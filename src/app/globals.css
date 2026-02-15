@@ -213,9 +213,45 @@
   body {
     background: white !important;
     color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  .no-print {
+  /* Hide sidebar and toolbar when printing from the app */
+  .no-print,
+  [class*="border-r"],
+  [class*="no-print"] {
+    display: none !important;
+  }
+
+  /* Hide everything except the script pages */
+  .flex.h-full > *:not(.flex-1) {
+    display: none !important;
+  }
+
+  /* Make the script area fill the page */
+  .sp-page {
+    width: auto !important;
+    max-width: none !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .sp-dark {
+    background: white !important;
+    color: black !important;
+  }
+
+  .sp-dark .sp-element {
+    color: black !important;
+  }
+
+  .sp-gutter {
     display: none !important;
   }
 
@@ -224,5 +260,10 @@
     margin: 0;
     box-shadow: none;
     border: none;
+  }
+
+  @page {
+    size: letter;
+    margin: 1in 1in 1in 1.5in;
   }
 }

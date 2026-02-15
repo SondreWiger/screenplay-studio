@@ -10,6 +10,16 @@ export default function LandingPage() {
         <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-3xl" />
       </div>
 
+      {/* Support banner */}
+      <div className="relative z-10 flex items-center justify-center px-4 py-2.5 bg-surface-900/60 border-b border-surface-800/50">
+        <p className="text-xs text-surface-400">
+          Built &amp; run for free by a solo developer.{' '}
+          <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
+            Support the project &#x2764;
+          </a>
+        </p>
+      </div>
+
       {/* Nav */}
       <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
@@ -208,6 +218,34 @@ export default function LandingPage() {
           </div>
         </div>
       </main>
+
+      {/* Support section */}
+      <section className="relative z-10 border-t border-surface-800 py-16 px-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600/10 border border-brand-600/20 mb-6">
+            <span className="text-2xl">&#x2764;&#xFE0F;</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Made with love by a solo developer</h2>
+          <p className="text-surface-400 leading-relaxed mb-2">
+            Screenplay Studio is self-funded, built, and maintained by a single developer.
+            The platform is completely free to use — no subscriptions, no paywalls, no ads.
+          </p>
+          <p className="text-surface-400 leading-relaxed mb-8">
+            If you find this tool useful and want to help keep it running and growing,
+            consider supporting the project. Every contribution goes directly towards
+            server costs, development time, and new features.
+          </p>
+          <a
+            href="https://ko-fi.com/northemdevelopment"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-[#FF5E5B] hover:bg-[#e54e4b] text-white font-semibold text-sm transition-colors shadow-lg shadow-[#FF5E5B]/20"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M7.5 7.5C4.5 7.5 3 9.5 3 12c0 5 8 9.5 9 10 1-.5 9-5 9-10 0-2.5-1.5-4.5-4.5-4.5-1.8 0-3 1-3.5 1.5C12.5 8.5 11.3 7.5 9.5 7.5h-2z" /></svg>
+            Support on Ko-fi
+          </a>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-surface-800 py-8 px-8">

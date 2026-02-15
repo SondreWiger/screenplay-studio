@@ -84,8 +84,8 @@ function LoginForm() {
 
           {/* Google Login */}
           <button
-            onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 rounded-lg border border-surface-700 bg-surface-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-surface-700 transition-colors mb-6"
+            disabled
+            className="w-full flex items-center justify-center gap-3 rounded-lg border border-surface-700 bg-surface-800/50 px-4 py-2.5 text-sm font-medium text-surface-500 cursor-not-allowed mb-2 opacity-60"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -95,6 +95,7 @@ function LoginForm() {
             </svg>
             Continue with Google
           </button>
+          <p className="text-[11px] text-surface-500 text-center mb-6">Google sign-in is under construction</p>
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">

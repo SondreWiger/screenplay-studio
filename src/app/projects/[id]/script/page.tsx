@@ -196,10 +196,227 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     }
   };
 
+  // ---- PDF Export ----
+  const handleExportPDF = useCallback(() => {
+    const store = useScriptStore.getState();
+    const script = store.currentScript;
+    const els = store.elements;
+    if (!script) return;
+
+    const titlePage = script.title_page_data || {} as any;
+    const hasTitlePage = titlePage.title || titlePage.author;
+
+    // Build element HTML
+    const elementHTML = (el: ScriptElement) => {
+      const content = (el.content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const cls = el.element_type.replace('_', '-');
+      if (el.is_omitted) return '';
+      return `<div class="el el-${cls}">${content}</div>`;
+    };
+
+    // Paginate: ~56 lines per page
+    const linesPerPage = 56;
+    const pages: string[][] = [[]];
+    let lineCount = 0;
+    for (const el of els) {
+      if (el.is_omitted) continue;
+      const lines = Math.max(1, Math.ceil((el.content || '').length / 60));
+      if (el.element_type === 'scene_heading') lineCount += 2;
+      if (lineCount + lines > linesPerPage && pages[pages.length - 1].length > 0) {
+        pages.push([]);
+        lineCount = 0;
+      }
+      pages[pages.length - 1].push(elementHTML(el));
+      lineCount += lines;
+      if (el.element_type === 'scene_heading' || el.element_type === 'transition') lineCount += 1;
+    }
+
+    const pageHTML = pages.map((p, i) => `
+      <div class="page">
+        <div class="page-content">${p.join('')}</div>
+        <div class="page-number">${i + 1}.</div>
+      </div>
+    `).join('');
+
+    const titlePageHTML = hasTitlePage ? `
+      <div class="page title-page">
+        <div class="title-center">
+          ${titlePage.title ? `<div class="tp-title">${titlePage.title}</div>` : ''}
+          ${titlePage.credit ? `<div class="tp-credit">${titlePage.credit}</div>` : ''}
+          ${titlePage.author ? `<div class="tp-author">${titlePage.author}</div>` : ''}
+          ${titlePage.source ? `<div class="tp-source">${titlePage.source}</div>` : ''}
+        </div>
+        <div class="title-bottom">
+          ${titlePage.draft_date ? `<div class="tp-info">${titlePage.draft_date}</div>` : ''}
+          ${titlePage.contact ? `<div class="tp-info">${titlePage.contact}</div>` : ''}
+          ${titlePage.copyright ? `<div class="tp-info">${titlePage.copyright}</div>` : ''}
+        </div>
+      </div>
+    ` : '';
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${script.title || 'Screenplay'} - Export</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+    font-size: 12pt;
+    line-height: 1;
+    color: black;
+    background: white;
+  }
+
+  .page {
+    width: 8.5in;
+    min-height: 11in;
+    padding: 1in 1in 1in 1.5in;
+    position: relative;
+    page-break-after: always;
+    margin: 0 auto;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .page-content {
+    min-height: calc(11in - 2in);
+  }
+
+  .page-number {
+    position: absolute;
+    top: 0.5in;
+    right: 1in;
+    font-size: 12pt;
+  }
+
+  /* Title page */
+  .title-page { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .title-page .page-number { display: none; }
+  .title-center { text-align: center; margin-top: -2in; }
+  .title-bottom { position: absolute; bottom: 1.5in; left: 1.5in; }
+  .tp-title { font-size: 24pt; font-weight: bold; text-transform: uppercase; margin-bottom: 24pt; }
+  .tp-credit { font-size: 12pt; margin-bottom: 12pt; }
+  .tp-author { font-size: 12pt; margin-bottom: 12pt; }
+  .tp-source { font-size: 12pt; font-style: italic; margin-bottom: 12pt; }
+  .tp-info { font-size: 10pt; margin-bottom: 6pt; }
+
+  /* Element types */
+  .el {
+    font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+    font-size: 12pt;
+    line-height: 1;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .el-scene-heading {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 24pt;
+    padding-bottom: 12pt;
+  }
+  .page-content > .el-scene-heading:first-child { margin-top: 0; }
+
+  .el-action { padding-top: 12pt; }
+
+  .el-character {
+    text-transform: uppercase;
+    margin-left: 2.2in;
+    padding-top: 12pt;
+  }
+
+  .el-parenthetical {
+    margin-left: 1.6in;
+    margin-right: 2in;
+  }
+
+  .el-dialogue {
+    margin-left: 1in;
+    margin-right: 1.5in;
+  }
+
+  .el-transition {
+    text-transform: uppercase;
+    text-align: right;
+    padding-top: 12pt;
+    padding-bottom: 12pt;
+  }
+
+  .el-centered {
+    text-align: center;
+    padding-top: 12pt;
+  }
+
+  .el-note {
+    font-style: italic;
+    color: #666;
+    border-left: 2px solid #ccc;
+    padding-left: 12pt;
+    padding-top: 12pt;
+  }
+
+  /* Screen preview */
+  @media screen {
+    body { background: #e0e0e0; padding: 20px 0; }
+    .page {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
+  }
+
+  /* Print */
+  @media print {
+    body { background: white; }
+    .page {
+      width: auto;
+      min-height: auto;
+      padding: 0;
+      margin: 0;
+      page-break-after: always;
+    }
+    .page-content { min-height: auto; }
+  }
+
+  @page {
+    size: letter;
+    margin: 1in 1in 1in 1.5in;
+  }
+</style>
+</head>
+<body>
+${titlePageHTML}
+${pageHTML}
+<script>
+  // Auto-trigger print after fonts load
+  document.fonts.ready.then(() => {
+    setTimeout(() => window.print(), 300);
+  });
+<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      alert('Please allow popups to export PDF.');
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+  }, []);
+
   const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
       e.preventDefault();
       setShowSearch(true);
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+      e.preventDefault();
+      handleExportPDF();
     }
   };
 
@@ -290,7 +507,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
             <button onClick={() => setShowTitlePage(true)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Title Page">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
             </button>
-            <button onClick={() => window.print()} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Print / Export PDF">
+            <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Export PDF (Cmd+P)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
             </button>
             <button onClick={() => setDarkMode(!darkMode)}
