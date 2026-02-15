@@ -98,13 +98,17 @@ export default function RegisterPage() {
           {/* Google Sign Up */}
           <button
             onClick={async () => {
+              setError('');
               const supabase = createClient();
-              await supabase.auth.signInWithOAuth({
+              const { error: oauthError } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                   redirectTo: `${window.location.origin}/auth/callback?redirect=/dashboard`,
                 },
               });
+              if (oauthError) {
+                setError(oauthError.message);
+              }
             }}
             className="w-full flex items-center justify-center gap-3 rounded-lg border border-surface-700 bg-surface-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-surface-700 transition-colors mb-6"
           >

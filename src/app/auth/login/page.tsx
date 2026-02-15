@@ -45,13 +45,17 @@ function LoginForm() {
   };
 
   const handleGoogleLogin = async () => {
+    setError('');
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
       },
     });
+    if (oauthError) {
+      setError(oauthError.message);
+    }
   };
 
   return (

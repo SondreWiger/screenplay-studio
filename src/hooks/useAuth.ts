@@ -38,11 +38,12 @@ export function useAuth() {
           setUser(profile as Profile);
         } else {
           // Profile missing — create minimal one from auth data
+          const meta = authUser.user_metadata || {};
           const minimalProfile: Profile = {
             id: authUser.id,
             email: authUser.email || '',
-            full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
-            avatar_url: authUser.user_metadata?.avatar_url || '',
+            full_name: meta.full_name || meta.name || '',
+            avatar_url: meta.avatar_url || meta.picture || '',
           } as Profile;
 
           // Try to insert the missing profile
@@ -82,7 +83,25 @@ export function useAuth() {
               .select('*')
               .eq('id', session.user.id)
               .single();
-            setUser(profile as Profile || null);
+            if (profile) {
+              setUser(profile as Profile);
+            } else {
+              // OAuth user with no profile yet — create one
+              const meta = session.user.user_metadata || {};
+              const newProfile: Profile = {
+                id: session.user.id,
+                email: session.user.email || '',
+                full_name: meta.full_name || meta.name || '',
+                avatar_url: meta.avatar_url || meta.picture || '',
+              } as Profile;
+              await supabase.from('profiles').upsert({
+                id: session.user.id,
+                email: session.user.email || '',
+                full_name: newProfile.full_name,
+                avatar_url: newProfile.avatar_url,
+              });
+              setUser(newProfile);
+            }
           } catch {
             // Keep existing user state on error
           }
