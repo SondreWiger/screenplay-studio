@@ -40,6 +40,8 @@ function LoginForm() {
       return;
     }
 
+    // Mark session as active for this browser session
+    sessionStorage.setItem('ss_session_active', '1');
     router.push(redirect);
     router.refresh();
   };

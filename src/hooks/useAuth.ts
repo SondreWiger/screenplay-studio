@@ -18,6 +18,16 @@ export function useAuth() {
 
     const initAuth = async () => {
       try {
+        // Session-only auth: if there's no sessionStorage flag, sign out any persisted session.
+        // This ensures users must log in fresh each browser session.
+        const hasSessionFlag = sessionStorage.getItem('ss_session_active');
+        if (!hasSessionFlag) {
+          await supabase.auth.signOut();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
         // Use getUser() to validate session server-side and refresh token if needed
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
@@ -71,12 +81,15 @@ export function useAuth() {
         if (event === 'INITIAL_SESSION') return; // Already handled above
 
         if (event === 'SIGNED_OUT') {
+          try { sessionStorage.removeItem('ss_session_active'); } catch {}
           setUser(null);
           setLoading(false);
           return;
         }
 
         if (session?.user) {
+          // Mark session active (covers email verification, OAuth callbacks)
+          try { sessionStorage.setItem('ss_session_active', '1'); } catch {}
           try {
             const { data: profile } = await supabase
               .from('profiles')

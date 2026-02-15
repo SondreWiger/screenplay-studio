@@ -31,6 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setInitialized: (initialized) => set({ initialized }),
   signOut: async () => {
     const supabase = createClient();
+    try { sessionStorage.removeItem('ss_session_active'); } catch {}
     await supabase.auth.signOut();
     set({ user: null });
   },

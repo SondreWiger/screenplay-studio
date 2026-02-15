@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select } from '@/components/ui';
 import { formatDate, timeAgo } from '@/lib/utils';
 import type { Project } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS } from '@/lib/types';
+
+const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -68,12 +71,25 @@ export default function DashboardPage() {
             <h1 className="text-lg font-semibold text-white">Screenplay Studio</h1>
           </div>
           <div className="flex items-center gap-4">
+            {user?.id === ADMIN_UID && (
+              <Link href="/admin" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors border border-red-500/20">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                Admin
+              </Link>
+            )}
             <Button onClick={() => setShowNewProject(true)}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               New Project
             </Button>
+            <button
+              onClick={() => useAuthStore.getState().signOut().then(() => router.replace('/auth/login'))}
+              className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors"
+              title="Sign out"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            </button>
             <Avatar src={user?.avatar_url} name={user?.full_name} size="md" />
           </div>
         </div>

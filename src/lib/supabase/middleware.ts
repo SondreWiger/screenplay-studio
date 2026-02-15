@@ -30,7 +30,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes
-  const protectedPaths = ['/dashboard', '/projects'];
+  const protectedPaths = ['/dashboard', '/projects', '/admin'];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -39,6 +39,14 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     url.searchParams.set('redirect', request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Admin route — only allow the designated admin user
+  const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+  if (request.nextUrl.pathname.startsWith('/admin') && user?.id !== ADMIN_UID) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
