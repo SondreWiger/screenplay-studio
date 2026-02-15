@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@layer base {
+  * {
+    @apply border-surface-800;
+  }
+
+  body {
+    @apply bg-surface-950 text-white antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-surface-600;
+  }
+}
+
+@layer components {
+  /* =============================================
+     Screenplay Page — continuous-document feel
+     ============================================= */
+  .sp-page {
+    @apply font-screenplay;
+    font-size: 12pt;
+    line-height: 1;
+    max-width: 8.5in;
+    padding: 1in 1in 1in 1.5in;
+    background: white;
+    color: black;
+    min-height: 11in;
+  }
+
+  /* Each line wrapper: holds gutter + editable element */
+  .sp-line {
+    position: relative;
+  }
+
+  /* Hover gutter (element type label, delete) */
+  .sp-gutter {
+    position: absolute;
+    left: -6rem;
+    top: 0;
+    display: none;
+    align-items: center;
+    gap: 2px;
+  }
+  .sp-line:hover .sp-gutter,
+  .sp-line:focus-within .sp-gutter {
+    display: flex;
+  }
+
+  /* Base element style */
+  .sp-element {
+    @apply font-screenplay;
+    font-size: 12pt;
+    line-height: 1;
+    min-height: 1em;
+    cursor: text;
+    outline: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Placeholder for empty contentEditable */
+  .sp-element:empty::before {
+    content: attr(data-placeholder);
+    color: #999;
+    pointer-events: none;
+  }
+
+  /* Focus indicator — very subtle highlight */
+  .sp-element:focus {
+    outline: none;
+  }
+
+  /* Element type styles */
+  .sp-scene-heading {
+    @apply font-bold uppercase;
+    margin-top: 24pt;
+    padding-bottom: 12pt;
+  }
+  .sp-line:first-child .sp-scene-heading {
+    margin-top: 0;
+  }
+
+  .sp-action {
+    padding-top: 12pt;
+  }
+
+  .sp-character {
+    @apply uppercase;
+    margin-left: 2.2in;
+    padding-top: 12pt;
+  }
+
+  .sp-parenthetical {
+    margin-left: 1.6in;
+    margin-right: 2in;
+  }
+
+  .sp-dialogue {
+    margin-left: 1in;
+    margin-right: 1.5in;
+  }
+
+  .sp-transition {
+    @apply uppercase;
+    text-align: right;
+    padding-top: 12pt;
+    padding-bottom: 12pt;
+  }
+
+  .sp-centered {
+    text-align: center;
+    padding-top: 12pt;
+  }
+
+  .sp-note {
+    @apply italic;
+    color: #666;
+    border-left: 2px solid #ccc;
+    padding-left: 12pt;
+    padding-top: 12pt;
+  }
+
+  /* =============================================
+     Dark mode
+     ============================================= */
+  .sp-dark {
+    background: #1a1a2e !important;
+    color: #e0e0e0 !important;
+  }
+
+  .sp-dark .sp-element:empty::before {
+    color: #444;
+  }
+
+  .sp-dark .sp-element:focus {
+    border-left-color: rgba(221, 87, 78, 0.6);
+  }
+
+  .sp-dark .sp-note {
+    color: #999;
+    border-left-color: #555;
+  }
+
+  /* Legacy class compat (keep for other pages) */
+  .screenplay-page { @apply font-screenplay; font-size: 12pt; line-height: 1; max-width: 8.5in; padding: 1in; background: white; color: black; }
+  .screenplay-element { @apply font-screenplay; font-size: 12pt; line-height: 1; min-height: 1em; cursor: text; }
+  .screenplay-element:empty::before { content: attr(data-placeholder); color: #999; pointer-events: none; }
+  .screenplay-element:focus { outline: none; }
+  .screenplay-scene-heading { @apply font-bold uppercase; margin-top: 24pt; margin-bottom: 12pt; }
+  .screenplay-action { margin-top: 12pt; margin-bottom: 12pt; }
+  .screenplay-character { @apply uppercase; margin-left: 2.2in; margin-top: 12pt; }
+  .screenplay-dialogue { margin-left: 1in; margin-right: 1.5in; }
+  .screenplay-parenthetical { margin-left: 1.6in; margin-right: 2in; }
+  .screenplay-transition { @apply uppercase; text-align: right; margin-top: 12pt; margin-bottom: 12pt; }
+  .screenplay-dark { background: #1a1a2e !important; color: #e0e0e0 !important; }
+
+  /* Glow effects */
+  .glow-brand {
+    box-shadow: 0 0 20px rgba(221, 87, 78, 0.15);
+  }
+
+  .glow-brand-strong {
+    box-shadow: 0 0 40px rgba(221, 87, 78, 0.25);
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-400 via-brand-500 to-orange-400 bg-clip-text text-transparent;
+  }
+
+  /* Sidebar link */
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 transition-all duration-200;
+    @apply hover:bg-white/5 hover:text-white;
+  }
+
+  .sidebar-link.active {
+    @apply bg-brand-600/10 text-brand-400;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Print styles for script export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .screenplay-page {
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    border: none;
+  }
+}

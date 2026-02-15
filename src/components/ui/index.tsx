@@ -1,0 +1,519 @@
+'use client';
+
+import React from 'react';
+import { cn } from '@/lib/utils';
+
+// ============================================================
+// BUTTON
+// ============================================================
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+  size?: 'sm' | 'md' | 'lg' | 'icon';
+  loading?: boolean;
+}
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
+    const variants = {
+      primary: 'bg-brand-600 text-white hover:bg-brand-700 shadow-sm',
+      secondary: 'bg-surface-800 text-white hover:bg-surface-700 shadow-sm',
+      ghost: 'text-surface-300 hover:text-white hover:bg-white/10',
+      danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
+      outline: 'border border-surface-600 text-surface-300 hover:bg-white/5 hover:text-white',
+    };
+    const sizes = {
+      sm: 'px-3 py-1.5 text-xs',
+      md: 'px-4 py-2 text-sm',
+      lg: 'px-6 py-3 text-base',
+      icon: 'p-2',
+    };
+
+    return (
+      <button
+        ref={ref}
+        className={cn(
+          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          variants[variant],
+          sizes[size],
+          className
+        )}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading && (
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        )}
+        {children}
+      </button>
+    );
+  }
+);
+Button.displayName = 'Button';
+
+// ============================================================
+// INPUT
+// ============================================================
+
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  icon?: React.ReactNode;
+}
+
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, label, error, icon, ...props }, ref) => {
+    return (
+      <div className="space-y-1.5">
+        {label && (
+          <label className="block text-sm font-medium text-surface-300">
+            {label}
+          </label>
+        )}
+        <div className="relative">
+          {icon && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">
+              {icon}
+            </div>
+          )}
+          <input
+            ref={ref}
+            className={cn(
+              'w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white',
+              'placeholder:text-surface-500',
+              'focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500',
+              'transition-colors duration-200',
+              icon && 'pl-10',
+              error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
+              className
+            )}
+            {...props}
+          />
+        </div>
+        {error && <p className="text-xs text-red-400">{error}</p>}
+      </div>
+    );
+  }
+);
+Input.displayName = 'Input';
+
+// ============================================================
+// TEXTAREA
+// ============================================================
+
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  error?: string;
+}
+
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, label, error, ...props }, ref) => {
+    return (
+      <div className="space-y-1.5">
+        {label && (
+          <label className="block text-sm font-medium text-surface-300">
+            {label}
+          </label>
+        )}
+        <textarea
+          ref={ref}
+          className={cn(
+            'w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white',
+            'placeholder:text-surface-500 resize-none',
+            'focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500',
+            'transition-colors duration-200',
+            error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
+            className
+          )}
+          {...props}
+        />
+        {error && <p className="text-xs text-red-400">{error}</p>}
+      </div>
+    );
+  }
+);
+Textarea.displayName = 'Textarea';
+
+// ============================================================
+// SELECT
+// ============================================================
+
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  error?: string;
+  options: { value: string; label: string }[];
+}
+
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  ({ className, label, error, options, ...props }, ref) => {
+    return (
+      <div className="space-y-1.5">
+        {label && (
+          <label className="block text-sm font-medium text-surface-300">
+            {label}
+          </label>
+        )}
+        <select
+          ref={ref}
+          className={cn(
+            'w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white',
+            'focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500',
+            'transition-colors duration-200',
+            error && 'border-red-500',
+            className
+          )}
+          {...props}
+        >
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {error && <p className="text-xs text-red-400">{error}</p>}
+      </div>
+    );
+  }
+);
+Select.displayName = 'Select';
+
+// ============================================================
+// BADGE
+// ============================================================
+
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
+  size?: 'sm' | 'md';
+  className?: string;
+}
+
+export function Badge({ children, variant = 'default', size = 'sm', className }: BadgeProps) {
+  const variants = {
+    default: 'bg-surface-700 text-surface-300',
+    success: 'bg-green-500/20 text-green-400',
+    warning: 'bg-yellow-500/20 text-yellow-400',
+    error: 'bg-red-500/20 text-red-400',
+    info: 'bg-blue-500/20 text-blue-400',
+  };
+  const sizes = {
+    sm: 'px-2 py-0.5 text-[10px]',
+    md: 'px-2.5 py-1 text-xs',
+  };
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full font-medium',
+        variants[variant],
+        sizes[size],
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+// ============================================================
+// CARD
+// ============================================================
+
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+  hover?: boolean;
+  onClick?: () => void;
+}
+
+export function Card({ children, className, hover = false, onClick }: CardProps) {
+  return (
+    <div
+      className={cn(
+        'rounded-xl border border-surface-800 bg-surface-900/50 backdrop-blur-sm',
+        hover && 'hover:border-surface-600 hover:bg-surface-800/50 cursor-pointer transition-all duration-200',
+        onClick && 'cursor-pointer',
+        className
+      )}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+}
+
+export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+  if (!isOpen) return null;
+
+  const sizes = {
+    sm: 'max-w-sm',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    full: 'max-w-6xl',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className={cn(
+          'relative w-full rounded-2xl border border-surface-700 bg-surface-900 shadow-2xl animate-slide-up',
+          sizes[size]
+        )}
+      >
+        {title && (
+          <div className="flex items-center justify-between border-b border-surface-800 px-6 py-4">
+            <h2 className="text-lg font-semibold text-white">{title}</h2>
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-surface-400 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        <div className="p-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// AVATAR
+// ============================================================
+
+interface AvatarProps {
+  src?: string | null;
+  name?: string | null;
+  size?: 'sm' | 'md' | 'lg';
+  color?: string;
+  className?: string;
+  online?: boolean;
+}
+
+export function Avatar({ src, name, size = 'md', color, className, online }: AvatarProps) {
+  const sizes = {
+    sm: 'h-7 w-7 text-[10px]',
+    md: 'h-9 w-9 text-xs',
+    lg: 'h-12 w-12 text-sm',
+  };
+
+  const initials = name
+    ? name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+    : '?';
+
+  return (
+    <div className={cn('relative inline-flex', className)}>
+      {src ? (
+        <img
+          src={src}
+          alt={name || 'Avatar'}
+          className={cn('rounded-full object-cover', sizes[size])}
+        />
+      ) : (
+        <div
+          className={cn(
+            'rounded-full flex items-center justify-center font-semibold text-white',
+            sizes[size]
+          )}
+          style={{ backgroundColor: color || '#6366f1' }}
+        >
+          {initials}
+        </div>
+      )}
+      {online !== undefined && (
+        <span
+          className={cn(
+            'absolute bottom-0 right-0 block rounded-full ring-2 ring-surface-900',
+            size === 'sm' ? 'h-2 w-2' : 'h-2.5 w-2.5',
+            online ? 'bg-green-400' : 'bg-surface-500'
+          )}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// TABS
+// ============================================================
+
+interface Tab {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+  count?: number;
+}
+
+interface TabsProps {
+  tabs: Tab[];
+  activeTab: string;
+  onChange: (id: string) => void;
+  className?: string;
+}
+
+export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
+  return (
+    <div className={cn('flex gap-1 rounded-lg bg-surface-900 p-1', className)}>
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => onChange(tab.id)}
+          className={cn(
+            'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200',
+            activeTab === tab.id
+              ? 'bg-surface-700 text-white shadow-sm'
+              : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800'
+          )}
+        >
+          {tab.icon}
+          {tab.label}
+          {tab.count !== undefined && (
+            <span className="ml-1 rounded-full bg-surface-600 px-1.5 py-0.5 text-[10px]">
+              {tab.count}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// EMPTY STATE
+// ============================================================
+
+interface EmptyStateProps {
+  icon?: React.ReactNode;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+}
+
+export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      {icon && <div className="mb-4 text-surface-600">{icon}</div>}
+      <h3 className="text-lg font-semibold text-white">{title}</h3>
+      {description && (
+        <p className="mt-1 max-w-sm text-sm text-surface-400">{description}</p>
+      )}
+      {action && <div className="mt-6">{action}</div>}
+    </div>
+  );
+}
+
+// ============================================================
+// LOADING
+// ============================================================
+
+export function LoadingSpinner({ className }: { className?: string }) {
+  return (
+    <div className={cn('flex items-center justify-center', className)}>
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-surface-700 border-t-brand-500" />
+    </div>
+  );
+}
+
+export function LoadingPage() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-surface-950">
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-surface-700 border-t-brand-500" />
+        <p className="mt-4 text-sm text-surface-400">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// TOOLTIP
+// ============================================================
+
+interface TooltipProps {
+  content: string;
+  children: React.ReactNode;
+  position?: 'top' | 'bottom' | 'left' | 'right';
+}
+
+export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
+  const positions = {
+    top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+    bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
+    left: 'right-full top-1/2 -translate-y-1/2 mr-2',
+    right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+  };
+
+  return (
+    <div className="group relative inline-flex">
+      {children}
+      <div
+        className={cn(
+          'absolute z-50 hidden group-hover:block',
+          'rounded-md bg-surface-800 px-2 py-1 text-xs text-white shadow-lg',
+          'whitespace-nowrap',
+          positions[position]
+        )}
+      >
+        {content}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// PROGRESS BAR
+// ============================================================
+
+interface ProgressProps {
+  value: number;
+  max?: number;
+  label?: string;
+  showPercent?: boolean;
+  color?: string;
+  className?: string;
+}
+
+export function Progress({ value, max = 100, label, showPercent = true, color, className }: ProgressProps) {
+  const percent = Math.round((value / max) * 100);
+
+  return (
+    <div className={cn('space-y-1', className)}>
+      {(label || showPercent) && (
+        <div className="flex items-center justify-between text-xs">
+          {label && <span className="text-surface-400">{label}</span>}
+          {showPercent && <span className="text-surface-500">{percent}%</span>}
+        </div>
+      )}
+      <div className="h-2 overflow-hidden rounded-full bg-surface-800">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${percent}%`,
+            backgroundColor: color || '#dd574e',
+          }}
+        />
+      </div>
+    </div>
+  );
+}

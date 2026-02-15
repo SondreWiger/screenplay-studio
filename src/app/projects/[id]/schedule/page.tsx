@@ -1,0 +1,331 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/lib/stores';
+import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
+import { cn, formatDate, formatTime } from '@/lib/utils';
+import type { ScheduleEvent, Scene, Location as Loc, ScheduleEventType } from '@/lib/types';
+
+const EVENT_TYPES: { value: ScheduleEventType; label: string; color: string }[] = [
+  { value: 'shooting', label: 'Shooting', color: 'bg-red-500' },
+  { value: 'rehearsal', label: 'Rehearsal', color: 'bg-blue-500' },
+  { value: 'location_scout', label: 'Location Scout', color: 'bg-green-500' },
+  { value: 'meeting', label: 'Meeting', color: 'bg-yellow-500' },
+  { value: 'setup', label: 'Setup', color: 'bg-purple-500' },
+  { value: 'wrap', label: 'Wrap', color: 'bg-pink-500' },
+  { value: 'travel', label: 'Travel', color: 'bg-orange-500' },
+  { value: 'break', label: 'Break', color: 'bg-teal-500' },
+  { value: 'other', label: 'Other', color: 'bg-surface-500' },
+];
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function getMonthDays(year: number, month: number) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) days.push(null);
+  for (let i = 1; i <= daysInMonth; i++) days.push(i);
+  return days;
+}
+
+export default function SchedulePage({ params }: { params: { id: string } }) {
+  const { user } = useAuthStore();
+  const [events, setEvents] = useState<ScheduleEvent[]>([]);
+  const [scenes, setScenes] = useState<Scene[]>([]);
+  const [locations, setLocations] = useState<Loc[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const [view, setView] = useState<'calendar' | 'list'>('calendar');
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  useEffect(() => { fetchData(); }, [params.id]);
+
+  const fetchData = async () => {
+    try {
+      const supabase = createClient();
+      const [evRes, scRes, loRes] = await Promise.all([
+        supabase.from('production_schedule').select('*').eq('project_id', params.id).order('start_time'),
+        supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
+        supabase.from('locations').select('*').eq('project_id', params.id).order('name'),
+      ]);
+      if (evRes.error) console.error('Schedule fetch error:', evRes.error.message);
+      if (scRes.error) console.error('Scenes fetch error:', scRes.error.message);
+      if (loRes.error) console.error('Locations fetch error:', loRes.error.message);
+      setEvents(evRes.data || []);
+      setScenes(scRes.data || []);
+      setLocations(loRes.data || []);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this event?')) return;
+    const supabase = createClient();
+    await supabase.from('production_schedule').delete().eq('id', id);
+    setEvents(events.filter((e) => e.id !== id));
+    setShowEditor(false);
+  };
+
+  const prevMonth = () => {
+    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
+    else setCurrentMonth(currentMonth - 1);
+  };
+  const nextMonth = () => {
+    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
+    else setCurrentMonth(currentMonth + 1);
+  };
+
+  const days = getMonthDays(currentYear, currentMonth);
+  const getEventsForDay = (day: number) => {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return events.filter((e) => e.start_time.startsWith(dateStr));
+  };
+
+  const today = new Date();
+  const isToday = (day: number) => day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+
+  const upcoming = events.filter((e) => new Date(e.start_time) >= new Date(new Date().toDateString())).slice(0, 20);
+
+  if (loading) return <LoadingSpinner className="py-32" />;
+
+  return (
+    <div className="p-8 max-w-6xl">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Production Schedule</h1>
+          <p className="text-sm text-surface-400 mt-1">{events.length} events scheduled</p>
+        </div>
+        <div className="flex gap-3">
+          <div className="flex rounded-lg border border-surface-700 overflow-hidden">
+            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>Calendar</button>
+            <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'list' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>List</button>
+          </div>
+          <Button onClick={() => { setSelectedEvent(null); setSelectedDate(null); setShowEditor(true); }}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Event
+          </Button>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex gap-4 mb-6 flex-wrap">
+        {EVENT_TYPES.map((t) => (
+          <div key={t.value} className="flex items-center gap-1.5">
+            <div className={cn('w-2.5 h-2.5 rounded-full', t.color)} />
+            <span className="text-xs text-surface-400">{t.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {view === 'calendar' ? (
+        <div className="bg-surface-900 rounded-xl border border-surface-800">
+          {/* Calendar header */}
+          <div className="flex items-center justify-between p-4 border-b border-surface-800">
+            <button onClick={prevMonth} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <h2 className="text-lg font-semibold text-white">{MONTHS[currentMonth]} {currentYear}</h2>
+            <button onClick={nextMonth} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+          {/* Day headers */}
+          <div className="grid grid-cols-7 border-b border-surface-800">
+            {DAYS.map((d) => <div key={d} className="p-2 text-center text-xs font-medium text-surface-500">{d}</div>)}
+          </div>
+          {/* Day cells */}
+          <div className="grid grid-cols-7">
+            {days.map((day, i) => {
+              const dayEvents = day ? getEventsForDay(day) : [];
+              return (
+                <div key={i} className={cn(
+                  'min-h-[90px] p-1.5 border-r border-b border-surface-800/50 transition-colors',
+                  day ? 'hover:bg-white/[0.02] cursor-pointer' : '',
+                  isToday(day!) ? 'bg-brand-600/5' : '',
+                )} onClick={() => {
+                  if (!day) return;
+                  const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  setSelectedDate(dateStr); setSelectedEvent(null); setShowEditor(true);
+                }}>
+                  {day && (
+                    <>
+                      <span className={cn('text-xs font-medium', isToday(day) ? 'text-brand-400' : 'text-surface-400')}>{day}</span>
+                      <div className="mt-1 space-y-0.5">
+                        {dayEvents.slice(0, 3).map((ev) => {
+                          const evType = EVENT_TYPES.find((t) => t.value === ev.event_type);
+                          return (
+                            <div key={ev.id}
+                              onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setShowEditor(true); }}
+                              className={cn('text-[10px] px-1.5 py-0.5 rounded truncate text-white/90', evType?.color || 'bg-surface-600')}>
+                              {ev.title}
+                            </div>
+                          );
+                        })}
+                        {dayEvents.length > 3 && <span className="text-[10px] text-surface-500 pl-1">+{dayEvents.length - 3} more</span>}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        // List view
+        upcoming.length === 0 ? (
+          <EmptyState title="No upcoming events" description="Add shooting days, meetings, and milestones"
+            action={<Button onClick={() => { setSelectedEvent(null); setShowEditor(true); }}>Add Event</Button>} />
+        ) : (
+          <div className="space-y-2">
+            {upcoming.map((ev) => {
+              const evType = EVENT_TYPES.find((t) => t.value === ev.event_type);
+              const scene = ev.scene_ids?.length ? scenes.find((s) => s.id === ev.scene_ids[0]) : null;
+              const loc = locations.find((l) => l.id === ev.location_id);
+              return (
+                <Card key={ev.id} hover onClick={() => { setSelectedEvent(ev); setShowEditor(true); }}>
+                  <div className="flex items-center gap-4 p-4">
+                    <div className={cn('w-3 h-12 rounded-full shrink-0', evType?.color)} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-white">{ev.title}</h3>
+                        <Badge size="sm">{evType?.label || ev.event_type}</Badge>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-surface-400">
+                        <span>{formatDate(ev.start_time)}</span>
+                        {ev.call_time && <span>Call: {ev.call_time}</span>}
+                        {ev.wrap_time && <span>Wrap: {ev.wrap_time}</span>}
+                        {scene && <span>Sc. {scene.scene_number}</span>}
+                        {loc && <span>{loc.name}</span>}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )
+      )}
+
+      <ScheduleEditor isOpen={showEditor} onClose={() => setShowEditor(false)} event={selectedEvent}
+        projectId={params.id} userId={user?.id || ''} scenes={scenes} locations={locations}
+        defaultDate={selectedDate} onSaved={() => { fetchData(); setShowEditor(false); }} onDelete={handleDelete} />
+    </div>
+  );
+}
+
+function ScheduleEditor({ isOpen, onClose, event, projectId, userId, scenes, locations, defaultDate, onSaved, onDelete }: {
+  isOpen: boolean; onClose: () => void; event: ScheduleEvent | null; projectId: string; userId: string;
+  scenes: Scene[]; locations: Loc[]; defaultDate: string | null; onSaved: () => void; onDelete: (id: string) => void;
+}) {
+  const [form, setForm] = useState<any>({});
+  const [loading, setLoading] = useState(false);
+
+  const pad2 = (n: number) => n.toString().padStart(2, '0');
+  const toHHMM = (iso: string) => { const d = new Date(iso); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+  const toDateStr = (iso: string) => { const d = new Date(iso); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+
+  useEffect(() => {
+    if (event) {
+      setForm({
+        ...event,
+        date: toDateStr(event.start_time),
+        call_time: event.call_time ? toHHMM(event.call_time) : toHHMM(event.start_time),
+        wrap_time: event.wrap_time ? toHHMM(event.wrap_time) : toHHMM(event.end_time),
+        scene_id: (event.scene_ids || [])[0] || '',
+      });
+    } else {
+      setForm({
+        title: '', event_type: 'shooting', date: defaultDate || new Date().toISOString().split('T')[0],
+        call_time: '06:00', wrap_time: '18:00', scene_id: '', location_id: '', notes: '',
+      });
+    }
+  }, [event, isOpen, defaultDate]);
+
+  const handleSave = async () => {
+    if (!form.title || !form.date) return;
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const callStr = form.call_time || '06:00';
+      const wrapStr = form.wrap_time || '18:00';
+      const startTime = new Date(`${form.date}T${callStr}`).toISOString();
+      const endTime = new Date(`${form.date}T${wrapStr}`).toISOString();
+      const payload = {
+        title: form.title, event_type: form.event_type, start_time: startTime, end_time: endTime,
+        call_time: startTime, wrap_time: endTime,
+        scene_ids: form.scene_id ? [form.scene_id] : [], location_id: form.location_id || null,
+        notes: form.notes || null, project_id: projectId, created_by: userId,
+      };
+      if (event) {
+        const { error } = await supabase.from('production_schedule').update(payload).eq('id', event.id);
+        if (error) { alert(error.message); setLoading(false); return; }
+      } else {
+        const { error } = await supabase.from('production_schedule').insert(payload);
+        if (error) { alert(error.message); setLoading(false); return; }
+      }
+    } catch (err) {
+      alert('Failed to save event');
+    }
+    setLoading(false);
+    onSaved();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={event ? `Edit: ${event.title}` : 'New Schedule Event'} size="md">
+      <div className="space-y-4">
+        <Input label="Title" value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Day 1 - Interior scenes" />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-surface-300 mb-1.5">Type</label>
+            <select value={form.event_type || 'shooting'} onChange={(e) => setForm({ ...form, event_type: e.target.value })}
+              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
+              {EVENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </div>
+          <Input label="Date" type="date" value={form.date || ''} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Call Time" type="time" value={form.call_time || ''} onChange={(e) => setForm({ ...form, call_time: e.target.value })} />
+          <Input label="Wrap Time" type="time" value={form.wrap_time || ''} onChange={(e) => setForm({ ...form, wrap_time: e.target.value })} />
+        </div>
+        {scenes.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-surface-300 mb-1.5">Scene</label>
+            <select value={form.scene_id || ''} onChange={(e) => setForm({ ...form, scene_id: e.target.value })}
+              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
+              <option value="">None</option>
+              {scenes.map((s) => <option key={s.id} value={s.id}>Scene {s.scene_number} - {s.scene_heading || 'Untitled'}</option>)}
+            </select>
+          </div>
+        )}
+        {locations.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-surface-300 mb-1.5">Location</label>
+            <select value={form.location_id || ''} onChange={(e) => setForm({ ...form, location_id: e.target.value })}
+              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
+              <option value="">None</option>
+              {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+            </select>
+          </div>
+        )}
+        <Textarea label="Notes" value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
+      </div>
+      <div className="flex items-center justify-between pt-6 mt-6 border-t border-surface-800">
+        <div>{event && <Button variant="danger" size="sm" onClick={() => onDelete(event.id)}>Delete</Button>}</div>
+        <div className="flex gap-3">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} loading={loading}>{event ? 'Save' : 'Create'}</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}

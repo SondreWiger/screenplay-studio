@@ -8,7 +8,8 @@ import type { UserPresence, ScriptElement } from '@/lib/types';
 export function useRealtime(projectId: string) {
   const { user } = useAuthStore();
   const { setOnlineUsers } = usePresenceStore();
-  const { elements, setElements } = useScriptStore();
+  // Only grab setElements — avoid capturing `elements` in the closure (stale)
+  const { setElements } = useScriptStore();
 
   useEffect(() => {
     if (!projectId || !user) return;
@@ -26,17 +27,32 @@ export function useRealtime(projectId: string) {
           table: 'script_elements',
         },
         (payload) => {
+          // Ignore changes made by the current user — we already update state locally
+          const newRecord = payload.new as ScriptElement | undefined;
+          if (newRecord && newRecord.last_edited_by === user.id) return;
+
+          // For DELETE, check old record's last_edited_by as well
+          if (payload.eventType === 'DELETE') {
+            const oldRecord = payload.old as any;
+            if (oldRecord?.last_edited_by === user.id) return;
+          }
+
+          // Use getState() to avoid stale closure
+          const currentElements = useScriptStore.getState().elements;
+
           if (payload.eventType === 'INSERT') {
             const newElement = payload.new as ScriptElement;
-            setElements([...elements, newElement].sort((a, b) => a.sort_order - b.sort_order));
+            // Avoid duplicates (we may already have it from local addElement)
+            if (currentElements.some((e) => e.id === newElement.id)) return;
+            setElements([...currentElements, newElement].sort((a, b) => a.sort_order - b.sort_order));
           } else if (payload.eventType === 'UPDATE') {
             const updated = payload.new as ScriptElement;
             setElements(
-              elements.map((e) => (e.id === updated.id ? updated : e))
+              currentElements.map((e) => (e.id === updated.id ? updated : e))
             );
           } else if (payload.eventType === 'DELETE') {
             const deleted = payload.old as { id: string };
-            setElements(elements.filter((e) => e.id !== deleted.id));
+            setElements(currentElements.filter((e) => e.id !== deleted.id));
           }
         }
       )
@@ -56,13 +72,17 @@ export function useRealtime(projectId: string) {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && user) {
+          const page = window.location.pathname.split('/').pop() || 'overview';
           await presenceChannel.track({
             user_id: user.id,
             project_id: projectId,
-            current_page: window.location.pathname,
+            current_page: page,
             is_online: true,
             last_seen: new Date().toISOString(),
-            profile: user,
+            full_name: (user as any).full_name || (user as any).email || '',
+            email: (user as any).email || '',
+            avatar_url: (user as any).avatar_url || '',
+            focused_element_id: null,
           });
         }
       });
@@ -77,6 +97,24 @@ export function useRealtime(projectId: string) {
     async (page: string, elementId?: string) => {
       if (!user || !projectId) return;
       const supabase = createClient();
+
+      // Update presence channel (realtime) with the page slug + focused element
+      const presenceChannel = supabase.channel(`presence-${projectId}`);
+      try {
+        await presenceChannel.track({
+          user_id: user.id,
+          project_id: projectId,
+          current_page: page,
+          is_online: true,
+          last_seen: new Date().toISOString(),
+          full_name: (user as any).full_name || (user as any).email || '',
+          email: (user as any).email || '',
+          avatar_url: (user as any).avatar_url || '',
+          focused_element_id: elementId || null,
+        });
+      } catch {} // channel may not be joined yet
+
+      // Also persist to DB
       await supabase.from('user_presence').upsert({
         user_id: user.id,
         project_id: projectId,

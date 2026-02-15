@@ -15,16 +15,20 @@ import type {
 interface AuthState {
   user: Profile | null;
   loading: boolean;
+  initialized: boolean;
   setUser: (user: Profile | null) => void;
   setLoading: (loading: boolean) => void;
+  setInitialized: (initialized: boolean) => void;
   signOut: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: true,
+  initialized: false,
   setUser: (user) => set({ user }),
   setLoading: (loading) => set({ loading }),
+  setInitialized: (initialized) => set({ initialized }),
   signOut: async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -72,7 +76,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
     set({ loading: true });
     const [projectRes, membersRes] = await Promise.all([
       supabase.from('projects').select('*').eq('id', id).single(),
-      supabase.from('project_members').select('*, profile:profiles(*)').eq('project_id', id),
+      supabase.from('project_members').select('*, profile:profiles!user_id(*)').eq('project_id', id),
     ]);
     set({
       currentProject: projectRes.data,
@@ -152,29 +156,36 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
     set({ saving: true });
     const elements = get().elements;
     const maxOrder = elements.length > 0 ? Math.max(...elements.map((e) => e.sort_order)) : 0;
+    const insertData = {
+      ...element,
+      sort_order: element.sort_order ?? maxOrder + 1,
+    };
+    console.log('[addElement] Inserting:', insertData);
     const { data, error } = await supabase
       .from('script_elements')
-      .insert({
-        ...element,
-        sort_order: element.sort_order ?? maxOrder + 1,
-      })
+      .insert(insertData)
       .select()
       .single();
+    if (error) {
+      console.error('[addElement] Supabase error:', error.message, error.details, error.hint);
+    }
     if (data && !error) {
-      set({ elements: [...elements, data].sort((a, b) => a.sort_order - b.sort_order) });
+      console.log('[addElement] Success:', data.id);
+      set({ elements: [...get().elements, data].sort((a, b) => a.sort_order - b.sort_order) });
     }
     set({ saving: false });
-    return data;
+    return data ?? null;
   },
 
   updateElement: async (id, updates) => {
-    const supabase = createClient();
-    set({ saving: true });
-    await supabase.from('script_elements').update(updates).eq('id', id);
+    // Optimistic update — apply immediately, then persist
     set({
       elements: get().elements.map((e) => (e.id === id ? { ...e, ...updates } : e)),
-      saving: false,
+      saving: true,
     });
+    const supabase = createClient();
+    await supabase.from('script_elements').update(updates).eq('id', id);
+    set({ saving: false });
   },
 
   deleteElement: async (id) => {
