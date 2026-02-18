@@ -308,7 +308,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 stagger-children">
           {(() => {
             const allProjects = [...projects, ...Object.values(companyProjects).flat()];
             return [

@@ -112,7 +112,6 @@ export default function CommunityPage() {
             <Link href="/community" className="text-sm font-semibold text-stone-900 border-b-2 border-brand-500 pb-0.5">Feed</Link>
             <Link href="/community/challenges" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Challenges</Link>
             <Link href="/community/free-scripts" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Free Scripts</Link>
-            <Link href="/community/festivals" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Festivals</Link>
             <Link href="/community/chat" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Chat</Link>
             <Link href="/blog" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Blog</Link>
           </div>

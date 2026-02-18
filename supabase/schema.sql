@@ -11,11 +11,32 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 -- ENUM TYPES
 -- ============================================================
 
+-- Cleanup enum types for rerunnable schema
+DROP TYPE IF EXISTS public.comment_type CASCADE;
+DROP TYPE IF EXISTS public.budget_category CASCADE;
+DROP TYPE IF EXISTS public.shot_movement CASCADE;
+DROP TYPE IF EXISTS public.shot_type CASCADE;
+DROP TYPE IF EXISTS public.schedule_event_type CASCADE;
+DROP TYPE IF EXISTS public.idea_category CASCADE;
+DROP TYPE IF EXISTS public.idea_status CASCADE;
+DROP TYPE IF EXISTS public.revision_color CASCADE;
+DROP TYPE IF EXISTS public.scene_location_type CASCADE;
+DROP TYPE IF EXISTS public.scene_time CASCADE;
+DROP TYPE IF EXISTS public.script_element_type CASCADE;
+DROP TYPE IF EXISTS public.project_status CASCADE;
+DROP TYPE IF EXISTS public.user_role CASCADE;
+
 DO $$
 BEGIN
-  CREATE TYPE public.user_role AS ENUM ('owner', 'admin', 'writer', 'editor', 'viewer');
-EXCEPTION
-  WHEN duplicate_object THEN NULL;
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_type t
+    JOIN pg_namespace n ON n.oid = t.typnamespace
+    WHERE n.nspname = 'public'
+      AND t.typname = 'user_role'
+  ) THEN
+    CREATE TYPE public.user_role AS ENUM ('owner', 'admin', 'writer', 'editor', 'viewer');
+  END IF;
 END
 $$;
 
@@ -162,6 +183,8 @@ CREATE TABLE profiles (
   avatar_url TEXT,
   bio TEXT,
   role TEXT DEFAULT 'writer',
+  is_pro BOOLEAN DEFAULT false,
+  pro_since TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -503,6 +526,7 @@ CREATE TABLE scenes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   script_id UUID REFERENCES scripts(id) ON DELETE SET NULL,
+  script_element_id UUID REFERENCES script_elements(id) ON DELETE SET NULL,
   scene_number TEXT,
   scene_heading TEXT,
   location_type scene_location_type DEFAULT 'INT',
@@ -665,26 +689,7 @@ CREATE POLICY "Ideas follow project access"
 -- BUDGET
 -- ============================================================
 
-CREATE TABLE budget_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  category budget_category DEFAULT 'other',
-  subcategory TEXT,
-  description TEXT NOT NULL,
-  estimated_amount DECIMAL(12,2) DEFAULT 0,
-  actual_amount DECIMAL(12,2) DEFAULT 0,
-  quantity INTEGER DEFAULT 1,
-  unit_cost DECIMAL(10,2),
-  vendor TEXT,
-  invoice_ref TEXT,
-  is_paid BOOLEAN DEFAULT false,
-  due_date DATE,
-  notes TEXT,
-  sort_order INTEGER DEFAULT 0,
-  created_by UUID REFERENCES profiles(id),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+,.
 
 ALTER TABLE budget_items ENABLE ROW LEVEL SECURITY;
 

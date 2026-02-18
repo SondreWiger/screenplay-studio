@@ -275,6 +275,20 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       notifications: [n, ...existing],
       unreadCount: get().unreadCount + (n.read ? 0 : 1),
     });
+    // Trigger device notification if service worker is active
+    if (!n.read && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((reg) => {
+        if (reg.active && Notification.permission === 'granted') {
+          reg.showNotification(n.title, {
+            body: n.body || undefined,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: `notif-${n.id}`,
+            data: { url: n.link || '/notifications' },
+          });
+        }
+      }).catch(() => {});
+    }
   },
   fetchNotifications: async () => {
     const supabase = createClient();

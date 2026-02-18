@@ -235,8 +235,8 @@ export function Card({ children, className, hover = false, onClick }: CardProps)
   return (
     <div
       className={cn(
-        'rounded-xl border border-surface-800 bg-surface-900/50 backdrop-blur-sm',
-        hover && 'hover:border-surface-600 hover:bg-surface-800/50 cursor-pointer transition-all duration-200',
+        'rounded-xl border border-surface-800 bg-surface-900/50 backdrop-blur-sm transition-all duration-200',
+        hover && 'hover:border-surface-600 hover:bg-surface-800/50 hover:-translate-y-[1px] hover:shadow-lg hover:shadow-black/10 cursor-pointer',
         onClick && 'cursor-pointer',
         className
       )}
@@ -442,6 +442,46 @@ export function LoadingPage() {
         <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-surface-700 border-t-brand-500" />
         <p className="mt-4 text-sm text-surface-400">Loading...</p>
       </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SKELETON LOADING
+// ============================================================
+
+export function Skeleton({ className, count = 1 }: { className?: string; count?: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={cn('skeleton h-4 w-full', className)} />
+      ))}
+    </>
+  );
+}
+
+export function SkeletonCard() {
+  return (
+    <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="skeleton w-10 h-10 rounded-lg" />
+        <div className="flex-1 space-y-2">
+          <div className="skeleton h-4 w-1/3" />
+          <div className="skeleton h-3 w-2/3" />
+        </div>
+      </div>
+      <div className="skeleton h-3 w-full" />
+      <div className="skeleton h-3 w-4/5" />
+    </div>
+  );
+}
+
+export function SkeletonList({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-3 animate-fade-in">
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
     </div>
   );
 }

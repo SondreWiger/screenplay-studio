@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { Scene, Location, Character, SceneLocationType, SceneTime } from '@/lib/types';
+import type { Scene, Location, Character, SceneLocationType, SceneTime, ScriptElement } from '@/lib/types';
 
 // Parse a scene heading like "INT. COFFEE SHOP - NIGHT" into components
 function parseSceneHeading(heading: string) {
@@ -40,6 +40,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   useEffect(() => { fetchData(); }, [params.id]);
 
@@ -83,12 +84,22 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
           </p>
         </div>
         <div className="flex gap-2">
-          {canEdit && <Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Scene
-          </Button>}
+          {canEdit && (
+            <>
+              <Button variant="secondary" onClick={() => setShowImport(true)}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Import from Script
+              </Button>
+              <Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Scene
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -102,7 +113,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
         <EmptyState title="No scenes yet" description="Break down your script into scenes for production planning"
           action={canEdit ? <Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>Add Scene</Button> : undefined} />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-children">
           {scenes.map((scene, i) => (
             <Card key={scene.id} hover className="overflow-hidden" onClick={() => { setSelectedScene(scene); setShowEditor(true); }}>
               <div className="flex items-start gap-4 p-4">
@@ -120,6 +131,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
                     </h3>
                     <Badge size="sm">{scene.time_of_day}</Badge>
                     {scene.is_completed && <Badge variant="success" size="sm">Done</Badge>}
+                    {scene.script_element_id && <Badge variant="info" size="sm">📄 Script Linked</Badge>}
                   </div>
                   {scene.synopsis && <p className="text-sm text-surface-400 mt-1 line-clamp-1">{scene.synopsis}</p>}
                   <div className="flex items-center gap-4 mt-2 text-xs text-surface-500">
@@ -143,6 +155,15 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
         onSaved={() => { fetchData(); setShowEditor(false); }}
         onDelete={handleDelete}
         canEdit={canEdit}
+      />
+
+      <ImportFromScriptModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        projectId={params.id}
+        userId={user?.id || ''}
+        existingScenes={scenes}
+        onImported={() => { fetchData(); setShowImport(false); }}
       />
     </div>
   );
@@ -322,6 +343,174 @@ function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, cha
           {canEdit && <Button onClick={handleSave} loading={loading}>{scene ? 'Save' : 'Create'}</Button>}
         </div>
       </div>
+    </Modal>
+  );
+}
+
+// ============================================================
+// IMPORT FROM SCRIPT MODAL
+// ============================================================
+
+function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingScenes, onImported }: {
+  isOpen: boolean; onClose: () => void; projectId: string; userId: string;
+  existingScenes: Scene[]; onImported: () => void;
+}) {
+  const [scriptElements, setScriptElements] = useState<ScriptElement[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) loadSceneHeadings();
+  }, [isOpen]);
+
+  const loadSceneHeadings = async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const { data: scripts } = await supabase
+      .from('scripts').select('id').eq('project_id', projectId).limit(1);
+    if (!scripts || scripts.length === 0) { setLoading(false); return; }
+
+    const { data: elements } = await supabase
+      .from('script_elements')
+      .select('*')
+      .eq('script_id', scripts[0].id)
+      .eq('element_type', 'scene_heading')
+      .eq('is_omitted', false)
+      .order('sort_order');
+
+    setScriptElements(elements || []);
+    setLoading(false);
+  };
+
+  const linkedElementIds = new Set(existingScenes.filter(s => s.script_element_id).map(s => s.script_element_id));
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
+  };
+
+  const selectAll = () => {
+    const unlinked = scriptElements.filter(e => !linkedElementIds.has(e.id));
+    if (selected.size === unlinked.length) setSelected(new Set());
+    else setSelected(new Set(unlinked.map(e => e.id)));
+  };
+
+  const handleImport = async () => {
+    if (selected.size === 0) return;
+    setImporting(true);
+    const supabase = createClient();
+
+    const { data: scripts } = await supabase
+      .from('scripts').select('id').eq('project_id', projectId).limit(1);
+    const scriptId = scripts?.[0]?.id || null;
+
+    const scenesToCreate = Array.from(selected).map((elementId, i) => {
+      const el = scriptElements.find(e => e.id === elementId);
+      if (!el) return null;
+      const parsed = parseSceneHeading(el.content);
+      return {
+        project_id: projectId,
+        script_id: scriptId,
+        script_element_id: elementId,
+        scene_number: el.scene_number || String(existingScenes.length + i + 1),
+        scene_heading: el.content,
+        location_type: parsed.locationType as SceneLocationType,
+        location_name: parsed.locationName,
+        time_of_day: parsed.timeOfDay as SceneTime,
+        sort_order: existingScenes.length + i,
+        created_by: userId,
+      };
+    }).filter(Boolean);
+
+    if (scenesToCreate.length > 0) {
+      const { error } = await supabase.from('scenes').insert(scenesToCreate);
+      if (error) {
+        alert('Import failed: ' + error.message);
+        setImporting(false);
+        return;
+      }
+    }
+
+    setImporting(false);
+    setSelected(new Set());
+    onImported();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Import Scenes from Script" size="lg">
+      {loading ? (
+        <LoadingSpinner className="py-12" />
+      ) : scriptElements.length === 0 ? (
+        <div className="text-center py-12">
+          <span className="text-3xl mb-3 block">📄</span>
+          <p className="text-surface-400 text-sm">No script found or no scene headings in the script.</p>
+          <p className="text-surface-500 text-xs mt-1">Write your screenplay first, then import scenes here.</p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-surface-400">
+              {scriptElements.length} scene headings found. Select which to import.
+            </p>
+            <button onClick={selectAll} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
+              {selected.size === scriptElements.filter(e => !linkedElementIds.has(e.id)).length ? 'Deselect All' : 'Select All'}
+            </button>
+          </div>
+          <div className="space-y-1 max-h-[50vh] overflow-y-auto pr-2">
+            {scriptElements.map((el) => {
+              const isLinked = linkedElementIds.has(el.id);
+              const isSelected = selected.has(el.id);
+              const parsed = parseSceneHeading(el.content);
+              return (
+                <button
+                  key={el.id}
+                  disabled={isLinked}
+                  onClick={() => toggleSelect(el.id)}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors',
+                    isLinked ? 'opacity-50 cursor-not-allowed bg-surface-800/30' :
+                    isSelected ? 'bg-brand-600/15 border border-brand-600/30' :
+                    'bg-surface-900 hover:bg-surface-800 border border-transparent'
+                  )}
+                >
+                  <div className={cn(
+                    'w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
+                    isLinked ? 'border-green-500 bg-green-500/20' :
+                    isSelected ? 'border-brand-500 bg-brand-500' : 'border-surface-600'
+                  )}>
+                    {(isLinked || isSelected) && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      {el.scene_number && <span className="text-xs font-mono text-surface-500">{el.scene_number}</span>}
+                      <Badge size="sm" variant="info">{parsed.locationType.replace('_', '/')}</Badge>
+                      <span className="text-sm text-white font-medium truncate">{parsed.locationName}</span>
+                      <Badge size="sm">{parsed.timeOfDay}</Badge>
+                    </div>
+                  </div>
+                  {isLinked && <span className="text-[10px] text-green-400">Already linked</span>}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-between pt-6 mt-4 border-t border-surface-800">
+            <p className="text-xs text-surface-500">{selected.size} selected</p>
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button onClick={handleImport} loading={importing} disabled={selected.size === 0}>
+                Import {selected.size} Scene{selected.size !== 1 ? 's' : ''}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </Modal>
   );
 }

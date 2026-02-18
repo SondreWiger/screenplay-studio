@@ -61,6 +61,8 @@ export interface Profile {
   preferred_script_type: ScriptType;
   theme_preference: string;
   company_id: string | null;
+  is_pro: boolean;
+  pro_since: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -205,6 +207,7 @@ export interface Scene {
   id: string;
   project_id: string;
   script_id: string | null;
+  script_element_id: string | null;
   scene_number: string | null;
   scene_heading: string | null;
   location_type: SceneLocationType;
@@ -321,6 +324,7 @@ export interface BudgetItem {
   unit_cost: number | null;
   vendor: string | null;
   invoice_ref: string | null;
+  is_income: boolean;
   is_paid: boolean;
   due_date: string | null;
   notes: string | null;
@@ -552,50 +556,6 @@ export interface ScriptProduction {
 }
 
 // ============================================================
-// Festival Submissions
-// ============================================================
-
-export type FestivalSubmissionStatus = 'draft' | 'submitted' | 'accepted' | 'rejected' | 'withdrawn';
-
-export interface Festival {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  website: string | null;
-  logo_url: string | null;
-  deadline: string | null;
-  location: string | null;
-  categories: string[];
-  is_active: boolean;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface FestivalSubmission {
-  id: string;
-  festival_id: string;
-  project_id: string;
-  user_id: string;
-  script_snapshot: any;
-  title: string;
-  logline: string | null;
-  genre: string | null;
-  format: string | null;
-  script_type: string;
-  page_count: number;
-  word_count: number;
-  status: FestivalSubmissionStatus;
-  submitted_at: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-  festival?: Festival;
-  project?: Project;
-}
-
-// ============================================================
 // Chat Forum
 // ============================================================
 
@@ -795,7 +755,6 @@ export type NotificationType =
   | 'production_submitted'
   | 'production_approved'
   | 'production_rejected'
-  | 'festival_deadline'
   | 'chat_mention'
   | 'general';
 

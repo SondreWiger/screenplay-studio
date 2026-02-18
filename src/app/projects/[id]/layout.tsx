@@ -300,7 +300,9 @@ export default function ProjectLayout({
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
-        {children}
+        <div className="animate-fade-in-up">
+          {children}
+        </div>
       </main>
     </div>
   );

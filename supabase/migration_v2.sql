@@ -1440,156 +1440,7 @@ CREATE TRIGGER on_production_reviewed
   FOR EACH ROW EXECUTE FUNCTION notify_on_production_reviewed();
 
 -- ============================================================
--- 30. FESTIVAL SUBMISSIONS
--- Users can submit their project's scripts to festivals.
--- Script content is snapshotted at submission time.
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS festivals (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  description TEXT,
-  website TEXT,
-  logo_url TEXT,
-  deadline TIMESTAMPTZ,
-  location TEXT,
-  categories TEXT[] DEFAULT '{}',
-  is_active BOOLEAN DEFAULT true,
-  created_by UUID REFERENCES profiles(id),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS festival_submissions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  festival_id UUID NOT NULL REFERENCES festivals(id) ON DELETE CASCADE,
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  script_snapshot JSONB,
-  title TEXT NOT NULL,
-  logline TEXT,
-  genre TEXT,
-  format TEXT,
-  script_type TEXT DEFAULT 'screenplay',
-  page_count INTEGER DEFAULT 0,
-  word_count INTEGER DEFAULT 0,
-  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'accepted', 'rejected', 'withdrawn')),
-  submitted_at TIMESTAMPTZ,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(festival_id, project_id, user_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_festival_submissions_user ON festival_submissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_festival_submissions_festival ON festival_submissions(festival_id);
-CREATE INDEX IF NOT EXISTS idx_festival_submissions_project ON festival_submissions(project_id);
-
-ALTER TABLE festivals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE festival_submissions ENABLE ROW LEVEL SECURITY;
-GRANT ALL ON festivals TO authenticated, anon, service_role;
-GRANT ALL ON festival_submissions TO authenticated, anon, service_role;
-
--- Festivals are readable by everyone
-DROP POLICY IF EXISTS "Festivals are public" ON festivals;
-CREATE POLICY "Festivals are public" ON festivals FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Admins can manage festivals" ON festivals;
-CREATE POLICY "Admins can manage festivals" ON festivals
-  FOR ALL USING (
-    auth.uid() = 'f0e0c4a4-0833-4c64-b012-15829c087c77'::uuid
-    OR auth.uid() = created_by
-  );
-
--- Users manage their own submissions
-DROP POLICY IF EXISTS "Users see own submissions" ON festival_submissions;
-CREATE POLICY "Users see own submissions" ON festival_submissions
-  FOR SELECT USING (user_id = auth.uid() OR auth.uid() = 'f0e0c4a4-0833-4c64-b012-15829c087c77'::uuid);
-
-DROP POLICY IF EXISTS "Users create submissions" ON festival_submissions;
-CREATE POLICY "Users create submissions" ON festival_submissions
-  FOR INSERT WITH CHECK (user_id = auth.uid());
-
-DROP POLICY IF EXISTS "Users manage own submissions" ON festival_submissions;
-CREATE POLICY "Users manage own submissions" ON festival_submissions
-  FOR UPDATE USING (user_id = auth.uid());
-
-DROP POLICY IF EXISTS "Users delete own submissions" ON festival_submissions;
-CREATE POLICY "Users delete own submissions" ON festival_submissions
-  FOR DELETE USING (user_id = auth.uid());
-
--- Snapshot a project's script for festival submission
-CREATE OR REPLACE FUNCTION snapshot_script_for_festival(
-  p_project_id UUID,
-  p_festival_id UUID,
-  p_notes TEXT DEFAULT NULL
-)
-RETURNS UUID
-LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE
-  v_user_id UUID;
-  v_project RECORD;
-  v_script RECORD;
-  v_snapshot JSONB;
-  v_word_count INTEGER;
-  v_element_count INTEGER;
-  v_sub_id UUID;
-BEGIN
-  v_user_id := auth.uid();
-  IF v_user_id IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;
-
-  SELECT id, title, logline, genre, format, script_type INTO v_project FROM projects WHERE id = p_project_id;
-  IF v_project IS NULL THEN RAISE EXCEPTION 'Project not found'; END IF;
-
-  SELECT id INTO v_script FROM scripts WHERE project_id = p_project_id ORDER BY created_at ASC LIMIT 1;
-  IF v_script IS NULL THEN RAISE EXCEPTION 'No script found'; END IF;
-
-  -- Snapshot elements
-  SELECT jsonb_agg(
-    jsonb_build_object(
-      'element_type', element_type,
-      'content', content,
-      'sort_order', sort_order,
-      'scene_number', scene_number,
-      'is_omitted', is_omitted,
-      'revision_color', revision_color
-    ) ORDER BY sort_order
-  ) INTO v_snapshot
-  FROM script_elements WHERE script_id = v_script.id AND is_omitted = false;
-
-  SELECT COUNT(*), COALESCE(SUM(array_length(regexp_split_to_array(content, '\s+'), 1)), 0)
-  INTO v_element_count, v_word_count
-  FROM script_elements WHERE script_id = v_script.id AND is_omitted = false;
-
-  INSERT INTO festival_submissions (
-    festival_id, project_id, user_id, script_snapshot,
-    title, logline, genre, format, script_type,
-    page_count, word_count, notes
-  ) VALUES (
-    p_festival_id, p_project_id, v_user_id, v_snapshot,
-    v_project.title, v_project.logline, v_project.genre, v_project.format, v_project.script_type,
-    GREATEST(1, CEIL(v_word_count::decimal / 250)), v_word_count, p_notes
-  )
-  ON CONFLICT (festival_id, project_id, user_id)
-  DO UPDATE SET
-    script_snapshot = EXCLUDED.script_snapshot,
-    title = EXCLUDED.title,
-    logline = EXCLUDED.logline,
-    genre = EXCLUDED.genre,
-    format = EXCLUDED.format,
-    page_count = EXCLUDED.page_count,
-    word_count = EXCLUDED.word_count,
-    notes = COALESCE(EXCLUDED.notes, festival_submissions.notes),
-    updated_at = NOW()
-  RETURNING id INTO v_sub_id;
-
-  RETURN v_sub_id;
-END;
-$$;
-
--- ============================================================
--- 31. GENERAL CHAT FORUM
+-- 30. GENERAL CHAT FORUM
 -- Real-time chat rooms with channels, for community discussion.
 -- ============================================================
 
@@ -1673,7 +1524,7 @@ INSERT INTO chat_channels (name, slug, description, icon, is_default, sort_order
 ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================
--- 32. ADDITIONAL NOTIFICATION TYPES
+-- 31. ADDITIONAL NOTIFICATION TYPES
 -- ============================================================
 
 DO $$
@@ -1682,7 +1533,43 @@ BEGIN
     ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'production_submitted';
     ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'production_approved';
     ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'production_rejected';
-    ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'festival_deadline';
     ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'chat_mention';
   END IF;
 END $$;
+
+-- ============================================================
+-- 32. BUDGET: ADD is_income COLUMN
+-- ============================================================
+
+ALTER TABLE budget_items ADD COLUMN IF NOT EXISTS is_income BOOLEAN DEFAULT false;
+
+-- ============================================================
+-- 33. PRO USER SYSTEM
+-- ============================================================
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_pro BOOLEAN DEFAULT false;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pro_since TIMESTAMPTZ;
+
+-- ============================================================
+-- 34. PUSH NOTIFICATION SUBSCRIPTIONS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL,
+  keys JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, endpoint)
+);
+
+ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users manage own push subscriptions"
+  ON push_subscriptions FOR ALL USING (user_id = auth.uid());
+
+-- ============================================================
+-- 35. SCENE-SCRIPT LINKING
+-- ============================================================
+
+ALTER TABLE scenes ADD COLUMN IF NOT EXISTS script_element_id UUID REFERENCES script_elements(id) ON DELETE SET NULL;

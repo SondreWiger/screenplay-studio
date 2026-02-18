@@ -129,7 +129,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
         <EmptyState title="No shots yet" description="Build your shot list for production"
           action={canEdit ? <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>Add Shot</Button> : undefined} />
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 stagger-children">
           {filtered.map((shot) => {
             const scene = scenes.find((s) => s.id === shot.scene_id);
             return (

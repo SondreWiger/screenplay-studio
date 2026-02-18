@@ -40,10 +40,11 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [view, setView] = useState<'calendar' | 'list'>('calendar');
+  const [view, setView] = useState<'calendar' | 'day' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [dayViewDate, setDayViewDate] = useState(new Date());
 
   useEffect(() => { fetchData(); }, [params.id]);
 
@@ -113,7 +114,8 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
         </div>
         <div className="flex gap-3">
           <div className="flex rounded-lg border border-surface-700 overflow-hidden">
-            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>Calendar</button>
+            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>Month</button>
+            <button onClick={() => setView('day')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'day' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>Day</button>
             <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'list' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>List</button>
           </div>
           {canEdit && (
@@ -161,9 +163,10 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                   day ? 'hover:bg-white/[0.02] cursor-pointer' : '',
                   isToday(day!) ? 'bg-brand-600/5' : '',
                 )} onClick={() => {
-                  if (!day || !canEdit) return;
+                  if (!day) return;
                   const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                  setSelectedDate(dateStr); setSelectedEvent(null); setShowEditor(true);
+                  setDayViewDate(new Date(`${dateStr}T00:00:00`));
+                  setView('day');
                 }}>
                   {day && (
                     <>
@@ -188,6 +191,17 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
             })}
           </div>
         </div>
+      ) : view === 'day' ? (
+        <DayPlannerView
+          date={dayViewDate}
+          events={events}
+          scenes={scenes}
+          locations={locations}
+          canEdit={canEdit}
+          onDateChange={setDayViewDate}
+          onEventClick={(ev) => { setSelectedEvent(ev); setShowEditor(true); }}
+          onSlotClick={(dateStr) => { setSelectedDate(dateStr); setSelectedEvent(null); setShowEditor(true); }}
+        />
       ) : (
         // List view
         upcoming.length === 0 ? (
@@ -227,6 +241,156 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
       <ScheduleEditor isOpen={showEditor} onClose={() => setShowEditor(false)} event={selectedEvent}
         projectId={params.id} userId={user?.id || ''} scenes={scenes} locations={locations}
         defaultDate={selectedDate} onSaved={() => { fetchData(); setShowEditor(false); }} onDelete={handleDelete} />
+    </div>
+  );
+}
+
+function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange, onEventClick, onSlotClick }: {
+  date: Date; events: ScheduleEvent[]; scenes: Scene[]; locations: Loc[];
+  canEdit: boolean;
+  onDateChange: (d: Date) => void;
+  onEventClick: (e: ScheduleEvent) => void;
+  onSlotClick: (dateStr: string) => void;
+}) {
+  const HOURS = Array.from({ length: 18 }, (_, i) => i + 5); // 5 AM to 10 PM
+
+  const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const dayEvents = events.filter((e) => e.start_time.startsWith(dateStr));
+
+  const prevDay = () => { const d = new Date(date); d.setDate(d.getDate() - 1); onDateChange(d); };
+  const nextDay = () => { const d = new Date(date); d.setDate(d.getDate() + 1); onDateChange(d); };
+  const goToday = () => onDateChange(new Date());
+
+  const isToday = date.toDateString() === new Date().toDateString();
+  const now = new Date();
+  const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  // Position an event on the timeline
+  const getEventPosition = (ev: ScheduleEvent) => {
+    const start = new Date(ev.start_time);
+    const end = new Date(ev.end_time);
+    const startMin = start.getHours() * 60 + start.getMinutes();
+    const endMin = end.getHours() * 60 + end.getMinutes();
+    const topOffset = ((startMin - 5 * 60) / 60) * 64; // 64px per hour, starting at 5 AM
+    const height = Math.max(((endMin - startMin) / 60) * 64, 24);
+    return { top: Math.max(topOffset, 0), height };
+  };
+
+  return (
+    <div className="bg-surface-900 rounded-xl border border-surface-800 overflow-hidden">
+      {/* Day header */}
+      <div className="flex items-center justify-between p-4 border-b border-surface-800">
+        <div className="flex items-center gap-3">
+          <button onClick={prevDay} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <div className="text-center min-w-[200px]">
+            <h2 className="text-lg font-semibold text-white">
+              {WEEKDAYS[date.getDay()]}, {MONTHS[date.getMonth()]} {date.getDate()}
+            </h2>
+            <p className="text-xs text-surface-500">{date.getFullYear()}</p>
+          </div>
+          <button onClick={nextDay} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          {!isToday && (
+            <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-brand-400 hover:text-brand-300 border border-surface-700 rounded-lg hover:border-surface-600 transition-colors">
+              Today
+            </button>
+          )}
+          <span className="text-xs text-surface-500">{dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+
+      {/* All-day events */}
+      {dayEvents.filter(e => e.all_day).length > 0 && (
+        <div className="px-4 py-2 border-b border-surface-800 bg-surface-800/30">
+          <p className="text-[10px] uppercase text-surface-500 font-medium mb-1">All Day</p>
+          <div className="flex flex-wrap gap-1">
+            {dayEvents.filter(e => e.all_day).map(ev => {
+              const evType = EVENT_TYPES.find(t => t.value === ev.event_type);
+              return (
+                <button key={ev.id} onClick={() => onEventClick(ev)}
+                  className={cn('px-2.5 py-1 rounded text-xs text-white/90 font-medium', evType?.color || 'bg-surface-600')}>
+                  {ev.title}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Time grid */}
+      <div className="relative overflow-y-auto max-h-[65vh]">
+        {/* Current time indicator */}
+        {isToday && currentTimeMinutes >= 5 * 60 && currentTimeMinutes <= 22 * 60 && (
+          <div className="absolute left-0 right-0 z-20 pointer-events-none"
+            style={{ top: ((currentTimeMinutes - 5 * 60) / 60) * 64 }}>
+            <div className="flex items-center">
+              <div className="w-2 h-2 rounded-full bg-brand-500 -ml-1" />
+              <div className="flex-1 h-[2px] bg-brand-500/60" />
+            </div>
+          </div>
+        )}
+
+        {/* Hour rows */}
+        {HOURS.map((hour) => (
+          <div key={hour} className="flex border-b border-surface-800/50 relative" style={{ height: 64 }}>
+            {/* Time label */}
+            <div className="w-16 shrink-0 px-2 pt-1 text-right">
+              <span className="text-[10px] text-surface-500 font-medium">
+                {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+              </span>
+            </div>
+            {/* Clickable slot */}
+            <div className="flex-1 border-l border-surface-800/50 relative group"
+              onClick={() => {
+                if (!canEdit) return;
+                onSlotClick(dateStr);
+              }}>
+              {/* Half-hour line */}
+              <div className="absolute top-1/2 left-0 right-0 border-t border-surface-800/20" />
+              {canEdit && (
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-white/[0.02] transition-opacity flex items-center justify-center">
+                  <span className="text-[10px] text-surface-500">+ Add event</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Positioned events */}
+        {dayEvents.filter(e => !e.all_day).map((ev) => {
+          const pos = getEventPosition(ev);
+          const evType = EVENT_TYPES.find(t => t.value === ev.event_type);
+          const scene = ev.scene_ids?.length ? scenes.find(s => s.id === ev.scene_ids[0]) : null;
+          const loc = locations.find(l => l.id === ev.location_id);
+          return (
+            <button key={ev.id} onClick={() => onEventClick(ev)}
+              className={cn(
+                'absolute left-[68px] right-2 rounded-lg px-3 py-1.5 text-left z-10 overflow-hidden border border-transparent hover:border-white/20 transition-all shadow-lg',
+                evType?.color || 'bg-surface-600'
+              )}
+              style={{ top: pos.top, height: pos.height, minHeight: 24 }}>
+              <p className="text-xs font-semibold text-white truncate">{ev.title}</p>
+              {pos.height > 36 && (
+                <p className="text-[10px] text-white/70 truncate mt-0.5">
+                  {formatTime(ev.start_time)} – {formatTime(ev.end_time)}
+                  {scene ? ` · Sc. ${scene.scene_number}` : ''}
+                  {loc ? ` · ${loc.name}` : ''}
+                </p>
+              )}
+              {pos.height > 56 && ev.notes && (
+                <p className="text-[10px] text-white/50 truncate mt-0.5">{ev.notes}</p>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -25,6 +25,8 @@ interface PlatformStats {
   totalBudgetItems: number;
   totalScheduleEvents: number;
   totalComments: number;
+  proUsers: number;
+  pushSubscriptions: number;
   recentUsers: any[];
   recentProjects: any[];
   projectDetails: any[];
@@ -37,12 +39,14 @@ interface UserRow {
   display_name: string | null;
   avatar_url: string | null;
   role: string;
+  is_pro: boolean;
+  pro_since: string | null;
   created_at: string;
   updated_at: string;
   projectCount?: number;
 }
 
-type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'festivals' | 'system';
+type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'system';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -110,6 +114,7 @@ export default function AdminPage() {
         charsRes, locsRes, scenesRes, shotsRes, ideasRes,
         budgetRes, schedRes, commentsRes,
         recentUsersRes, recentProjectsRes,
+        proUsersRes, pushSubsRes,
       ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('projects').select('id', { count: 'exact', head: true }),
@@ -125,6 +130,8 @@ export default function AdminPage() {
         supabase.from('comments').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5),
         supabase.from('projects').select('*').order('created_at', { ascending: false }).limit(5),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_pro', true),
+        supabase.from('push_subscriptions').select('id', { count: 'exact', head: true }),
       ]);
 
       // Count total words from elements
@@ -148,6 +155,8 @@ export default function AdminPage() {
         totalBudgetItems: budgetRes.count || 0,
         totalScheduleEvents: schedRes.count || 0,
         totalComments: commentsRes.count || 0,
+        proUsers: proUsersRes.count || 0,
+        pushSubscriptions: pushSubsRes.count || 0,
         recentUsers: recentUsersRes.data || [],
         recentProjects: recentProjectsRes.data || [],
         projectDetails: [],
@@ -378,10 +387,7 @@ export default function AdminPage() {
       key: 'community' as Tab, label: 'Community',
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
     },
-    {
-      key: 'festivals' as Tab, label: 'Festivals',
-      icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>,
-    },
+
   ];
 
   return (
@@ -483,7 +489,6 @@ export default function AdminPage() {
               onCreateChallenge={handleCreateCustomChallenge}
             />
           )}
-          {activeTab === 'festivals' && <FestivalsTab />}
         </div>
       </main>
 
@@ -516,6 +521,7 @@ export default function AdminPage() {
 function OverviewTab({ stats }: { stats: PlatformStats }) {
   const statCards = [
     { label: 'Total Users', value: stats.totalUsers, icon: '👤', color: 'from-blue-500/20 to-blue-600/5' },
+    { label: 'Pro Users', value: stats.proUsers, icon: '⭐', color: 'from-yellow-500/20 to-yellow-600/5' },
     { label: 'Projects', value: stats.totalProjects, icon: '🎬', color: 'from-purple-500/20 to-purple-600/5' },
     { label: 'Scripts', value: stats.totalScripts, icon: '📝', color: 'from-green-500/20 to-green-600/5' },
     { label: 'Total Words', value: stats.totalWords.toLocaleString(), icon: '✍️', color: 'from-amber-500/20 to-amber-600/5' },
@@ -528,6 +534,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
     { label: 'Budget Items', value: stats.totalBudgetItems, icon: '💰', color: 'from-teal-500/20 to-teal-600/5' },
     { label: 'Schedule Events', value: stats.totalScheduleEvents, icon: '📅', color: 'from-pink-500/20 to-pink-600/5' },
     { label: 'Comments', value: stats.totalComments, icon: '💬', color: 'from-violet-500/20 to-violet-600/5' },
+    { label: 'Push Subscriptions', value: stats.pushSubscriptions, icon: '🔔', color: 'from-sky-500/20 to-sky-600/5' },
   ];
 
   return (
@@ -580,6 +587,35 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                 <span className="text-[10px] text-surface-500">{timeAgo(p.created_at)}</span>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Health */}
+      <div className="mt-6 rounded-xl border border-surface-800 bg-surface-900/50 p-6">
+        <h3 className="text-sm font-semibold text-white mb-4">Platform Health</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <p className="text-lg font-bold text-green-400">Active</p>
+            <p className="text-xs text-surface-400 mt-1">Database</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-white">
+              {stats.totalUsers > 0 ? (stats.totalProjects / stats.totalUsers).toFixed(1) : '0'}
+            </p>
+            <p className="text-xs text-surface-400 mt-1">Projects/User</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-white">
+              {stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : '0'}%
+            </p>
+            <p className="text-xs text-surface-400 mt-1">Pro Conversion</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-white">
+              {stats.totalScripts > 0 ? Math.round(stats.totalWords / stats.totalScripts).toLocaleString() : '0'}
+            </p>
+            <p className="text-xs text-surface-400 mt-1">Avg Words/Script</p>
           </div>
         </div>
       </div>
@@ -642,9 +678,12 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
                 </td>
                 <td className="px-4 py-3 text-sm text-surface-300">{u.email}</td>
                 <td className="px-4 py-3">
-                  <Badge variant={u.id === ADMIN_UID ? 'warning' : 'default'} size="sm">
-                    {u.id === ADMIN_UID ? 'Admin' : u.role || 'user'}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant={u.id === ADMIN_UID ? 'warning' : 'default'} size="sm">
+                      {u.id === ADMIN_UID ? 'Admin' : u.role || 'user'}
+                    </Badge>
+                    {u.is_pro && <Badge variant="success" size="sm">PRO</Badge>}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-xs text-surface-400">{formatDate(u.created_at)}</td>
                 <td className="px-4 py-3 text-right">
@@ -996,6 +1035,7 @@ function EditUserModal({ user, onClose, onSave }: {
   const [fullName, setFullName] = useState(user.full_name || '');
   const [displayName, setDisplayName] = useState(user.display_name || '');
   const [role, setRole] = useState(user.role || 'user');
+  const [isPro, setIsPro] = useState(user.is_pro || false);
 
   return (
     <Modal isOpen={true} onClose={onClose} title="Edit User" size="md">
@@ -1025,9 +1065,37 @@ function EditUserModal({ user, onClose, onSave }: {
           placeholder="user / admin / writer / producer"
         />
 
+        {/* Pro Toggle */}
+        <div className="flex items-center justify-between p-4 rounded-xl border border-surface-700 bg-surface-800/50">
+          <div>
+            <p className="text-sm font-medium text-white">Pro Status</p>
+            <p className="text-xs text-surface-400 mt-0.5">
+              {isPro ? `Pro since ${user.pro_since ? new Date(user.pro_since).toLocaleDateString() : 'unknown'}` : 'Free tier user'}
+            </p>
+          </div>
+          <button
+            onClick={() => setIsPro(!isPro)}
+            className={cn(
+              'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',
+              isPro ? 'bg-green-500' : 'bg-surface-600'
+            )}
+          >
+            <span className={cn(
+              'inline-block h-5 w-5 rounded-full bg-white shadow-lg transition-transform duration-200',
+              isPro ? 'translate-x-5' : 'translate-x-0'
+            )} />
+          </button>
+        </div>
+
         <div className="flex justify-end gap-3 pt-4">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(user.id, { full_name: fullName, display_name: displayName, role })}>
+          <Button onClick={() => onSave(user.id, {
+            full_name: fullName,
+            display_name: displayName,
+            role,
+            is_pro: isPro,
+            pro_since: isPro && !user.is_pro ? new Date().toISOString() : isPro ? user.pro_since : null,
+          } as any)}>
             Save Changes
           </Button>
         </div>
@@ -1036,267 +1104,6 @@ function EditUserModal({ user, onClose, onSave }: {
   );
 }
 
-// ============================================================
-// Festivals Tab
-// ============================================================
-
-function FestivalsTab() {
-  const [festivals, setFestivals] = useState<any[]>([]);
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [view, setView] = useState<'festivals' | 'submissions'>('festivals');
-  const [showForm, setShowForm] = useState(false);
-  const [editFest, setEditFest] = useState<any>(null);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    name: '', description: '', website: '', logo_url: '', deadline: '', location: '',
-    categories: '' as string, is_active: true,
-  });
-
-  useEffect(() => { loadFestivals(); loadSubmissions(); }, []);
-
-  const loadFestivals = async () => {
-    const supabase = createClient();
-    const { data } = await supabase.from('festivals').select('*').order('created_at', { ascending: false });
-    setFestivals(data || []);
-  };
-
-  const loadSubmissions = async () => {
-    const supabase = createClient();
-    const { data } = await supabase.from('festival_submissions')
-      .select('*, festival:festivals(name), user:profiles!festival_submissions_user_id_fkey(full_name, email), project:projects(title)')
-      .order('created_at', { ascending: false });
-    setSubmissions(data || []);
-  };
-
-  const openNewForm = () => {
-    setEditFest(null);
-    setForm({ name: '', description: '', website: '', logo_url: '', deadline: '', location: '', categories: '', is_active: true });
-    setShowForm(true);
-  };
-
-  const openEditForm = (fest: any) => {
-    setEditFest(fest);
-    setForm({
-      name: fest.name, description: fest.description || '', website: fest.website || '',
-      logo_url: fest.logo_url || '', deadline: fest.deadline ? fest.deadline.split('T')[0] : '',
-      location: fest.location || '', categories: (fest.categories || []).join(', '), is_active: fest.is_active,
-    });
-    setShowForm(true);
-  };
-
-  const handleSave = async () => {
-    if (!form.name.trim()) return;
-    setSaving(true);
-    const supabase = createClient();
-    const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const payload = {
-      name: form.name.trim(),
-      slug,
-      description: form.description.trim() || null,
-      website: form.website.trim() || null,
-      logo_url: form.logo_url.trim() || null,
-      deadline: form.deadline || null,
-      location: form.location.trim() || null,
-      categories: form.categories ? form.categories.split(',').map(c => c.trim()).filter(Boolean) : [],
-      is_active: form.is_active,
-    };
-    if (editFest) {
-      await supabase.from('festivals').update(payload).eq('id', editFest.id);
-    } else {
-      await supabase.from('festivals').insert(payload);
-    }
-    setShowForm(false);
-    setSaving(false);
-    loadFestivals();
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this festival? All submissions will also be removed.')) return;
-    const supabase = createClient();
-    await supabase.from('festival_submissions').delete().eq('festival_id', id);
-    await supabase.from('festivals').delete().eq('id', id);
-    loadFestivals();
-  };
-
-  const handleUpdateSubmission = async (id: string, status: string) => {
-    const supabase = createClient();
-    await supabase.from('festival_submissions').update({ status }).eq('id', id);
-    loadSubmissions();
-  };
-
-  const subTabs = [
-    { key: 'festivals', label: 'Manage Festivals', count: festivals.length },
-    { key: 'submissions', label: 'Submissions', count: submissions.length },
-  ];
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">🏆 Festivals</h2>
-        <Button onClick={openNewForm}>+ New Festival</Button>
-      </div>
-
-      {/* Sub-tabs */}
-      <div className="flex gap-2 mb-6 border-b border-surface-800 pb-3">
-        {subTabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setView(t.key as any)}
-            className={cn(
-              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-              view === t.key ? 'bg-surface-800 text-white' : 'text-surface-400 hover:text-white'
-            )}
-          >
-            {t.label} <span className="ml-1 text-xs text-surface-500">({t.count})</span>
-          </button>
-        ))}
-      </div>
-
-      {view === 'festivals' && (
-        <div className="space-y-3">
-          {festivals.map((fest) => (
-            <div key={fest.id} className="rounded-xl border border-surface-800 bg-surface-900 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-white">{fest.name}</h3>
-                    <span className={cn('px-2 py-0.5 text-[10px] font-semibold rounded-full', fest.is_active ? 'text-green-400 bg-green-500/10' : 'text-surface-500 bg-surface-800')}>
-                      {fest.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  {fest.description && <p className="text-xs text-surface-400 line-clamp-1">{fest.description}</p>}
-                  <div className="flex items-center gap-3 mt-2 text-xs text-surface-500">
-                    {fest.deadline && <span>📅 {new Date(fest.deadline).toLocaleDateString()}</span>}
-                    {fest.location && <span>📍 {fest.location}</span>}
-                    {fest.website && <a href={fest.website} target="_blank" className="text-brand-400 hover:text-brand-300">🔗 Website</a>}
-                  </div>
-                  {fest.categories?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {fest.categories.map((c: string) => (
-                        <span key={c} className="px-2 py-0.5 text-[10px] text-surface-300 bg-surface-800 rounded-full">{c}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => openEditForm(fest)} className="text-xs text-surface-400 hover:text-white transition-colors">Edit</button>
-                  <button onClick={() => handleDelete(fest.id)} className="text-xs text-red-400 hover:text-red-300 transition-colors">Delete</button>
-                </div>
-              </div>
-            </div>
-          ))}
-          {festivals.length === 0 && (
-            <div className="text-center py-12 text-surface-500 text-sm">
-              No festivals yet. Create one to get started.
-            </div>
-          )}
-        </div>
-      )}
-
-      {view === 'submissions' && (
-        <div className="space-y-3">
-          {submissions.map((sub) => (
-            <div key={sub.id} className="rounded-xl border border-surface-800 bg-surface-900 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={cn(
-                      'px-2 py-0.5 text-[10px] font-semibold rounded-full',
-                      sub.status === 'submitted' ? 'text-blue-400 bg-blue-500/10' :
-                      sub.status === 'accepted' ? 'text-green-400 bg-green-500/10' :
-                      sub.status === 'rejected' ? 'text-red-400 bg-red-500/10' :
-                      'text-surface-400 bg-surface-800'
-                    )}>
-                      {sub.status}
-                    </span>
-                    <h3 className="text-sm font-semibold text-white">{sub.title}</h3>
-                  </div>
-                  <p className="text-xs text-surface-400">
-                    {sub.festival?.name} · {sub.user?.full_name || sub.user?.email || 'Unknown'} · {sub.project?.title}
-                    {sub.page_count && ` · ${sub.page_count} pages`}
-                  </p>
-                </div>
-                {sub.status === 'submitted' && (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button onClick={() => handleUpdateSubmission(sub.id, 'accepted')} className="px-3 py-1 text-xs font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-colors">Accept</button>
-                    <button onClick={() => handleUpdateSubmission(sub.id, 'rejected')} className="px-3 py-1 text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">Reject</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-          {submissions.length === 0 && (
-            <div className="text-center py-12 text-surface-500 text-sm">
-              No submissions yet.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Festival Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-surface-900 rounded-2xl border border-surface-800 shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-white mb-4">{editFest ? 'Edit Festival' : 'New Festival'}</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium text-surface-400 mb-1 block">Name *</label>
-                <input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-surface-400 mb-1 block">Description</label>
-                <textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={2}
-                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none resize-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-medium text-surface-400 mb-1 block">Website URL</label>
-                  <input value={form.website} onChange={(e) => setForm(f => ({ ...f, website: e.target.value }))}
-                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-surface-400 mb-1 block">Logo URL</label>
-                  <input value={form.logo_url} onChange={(e) => setForm(f => ({ ...f, logo_url: e.target.value }))}
-                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-medium text-surface-400 mb-1 block">Deadline</label>
-                  <input type="date" value={form.deadline} onChange={(e) => setForm(f => ({ ...f, deadline: e.target.value }))}
-                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-surface-400 mb-1 block">Location</label>
-                  <input value={form.location} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))}
-                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-surface-400 mb-1 block">Categories (comma-separated)</label>
-                <input value={form.categories} onChange={(e) => setForm(f => ({ ...f, categories: e.target.value }))} placeholder="Short Film, Feature, Documentary"
-                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
-              </div>
-              <label className="flex items-center gap-2 text-sm text-surface-300 cursor-pointer">
-                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm(f => ({ ...f, is_active: e.target.checked }))}
-                  className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500" />
-                Active (visible to users)
-              </label>
-            </div>
-            <div className="flex justify-end gap-3 mt-5">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-surface-400 hover:text-white transition-colors">Cancel</button>
-              <button onClick={handleSave} disabled={saving || !form.name.trim()}
-                className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 rounded-lg transition-colors">
-                {saving ? 'Saving...' : editFest ? 'Update' : 'Create'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 // ============================================================
 // Blog Tab
 // ============================================================

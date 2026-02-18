@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useNotificationStore } from '@/lib/stores';
+import { useNotificationStore, useAuthStore } from '@/lib/stores';
 import { createClient } from '@/lib/supabase/client';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import type { Notification, NotificationType, CompanyRole } from '@/lib/types';
 import { timeAgo } from '@/lib/utils';
 
@@ -25,7 +26,6 @@ const TYPE_ICON: Record<NotificationType, { emoji: string; color: string }> = {
   production_submitted: { emoji: '🎬', color: 'bg-purple-500/20' },
   production_approved: { emoji: '🎉', color: 'bg-green-500/20' },
   production_rejected: { emoji: '❌', color: 'bg-red-500/20' },
-  festival_deadline: { emoji: '🏆', color: 'bg-yellow-500/20' },
   chat_mention: { emoji: '💬', color: 'bg-cyan-500/20' },
   general: { emoji: '🔔', color: 'bg-surface-700' },
 };
@@ -77,6 +77,8 @@ export function NotificationBell() {
 
 function NotificationsDropdown({ onClose }: { onClose: () => void }) {
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { user } = useAuthStore();
+  const push = usePushNotifications(user?.id || undefined);
   const latest = notifications.slice(0, 20);
 
   return (
@@ -124,6 +126,38 @@ function NotificationsDropdown({ onClose }: { onClose: () => void }) {
           >
             See all {notifications.length} notifications
           </Link>
+        </div>
+      )}
+
+      {/* Push notifications toggle */}
+      {push.isSupported && (
+        <div className="border-t border-surface-800 px-4 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">
+                {push.isSubscribed ? '🔔' : '🔕'}
+              </span>
+              <span className="text-[11px] text-surface-400">
+                Device notifications
+              </span>
+            </div>
+            <button
+              onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
+              disabled={push.loading}
+              className={`relative w-9 h-5 rounded-full transition-colors ${
+                push.isSubscribed ? 'bg-brand-500' : 'bg-surface-700'
+              } ${push.loading ? 'opacity-50' : ''}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                push.isSubscribed ? 'translate-x-4' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+          {push.permission === 'denied' && (
+            <p className="text-[10px] text-red-400 mt-1">
+              Notifications blocked — enable in browser settings
+            </p>
+          )}
         </div>
       )}
     </div>
