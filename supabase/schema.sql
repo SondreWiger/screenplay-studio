@@ -11,41 +11,148 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 -- ENUM TYPES
 -- ============================================================
 
-CREATE TYPE user_role AS ENUM ('owner', 'admin', 'writer', 'editor', 'viewer');
-CREATE TYPE project_status AS ENUM ('development', 'pre_production', 'production', 'post_production', 'completed', 'archived');
-CREATE TYPE script_element_type AS ENUM (
-  'scene_heading', 'action', 'character', 'dialogue', 'parenthetical',
-  'transition', 'shot', 'note', 'page_break', 'title_page',
-  'centered', 'lyrics', 'synopsis', 'section'
-);
-CREATE TYPE scene_time AS ENUM ('DAY', 'NIGHT', 'DAWN', 'DUSK', 'MORNING', 'AFTERNOON', 'EVENING', 'CONTINUOUS', 'LATER', 'MOMENTS_LATER');
-CREATE TYPE scene_location_type AS ENUM ('INT', 'EXT', 'INT_EXT', 'EXT_INT');
-CREATE TYPE revision_color AS ENUM ('white', 'blue', 'pink', 'yellow', 'green', 'goldenrod', 'buff', 'salmon', 'cherry', 'tan');
-CREATE TYPE idea_status AS ENUM ('spark', 'developing', 'ready', 'used', 'discarded');
-CREATE TYPE idea_category AS ENUM ('plot', 'character', 'dialogue', 'visual', 'sound', 'location', 'prop', 'costume', 'effect', 'theme', 'other');
-CREATE TYPE schedule_event_type AS ENUM ('shooting', 'rehearsal', 'location_scout', 'meeting', 'setup', 'wrap', 'travel', 'break', 'other');
-CREATE TYPE shot_type AS ENUM (
-  'wide', 'full', 'medium_wide', 'medium', 'medium_close', 'close_up',
-  'extreme_close', 'over_shoulder', 'two_shot', 'pov', 'aerial',
-  'insert', 'cutaway', 'establishing', 'tracking', 'dolly',
-  'crane', 'steadicam', 'handheld', 'static', 'dutch_angle'
-);
-CREATE TYPE shot_movement AS ENUM (
-  'static', 'pan_left', 'pan_right', 'tilt_up', 'tilt_down',
-  'dolly_in', 'dolly_out', 'truck_left', 'truck_right',
-  'crane_up', 'crane_down', 'zoom_in', 'zoom_out',
-  'follow', 'orbit', 'whip_pan', 'rack_focus'
-);
-CREATE TYPE budget_category AS ENUM (
-  'above_the_line', 'below_the_line', 'production', 'post_production',
-  'talent', 'locations', 'equipment', 'props_costumes', 'catering',
-  'transportation', 'insurance', 'marketing', 'contingency', 'other'
-);
-CREATE TYPE comment_type AS ENUM ('note', 'suggestion', 'issue', 'resolved');
+DO $$
+BEGIN
+  CREATE TYPE public.user_role AS ENUM ('owner', 'admin', 'writer', 'editor', 'viewer');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.project_status AS ENUM ('development', 'pre_production', 'production', 'post_production', 'completed', 'archived');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.script_element_type AS ENUM (
+    'scene_heading', 'action', 'character', 'dialogue', 'parenthetical',
+    'transition', 'shot', 'note', 'page_break', 'title_page',
+    'centered', 'lyrics', 'synopsis', 'section'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.scene_time AS ENUM ('DAY', 'NIGHT', 'DAWN', 'DUSK', 'MORNING', 'AFTERNOON', 'EVENING', 'CONTINUOUS', 'LATER', 'MOMENTS_LATER');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.scene_location_type AS ENUM ('INT', 'EXT', 'INT_EXT', 'EXT_INT');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.revision_color AS ENUM ('white', 'blue', 'pink', 'yellow', 'green', 'goldenrod', 'buff', 'salmon', 'cherry', 'tan');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.idea_status AS ENUM ('spark', 'developing', 'ready', 'used', 'discarded');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.idea_category AS ENUM ('plot', 'character', 'dialogue', 'visual', 'sound', 'location', 'prop', 'costume', 'effect', 'theme', 'other');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.schedule_event_type AS ENUM ('shooting', 'rehearsal', 'location_scout', 'meeting', 'setup', 'wrap', 'travel', 'break', 'other');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.shot_type AS ENUM (
+    'wide', 'full', 'medium_wide', 'medium', 'medium_close', 'close_up',
+    'extreme_close', 'over_shoulder', 'two_shot', 'pov', 'aerial',
+    'insert', 'cutaway', 'establishing', 'tracking', 'dolly',
+    'crane', 'steadicam', 'handheld', 'static', 'dutch_angle'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.shot_movement AS ENUM (
+    'static', 'pan_left', 'pan_right', 'tilt_up', 'tilt_down',
+    'dolly_in', 'dolly_out', 'truck_left', 'truck_right',
+    'crane_up', 'crane_down', 'zoom_in', 'zoom_out',
+    'follow', 'orbit', 'whip_pan', 'rack_focus'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.budget_category AS ENUM (
+    'above_the_line', 'below_the_line', 'production', 'post_production',
+    'talent', 'locations', 'equipment', 'props_costumes', 'catering',
+    'transportation', 'insurance', 'marketing', 'contingency', 'other'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE public.comment_type AS ENUM ('note', 'suggestion', 'issue', 'resolved');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
 
 -- ============================================================
 -- PROFILES (extends Supabase auth.users)
 -- ============================================================
+
+-- Cleanup for rerunnable schema (avoids "relation already exists" errors)
+DROP TABLE IF EXISTS user_presence CASCADE;
+DROP TABLE IF EXISTS revisions CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS budget_items CASCADE;
+DROP TABLE IF EXISTS ideas CASCADE;
+DROP TABLE IF EXISTS production_schedule CASCADE;
+DROP TABLE IF EXISTS shots CASCADE;
+DROP TABLE IF EXISTS scenes CASCADE;
+DROP TABLE IF EXISTS locations CASCADE;
+DROP TABLE IF EXISTS characters CASCADE;
+DROP TABLE IF EXISTS script_elements CASCADE;
+DROP TABLE IF EXISTS scripts CASCADE;
+DROP TABLE IF EXISTS project_members CASCADE;
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
 
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,

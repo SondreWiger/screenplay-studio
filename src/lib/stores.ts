@@ -66,24 +66,34 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProjects: async () => {
     const supabase = createClient();
     set({ loading: true });
-    const { data } = await supabase
-      .from('projects')
-      .select('*')
-      .order('updated_at', { ascending: false });
-    set({ projects: data || [], loading: false });
+    try {
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .order('updated_at', { ascending: false });
+      set({ projects: data || [], loading: false });
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+      set({ projects: [], loading: false });
+    }
   },
   fetchProject: async (id: string) => {
     const supabase = createClient();
     set({ loading: true });
-    const [projectRes, membersRes] = await Promise.all([
-      supabase.from('projects').select('*').eq('id', id).single(),
-      supabase.from('project_members').select('*, profile:profiles!user_id(*)').eq('project_id', id),
-    ]);
-    set({
-      currentProject: projectRes.data,
-      members: membersRes.data || [],
-      loading: false,
-    });
+    try {
+      const [projectRes, membersRes] = await Promise.all([
+        supabase.from('projects').select('*').eq('id', id).single(),
+        supabase.from('project_members').select('*, profile:profiles!user_id(*)').eq('project_id', id),
+      ]);
+      set({
+        currentProject: projectRes.data,
+        members: membersRes.data || [],
+        loading: false,
+      });
+    } catch (err) {
+      console.error('Error fetching project:', err);
+      set({ currentProject: null, members: [], loading: false });
+    }
   },
 }));
 
@@ -128,28 +138,38 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
   fetchScripts: async (projectId: string) => {
     const supabase = createClient();
-    const { data } = await supabase
-      .from('scripts')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('version', { ascending: false });
-    const scripts = data || [];
-    set({ scripts });
-    if (scripts.length > 0 && !get().currentScript) {
-      const active = scripts.find((s) => s.is_active) || scripts[0];
-      set({ currentScript: active });
+    try {
+      const { data } = await supabase
+        .from('scripts')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('version', { ascending: false });
+      const scripts = data || [];
+      set({ scripts });
+      if (scripts.length > 0 && !get().currentScript) {
+        const active = scripts.find((s) => s.is_active) || scripts[0];
+        set({ currentScript: active });
+      }
+    } catch (err) {
+      console.error('Error fetching scripts:', err);
+      set({ scripts: [] });
     }
   },
 
   fetchElements: async (scriptId: string) => {
     const supabase = createClient();
     set({ loading: true });
-    const { data } = await supabase
-      .from('script_elements')
-      .select('*')
-      .eq('script_id', scriptId)
-      .order('sort_order', { ascending: true });
-    set({ elements: data || [], loading: false });
+    try {
+      const { data } = await supabase
+        .from('script_elements')
+        .select('*')
+        .eq('script_id', scriptId)
+        .order('sort_order', { ascending: true });
+      set({ elements: data || [], loading: false });
+    } catch (err) {
+      console.error('Error fetching elements:', err);
+      set({ elements: [], loading: false });
+    }
   },
 
   addElement: async (element) => {

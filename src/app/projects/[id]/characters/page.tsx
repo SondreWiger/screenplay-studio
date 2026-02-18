@@ -20,15 +20,22 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   const fetchCharacters = async () => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('characters')
-      .select('*')
-      .eq('project_id', params.id)
-      .order('is_main', { ascending: false })
-      .order('sort_order', { ascending: true });
-    setCharacters(data || []);
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('project_id', params.id)
+        .order('is_main', { ascending: false })
+        .order('sort_order', { ascending: true });
+      if (error) console.error('Characters fetch error:', error.message);
+      setCharacters(data || []);
+    } catch (err) {
+      console.error('Unexpected error fetching characters:', err);
+      setCharacters([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {

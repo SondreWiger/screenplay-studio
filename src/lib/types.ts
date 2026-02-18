@@ -29,6 +29,7 @@ export type BudgetCategory =
   | 'talent' | 'locations' | 'equipment' | 'props_costumes' | 'catering'
   | 'transportation' | 'insurance' | 'marketing' | 'contingency' | 'other';
 export type CommentType = 'note' | 'suggestion' | 'issue' | 'resolved';
+export type BlogPostStatus = 'draft' | 'published' | 'archived';
 
 // ============================================================
 // Database Row Types
@@ -346,6 +347,49 @@ export interface UserPresence {
   is_online: boolean;
   last_seen: string;
   profile?: Profile;
+}
+
+// ============================================================
+// Blog Types
+// ============================================================
+
+export interface BlogPostSection {
+  heading: string;
+  body: string;
+  order: number;
+}
+
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  cover_image_url: string | null;
+  sections: BlogPostSection[];
+  tags: string[];
+  status: BlogPostStatus;
+  published_at: string | null;
+  author_id: string | null;
+  allow_comments: boolean;
+  view_count: number;
+  created_at: string;
+  updated_at: string;
+  author?: Profile;
+}
+
+export interface BlogComment {
+  id: string;
+  post_id: string;
+  parent_id: string | null;
+  author_id: string | null;
+  author_name: string | null;
+  content: string;
+  is_pinned: boolean;
+  is_hidden: boolean;
+  created_at: string;
+  updated_at: string;
+  author?: Profile;
+  replies?: BlogComment[];
 }
 
 // ============================================================

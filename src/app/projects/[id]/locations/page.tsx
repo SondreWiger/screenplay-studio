@@ -18,10 +18,17 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   useEffect(() => { fetchLocations(); }, [params.id]);
 
   const fetchLocations = async () => {
-    const supabase = createClient();
-    const { data } = await supabase.from('locations').select('*').eq('project_id', params.id).order('name');
-    setLocations(data || []);
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('locations').select('*').eq('project_id', params.id).order('name');
+      if (error) console.error('Locations fetch error:', error.message);
+      setLocations(data || []);
+    } catch (err) {
+      console.error('Unexpected error fetching locations:', err);
+      setLocations([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {

@@ -29,11 +29,17 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   useEffect(() => { fetchProject(); }, [params.id]);
 
   const fetchProject = async () => {
-    const supabase = createClient();
-    const { data } = await supabase.from('projects').select('*').eq('id', params.id).single();
-    setProject(data);
-    setForm(data || {});
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('projects').select('*').eq('id', params.id).single();
+      if (error) console.error('Settings fetch error:', error.message);
+      setProject(data);
+      setForm(data || {});
+    } catch (err) {
+      console.error('Unexpected error fetching project settings:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSave = async () => {

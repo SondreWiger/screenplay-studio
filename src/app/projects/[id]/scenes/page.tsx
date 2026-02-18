@@ -40,16 +40,21 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   useEffect(() => { fetchData(); }, [params.id]);
 
   const fetchData = async () => {
-    const supabase = createClient();
-    const [scenesRes, locsRes, charsRes] = await Promise.all([
-      supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
-      supabase.from('locations').select('*').eq('project_id', params.id),
-      supabase.from('characters').select('*').eq('project_id', params.id).order('name'),
-    ]);
-    setScenes(scenesRes.data || []);
-    setLocations(locsRes.data || []);
-    setCharacters(charsRes.data || []);
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const [scenesRes, locsRes, charsRes] = await Promise.all([
+        supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
+        supabase.from('locations').select('*').eq('project_id', params.id),
+        supabase.from('characters').select('*').eq('project_id', params.id).order('name'),
+      ]);
+      setScenes(scenesRes.data || []);
+      setLocations(locsRes.data || []);
+      setCharacters(charsRes.data || []);
+    } catch (err) {
+      console.error('Unexpected error fetching scenes data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
