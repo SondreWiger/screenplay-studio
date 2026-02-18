@@ -517,3 +517,214 @@ export function Progress({ value, max = 100, label, showPercent = true, color, c
     </div>
   );
 }
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+
+type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+interface ToastItem {
+  id: string;
+  message: string;
+  type: ToastType;
+  duration?: number;
+}
+
+const toastListeners: Set<(toast: ToastItem) => void> = new Set();
+
+export function toast(message: string, type: ToastType = 'info', duration = 3000) {
+  const item: ToastItem = { id: crypto.randomUUID(), message, type, duration };
+  toastListeners.forEach(fn => fn(item));
+}
+
+toast.success = (msg: string) => toast(msg, 'success');
+toast.error = (msg: string) => toast(msg, 'error', 5000);
+toast.warning = (msg: string) => toast(msg, 'warning', 4000);
+
+export function ToastContainer() {
+  const [toasts, setToasts] = React.useState<ToastItem[]>([]);
+
+  React.useEffect(() => {
+    const handler = (item: ToastItem) => {
+      setToasts(prev => [...prev, item]);
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== item.id));
+      }, item.duration || 3000);
+    };
+    toastListeners.add(handler);
+    return () => { toastListeners.delete(handler); };
+  }, []);
+
+  if (toasts.length === 0) return null;
+
+  const icons: Record<ToastType, string> = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+  const colors: Record<ToastType, string> = {
+    success: 'bg-green-500/10 border-green-500/30 text-green-300',
+    error: 'bg-red-500/10 border-red-500/30 text-red-300',
+    warning: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
+    info: 'bg-blue-500/10 border-blue-500/30 text-blue-300',
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className={cn(
+            'flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-lg',
+            'animate-in slide-in-from-right-5 fade-in duration-300',
+            colors[t.type]
+          )}
+        >
+          <span className="text-sm font-bold shrink-0">{icons[t.type]}</span>
+          <p className="text-sm font-medium flex-1">{t.message}</p>
+          <button
+            onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))}
+            className="text-xs opacity-60 hover:opacity-100 transition-opacity shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// KEYBOARD SHORTCUTS PANEL
+// ============================================================
+
+interface ShortcutGroup {
+  title: string;
+  shortcuts: { keys: string[]; description: string }[];
+}
+
+interface KeyboardShortcutsProps {
+  isOpen: boolean;
+  onClose: () => void;
+  groups?: ShortcutGroup[];
+}
+
+const defaultGroups: ShortcutGroup[] = [
+  {
+    title: 'Navigation',
+    shortcuts: [
+      { keys: ['⌘', 'K'], description: 'Quick search / command palette' },
+      { keys: ['⌘', '/'], description: 'Show keyboard shortcuts' },
+    ],
+  },
+  {
+    title: 'Script Editor',
+    shortcuts: [
+      { keys: ['Tab'], description: 'Cycle element type' },
+      { keys: ['Enter'], description: 'New element' },
+      { keys: ['⌘', 'S'], description: 'Save script' },
+      { keys: ['⌘', 'F'], description: 'Search in script' },
+      { keys: ['⌘', 'P'], description: 'Export to PDF' },
+      { keys: ['⌘', 'D'], description: 'Save draft snapshot' },
+    ],
+  },
+  {
+    title: 'General',
+    shortcuts: [
+      { keys: ['Esc'], description: 'Close modal / cancel' },
+      { keys: ['⌘', 'N'], description: 'New project (dashboard)' },
+    ],
+  },
+];
+
+export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: KeyboardShortcutsProps) {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="bg-surface-900 border border-surface-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[70vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <span className="text-surface-400">⌨️</span> Keyboard Shortcuts
+          </h3>
+          <button onClick={onClose} className="text-surface-500 hover:text-white transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div className="space-y-5">
+          {groups.map((group) => (
+            <div key={group.title}>
+              <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">{group.title}</h4>
+              <div className="space-y-1.5">
+                {group.shortcuts.map((sc, i) => (
+                  <div key={i} className="flex items-center justify-between py-1.5">
+                    <span className="text-sm text-surface-300">{sc.description}</span>
+                    <div className="flex items-center gap-1">
+                      {sc.keys.map((key, ki) => (
+                        <React.Fragment key={ki}>
+                          {ki > 0 && <span className="text-surface-600 text-xs">+</span>}
+                          <kbd className="px-2 py-0.5 text-xs font-mono text-surface-300 bg-surface-800 border border-surface-700 rounded-md shadow-sm">
+                            {key}
+                          </kbd>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// CONFIRMATION DIALOG
+// ============================================================
+
+interface ConfirmDialogProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: 'danger' | 'primary';
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading?: boolean;
+}
+
+export function ConfirmDialog({
+  isOpen, title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel',
+  variant = 'primary', onConfirm, onCancel, loading,
+}: ConfirmDialogProps) {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen, onCancel]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onCancel}>
+      <div className="bg-surface-900 border border-surface-800 rounded-2xl shadow-2xl max-w-sm w-full p-6" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+        <p className="text-sm text-surface-400 mb-5">{message}</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="ghost" onClick={onCancel} disabled={loading}>{cancelLabel}</Button>
+          <Button variant={variant === 'danger' ? 'danger' : 'primary'} onClick={onConfirm} loading={loading}>
+            {confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

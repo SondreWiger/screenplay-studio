@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import type {
   Project, Script, ScriptElement, Character, Location,
   Scene, Shot, Idea, BudgetItem, ScheduleEvent, Comment,
-  Profile, ProjectMember, UserPresence
+  Profile, ProjectMember, UserPresence, Notification
 } from '@/lib/types';
 
 // ============================================================
@@ -241,4 +241,83 @@ interface PresenceState {
 export const usePresenceStore = create<PresenceState>((set) => ({
   onlineUsers: [],
   setOnlineUsers: (users) => set({ onlineUsers: users }),
+}));
+
+// ============================================================
+// Notification Store
+// ============================================================
+
+interface NotificationState {
+  notifications: Notification[];
+  unreadCount: number;
+  loading: boolean;
+  setNotifications: (notifications: Notification[]) => void;
+  setUnreadCount: (count: number) => void;
+  setLoading: (loading: boolean) => void;
+  fetchNotifications: () => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
+  addNotification: (n: Notification) => void;
+}
+
+export const useNotificationStore = create<NotificationState>((set, get) => ({
+  notifications: [],
+  unreadCount: 0,
+  loading: true,
+  setNotifications: (notifications) => set({ notifications }),
+  setUnreadCount: (count) => set({ unreadCount: count }),
+  setLoading: (loading) => set({ loading }),
+  addNotification: (n) => {
+    const existing = get().notifications;
+    if (existing.some((e) => e.id === n.id)) return;
+    set({
+      notifications: [n, ...existing],
+      unreadCount: get().unreadCount + (n.read ? 0 : 1),
+    });
+  },
+  fetchNotifications: async () => {
+    const supabase = createClient();
+    set({ loading: true });
+    try {
+      const { data } = await supabase
+        .from('notifications')
+        .select('*, actor:profiles!notifications_actor_id_fkey(*)')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      const notifications = (data || []) as Notification[];
+      set({
+        notifications,
+        unreadCount: notifications.filter((n) => !n.read).length,
+        loading: false,
+      });
+    } catch {
+      set({ loading: false });
+    }
+  },
+  markAsRead: async (id) => {
+    const supabase = createClient();
+    set({
+      notifications: get().notifications.map((n) => n.id === id ? { ...n, read: true } : n),
+      unreadCount: Math.max(0, get().unreadCount - (get().notifications.find((n) => n.id === id && !n.read) ? 1 : 0)),
+    });
+    await supabase.from('notifications').update({ read: true }).eq('id', id);
+  },
+  markAllAsRead: async () => {
+    const supabase = createClient();
+    set({
+      notifications: get().notifications.map((n) => ({ ...n, read: true })),
+      unreadCount: 0,
+    });
+    await supabase.from('notifications').update({ read: true }).eq('read', false);
+  },
+  deleteNotification: async (id) => {
+    const supabase = createClient();
+    const n = get().notifications.find((n) => n.id === id);
+    set({
+      notifications: get().notifications.filter((n) => n.id !== id),
+      unreadCount: Math.max(0, get().unreadCount - (n && !n.read ? 1 : 0)),
+    });
+    await supabase.from('notifications').delete().eq('id', id);
+  },
 }));

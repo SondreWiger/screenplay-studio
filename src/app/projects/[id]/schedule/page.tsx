@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, formatDate, formatTime } from '@/lib/utils';
+import { useProjectStore } from '@/lib/stores';
 import type { ScheduleEvent, Scene, Location as Loc, ScheduleEventType } from '@/lib/types';
 
 const EVENT_TYPES: { value: ScheduleEventType; label: string; color: string }[] = [
@@ -45,6 +46,12 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => { fetchData(); }, [params.id]);
+
+  // Role awareness
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
 
   const fetchData = async () => {
     try {
@@ -98,10 +105,10 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Production Schedule</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-white">Production Schedule</h1>
           <p className="text-sm text-surface-400 mt-1">{events.length} events scheduled</p>
         </div>
         <div className="flex gap-3">
@@ -109,19 +116,21 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
             <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>Calendar</button>
             <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'list' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>List</button>
           </div>
-          <Button onClick={() => { setSelectedEvent(null); setSelectedDate(null); setShowEditor(true); }}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Event
-          </Button>
+          {canEdit && (
+            <Button onClick={() => { setSelectedEvent(null); setSelectedDate(null); setShowEditor(true); }}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              <span className="hidden sm:inline">Add Event</span>
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mb-6 flex-wrap">
+      <div className="flex gap-3 md:gap-4 mb-6 flex-wrap">
         {EVENT_TYPES.map((t) => (
           <div key={t.value} className="flex items-center gap-1.5">
-            <div className={cn('w-2.5 h-2.5 rounded-full', t.color)} />
-            <span className="text-xs text-surface-400">{t.label}</span>
+            <div className={cn('w-2 h-2 md:w-2.5 md:h-2.5 rounded-full', t.color)} />
+            <span className="text-[10px] md:text-xs text-surface-400">{t.label}</span>
           </div>
         ))}
       </div>
@@ -152,7 +161,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                   day ? 'hover:bg-white/[0.02] cursor-pointer' : '',
                   isToday(day!) ? 'bg-brand-600/5' : '',
                 )} onClick={() => {
-                  if (!day) return;
+                  if (!day || !canEdit) return;
                   const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                   setSelectedDate(dateStr); setSelectedEvent(null); setShowEditor(true);
                 }}>

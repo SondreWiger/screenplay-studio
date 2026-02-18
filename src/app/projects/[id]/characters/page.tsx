@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Avatar, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, randomColor } from '@/lib/utils';
 import type { Character } from '@/lib/types';
 
 export default function CharactersPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
@@ -55,18 +59,18 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Characters</h1>
           <p className="text-sm text-surface-400 mt-1">{characters.length} characters in this project</p>
         </div>
-        <Button onClick={() => { setSelectedCharacter(null); setShowEditor(true); }}>
+        {canEdit && <Button onClick={() => { setSelectedCharacter(null); setShowEditor(true); }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Add Character
-        </Button>
+        </Button>}
       </div>
 
       {/* Filter Tabs */}
@@ -91,11 +95,11 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
         <EmptyState
           title="No characters yet"
           description="Add characters to build your cast"
-          action={
+          action={canEdit ?
             <Button onClick={() => { setSelectedCharacter(null); setShowEditor(true); }}>
               Add Character
             </Button>
-          }
+          : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -168,6 +172,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
           setShowEditor(false);
         }}
         onDelete={handleDelete}
+        canEdit={canEdit}
       />
     </div>
   );
@@ -185,6 +190,7 @@ function CharacterEditor({
   userId,
   onSaved,
   onDelete,
+  canEdit,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -193,6 +199,7 @@ function CharacterEditor({
   userId: string;
   onSaved: () => void;
   onDelete: (id: string) => void;
+  canEdit: boolean;
 }) {
   const [form, setForm] = useState({
     name: '',
@@ -392,7 +399,7 @@ function CharacterEditor({
 
       <div className="flex items-center justify-between pt-6 mt-6 border-t border-surface-800">
         <div>
-          {character && (
+          {canEdit && character && (
             <Button variant="danger" size="sm" onClick={() => onDelete(character.id)}>
               Delete Character
             </Button>
@@ -400,9 +407,9 @@ function CharacterEditor({
         </div>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={loading}>
+          {canEdit && <Button onClick={handleSave} loading={loading}>
             {character ? 'Save Changes' : 'Create Character'}
-          </Button>
+          </Button>}
         </div>
       </div>
     </Modal>

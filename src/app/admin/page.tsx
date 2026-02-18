@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select } from '@/components/ui';
-import { cn, formatDate, timeAgo } from '@/lib/utils';
-import type { BlogPost, BlogPostSection } from '@/lib/types';
+import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
+import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge } from '@/lib/types';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 
@@ -42,7 +42,7 @@ interface UserRow {
   projectCount?: number;
 }
 
-type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'system';
+type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'festivals' | 'system';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -61,6 +61,12 @@ export default function AdminPage() {
   const [blogComments, setBlogComments] = useState<any[]>([]);
   const [siteVersion, setSiteVersion] = useState<string>('');
 
+  // Community
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
+  const [communityCategories, setCommunityCategories] = useState<CommunityCategory[]>([]);
+  const [challengeThemes, setChallengeThemes] = useState<ChallengeTheme[]>([]);
+  const [challenges, setChallenges] = useState<CommunityChallenge[]>([]);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.id !== ADMIN_UID) {
@@ -71,6 +77,7 @@ export default function AdminPage() {
     loadUsers();
     loadProjects();
     loadBlogPosts();
+    loadCommunityData();
     loadSiteVersion();
   }, [user, authLoading]);
 
@@ -198,6 +205,75 @@ export default function AdminPage() {
     }
   };
 
+  const loadCommunityData = async () => {
+    try {
+      const supabase = createClient();
+      const [postsRes, catsRes, themesRes, challengesRes] = await Promise.all([
+        supabase.from('community_posts').select('*, author:profiles!author_id(full_name, email)').order('created_at', { ascending: false }),
+        supabase.from('community_categories').select('*').order('display_order'),
+        supabase.from('challenge_themes').select('*').order('title'),
+        supabase.from('community_challenges').select('*').order('starts_at', { ascending: false }),
+      ]);
+      setCommunityPosts(postsRes.data || []);
+      setCommunityCategories(catsRes.data || []);
+      setChallengeThemes(themesRes.data || []);
+      setChallenges(challengesRes.data || []);
+    } catch (err) {
+      console.error('Error loading community data:', err);
+    }
+  };
+
+  const handleDeleteCommunityPost = async (id: string) => {
+    if (!confirm('Delete this community post?')) return;
+    const supabase = createClient();
+    await supabase.from('community_post_categories').delete().eq('post_id', id);
+    await supabase.from('community_comments').delete().eq('post_id', id);
+    await supabase.from('community_upvotes').delete().eq('post_id', id);
+    await supabase.from('community_posts').delete().eq('id', id);
+    await loadCommunityData();
+  };
+
+  const handleSaveCategory = async (cat: Partial<CommunityCategory> & { id?: string }) => {
+    const supabase = createClient();
+    if (cat.id) {
+      await supabase.from('community_categories').update({ name: cat.name, slug: cat.slug, description: cat.description, icon: cat.icon, color: cat.color, display_order: cat.display_order }).eq('id', cat.id);
+    } else {
+      await supabase.from('community_categories').insert({ name: cat.name!, slug: cat.slug!, description: cat.description, icon: cat.icon, color: cat.color, display_order: cat.display_order || 0 });
+    }
+    await loadCommunityData();
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm('Delete this category?')) return;
+    const supabase = createClient();
+    await supabase.from('community_post_categories').delete().eq('category_id', id);
+    await supabase.from('community_categories').delete().eq('id', id);
+    await loadCommunityData();
+  };
+
+  const handleSaveTheme = async (theme: Partial<ChallengeTheme> & { id?: string }) => {
+    const supabase = createClient();
+    if (theme.id) {
+      await supabase.from('challenge_themes').update({ title: theme.title, description: theme.description, genre_hint: theme.genre_hint, constraints: theme.constraints, difficulty: theme.difficulty, is_active: theme.is_active }).eq('id', theme.id);
+    } else {
+      await supabase.from('challenge_themes').insert({ title: theme.title!, description: theme.description!, genre_hint: theme.genre_hint, constraints: theme.constraints, difficulty: theme.difficulty || 'intermediate', is_active: true });
+    }
+    await loadCommunityData();
+  };
+
+  const handleDeleteTheme = async (id: string) => {
+    if (!confirm('Delete this challenge theme?')) return;
+    const supabase = createClient();
+    await supabase.from('challenge_themes').delete().eq('id', id);
+    await loadCommunityData();
+  };
+
+  const handleCreateCustomChallenge = async (data: { title: string; description: string; starts_at: string; submissions_close_at: string; voting_close_at: string; reveal_at: string; prize_title?: string; prize_description?: string }) => {
+    const supabase = createClient();
+    await supabase.from('community_challenges').insert({ ...data, challenge_type: 'custom', created_by: user!.id });
+    await loadCommunityData();
+  };
+
   const handleDeletePost = async (id: string) => {
     if (!confirm('Delete this blog post? This cannot be undone.')) return;
     const supabase = createClient();
@@ -298,6 +374,14 @@ export default function AdminPage() {
       key: 'blog', label: 'Blog',
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>,
     },
+    {
+      key: 'community' as Tab, label: 'Community',
+      icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+    },
+    {
+      key: 'festivals' as Tab, label: 'Festivals',
+      icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>,
+    },
   ];
 
   return (
@@ -385,6 +469,21 @@ export default function AdminPage() {
               onDeleteComment={handleDeleteComment}
             />
           )}
+          {activeTab === 'community' && (
+            <CommunityTab
+              posts={communityPosts}
+              categories={communityCategories}
+              themes={challengeThemes}
+              challenges={challenges}
+              onDeletePost={handleDeleteCommunityPost}
+              onSaveCategory={handleSaveCategory}
+              onDeleteCategory={handleDeleteCategory}
+              onSaveTheme={handleSaveTheme}
+              onDeleteTheme={handleDeleteTheme}
+              onCreateChallenge={handleCreateCustomChallenge}
+            />
+          )}
+          {activeTab === 'festivals' && <FestivalsTab />}
         </div>
       </main>
 
@@ -938,6 +1037,267 @@ function EditUserModal({ user, onClose, onSave }: {
 }
 
 // ============================================================
+// Festivals Tab
+// ============================================================
+
+function FestivalsTab() {
+  const [festivals, setFestivals] = useState<any[]>([]);
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [view, setView] = useState<'festivals' | 'submissions'>('festivals');
+  const [showForm, setShowForm] = useState(false);
+  const [editFest, setEditFest] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: '', description: '', website: '', logo_url: '', deadline: '', location: '',
+    categories: '' as string, is_active: true,
+  });
+
+  useEffect(() => { loadFestivals(); loadSubmissions(); }, []);
+
+  const loadFestivals = async () => {
+    const supabase = createClient();
+    const { data } = await supabase.from('festivals').select('*').order('created_at', { ascending: false });
+    setFestivals(data || []);
+  };
+
+  const loadSubmissions = async () => {
+    const supabase = createClient();
+    const { data } = await supabase.from('festival_submissions')
+      .select('*, festival:festivals(name), user:profiles!festival_submissions_user_id_fkey(full_name, email), project:projects(title)')
+      .order('created_at', { ascending: false });
+    setSubmissions(data || []);
+  };
+
+  const openNewForm = () => {
+    setEditFest(null);
+    setForm({ name: '', description: '', website: '', logo_url: '', deadline: '', location: '', categories: '', is_active: true });
+    setShowForm(true);
+  };
+
+  const openEditForm = (fest: any) => {
+    setEditFest(fest);
+    setForm({
+      name: fest.name, description: fest.description || '', website: fest.website || '',
+      logo_url: fest.logo_url || '', deadline: fest.deadline ? fest.deadline.split('T')[0] : '',
+      location: fest.location || '', categories: (fest.categories || []).join(', '), is_active: fest.is_active,
+    });
+    setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    const supabase = createClient();
+    const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const payload = {
+      name: form.name.trim(),
+      slug,
+      description: form.description.trim() || null,
+      website: form.website.trim() || null,
+      logo_url: form.logo_url.trim() || null,
+      deadline: form.deadline || null,
+      location: form.location.trim() || null,
+      categories: form.categories ? form.categories.split(',').map(c => c.trim()).filter(Boolean) : [],
+      is_active: form.is_active,
+    };
+    if (editFest) {
+      await supabase.from('festivals').update(payload).eq('id', editFest.id);
+    } else {
+      await supabase.from('festivals').insert(payload);
+    }
+    setShowForm(false);
+    setSaving(false);
+    loadFestivals();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this festival? All submissions will also be removed.')) return;
+    const supabase = createClient();
+    await supabase.from('festival_submissions').delete().eq('festival_id', id);
+    await supabase.from('festivals').delete().eq('id', id);
+    loadFestivals();
+  };
+
+  const handleUpdateSubmission = async (id: string, status: string) => {
+    const supabase = createClient();
+    await supabase.from('festival_submissions').update({ status }).eq('id', id);
+    loadSubmissions();
+  };
+
+  const subTabs = [
+    { key: 'festivals', label: 'Manage Festivals', count: festivals.length },
+    { key: 'submissions', label: 'Submissions', count: submissions.length },
+  ];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-white">🏆 Festivals</h2>
+        <Button onClick={openNewForm}>+ New Festival</Button>
+      </div>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-2 mb-6 border-b border-surface-800 pb-3">
+        {subTabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setView(t.key as any)}
+            className={cn(
+              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+              view === t.key ? 'bg-surface-800 text-white' : 'text-surface-400 hover:text-white'
+            )}
+          >
+            {t.label} <span className="ml-1 text-xs text-surface-500">({t.count})</span>
+          </button>
+        ))}
+      </div>
+
+      {view === 'festivals' && (
+        <div className="space-y-3">
+          {festivals.map((fest) => (
+            <div key={fest.id} className="rounded-xl border border-surface-800 bg-surface-900 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-sm font-semibold text-white">{fest.name}</h3>
+                    <span className={cn('px-2 py-0.5 text-[10px] font-semibold rounded-full', fest.is_active ? 'text-green-400 bg-green-500/10' : 'text-surface-500 bg-surface-800')}>
+                      {fest.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  {fest.description && <p className="text-xs text-surface-400 line-clamp-1">{fest.description}</p>}
+                  <div className="flex items-center gap-3 mt-2 text-xs text-surface-500">
+                    {fest.deadline && <span>📅 {new Date(fest.deadline).toLocaleDateString()}</span>}
+                    {fest.location && <span>📍 {fest.location}</span>}
+                    {fest.website && <a href={fest.website} target="_blank" className="text-brand-400 hover:text-brand-300">🔗 Website</a>}
+                  </div>
+                  {fest.categories?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {fest.categories.map((c: string) => (
+                        <span key={c} className="px-2 py-0.5 text-[10px] text-surface-300 bg-surface-800 rounded-full">{c}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => openEditForm(fest)} className="text-xs text-surface-400 hover:text-white transition-colors">Edit</button>
+                  <button onClick={() => handleDelete(fest.id)} className="text-xs text-red-400 hover:text-red-300 transition-colors">Delete</button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {festivals.length === 0 && (
+            <div className="text-center py-12 text-surface-500 text-sm">
+              No festivals yet. Create one to get started.
+            </div>
+          )}
+        </div>
+      )}
+
+      {view === 'submissions' && (
+        <div className="space-y-3">
+          {submissions.map((sub) => (
+            <div key={sub.id} className="rounded-xl border border-surface-800 bg-surface-900 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={cn(
+                      'px-2 py-0.5 text-[10px] font-semibold rounded-full',
+                      sub.status === 'submitted' ? 'text-blue-400 bg-blue-500/10' :
+                      sub.status === 'accepted' ? 'text-green-400 bg-green-500/10' :
+                      sub.status === 'rejected' ? 'text-red-400 bg-red-500/10' :
+                      'text-surface-400 bg-surface-800'
+                    )}>
+                      {sub.status}
+                    </span>
+                    <h3 className="text-sm font-semibold text-white">{sub.title}</h3>
+                  </div>
+                  <p className="text-xs text-surface-400">
+                    {sub.festival?.name} · {sub.user?.full_name || sub.user?.email || 'Unknown'} · {sub.project?.title}
+                    {sub.page_count && ` · ${sub.page_count} pages`}
+                  </p>
+                </div>
+                {sub.status === 'submitted' && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => handleUpdateSubmission(sub.id, 'accepted')} className="px-3 py-1 text-xs font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-colors">Accept</button>
+                    <button onClick={() => handleUpdateSubmission(sub.id, 'rejected')} className="px-3 py-1 text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">Reject</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {submissions.length === 0 && (
+            <div className="text-center py-12 text-surface-500 text-sm">
+              No submissions yet.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Festival Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-surface-900 rounded-2xl border border-surface-800 shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white mb-4">{editFest ? 'Edit Festival' : 'New Festival'}</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-surface-400 mb-1 block">Name *</label>
+                <input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-surface-400 mb-1 block">Description</label>
+                <textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={2}
+                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none resize-none" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-surface-400 mb-1 block">Website URL</label>
+                  <input value={form.website} onChange={(e) => setForm(f => ({ ...f, website: e.target.value }))}
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-surface-400 mb-1 block">Logo URL</label>
+                  <input value={form.logo_url} onChange={(e) => setForm(f => ({ ...f, logo_url: e.target.value }))}
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-surface-400 mb-1 block">Deadline</label>
+                  <input type="date" value={form.deadline} onChange={(e) => setForm(f => ({ ...f, deadline: e.target.value }))}
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-surface-400 mb-1 block">Location</label>
+                  <input value={form.location} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))}
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-surface-400 mb-1 block">Categories (comma-separated)</label>
+                <input value={form.categories} onChange={(e) => setForm(f => ({ ...f, categories: e.target.value }))} placeholder="Short Film, Feature, Documentary"
+                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+              </div>
+              <label className="flex items-center gap-2 text-sm text-surface-300 cursor-pointer">
+                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm(f => ({ ...f, is_active: e.target.checked }))}
+                  className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500" />
+                Active (visible to users)
+              </label>
+            </div>
+            <div className="flex justify-end gap-3 mt-5">
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-surface-400 hover:text-white transition-colors">Cancel</button>
+              <button onClick={handleSave} disabled={saving || !form.name.trim()}
+                className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 rounded-lg transition-colors">
+                {saving ? 'Saving...' : editFest ? 'Update' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+// ============================================================
 // Blog Tab
 // ============================================================
 
@@ -1065,6 +1425,383 @@ function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggl
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// Community Tab
+// ============================================================
+
+function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onSaveCategory, onDeleteCategory, onSaveTheme, onDeleteTheme, onCreateChallenge }: {
+  posts: CommunityPost[];
+  categories: CommunityCategory[];
+  themes: ChallengeTheme[];
+  challenges: CommunityChallenge[];
+  onDeletePost: (id: string) => void;
+  onSaveCategory: (cat: any) => void;
+  onDeleteCategory: (id: string) => void;
+  onSaveTheme: (theme: any) => void;
+  onDeleteTheme: (id: string) => void;
+  onCreateChallenge: (data: any) => void;
+}) {
+  const [view, setView] = useState<'posts' | 'categories' | 'themes' | 'challenges' | 'productions'>('posts');
+  const [editingCat, setEditingCat] = useState<any>(null); // CommunityCategory | 'new'
+  const [editingTheme, setEditingTheme] = useState<any>(null);
+  const [showNewChallenge, setShowNewChallenge] = useState(false);
+  const [pendingProductions, setPendingProductions] = useState<any[]>([]);
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
+
+  // New challenge form
+  const [chTitle, setChTitle] = useState('');
+  const [chDesc, setChDesc] = useState('');
+  const [chStart, setChStart] = useState('');
+  const [chSubClose, setChSubClose] = useState('');
+  const [chVoteClose, setChVoteClose] = useState('');
+  const [chReveal, setChReveal] = useState('');
+  const [chPrize, setChPrize] = useState('');
+  const [chPrizeDesc, setChPrizeDesc] = useState('');
+
+  // Category form
+  const [catName, setCatName] = useState('');
+  const [catSlug, setCatSlug] = useState('');
+  const [catIcon, setCatIcon] = useState('');
+  const [catColor, setCatColor] = useState('');
+  const [catDesc, setCatDesc] = useState('');
+
+  // Theme form
+  const [thTitle, setThTitle] = useState('');
+  const [thDesc, setThDesc] = useState('');
+  const [thGenre, setThGenre] = useState('');
+  const [thConstraints, setThConstraints] = useState('');
+
+  const startEditCat = (cat: CommunityCategory | null) => {
+    if (cat) {
+      setCatName(cat.name); setCatSlug(cat.slug); setCatIcon(cat.icon || ''); setCatColor(cat.color || ''); setCatDesc(cat.description || '');
+    } else {
+      setCatName(''); setCatSlug(''); setCatIcon(''); setCatColor(''); setCatDesc('');
+    }
+    setEditingCat(cat || 'new');
+  };
+
+  const saveCat = () => {
+    if (!catName.trim() || !catSlug.trim()) return;
+    const data: any = { name: catName.trim(), slug: catSlug.trim(), icon: catIcon.trim() || null, color: catColor.trim() || null, description: catDesc.trim() || null };
+    if (editingCat !== 'new') data.id = editingCat.id;
+    onSaveCategory(data);
+    setEditingCat(null);
+  };
+
+  const startEditTheme = (theme: ChallengeTheme | null) => {
+    if (theme) {
+      setThTitle(theme.title); setThDesc(theme.description); setThGenre(theme.genre_hint || ''); setThConstraints(theme.constraints || '');
+    } else {
+      setThTitle(''); setThDesc(''); setThGenre(''); setThConstraints('');
+    }
+    setEditingTheme(theme || 'new');
+  };
+
+  const saveTheme = () => {
+    if (!thTitle.trim() || !thDesc.trim()) return;
+    const data: any = { title: thTitle.trim(), description: thDesc.trim(), genre_hint: thGenre.trim() || null, constraints: thConstraints.trim() || null, difficulty: 'intermediate' };
+    if (editingTheme !== 'new') { data.id = editingTheme.id; data.is_active = editingTheme.is_active; }
+    onSaveTheme(data);
+    setEditingTheme(null);
+  };
+
+  const createChallenge = () => {
+    if (!chTitle.trim() || !chDesc.trim() || !chStart || !chSubClose || !chVoteClose || !chReveal) return;
+    onCreateChallenge({
+      title: chTitle.trim(), description: chDesc.trim(),
+      starts_at: new Date(chStart).toISOString(),
+      submissions_close_at: new Date(chSubClose).toISOString(),
+      voting_close_at: new Date(chVoteClose).toISOString(),
+      reveal_at: new Date(chReveal).toISOString(),
+      prize_title: chPrize.trim() || null,
+      prize_description: chPrizeDesc.trim() || null,
+    });
+    setShowNewChallenge(false);
+    setChTitle(''); setChDesc(''); setChStart(''); setChSubClose(''); setChVoteClose(''); setChReveal(''); setChPrize(''); setChPrizeDesc('');
+  };
+
+  // Productions review
+  const loadProductions = useCallback(async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('script_productions')
+      .select('*, submitter:profiles!submitter_id(full_name, email, avatar_url), post:community_posts!post_id(title, slug)')
+      .order('created_at', { ascending: false });
+    setPendingProductions(data || []);
+  }, []);
+
+  useEffect(() => { if (view === 'productions') loadProductions(); }, [view, loadProductions]);
+
+  const handleReviewProduction = async (id: string, status: 'approved' | 'rejected') => {
+    const supabase = createClient();
+    await supabase.from('script_productions').update({
+      status,
+      review_notes: reviewNotes[id] || null,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: 'f0e0c4a4-0833-4c64-b012-15829c087c77',
+    }).eq('id', id);
+    await loadProductions();
+  };
+
+  const inputCls = 'w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors';
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Community</h1>
+          <p className="text-sm text-surface-400">Manage posts, categories, themes & challenges</p>
+        </div>
+        <Link href="/community" className="text-sm text-surface-400 hover:text-white transition-colors">
+          View Community →
+        </Link>
+      </div>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-1 mb-6 bg-surface-900 rounded-lg p-1 w-fit overflow-x-auto">
+        {([
+          { k: 'posts', label: `Posts (${posts.length})` },
+          { k: 'productions', label: `Productions (${pendingProductions.filter(p => p.status === 'pending').length})` },
+          { k: 'categories', label: `Categories (${categories.length})` },
+          { k: 'themes', label: `Themes (${themes.length})` },
+          { k: 'challenges', label: `Challenges (${challenges.length})` },
+        ] as const).map((t) => (
+          <button
+            key={t.k}
+            onClick={() => setView(t.k as any)}
+            className={cn(
+              'px-4 py-1.5 rounded-md text-sm font-medium transition-all',
+              view === t.k ? 'bg-surface-700 text-white shadow-sm' : 'text-surface-400 hover:text-white'
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* POSTS */}
+      {view === 'posts' && (
+        <div className="space-y-3">
+          {posts.length === 0 ? (
+            <p className="text-center text-surface-400 text-sm py-12">No community posts yet.</p>
+          ) : posts.map((post) => (
+            <div key={post.id} className="rounded-xl border border-surface-800 bg-surface-900/50 p-4 flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant={post.status === 'published' ? 'success' : post.status === 'archived' ? 'warning' : 'default'} size="sm">{post.status}</Badge>
+                  {post.allow_free_use && <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 font-semibold">Free Use</span>}
+                </div>
+                <p className="text-sm font-medium text-white truncate">{post.title}</p>
+                <p className="text-xs text-surface-500 mt-0.5">
+                  by {(post.author as any)?.full_name || (post.author as any)?.email || 'Unknown'} · {timeAgo(post.created_at)} · ↑{post.upvote_count} · 💬{post.comment_count}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <a href={`/community/post/${post.slug}`} target="_blank" className="text-xs text-surface-400 hover:text-white transition-colors">View</a>
+                <button onClick={() => onDeletePost(post.id)} className="text-xs text-red-400 hover:text-red-300 transition-colors">Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* PRODUCTIONS REVIEW */}
+      {view === 'productions' && (
+        <div>
+          <h3 className="text-sm font-semibold text-white mb-4">Film Productions — Review Queue</h3>
+          {pendingProductions.length === 0 ? (
+            <p className="text-center text-surface-400 text-sm py-12">No productions submitted yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingProductions.map((prod: any) => (
+                <div key={prod.id} className="rounded-xl border border-surface-800 bg-surface-900/50 p-4">
+                  <div className="flex items-start gap-4">
+                    {prod.thumbnail_url && (
+                      <div className="w-20 h-14 rounded-lg overflow-hidden shrink-0">
+                        <img src={prod.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant={prod.status === 'approved' ? 'success' : prod.status === 'rejected' ? 'error' : 'warning'} size="sm">{prod.status}</Badge>
+                        <span className="text-sm font-medium text-white">{prod.title}</span>
+                      </div>
+                      {prod.description && <p className="text-xs text-surface-400 line-clamp-2">{prod.description}</p>}
+                      <p className="text-xs text-surface-500 mt-1">
+                        by {prod.submitter?.full_name || prod.submitter?.email || 'Unknown'} · {timeAgo(prod.created_at)}
+                        {prod.post && <> · script: <a href={`/community/post/${prod.post.slug}`} target="_blank" className="text-brand-400 hover:underline">{prod.post.title}</a></>}
+                      </p>
+                      {prod.url && <a href={prod.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-400 hover:underline mt-1 inline-block">🔗 Watch →</a>}
+                    </div>
+                  </div>
+                  {prod.status === 'pending' && (
+                    <div className="mt-3 pt-3 border-t border-surface-800">
+                      <input
+                        value={reviewNotes[prod.id] || ''}
+                        onChange={(e) => setReviewNotes(prev => ({ ...prev, [prod.id]: e.target.value }))}
+                        placeholder="Review notes (optional)..."
+                        className={inputCls + ' mb-2'}
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => handleReviewProduction(prod.id, 'approved')}>✅ Approve</Button>
+                        <Button size="sm" variant="danger" onClick={() => handleReviewProduction(prod.id, 'rejected')}>❌ Reject</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* CATEGORIES */}
+      {view === 'categories' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <Button size="sm" onClick={() => startEditCat(null)}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Add Category
+            </Button>
+          </div>
+
+          {editingCat && (
+            <div className="rounded-xl border border-surface-800 bg-surface-900 p-5 mb-5 space-y-3">
+              <h3 className="text-sm font-semibold text-white">{editingCat === 'new' ? 'New Category' : 'Edit Category'}</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <input className={inputCls} placeholder="Name" value={catName} onChange={(e) => setCatName(e.target.value)} />
+                <input className={inputCls} placeholder="slug" value={catSlug} onChange={(e) => setCatSlug(e.target.value)} />
+                <input className={inputCls} placeholder="Icon (emoji)" value={catIcon} onChange={(e) => setCatIcon(e.target.value)} />
+                <input className={inputCls} placeholder="Color (#hex)" value={catColor} onChange={(e) => setCatColor(e.target.value)} />
+              </div>
+              <input className={inputCls} placeholder="Description" value={catDesc} onChange={(e) => setCatDesc(e.target.value)} />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={saveCat}>Save</Button>
+                <Button size="sm" variant="ghost" onClick={() => setEditingCat(null)}>Cancel</Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {categories.map((cat) => (
+              <div key={cat.id} className="rounded-lg border border-surface-800 bg-surface-900/50 px-4 py-3 flex items-center gap-3">
+                <span className="text-lg">{cat.icon || '📁'}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-white">{cat.name}</span>
+                  <span className="text-xs text-surface-500 ml-2">/{cat.slug}</span>
+                  {cat.color && <span className="inline-block w-3 h-3 rounded-full ml-2" style={{ backgroundColor: cat.color }} />}
+                </div>
+                <button onClick={() => startEditCat(cat)} className="text-xs text-surface-400 hover:text-white transition-colors">Edit</button>
+                <button onClick={() => onDeleteCategory(cat.id)} className="text-xs text-red-400 hover:text-red-300 transition-colors">Delete</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* THEMES */}
+      {view === 'themes' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <Button size="sm" onClick={() => startEditTheme(null)}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Add Theme
+            </Button>
+          </div>
+
+          {editingTheme && (
+            <div className="rounded-xl border border-surface-800 bg-surface-900 p-5 mb-5 space-y-3">
+              <h3 className="text-sm font-semibold text-white">{editingTheme === 'new' ? 'New Theme' : 'Edit Theme'}</h3>
+              <input className={inputCls} placeholder="Title" value={thTitle} onChange={(e) => setThTitle(e.target.value)} />
+              <textarea className={inputCls + ' resize-none'} rows={3} placeholder="Description / prompt for writers" value={thDesc} onChange={(e) => setThDesc(e.target.value)} />
+              <div className="grid grid-cols-2 gap-3">
+                <input className={inputCls} placeholder="Genre hint (optional)" value={thGenre} onChange={(e) => setThGenre(e.target.value)} />
+                <input className={inputCls} placeholder="Constraints (optional)" value={thConstraints} onChange={(e) => setThConstraints(e.target.value)} />
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={saveTheme}>Save</Button>
+                <Button size="sm" variant="ghost" onClick={() => setEditingTheme(null)}>Cancel</Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {themes.map((theme) => (
+              <div key={theme.id} className="rounded-lg border border-surface-800 bg-surface-900/50 px-4 py-3 flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-sm font-medium text-white">{theme.title}</span>
+                    {!theme.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-semibold">Inactive</span>}
+                    <span className="text-[10px] text-surface-500">used {theme.used_count}×</span>
+                  </div>
+                  <p className="text-xs text-surface-400 line-clamp-1">{theme.description}</p>
+                </div>
+                <button onClick={() => startEditTheme(theme)} className="text-xs text-surface-400 hover:text-white transition-colors shrink-0">Edit</button>
+                <button onClick={() => onDeleteTheme(theme.id)} className="text-xs text-red-400 hover:text-red-300 transition-colors shrink-0">Delete</button>
+              </div>
+            ))}
+            {themes.length === 0 && <p className="text-center text-surface-400 text-sm py-8">No challenge themes. Add some to enable weekly challenges.</p>}
+          </div>
+        </div>
+      )}
+
+      {/* CHALLENGES */}
+      {view === 'challenges' && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <Button size="sm" onClick={() => setShowNewChallenge(true)}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Custom Challenge
+            </Button>
+          </div>
+
+          {showNewChallenge && (
+            <div className="rounded-xl border border-surface-800 bg-surface-900 p-5 mb-5 space-y-3">
+              <h3 className="text-sm font-semibold text-white">Create Custom Challenge</h3>
+              <input className={inputCls} placeholder="Title" value={chTitle} onChange={(e) => setChTitle(e.target.value)} />
+              <textarea className={inputCls + ' resize-none'} rows={3} placeholder="Description / prompt" value={chDesc} onChange={(e) => setChDesc(e.target.value)} />
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs text-surface-400 block mb-1">Starts At</label><input type="datetime-local" className={inputCls} value={chStart} onChange={(e) => setChStart(e.target.value)} /></div>
+                <div><label className="text-xs text-surface-400 block mb-1">Submissions Close</label><input type="datetime-local" className={inputCls} value={chSubClose} onChange={(e) => setChSubClose(e.target.value)} /></div>
+                <div><label className="text-xs text-surface-400 block mb-1">Voting Closes</label><input type="datetime-local" className={inputCls} value={chVoteClose} onChange={(e) => setChVoteClose(e.target.value)} /></div>
+                <div><label className="text-xs text-surface-400 block mb-1">Reveal At</label><input type="datetime-local" className={inputCls} value={chReveal} onChange={(e) => setChReveal(e.target.value)} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <input className={inputCls} placeholder="Prize title (optional)" value={chPrize} onChange={(e) => setChPrize(e.target.value)} />
+                <input className={inputCls} placeholder="Prize description (optional)" value={chPrizeDesc} onChange={(e) => setChPrizeDesc(e.target.value)} />
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={createChallenge}>Create Challenge</Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowNewChallenge(false)}>Cancel</Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {challenges.map((ch) => {
+              const phase = getChallengePhase(ch);
+              return (
+                <div key={ch.id} className="rounded-lg border border-surface-800 bg-surface-900/50 px-4 py-3 flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-sm font-medium text-white">{ch.title}</span>
+                      <Badge variant={phase === 'completed' ? 'default' : phase === 'submissions' ? 'success' : phase === 'voting' ? 'warning' : 'info'} size="sm">{getPhaseLabel(phase)}</Badge>
+                      <span className="text-[10px] text-surface-500">{ch.challenge_type}</span>
+                    </div>
+                    <p className="text-xs text-surface-400">{ch.submission_count} submissions · {formatDate(ch.starts_at)} → {formatDate(ch.reveal_at)}</p>
+                  </div>
+                  <a href={`/community/challenges/${ch.id}`} target="_blank" className="text-xs text-surface-400 hover:text-white transition-colors shrink-0">View</a>
+                </div>
+              );
+            })}
+            {challenges.length === 0 && <p className="text-center text-surface-400 text-sm py-8">No challenges yet. Weekly challenges auto-create when themes exist.</p>}
+          </div>
         </div>
       )}
     </div>

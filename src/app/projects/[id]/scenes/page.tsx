@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Scene, Location, Character, SceneLocationType, SceneTime } from '@/lib/types';
@@ -30,6 +30,10 @@ function parseSceneHeading(heading: string) {
 
 export default function ScenesPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -70,8 +74,8 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Scene Breakdown</h1>
           <p className="text-sm text-surface-400 mt-1">
@@ -79,12 +83,12 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>
+          {canEdit && <Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add Scene
-          </Button>
+          </Button>}
         </div>
       </div>
 
@@ -96,7 +100,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
 
       {scenes.length === 0 ? (
         <EmptyState title="No scenes yet" description="Break down your script into scenes for production planning"
-          action={<Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>Add Scene</Button>} />
+          action={canEdit ? <Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>Add Scene</Button> : undefined} />
       ) : (
         <div className="space-y-3">
           {scenes.map((scene, i) => (
@@ -138,15 +142,16 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
         locations={locations} characters={characters}
         onSaved={() => { fetchData(); setShowEditor(false); }}
         onDelete={handleDelete}
+        canEdit={canEdit}
       />
     </div>
   );
 }
 
-function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, characters, onSaved, onDelete }: {
+function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, characters, onSaved, onDelete, canEdit }: {
   isOpen: boolean; onClose: () => void; scene: Scene | null; projectId: string; userId: string;
   locations: Location[]; characters: Character[];
-  onSaved: () => void; onDelete: (id: string) => void;
+  onSaved: () => void; onDelete: (id: string) => void; canEdit: boolean;
 }) {
   const [form, setForm] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -311,10 +316,10 @@ function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, cha
       </div>
 
       <div className="flex items-center justify-between pt-6 mt-6 border-t border-surface-800">
-        <div>{scene && <Button variant="danger" size="sm" onClick={() => onDelete(scene.id)}>Delete</Button>}</div>
+        <div>{canEdit && scene && <Button variant="danger" size="sm" onClick={() => onDelete(scene.id)}>Delete</Button>}</div>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={loading}>{scene ? 'Save' : 'Create'}</Button>
+          {canEdit && <Button onClick={handleSave} loading={loading}>{scene ? 'Save' : 'Create'}</Button>}
         </div>
       </div>
     </Modal>

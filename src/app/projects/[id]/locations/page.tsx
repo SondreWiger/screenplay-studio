@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
 import type { Location, SceneLocationType } from '@/lib/types';
 
 export default function LocationsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -45,20 +49,20 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Locations</h1>
           <p className="text-sm text-surface-400 mt-1">
             {locations.filter((l) => l.is_confirmed).length} confirmed / {locations.length} total
           </p>
         </div>
-        <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>
+        {canEdit && <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Add Location
-        </Button>
+        </Button>}
       </div>
 
       <div className="flex gap-2 mb-6">
@@ -74,7 +78,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
 
       {filtered.length === 0 ? (
         <EmptyState title="No locations yet" description="Add locations for your production"
-          action={<Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>Add Location</Button>} />
+          action={canEdit ? <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>Add Location</Button> : undefined} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map((location) => (
@@ -139,14 +143,15 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
         userId={user?.id || ''}
         onSaved={() => { fetchLocations(); setShowEditor(false); }}
         onDelete={handleDelete}
+        canEdit={canEdit}
       />
     </div>
   );
 }
 
-function LocationEditor({ isOpen, onClose, location, projectId, userId, onSaved, onDelete }: {
+function LocationEditor({ isOpen, onClose, location, projectId, userId, onSaved, onDelete, canEdit }: {
   isOpen: boolean; onClose: () => void; location: Location | null; projectId: string;
-  userId: string; onSaved: () => void; onDelete: (id: string) => void;
+  userId: string; onSaved: () => void; onDelete: (id: string) => void; canEdit: boolean;
 }) {
   const [form, setForm] = useState({
     name: '', description: '', address: '', location_type: 'INT' as SceneLocationType,
@@ -272,10 +277,10 @@ function LocationEditor({ isOpen, onClose, location, projectId, userId, onSaved,
       </div>
 
       <div className="flex items-center justify-between pt-6 mt-6 border-t border-surface-800">
-        <div>{location && <Button variant="danger" size="sm" onClick={() => onDelete(location.id)}>Delete</Button>}</div>
+        <div>{canEdit && location && <Button variant="danger" size="sm" onClick={() => onDelete(location.id)}>Delete</Button>}</div>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={loading}>{location ? 'Save' : 'Create'}</Button>
+          {canEdit && <Button onClick={handleSave} loading={loading}>{location ? 'Save' : 'Create'}</Button>}
         </div>
       </div>
     </Modal>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
 import { cn, formatCurrency, formatNumber } from '@/lib/utils';
 import type { BudgetItem, BudgetCategory } from '@/lib/types';
@@ -26,6 +26,10 @@ const CATEGORIES: { value: BudgetCategory; label: string; icon: string }[] = [
 
 export default function BudgetPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<BudgetItem | null>(null);
@@ -80,20 +84,20 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-8 max-w-5xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-5xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Budget Tracker</h1>
           <p className="text-sm text-surface-400 mt-1">{items.length} line items</p>
         </div>
-        <Button onClick={() => { setSelectedItem(null); setShowEditor(true); }}>
+        {canEdit && <Button onClick={() => { setSelectedItem(null); setShowEditor(true); }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Add Item
-        </Button>
+        </Button>}
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 md:mb-8">
         <Card className="p-4">
           <p className="text-xs text-surface-400 mb-1">Income</p>
           <p className="text-xl font-bold text-green-400">{formatCurrency(totalIncome)}</p>
@@ -135,7 +139,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
 
       {items.length === 0 ? (
         <EmptyState title="No budget items" description="Track every dollar of your production"
-          action={<Button onClick={() => { setSelectedItem(null); setShowEditor(true); }}>Add Item</Button>} />
+          action={canEdit ? <Button onClick={() => { setSelectedItem(null); setShowEditor(true); }}>Add Item</Button> : undefined} />
       ) : (
         <div className="space-y-3">
           {grouped.filter((g) => g.items.length > 0).map((group) => (
@@ -198,14 +202,14 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
 
       <BudgetEditor isOpen={showEditor} onClose={() => setShowEditor(false)} item={selectedItem}
         projectId={params.id} userId={user?.id || ''}
-        onSaved={() => { fetchItems(); setShowEditor(false); }} onDelete={handleDelete} />
+        onSaved={() => { fetchItems(); setShowEditor(false); }} onDelete={handleDelete} canEdit={canEdit} />
     </div>
   );
 }
 
-function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDelete }: {
+function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDelete, canEdit }: {
   isOpen: boolean; onClose: () => void; item: BudgetItem | null; projectId: string; userId: string;
-  onSaved: () => void; onDelete: (id: string) => void;
+  onSaved: () => void; onDelete: (id: string) => void; canEdit: boolean;
 }) {
   const [form, setForm] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -281,10 +285,10 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
         </label>
       </div>
       <div className="flex items-center justify-between pt-6 mt-6 border-t border-surface-800">
-        <div>{item && <Button variant="danger" size="sm" onClick={() => onDelete(item.id)}>Delete</Button>}</div>
+        <div>{canEdit && item && <Button variant="danger" size="sm" onClick={() => onDelete(item.id)}>Delete</Button>}</div>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={loading}>{item ? 'Save' : 'Create'}</Button>
+          {canEdit && <Button onClick={handleSave} loading={loading}>{item ? 'Save' : 'Create'}</Button>}
         </div>
       </div>
     </Modal>

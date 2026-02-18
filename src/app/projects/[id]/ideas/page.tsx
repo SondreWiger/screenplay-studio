@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import type { Idea, IdeaStatus, IdeaCategory } from '@/lib/types';
@@ -31,6 +31,10 @@ const PRIORITY_COLORS: Record<number, string> = {
 
 export default function IdeasPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
@@ -76,16 +80,16 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Ideas Board</h1>
           <p className="text-sm text-surface-400 mt-1">{ideas.length} ideas captured</p>
         </div>
-        <Button onClick={() => { setSelectedIdea(null); setShowEditor(true); }}>
+        {canEdit && <Button onClick={() => { setSelectedIdea(null); setShowEditor(true); }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Capture Idea
-        </Button>
+        </Button>}
       </div>
 
       {/* Category filter */}
@@ -103,7 +107,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Kanban board */}
-      <div className="grid grid-cols-5 gap-4 min-h-[60vh]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 min-h-[60vh]">
         {STATUS_COLUMNS.map((col) => {
           const colIdeas = filtered.filter((i) => i.status === col.value);
           return (
@@ -157,14 +161,14 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
 
       <IdeaEditor isOpen={showEditor} onClose={() => setShowEditor(false)} idea={selectedIdea}
         projectId={params.id} userId={user?.id || ''}
-        onSaved={() => { fetchIdeas(); setShowEditor(false); }} onDelete={handleDelete} />
+        onSaved={() => { fetchIdeas(); setShowEditor(false); }} onDelete={handleDelete} canEdit={canEdit} />
     </div>
   );
 }
 
-function IdeaEditor({ isOpen, onClose, idea, projectId, userId, onSaved, onDelete }: {
+function IdeaEditor({ isOpen, onClose, idea, projectId, userId, onSaved, onDelete, canEdit }: {
   isOpen: boolean; onClose: () => void; idea: Idea | null; projectId: string; userId: string;
-  onSaved: () => void; onDelete: (id: string) => void;
+  onSaved: () => void; onDelete: (id: string) => void; canEdit: boolean;
 }) {
   const [form, setForm] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -252,10 +256,10 @@ function IdeaEditor({ isOpen, onClose, idea, projectId, userId, onSaved, onDelet
         </div>
       </div>
       <div className="flex items-center justify-between pt-6 mt-6 border-t border-surface-800">
-        <div>{idea && <Button variant="danger" size="sm" onClick={() => onDelete(idea.id)}>Delete</Button>}</div>
+        <div>{canEdit && idea && <Button variant="danger" size="sm" onClick={() => onDelete(idea.id)}>Delete</Button>}</div>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={loading}>{idea ? 'Save' : 'Capture'}</Button>
+          {canEdit && <Button onClick={handleSave} loading={loading}>{idea ? 'Save' : 'Capture'}</Button>}
         </div>
       </div>
     </Modal>

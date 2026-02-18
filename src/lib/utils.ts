@@ -94,3 +94,53 @@ export function randomColor(): string {
 export const SCREENPLAY_FONT_SIZE = 12;
 export const SCREENPLAY_LINE_HEIGHT = 1.5;
 export const LINES_PER_PAGE = 56;
+
+// Challenge phase computation
+export function getChallengePhase(challenge: {
+  starts_at: string;
+  submissions_close_at: string;
+  voting_close_at: string;
+  reveal_at: string;
+}): 'upcoming' | 'submissions' | 'voting' | 'reveal_pending' | 'completed' {
+  const now = Date.now();
+  if (now < new Date(challenge.starts_at).getTime()) return 'upcoming';
+  if (now < new Date(challenge.submissions_close_at).getTime()) return 'submissions';
+  if (now < new Date(challenge.voting_close_at).getTime()) return 'voting';
+  if (now < new Date(challenge.reveal_at).getTime()) return 'reveal_pending';
+  return 'completed';
+}
+
+export function getPhaseLabel(phase: string): string {
+  const labels: Record<string, string> = {
+    upcoming: 'Starting Soon',
+    submissions: 'Submissions Open',
+    voting: 'Voting Open',
+    reveal_pending: 'Results Pending',
+    completed: 'Completed',
+  };
+  return labels[phase] || phase;
+}
+
+export function getPhaseColor(phase: string): string {
+  const colors: Record<string, string> = {
+    upcoming: 'text-blue-600 bg-blue-50',
+    submissions: 'text-green-600 bg-green-50',
+    voting: 'text-amber-600 bg-amber-50',
+    reveal_pending: 'text-purple-600 bg-purple-50',
+    completed: 'text-stone-600 bg-stone-100',
+  };
+  return colors[phase] || 'text-stone-600 bg-stone-100';
+}
+
+export function timeUntil(date: string | Date): string {
+  const now = new Date();
+  const target = new Date(date);
+  const diff = target.getTime() - now.getTime();
+  if (diff <= 0) return 'now';
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
+}

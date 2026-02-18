@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, memo, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
+import { useProjectStore } from '@/lib/stores';
 import { Button, Badge, Modal, Input, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +22,7 @@ interface CollabCursor {
   name: string;
   colorIdx: number;
 }
-import type { ScriptElement, ScriptElementType, Script } from '@/lib/types';
+import type { ScriptElement, ScriptElementType, Script, ScriptDraft } from '@/lib/types';
 import { ELEMENT_LABELS, REVISION_COLOR_HEX } from '@/lib/types';
 
 // ============================================================
@@ -114,12 +115,58 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [showTitlePage, setShowTitlePage] = useState(false);
   const [showNewScript, setShowNewScript] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showDrafts, setShowDrafts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [darkMode, setDarkMode] = useState(true);
   const [activeElementType, setActiveElementType] = useState<ScriptElementType>('action');
+  const [drafts, setDrafts] = useState<ScriptDraft[]>([]);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [restoringDraft, setRestoringDraft] = useState(false);
+  const [showScriptsSidebar, setShowScriptsSidebar] = useState(false);
+
+  // Role awareness: determine if user can edit
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
 
   useEffect(() => { fetchScripts(params.id); }, [params.id]);
-  useEffect(() => { if (currentScript) fetchElements(currentScript.id); }, [currentScript?.id]);
+  useEffect(() => { if (currentScript) { fetchElements(currentScript.id); loadDrafts(); } }, [currentScript?.id]);
+
+  const loadDrafts = async () => {
+    if (!currentScript) return;
+    const supabase = createClient();
+    const { data } = await supabase.from('script_drafts')
+      .select('*')
+      .eq('script_id', currentScript.id)
+      .order('draft_number', { ascending: false });
+    setDrafts(data || []);
+  };
+
+  const handleSaveDraft = async () => {
+    if (!currentScript) return;
+    setSavingDraft(true);
+    const name = prompt('Draft name (optional):', `Draft ${drafts.length + 1}`);
+    if (name === null) { setSavingDraft(false); return; }
+    const supabase = createClient();
+    await supabase.rpc('save_script_draft', {
+      p_script_id: currentScript.id,
+      p_draft_name: name || `Draft ${drafts.length + 1}`,
+      p_notes: null,
+    });
+    await loadDrafts();
+    setSavingDraft(false);
+  };
+
+  const handleRestoreDraft = async (draftId: string, draftName: string) => {
+    if (!confirm(`Restore "${draftName}"? Current state will be auto-saved first.`)) return;
+    setRestoringDraft(true);
+    const supabase = createClient();
+    await supabase.rpc('restore_script_draft', { p_draft_id: draftId });
+    if (currentScript) fetchElements(currentScript.id);
+    await loadDrafts();
+    setRestoringDraft(false);
+  };
 
   // Character names for autocomplete
   const characterNames = useMemo(() => {
@@ -151,6 +198,23 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const totalPages = Object.values(elementPages).length > 0
     ? Math.max(...Object.values(elementPages)) : 1;
 
+  // Word count
+  const wordCount = useMemo(() => {
+    return elements.reduce((count, el) => {
+      return count + (el.content || '').split(/\s+/).filter(Boolean).length;
+    }, 0);
+  }, [elements]);
+
+  // Last saved timestamp
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  useEffect(() => {
+    if (!saving && lastSaved === null && elements.length > 0) {
+      setLastSaved(new Date());
+    }
+    if (saving) return;
+    // When saving just finished
+    setLastSaved(new Date());
+  }, [saving]);
   const filteredElements = searchQuery
     ? elements.filter((e) => (e.content || '').toLowerCase().includes(searchQuery.toLowerCase()))
     : elements;
@@ -422,8 +486,23 @@ ${pageHTML}
 
   return (
     <div className="flex h-full" onKeyDown={handleEditorKeyDown}>
+      {/* Scripts sidebar toggle on mobile */}
+      <button onClick={() => setShowScriptsSidebar(!showScriptsSidebar)}
+        className="fixed bottom-4 left-4 z-30 md:hidden p-3 bg-brand-600 text-white rounded-full shadow-lg">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" /></svg>
+      </button>
+
       {/* Sidebar */}
-      <div className="w-56 border-r border-surface-800 flex flex-col bg-surface-950">
+      <div className={cn(
+        'w-56 border-r border-surface-800 flex flex-col bg-surface-950',
+        'max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:w-64 max-md:transition-transform max-md:duration-200',
+        showScriptsSidebar ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
+      )}>
+        {/* Mobile close */}
+        <button onClick={() => setShowScriptsSidebar(false)}
+          className="md:hidden absolute top-2 right-2 p-1.5 text-surface-500 hover:text-white z-10">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
         <div className="p-3 border-b border-surface-800">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-surface-500 uppercase tracking-wider">Scripts</span>
@@ -472,9 +551,10 @@ ${pageHTML}
               </div>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2 text-center">
+          <div className="grid grid-cols-3 gap-2 text-center">
             <div><p className="text-lg font-bold text-white">{totalPages}</p><p className="text-[10px] text-surface-500">Pages</p></div>
             <div><p className="text-lg font-bold text-white">{elements.length}</p><p className="text-[10px] text-surface-500">Elements</p></div>
+            <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[10px] text-surface-500">Words</p></div>
           </div>
         </div>
       </div>
@@ -482,22 +562,31 @@ ${pageHTML}
       {/* Editor */}
       <div className="flex-1 flex flex-col">
         {/* Toolbar */}
-        <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-4 py-2 flex items-center gap-2 no-print">
-          <div className="flex items-center gap-1">
-            {ELEMENT_CYCLE.map((type) => (
-              <button key={type} onClick={() => handleToolbarAdd(type)}
-                className={cn('px-2.5 py-1 rounded text-[11px] font-medium transition-colors',
-                  activeElementType === type ? 'bg-brand-600/20 text-brand-400' : 'text-surface-500 hover:text-white hover:bg-white/5'
-                )} title={`Add ${ELEMENT_LABELS[type]}`}>
-                {ELEMENT_LABELS[type]}
-              </button>
-            ))}
-          </div>
+        <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-3 md:px-4 py-2 flex items-center gap-2 no-print overflow-x-auto">
+          {canEdit && (
+            <div className="flex items-center gap-1 shrink-0">
+              {ELEMENT_CYCLE.map((type) => (
+                <button key={type} onClick={() => handleToolbarAdd(type)}
+                  className={cn('px-2 md:px-2.5 py-1 rounded text-[10px] md:text-[11px] font-medium transition-colors whitespace-nowrap',
+                    activeElementType === type ? 'bg-brand-600/20 text-brand-400' : 'text-surface-500 hover:text-white hover:bg-white/5'
+                  )} title={`Add ${ELEMENT_LABELS[type]}`}>
+                  {ELEMENT_LABELS[type]}
+                </button>
+              ))}
+            </div>
+          )}
+          {!canEdit && (
+            <span className="text-[11px] text-surface-500 px-2 py-1 bg-surface-800 rounded font-medium shrink-0">Read Only</span>
+          )}
           <div className="flex-1" />
           <div className="flex items-center gap-1.5">
-            {saving && (
+            {saving ? (
               <span className="flex items-center gap-1.5 text-[11px] text-surface-500">
                 <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />Saving
+              </span>
+            ) : lastSaved && (
+              <span className="flex items-center gap-1.5 text-[11px] text-surface-600">
+                <div className="w-2 h-2 rounded-full bg-green-500" />Saved
               </span>
             )}
             <span className="text-[10px] text-surface-600 px-1">Tab: change type &middot; Enter: new line</span>
@@ -509,6 +598,12 @@ ${pageHTML}
             </button>
             <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Export PDF (Cmd+P)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+            </button>
+            <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10 disabled:opacity-50" title="Save Draft Snapshot">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+            </button>
+            <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')} title="Draft Timeline">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
             <button onClick={() => setDarkMode(!darkMode)}
               className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-white/10' : 'text-surface-500 hover:text-white hover:bg-white/10')}
@@ -535,8 +630,118 @@ ${pageHTML}
           </div>
         )}
 
+        {/* Draft Timeline Panel */}
+        {showDrafts && (
+          <div className="border-b border-surface-800 bg-surface-900/80 px-4 py-3 no-print">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Draft Timeline</h4>
+              <button onClick={() => setShowDrafts(false)} className="p-1 rounded text-surface-500 hover:text-white">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            {drafts.length === 0 ? (
+              <p className="text-xs text-surface-500 py-2">No drafts saved yet. Use the save button to create snapshots.</p>
+            ) : (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {/* Timeline line */}
+                <div className="relative flex items-center gap-0">
+                  {drafts.map((draft, i) => (
+                    <div key={draft.id} className="flex items-center">
+                      {i > 0 && <div className="w-8 h-px bg-surface-700" />}
+                      <button
+                        onClick={() => handleRestoreDraft(draft.id, draft.draft_name || `Draft ${draft.draft_number}`)}
+                        disabled={restoringDraft || draft.is_current}
+                        className={cn(
+                          'relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-left transition-all min-w-[100px]',
+                          draft.is_current
+                            ? 'bg-brand-500/15 border border-brand-500/30'
+                            : 'hover:bg-surface-800 border border-transparent'
+                        )}
+                        title={draft.notes || undefined}
+                      >
+                        <div className={cn(
+                          'w-3 h-3 rounded-full border-2',
+                          draft.is_current ? 'border-brand-500 bg-brand-500' : 'border-surface-600 bg-surface-800'
+                        )} />
+                        <span className={cn('text-[11px] font-medium truncate max-w-[90px]', draft.is_current ? 'text-brand-400' : 'text-surface-300')}>
+                          {draft.draft_name || `Draft ${draft.draft_number}`}
+                        </span>
+                        <span className="text-[9px] text-surface-500">
+                          {new Date(draft.created_at).toLocaleDateString()} {new Date(draft.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {draft.word_count > 0 && (
+                          <span className="text-[9px] text-surface-600">{draft.word_count} words · {draft.page_count}p</span>
+                        )}
+                        {draft.is_current && (
+                          <span className="text-[8px] font-bold text-brand-400 uppercase">Current</span>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Document */}
         <div className="flex-1 overflow-y-auto bg-surface-900/30">
+          {/* Title page (rendered in document) */}
+          {currentScript?.title_page_data && (currentScript.title_page_data.title || currentScript.title_page_data.author) && (
+            <div className={cn('sp-page mx-auto mt-8 mb-0 shadow-2xl rounded-sm cursor-pointer group', darkMode && 'sp-dark')}
+              onClick={() => setShowTitlePage(true)}
+              title="Click to edit title page"
+            >
+              <div className="flex flex-col justify-center items-center min-h-[600px] relative">
+                <div className="text-center" style={{ marginTop: '-80px' }}>
+                  {currentScript.title_page_data.title && (
+                    <div className={cn('text-2xl font-bold uppercase tracking-wide mb-2', darkMode ? 'text-white' : 'text-black')}>
+                      {currentScript.title_page_data.title}
+                    </div>
+                  )}
+                  {currentScript.title_page_data.credit && (
+                    <div className={cn('text-sm mt-6 mb-2', darkMode ? 'text-surface-300' : 'text-gray-600')}>
+                      {currentScript.title_page_data.credit}
+                    </div>
+                  )}
+                  {currentScript.title_page_data.author && (
+                    <div className={cn('text-sm', darkMode ? 'text-surface-300' : 'text-gray-600')}>
+                      {currentScript.title_page_data.author}
+                    </div>
+                  )}
+                  {currentScript.title_page_data.source && (
+                    <div className={cn('text-xs mt-4', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                      {currentScript.title_page_data.source}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute bottom-12 left-12 text-left">
+                  {currentScript.title_page_data.draft_date && (
+                    <div className={cn('text-xs', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                      {currentScript.title_page_data.draft_date}
+                    </div>
+                  )}
+                  {currentScript.title_page_data.contact && (
+                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                      {currentScript.title_page_data.contact}
+                    </div>
+                  )}
+                  {currentScript.title_page_data.copyright && (
+                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                      {currentScript.title_page_data.copyright}
+                    </div>
+                  )}
+                </div>
+                {/* Edit hint */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className={cn('text-[10px] px-2 py-1 rounded', darkMode ? 'bg-surface-700 text-surface-400' : 'bg-gray-100 text-gray-500')}>
+                    Click to edit
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className={cn('sp-page mx-auto my-8 shadow-2xl rounded-sm', darkMode && 'sp-dark')}>
             {elements.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32 text-center">
@@ -563,10 +768,11 @@ ${pageHTML}
                   onFocused={(type) => setActiveElementType(type)}
                   collaborators={collabMap[element.id] || []}
                   projectId={params.id}
+                  canEdit={canEdit}
                 />
               ))
             )}
-            {elements.length > 0 && (
+            {elements.length > 0 && canEdit && (
               <div className="py-12 text-center">
                 <button onClick={() => {
                   const lastType = elements[elements.length - 1]?.element_type || 'action';
@@ -608,6 +814,7 @@ interface LineEditorProps {
   onFocused: (type: ScriptElementType) => void;
   collaborators: CollabCursor[];
   projectId: string;
+  canEdit: boolean;
 }
 
 const LineEditor = memo(function LineEditor({
@@ -620,6 +827,7 @@ const LineEditor = memo(function LineEditor({
   onFocused,
   collaborators,
   projectId,
+  canEdit,
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector
   const element = useScriptStore((s) => s.elements.find((e) => e.id === elementId));
@@ -735,6 +943,9 @@ const LineEditor = memo(function LineEditor({
 
   // --- Keyboard handler (all store access via getState) ---
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Viewers cannot edit
+    if (!canEdit) return;
+
     // Character autocomplete navigation
     if (suggestions.length > 0) {
       if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedSuggestion((p) => Math.min(p + 1, suggestions.length - 1)); return; }
@@ -961,7 +1172,7 @@ const LineEditor = memo(function LineEditor({
         <div
           ref={divRef}
           id={`el-${elementId}`}
-          contentEditable
+          contentEditable={canEdit}
           suppressContentEditableWarning
           className={cn('sp-element', getElementClass(element.element_type))}
           onInput={handleInput}
@@ -994,7 +1205,8 @@ const LineEditor = memo(function LineEditor({
     && prev.pageNumber === next.pageNumber
     && prev.characterNames === next.characterNames
     && prev.collaborators === next.collaborators
-    && prev.projectId === next.projectId;
+    && prev.projectId === next.projectId
+    && prev.canEdit === next.canEdit;
   // Note: element content changes are handled by the Zustand selector
   // inside the component, not through props. onFocused is intentionally
   // excluded — it's a stable parent callback.

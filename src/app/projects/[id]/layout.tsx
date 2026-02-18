@@ -8,8 +8,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore, usePresenceStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
 import { Avatar, Badge, LoadingPage } from '@/components/ui';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { useNotifications } from '@/hooks/useNotifications';
 import { cn, getInitials } from '@/lib/utils';
-import type { Project, ProjectMember, Profile } from '@/lib/types';
+import type { Project, ProjectMember, Profile, UserRole } from '@/lib/types';
 
 const PAGE_LABELS: Record<string, string> = {
   overview: 'Overview', script: 'Script Editor', characters: 'Characters',
@@ -33,6 +35,13 @@ export default function ProjectLayout({
   const { updatePresence } = useRealtime(params.id);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showMoreTools, setShowMoreTools] = useState(false);
+
+  useNotifications(user?.id);
+
+  // Close mobile menu on navigation
+  useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -77,19 +86,43 @@ export default function ProjectLayout({
   if (authLoading || (!user && loading)) return <LoadingPage />;
   if (!currentProject) return null;
 
+  // Current user's role in this project
+  const currentUserRole: UserRole | undefined =
+    members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject.created_by === user?.id ? 'owner' : undefined);
+  const isViewer = currentUserRole === 'viewer';
+
+  const showProduction = user?.show_production_tools !== false;
+  const showCollab = user?.show_collaboration !== false;
+
   const navItems = [
-    { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview' },
-    { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script' },
-    { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters' },
-    { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations' },
-    { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes' },
-    { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots' },
-    { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule' },
-    { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas' },
-    { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget' },
-    { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team' },
-    { label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings' },
+    { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
+    { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+    { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters', always: true },
+    { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', always: false, production: true },
+    { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', always: false, production: true },
+    { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', always: false, production: true },
+    { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', always: false, production: true },
+    { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
+    { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', always: false, production: true },
+    { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', always: false, collab: true },
+    // Viewers can't access settings
+    ...(!isViewer ? [{ label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings', always: true }] : []),
   ];
+
+  const visibleItems = navItems.filter((item) => {
+    if (item.always) return true;
+    if (item.production && showProduction) return true;
+    if (item.collab && showCollab) return true;
+    return false;
+  });
+
+  const hiddenItems = navItems.filter((item) => {
+    if (item.always) return false;
+    if (item.production && !showProduction) return true;
+    if (item.collab && !showCollab) return true;
+    return false;
+  });
 
   const icons: Record<string, React.ReactNode> = {
     overview: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
@@ -105,100 +138,168 @@ export default function ProjectLayout({
     settings: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
   };
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-surface-950">
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'flex flex-col border-r border-surface-800 bg-surface-950 transition-all duration-300',
-          sidebarCollapsed ? 'w-16' : 'w-64'
-        )}
-      >
-        {/* Project Header */}
-        <div className="border-b border-surface-800 p-4">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="shrink-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">
-                {currentProject.title[0]}
-              </div>
-            </Link>
-            {!sidebarCollapsed && (
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold text-white truncate">{currentProject.title}</h2>
+  // Active page label for mobile header
+  const currentPage = pathname.split('/').pop() || 'overview';
+  const pageLabel = PAGE_LABELS[currentPage] || currentProject.title;
+
+  // Sidebar content — shared between desktop and mobile
+  const sidebarContent = (mobile?: boolean) => (
+    <>
+      {/* Project Header */}
+      <div className="border-b border-surface-800 p-4">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="shrink-0" onClick={() => setMobileMenuOpen(false)}>
+            <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">
+              {currentProject.title[0]}
+            </div>
+          </Link>
+          {(mobile || !sidebarCollapsed) && (
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold text-white truncate">{currentProject.title}</h2>
+              <div className="flex items-center gap-2">
                 <p className="text-[11px] text-surface-500 capitalize">{currentProject.status.replace('_', ' ')}</p>
+                {isViewer && <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400 font-medium">View Only</span>}
               </div>
-            )}
+            </div>
+          )}
+          {mobile && (
+            <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-surface-500 hover:text-white">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
+        {visibleItems.map((item) => {
+          const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className={cn(
+                'sidebar-link',
+                isActive && 'active',
+                !mobile && sidebarCollapsed && 'justify-center px-2'
+              )}
+              title={!mobile && sidebarCollapsed ? item.label : undefined}
+            >
+              {icons[item.icon]}
+              {(mobile || !sidebarCollapsed) && <span>{item.label}</span>}
+            </Link>
+          );
+        })}
+
+        {/* More Tools (hidden items) */}
+        {hiddenItems.length > 0 && (mobile || !sidebarCollapsed) && (
+          <>
+            <button
+              onClick={() => setShowMoreTools(!showMoreTools)}
+              className="sidebar-link w-full text-surface-500 hover:text-surface-300 mt-2"
+            >
+              <svg className={cn('w-4 h-4 transition-transform', showMoreTools && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-[11px]">More Tools</span>
+            </button>
+            {showMoreTools && hiddenItems.map((item) => {
+              const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn('sidebar-link opacity-60 hover:opacity-100', isActive && 'active')}
+                  title={item.label}
+                >
+                  {icons[item.icon]}
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </>
+        )}
+      </nav>
+
+      {/* Online Users */}
+      {(mobile || !sidebarCollapsed) && onlineUsers.length > 0 && (
+        <div className="border-t border-surface-800 p-4">
+          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-wider mb-3">Online Now</p>
+          <div className="space-y-2">
+            {onlineUsers.slice(0, 5).map((presence: any) => {
+              const pl = PAGE_LABELS[presence.current_page] || presence.current_page;
+              return (
+                <div key={presence.user_id} className="flex items-center gap-2">
+                  <Avatar src={presence.avatar_url} name={presence.full_name || presence.email} size="sm" online />
+                  <div className="min-w-0">
+                    <p className="text-xs text-surface-300 truncate">{presence.full_name || presence.email || 'User'}</p>
+                    <p className="text-[10px] text-green-400">{pl}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
+      )}
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'sidebar-link',
-                  isActive && 'active',
-                  sidebarCollapsed && 'justify-center px-2'
-                )}
-                title={sidebarCollapsed ? item.label : undefined}
-              >
-                {icons[item.icon]}
-                {!sidebarCollapsed && <span>{item.label}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Online Users */}
-        {!sidebarCollapsed && onlineUsers.length > 0 && (
-          <div className="border-t border-surface-800 p-4">
-            <p className="text-[11px] font-medium text-surface-500 uppercase tracking-wider mb-3">Online Now</p>
-            <div className="space-y-2">
-              {onlineUsers.slice(0, 5).map((presence: any) => {
-                const pageLabel = PAGE_LABELS[presence.current_page] || presence.current_page;
-                return (
-                  <div key={presence.user_id} className="flex items-center gap-2">
-                    <Avatar
-                      src={presence.avatar_url}
-                      name={presence.full_name || presence.email}
-                      size="sm"
-                      online
-                    />
-                    <div className="min-w-0">
-                      <p className="text-xs text-surface-300 truncate">{presence.full_name || presence.email || 'User'}</p>
-                      <p className="text-[10px] text-green-400">{pageLabel}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Collapse Toggle */}
-        <div className="border-t border-surface-800 p-2">
+      {/* Collapse Toggle (desktop only) */}
+      {!mobile && (
+        <div className="border-t border-surface-800 p-2 flex items-center justify-between">
+          {!sidebarCollapsed && <NotificationBell />}
           <button
             onClick={() => setSidebarCollapsed((v) => !v)}
-            className="w-full flex items-center justify-center p-2 rounded-lg text-surface-500 hover:text-white hover:bg-white/5 transition-colors"
+            className={cn("flex items-center justify-center p-2 rounded-lg text-surface-500 hover:text-white hover:bg-white/5 transition-colors", sidebarCollapsed && "w-full")}
           >
-            <svg
-              className={cn('w-4 h-4 transition-transform', sidebarCollapsed && 'rotate-180')}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className={cn('w-4 h-4 transition-transform', sidebarCollapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
             </svg>
           </button>
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-surface-950">
+      {/* Mobile header bar */}
+      <div className="fixed top-0 left-0 right-0 z-40 md:hidden bg-surface-950 border-b border-surface-800">
+        <div className="flex items-center justify-between px-3 py-2">
+          <button onClick={() => setMobileMenuOpen(true)} className="p-2 text-surface-400 hover:text-white">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 bg-gradient-to-br from-brand-500 to-orange-500 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+              {currentProject.title[0]}
+            </div>
+            <span className="text-sm font-medium text-white truncate">{pageLabel}</span>
+            {isViewer && <span className="text-[8px] px-1 py-0.5 rounded bg-surface-800 text-surface-400 font-medium shrink-0">View Only</span>}
+          </div>
+          <NotificationBell />
+        </div>
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {mobileMenuOpen && (
+        <>
+          <div className="fixed inset-0 bg-black/60 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+          <aside className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col bg-surface-950 border-r border-surface-800 md:hidden animate-slide-right">
+            {sidebarContent(true)}
+          </aside>
+        </>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className={cn(
+        'hidden md:flex flex-col border-r border-surface-800 bg-surface-950 transition-all duration-300',
+        sidebarCollapsed ? 'w-16' : 'w-64'
+      )}>
+        {sidebarContent(false)}
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
         {children}
       </main>
     </div>

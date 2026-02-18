@@ -208,6 +208,9 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <Link href="/" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
               Home
             </Link>
+            <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+              Community
+            </Link>
             {user ? (
               <>
                 <button onClick={handleSignOut} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">

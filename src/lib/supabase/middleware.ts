@@ -29,8 +29,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes
-  const protectedPaths = ['/dashboard', '/projects', '/admin'];
+  // ── Security headers ──────────────────────────────────────
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff');
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY');
+  supabaseResponse.headers.set('X-XSS-Protection', '1; mode=block');
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  supabaseResponse.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+  // ── Protected routes ──────────────────────────────────────
+  const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding'];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -42,7 +49,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Admin route — only allow the designated admin user
+  // ── Admin route — only allow the designated admin user ────
   const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
   if (request.nextUrl.pathname.startsWith('/admin') && user?.id !== ADMIN_UID) {
     const url = request.nextUrl.clone();
@@ -50,7 +57,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged in users away from auth pages
+  // ── Redirect logged-in users away from auth pages ─────────
   const authPaths = ['/auth/login', '/auth/register'];
   const isAuthPage = authPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
@@ -58,10 +65,11 @@ export async function updateSession(request: NextRequest) {
 
   if (isAuthPage && user) {
     const url = request.nextUrl.clone();
-    // Respect the redirect query param (e.g. coming from blog sign-in)
     const redirectTo = request.nextUrl.searchParams.get('redirect');
-    url.pathname = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dashboard';
-    url.search = ''; // Clear query params
+    // Only allow relative redirects — prevent open redirect attacks
+    const safeRedirect = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
+    url.pathname = safeRedirect;
+    url.search = '';
     return NextResponse.redirect(url);
   }
 

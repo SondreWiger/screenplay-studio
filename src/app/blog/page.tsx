@@ -75,6 +75,9 @@ export default function BlogPage() {
             <span className="text-sm font-semibold text-stone-900 border-b-2 border-brand-500 pb-0.5">
               Blog
             </span>
+            <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+              Community
+            </Link>
             {user ? (
               <>
                 <Link href="/dashboard" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Shot, Scene, ShotType, ShotMovement } from '@/lib/types';
@@ -32,6 +32,10 @@ const MOVEMENTS: { value: ShotMovement; label: string }[] = [
 
 export default function ShotsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
+  const { members, currentProject } = useProjectStore();
+  const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
+    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
+  const canEdit = currentUserRole !== 'viewer';
   const [shots, setShots] = useState<Shot[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,18 +93,18 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Shot List</h1>
           <p className="text-sm text-surface-400 mt-1">{completed}/{shots.length} shots completed</p>
         </div>
-        <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>
+        {canEdit && <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Add Shot
-        </Button>
+        </Button>}
       </div>
 
       {shots.length > 0 && <Progress value={completed} max={Math.max(shots.length, 1)} label="Completion" color="#3b82f6" className="mb-6" />}
@@ -123,7 +127,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
 
       {filtered.length === 0 ? (
         <EmptyState title="No shots yet" description="Build your shot list for production"
-          action={<Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>Add Shot</Button>} />
+          action={canEdit ? <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>Add Shot</Button> : undefined} />
       ) : (
         <div className="space-y-2">
           {filtered.map((shot) => {
@@ -185,14 +189,14 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
 
       <ShotEditor isOpen={showEditor} onClose={() => setShowEditor(false)} shot={selectedShot}
         projectId={params.id} userId={user?.id || ''} scenes={scenes}
-        onSaved={() => { fetchData(); setShowEditor(false); }} onDelete={handleDelete} />
+        onSaved={() => { fetchData(); setShowEditor(false); }} onDelete={handleDelete} canEdit={canEdit} />
     </div>
   );
 }
 
-function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved, onDelete }: {
+function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved, onDelete, canEdit }: {
   isOpen: boolean; onClose: () => void; shot: Shot | null; projectId: string; userId: string;
-  scenes: Scene[]; onSaved: () => void; onDelete: (id: string) => void;
+  scenes: Scene[]; onSaved: () => void; onDelete: (id: string) => void; canEdit: boolean;
 }) {
   const [form, setForm] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -275,10 +279,10 @@ function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved,
         {form.vfx_required && <Textarea label="VFX Notes" value={form.vfx_notes || ''} onChange={(e) => setForm({ ...form, vfx_notes: e.target.value })} rows={2} />}
       </div>
       <div className="flex items-center justify-between pt-6 mt-6 border-t border-surface-800">
-        <div>{shot && <Button variant="danger" size="sm" onClick={() => onDelete(shot.id)}>Delete</Button>}</div>
+        <div>{canEdit && shot && <Button variant="danger" size="sm" onClick={() => onDelete(shot.id)}>Delete</Button>}</div>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} loading={loading}>{shot ? 'Save' : 'Create'}</Button>
+          {canEdit && <Button onClick={handleSave} loading={loading}>{shot ? 'Save' : 'Create'}</Button>}
         </div>
       </div>
     </Modal>
