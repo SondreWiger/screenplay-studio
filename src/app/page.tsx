@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SiteVersion } from '@/components/SiteVersion';
 
 export default function LandingPage() {
   return (
@@ -251,7 +252,10 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-surface-800 py-8 px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <p className="text-sm text-surface-500">Screenplay Studio</p>
-          <p className="text-sm text-surface-600">Professional film production suite</p>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-surface-600">Professional film production suite</p>
+            <SiteVersion />
+          </div>
         </div>
       </footer>
     </div>

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { BlogPost, BlogComment, Profile } from '@/lib/types';
 import { formatDate, timeAgo } from '@/lib/utils';
+import { SiteVersion } from '@/components/SiteVersion';
 
 // ============================================================
 // Individual blog post page — clean reading experience
@@ -457,6 +458,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="hover:text-stone-900 transition-colors">
               Support ❤️
             </a>
+            <SiteVersion light />
           </div>
         </div>
       </footer>

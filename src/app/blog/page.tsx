@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { BlogPost } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
+import { SiteVersion } from '@/components/SiteVersion';
 
 // ============================================================
 // Blog index — distinct, magazine-style design
@@ -330,6 +331,7 @@ export default function BlogPage() {
             <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="hover:text-stone-900 transition-colors">
               Support ❤️
             </a>
+            <SiteVersion light />
           </div>
         </div>
       </footer>

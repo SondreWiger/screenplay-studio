@@ -59,6 +59,7 @@ export default function AdminPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [editingPost, setEditingPost] = useState<BlogPost | null | 'new'>(null);
   const [blogComments, setBlogComments] = useState<any[]>([]);
+  const [siteVersion, setSiteVersion] = useState<string>('');
 
   useEffect(() => {
     if (authLoading) return;
@@ -70,7 +71,28 @@ export default function AdminPage() {
     loadUsers();
     loadProjects();
     loadBlogPosts();
+    loadSiteVersion();
   }, [user, authLoading]);
+
+  const loadSiteVersion = async () => {
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.from('site_settings').select('value').eq('key', 'site_version').single();
+      if (data) setSiteVersion(data.value);
+    } catch (err) {
+      console.error('Error loading site version:', err);
+    }
+  };
+
+  const handleUpdateVersion = async (newVersion: string) => {
+    try {
+      const supabase = createClient();
+      await supabase.from('site_settings').upsert({ key: 'site_version', value: newVersion, updated_at: new Date().toISOString() });
+      setSiteVersion(newVersion);
+    } catch (err) {
+      console.error('Error updating version:', err);
+    }
+  };
 
   const loadStats = async () => {
     try {
@@ -348,6 +370,8 @@ export default function AdminPage() {
               onSoftReboot={handleSoftReboot}
               onClearPresence={handleClearAllPresence}
               onRefreshStats={() => { setLoading(true); loadStats(); loadUsers(); loadProjects(); }}
+              siteVersion={siteVersion}
+              onUpdateVersion={handleUpdateVersion}
             />
           )}
           {activeTab === 'blog' && (
@@ -697,16 +721,59 @@ function ProjectsTab({ projects, search, onSearchChange }: {
 // System Tab
 // ============================================================
 
-function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats }: {
+function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats, siteVersion, onUpdateVersion }: {
   rebootStatus: string | null;
   onSoftReboot: () => void;
   onClearPresence: () => void;
   onRefreshStats: () => void;
+  siteVersion: string;
+  onUpdateVersion: (v: string) => void;
 }) {
+  const [editingVersion, setEditingVersion] = useState(false);
+  const [versionDraft, setVersionDraft] = useState(siteVersion);
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-1">System Management</h1>
       <p className="text-sm text-surface-400 mb-8">Maintenance tools for the platform</p>
+
+      {/* Version control */}
+      <div className="mb-6 rounded-xl border border-surface-800 bg-surface-900/50 p-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-brand-500/20 flex items-center justify-center">
+            <svg className="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white">Site Version</h3>
+            <p className="text-xs text-surface-500">Displayed in all footers across the site</p>
+          </div>
+        </div>
+        {editingVersion ? (
+          <div className="flex items-center gap-2">
+            <input
+              value={versionDraft}
+              onChange={(e) => setVersionDraft(e.target.value)}
+              className="w-32 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              placeholder="e.g. 1.2.0"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { onUpdateVersion(versionDraft); setEditingVersion(false); }
+                if (e.key === 'Escape') { setVersionDraft(siteVersion); setEditingVersion(false); }
+              }}
+            />
+            <Button variant="ghost" size="sm" onClick={() => { onUpdateVersion(versionDraft); setEditingVersion(false); }}>Save</Button>
+            <Button variant="ghost" size="sm" onClick={() => { setVersionDraft(siteVersion); setEditingVersion(false); }}>Cancel</Button>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setVersionDraft(siteVersion); setEditingVersion(true); }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 transition-colors group"
+          >
+            <span className="text-sm font-mono text-brand-400">v{siteVersion || '—'}</span>
+            <svg className="w-3.5 h-3.5 text-surface-500 group-hover:text-surface-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+          </button>
+        )}
+      </div>
 
       {rebootStatus && (
         <div className="mb-6 rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-sm text-amber-400 flex items-center gap-2">
@@ -806,6 +873,10 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
             <div className="flex justify-between">
               <span className="text-surface-500">Admin UUID</span>
               <span className="text-white font-mono text-[10px]">{ADMIN_UID.slice(0, 12)}...</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-surface-500">Version</span>
+              <span className="text-white font-mono">v{siteVersion || '—'}</span>
             </div>
           </div>
         </div>
