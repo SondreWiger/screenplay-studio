@@ -5,7 +5,25 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Avatar, Badge } from '@/components/ui';
 import { formatTime } from '@/lib/utils';
-import type { CommunityPost, Profile } from '@/lib/types';
+import type { Profile } from '@/lib/types';
+
+// Lightweight post shape used by the trailer demo (we only need a few fields)
+type TrailerPost = {
+  id: string;
+  slug?: string | null;
+  title: string;
+  description?: string | null;
+  cover_image_url?: string | null;
+  created_at: string;
+  author?: Profile | null;
+};
+
+type TrailerAuthor = {
+  id: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  username?: string | null;
+};
 
 const VERBS = ['Write', 'Collaborate', 'Plan', 'Shoot', 'Edit', 'Ship'];
 const STAGE_DURATION = 3800; // ms per stage
@@ -14,8 +32,8 @@ export default function TrailerPage() {
   const [playing, setPlaying] = useState(true);
   const [stage, setStage] = useState(0);
   const [verbIndex, setVerbIndex] = useState(0);
-  const [posts, setPosts] = useState<CommunityPost[]>([]);
-  const [authors, setAuthors] = useState<Profile[]>([]);
+  const [posts, setPosts] = useState<TrailerPost[]>([]);
+  const [authors, setAuthors] = useState<TrailerAuthor[]>([]);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -28,7 +46,22 @@ export default function TrailerPage() {
       .eq('status', 'published')
       .order('created_at', { ascending: false })
       .limit(6)
-      .then((r) => { if (r.data) setPosts(r.data); });
+      .then((r) => {
+        if (r.data) {
+          // supabase returns joined rows where `author` can be an array (due to the join),
+          // normalize to a single `Profile | null` and only keep the small shape we need.
+          const normalized = r.data.map((row: any) => ({
+            id: row.id,
+            slug: row.slug,
+            title: row.title,
+            description: row.description,
+            cover_image_url: row.cover_image_url,
+            created_at: row.created_at,
+            author: Array.isArray(row.author) ? row.author[0] ?? null : row.author ?? null,
+          }));
+          setPosts(normalized);
+        }
+      });
 
     // Fetch a few public profiles (recent)
     supabase
@@ -36,7 +69,17 @@ export default function TrailerPage() {
       .select('id,full_name,avatar_url,username')
       .order('created_at', { ascending: false })
       .limit(8)
-      .then((r) => { if (r.data) setAuthors(r.data); });
+      .then((r) => {
+        if (r.data) {
+          const normalized = r.data.map((row: any) => ({
+            id: row.id,
+            full_name: row.full_name ?? null,
+            avatar_url: row.avatar_url ?? null,
+            username: row.username ?? null,
+          }));
+          setAuthors(normalized);
+        }
+      });
   }, []);
 
   // autoplay stage loop
@@ -131,7 +174,7 @@ export default function TrailerPage() {
 
             <div className="mt-4 flex items-center gap-3 text-sm">
               <Badge variant="default">Realtime</Badge>
-              <Badge variant="secondary">Collaboration</Badge>
+              <Badge variant="info">Collaboration</Badge>
               <Badge variant="default">Revision tracking</Badge>
             </div>
           </div>
