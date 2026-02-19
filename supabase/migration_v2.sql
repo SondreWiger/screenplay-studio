@@ -1573,3 +1573,407 @@ CREATE POLICY "Users manage own push subscriptions"
 -- ============================================================
 
 ALTER TABLE scenes ADD COLUMN IF NOT EXISTS script_element_id UUID REFERENCES script_elements(id) ON DELETE SET NULL;
+
+-- ============================================================
+-- 36. CHARACTER RELATIONSHIP MIND MAP
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS mindmap_nodes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  character_id UUID REFERENCES characters(id) ON DELETE SET NULL,
+  label TEXT NOT NULL,
+  node_type TEXT NOT NULL DEFAULT 'character', -- character, group, note
+  x DOUBLE PRECISION NOT NULL DEFAULT 0,
+  y DOUBLE PRECISION NOT NULL DEFAULT 0,
+  width DOUBLE PRECISION NOT NULL DEFAULT 120,
+  height DOUBLE PRECISION NOT NULL DEFAULT 60,
+  color TEXT NOT NULL DEFAULT '#dd574e',
+  shape TEXT NOT NULL DEFAULT 'rounded', -- rounded, circle, diamond, rectangle
+  font_size INTEGER NOT NULL DEFAULT 14,
+  image_url TEXT,
+  notes TEXT,
+  group_id UUID REFERENCES mindmap_nodes(id) ON DELETE SET NULL,
+  is_locked BOOLEAN DEFAULT false,
+  z_index INTEGER DEFAULT 0,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS mindmap_edges (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  source_node_id UUID NOT NULL REFERENCES mindmap_nodes(id) ON DELETE CASCADE,
+  target_node_id UUID NOT NULL REFERENCES mindmap_nodes(id) ON DELETE CASCADE,
+  label TEXT,
+  color TEXT NOT NULL DEFAULT '#888888',
+  line_style TEXT NOT NULL DEFAULT 'solid', -- solid, dashed, dotted
+  thickness INTEGER NOT NULL DEFAULT 2,
+  arrow_type TEXT NOT NULL DEFAULT 'none', -- none, forward, backward, both
+  animated BOOLEAN DEFAULT false,
+  notes TEXT,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE mindmap_nodes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mindmap_edges ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Members can view mindmap nodes" ON mindmap_nodes
+  FOR SELECT USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid()
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+CREATE POLICY "Members can manage mindmap nodes" ON mindmap_nodes
+  FOR ALL USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid() AND role IN ('owner', 'admin', 'editor')
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+CREATE POLICY "Members can view mindmap edges" ON mindmap_edges
+  FOR SELECT USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid()
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+CREATE POLICY "Members can manage mindmap edges" ON mindmap_edges
+  FOR ALL USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid() AND role IN ('owner', 'admin', 'editor')
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+-- ============================================================
+-- 37. DIRECT MESSAGES & GROUP DMS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS conversations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  conversation_type TEXT NOT NULL DEFAULT 'direct', -- direct, group
+  name TEXT, -- null for direct, set for group
+  avatar_url TEXT,
+  created_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  last_message_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS conversation_members (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'member', -- admin, member
+  last_read_at TIMESTAMPTZ DEFAULT NOW(),
+  is_muted BOOLEAN DEFAULT false,
+  joined_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(conversation_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS direct_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  message_type TEXT NOT NULL DEFAULT 'text', -- text, image, file, system
+  file_url TEXT,
+  file_name TEXT,
+  reply_to_id UUID REFERENCES direct_messages(id) ON DELETE SET NULL,
+  is_edited BOOLEAN DEFAULT false,
+  is_deleted BOOLEAN DEFAULT false,
+  edited_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE conversation_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE direct_messages ENABLE ROW LEVEL SECURITY;
+
+-- SECURITY DEFINER helper: returns conversation IDs for the current user.
+-- This breaks the infinite recursion that occurs when conversation_members
+-- policies reference conversation_members in subqueries.
+CREATE OR REPLACE FUNCTION get_my_conversation_ids()
+RETURNS SETOF UUID
+LANGUAGE sql SECURITY DEFINER STABLE AS $$
+  SELECT conversation_id FROM conversation_members WHERE user_id = auth.uid();
+$$;
+
+-- Drop old self-referencing policies (idempotent)
+DROP POLICY IF EXISTS "Members can view their conversations" ON conversations;
+DROP POLICY IF EXISTS "Users can create conversations" ON conversations;
+DROP POLICY IF EXISTS "Admins can update conversations" ON conversations;
+DROP POLICY IF EXISTS "Members can view conversation members" ON conversation_members;
+DROP POLICY IF EXISTS "Users can manage conversation members" ON conversation_members;
+DROP POLICY IF EXISTS "Members can view messages" ON direct_messages;
+DROP POLICY IF EXISTS "Members can send messages" ON direct_messages;
+DROP POLICY IF EXISTS "Senders can edit own messages" ON direct_messages;
+
+-- Conversations policies (use helper function)
+CREATE POLICY "Members can view their conversations" ON conversations
+  FOR SELECT USING (
+    id IN (SELECT get_my_conversation_ids())
+    OR created_by = auth.uid()
+  );
+
+CREATE POLICY "Users can create conversations" ON conversations
+  FOR INSERT WITH CHECK (created_by = auth.uid());
+
+CREATE POLICY "Admins can update conversations" ON conversations
+  FOR UPDATE USING (
+    id IN (SELECT get_my_conversation_ids())
+    OR created_by = auth.uid()
+  );
+
+-- Conversation members policies (use helper function — no self-reference)
+CREATE POLICY "Members can view conversation members" ON conversation_members
+  FOR SELECT USING (conversation_id IN (SELECT get_my_conversation_ids()));
+
+CREATE POLICY "Members can insert conversation members" ON conversation_members
+  FOR INSERT WITH CHECK (
+    conversation_id IN (
+      SELECT get_my_conversation_ids()
+    ) OR user_id = auth.uid()
+    OR conversation_id IN (SELECT id FROM conversations WHERE created_by = auth.uid())
+  );
+
+CREATE POLICY "Members can update own membership" ON conversation_members
+  FOR UPDATE USING (user_id = auth.uid());
+
+CREATE POLICY "Admins can delete conversation members" ON conversation_members
+  FOR DELETE USING (
+    conversation_id IN (
+      SELECT cm.conversation_id FROM conversation_members cm
+      WHERE cm.user_id = auth.uid() AND cm.role = 'admin'
+    ) OR user_id = auth.uid()
+  );
+
+-- Direct messages policies (use helper function)
+CREATE POLICY "Members can view messages" ON direct_messages
+  FOR SELECT USING (conversation_id IN (SELECT get_my_conversation_ids()));
+
+CREATE POLICY "Members can send messages" ON direct_messages
+  FOR INSERT WITH CHECK (
+    sender_id = auth.uid() AND
+    conversation_id IN (SELECT get_my_conversation_ids())
+  );
+
+CREATE POLICY "Senders can edit own messages" ON direct_messages
+  FOR UPDATE USING (sender_id = auth.uid());
+
+-- Grant access
+GRANT ALL ON conversations TO authenticated, anon, service_role;
+GRANT ALL ON conversation_members TO authenticated, anon, service_role;
+GRANT ALL ON direct_messages TO authenticated, anon, service_role;
+
+-- Realtime for DMs
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE direct_messages; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE INDEX IF NOT EXISTS idx_dm_conversation ON direct_messages(conversation_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_conv_members ON conversation_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_conv_last_msg ON conversations(last_message_at DESC);
+
+-- ============================================================
+-- 38. MOOD BOARD
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS mood_board_items (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  item_type TEXT NOT NULL DEFAULT 'image', -- image, text, color, link, note
+  title TEXT,
+  content TEXT,
+  image_url TEXT,
+  link_url TEXT,
+  color TEXT,
+  x DOUBLE PRECISION NOT NULL DEFAULT 0,
+  y DOUBLE PRECISION NOT NULL DEFAULT 0,
+  width DOUBLE PRECISION NOT NULL DEFAULT 200,
+  height DOUBLE PRECISION NOT NULL DEFAULT 200,
+  rotation DOUBLE PRECISION DEFAULT 0,
+  z_index INTEGER DEFAULT 0,
+  opacity DOUBLE PRECISION DEFAULT 1,
+  tags TEXT[] DEFAULT '{}',
+  board_section TEXT DEFAULT 'general', -- general, characters, locations, atmosphere, costumes, props
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE mood_board_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Members can view mood board items" ON mood_board_items
+  FOR SELECT USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid()
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+CREATE POLICY "Members can manage mood board items" ON mood_board_items
+  FOR ALL USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid() AND role IN ('owner', 'admin', 'editor')
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+-- ============================================================
+-- 39. MOOD BOARD CONNECTIONS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS mood_board_connections (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  source_item_id UUID NOT NULL REFERENCES mood_board_items(id) ON DELETE CASCADE,
+  target_item_id UUID NOT NULL REFERENCES mood_board_items(id) ON DELETE CASCADE,
+  label TEXT,
+  color TEXT NOT NULL DEFAULT '#888888',
+  line_style TEXT NOT NULL DEFAULT 'solid' CHECK (line_style IN ('solid', 'dashed', 'dotted')),
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_mood_board_connections_project ON mood_board_connections(project_id);
+CREATE INDEX IF NOT EXISTS idx_mood_board_connections_source ON mood_board_connections(source_item_id);
+CREATE INDEX IF NOT EXISTS idx_mood_board_connections_target ON mood_board_connections(target_item_id);
+
+ALTER TABLE mood_board_connections ENABLE ROW LEVEL SECURITY;
+
+GRANT ALL ON mood_board_connections TO authenticated, anon, service_role;
+
+CREATE POLICY "Members can view mood board connections" ON mood_board_connections
+  FOR SELECT USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid()
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+CREATE POLICY "Members can manage mood board connections" ON mood_board_connections
+  FOR ALL USING (project_id IN (
+    SELECT project_id FROM project_members WHERE user_id = auth.uid() AND role IN ('owner', 'admin', 'editor')
+    UNION SELECT id FROM projects WHERE created_by = auth.uid()
+  ));
+
+-- ============================================================
+-- 40. PROFILE ENHANCEMENTS — username, banner, social links,
+--     headline, location, website, featured projects, etc.
+-- ============================================================
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS headline TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS location TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS website TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS banner_url TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS featured_project_ids UUID[] DEFAULT '{}';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS profile_theme TEXT DEFAULT 'default';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_email BOOLEAN DEFAULT false;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_projects BOOLEAN DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_activity BOOLEAN DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS allow_dms BOOLEAN DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS profile_views INTEGER DEFAULT 0;
+
+-- Index for fast username lookups (public profile pages)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_username ON profiles(username) WHERE username IS NOT NULL;
+
+-- RPC to increment profile views
+CREATE OR REPLACE FUNCTION increment_profile_views(p_user_id UUID)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  UPDATE profiles SET profile_views = COALESCE(profile_views, 0) + 1 WHERE id = p_user_id;
+END;
+$$;
+
+-- ============================================================
+-- 41. PROJECT CHANNELS & CHANNEL MESSAGES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS project_channels (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  is_default BOOLEAN DEFAULT false,
+  sort_order INTEGER DEFAULT 0,
+  created_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(project_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS channel_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  channel_id UUID NOT NULL REFERENCES project_channels(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  message_type TEXT NOT NULL DEFAULT 'text', -- text, system, image, file
+  file_url TEXT,
+  file_name TEXT,
+  reply_to_id UUID REFERENCES channel_messages(id) ON DELETE SET NULL,
+  is_edited BOOLEAN DEFAULT false,
+  is_deleted BOOLEAN DEFAULT false,
+  edited_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE project_channels ENABLE ROW LEVEL SECURITY;
+ALTER TABLE channel_messages ENABLE ROW LEVEL SECURITY;
+
+-- Use existing is_project_member / has_project_access helpers from fix_rls_policies.sql
+-- If those don't exist yet, create a lightweight version:
+CREATE OR REPLACE FUNCTION public.is_project_member_lite(p_project_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.project_members WHERE project_id = p_project_id AND user_id = auth.uid()
+  ) OR EXISTS (
+    SELECT 1 FROM public.projects WHERE id = p_project_id AND created_by = auth.uid()
+  );
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+CREATE OR REPLACE FUNCTION public.is_project_admin_lite(p_project_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.project_members WHERE project_id = p_project_id AND user_id = auth.uid() AND role IN ('owner', 'admin')
+  ) OR EXISTS (
+    SELECT 1 FROM public.projects WHERE id = p_project_id AND created_by = auth.uid()
+  );
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- Channels: any project member can view; owner/admin can create/update/delete
+CREATE POLICY "Members can view channels" ON project_channels
+  FOR SELECT USING (public.is_project_member_lite(project_id));
+
+CREATE POLICY "Admins can create channels" ON project_channels
+  FOR INSERT WITH CHECK (public.is_project_admin_lite(project_id));
+
+CREATE POLICY "Admins can update channels" ON project_channels
+  FOR UPDATE USING (public.is_project_admin_lite(project_id));
+
+CREATE POLICY "Admins can delete channels" ON project_channels
+  FOR DELETE USING (public.is_project_admin_lite(project_id));
+
+-- Channel messages: any project member can read/write via channel's project_id
+CREATE POLICY "Members can view channel messages" ON channel_messages
+  FOR SELECT USING (
+    channel_id IN (
+      SELECT id FROM project_channels WHERE public.is_project_member_lite(project_id)
+    )
+  );
+
+CREATE POLICY "Members can send channel messages" ON channel_messages
+  FOR INSERT WITH CHECK (
+    sender_id = auth.uid() AND
+    channel_id IN (
+      SELECT id FROM project_channels WHERE public.is_project_member_lite(project_id)
+    )
+  );
+
+CREATE POLICY "Senders can edit channel messages" ON channel_messages
+  FOR UPDATE USING (sender_id = auth.uid());
+
+CREATE POLICY "Senders can delete channel messages" ON channel_messages
+  FOR DELETE USING (sender_id = auth.uid());
+
+GRANT ALL ON project_channels TO authenticated, anon, service_role;
+GRANT ALL ON channel_messages TO authenticated, anon, service_role;
+
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE channel_messages; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE INDEX IF NOT EXISTS idx_channel_project ON project_channels(project_id, sort_order);
+CREATE INDEX IF NOT EXISTS idx_channel_msgs ON channel_messages(channel_id, created_at DESC);

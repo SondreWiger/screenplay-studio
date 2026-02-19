@@ -27,6 +27,7 @@ const TYPE_ICON: Record<NotificationType, { emoji: string; color: string }> = {
   production_approved: { emoji: '🎉', color: 'bg-green-500/20' },
   production_rejected: { emoji: '❌', color: 'bg-red-500/20' },
   chat_mention: { emoji: '💬', color: 'bg-cyan-500/20' },
+  direct_message: { emoji: '💬', color: 'blue' },
   general: { emoji: '🔔', color: 'bg-surface-700' },
 };
 

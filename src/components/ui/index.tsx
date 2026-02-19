@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 // ============================================================
@@ -270,31 +271,34 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     full: 'max-w-6xl',
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div
-        className={cn(
-          'relative w-full rounded-2xl border border-surface-700 bg-surface-900 shadow-2xl animate-slide-up',
-          sizes[size]
-        )}
-      >
-        {title && (
-          <div className="flex items-center justify-between border-b border-surface-800 px-6 py-4">
-            <h2 className="text-lg font-semibold text-white">{title}</h2>
-            <button
-              onClick={onClose}
-              className="rounded-lg p-1.5 text-surface-400 hover:bg-white/10 hover:text-white transition-colors"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        )}
-        <div className="p-6">{children}</div>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative min-h-full flex items-start justify-center p-4 pt-[8vh] pb-8">
+        <div
+          className={cn(
+            'relative w-full rounded-2xl border border-surface-700 bg-surface-900 shadow-2xl animate-slide-up',
+            sizes[size]
+          )}
+        >
+          {title && (
+            <div className="flex items-center justify-between border-b border-surface-800 px-6 py-4">
+              <h2 className="text-lg font-semibold text-white">{title}</h2>
+              <button
+                onClick={onClose}
+                className="rounded-lg p-1.5 text-surface-400 hover:bg-white/10 hover:text-white transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+          <div className="p-6">{children}</div>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

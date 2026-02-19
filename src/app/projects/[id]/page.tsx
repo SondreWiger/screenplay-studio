@@ -157,15 +157,15 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       </div>
 
       {/* Quick Stats + Duration */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8 stagger-children">
         {[
           { label: 'Scripts', value: stats.scripts, href: 'script', color: '#6366f1' },
           { label: 'Characters', value: stats.characters, href: 'characters', color: '#ec4899' },
+          { label: 'Mind Map', value: '→', href: 'mindmap', color: '#f97316' },
           { label: 'Locations', value: stats.locations, href: 'locations', color: '#14b8a6' },
           { label: 'Scenes', value: stats.scenes, href: 'scenes', color: '#f59e0b' },
           { label: 'Shots', value: stats.shots, href: 'shots', color: '#3b82f6' },
           { label: 'Ideas', value: stats.ideas, href: 'ideas', color: '#a855f7' },
-          { label: 'Team', value: stats.members, href: 'team', color: '#10b981' },
         ].map((stat) => (
           <Link key={stat.label} href={'/projects/' + params.id + '/' + stat.href}>
             <Card hover className="p-4 text-center">
@@ -349,6 +349,42 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               ))}
             </div>
           )}
+        </Card>
+
+        {/* Creative Tools Integration */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Creative Tools</h3>
+          <p className="text-xs text-surface-500 mb-4">Your project's creative workspace — everything connected.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href={'/projects/' + params.id + '/mindmap'}>
+              <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 hover:border-orange-500/40 transition-all group cursor-pointer">
+                <svg className="w-6 h-6 text-orange-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg>
+                <p className="text-sm font-medium text-white">Mind Map</p>
+                <p className="text-[11px] text-surface-500 mt-0.5">Character relationships</p>
+              </div>
+            </Link>
+            <Link href={'/projects/' + params.id + '/moodboard'}>
+              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all group cursor-pointer">
+                <svg className="w-6 h-6 text-purple-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg>
+                <p className="text-sm font-medium text-white">Mood Board</p>
+                <p className="text-[11px] text-surface-500 mt-0.5">Visual references & palette</p>
+              </div>
+            </Link>
+            <Link href={'/projects/' + params.id + '/characters'}>
+              <div className="p-4 rounded-xl bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-500/20 hover:border-pink-500/40 transition-all group cursor-pointer">
+                <svg className="w-6 h-6 text-pink-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <p className="text-sm font-medium text-white">Characters</p>
+                <p className="text-[11px] text-surface-500 mt-0.5">{stats.characters} cast members</p>
+              </div>
+            </Link>
+            <Link href={'/projects/' + params.id + '/ideas'}>
+              <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 hover:border-yellow-500/40 transition-all group cursor-pointer">
+                <svg className="w-6 h-6 text-yellow-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                <p className="text-sm font-medium text-white">Ideas</p>
+                <p className="text-[11px] text-surface-500 mt-0.5">{stats.ideas} ideas & inspirations</p>
+              </div>
+            </Link>
+          </div>
         </Card>
 
         {/* Synopsis */}

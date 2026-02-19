@@ -275,14 +275,17 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                <Link href="/messages" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Messages</Link>
                 <Link href="/dashboard" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
-                    {(user.full_name || user.email || '?')[0].toUpperCase()}
-                  </div>
-                )}
+                <Link href={`/u/${user.username || user.id}`}>
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600 hover:ring-2 ring-brand-300 transition-all">
+                      {(user.full_name || user.email || '?')[0].toUpperCase()}
+                    </div>
+                  )}
+                </Link>
               </>
             ) : (
               <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Sign In</Link>
@@ -314,33 +317,49 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
 
           {/* Author & meta */}
           <div className="mt-6 flex items-center justify-between pb-6 border-b border-stone-200">
-            <div className="flex items-center gap-3">
+            <Link
+              href={`/u/${post.author?.username || post.author?.id || ''}`}
+              className="flex items-center gap-3 group"
+            >
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt="" className="w-10 h-10 rounded-full" />
+                <img src={post.author.avatar_url} alt="" className="w-10 h-10 rounded-full group-hover:ring-2 ring-brand-300 transition-all" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-sm font-bold text-brand-600">
+                <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-sm font-bold text-brand-600 group-hover:ring-2 ring-brand-300 transition-all">
                   {(post.author?.full_name || 'A')[0]}
                 </div>
               )}
               <div>
-                <p className="text-sm font-semibold text-stone-800">{post.author?.full_name || 'Anonymous'}</p>
+                <p className="text-sm font-semibold text-stone-800 group-hover:text-brand-600 transition-colors">{post.author?.full_name || 'Anonymous'}</p>
                 <p className="text-xs text-stone-400">{formatDate(post.created_at)} · {post.view_count} views</p>
               </div>
-            </div>
+            </Link>
 
-            {/* Upvote */}
-            <button
-              onClick={handleUpvote}
-              disabled={!user}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                hasUpvoted
-                  ? 'border-brand-300 bg-brand-50 text-brand-700'
-                  : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
-              } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <svg className="w-4 h-4" fill={hasUpvoted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-              <span className="text-sm font-semibold">{post.upvote_count}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* DM button */}
+              {user && post.author_id !== user.id && (
+                <Link
+                  href={`/u/${post.author?.username || post.author?.id || ''}`}
+                  className="px-3 py-2 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors flex items-center gap-1.5"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                  Profile
+                </Link>
+              )}
+
+              {/* Upvote */}
+              <button
+                onClick={handleUpvote}
+                disabled={!user}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                  hasUpvoted
+                    ? 'border-brand-300 bg-brand-50 text-brand-700'
+                    : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
+                } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <svg className="w-4 h-4" fill={hasUpvoted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                <span className="text-sm font-semibold">{post.upvote_count}</span>
+              </button>
+            </div>
           </div>
 
           {/* Permission badges */}
@@ -501,16 +520,18 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               {filteredComments.map((comment) => (
                 <div key={comment.id} className="rounded-xl border border-stone-200 bg-white p-5">
                   <div className="flex items-start gap-3">
-                    {comment.author?.avatar_url ? (
-                      <img src={comment.author.avatar_url} alt="" className="w-8 h-8 rounded-full" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-500">
-                        {(comment.author?.full_name || '?')[0]}
-                      </div>
-                    )}
+                    <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
+                      {comment.author?.avatar_url ? (
+                        <img src={comment.author.avatar_url} alt="" className="w-8 h-8 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-500 hover:ring-2 ring-brand-300 transition-all">
+                          {(comment.author?.full_name || '?')[0]}
+                        </div>
+                      )}
+                    </Link>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-stone-800">{comment.author?.full_name || 'Anonymous'}</span>
+                        <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className="text-sm font-semibold text-stone-800 hover:text-brand-600 transition-colors">{comment.author?.full_name || 'Anonymous'}</Link>
                         <span className="text-xs text-stone-400">{timeAgo(comment.created_at)}</span>
                         {comment.comment_type === 'suggestion' && (
                           <span className="px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 rounded">Suggestion</span>
@@ -549,16 +570,18 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                         <div className="mt-4 ml-4 pl-4 border-l-2 border-stone-100 space-y-3">
                           {comment.replies.map((reply: CommunityComment) => (
                             <div key={reply.id} className="flex items-start gap-2">
-                              {reply.author?.avatar_url ? (
-                                <img src={reply.author.avatar_url} alt="" className="w-6 h-6 rounded-full" />
-                              ) : (
-                                <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-[9px] font-bold text-stone-500">
-                                  {(reply.author?.full_name || '?')[0]}
-                                </div>
-                              )}
+                              <Link href={`/u/${reply.author?.username || reply.author?.id || ''}`}>
+                                {reply.author?.avatar_url ? (
+                                  <img src={reply.author.avatar_url} alt="" className="w-6 h-6 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                                ) : (
+                                  <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-[9px] font-bold text-stone-500 hover:ring-2 ring-brand-300 transition-all">
+                                    {(reply.author?.full_name || '?')[0]}
+                                  </div>
+                                )}
+                              </Link>
                               <div>
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-xs font-semibold text-stone-700">{reply.author?.full_name}</span>
+                                  <Link href={`/u/${reply.author?.username || reply.author?.id || ''}`} className="text-xs font-semibold text-stone-700 hover:text-brand-600 transition-colors">{reply.author?.full_name}</Link>
                                   <span className="text-[10px] text-stone-400">{timeAgo(reply.created_at)}</span>
                                 </div>
                                 <p className="text-xs text-stone-600 mt-0.5">{reply.content}</p>
@@ -596,7 +619,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                         <h4 className="text-sm font-semibold text-stone-900">{distro.title}</h4>
                         {distro.description && <p className="text-xs text-stone-500 mt-1">{distro.description}</p>}
                         <div className="flex items-center gap-2 mt-2 text-xs text-stone-400">
-                          <span>by {distro.author?.full_name || 'Anonymous'}</span>
+                          <span>by <Link href={`/u/${distro.author?.username || distro.author?.id || ''}`} className="hover:text-stone-700 transition-colors">{distro.author?.full_name || 'Anonymous'}</Link></span>
                           <span>·</span>
                           <span>{timeAgo(distro.created_at)}</span>
                         </div>

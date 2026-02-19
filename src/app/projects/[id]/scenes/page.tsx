@@ -41,6 +41,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => { fetchData(); }, [params.id]);
 
@@ -62,6 +63,60 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     }
   };
 
+  // Auto-sync: detect new scene headings from script and create scene entries
+  const handleAutoSync = async () => {
+    setSyncing(true);
+    try {
+      const supabase = createClient();
+      const { data: scripts } = await supabase
+        .from('scripts').select('id').eq('project_id', params.id).limit(1);
+      if (!scripts || scripts.length === 0) { setSyncing(false); return; }
+
+      const { data: elements } = await supabase
+        .from('script_elements')
+        .select('*')
+        .eq('script_id', scripts[0].id)
+        .eq('element_type', 'scene_heading')
+        .eq('is_omitted', false)
+        .order('sort_order');
+
+      if (!elements || elements.length === 0) { setSyncing(false); return; }
+
+      const linkedIds = new Set(scenes.filter(s => s.script_element_id).map(s => s.script_element_id));
+      const newElements = elements.filter(e => !linkedIds.has(e.id));
+
+      if (newElements.length === 0) { setSyncing(false); return; }
+
+      const scenesToCreate = newElements.map((el, i) => {
+        const parsed = parseSceneHeading(el.content);
+        return {
+          project_id: params.id,
+          script_id: scripts[0].id,
+          script_element_id: el.id,
+          scene_number: el.scene_number || String(scenes.length + i + 1),
+          scene_heading: el.content,
+          location_type: parsed.locationType as SceneLocationType,
+          location_name: parsed.locationName,
+          time_of_day: parsed.timeOfDay as SceneTime,
+          sort_order: scenes.length + i,
+          created_by: user?.id,
+        };
+      });
+
+      await supabase.from('scenes').insert(scenesToCreate);
+      await fetchData();
+    } catch (err) {
+      console.error('Auto-sync error:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Determine if a scene "needs setup" (only has auto-imported data, no production breakdown)
+  const needsSetup = (s: Scene) => {
+    return s.script_element_id && !s.is_completed && !s.synopsis && s.cast_ids.length === 0 && s.props.length === 0 && !s.location_id;
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this scene?')) return;
     const supabase = createClient();
@@ -70,6 +125,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   };
 
   const completed = scenes.filter((s) => s.is_completed).length;
+  const setupNeeded = scenes.filter(needsSetup).length;
   const totalPages = scenes.reduce((sum, s) => sum + (s.page_count || 0), 0);
 
   if (loading) return <LoadingSpinner className="py-32" />;
@@ -81,11 +137,18 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
           <h1 className="text-2xl font-bold text-white">Scene Breakdown</h1>
           <p className="text-sm text-surface-400 mt-1">
             {completed}/{scenes.length} scenes completed &bull; {totalPages} pages total
+            {setupNeeded > 0 && <span className="text-amber-400"> &bull; {setupNeeded} need setup</span>}
           </p>
         </div>
         <div className="flex gap-2">
           {canEdit && (
             <>
+              <Button variant="secondary" onClick={handleAutoSync} loading={syncing}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Sync from Script
+              </Button>
               <Button variant="secondary" onClick={() => setShowImport(true)}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -131,8 +194,17 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
                     </h3>
                     <Badge size="sm">{scene.time_of_day}</Badge>
                     {scene.is_completed && <Badge variant="success" size="sm">Done</Badge>}
-                    {scene.script_element_id && <Badge variant="info" size="sm">📄 Script Linked</Badge>}
+                    {needsSetup(scene) && (
+                      <Badge variant="warning" size="sm">
+                        <svg className="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                        Set Up
+                      </Badge>
+                    )}
+                    {!needsSetup(scene) && scene.script_element_id && <Badge variant="info" size="sm">📄 Script Linked</Badge>}
                   </div>
+                  {needsSetup(scene) && !scene.synopsis && (
+                    <p className="text-sm text-amber-400/70 mt-1 italic">Click to set up cast, props, location &amp; more</p>
+                  )}
                   {scene.synopsis && <p className="text-sm text-surface-400 mt-1 line-clamp-1">{scene.synopsis}</p>}
                   <div className="flex items-center gap-4 mt-2 text-xs text-surface-500">
                     {scene.page_count > 0 && <span>{scene.page_count} pgs</span>}

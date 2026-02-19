@@ -113,6 +113,7 @@ export default function CommunityPage() {
             <Link href="/community/challenges" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Challenges</Link>
             <Link href="/community/free-scripts" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Free Scripts</Link>
             <Link href="/community/chat" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Chat</Link>
+            <Link href="/messages" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Messages</Link>
             <Link href="/blog" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Blog</Link>
           </div>
 
@@ -127,13 +128,15 @@ export default function CommunityPage() {
                 </Link>
                 <Link href="/dashboard" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
                 <button onClick={handleSignOut} className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Sign Out</button>
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
-                    {(user.full_name || user.email || '?')[0].toUpperCase()}
-                  </div>
-                )}
+                <Link href={`/u/${user.username || user.id}`}>
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600 hover:ring-2 ring-brand-300 transition-all">
+                      {(user.full_name || user.email || '?')[0].toUpperCase()}
+                    </div>
+                  )}
+                </Link>
               </>
             ) : (
               <>
@@ -296,7 +299,11 @@ export default function CommunityPage() {
 
                         {/* Meta row */}
                         <div className="flex items-center gap-4 mt-3 text-xs text-stone-400">
-                          <span className="flex items-center gap-1">
+                          <Link
+                            href={`/u/${post.author?.username || post.author?.id || ''}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1 hover:text-stone-700 transition-colors"
+                          >
                             {post.author?.avatar_url ? (
                               <img src={post.author.avatar_url} alt="" className="w-4 h-4 rounded-full" />
                             ) : (
@@ -305,7 +312,7 @@ export default function CommunityPage() {
                               </div>
                             )}
                             <span className="text-stone-600 font-medium">{post.author?.full_name || 'Anonymous'}</span>
-                          </span>
+                          </Link>
                           <span>{timeAgo(post.created_at)}</span>
                           <span className="flex items-center gap-1">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>

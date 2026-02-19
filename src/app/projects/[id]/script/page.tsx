@@ -556,6 +556,25 @@ ${pageHTML}
             <div><p className="text-lg font-bold text-white">{elements.length}</p><p className="text-[10px] text-surface-500">Elements</p></div>
             <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[10px] text-surface-500">Words</p></div>
           </div>
+          {/* Estimated screen time */}
+          <div className="mt-3 pt-3 border-t border-surface-800">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-surface-500 uppercase tracking-wider">Est. Screen Time</span>
+              <span className="text-sm font-semibold text-white">
+                {totalPages >= 60
+                  ? `${Math.floor(totalPages / 60)}h ${totalPages % 60}m`
+                  : `${totalPages} min`
+                }
+              </span>
+            </div>
+            <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
+              <div
+                className="h-1.5 rounded-full bg-brand-500 transition-all duration-500"
+                style={{ width: `${Math.min(100, (totalPages / 120) * 100)}%` }}
+              />
+            </div>
+            <p className="text-[9px] text-surface-600 mt-1">~1 min/page &middot; {totalPages} pages &middot; {wordCount.toLocaleString()} words</p>
+          </div>
         </div>
       </div>
 

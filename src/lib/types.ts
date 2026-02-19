@@ -65,6 +65,20 @@ export interface Profile {
   pro_since: string | null;
   created_at: string;
   updated_at: string;
+  // Profile customisation
+  username: string | null;
+  headline: string | null;
+  location: string | null;
+  website: string | null;
+  banner_url: string | null;
+  social_links: Record<string, string>;
+  featured_project_ids: string[];
+  profile_theme: string;
+  show_email: boolean;
+  show_projects: boolean;
+  show_activity: boolean;
+  allow_dms: boolean;
+  profile_views: number;
 }
 
 export interface Project {
@@ -756,7 +770,181 @@ export type NotificationType =
   | 'production_approved'
   | 'production_rejected'
   | 'chat_mention'
+  | 'direct_message'
   | 'general';
+
+// ============================================================
+// Mind Map Types
+// ============================================================
+
+export type MindMapNodeShape = 'rounded' | 'circle' | 'diamond' | 'rectangle';
+export type MindMapEdgeStyle = 'solid' | 'dashed' | 'dotted';
+export type MindMapArrowType = 'none' | 'forward' | 'backward' | 'both';
+export type MindMapNodeType = 'character' | 'group' | 'note';
+
+export interface MindMapNode {
+  id: string;
+  project_id: string;
+  character_id: string | null;
+  label: string;
+  node_type: MindMapNodeType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  shape: MindMapNodeShape;
+  font_size: number;
+  image_url: string | null;
+  notes: string | null;
+  group_id: string | null;
+  is_locked: boolean;
+  z_index: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  character?: Character;
+}
+
+export interface MindMapEdge {
+  id: string;
+  project_id: string;
+  source_node_id: string;
+  target_node_id: string;
+  label: string | null;
+  color: string;
+  line_style: MindMapEdgeStyle;
+  thickness: number;
+  arrow_type: MindMapArrowType;
+  animated: boolean;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// Direct Message Types
+// ============================================================
+
+export type ConversationType = 'direct' | 'group';
+export type MessageType = 'text' | 'image' | 'file' | 'system';
+
+export interface Conversation {
+  id: string;
+  conversation_type: ConversationType;
+  name: string | null;
+  avatar_url: string | null;
+  created_by: string;
+  last_message_at: string;
+  created_at: string;
+  updated_at: string;
+  members?: ConversationMember[];
+  last_message?: DirectMessage;
+  unread_count?: number;
+}
+
+export interface ConversationMember {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  role: 'admin' | 'member';
+  last_read_at: string;
+  is_muted: boolean;
+  joined_at: string;
+  profile?: Profile;
+}
+
+export interface DirectMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  message_type: MessageType;
+  file_url: string | null;
+  file_name: string | null;
+  reply_to_id: string | null;
+  is_edited: boolean;
+  is_deleted: boolean;
+  edited_at: string | null;
+  created_at: string;
+  sender?: Profile;
+  reply_to?: DirectMessage;
+}
+
+// ============================================================
+// Project Channel Types
+// ============================================================
+
+export interface ProjectChannel {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string | null;
+  is_default: boolean;
+  sort_order: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChannelMessage {
+  id: string;
+  channel_id: string;
+  sender_id: string;
+  content: string;
+  message_type: 'text' | 'system' | 'image' | 'file';
+  file_url: string | null;
+  file_name: string | null;
+  reply_to_id: string | null;
+  is_edited: boolean;
+  is_deleted: boolean;
+  edited_at: string | null;
+  created_at: string;
+  sender?: Profile;
+}
+
+// ============================================================
+// Mood Board Types
+// ============================================================
+
+export type MoodBoardItemType = 'image' | 'text' | 'color' | 'link' | 'note';
+export type MoodBoardSection = 'general' | 'characters' | 'locations' | 'atmosphere' | 'costumes' | 'props';
+
+export interface MoodBoardItem {
+  id: string;
+  project_id: string;
+  item_type: MoodBoardItemType;
+  title: string | null;
+  content: string | null;
+  image_url: string | null;
+  link_url: string | null;
+  color: string | null;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  z_index: number;
+  opacity: number;
+  tags: string[];
+  board_section: MoodBoardSection;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MoodBoardConnection {
+  id: string;
+  project_id: string;
+  source_item_id: string;
+  target_item_id: string;
+  label: string | null;
+  color: string;
+  line_style: 'solid' | 'dashed' | 'dotted';
+  created_by: string | null;
+  created_at: string;
+}
 
 export interface Notification {
   id: string;

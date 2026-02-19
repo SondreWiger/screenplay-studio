@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Avatar, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, randomColor } from '@/lib/utils';
-import type { Character } from '@/lib/types';
+import Link from 'next/link';
+import type { Character, ScriptElement } from '@/lib/types';
 
 export default function CharactersPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -17,7 +18,8 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'main' | 'supporting'>('all');
+  const [filter, setFilter] = useState<'all' | 'main' | 'supporting' | 'needs_setup'>('all');
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchCharacters();
@@ -50,11 +52,72 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     if (selectedCharacter?.id === id) setSelectedCharacter(null);
   };
 
+  // Auto-sync: detect character names from script and create placeholders
+  const handleAutoSync = async () => {
+    setSyncing(true);
+    try {
+      const supabase = createClient();
+      const { data: scripts } = await supabase
+        .from('scripts').select('id').eq('project_id', params.id).limit(1);
+      if (!scripts || scripts.length === 0) { setSyncing(false); return; }
+
+      const { data: elements } = await supabase
+        .from('script_elements')
+        .select('content')
+        .eq('script_id', scripts[0].id)
+        .eq('element_type', 'character')
+        .eq('is_omitted', false);
+
+      if (!elements || elements.length === 0) { setSyncing(false); return; }
+
+      // Deduplicate character names (remove parentheticals like "(V.O.)", "(O.S.)")  
+      const nameSet = new Set<string>();
+      elements.forEach((el: { content: string }) => {
+        const name = el.content.trim().replace(/\s*\(.*\)\s*$/, '').toUpperCase();
+        if (name) nameSet.add(name);
+      });
+
+      const existingNames = new Set(characters.map(c => c.name.toUpperCase()));
+      const newNames = Array.from(nameSet).filter(n => !existingNames.has(n));
+
+      if (newNames.length === 0) { setSyncing(false); return; }
+
+      // Count how many times each character appears (more lines = likely main character)
+      const appearance: Record<string, number> = {};
+      elements.forEach((el: { content: string }) => {
+        const name = el.content.trim().replace(/\s*\(.*\)\s*$/, '').toUpperCase();
+        if (name) appearance[name] = (appearance[name] || 0) + 1;
+      });
+
+      const charsToCreate = newNames.map((name, i) => ({
+        project_id: params.id,
+        name: name.charAt(0) + name.slice(1).toLowerCase(), // Title case
+        is_main: (appearance[name] || 0) >= 10, // 10+ appearances = main
+        color: randomColor(),
+        sort_order: characters.length + i,
+        created_by: user?.id,
+        personality_traits: [],
+      }));
+
+      await supabase.from('characters').insert(charsToCreate);
+      await fetchCharacters();
+    } catch (err) {
+      console.error('Character auto-sync error:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Determine if a character "needs setup"
+  const needsSetup = (c: Character) => !c.description && !c.age && !c.backstory && !c.motivation;
+
   const filtered = filter === 'all'
     ? characters
     : filter === 'main'
       ? characters.filter((c) => c.is_main)
-      : characters.filter((c) => !c.is_main);
+      : filter === 'needs_setup'
+        ? characters.filter(needsSetup)
+        : characters.filter((c) => !c.is_main);
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
@@ -63,19 +126,38 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Characters</h1>
-          <p className="text-sm text-surface-400 mt-1">{characters.length} characters in this project</p>
+          <p className="text-sm text-surface-400 mt-1">
+            {characters.length} characters in this project
+            {characters.filter(needsSetup).length > 0 && (
+              <span className="text-amber-400"> &bull; {characters.filter(needsSetup).length} need setup</span>
+            )}
+          </p>
         </div>
-        {canEdit && <Button onClick={() => { setSelectedCharacter(null); setShowEditor(true); }}>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Character
-        </Button>}
+        <div className="flex items-center gap-2">
+          <Link href={`/projects/${params.id}/mindmap`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-surface-400 bg-surface-800 hover:text-orange-400 hover:bg-orange-500/10 transition-colors border border-surface-700 hover:border-orange-500/30">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg>
+            Mind Map
+          </Link>
+          {canEdit && (
+            <Button variant="secondary" onClick={handleAutoSync} loading={syncing}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Sync from Script
+            </Button>
+          )}
+          {canEdit && <Button onClick={() => { setSelectedCharacter(null); setShowEditor(true); }}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Character
+          </Button>}
+        </div>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-6">
-        {(['all', 'main', 'supporting'] as const).map((f) => (
+        {(['all', 'main', 'supporting', 'needs_setup'] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -86,7 +168,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
                 : 'text-surface-400 hover:text-white hover:bg-white/5'
             )}
           >
-            {f === 'all' ? 'All' : f === 'main' ? 'Main Cast' : 'Supporting'}
+            {f === 'all' ? 'All' : f === 'main' ? 'Main Cast' : f === 'needs_setup' ? `Needs Setup (${characters.filter(needsSetup).length})` : 'Supporting'}
           </button>
         ))}
       </div>
@@ -122,6 +204,12 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-white">{character.name}</h3>
                       {character.is_main && <Badge variant="success" size="sm">Main</Badge>}
+                      {needsSetup(character) && (
+                        <Badge variant="warning" size="sm">
+                          <svg className="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                          Set Up
+                        </Badge>
+                      )}
                     </div>
                     {character.full_name && character.full_name !== character.name && (
                       <p className="text-xs text-surface-500">{character.full_name}</p>

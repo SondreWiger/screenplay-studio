@@ -17,7 +17,8 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'confirmed' | 'scouting'>('all');
+  const [filter, setFilter] = useState<'all' | 'confirmed' | 'scouting' | 'needs_setup'>('all');
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => { fetchLocations(); }, [params.id]);
 
@@ -35,6 +36,81 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
     }
   };
 
+  // Parse scene heading to extract location info
+  function parseSceneHeading(heading: string) {
+    let locationType: 'INT' | 'EXT' | 'INT_EXT' = 'INT';
+    const h = heading.trim().toUpperCase();
+    if (h.startsWith('INT./EXT.') || h.startsWith('INT/EXT') || h.startsWith('I/E.')) locationType = 'INT_EXT';
+    else if (h.startsWith('EXT.')) locationType = 'EXT';
+    else if (h.startsWith('INT.')) locationType = 'INT';
+
+    let rest = h.replace(/^(INT\.\/EXT\.|INT\/EXT|I\/E\.|INT\.|EXT\.)\s*/i, '').trim();
+    const dashParts = rest.split(/\s+-\s+/);
+    const locationName = dashParts[0]?.trim() || '';
+    return { locationType, locationName };
+  }
+
+  // Auto-sync: detect location names from script scene headings
+  const handleAutoSync = async () => {
+    setSyncing(true);
+    try {
+      const supabase = createClient();
+      const { data: scripts } = await supabase
+        .from('scripts').select('id').eq('project_id', params.id).limit(1);
+      if (!scripts || scripts.length === 0) { setSyncing(false); return; }
+
+      const { data: elements } = await supabase
+        .from('script_elements')
+        .select('content')
+        .eq('script_id', scripts[0].id)
+        .eq('element_type', 'scene_heading')
+        .eq('is_omitted', false);
+
+      if (!elements || elements.length === 0) { setSyncing(false); return; }
+
+      // Deduplicate location names  
+      const locationMap = new Map<string, SceneLocationType>();
+      elements.forEach((el: { content: string }) => {
+        const parsed = parseSceneHeading(el.content);
+        if (parsed.locationName && !locationMap.has(parsed.locationName)) {
+          locationMap.set(parsed.locationName, parsed.locationType as SceneLocationType);
+        }
+      });
+
+      const existingNames = new Set(locations.map(l => l.name.toUpperCase()));
+      const newLocations: Array<{ name: string; type: SceneLocationType }> = [];
+      locationMap.forEach((type, name) => {
+        if (!existingNames.has(name)) {
+          newLocations.push({ name, type });
+        }
+      });
+
+      if (newLocations.length === 0) { setSyncing(false); return; }
+
+      const locsToCreate = newLocations.map((loc) => ({
+        project_id: params.id,
+        name: loc.name.charAt(0) + loc.name.slice(1).toLowerCase(), // Title case
+        location_type: loc.type,
+        created_by: user?.id,
+        is_confirmed: false,
+        permits_required: false,
+        power_available: true,
+        photos: [],
+        tags: [],
+      }));
+
+      await supabase.from('locations').insert(locsToCreate);
+      await fetchLocations();
+    } catch (err) {
+      console.error('Location auto-sync error:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Determine if a location "needs setup"
+  const needsSetup = (l: Location) => !l.description && !l.address && !l.is_confirmed;
+
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this location?')) return;
     const supabase = createClient();
@@ -44,6 +120,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
 
   const filtered = filter === 'all' ? locations
     : filter === 'confirmed' ? locations.filter((l) => l.is_confirmed)
+    : filter === 'needs_setup' ? locations.filter(needsSetup)
     : locations.filter((l) => !l.is_confirmed);
 
   if (loading) return <LoadingSpinner className="py-32" />;
@@ -55,23 +132,36 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
           <h1 className="text-2xl font-bold text-white">Locations</h1>
           <p className="text-sm text-surface-400 mt-1">
             {locations.filter((l) => l.is_confirmed).length} confirmed / {locations.length} total
+            {locations.filter(needsSetup).length > 0 && (
+              <span className="text-amber-400"> &bull; {locations.filter(needsSetup).length} need setup</span>
+            )}
           </p>
         </div>
-        {canEdit && <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Location
-        </Button>}
+        <div className="flex items-center gap-2">
+          {canEdit && (
+            <Button variant="secondary" onClick={handleAutoSync} loading={syncing}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Sync from Script
+            </Button>
+          )}
+          {canEdit && <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Location
+          </Button>}
+        </div>
       </div>
 
       <div className="flex gap-2 mb-6">
-        {(['all', 'confirmed', 'scouting'] as const).map((f) => (
+        {(['all', 'confirmed', 'scouting', 'needs_setup'] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)} className={cn(
-            'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize',
+            'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
             filter === f ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
           )}>
-            {f}
+            {f === 'needs_setup' ? `Needs Setup (${locations.filter(needsSetup).length})` : f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
@@ -89,7 +179,16 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
                     <div className="flex items-center gap-2">
                       <Badge size="sm" variant="info">{location.location_type}</Badge>
                       <h3 className="font-semibold text-white">{location.name}</h3>
+                      {needsSetup(location) && (
+                        <Badge variant="warning" size="sm">
+                          <svg className="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                          Set Up
+                        </Badge>
+                      )}
                     </div>
+                    {!location.address && needsSetup(location) && (
+                      <p className="text-xs text-amber-400/70 mt-1 italic">Click to add details, address &amp; more</p>
+                    )}
                     {location.address && <p className="text-xs text-surface-500 mt-1">{location.address}</p>}
                   </div>
                   {location.is_confirmed ? (

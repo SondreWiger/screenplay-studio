@@ -28,6 +28,17 @@ export default function UserSettingsPage() {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [username, setUsername] = useState('');
+  const [headline, setHeadline] = useState('');
+  const [location, setLocation] = useState('');
+  const [website, setWebsite] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
+  const [profileTheme, setProfileTheme] = useState('default');
+  const [showEmail, setShowEmail] = useState(false);
+  const [showProjects, setShowProjects] = useState(true);
+  const [showActivity, setShowActivity] = useState(true);
+  const [allowDms, setAllowDms] = useState(true);
 
   // Preferences form
   const [usageIntent, setUsageIntent] = useState<UsageIntent>('writer');
@@ -51,6 +62,17 @@ export default function UserSettingsPage() {
     setDisplayName(user.display_name || '');
     setBio(user.bio || '');
     setAvatarUrl(user.avatar_url || '');
+    setUsername(user.username || '');
+    setHeadline(user.headline || '');
+    setLocation(user.location || '');
+    setWebsite(user.website || '');
+    setBannerUrl(user.banner_url || '');
+    setSocialLinks(user.social_links || {});
+    setProfileTheme(user.profile_theme || 'default');
+    setShowEmail(user.show_email ?? false);
+    setShowProjects(user.show_projects !== false);
+    setShowActivity(user.show_activity !== false);
+    setAllowDms(user.allow_dms !== false);
     setUsageIntent(user.usage_intent || 'writer');
     setShowCommunity(user.show_community !== false);
     setShowProductionTools(user.show_production_tools !== false);
@@ -70,20 +92,36 @@ export default function UserSettingsPage() {
     if (!user) return;
     setSaving(true);
     const supabase = createClient();
-    await supabase.from('profiles').update({
+    const updates = {
       full_name: fullName.trim() || null,
       display_name: displayName.trim() || null,
       bio: bio.trim() || null,
       avatar_url: avatarUrl.trim() || null,
-    }).eq('id', user.id);
+      username: username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || null,
+      headline: headline.trim() || null,
+      location: location.trim() || null,
+      website: website.trim() || null,
+      banner_url: bannerUrl.trim() || null,
+      social_links: socialLinks,
+      profile_theme: profileTheme,
+      show_email: showEmail,
+      show_projects: showProjects,
+      show_activity: showActivity,
+      allow_dms: allowDms,
+    };
+    const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
 
-    useAuthStore.getState().setUser({
-      ...user,
-      full_name: fullName.trim() || null,
-      display_name: displayName.trim() || null,
-      bio: bio.trim() || null,
-      avatar_url: avatarUrl.trim() || null,
-    });
+    if (error) {
+      if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
+        alert('That username is already taken. Please choose a different one.');
+      } else {
+        alert('Failed to save: ' + error.message);
+      }
+      setSaving(false);
+      return;
+    }
+
+    useAuthStore.getState().setUser({ ...user, ...updates });
 
     setSaving(false);
     setSaved(true);
@@ -203,14 +241,124 @@ export default function UserSettingsPage() {
               <div className="space-y-4">
                 <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" />
                 <Input label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="How you appear to others" />
+                <div>
+                  <label className="block text-sm font-medium text-surface-300 mb-1.5">Username</label>
+                  <div className="flex items-center gap-0">
+                    <span className="px-3 py-2.5 rounded-l-lg border border-r-0 border-surface-700 bg-surface-800 text-xs text-surface-500">@</span>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500"
+                      placeholder="your-username"
+                    />
+                  </div>
+                  <p className="text-[10px] text-surface-500 mt-1">Your public profile will be at /u/{username || 'username'}</p>
+                </div>
+                <Input label="Headline" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Screenwriter, Director, Producer..." />
                 <Textarea label="Bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
                 <Input label="Avatar URL" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://..." />
               </div>
-              <div className="flex items-center gap-3 mt-6 pt-6 border-t border-surface-800">
-                <Button onClick={saveProfile} loading={saving}>
-                  {saved ? '✓ Saved' : 'Save Profile'}
-                </Button>
-                {saved && <span className="text-sm text-green-400">Changes saved</span>}
+            </Card>
+
+            {/* Public Profile Customisation */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Public Profile</h2>
+              <p className="text-sm text-surface-400 mb-6">Customise how your profile appears to visitors.</p>
+              <div className="space-y-4">
+                <Input label="Banner Image URL" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} placeholder="https://... (hero image for your profile)" />
+                <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Los Angeles, CA" />
+                <Input label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yoursite.com" />
+              </div>
+
+              {/* Profile Theme */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-surface-300 mb-3">Profile Theme</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { key: 'default', label: 'Default', gradient: 'from-stone-900 to-stone-800' },
+                    { key: 'midnight', label: 'Midnight', gradient: 'from-indigo-950 to-slate-900' },
+                    { key: 'sunset', label: 'Sunset', gradient: 'from-orange-600 to-rose-700' },
+                    { key: 'forest', label: 'Forest', gradient: 'from-emerald-900 to-teal-800' },
+                    { key: 'ocean', label: 'Ocean', gradient: 'from-cyan-800 to-blue-900' },
+                    { key: 'noir', label: 'Noir', gradient: 'from-neutral-950 to-neutral-900' },
+                    { key: 'royal', label: 'Royal', gradient: 'from-purple-900 to-fuchsia-800' },
+                    { key: 'crimson', label: 'Crimson', gradient: 'from-red-900 to-rose-800' },
+                  ].map((t) => (
+                    <button
+                      key={t.key}
+                      onClick={() => setProfileTheme(t.key)}
+                      className={`relative rounded-lg overflow-hidden border-2 transition-all ${
+                        profileTheme === t.key ? 'border-brand-500 ring-2 ring-brand-500/30' : 'border-surface-700 hover:border-surface-600'
+                      }`}
+                    >
+                      <div className={`h-12 bg-gradient-to-br ${t.gradient}`} />
+                      <p className="text-[10px] font-medium text-surface-300 py-1 text-center">{t.label}</p>
+                      {profileTheme === t.key && (
+                        <div className="absolute top-1 right-1 w-4 h-4 bg-brand-500 rounded-full flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Social Links */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Social Links</h2>
+              <p className="text-sm text-surface-400 mb-6">Add links to your social profiles. Leave blank to hide.</p>
+              <div className="space-y-3">
+                {[
+                  { key: 'twitter', label: 'Twitter / X', placeholder: 'https://x.com/username', icon: '𝕏' },
+                  { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/username', icon: '📷' },
+                  { key: 'imdb', label: 'IMDb', placeholder: 'https://imdb.com/name/nm...', icon: '🎬' },
+                  { key: 'letterboxd', label: 'Letterboxd', placeholder: 'https://letterboxd.com/username', icon: '🎞️' },
+                  { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/in/username', icon: '💼' },
+                  { key: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@channel', icon: '▶️' },
+                  { key: 'vimeo', label: 'Vimeo', placeholder: 'https://vimeo.com/username', icon: '🎥' },
+                  { key: 'github', label: 'GitHub', placeholder: 'https://github.com/username', icon: '💻' },
+                ].map((social) => (
+                  <div key={social.key} className="flex items-center gap-3">
+                    <span className="text-lg w-6 text-center shrink-0">{social.icon}</span>
+                    <input
+                      type="text"
+                      value={socialLinks[social.key] || ''}
+                      onChange={(e) => setSocialLinks((prev) => ({ ...prev, [social.key]: e.target.value }))}
+                      placeholder={social.placeholder}
+                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Privacy & Visibility */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Privacy & Visibility</h2>
+              <p className="text-sm text-surface-400 mb-6">Control what others can see on your profile.</p>
+              <div className="space-y-3">
+                {[
+                  { label: 'Show email on profile', desc: 'Let visitors see your email address', value: showEmail, set: setShowEmail },
+                  { label: 'Show projects', desc: 'Display your projects on your public profile', value: showProjects, set: setShowProjects },
+                  { label: 'Show activity', desc: 'Display recent activity and stats', value: showActivity, set: setShowActivity },
+                  { label: 'Allow direct messages', desc: 'Let people message you from your profile', value: allowDms, set: setAllowDms },
+                ].map((toggle) => (
+                  <button
+                    key={toggle.label}
+                    onClick={() => toggle.set(!toggle.value)}
+                    className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-surface-700 hover:border-surface-600 transition-colors text-left"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white">{toggle.label}</p>
+                      <p className="text-[11px] text-surface-500">{toggle.desc}</p>
+                    </div>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
+                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
+                    </div>
+                  </button>
+                ))}
               </div>
             </Card>
 
@@ -225,8 +373,21 @@ export default function UserSettingsPage() {
                   <p className="text-surface-500">Member Since</p>
                   <p className="text-surface-300 mt-1">{new Date(user.created_at).toLocaleDateString()}</p>
                 </div>
+                {username && (
+                  <div className="col-span-2">
+                    <p className="text-surface-500">Public Profile</p>
+                    <Link href={`/u/${username}`} className="text-brand-400 hover:text-brand-300 transition-colors mt-1 inline-block text-sm">/u/{username}</Link>
+                  </div>
+                )}
               </div>
             </Card>
+
+            <div className="flex items-center gap-3">
+              <Button onClick={saveProfile} loading={saving}>
+                {saved ? '✓ Saved' : 'Save Profile'}
+              </Button>
+              {saved && <span className="text-sm text-green-400">Changes saved</span>}
+            </div>
           </div>
         )}
 

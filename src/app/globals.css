@@ -278,6 +278,41 @@
 .stagger-children > *:nth-child(9) { animation-delay: 320ms; }
 .stagger-children > *:nth-child(10) { animation-delay: 360ms; }
 
+/* Trailer-specific animations */
+@keyframes floaty {
+  0% { transform: translateY(0) rotate(-1deg); opacity: 0.95; }
+  50% { transform: translateY(-8px) rotate(1deg); opacity: 1; }
+  100% { transform: translateY(0) rotate(-1deg); opacity: 0.95; }
+}
+
+@keyframes slide-in-wide {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.trailer-float { animation: floaty 4s ease-in-out infinite; }
+.trailer-slide-in { animation: slide-in-wide 450ms cubic-bezier(.2,.9,.3,1) both; }
+.trailer-marquee { animation: marquee-left 18s linear infinite; }
+
+.trailer-hero-verb {
+  display: inline-block;
+  transform-origin: center;
+  transition: transform 350ms cubic-bezier(.2,.9,.3,1), opacity 300ms;
+}
+.trailer-hero-verb.enter { transform: translateY(0); opacity: 1; }
+.trailer-hero-verb.exit { transform: translateY(-18px) scale(0.98); opacity: 0; }
+
+.trailer-grid-tile { transition: transform 220ms ease, box-shadow 220ms ease; }
+.trailer-grid-tile:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+
+.trailer-progress { height: 4px; background: linear-gradient(90deg,#dc4d45,#ff9a4d); border-radius: 8px; }
+
+
 /* Skeleton loading shimmer */
 .skeleton {
   background: linear-gradient(90deg, theme('colors.surface.800') 25%, theme('colors.surface.700') 50%, theme('colors.surface.800') 75%);
