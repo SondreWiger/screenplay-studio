@@ -249,12 +249,33 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Welcome */}
-        <div className="mb-10">
-          <h2 className="text-3xl font-bold text-white">
-            Welcome back{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}
-          </h2>
-          <p className="mt-1 text-surface-400">Your film projects and recent work</p>
+        {/* Welcome + Stats row */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              Welcome back{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}
+            </h2>
+            <p className="mt-0.5 text-sm text-surface-500">Your film projects and recent work</p>
+          </div>
+          {/* Inline Stats */}
+          {(() => {
+            const allP = [...projects, ...Object.values(companyProjects).flat()];
+            return (
+              <div className="flex items-center gap-6">
+                {[
+                  { label: 'Projects', value: allP.length },
+                  { label: 'In Dev', value: allP.filter(p => p.status === 'development').length },
+                  { label: 'In Prod', value: allP.filter(p => p.status === 'production').length },
+                  { label: 'Done', value: allP.filter(p => p.status === 'completed').length },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <p className="text-lg font-semibold text-white">{s.value}</p>
+                    <p className="text-[10px] text-surface-500 uppercase tracking-wider">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Continue Writing CTA */}
@@ -310,33 +331,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 stagger-children">
-          {(() => {
-            const allProjects = [...projects, ...Object.values(companyProjects).flat()];
-            return [
-              { label: 'Total Projects', value: allProjects.length, color: '#6366f1' },
-              { label: 'In Development', value: allProjects.filter(p => p.status === 'development').length, color: '#3b82f6' },
-              { label: 'In Production', value: allProjects.filter(p => p.status === 'production').length, color: '#22c55e' },
-              { label: 'Completed', value: allProjects.filter(p => p.status === 'completed').length, color: '#f59e0b' },
-            ].map((stat) => (
-              <Card key={stat.label} className="p-5">
-                <p className="text-sm text-surface-400">{stat.label}</p>
-                <p className="mt-1 text-3xl font-bold text-white">{stat.value}</p>
-                <div className="mt-3 h-1 rounded-full bg-surface-800">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${allProjects.length > 0 ? (stat.value / allProjects.length) * 100 : 0}%`,
-                      backgroundColor: stat.color,
-                    }}
-                  />
-                </div>
-              </Card>
-            ));
-          })()}
-        </div>
-
         {/* Personal Projects */}
         <div className="mb-4 flex items-center gap-2">
           <svg className="w-5 h-5 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
@@ -372,37 +366,41 @@ export default function DashboardPage() {
               <Link key={project.id} href={`/projects/${project.id}`}>
                 <Card hover className="overflow-hidden group">
                   {/* Cover */}
-                  <div className="h-32 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
+                  <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
                     {project.cover_url ? (
-                      <img src={project.cover_url} alt="" className="w-full h-full object-cover" />
+                      <img src={project.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-5xl font-bold text-surface-700 group-hover:text-surface-600 transition-colors">
+                        <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
                           {project.title[0]}
                         </span>
                       </div>
                     )}
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute top-2.5 right-2.5">
                       <Badge variant={statusColors[project.status] as any}>
                         {project.status.replace('_', ' ')}
                       </Badge>
                     </div>
                   </div>
 
-                  <div className="p-5">
-                    <h3 className="text-lg font-semibold text-white group-hover:text-brand-400 transition-colors">
+                  <div className="p-4">
+                    <h3 className="text-base font-semibold text-white group-hover:text-brand-400 transition-colors truncate">
                       {project.title}
                     </h3>
                     {project.logline && (
-                      <p className="mt-1 text-sm text-surface-400 line-clamp-2">{project.logline}</p>
+                      <p className="mt-1 text-xs text-surface-400 line-clamp-2 leading-relaxed">{project.logline}</p>
                     )}
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex gap-1.5">
-                        {project.genre?.slice(0, 3).map((g) => (
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="flex gap-1">
+                        {project.genre?.slice(0, 2).map((g) => (
                           <Badge key={g} size="sm">{g}</Badge>
                         ))}
+                        {(project.genre?.length || 0) > 2 && (
+                          <span className="text-[10px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
+                        )}
                       </div>
-                      <span className="text-xs text-surface-500">{timeAgo(project.updated_at)}</span>
+                      <span className="text-[10px] text-surface-600">{timeAgo(project.updated_at)}</span>
                     </div>
                   </div>
                 </Card>
@@ -462,17 +460,18 @@ export default function DashboardPage() {
                   {cProjects.map((project) => (
                     <Link key={project.id} href={`/projects/${project.id}`}>
                       <Card hover className="overflow-hidden group">
-                        <div className="h-32 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
+                        <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
                           {project.cover_url ? (
-                            <img src={project.cover_url} alt="" className="w-full h-full object-cover" />
+                            <img src={project.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-5xl font-bold text-surface-700 group-hover:text-surface-600 transition-colors">
+                              <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
                                 {project.title[0]}
                               </span>
                             </div>
                           )}
-                          <div className="absolute top-3 left-3">
+                          <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
+                          <div className="absolute top-2.5 left-2.5">
                             <div
                               className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold text-white"
                               style={{ backgroundColor: company.brand_color || '#6366f1' }}
@@ -481,26 +480,29 @@ export default function DashboardPage() {
                               {company.name[0]}
                             </div>
                           </div>
-                          <div className="absolute top-3 right-3">
+                          <div className="absolute top-2.5 right-2.5">
                             <Badge variant={statusColors[project.status] as any}>
                               {project.status.replace('_', ' ')}
                             </Badge>
                           </div>
                         </div>
-                        <div className="p-5">
-                          <h3 className="text-lg font-semibold text-white group-hover:text-brand-400 transition-colors">
+                        <div className="p-4">
+                          <h3 className="text-base font-semibold text-white group-hover:text-brand-400 transition-colors truncate">
                             {project.title}
                           </h3>
                           {project.logline && (
-                            <p className="mt-1 text-sm text-surface-400 line-clamp-2">{project.logline}</p>
+                            <p className="mt-1 text-xs text-surface-400 line-clamp-2 leading-relaxed">{project.logline}</p>
                           )}
-                          <div className="mt-4 flex items-center justify-between">
-                            <div className="flex gap-1.5">
-                              {project.genre?.slice(0, 3).map((g) => (
+                          <div className="mt-3 flex items-center justify-between">
+                            <div className="flex gap-1">
+                              {project.genre?.slice(0, 2).map((g) => (
                                 <Badge key={g} size="sm">{g}</Badge>
                               ))}
+                              {(project.genre?.length || 0) > 2 && (
+                                <span className="text-[10px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
+                              )}
                             </div>
-                            <span className="text-xs text-surface-500">{timeAgo(project.updated_at)}</span>
+                            <span className="text-[10px] text-surface-600">{timeAgo(project.updated_at)}</span>
                           </div>
                         </div>
                       </Card>

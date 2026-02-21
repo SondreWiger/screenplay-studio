@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingSpinner } from '@/components/ui';
@@ -25,6 +25,9 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState<any>({});
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { fetchProject(); }, [params.id]);
 
@@ -35,11 +38,69 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       if (error) console.error('Settings fetch error:', error.message);
       setProject(data);
       setForm(data || {});
+      setCoverUrl(data?.cover_url || null);
     } catch (err) {
       console.error('Unexpected error fetching project settings:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB');
+      return;
+    }
+    setUploadingCover(true);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `${params.id}/cover.${ext}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('project-covers')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError.message);
+        // Fallback: convert to data URL
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const dataUrl = ev.target?.result as string;
+          await supabase.from('projects').update({ cover_url: dataUrl }).eq('id', params.id);
+          setCoverUrl(dataUrl);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('project-covers')
+          .getPublicUrl(filePath);
+        const url = urlData.publicUrl;
+        await supabase.from('projects').update({ cover_url: url }).eq('id', params.id);
+        setCoverUrl(url);
+      }
+    } catch (err) {
+      console.error('Cover upload error:', err);
+    } finally {
+      setUploadingCover(false);
+      if (coverInputRef.current) coverInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveCover = async () => {
+    const supabase = createClient();
+    await supabase.from('projects').update({ cover_url: null }).eq('id', params.id);
+    setCoverUrl(null);
+    // Try to delete from storage (ignore errors)
+    try {
+      await supabase.storage.from('project-covers').remove([`${params.id}/cover.jpg`, `${params.id}/cover.png`, `${params.id}/cover.webp`]);
+    } catch {}
   };
 
   const handleSave = async () => {
@@ -110,6 +171,55 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
             {saved ? '✓ Saved' : 'Save Changes'}
           </Button>
           {saved && <span className="text-sm text-green-400">Changes saved successfully</span>}
+        </div>
+      </Card>
+
+      {/* Cover Image */}
+      <Card className="p-6 mb-6">
+        <h2 className="text-lg font-semibold text-white mb-2">Cover Image</h2>
+        <p className="text-sm text-surface-400 mb-4">This image is displayed on your dashboard project card.</p>
+        <div className="flex items-start gap-6">
+          {/* Preview */}
+          <div className="w-48 h-28 rounded-lg border border-surface-700 bg-surface-900 overflow-hidden flex-shrink-0">
+            {coverUrl ? (
+              <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-surface-600">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            )}
+          </div>
+          {/* Upload controls */}
+          <div className="flex-1 space-y-3">
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverUpload}
+              className="hidden"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={uploadingCover}
+                onClick={() => coverInputRef.current?.click()}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                {coverUrl ? 'Replace Image' : 'Upload Image'}
+              </Button>
+              {coverUrl && (
+                <Button variant="ghost" size="sm" onClick={handleRemoveCover}>
+                  Remove
+                </Button>
+              )}
+            </div>
+            <p className="text-[11px] text-surface-500">Recommended: 800x450 (16:9). Max 5MB. JPG, PNG, or WebP.</p>
+          </div>
         </div>
       </Card>
 

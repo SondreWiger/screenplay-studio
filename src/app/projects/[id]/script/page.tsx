@@ -4,8 +4,70 @@ import { useEffect, useState, useRef, useCallback, memo, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Badge, Modal, Input, LoadingSpinner } from '@/components/ui';
+import { Button, Badge, Modal, Input, Select, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
+
+// ============================================================
+// Display Settings — persisted in localStorage
+// ============================================================
+interface DisplaySettings {
+  showSceneNumbers: boolean;
+  showCharacterHighlights: boolean;
+  fontSize: number; // 10-16
+  pageWidth: 'narrow' | 'standard' | 'wide';
+  showNotes: boolean;
+  showRevisionColors: boolean;
+}
+
+const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
+  showSceneNumbers: true,
+  showCharacterHighlights: true,
+  fontSize: 12,
+  pageWidth: 'standard',
+  showNotes: true,
+  showRevisionColors: true,
+};
+
+function loadDisplaySettings(): DisplaySettings {
+  try {
+    const saved = localStorage.getItem('ss_display_settings');
+    if (saved) return { ...DEFAULT_DISPLAY_SETTINGS, ...JSON.parse(saved) };
+  } catch {}
+  return DEFAULT_DISPLAY_SETTINGS;
+}
+
+function saveDisplaySettings(settings: DisplaySettings) {
+  try { localStorage.setItem('ss_display_settings', JSON.stringify(settings)); } catch {}
+}
+
+// ============================================================
+// Character color map — deterministic colors for character names
+// ============================================================
+const CHARACTER_COLORS = [
+  { bg: 'bg-blue-500/10', border: 'border-l-blue-400', text: 'text-blue-300', hex: '#60a5fa' },
+  { bg: 'bg-emerald-500/10', border: 'border-l-emerald-400', text: 'text-emerald-300', hex: '#34d399' },
+  { bg: 'bg-purple-500/10', border: 'border-l-purple-400', text: 'text-purple-300', hex: '#a78bfa' },
+  { bg: 'bg-amber-500/10', border: 'border-l-amber-400', text: 'text-amber-300', hex: '#fbbf24' },
+  { bg: 'bg-rose-500/10', border: 'border-l-rose-400', text: 'text-rose-300', hex: '#fb7185' },
+  { bg: 'bg-cyan-500/10', border: 'border-l-cyan-400', text: 'text-cyan-300', hex: '#22d3ee' },
+  { bg: 'bg-pink-500/10', border: 'border-l-pink-400', text: 'text-pink-300', hex: '#f472b6' },
+  { bg: 'bg-lime-500/10', border: 'border-l-lime-400', text: 'text-lime-300', hex: '#a3e635' },
+  { bg: 'bg-indigo-500/10', border: 'border-l-indigo-400', text: 'text-indigo-300', hex: '#818cf8' },
+  { bg: 'bg-orange-500/10', border: 'border-l-orange-400', text: 'text-orange-300', hex: '#fb923c' },
+  { bg: 'bg-teal-500/10', border: 'border-l-teal-400', text: 'text-teal-300', hex: '#2dd4bf' },
+  { bg: 'bg-fuchsia-500/10', border: 'border-l-fuchsia-400', text: 'text-fuchsia-300', hex: '#e879f9' },
+];
+
+function getCharacterColorIndex(name: string): number {
+  let hash = 0;
+  const normalized = name.toUpperCase().replace(/\s*\(.*?\)\s*$/, '').trim();
+  for (let i = 0; i < normalized.length; i++) {
+    hash = ((hash << 5) - hash) + normalized.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash) % CHARACTER_COLORS.length;
+}
 
 // Collaborator colors for cursors
 const COLLAB_COLORS = [
@@ -73,6 +135,21 @@ function getElementPlaceholder(type: ScriptElementType): string {
 }
 
 // ============================================================
+// Download helper
+// ============================================================
+function downloadFile(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
 // Focus helper — places cursor at start or end of an element
 // ============================================================
 function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
@@ -118,6 +195,11 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [showDrafts, setShowDrafts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [darkMode, setDarkMode] = useState(true);
+  const [displaySettings, setDisplaySettings] = useState<DisplaySettings>(DEFAULT_DISPLAY_SETTINGS);
+  const [showDisplaySettings, setShowDisplaySettings] = useState(false);
+  const [showImportExport, setShowImportExport] = useState(false);
+  const importExportRef = useRef<HTMLButtonElement>(null);
+  const displaySettingsRef = useRef<HTMLButtonElement>(null);
   const [activeElementType, setActiveElementType] = useState<ScriptElementType>('action');
   const [drafts, setDrafts] = useState<ScriptDraft[]>([]);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -179,6 +261,29 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return Array.from(names).sort();
   }, [elements]);
 
+  // Character color map — assigns stable colors to each character
+  const characterColorMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    characterNames.forEach((name) => {
+      map[name] = getCharacterColorIndex(name);
+    });
+    return map;
+  }, [characterNames]);
+
+  // Load display settings from localStorage
+  useEffect(() => {
+    setDisplaySettings(loadDisplaySettings());
+  }, []);
+
+  // Save display settings when changed
+  const updateDisplaySettings = useCallback((updates: Partial<DisplaySettings>) => {
+    setDisplaySettings((prev) => {
+      const next = { ...prev, ...updates };
+      saveDisplaySettings(next);
+      return next;
+    });
+  }, []);
+
   // Page numbers (rough estimate: 56 lines per page)
   const elementPages = useMemo(() => {
     const pages: Record<string, number> = {};
@@ -195,6 +300,20 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }, [elements]);
 
   const sceneHeadings = elements.filter((e) => e.element_type === 'scene_heading');
+
+  // Map scene_heading element IDs → sequential scene number (use existing scene_number if set, otherwise auto-index)
+  const sceneNumberMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    let autoIndex = 0;
+    for (const el of elements) {
+      if (el.element_type === 'scene_heading') {
+        autoIndex++;
+        map[el.id] = el.scene_number || String(autoIndex);
+      }
+    }
+    return map;
+  }, [elements]);
+
   const totalPages = Object.values(elementPages).length > 0
     ? Math.max(...Object.values(elementPages)) : 1;
 
@@ -304,16 +423,18 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
     const titlePageHTML = hasTitlePage ? `
       <div class="page title-page">
-        <div class="title-center">
-          ${titlePage.title ? `<div class="tp-title">${titlePage.title}</div>` : ''}
-          ${titlePage.credit ? `<div class="tp-credit">${titlePage.credit}</div>` : ''}
-          ${titlePage.author ? `<div class="tp-author">${titlePage.author}</div>` : ''}
-          ${titlePage.source ? `<div class="tp-source">${titlePage.source}</div>` : ''}
-        </div>
-        <div class="title-bottom">
-          ${titlePage.draft_date ? `<div class="tp-info">${titlePage.draft_date}</div>` : ''}
-          ${titlePage.contact ? `<div class="tp-info">${titlePage.contact}</div>` : ''}
-          ${titlePage.copyright ? `<div class="tp-info">${titlePage.copyright}</div>` : ''}
+        <div class="page-content">
+          <div class="title-center">
+            ${titlePage.title ? `<div class="tp-title">${titlePage.title}</div>` : ''}
+            ${titlePage.credit ? `<div class="tp-credit">${titlePage.credit}</div>` : ''}
+            ${titlePage.author ? `<div class="tp-author">${titlePage.author}</div>` : ''}
+            ${titlePage.source ? `<div class="tp-source">${titlePage.source}</div>` : ''}
+          </div>
+          <div class="title-bottom">
+            ${titlePage.draft_date ? `<div class="tp-info">${titlePage.draft_date}</div>` : ''}
+            ${titlePage.contact ? `<div class="tp-info">${titlePage.contact}</div>` : ''}
+            ${titlePage.copyright ? `<div class="tp-info">${titlePage.copyright}</div>` : ''}
+          </div>
         </div>
       </div>
     ` : '';
@@ -358,10 +479,11 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }
 
   /* Title page */
-  .title-page { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .title-page { position: relative; }
   .title-page .page-number { display: none; }
-  .title-center { text-align: center; margin-top: -2in; }
-  .title-bottom { position: absolute; bottom: 1.5in; left: 1.5in; }
+  .title-page .page-content { display: flex; flex-direction: column; min-height: calc(11in - 2in); }
+  .title-center { text-align: center; padding-top: 3in; }
+  .title-bottom { position: absolute; bottom: 1in; left: 0; }
   .tp-title { font-size: 24pt; font-weight: bold; text-transform: uppercase; margin-bottom: 24pt; }
   .tp-credit { font-size: 12pt; margin-bottom: 12pt; }
   .tp-author { font-size: 12pt; margin-bottom: 12pt; }
@@ -444,6 +566,14 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       page-break-after: always;
     }
     .page-content { min-height: auto; }
+    .title-page {
+      min-height: 100vh;
+      padding: 0;
+      position: relative;
+    }
+    .title-page .page-content { min-height: 100vh; }
+    .title-page .title-center { padding-top: 30vh; }
+    .title-page .title-bottom { position: absolute; bottom: 0.5in; left: 0; }
   }
 
   @page {
@@ -473,6 +603,187 @@ ${pageHTML}
     win.document.close();
   }, []);
 
+  // ============================================================
+  // Import / Export Handlers
+  // ============================================================
+
+  const handleImportFile = useCallback(async (format: 'fdx' | 'fountain') => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = format === 'fdx' ? '.fdx' : '.fountain,.txt';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+
+      try {
+        let titlePage: any = {};
+        let importedElements: Partial<ScriptElement>[] = [];
+
+        if (format === 'fdx') {
+          const result = parseFDX(text);
+          titlePage = result.titlePage;
+          importedElements = result.elements;
+        } else {
+          const result = parseFountain(text);
+          titlePage = result.titlePage;
+          importedElements = result.elements;
+        }
+
+        if (!currentScript) {
+          alert('Please select or create a script first.');
+          return;
+        }
+
+        // Confirm import
+        const count = importedElements.length;
+        if (!confirm(`Import ${count} elements from ${file.name}? This will replace the current script content.`)) return;
+
+        const supabase = createClient();
+
+        // Save current as draft first
+        if (elements.length > 0) {
+          await supabase.rpc('save_script_draft', {
+            p_script_id: currentScript.id,
+            p_draft_name: `Pre-import backup`,
+            p_notes: `Auto-saved before importing ${file.name}`,
+          });
+        }
+
+        // Delete existing elements
+        await supabase.from('script_elements').delete().eq('script_id', currentScript.id);
+
+        // Update title page
+        if (titlePage.title || titlePage.author) {
+          await supabase.from('scripts').update({ title_page_data: titlePage }).eq('id', currentScript.id);
+          // Update the Zustand store so exports pick up the title page immediately
+          setCurrentScript({ ...currentScript, title_page_data: titlePage });
+        }
+
+        // Insert new elements
+        const inserts = importedElements.map((el, i) => ({
+          script_id: currentScript.id,
+          element_type: el.element_type || 'action',
+          content: el.content || '',
+          sort_order: i,
+          scene_number: el.scene_number || null,
+          created_by: user?.id,
+          last_edited_by: user?.id,
+        }));
+
+        // Insert in batches of 100
+        for (let b = 0; b < inserts.length; b += 100) {
+          await supabase.from('script_elements').insert(inserts.slice(b, b + 100));
+        }
+
+        // Refresh
+        fetchElements(currentScript.id);
+        setShowImportExport(false);
+        alert(`Successfully imported ${count} elements from ${file.name}!`);
+      } catch (err: any) {
+        alert('Import error: ' + (err.message || 'Unknown error'));
+      }
+    };
+    input.click();
+  }, [currentScript, elements, user, fetchElements, setCurrentScript]);
+
+  const handleExportFDX = useCallback(() => {
+    if (!currentScript || elements.length === 0) return;
+    const xml = generateFDX({
+      titlePage: currentScript.title_page_data || undefined,
+      elements,
+      scriptTitle: currentScript.title,
+    });
+    downloadFile(xml, `${currentScript.title || 'script'}.fdx`, 'application/xml');
+    setShowImportExport(false);
+  }, [currentScript, elements]);
+
+  const handleExportFountain = useCallback(() => {
+    if (!currentScript || elements.length === 0) return;
+    const text = generateFountain({
+      titlePage: currentScript.title_page_data || undefined,
+      elements,
+    });
+    downloadFile(text, `${currentScript.title || 'script'}.fountain`, 'text/plain');
+    setShowImportExport(false);
+  }, [currentScript, elements]);
+
+  const handleExportPlainText = useCallback(() => {
+    if (!currentScript || elements.length === 0) return;
+    const tp = currentScript.title_page_data;
+    let lines: string[] = [];
+    // Title page
+    if (tp && (tp.title || tp.author)) {
+      lines.push('', '');
+      if (tp.title) { lines.push(tp.title.toUpperCase()); lines.push(''); }
+      if (tp.credit) { lines.push(tp.credit); lines.push(''); }
+      if (tp.author) { lines.push(tp.author); lines.push(''); }
+      if (tp.source) { lines.push(tp.source); lines.push(''); }
+      if (tp.draft_date) lines.push(tp.draft_date);
+      if (tp.contact) lines.push(tp.contact);
+      if (tp.copyright) lines.push(tp.copyright);
+      lines.push('', '---', '');
+    }
+    for (const el of elements) {
+      const c = (el.content || '').trim();
+      if (!c) { lines.push(''); continue; }
+      switch (el.element_type) {
+        case 'scene_heading': lines.push('', c.toUpperCase(), ''); break;
+        case 'character': lines.push('', '    ' + c.toUpperCase()); break;
+        case 'parenthetical': lines.push('    ' + c); break;
+        case 'dialogue': lines.push('    ' + c); break;
+        case 'transition': lines.push('', c.toUpperCase(), ''); break;
+        default: lines.push(c); break;
+      }
+    }
+    downloadFile(lines.join('\n'), `${currentScript.title || 'script'}.txt`, 'text/plain');
+    setShowImportExport(false);
+  }, [currentScript, elements]);
+
+  const handleExportHTML = useCallback(() => {
+    if (!currentScript || elements.length === 0) return;
+    const tp = currentScript.title_page_data;
+    let html = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>${currentScript.title || 'Script'}</title>
+<style>
+  body { font-family: 'Courier Prime', 'Courier New', monospace; max-width: 8in; margin: 1in auto; font-size: 12pt; line-height: 1.5; color: #000; }
+  .scene-heading { font-weight: bold; text-transform: uppercase; margin-top: 1.5em; }
+  .action { margin: 1em 0; }
+  .character { text-transform: uppercase; margin-left: 2.5in; margin-top: 1em; margin-bottom: 0; }
+  .parenthetical { margin-left: 2in; margin-top: 0; margin-bottom: 0; }
+  .dialogue { margin-left: 1.5in; margin-right: 2in; margin-top: 0; }
+  .transition { text-align: right; text-transform: uppercase; margin-top: 1em; }
+  .note { color: #666; font-style: italic; border-left: 3px solid #ddd; padding-left: 0.5em; }
+  .title-page { text-align: center; min-height: 80vh; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .title-page h1 { text-transform: uppercase; letter-spacing: 0.1em; }
+  .title-page .contact { position: absolute; bottom: 1in; left: 1in; text-align: left; font-size: 10pt; }
+  @media print { body { margin: 0; } }
+</style></head><body>\n`;
+    if (tp && (tp.title || tp.author)) {
+      html += '<div class="title-page">';
+      if (tp.title) html += `<h1>${tp.title}</h1>`;
+      if (tp.credit) html += `<p>${tp.credit}</p>`;
+      if (tp.author) html += `<p>${tp.author}</p>`;
+      if (tp.source) html += `<p><em>${tp.source}</em></p>`;
+      if (tp.draft_date || tp.contact || tp.copyright) {
+        html += '<div class="contact">';
+        if (tp.draft_date) html += `<p>${tp.draft_date}</p>`;
+        if (tp.contact) html += `<p>${tp.contact}</p>`;
+        if (tp.copyright) html += `<p>${tp.copyright}</p>`;
+        html += '</div>';
+      }
+      html += '</div>\n';
+    }
+    for (const el of elements) {
+      const c = (el.content || '').trim();
+      if (!c) continue;
+      const cls = el.element_type.replace('_', '-');
+      html += `<p class="${cls}">${c}</p>\n`;
+    }
+    html += '</body></html>';
+    downloadFile(html, `${currentScript.title || 'script'}.html`, 'text/html');
+    setShowImportExport(false);
+  }, [currentScript, elements]);
+
   const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
       e.preventDefault();
@@ -485,7 +796,7 @@ ${pageHTML}
   };
 
   return (
-    <div className="flex h-full" onKeyDown={handleEditorKeyDown}>
+    <div className="flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden" onKeyDown={handleEditorKeyDown}>
       {/* Scripts sidebar toggle on mobile */}
       <button onClick={() => setShowScriptsSidebar(!showScriptsSidebar)}
         className="fixed bottom-4 left-4 z-30 md:hidden p-3 bg-brand-600 text-white rounded-full shadow-lg">
@@ -494,7 +805,7 @@ ${pageHTML}
 
       {/* Sidebar */}
       <div className={cn(
-        'w-56 border-r border-surface-800 flex flex-col bg-surface-950',
+        'w-56 border-r border-surface-800 flex flex-col bg-surface-950 overflow-hidden shrink-0',
         'max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:w-64 max-md:transition-transform max-md:duration-200',
         showScriptsSidebar ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
       )}>
@@ -579,9 +890,9 @@ ${pageHTML}
       </div>
 
       {/* Editor */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Toolbar */}
-        <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-3 md:px-4 py-2 flex items-center gap-2 no-print overflow-x-auto">
+        <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-3 md:px-4 py-2 flex items-center gap-2 no-print overflow-x-auto" style={{ overflow: 'visible' }}>
           {canEdit && (
             <div className="flex items-center gap-1 shrink-0">
               {ELEMENT_CYCLE.map((type) => (
@@ -618,12 +929,116 @@ ${pageHTML}
             <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Export PDF (Cmd+P)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
             </button>
+            {/* Import / Export dropdown */}
+            <div className="relative">
+              <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded transition-colors', showImportExport ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')} title="Import / Export">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+              </button>
+            </div>
+            {showImportExport && (
+              <>
+                <div className="fixed inset-0 z-[9998]" onClick={() => setShowImportExport(false)} />
+                <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl py-1.5 min-w-[220px] animate-fade-in-up"
+                  style={{
+                    top: importExportRef.current ? importExportRef.current.getBoundingClientRect().bottom + 6 : 60,
+                    right: importExportRef.current ? window.innerWidth - importExportRef.current.getBoundingClientRect().right : 16,
+                  }}>
+                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Import</p>
+                  <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                    <span className="w-8 text-[10px] font-mono text-brand-400">.fdx</span> Final Draft
+                  </button>
+                  <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                    <span className="w-8 text-[10px] font-mono text-brand-400">.ftn</span> Fountain
+                  </button>
+                  <div className="border-t border-surface-700 my-1" />
+                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Export</p>
+                  <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.pdf</span> PDF (Print)
+                  </button>
+                  <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.fdx</span> Final Draft
+                  </button>
+                  <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.ftn</span> Fountain
+                  </button>
+                  <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.txt</span> Plain Text
+                  </button>
+                  <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
+                  </button>
+                </div>
+              </>
+            )}
             <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10 disabled:opacity-50" title="Save Draft Snapshot">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
             </button>
             <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')} title="Draft Timeline">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
+            {/* Display Settings */}
+            <div className="relative">
+              <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
+                className={cn('p-1.5 rounded transition-colors', showDisplaySettings ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')}
+                title="Display Settings">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+              </button>
+            </div>
+            {showDisplaySettings && (
+              <>
+                <div className="fixed inset-0 z-[9998]" onClick={() => setShowDisplaySettings(false)} />
+                <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl p-4 min-w-[260px] animate-fade-in-up"
+                  style={{
+                    top: displaySettingsRef.current ? displaySettingsRef.current.getBoundingClientRect().bottom + 6 : 60,
+                    right: displaySettingsRef.current ? window.innerWidth - displaySettingsRef.current.getBoundingClientRect().right : 16,
+                  }}>
+                  <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Display Settings</h4>
+                  <div className="space-y-3">
+                    <label className="flex items-center justify-between">
+                      <span className="text-xs text-surface-300">Scene Numbers</span>
+                      <input type="checkbox" checked={displaySettings.showSceneNumbers}
+                        onChange={(e) => updateDisplaySettings({ showSceneNumbers: e.target.checked })}
+                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                    </label>
+                    <label className="flex items-center justify-between">
+                      <span className="text-xs text-surface-300">Character Highlights</span>
+                      <input type="checkbox" checked={displaySettings.showCharacterHighlights}
+                        onChange={(e) => updateDisplaySettings({ showCharacterHighlights: e.target.checked })}
+                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                    </label>
+                    <label className="flex items-center justify-between">
+                      <span className="text-xs text-surface-300">Show Notes</span>
+                      <input type="checkbox" checked={displaySettings.showNotes}
+                        onChange={(e) => updateDisplaySettings({ showNotes: e.target.checked })}
+                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                    </label>
+                    <label className="flex items-center justify-between">
+                      <span className="text-xs text-surface-300">Revision Colors</span>
+                      <input type="checkbox" checked={displaySettings.showRevisionColors}
+                        onChange={(e) => updateDisplaySettings({ showRevisionColors: e.target.checked })}
+                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                    </label>
+                    <div>
+                      <span className="text-xs text-surface-300 mb-1 block">Font Size: {displaySettings.fontSize}pt</span>
+                      <input type="range" min={10} max={16} value={displaySettings.fontSize}
+                        onChange={(e) => updateDisplaySettings({ fontSize: Number(e.target.value) })}
+                        className="w-full accent-brand-500" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-surface-300 mb-1 block">Page Width</span>
+                      <div className="flex gap-1">
+                        {(['narrow', 'standard', 'wide'] as const).map((w) => (
+                          <button key={w} onClick={() => updateDisplaySettings({ pageWidth: w })}
+                            className={cn('flex-1 px-2 py-1 rounded text-[10px] font-medium transition-colors capitalize',
+                              displaySettings.pageWidth === w ? 'bg-brand-600/20 text-brand-400' : 'text-surface-500 hover:text-white hover:bg-white/5'
+                            )}>{w}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
             <button onClick={() => setDarkMode(!darkMode)}
               className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-white/10' : 'text-surface-500 hover:text-white hover:bg-white/10')}
               title={darkMode ? 'Light Mode' : 'Dark Mode'}>
@@ -704,7 +1119,7 @@ ${pageHTML}
         )}
 
         {/* Document */}
-        <div className="flex-1 overflow-y-auto bg-surface-900/30">
+        <div className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30">
           {/* Title page (rendered in document) */}
           {currentScript?.title_page_data && (currentScript.title_page_data.title || currentScript.title_page_data.author) && (
             <div className={cn('sp-page mx-auto mt-8 mb-0 shadow-2xl rounded-sm cursor-pointer group', darkMode && 'sp-dark')}
@@ -761,7 +1176,12 @@ ${pageHTML}
             </div>
           )}
 
-          <div className={cn('sp-page mx-auto my-8 shadow-2xl rounded-sm', darkMode && 'sp-dark')}>
+          <div className={cn(
+            'sp-page mx-auto my-8 shadow-2xl rounded-sm',
+            darkMode && 'sp-dark',
+            displaySettings.pageWidth === 'narrow' && 'max-w-[6.5in]',
+            displaySettings.pageWidth === 'wide' && 'max-w-[9in]',
+          )} style={{ fontSize: `${displaySettings.fontSize}pt` }}>
             {elements.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32 text-center">
                 <svg className="w-12 h-12 mb-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -788,6 +1208,9 @@ ${pageHTML}
                   collaborators={collabMap[element.id] || []}
                   projectId={params.id}
                   canEdit={canEdit}
+                  displaySettings={displaySettings}
+                  characterColorMap={characterColorMap}
+                  sceneNumberMap={sceneNumberMap}
                 />
               ))
             )}
@@ -834,6 +1257,9 @@ interface LineEditorProps {
   collaborators: CollabCursor[];
   projectId: string;
   canEdit: boolean;
+  displaySettings: DisplaySettings;
+  characterColorMap: Record<string, number>;
+  sceneNumberMap: Record<string, string>;
 }
 
 const LineEditor = memo(function LineEditor({
@@ -847,6 +1273,9 @@ const LineEditor = memo(function LineEditor({
   collaborators,
   projectId,
   canEdit,
+  displaySettings,
+  characterColorMap,
+  sceneNumberMap,
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector
   const element = useScriptStore((s) => s.elements.find((e) => e.id === elementId));
@@ -1134,8 +1563,33 @@ const LineEditor = memo(function LineEditor({
     broadcastFocus(null);
   };
 
-  const revisionBg = element.is_revised && element.revision_color && element.revision_color !== 'white'
+  const revisionBg = (displaySettings.showRevisionColors && element.is_revised && element.revision_color && element.revision_color !== 'white')
     ? REVISION_COLOR_HEX[element.revision_color] : undefined;
+
+  // Character highlight color — for character and their dialogue/parenthetical lines
+  const charColorIdx = (() => {
+    if (!displaySettings.showCharacterHighlights) return -1;
+    if (element.element_type === 'character') {
+      const name = (element.content || '').trim().toUpperCase();
+      return characterColorMap[name] ?? -1;
+    }
+    // For dialogue/parenthetical: find the nearest preceding character element
+    if (element.element_type === 'dialogue' || element.element_type === 'parenthetical') {
+      const els = useScriptStore.getState().elements;
+      const idx = els.findIndex((e) => e.id === element.id);
+      for (let j = idx - 1; j >= 0; j--) {
+        if (els[j].element_type === 'character') {
+          const name = (els[j].content || '').trim().toUpperCase();
+          return characterColorMap[name] ?? -1;
+        }
+        if (els[j].element_type !== 'dialogue' && els[j].element_type !== 'parenthetical') break;
+      }
+    }
+    return -1;
+  })();
+
+  // Hide notes if display settings say so
+  if (!displaySettings.showNotes && element.element_type === 'note') return null;
 
   return (
     <>
@@ -1150,12 +1604,23 @@ const LineEditor = memo(function LineEditor({
           isHighlighted && (darkMode ? 'bg-yellow-500/20' : 'bg-yellow-100'),
           element.is_omitted && 'opacity-40 line-through',
           collaborators.length > 0 && COLLAB_COLORS[collaborators[0].colorIdx].bg,
+          charColorIdx >= 0 && CHARACTER_COLORS[charColorIdx].bg,
         )}
         style={{
           ...(revisionBg ? { backgroundColor: revisionBg + '40' } : {}),
           ...(collaborators.length > 0 ? { borderLeft: `3px solid ${COLLAB_COLORS[collaborators[0].colorIdx].hex}`, paddingLeft: '8px' } : {}),
+          ...(charColorIdx >= 0 && collaborators.length === 0 ? { borderLeft: `3px solid ${CHARACTER_COLORS[charColorIdx].hex}`, paddingLeft: '8px' } : {}),
+          fontSize: `${displaySettings.fontSize}pt`,
         }}
       >
+        {/* Scene number badge */}
+        {displaySettings.showSceneNumbers && element.element_type === 'scene_heading' && sceneNumberMap[element.id] && (
+          <div className="absolute -left-10 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <span className={cn('text-[10px] font-bold tabular-nums', darkMode ? 'text-surface-500' : 'text-gray-400')}>
+              {sceneNumberMap[element.id]}
+            </span>
+          </div>
+        )}
         {/* Collaborator labels */}
         {collaborators.length > 0 && (
           <div className="absolute -top-4 left-0 flex gap-1 z-10">
@@ -1225,7 +1690,9 @@ const LineEditor = memo(function LineEditor({
     && prev.characterNames === next.characterNames
     && prev.collaborators === next.collaborators
     && prev.projectId === next.projectId
-    && prev.canEdit === next.canEdit;
+    && prev.canEdit === next.canEdit
+    && prev.displaySettings === next.displaySettings
+    && prev.characterColorMap === next.characterColorMap;
   // Note: element content changes are handled by the Zustand selector
   // inside the component, not through props. onFocused is intentionally
   // excluded — it's a stable parent callback.
@@ -1237,12 +1704,15 @@ const LineEditor = memo(function LineEditor({
 
 function TitlePageModal({ isOpen, onClose, script }: { isOpen: boolean; onClose: () => void; script: Script | null }) {
   const [data, setData] = useState(script?.title_page_data || {} as any);
+  const { setCurrentScript } = useScriptStore();
   useEffect(() => { if (script) setData(script.title_page_data || {}); }, [script]);
 
   const handleSave = async () => {
     if (!script) return;
     const supabase = createClient();
     await supabase.from('scripts').update({ title_page_data: data }).eq('id', script.id);
+    // Update the Zustand store so exports pick up the title page immediately
+    setCurrentScript({ ...script, title_page_data: data });
     onClose();
   };
 

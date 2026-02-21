@@ -14,11 +14,11 @@ import { cn, getInitials } from '@/lib/utils';
 import type { Project, ProjectMember, Profile, UserRole } from '@/lib/types';
 
 const PAGE_LABELS: Record<string, string> = {
-  overview: 'Overview', script: 'Script Editor', characters: 'Characters',
-  locations: 'Locations', scenes: 'Scenes', shots: 'Shot List',
-  schedule: 'Schedule', ideas: 'Ideas', budget: 'Budget',
-  team: 'Team', settings: 'Settings', mindmap: 'Mind Map',
-  moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
+  overview: 'Overview', script: 'Script Editor', documents: 'Documents',
+  characters: 'Characters', locations: 'Locations', scenes: 'Scenes',
+  shots: 'Shot List', schedule: 'Schedule', ideas: 'Ideas',
+  budget: 'Budget', team: 'Team', settings: 'Settings',
+  mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
 };
 
 export default function ProjectLayout({
@@ -99,6 +99,7 @@ export default function ProjectLayout({
   const navItems = [
     { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
     { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+    { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
     { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters', always: true },
     { label: 'Mind Map', href: `/projects/${params.id}/mindmap`, icon: 'mindmap', always: true },
     { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
@@ -131,6 +132,7 @@ export default function ProjectLayout({
   const icons: Record<string, React.ReactNode> = {
     overview: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
     script: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+    documents: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>,
     characters: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
     mindmap: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg>,
     moodboard: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg>,

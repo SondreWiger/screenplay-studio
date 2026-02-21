@@ -979,6 +979,59 @@ export interface ProjectWithMembers extends Project {
   scripts?: Script[];
 }
 
+// ============================================================
+// Project Documents & Folders
+// ============================================================
+
+export type DocumentType = 'plain_text' | 'notes' | 'outline' | 'treatment' | 'research';
+
+export interface ProjectFolder {
+  id: string;
+  project_id: string;
+  parent_folder_id: string | null;
+  name: string;
+  color: string;
+  sort_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  children?: ProjectFolder[];
+  documents?: ProjectDocument[];
+}
+
+export interface ProjectDocument {
+  id: string;
+  project_id: string;
+  folder_id: string | null;
+  title: string;
+  doc_type: DocumentType;
+  content: string;
+  word_count: number;
+  is_pinned: boolean;
+  tags: string[];
+  metadata: Record<string, unknown>;
+  created_by: string | null;
+  last_edited_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
+  plain_text: 'Plain Text',
+  notes: 'Notes',
+  outline: 'Outline',
+  treatment: 'Treatment',
+  research: 'Research',
+};
+
+export const DOCUMENT_TYPE_ICONS: Record<DocumentType, string> = {
+  plain_text: '📄',
+  notes: '📝',
+  outline: '📋',
+  treatment: '📑',
+  research: '🔍',
+};
+
 export const ELEMENT_LABELS: Record<ScriptElementType, string> = {
   scene_heading: 'Scene Heading',
   action: 'Action',

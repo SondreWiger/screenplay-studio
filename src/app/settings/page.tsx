@@ -14,7 +14,7 @@ import type { UsageIntent, ScriptType, Company } from '@/lib/types';
 // User Settings — profile, preferences, company
 // ============================================================
 
-type SettingsTab = 'profile' | 'preferences' | 'company';
+type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy';
 
 export default function UserSettingsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -198,6 +198,7 @@ export default function UserSettingsPage() {
     { key: 'profile', label: 'Profile', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> },
     { key: 'preferences', label: 'Preferences', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg> },
     { key: 'company', label: 'Company', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
+    { key: 'privacy', label: 'Privacy & Data', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
   ];
 
   return (
@@ -584,6 +585,204 @@ export default function UserSettingsPage() {
                   Create Company
                 </Button>
               </div>
+            </Card>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* Privacy & Data Tab */}
+        {/* ============================================================ */}
+        {tab === 'privacy' && (
+          <div className="space-y-6">
+            {/* GDPR Data Export */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Export Your Data</h2>
+              <p className="text-sm text-surface-400 mb-4">
+                Download all your personal data in a machine-readable format (JSON).
+                This includes your profile, projects, scripts, characters, messages, and all other data
+                associated with your account. This is your right under GDPR Article 20.
+              </p>
+              <Button variant="secondary" onClick={async () => {
+                const supabase = createClient();
+                const userId = user?.id;
+                if (!userId) return;
+                const [
+                  profileRes, projectsRes, scriptsRes, elementsRes,
+                  charsRes, locsRes, scenesRes, shotsRes,
+                  ideasRes, commentsRes, notificationsRes,
+                  dmsRes, communityRes,
+                ] = await Promise.all([
+                  supabase.from('profiles').select('*').eq('id', userId),
+                  supabase.from('projects').select('*').eq('created_by', userId),
+                  supabase.from('scripts').select('*').eq('created_by', userId),
+                  supabase.from('script_elements').select('*').eq('created_by', userId),
+                  supabase.from('characters').select('*').eq('created_by', userId),
+                  supabase.from('locations').select('*').eq('created_by', userId),
+                  supabase.from('scenes').select('*').eq('created_by', userId),
+                  supabase.from('shots').select('*').eq('created_by', userId),
+                  supabase.from('ideas').select('*').eq('created_by', userId),
+                  supabase.from('comments').select('*').eq('user_id', userId),
+                  supabase.from('notifications').select('*').eq('user_id', userId),
+                  supabase.from('direct_messages').select('*').eq('sender_id', userId),
+                  supabase.from('community_posts').select('*').eq('author_id', userId),
+                ]);
+                const exportData = {
+                  exported_at: new Date().toISOString(),
+                  gdpr_notice: 'This file contains all personal data associated with your Screenplay Studio account.',
+                  profile: profileRes.data?.[0] || null,
+                  projects: projectsRes.data || [],
+                  scripts: scriptsRes.data || [],
+                  script_elements: elementsRes.data || [],
+                  characters: charsRes.data || [],
+                  locations: locsRes.data || [],
+                  scenes: scenesRes.data || [],
+                  shots: shotsRes.data || [],
+                  ideas: ideasRes.data || [],
+                  comments: commentsRes.data || [],
+                  notifications: notificationsRes.data || [],
+                  direct_messages: dmsRes.data || [],
+                  community_posts: communityRes.data || [],
+                };
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `screenplay_studio_data_export_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }}>
+                Download My Data
+              </Button>
+            </Card>
+
+            {/* Cookie Preferences */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Cookie Preferences</h2>
+              <p className="text-sm text-surface-400 mb-4">
+                Manage which types of cookies you allow. Necessary cookies cannot be disabled.
+              </p>
+              <Button variant="secondary" onClick={() => {
+                try { localStorage.removeItem('ss_cookie_consent'); } catch {}
+                window.location.reload();
+              }}>
+                Reset Cookie Preferences
+              </Button>
+            </Card>
+
+            {/* Privacy Settings */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Privacy Settings</h2>
+              <div className="space-y-4">
+                <label className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium text-white">Show Email on Profile</span>
+                    <p className="text-xs text-surface-500">Allow other users to see your email address.</p>
+                  </div>
+                  <input type="checkbox" checked={showEmail}
+                    onChange={(e) => setShowEmail(e.target.checked)}
+                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                </label>
+                <label className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium text-white">Show Projects on Profile</span>
+                    <p className="text-xs text-surface-500">Display your projects publicly on your profile.</p>
+                  </div>
+                  <input type="checkbox" checked={showProjects}
+                    onChange={(e) => setShowProjects(e.target.checked)}
+                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                </label>
+                <label className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium text-white">Show Activity</span>
+                    <p className="text-xs text-surface-500">Display your recent activity on your profile.</p>
+                  </div>
+                  <input type="checkbox" checked={showActivity}
+                    onChange={(e) => setShowActivity(e.target.checked)}
+                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                </label>
+                <label className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium text-white">Allow Direct Messages</span>
+                    <p className="text-xs text-surface-500">Let other users send you direct messages.</p>
+                  </div>
+                  <input type="checkbox" checked={allowDms}
+                    onChange={(e) => setAllowDms(e.target.checked)}
+                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                </label>
+              </div>
+              <div className="mt-4 pt-4 border-t border-surface-800">
+                <Button onClick={saveProfile} loading={saving}>Save Privacy Settings</Button>
+              </div>
+            </Card>
+
+            {/* Delete Account */}
+            <Card className="p-6 border-red-500/20">
+              <h2 className="text-lg font-semibold text-red-400 mb-2">Delete Account</h2>
+              <p className="text-sm text-surface-400 mb-4">
+                Permanently delete your account and all associated data. This action cannot be undone.
+                All your projects, scripts, characters, and other content will be permanently removed
+                within 30 days as required by GDPR Article 17 (Right to Erasure).
+              </p>
+              <Button variant="danger" onClick={async () => {
+                const confirmation = prompt('Type "DELETE" to confirm account deletion:');
+                if (confirmation !== 'DELETE') return;
+
+                const secondConfirm = confirm(
+                  'Are you absolutely sure? This will permanently delete:\n\n' +
+                  '- Your profile and all personal data\n' +
+                  '- All projects you own\n' +
+                  '- All scripts and documents\n' +
+                  '- All community posts and comments\n' +
+                  '- All messages and conversations\n\n' +
+                  'This cannot be undone.'
+                );
+                if (!secondConfirm) return;
+
+                try {
+                  const supabase = createClient();
+                  const userId = user?.id;
+                  if (!userId) return;
+
+                  // Delete user's owned projects (cascade deletes scripts, elements, etc.)
+                  await supabase.from('projects').delete().eq('created_by', userId);
+
+                  // Delete community posts
+                  await supabase.from('community_posts').delete().eq('author_id', userId);
+
+                  // Delete direct messages
+                  await supabase.from('direct_messages').delete().eq('sender_id', userId);
+
+                  // Delete notifications
+                  await supabase.from('notifications').delete().eq('user_id', userId);
+
+                  // Anonymize comments on other's content
+                  await supabase.from('comments').update({
+                    content: '[deleted]',
+                    user_id: null,
+                  }).eq('user_id', userId);
+
+                  // Delete profile
+                  await supabase.from('profiles').delete().eq('id', userId);
+
+                  // Sign out auth
+                  await supabase.auth.signOut();
+
+                  // Redirect
+                  router.push('/');
+                } catch (err) {
+                  console.error('Account deletion error:', err);
+                  alert('An error occurred. Please contact support.');
+                }
+              }}>
+                Delete My Account
+              </Button>
+              <p className="text-[10px] text-surface-600 mt-3">
+                By proceeding, you acknowledge that this action is permanent and irreversible.
+                <br />
+                <a href="/privacy" className="text-brand-400 hover:text-brand-300">Read our Privacy Policy</a>
+              </p>
             </Card>
           </div>
         )}

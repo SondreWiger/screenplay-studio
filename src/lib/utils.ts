@@ -144,3 +144,57 @@ export function timeUntil(date: string | Date): string {
   if (hours > 0) return `${hours}h ${mins}m`;
   return `${mins}m`;
 }
+
+// ── Security Utilities ──────────────────────────────────────
+
+/** Escape HTML entities to prevent XSS in user-generated content */
+export function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;', '<': '&lt;', '>': '&gt;',
+    '"': '&quot;', "'": '&#039;',
+  };
+  return text.replace(/[&<>"']/g, (c) => map[c] || c);
+}
+
+/** Strip all HTML tags from text */
+export function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '');
+}
+
+/** Validate email format */
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/** Validate URL format */
+export function isValidUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/** Sanitise user input to a safe filename */
+export function sanitizeFilename(name: string): string {
+  return name
+    .replace(/[^a-zA-Z0-9._\- ]/g, '')
+    .replace(/\s+/g, '_')
+    .slice(0, 255);
+}
+
+/** Truncate text to a max length, with optional ellipsis */
+export function truncate(text: string, maxLength: number, ellipsis = '…'): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength - ellipsis.length) + ellipsis;
+}
+
+/** Debounce helper */
+export function debounce<T extends (...args: any[]) => any>(fn: T, ms: number): (...args: Parameters<T>) => void {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
