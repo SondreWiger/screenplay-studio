@@ -68,6 +68,7 @@ export default function AdminPage() {
   const [editingPost, setEditingPost] = useState<BlogPost | null | 'new'>(null);
   const [blogComments, setBlogComments] = useState<any[]>([]);
   const [siteVersion, setSiteVersion] = useState<string>('');
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Community
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
@@ -512,9 +513,24 @@ export default function AdminPage() {
   const tabs = isFull ? allTabs : allTabs.filter((t) => MOD_TABS.includes(t.key));
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-950">
+    <div className="flex h-screen overflow-hidden bg-surface-950 relative">
+      {/* Mobile header bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-12 bg-surface-950 border-b border-surface-800 flex items-center px-3 gap-3">
+        <button onClick={() => setShowMobileSidebar(!showMobileSidebar)} className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-white/10">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+        <span className="text-sm font-semibold text-white">{isFull ? 'Admin' : 'Mod'} Panel</span>
+      </div>
+
+      {/* Mobile overlay */}
+      {showMobileSidebar && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setShowMobileSidebar(false)} />}
+
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col border-r border-surface-800 bg-surface-950">
+      <aside className={cn(
+        'w-64 flex flex-col border-r border-surface-800 bg-surface-950 shrink-0',
+        'fixed md:relative inset-y-0 left-0 z-40 transition-transform duration-200',
+        showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      )}>
         <div className="border-b border-surface-800 p-4">
           <div className="flex items-center gap-3">
             <Link href="/dashboard">
@@ -533,7 +549,7 @@ export default function AdminPage() {
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => { setActiveTab(tab.key); setShowMobileSidebar(false); }}
               className={cn(
                 'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                 activeTab === tab.key
@@ -556,8 +572,8 @@ export default function AdminPage() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-7xl mx-auto">
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
+        <div className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
           {activeTab === 'overview' && stats && <OverviewTab stats={stats} />}
           {activeTab === 'users' && (
             <UsersTab
@@ -953,7 +969,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
 
             {expandedProject === p.id && projectStats[p.id] && (
               <div className="border-t border-surface-800 px-6 py-4 bg-surface-900/80">
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 mb-4">
                   {[
                     { label: 'Scripts', val: projectStats[p.id].scripts },
                     { label: 'Words', val: projectStats[p.id].words.toLocaleString() },

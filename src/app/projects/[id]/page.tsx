@@ -133,7 +133,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       <div className="mb-8">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">{currentProject.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">{currentProject.title}</h1>
             {currentProject.logline && (
               <p className="mt-2 text-surface-400 max-w-2xl">{currentProject.logline}</p>
             )}

@@ -34,6 +34,12 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const [language, setLanguage] = useState('');
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  // Project customization
+  const [projectAccentColor, setProjectAccentColor] = useState<string | null>(null);
+  const [projectSidebarTabs, setProjectSidebarTabs] = useState<Record<string, boolean> | null>(null);
+  const [savingCustom, setSavingCustom] = useState(false);
+  const [savedCustom, setSavedCustom] = useState(false);
+
   useEffect(() => { fetchProject(); }, [params.id]);
 
   const fetchProject = async () => {
@@ -45,6 +51,8 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       setForm(data || {});
       setCoverUrl(data?.cover_url || null);
       setLanguage(data?.language || '');
+      setProjectAccentColor(data?.accent_color || null);
+      setProjectSidebarTabs(data?.sidebar_tabs || null);
     } catch (err) {
       console.error('Unexpected error fetching project settings:', err);
     } finally {
@@ -135,11 +143,11 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   if (!project) return <div className="p-8 text-surface-400">Project not found.</div>;
 
   return (
-    <div className="p-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-white mb-8">Project Settings</h1>
+    <div className="p-3 sm:p-4 md:p-8 max-w-3xl">
+      <h1 className="text-xl sm:text-2xl font-bold text-white mb-4 md:mb-8">Project Settings</h1>
 
       {/* General settings */}
-      <Card className="p-6 mb-6">
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <h2 className="text-lg font-semibold text-white mb-6">General</h2>
         <div className="space-y-4">
           <Input label="Project Title" value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} />
@@ -147,7 +155,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
             placeholder="A one-sentence summary of your story..." />
           <Textarea label="Synopsis" value={form.synopsis || ''} onChange={(e) => setForm({ ...form, synopsis: e.target.value })} rows={5}
             placeholder="A detailed summary of the story..." />
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1.5">Genre</label>
               <select value={form.genre || ''} onChange={(e) => setForm({ ...form, genre: e.target.value })}
@@ -191,7 +199,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       </Card>
 
       {/* Cover Image */}
-      <Card className="p-6 mb-6">
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <h2 className="text-lg font-semibold text-white mb-2">Cover Image</h2>
         <p className="text-sm text-surface-400 mb-4">This image is displayed on your dashboard project card.</p>
         <div className="flex items-start gap-6">
@@ -267,8 +275,132 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
         </div>
       </Card>
 
+      {/* Project Customization */}
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="text-lg font-semibold text-white mb-2">Project Customization</h2>
+        <p className="text-sm text-surface-400 mb-6">Override your global preferences for this project only. Leave on "Default" to use your account settings.</p>
+
+        {/* Accent Color Override */}
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-surface-300 mb-3">Accent Color</h3>
+          <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+            <button
+              onClick={() => setProjectAccentColor(null)}
+              className={`h-10 rounded-lg border-2 transition-all text-xs font-medium ${
+                !projectAccentColor
+                  ? 'border-white bg-surface-800 text-white'
+                  : 'border-surface-700 bg-surface-900 text-surface-400 hover:border-surface-600'
+              }`}
+            >
+              Default
+            </button>
+            {[
+              { key: 'brand', color: '#dd574e', label: 'Red' },
+              { key: 'blue', color: '#3b82f6', label: 'Blue' },
+              { key: 'green', color: '#10b981', label: 'Green' },
+              { key: 'purple', color: '#8b5cf6', label: 'Purple' },
+              { key: 'pink', color: '#ec4899', label: 'Pink' },
+              { key: 'orange', color: '#f97316', label: 'Orange' },
+              { key: 'cyan', color: '#06b6d4', label: 'Cyan' },
+              { key: 'amber', color: '#f59e0b', label: 'Amber' },
+              { key: 'lime', color: '#84cc16', label: 'Lime' },
+              { key: 'rose', color: '#f43f5e', label: 'Rose' },
+              { key: 'indigo', color: '#6366f1', label: 'Indigo' },
+              { key: 'teal', color: '#14b8a6', label: 'Teal' },
+            ].map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setProjectAccentColor(c.key)}
+                title={c.label}
+                className={`relative h-10 rounded-lg border-2 transition-all ${
+                  projectAccentColor === c.key
+                    ? 'border-white scale-105 ring-2 ring-white/20'
+                    : 'border-transparent hover:scale-105'
+                }`}
+                style={{ backgroundColor: c.color }}
+              >
+                {projectAccentColor === c.key && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar Tabs Override */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-surface-300">Sidebar Tabs</h3>
+            {projectSidebarTabs && (
+              <button onClick={() => setProjectSidebarTabs(null)} className="text-xs text-brand-400 hover:text-brand-300">
+                Reset to default
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {[
+              { key: 'script', label: '📝 Script' }, { key: 'scenes', label: '🎬 Scenes' },
+              { key: 'characters', label: '👤 Characters' }, { key: 'locations', label: '📍 Locations' },
+              { key: 'shots', label: '🎥 Shots' }, { key: 'storyboard', label: '🖼️ Storyboard' },
+              { key: 'schedule', label: '📅 Schedule' }, { key: 'budget', label: '💰 Budget' },
+              { key: 'documents', label: '📄 Documents' }, { key: 'moodboard', label: '🎨 Moodboard' },
+              { key: 'ideas', label: '💡 Ideas' }, { key: 'mindmap', label: '🧠 Mind Map' },
+              { key: 'team', label: '👥 Team' }, { key: 'thumbnails', label: '🖼️ Thumbnails' },
+              { key: 'seo', label: '📊 SEO' }, { key: 'sponsors', label: '💼 Sponsors' },
+              { key: 'broll', label: '🎞️ B-Roll' }, { key: 'checklist', label: '✅ Checklist' },
+            ].map((tab) => {
+              const isOn = projectSidebarTabs ? (projectSidebarTabs[tab.key] !== false) : true;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    const prev = projectSidebarTabs || {};
+                    setProjectSidebarTabs({ ...prev, [tab.key]: !isOn });
+                  }}
+                  className={`p-2 rounded-lg border text-left transition-all ${
+                    isOn
+                      ? 'border-brand-500/40 bg-brand-500/5'
+                      : 'border-surface-700 opacity-40'
+                  }`}
+                >
+                  <p className={`text-xs font-medium ${isOn ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 pt-4 border-t border-surface-800">
+          <Button
+            loading={savingCustom}
+            onClick={async () => {
+              setSavingCustom(true);
+              const supabase = createClient();
+              await supabase.from('projects').update({
+                accent_color: projectAccentColor,
+                sidebar_tabs: projectSidebarTabs,
+              }).eq('id', params.id);
+              // Apply immediately
+              if (projectAccentColor) {
+                document.documentElement.setAttribute('data-accent', projectAccentColor);
+              }
+              setSavingCustom(false);
+              setSavedCustom(true);
+              setTimeout(() => setSavedCustom(false), 2000);
+            }}
+          >
+            {savedCustom ? '✓ Saved' : 'Save Customization'}
+          </Button>
+          {savedCustom && <span className="text-sm text-green-400">Project customization saved</span>}
+        </div>
+      </Card>
+
       {/* Project info */}
-      <Card className="p-6 mb-6">
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <h2 className="text-lg font-semibold text-white mb-4">Project Info</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
@@ -291,7 +423,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       </Card>
 
       {/* Export */}
-      <Card className="p-6 mb-6">
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <h2 className="text-lg font-semibold text-white mb-4">Export</h2>
         <p className="text-sm text-surface-400 mb-4">Export your project data for backup or migration.</p>
         <div className="flex gap-3">
@@ -321,7 +453,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       </Card>
 
       {/* Showcase & Finished Production */}
-      <Card className="p-6 mb-6">
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-white mb-1">Showcase & Finished Production</h2>

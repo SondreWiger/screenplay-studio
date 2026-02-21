@@ -95,6 +95,11 @@ const ELEMENT_CYCLE: ScriptElementType[] = [
   'scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
 ];
 
+// YouTube/Content Creator element cycle
+const YOUTUBE_ELEMENT_CYCLE: ScriptElementType[] = [
+  'chapter_marker', 'hook', 'talking_point', 'broll_note', 'cta', 'sponsor_read',
+];
+
 function getNextElementType(current: ScriptElementType): ScriptElementType {
   switch (current) {
     case 'scene_heading': return 'action';
@@ -103,6 +108,13 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
     case 'dialogue': return 'action';
     case 'parenthetical': return 'dialogue';
     case 'transition': return 'scene_heading';
+    // YouTube elements
+    case 'chapter_marker': return 'talking_point';
+    case 'hook': return 'talking_point';
+    case 'talking_point': return 'talking_point';
+    case 'broll_note': return 'talking_point';
+    case 'cta': return 'talking_point';
+    case 'sponsor_read': return 'talking_point';
     default: return 'action';
   }
 }
@@ -117,19 +129,59 @@ function getElementClass(type: ScriptElementType): string {
     case 'transition': return 'sp-transition';
     case 'centered': return 'sp-centered';
     case 'note': return 'sp-note';
+    // YouTube elements
+    case 'chapter_marker': return 'sp-chapter';
+    case 'hook': return 'sp-hook';
+    case 'talking_point': return 'sp-talking-point';
+    case 'broll_note': return 'sp-broll-note';
+    case 'cta': return 'sp-cta';
+    case 'sponsor_read': return 'sp-sponsor';
     default: return '';
   }
 }
 
-function getElementPlaceholder(type: ScriptElementType): string {
+// ============================================================
+// Screenplay Studio Creator Format (SSCF) 
+// A custom script format designed for content creators
+// ============================================================
+const YOUTUBE_FORMAT_GUIDE = {
+  title: 'Screenplay Studio Creator Format',
+  tagline: 'A structured script format designed for content creators',
+  elements: [
+    { type: 'chapter_marker', symbol: '#', name: 'Chapter', desc: 'Timestamp & section title. Creates video chapters.' },
+    { type: 'hook', symbol: '!', name: 'Hook', desc: 'Opening hook or attention grabber. Keep it punchy!' },
+    { type: 'talking_point', symbol: '>', name: 'Script', desc: 'Your main spoken content. What you\'ll say on camera.' },
+    { type: 'broll_note', symbol: '[', name: 'Visual', desc: 'B-roll, graphics, or visual cue. What viewers see.' },
+    { type: 'cta', symbol: '*', name: 'CTA', desc: 'Call to action. Subscribe, like, comment prompts.' },
+    { type: 'sponsor_read', symbol: '$', name: 'Sponsor', desc: 'Sponsored segment with talking points.' },
+  ],
+  shortcuts: {
+    '#': 'chapter_marker',
+    '!': 'hook', 
+    '>': 'talking_point',
+    '[': 'broll_note',
+    '*': 'cta',
+    '$': 'sponsor_read',
+  },
+};
+
+function getElementPlaceholder(type: ScriptElementType, isYouTube = false): string {
   switch (type) {
-    case 'scene_heading': return 'INT./EXT. LOCATION - TIME';
-    case 'action': return 'Action...';
+    // Traditional screenplay elements
+    case 'scene_heading': return isYouTube ? '# SECTION TITLE' : 'INT./EXT. LOCATION - TIME';
+    case 'action': return isYouTube ? 'What you\'ll say or do...' : 'Action...';
     case 'character': return 'CHARACTER NAME';
     case 'dialogue': return 'Dialogue...';
     case 'parenthetical': return '(direction)';
     case 'transition': return 'CUT TO:';
     case 'note': return '[[Note]]';
+    // YouTube/Creator elements
+    case 'chapter_marker': return '# Chapter Title (00:00)';
+    case 'hook': return '! Hook or attention grabber...';
+    case 'talking_point': return '> What you\'ll say on camera...';
+    case 'broll_note': return '[ B-roll or visual description ]';
+    case 'cta': return '* Call to action...';
+    case 'sponsor_read': return '$ SPONSOR: Talking points...';
     default: return '';
   }
 }
@@ -205,12 +257,28 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [savingDraft, setSavingDraft] = useState(false);
   const [restoringDraft, setRestoringDraft] = useState(false);
   const [showScriptsSidebar, setShowScriptsSidebar] = useState(false);
+  const [showFormatIntro, setShowFormatIntro] = useState(false);
+  const [useCreatorFormat, setUseCreatorFormat] = useState(true); // vs plaintext
+  const [showFormatReminder, setShowFormatReminder] = useState(() => {
+    try { return localStorage.getItem('ss_hide_format_reminder') !== 'true'; } catch { return true; }
+  });
 
   // Role awareness: determine if user can edit
   const { members, currentProject } = useProjectStore();
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+
+  // Detect YouTube/Content Creator project
+  const isContentCreator = useMemo(() => {
+    const projectType = (currentProject as any)?.project_type;
+    const scriptType = (currentProject as any)?.script_type;
+    return ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(projectType) ||
+           ['youtube', 'tiktok'].includes(scriptType);
+  }, [currentProject]);
+
+  // Element cycle based on project type
+  const elementCycle = isContentCreator ? YOUTUBE_ELEMENT_CYCLE : ELEMENT_CYCLE;
 
   // ── Inline comments ──────────────────────────────────────────
   const [scriptComments, setScriptComments] = useState<(Comment & { profile?: Profile })[]>([]);
@@ -306,6 +374,29 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
   useEffect(() => { fetchScripts(params.id); }, [params.id]);
   useEffect(() => { if (currentScript) { fetchElements(currentScript.id); loadDrafts(); } }, [currentScript?.id]);
+  
+  // Show format intro for content creator projects (once per project)
+  useEffect(() => {
+    if (isContentCreator && currentScript) {
+      const key = `sscf_intro_seen_${params.id}`;
+      const seen = localStorage.getItem(key);
+      if (!seen) {
+        setShowFormatIntro(true);
+      }
+      // Load user's format preference
+      const formatPref = localStorage.getItem(`sscf_use_format_${params.id}`);
+      if (formatPref !== null) {
+        setUseCreatorFormat(formatPref === 'true');
+      }
+    }
+  }, [isContentCreator, currentScript, params.id]);
+
+  const dismissFormatIntro = (useFormat: boolean) => {
+    localStorage.setItem(`sscf_intro_seen_${params.id}`, 'true');
+    localStorage.setItem(`sscf_use_format_${params.id}`, String(useFormat));
+    setUseCreatorFormat(useFormat);
+    setShowFormatIntro(false);
+  };
 
   const loadDrafts = async () => {
     if (!currentScript) return;
@@ -392,6 +483,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }, [elements]);
 
   const sceneHeadings = elements.filter((e) => e.element_type === 'scene_heading');
+  const chapterMarkers = elements.filter((e) => e.element_type === 'chapter_marker');
 
   // Map scene_heading element IDs → sequential scene number (use existing scene_number if set, otherwise auto-index)
   const sceneNumberMap = useMemo(() => {
@@ -888,7 +980,72 @@ ${pageHTML}
   };
 
   return (
-    <div className="flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden" onKeyDown={handleEditorKeyDown}>
+    <>
+      {/* Creator Format Intro Modal */}
+      {showFormatIntro && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-surface-900 border border-surface-700 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-6 border-b border-surface-800 bg-gradient-to-r from-brand-600/20 to-purple-600/20">
+              <h2 className="text-2xl font-bold text-white">Welcome to Creator Format</h2>
+              <p className="text-surface-300 mt-1">A structured script format designed for YouTubers & content creators</p>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-surface-300 mb-4">
+                Unlike traditional screenplays, content creator scripts focus on what you'll <strong className="text-white">say</strong> and what viewers will <strong className="text-white">see</strong>. 
+                Our format helps you organize your video structure clearly.
+              </p>
+              
+              <div className="bg-surface-800 rounded-xl p-4 mb-6">
+                <h3 className="text-sm font-semibold text-white mb-3">Element Types</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {YOUTUBE_FORMAT_GUIDE.elements.map(el => (
+                    <div key={el.type} className="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-700/50">
+                      <code className="px-2 py-1 bg-surface-700 text-brand-400 rounded font-mono text-sm">{el.symbol}</code>
+                      <div>
+                        <p className="text-white font-medium text-sm">{el.name}</p>
+                        <p className="text-surface-400 text-xs">{el.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-surface-800/50 rounded-xl p-4 mb-6">
+                <h3 className="text-sm font-semibold text-white mb-2">Quick Start</h3>
+                <pre className="text-sm text-surface-300 font-mono whitespace-pre-wrap">
+{`# Intro (0:00)
+! Ever wondered how to get 10x more views?
+> In today's video, I'll show you exactly how...
+[ Screen recording of analytics ]
+
+# Main Content (0:30)
+> First, let's talk about the algorithm...
+[ B-roll of typing ]
+
+* Don't forget to subscribe!
+$ SPONSOR: Bored VPN - Get 60% off with code...`}
+                </pre>
+              </div>
+
+              <p className="text-xs text-surface-500 mb-4">
+                You can change your preference anytime in Display Settings.
+              </p>
+            </div>
+
+            <div className="p-4 border-t border-surface-800 flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => dismissFormatIntro(false)}>
+                Use Plain Text Instead
+              </Button>
+              <Button onClick={() => dismissFormatIntro(true)}>
+                Use Creator Format
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden" onKeyDown={handleEditorKeyDown}>
       {/* Scripts sidebar toggle on mobile */}
       <button onClick={() => setShowScriptsSidebar(!showScriptsSidebar)}
         className="fixed bottom-4 left-4 z-30 md:hidden p-3 bg-brand-600 text-white rounded-full shadow-lg">
@@ -927,17 +1084,38 @@ ${pageHTML}
         </div>
 
         <div className="flex-1 overflow-y-auto p-3">
-          <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Scenes ({sceneHeadings.length})</p>
-          <div className="space-y-0.5">
-            {sceneHeadings.map((scene, i) => (
-              <button key={scene.id} onClick={() => {
-                document.getElementById(`el-${scene.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
-                <span className="text-surface-600 mr-1">{i + 1}.</span>
-                <span className="truncate">{scene.content || 'Untitled Scene'}</span>
-              </button>
-            ))}
-          </div>
+          {isContentCreator ? (
+            <>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Chapters ({chapterMarkers.length})</p>
+              <div className="space-y-0.5">
+                {chapterMarkers.map((chapter, i) => (
+                  <button key={chapter.id} onClick={() => {
+                    document.getElementById(`el-${chapter.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
+                    <span className="text-brand-400 mr-1">#</span>
+                    <span className="truncate">{(chapter.content || '# Untitled Chapter').replace(/^#\s*/, '')}</span>
+                  </button>
+                ))}
+                {chapterMarkers.length === 0 && (
+                  <p className="text-xs text-surface-600 px-2 py-1">No chapters yet. Start a line with # to create one.</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Scenes ({sceneHeadings.length})</p>
+              <div className="space-y-0.5">
+                {sceneHeadings.map((scene, i) => (
+                  <button key={scene.id} onClick={() => {
+                    document.getElementById(`el-${scene.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
+                    <span className="text-surface-600 mr-1">{i + 1}.</span>
+                    <span className="truncate">{scene.content || 'Untitled Scene'}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="p-3 border-t border-surface-800">
@@ -984,10 +1162,10 @@ ${pageHTML}
       {/* Editor */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Toolbar */}
-        <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-3 md:px-4 py-2 flex items-center gap-2 no-print overflow-x-auto" style={{ overflow: 'visible' }}>
+        <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-2 md:px-4 py-2 flex items-center gap-1.5 md:gap-2 no-print overflow-x-auto" style={{ overflow: 'visible' }}>
           {canEdit && (
             <div className="flex items-center gap-1 shrink-0">
-              {ELEMENT_CYCLE.map((type) => (
+              {elementCycle.map((type) => (
                 <button key={type} onClick={() => handleToolbarAdd(type)}
                   className={cn('px-2 md:px-2.5 py-1 rounded text-[10px] md:text-[11px] font-medium transition-colors whitespace-nowrap',
                     activeElementType === type ? 'bg-brand-600/20 text-brand-400' : 'text-surface-500 hover:text-white hover:bg-white/5'
@@ -1011,7 +1189,7 @@ ${pageHTML}
                 <div className="w-2 h-2 rounded-full bg-green-500" />Saved
               </span>
             )}
-            <span className="text-[10px] text-surface-600 px-1">Tab: change type &middot; Enter: new line</span>
+            <span className="text-[10px] text-surface-600 px-1 hidden md:inline">Tab: change type &middot; Enter: new line</span>
             <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Search (Cmd+F)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
@@ -1080,6 +1258,14 @@ ${pageHTML}
             <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')} title="Draft Timeline">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
+            {/* Format Guide Button (for content creators) */}
+            {isContentCreator && (
+              <button onClick={() => setShowFormatIntro(true)}
+                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10"
+                title="Format Guide">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </button>
+            )}
             {/* Display Settings */}
             <div className="relative">
               <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
@@ -1226,11 +1412,11 @@ ${pageHTML}
         <div className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30">
           {/* Title page (rendered in document) */}
           {currentScript?.title_page_data && (currentScript.title_page_data.title || currentScript.title_page_data.author) && (
-            <div className={cn('sp-page mx-auto mt-8 mb-0 shadow-2xl rounded-sm cursor-pointer group', darkMode && 'sp-dark')}
+            <div className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0 shadow-2xl rounded-sm cursor-pointer group', darkMode && 'sp-dark')}
               onClick={() => setShowTitlePage(true)}
               title="Click to edit title page"
             >
-              <div className="flex flex-col justify-center items-center min-h-[600px] relative">
+              <div className="flex flex-col justify-center items-center min-h-[300px] md:min-h-[600px] relative">
                 <div className="text-center" style={{ marginTop: '-80px' }}>
                   {currentScript.title_page_data.title && (
                     <div className={cn('text-2xl font-bold uppercase tracking-wide mb-2', darkMode ? 'text-white' : 'text-black')}>
@@ -1281,10 +1467,10 @@ ${pageHTML}
           )}
 
           <div className={cn(
-            'sp-page mx-auto my-8 shadow-2xl rounded-sm',
+            'sp-page mx-auto my-4 md:my-8 shadow-2xl rounded-sm',
             darkMode && 'sp-dark',
-            displaySettings.pageWidth === 'narrow' && 'max-w-[6.5in]',
-            displaySettings.pageWidth === 'wide' && 'max-w-[9in]',
+            displaySettings.pageWidth === 'narrow' && 'md:max-w-[6.5in]',
+            displaySettings.pageWidth === 'wide' && 'md:max-w-[9in]',
           )} style={{ fontSize: `${displaySettings.fontSize}pt` }}>
             {elements.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32 text-center">
@@ -1317,6 +1503,7 @@ ${pageHTML}
                   sceneNumberMap={sceneNumberMap}
                   commentCount={commentCountMap[element.id] || 0}
                   onComment={openCommentPanel}
+                  isContentCreator={isContentCreator}
                 />
               ))
             )}
@@ -1368,7 +1555,46 @@ ${pageHTML}
         projectId={params.id} userId={user?.id || ''}
         onCreated={() => { fetchScripts(params.id); setShowNewScript(false); }}
       />
+
+      {/* Format Guide Reminder Card (floating, for content creators) */}
+      {isContentCreator && !showFormatIntro && showFormatReminder && (
+        <div className="fixed bottom-6 right-6 z-40 no-print">
+          <div className="bg-surface-800 border border-surface-700 rounded-xl shadow-xl p-4 max-w-xs animate-fade-in-up">
+            <button
+              onClick={() => {
+                setShowFormatReminder(false);
+                try { localStorage.setItem('ss_hide_format_reminder', 'true'); } catch {}
+              }}
+              className="absolute top-2 right-2 p-1 text-surface-500 hover:text-white rounded"
+              title="Dismiss"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div className="flex-1 min-w-0 pr-4">
+                <p className="text-sm font-medium text-white">Creator Format</p>
+                <p className="text-xs text-surface-400 mt-0.5">
+                  Use <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-400">#</code> for chapters,
+                  <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-400 ml-1">!</code> for hooks,
+                  <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-400 ml-1">&gt;</code> for script
+                </p>
+                <button
+                  onClick={() => setShowFormatIntro(true)}
+                  className="text-xs text-brand-400 hover:text-brand-300 mt-2 inline-flex items-center gap-1"
+                >
+                  View full guide
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </>
   );
 }
 
@@ -1605,6 +1831,7 @@ interface LineEditorProps {
   sceneNumberMap: Record<string, string>;
   commentCount: number;
   onComment: (elementId: string) => void;
+  isContentCreator: boolean;
 }
 
 const LineEditor = memo(function LineEditor({
@@ -1623,6 +1850,7 @@ const LineEditor = memo(function LineEditor({
   sceneNumberMap,
   commentCount,
   onComment,
+  isContentCreator,
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector
   const element = useScriptStore((s) => s.elements.find((e) => e.id === elementId));
@@ -2030,7 +2258,7 @@ const LineEditor = memo(function LineEditor({
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          data-placeholder={getElementPlaceholder(element.element_type)}
+          data-placeholder={getElementPlaceholder(element.element_type, isContentCreator)}
         />
 
         {/* Autocomplete dropdown */}
@@ -2060,7 +2288,8 @@ const LineEditor = memo(function LineEditor({
     && prev.canEdit === next.canEdit
     && prev.displaySettings === next.displaySettings
     && prev.characterColorMap === next.characterColorMap
-    && prev.commentCount === next.commentCount;
+    && prev.commentCount === next.commentCount
+    && prev.isContentCreator === next.isContentCreator;
   // Note: element content changes are handled by the Zustand selector
   // inside the component, not through props. onFocused and onComment
   // are intentionally excluded — they're stable parent callbacks.

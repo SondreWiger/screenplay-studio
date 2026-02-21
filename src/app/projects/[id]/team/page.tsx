@@ -153,7 +153,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Team</h1>
           <p className="text-sm text-surface-400 mt-1">

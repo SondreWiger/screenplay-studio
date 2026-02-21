@@ -5,6 +5,87 @@
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
+  /* ── Accent color CSS variables ────────────────────────── */
+  :root, [data-accent="brand"] {
+    --brand-50: 253 244 243;
+    --brand-100: 252 232 230;
+    --brand-200: 249 212 209;
+    --brand-300: 243 176 170;
+    --brand-400: 234 130 122;
+    --brand-500: 221 87 78;
+    --brand-600: 201 61 51;
+    --brand-700: 169 48 40;
+    --brand-800: 140 43 36;
+    --brand-900: 117 41 36;
+    --brand-950: 63 17 14;
+  }
+  [data-accent="blue"] {
+    --brand-50: 239 246 255; --brand-100: 219 234 254; --brand-200: 191 219 254;
+    --brand-300: 147 197 253; --brand-400: 96 165 250; --brand-500: 59 130 246;
+    --brand-600: 37 99 235; --brand-700: 29 78 216; --brand-800: 30 64 175;
+    --brand-900: 30 58 138; --brand-950: 23 37 84;
+  }
+  [data-accent="green"] {
+    --brand-50: 236 253 245; --brand-100: 209 250 229; --brand-200: 167 243 208;
+    --brand-300: 110 231 183; --brand-400: 52 211 153; --brand-500: 16 185 129;
+    --brand-600: 5 150 105; --brand-700: 4 120 87; --brand-800: 6 95 70;
+    --brand-900: 6 78 59; --brand-950: 2 44 34;
+  }
+  [data-accent="purple"] {
+    --brand-50: 245 243 255; --brand-100: 237 233 254; --brand-200: 221 214 254;
+    --brand-300: 196 181 253; --brand-400: 167 139 250; --brand-500: 139 92 246;
+    --brand-600: 124 58 237; --brand-700: 109 40 217; --brand-800: 91 33 182;
+    --brand-900: 76 29 149; --brand-950: 46 16 101;
+  }
+  [data-accent="pink"] {
+    --brand-50: 253 242 248; --brand-100: 252 231 243; --brand-200: 251 207 232;
+    --brand-300: 249 168 212; --brand-400: 244 114 182; --brand-500: 236 72 153;
+    --brand-600: 219 39 119; --brand-700: 190 24 93; --brand-800: 157 23 77;
+    --brand-900: 131 24 67; --brand-950: 80 7 36;
+  }
+  [data-accent="orange"] {
+    --brand-50: 255 247 237; --brand-100: 255 237 213; --brand-200: 254 215 170;
+    --brand-300: 253 186 116; --brand-400: 251 146 60; --brand-500: 249 115 22;
+    --brand-600: 234 88 12; --brand-700: 194 65 12; --brand-800: 154 52 18;
+    --brand-900: 124 45 18; --brand-950: 67 20 7;
+  }
+  [data-accent="cyan"] {
+    --brand-50: 236 254 255; --brand-100: 207 250 254; --brand-200: 165 243 252;
+    --brand-300: 103 232 249; --brand-400: 34 211 238; --brand-500: 6 182 212;
+    --brand-600: 8 145 178; --brand-700: 14 116 144; --brand-800: 21 94 117;
+    --brand-900: 22 78 99; --brand-950: 8 51 68;
+  }
+  [data-accent="amber"] {
+    --brand-50: 255 251 235; --brand-100: 254 243 199; --brand-200: 253 230 138;
+    --brand-300: 252 211 77; --brand-400: 251 191 36; --brand-500: 245 158 11;
+    --brand-600: 217 119 6; --brand-700: 180 83 9; --brand-800: 146 64 14;
+    --brand-900: 120 53 15; --brand-950: 69 26 3;
+  }
+  [data-accent="lime"] {
+    --brand-50: 247 254 231; --brand-100: 236 252 203; --brand-200: 217 249 157;
+    --brand-300: 190 242 100; --brand-400: 163 230 53; --brand-500: 132 204 22;
+    --brand-600: 101 163 13; --brand-700: 77 124 15; --brand-800: 63 98 18;
+    --brand-900: 54 83 20; --brand-950: 26 46 5;
+  }
+  [data-accent="rose"] {
+    --brand-50: 255 241 242; --brand-100: 255 228 230; --brand-200: 254 205 211;
+    --brand-300: 253 164 175; --brand-400: 251 113 133; --brand-500: 244 63 94;
+    --brand-600: 225 29 72; --brand-700: 190 18 60; --brand-800: 159 18 57;
+    --brand-900: 136 19 55; --brand-950: 76 5 25;
+  }
+  [data-accent="indigo"] {
+    --brand-50: 238 242 255; --brand-100: 224 231 255; --brand-200: 199 210 254;
+    --brand-300: 165 180 252; --brand-400: 129 140 248; --brand-500: 99 102 241;
+    --brand-600: 79 70 229; --brand-700: 67 56 202; --brand-800: 55 48 163;
+    --brand-900: 49 46 129; --brand-950: 30 27 75;
+  }
+  [data-accent="teal"] {
+    --brand-50: 240 253 250; --brand-100: 204 251 241; --brand-200: 153 246 228;
+    --brand-300: 94 234 212; --brand-400: 45 212 191; --brand-500: 20 184 166;
+    --brand-600: 13 148 136; --brand-700: 15 118 110; --brand-800: 17 94 89;
+    --brand-900: 19 78 74; --brand-950: 4 47 46;
+  }
+
   * {
     @apply border-surface-800;
   }
@@ -138,6 +219,65 @@
     padding-top: 12pt;
   }
 
+  /* YouTube/Content Creator element styles */
+  .sp-chapter {
+    @apply font-bold;
+    padding-top: 20pt;
+    padding-bottom: 8pt;
+    color: #6366f1;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+  }
+  .sp-line:first-child .sp-chapter {
+    padding-top: 0;
+  }
+
+  .sp-hook {
+    @apply font-semibold;
+    padding: 12pt;
+    background: rgba(249, 115, 22, 0.1);
+    border-left: 3px solid #f97316;
+    border-radius: 4px;
+    margin-top: 12pt;
+  }
+
+  .sp-talking-point {
+    padding-top: 12pt;
+    padding-left: 1rem;
+  }
+  .sp-talking-point::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #888;
+  }
+
+  .sp-broll-note {
+    @apply italic text-sm;
+    padding: 8pt 12pt;
+    background: rgba(139, 92, 246, 0.1);
+    border-left: 3px solid #8b5cf6;
+    border-radius: 4px;
+    margin-top: 8pt;
+    color: #a78bfa;
+  }
+
+  .sp-cta {
+    @apply font-medium;
+    padding: 12pt;
+    background: rgba(34, 197, 94, 0.1);
+    border-left: 3px solid #22c55e;
+    border-radius: 4px;
+    margin-top: 12pt;
+  }
+
+  .sp-sponsor {
+    padding: 12pt;
+    background: rgba(234, 179, 8, 0.1);
+    border-left: 3px solid #eab308;
+    border-radius: 4px;
+    margin-top: 12pt;
+  }
+
   /* =============================================
      Dark mode
      ============================================= */
@@ -157,6 +297,32 @@
   .sp-dark .sp-note {
     color: #999;
     border-left-color: #555;
+  }
+
+  /* Dark mode - YouTube elements */
+  .sp-dark .sp-chapter {
+    color: #818cf8;
+    border-bottom-color: rgba(129, 140, 248, 0.3);
+  }
+
+  .sp-dark .sp-hook {
+    background: rgba(249, 115, 22, 0.15);
+    border-left-color: #fb923c;
+  }
+
+  .sp-dark .sp-broll-note {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c4b5fd;
+  }
+
+  .sp-dark .sp-cta {
+    background: rgba(34, 197, 94, 0.15);
+    border-left-color: #4ade80;
+  }
+
+  .sp-dark .sp-sponsor {
+    background: rgba(234, 179, 8, 0.15);
+    border-left-color: #facc15;
   }
 
   /* Legacy class compat (keep for other pages) */
@@ -337,6 +503,62 @@
 button:active:not(:disabled),
 a:active:not(:disabled) {
   transform: scale(0.98);
+}
+
+/* =============================================
+   MOBILE RESPONSIVE — Screenplay & Global
+   ============================================= */
+@media (max-width: 768px) {
+  /* Script page: remove inch-based padding that crushes mobile */
+  .sp-page {
+    padding: 12px 10px 12px 14px !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .sp-character {
+    margin-left: 20% !important;
+  }
+
+  .sp-dialogue {
+    margin-left: 6% !important;
+    margin-right: 6% !important;
+  }
+
+  .sp-parenthetical {
+    margin-left: 12% !important;
+    margin-right: 12% !important;
+  }
+
+  .sp-transition {
+    text-align: right;
+  }
+
+  .sp-scene-heading {
+    margin-top: 16pt !important;
+    padding-bottom: 8pt !important;
+    font-size: 11pt !important;
+  }
+
+  .sp-element {
+    font-size: 11pt !important;
+  }
+
+  .sp-gutter {
+    display: none !important;
+  }
+
+  /* Legacy compat */
+  .screenplay-page {
+    padding: 12px 10px !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+  }
+  .screenplay-character { margin-left: 20% !important; }
+  .screenplay-dialogue { margin-left: 6% !important; margin-right: 6% !important; }
+  .screenplay-parenthetical { margin-left: 12% !important; margin-right: 12% !important; }
 }
 
 /* Print styles for script export */

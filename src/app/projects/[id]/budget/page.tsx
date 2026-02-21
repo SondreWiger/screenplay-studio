@@ -256,13 +256,13 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
           )}
         </div>
         {/* Actual */}
-        <div className="w-24 text-right">
-          <span className={cn('text-sm font-medium', item.is_income ? 'text-green-400' : itemOver ? 'text-red-400' : 'text-white')}>
+        <div className="w-20 sm:w-24 text-right">
+          <span className={cn('text-xs sm:text-sm font-medium', item.is_income ? 'text-green-400' : itemOver ? 'text-red-400' : 'text-white')}>
             {formatCurrency(item.actual_amount || 0)}
           </span>
         </div>
         {/* Paid/Unpaid status */}
-        <div className="w-20 flex justify-center">
+        <div className="w-16 sm:w-20 flex justify-center">
           {item.is_income ? (
             canEdit ? (
               <button

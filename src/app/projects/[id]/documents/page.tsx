@@ -304,6 +304,8 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     URL.revokeObjectURL(url);
   }, []);
 
+  const [showSidebar, setShowSidebar] = useState(false);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -313,9 +315,24 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full relative">
+      {/* Mobile sidebar toggle */}
+      <button onClick={() => setShowSidebar(!showSidebar)}
+        className="md:hidden fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-brand-600 text-white shadow-lg flex items-center justify-center">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+        </svg>
+      </button>
+
+      {/* Mobile overlay */}
+      {showSidebar && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setShowSidebar(false)} />}
+
       {/* Sidebar — folder tree & document list */}
-      <div className="w-64 border-r border-surface-800 flex flex-col bg-surface-950">
+      <div className={cn(
+        'w-72 md:w-64 border-r border-surface-800 flex flex-col bg-surface-950 shrink-0',
+        'fixed md:relative inset-y-0 left-0 z-40 transition-transform duration-200',
+        showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      )}>
         <div className="p-3 border-b border-surface-800">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-surface-500 uppercase tracking-wider flex items-center gap-2">
@@ -379,7 +396,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
           {currentDocuments.map((doc) => (
             <div key={doc.id} className="group">
               <button
-                onClick={() => setCurrentDoc(doc)}
+                onClick={() => { setCurrentDoc(doc); setShowSidebar(false); }}
                 className={cn(
                   'w-full text-left px-2 py-1.5 rounded text-xs transition-colors flex items-center gap-2',
                   currentDoc?.id === doc.id ? 'bg-brand-600/10 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'

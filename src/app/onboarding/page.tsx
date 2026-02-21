@@ -17,6 +17,7 @@ const USAGE_OPTIONS: { value: UsageIntent; label: string; description: string; i
   { value: 'writer', label: 'Writer', description: 'I want to write screenplays and scripts', icon: '✍️' },
   { value: 'producer', label: 'Producer / Filmmaker', description: 'I want to manage productions and collaborate', icon: '🎥' },
   { value: 'both', label: 'Writer & Producer', description: 'I write and produce — I want it all', icon: '🎬' },
+  { value: 'content_creator', label: 'Content Creator', description: 'YouTube, TikTok, podcasts — I make online content', icon: '▶️' },
   { value: 'student', label: 'Student / Learning', description: 'I\'m learning screenwriting and filmmaking', icon: '📚' },
 ];
 
@@ -52,6 +53,7 @@ export default function OnboardingPage() {
         setShowCommunity(true);
         setShowProductionTools(false);
         setShowCollaboration(false);
+        setScriptType('screenplay');
         break;
       case 'producer':
         setShowCommunity(false);
@@ -62,6 +64,12 @@ export default function OnboardingPage() {
         setShowCommunity(true);
         setShowProductionTools(true);
         setShowCollaboration(true);
+        break;
+      case 'content_creator':
+        setShowCommunity(true);
+        setShowProductionTools(true);
+        setShowCollaboration(true);
+        setScriptType('youtube');
         break;
       case 'student':
         setShowCommunity(true);

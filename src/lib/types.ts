@@ -7,7 +7,9 @@ export type ProjectStatus = 'development' | 'pre_production' | 'production' | 'p
 export type ScriptElementType =
   | 'scene_heading' | 'action' | 'character' | 'dialogue' | 'parenthetical'
   | 'transition' | 'shot' | 'note' | 'page_break' | 'title_page'
-  | 'centered' | 'lyrics' | 'synopsis' | 'section';
+  | 'centered' | 'lyrics' | 'synopsis' | 'section'
+  // YouTube/Content Creator elements
+  | 'hook' | 'talking_point' | 'broll_note' | 'cta' | 'sponsor_read' | 'chapter_marker';
 export type SceneTime = string; // Accepts any time-of-day value from scripts (DAY, NIGHT, MAGIC HOUR, etc.)
 export type SceneLocationType = 'INT' | 'EXT' | 'INT_EXT' | 'EXT_INT';
 export type RevisionColor = 'white' | 'blue' | 'pink' | 'yellow' | 'green' | 'goldenrod' | 'buff' | 'salmon' | 'cherry' | 'tan';
@@ -35,8 +37,13 @@ export type ChallengeType = 'weekly' | 'custom';
 export type ChallengePhase = 'upcoming' | 'submissions' | 'voting' | 'reveal_pending' | 'completed';
 export type ChallengeDifficulty = 'beginner' | 'intermediate' | 'advanced';
 export type ProductionStatus = 'pending' | 'approved' | 'rejected';
-export type UsageIntent = 'writer' | 'producer' | 'both' | 'student';
-export type ScriptType = 'screenplay' | 'stageplay' | 'episodic' | 'sketch' | 'comic' | 'podcast';
+export type UsageIntent = 'writer' | 'producer' | 'both' | 'student' | 'content_creator';
+export type ScriptType = 'screenplay' | 'stageplay' | 'episodic' | 'sketch' | 'comic' | 'podcast' | 'youtube' | 'tiktok';
+export type ProjectType = 'film' | 'youtube' | 'tiktok' | 'podcast' | 'documentary' | 'educational' | 'livestream';
+export type SponsorSegmentType = 'pre_roll' | 'mid_roll' | 'post_roll' | 'integration';
+export type ContentHookType = 'opening_hook' | 'intro' | 'cta' | 'outro' | 'transition';
+export type BrollStatus = 'needed' | 'found' | 'filmed' | 'edited';
+export type VideoVisibility = 'public' | 'unlisted' | 'private' | 'scheduled';
 export type CompanyRole = 'owner' | 'admin' | 'manager' | 'member' | 'viewer';
 export type CompanyPlan = 'free' | 'pro' | 'enterprise';
 export type SystemRole = 'writer' | 'moderator' | 'admin';
@@ -105,6 +112,9 @@ export interface Profile {
   show_activity: boolean;
   allow_dms: boolean;
   profile_views: number;
+  // Client customisation
+  accent_color?: string | null;
+  sidebar_tabs?: Record<string, boolean> | null;
 }
 
 export interface Project {
@@ -115,6 +125,8 @@ export interface Project {
   genre: string[];
   format: string;
   script_type: ScriptType;
+  project_type: ProjectType;
+  content_metadata: Record<string, any>;
   target_length_minutes: number | null;
   status: ProjectStatus;
   poster_url: string | null;
@@ -135,6 +147,8 @@ export interface Project {
   created_by: string;
   created_at: string;
   updated_at: string;
+  accent_color?: string | null;
+  sidebar_tabs?: Record<string, boolean> | null;
 }
 
 export type ProductionRole = 'director' | 'producer' | 'dp' | 'ad' | 'pa' | 'gaffer' | 'grip' | 'sound_mixer' | 'boom_op' | 'art_director' | 'wardrobe' | 'makeup' | 'editor' | 'vfx' | 'colorist' | 'composer' | 'actor' | 'extra' | 'script_supervisor' | 'stunt_coordinator' | 'location_manager' | 'craft_services' | 'other' | '';
@@ -1148,6 +1162,13 @@ export const ELEMENT_LABELS: Record<ScriptElementType, string> = {
   lyrics: 'Lyrics',
   synopsis: 'Synopsis',
   section: 'Section',
+  // YouTube/Content Creator elements
+  hook: 'Hook',
+  talking_point: 'Talking Point',
+  broll_note: 'B-Roll Note',
+  cta: 'CTA',
+  sponsor_read: 'Sponsor Read',
+  chapter_marker: 'Chapter',
 };
 
 export const ELEMENT_SHORTCUTS: Record<string, ScriptElementType> = {
@@ -1229,6 +1250,38 @@ export const GENRE_OPTIONS = [
   'Thriller', 'War', 'Western',
 ];
 
+// Location markers for the map
+export type MarkerType = 'location' | 'bus_stop' | 'train_station' | 'parking' | 'base_camp' | 'custom';
+
+export interface LocationMarker {
+  id: string;
+  project_id: string;
+  location_id: string | null; // Deprecated, use location_ids
+  location_ids: string[]; // Multiple locations per marker
+  name: string;
+  description: string | null;
+  marker_type: MarkerType;
+  lat: number;
+  lng: number;
+  color: string;
+  icon: string | null;
+  tags: string[];
+  created_at: string;
+}
+
+export type RouteType = 'bus' | 'train' | 'walking' | 'driving' | 'custom';
+
+export interface LocationRoute {
+  id: string;
+  project_id: string;
+  name: string;
+  route_type: RouteType;
+  color: string;
+  coordinates: { lat: number; lng: number }[];
+  notes: string | null;
+  created_at: string;
+}
+
 export const FORMAT_OPTIONS = [
   { value: 'feature', label: 'Feature Film' },
   { value: 'short', label: 'Short Film' },
@@ -1247,4 +1300,156 @@ export const SCRIPT_TYPE_OPTIONS: { value: ScriptType; label: string; descriptio
   { value: 'sketch', label: 'Sketch / Short', description: 'Comedy sketches and short-form content', icon: '😄' },
   { value: 'comic', label: 'Comic / Graphic Novel', description: 'Panel-based visual storytelling', icon: '📖' },
   { value: 'podcast', label: 'Podcast / Audio Drama', description: 'Audio-first scripted content', icon: '🎙️' },
+  { value: 'youtube', label: 'YouTube Video', description: 'Long-form video content with hooks & CTAs', icon: '▶️' },
+  { value: 'tiktok', label: 'TikTok / Reels / Shorts', description: 'Short-form vertical video content', icon: '📱' },
+];
+
+export const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string; description: string; icon: string }[] = [
+  { value: 'film', label: 'Film / TV', description: 'Traditional film, TV, or web series production', icon: '🎬' },
+  { value: 'youtube', label: 'YouTube', description: 'Long-form YouTube videos and series', icon: '▶️' },
+  { value: 'tiktok', label: 'TikTok / Shorts', description: 'Short-form vertical video content', icon: '📱' },
+  { value: 'podcast', label: 'Podcast', description: 'Audio podcasts and video podcasts', icon: '🎙️' },
+  { value: 'documentary', label: 'Documentary', description: 'Documentary films and series', icon: '🎥' },
+  { value: 'educational', label: 'Course / Tutorial', description: 'Educational content and online courses', icon: '📚' },
+  { value: 'livestream', label: 'Livestream', description: 'Live streaming content planning', icon: '🔴' },
+];
+
+// ============================================================
+// Content Creator Types
+// ============================================================
+
+export interface Thumbnail {
+  id: string;
+  project_id: string;
+  title: string;
+  image_url: string | null;
+  is_primary: boolean;
+  text_overlay: string | null;
+  font_style: string | null;
+  color_scheme: string[];
+  notes: string | null;
+  a_b_test_group: string | null;
+  click_rate: number | null;
+  impressions: number;
+  clicks: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SponsorSegment {
+  id: string;
+  project_id: string;
+  sponsor_name: string;
+  segment_type: SponsorSegmentType;
+  start_time: number | null;
+  end_time: number | null;
+  script_text: string | null;
+  talking_points: string[];
+  cta_link: string | null;
+  promo_code: string | null;
+  payment_amount: number | null;
+  payment_status: 'pending' | 'invoiced' | 'paid';
+  due_date: string | null;
+  notes: string | null;
+  is_disclosed: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VideoChapter {
+  id: string;
+  project_id: string;
+  title: string;
+  timestamp: number;
+  description: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VideoSEO {
+  id: string;
+  project_id: string;
+  video_title: string | null;
+  video_description: string | null;
+  tags: string[];
+  category: string | null;
+  default_language: string;
+  target_keywords: string[];
+  hashtags: string[];
+  end_screen_elements: { type: string; position: string; video_id?: string }[];
+  cards: { timestamp: number; type: string; video_id?: string; url?: string }[];
+  publish_date: string | null;
+  visibility: VideoVisibility;
+  made_for_kids: boolean;
+  age_restricted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UploadChecklistItem {
+  id: string;
+  project_id: string;
+  item_text: string;
+  is_completed: boolean;
+  category: 'general' | 'video' | 'audio' | 'seo' | 'legal' | 'promotion';
+  is_default: boolean;
+  sort_order: number;
+  completed_at: string | null;
+  completed_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrollItem {
+  id: string;
+  project_id: string;
+  scene_id: string | null;
+  description: string;
+  source: 'film' | 'stock' | 'archive' | 'screen_recording' | 'animation' | null;
+  source_url: string | null;
+  duration_seconds: number | null;
+  timestamp_start: number | null;
+  timestamp_end: number | null;
+  status: BrollStatus;
+  notes: string | null;
+  tags: string[];
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContentHook {
+  id: string;
+  project_id: string;
+  hook_type: ContentHookType;
+  content: string;
+  duration_seconds: number | null;
+  timestamp: number | null;
+  notes: string | null;
+  is_template: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Default upload checklist items for content creators
+export const DEFAULT_UPLOAD_CHECKLIST: { text: string; category: string }[] = [
+  { text: 'Video exported in correct resolution', category: 'video' },
+  { text: 'Audio levels normalized', category: 'audio' },
+  { text: 'Background music licensed', category: 'legal' },
+  { text: 'Sponsor disclosure added', category: 'legal' },
+  { text: 'Title optimized for search', category: 'seo' },
+  { text: 'Description written with links', category: 'seo' },
+  { text: 'Tags added', category: 'seo' },
+  { text: 'Thumbnail uploaded', category: 'general' },
+  { text: 'End screen added', category: 'video' },
+  { text: 'Cards placed at key moments', category: 'video' },
+  { text: 'Chapters/timestamps created', category: 'seo' },
+  { text: 'Captions/subtitles uploaded', category: 'video' },
+  { text: 'Schedule publish time set', category: 'general' },
+  { text: 'Community post ready', category: 'promotion' },
+  { text: 'Social media posts scheduled', category: 'promotion' },
 ];

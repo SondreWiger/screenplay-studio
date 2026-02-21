@@ -95,8 +95,8 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
   if (!project) return <div className="p-8 text-surface-400">Project not found.</div>;
 
   return (
-    <div className="p-8 max-w-3xl">
-      <div className="flex items-center gap-3 mb-8">
+    <div className="p-3 sm:p-4 md:p-8 max-w-3xl">
+      <div className="flex items-center gap-3 mb-4 md:mb-8">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
           <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
@@ -109,7 +109,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
       </div>
 
       {/* Finished Work URL */}
-      <Card className="p-6 mb-6">
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <h2 className="text-lg font-semibold text-white mb-2">Finished Production</h2>
         <p className="text-sm text-surface-400 mb-4">
           Add a link to the final result and optionally showcase it on the community.
@@ -140,7 +140,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
       {isShowcased && (
         <>
           {/* Description */}
-          <Card className="p-6 mb-6">
+          <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-lg font-semibold text-white mb-4">Showcase Description</h2>
             <Textarea
               value={showcaseDescription}
@@ -151,7 +151,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
           </Card>
 
           {/* Deep Dive */}
-          <Card className="p-6 mb-6">
+          <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-lg font-semibold text-white mb-2">Deep Dive</h2>
             <p className="text-sm text-surface-400 mb-4">Let visitors explore your creative process — all content is shown read-only.</p>
             <div className="space-y-3">
@@ -180,7 +180,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
           </Card>
 
           {/* Set Photos */}
-          <Card className="p-6 mb-6">
+          <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-lg font-semibold text-white mb-2">Set Photos</h2>
             <p className="text-sm text-surface-400 mb-4">Add behind-the-scenes and set photos with optional descriptions.</p>
             <div className="space-y-4">
@@ -253,7 +253,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
           </Card>
 
           {/* External Links */}
-          <Card className="p-6 mb-6">
+          <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-lg font-semibold text-white mb-2">External Links</h2>
             <p className="text-sm text-surface-400 mb-4">Link to IMDB, TMDB, Letterboxd, or your official website.</p>
             <div className="space-y-3">
@@ -270,7 +270,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
           </Card>
 
           {/* Production Trivia */}
-          <Card className="p-6 mb-6">
+          <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-lg font-semibold text-white mb-2">Production Trivia</h2>
             <p className="text-sm text-surface-400 mb-4">Share behind-the-scenes facts, fun stories, and production insights.</p>
             <div className="space-y-3">

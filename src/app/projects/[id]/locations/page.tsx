@@ -1,11 +1,25 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
 import type { Location, SceneLocationType } from '@/lib/types';
+
+// Dynamic import with SSR disabled for Leaflet
+const LocationMap = dynamic(
+  () => import('./LocationMap'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full bg-surface-900">
+        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
+      </div>
+    ),
+  }
+);
 
 export default function LocationsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -19,6 +33,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   const [showEditor, setShowEditor] = useState(false);
   const [filter, setFilter] = useState<'all' | 'confirmed' | 'scouting' | 'needs_setup'>('all');
   const [syncing, setSyncing] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const hasSynced = useRef(false);
 
@@ -137,52 +152,81 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
+    <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Locations</h1>
-          <p className="text-sm text-surface-400 mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Locations</h1>
+          <p className="text-xs sm:text-sm text-surface-400 mt-1">
             {locations.filter((l) => l.is_confirmed).length} confirmed / {locations.length} total
             {locations.filter(needsSetup).length > 0 && (
               <span className="text-amber-400"> &bull; {locations.filter(needsSetup).length} need setup</span>
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* View mode toggle */}
+          <div className="flex bg-surface-800 rounded-lg p-0.5">
+            <button onClick={() => setViewMode('list')} className={cn(
+              'px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+              viewMode === 'list' ? 'bg-surface-700 text-white' : 'text-surface-400 hover:text-white'
+            )}>
+              <svg className="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              List
+            </button>
+            <button onClick={() => setViewMode('map')} className={cn(
+              'px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+              viewMode === 'map' ? 'bg-surface-700 text-white' : 'text-surface-400 hover:text-white'
+            )}>
+              <svg className="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              Map
+            </button>
+          </div>
           {canEdit && (
-            <Button variant="secondary" onClick={handleAutoSync} loading={syncing}>
+            <Button size="sm" variant="secondary" onClick={handleAutoSync} loading={syncing}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Sync from Script
+              <span className="hidden sm:inline">Sync from Script</span>
+              <span className="sm:hidden">Sync</span>
             </Button>
           )}
-          {canEdit && <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>
+          {canEdit && <Button size="sm" onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add Location
+            <span className="hidden sm:inline">Add Location</span>
+            <span className="sm:hidden">Add</span>
           </Button>}
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6">
-        {(['all', 'confirmed', 'scouting', 'needs_setup'] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)} className={cn(
-            'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-            filter === f ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
-          )}>
-            {f === 'needs_setup' ? `Needs Setup (${locations.filter(needsSetup).length})` : f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {filtered.length === 0 ? (
-        <EmptyState title="No locations yet" description="Add locations for your production"
-          action={canEdit ? <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>Add Location</Button> : undefined} />
+      {viewMode === 'map' ? (
+        <div className="rounded-xl overflow-hidden border border-surface-800 h-[calc(100dvh-14rem)] md:h-[calc(100dvh-12rem)] relative">
+          <LocationMap projectId={params.id} locations={locations} canEdit={canEdit} />
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map((location) => (
+        <>
+          <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
+            {(['all', 'confirmed', 'scouting', 'needs_setup'] as const).map((f) => (
+              <button key={f} onClick={() => setFilter(f)} className={cn(
+                'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors',
+                filter === f ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+              )}>
+                {f === 'needs_setup' ? `Needs Setup (${locations.filter(needsSetup).length})` : f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {filtered.length === 0 ? (
+            <EmptyState title="No locations yet" description="Add locations for your production"
+              action={canEdit ? <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>Add Location</Button> : undefined} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              {filtered.map((location) => (
             <Card key={location.id} hover className="overflow-hidden" onClick={() => { setSelectedLocation(location); setShowEditor(true); }}>
               <div className="p-5">
                 <div className="flex items-start justify-between">
@@ -242,7 +286,9 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
               </div>
             </Card>
           ))}
-        </div>
+            </div>
+          )}
+        </>
       )}
 
       <LocationEditor
@@ -316,20 +362,20 @@ function LocationEditor({ isOpen, onClose, location, projectId, userId, onSaved,
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={location ? `Edit: ${location.name}` : 'New Location'} size="xl">
-      <div className="flex gap-1 mb-6 bg-surface-800 rounded-lg p-1">
+      <div className="flex gap-1 mb-4 md:mb-6 bg-surface-800 rounded-lg p-1 overflow-x-auto">
         {['details', 'logistics', 'technical', 'contact'].map((t) => (
           <button key={t} onClick={() => setTab(t)} className={cn(
-            'flex-1 px-3 py-1.5 rounded-md text-sm font-medium capitalize transition-colors',
+            'flex-1 min-w-[70px] px-2 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium capitalize transition-colors whitespace-nowrap',
             tab === t ? 'bg-surface-700 text-white' : 'text-surface-400 hover:text-white'
           )}>{t}</button>
         ))}
       </div>
 
-      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+      <div className="space-y-4 max-h-[50vh] md:max-h-[60vh] overflow-y-auto pr-1 md:pr-2">
         {tab === 'details' && (
           <>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+              <div className="sm:col-span-2">
                 <Input label="Location Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               </div>
               <div>

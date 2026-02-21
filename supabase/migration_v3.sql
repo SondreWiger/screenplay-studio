@@ -655,4 +655,105 @@ DO $$ BEGIN
 END $$;
 
 
+-- ============================================================
+-- 18. STORYBOARD FRAMES TABLE
+-- Dedicated table for storyboard frames with drawing data
+-- and reference images, separate from the shots table.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS storyboard_frames (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  shot_id UUID REFERENCES shots(id) ON DELETE SET NULL,
+  scene_id UUID REFERENCES scenes(id) ON DELETE SET NULL,
+  title TEXT NOT NULL DEFAULT '',
+  sort_order INT NOT NULL DEFAULT 0,
+  -- Drawing data: JSON for canvas strokes
+  drawing_data JSONB DEFAULT '[]',
+  -- Image: either an uploaded URL or a reference link
+  image_url TEXT,
+  -- Reference images: can be URLs or uploaded
+  reference_images JSONB DEFAULT '[]',
+  notes TEXT,
+  duration_hint TEXT,
+  camera_notes TEXT,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE storyboard_frames ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Storyboard frames follow project access"
+  ON storyboard_frames FOR ALL USING (
+    project_id IN (
+      SELECT id FROM projects WHERE created_by = auth.uid()
+      UNION
+      SELECT project_id FROM project_members WHERE user_id = auth.uid()
+    )
+  );
+
+
+-- ============================================================
+-- 19. LOCATION MAP MARKERS TABLE
+-- Map markers for locations with infrastructure data
+-- ============================================================
+CREATE TABLE IF NOT EXISTS location_markers (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  marker_type TEXT NOT NULL DEFAULT 'location',
+  -- Types: 'location', 'bus_stop', 'train_station', 'parking', 'base_camp', 'custom'
+  lat DOUBLE PRECISION NOT NULL,
+  lng DOUBLE PRECISION NOT NULL,
+  color TEXT DEFAULT '#dd574e',
+  icon TEXT, -- optional icon name
+  tags JSONB DEFAULT '[]',
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE location_markers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Location markers follow project access"
+  ON location_markers FOR ALL USING (
+    project_id IN (
+      SELECT id FROM projects WHERE created_by = auth.uid()
+      UNION
+      SELECT project_id FROM project_members WHERE user_id = auth.uid()
+    )
+  );
+
+-- ============================================================
+-- 20. LOCATION ROUTES TABLE
+-- Routes/paths for transport infrastructure
+-- ============================================================
+CREATE TABLE IF NOT EXISTS location_routes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  route_type TEXT NOT NULL DEFAULT 'custom',
+  -- Types: 'bus', 'train', 'walking', 'driving', 'custom'
+  color TEXT DEFAULT '#3b82f6',
+  -- GeoJSON linestring coordinates [[lng, lat], ...]
+  coordinates JSONB DEFAULT '[]',
+  notes TEXT,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE location_routes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Location routes follow project access"
+  ON location_routes FOR ALL USING (
+    project_id IN (
+      SELECT id FROM projects WHERE created_by = auth.uid()
+      UNION
+      SELECT project_id FROM project_members WHERE user_id = auth.uid()
+    )
+  );
+
+
 COMMIT;

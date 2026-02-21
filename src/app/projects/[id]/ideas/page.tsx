@@ -108,7 +108,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Kanban board */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 min-h-[60vh]">
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 min-h-[40vh] sm:min-h-[60vh]">
         {STATUS_COLUMNS.map((col) => {
           const colIdeas = filtered.filter((i) => i.status === col.value);
           return (

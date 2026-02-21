@@ -76,6 +76,10 @@ export function useAuth() {
 
         if (profile) {
           setUser(profile as Profile);
+          // Apply global accent color from profile
+          if (typeof document !== 'undefined' && (profile as Profile).accent_color) {
+            document.documentElement.setAttribute('data-accent', (profile as Profile).accent_color!);
+          }
         } else {
           // Profile missing — create minimal one from auth data
           const meta = authUser.user_metadata || {};
@@ -129,6 +133,9 @@ export function useAuth() {
             );
             if (profile) {
               setUser(profile as Profile);
+              if (typeof document !== 'undefined' && (profile as Profile).accent_color) {
+                document.documentElement.setAttribute('data-accent', (profile as Profile).accent_color!);
+              }
             } else {
               // OAuth user with no profile yet — create one
               const meta = session.user.user_metadata || {};

@@ -43,6 +43,13 @@ const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   lyrics: 'Lyrics',
   synopsis: 'Action',
   section: 'New Act',
+  // YouTube/Content Creator elements (map to Action in FDX)
+  hook: 'Action',
+  talking_point: 'Action',
+  broll_note: 'Action',
+  cta: 'Action',
+  sponsor_read: 'Action',
+  chapter_marker: 'Action',
 };
 
 // ============================================================

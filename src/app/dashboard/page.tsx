@@ -11,8 +11,8 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
-import type { Project, ScriptType, Company, CompanyMember, CompanyRole } from '@/lib/types';
-import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS } from '@/lib/types';
+import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole } from '@/lib/types';
+import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, PROJECT_TYPE_OPTIONS } from '@/lib/types';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 
@@ -164,26 +164,26 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-surface-950">
       {/* Top Bar */}
       <header className="sticky top-0 z-40 border-b border-surface-800 bg-surface-950/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
               </svg>
             </div>
-            <h1 className="text-lg font-semibold text-white">Screenplay Studio</h1>
+            <h1 className="text-base sm:text-lg font-semibold text-white">Screenplay Studio</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
               Blog
             </Link>
             {user?.show_community !== false && (
-              <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors">
+              <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
                 Community
               </Link>
             )}
             {companyMemberships.length > 0 && (
-              <Link href="/company" className="text-xs text-surface-500 hover:text-surface-300 transition-colors">
+              <Link href="/company" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
                 Company
               </Link>
             )}
@@ -260,7 +260,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Welcome + Stats row */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
           <div>
@@ -273,7 +273,7 @@ export default function DashboardPage() {
           {(() => {
             const allP = [...projects, ...Object.values(companyProjects).flat()];
             return (
-              <div className="flex items-center gap-4 sm:gap-6">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-6">
                 {[
                   { label: 'Projects', value: allP.length },
                   { label: 'In Dev', value: allP.filter(p => p.status === 'development').length },
@@ -578,10 +578,14 @@ function NewProjectModal({
   const [logline, setLogline] = useState('');
   const [format, setFormat] = useState('feature');
   const [scriptType, setScriptType] = useState<ScriptType>(currentUser?.preferred_script_type || 'screenplay');
+  const [projectType, setProjectType] = useState<ProjectType>('film');
   const [genre, setGenre] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0); // 0 = script type, 1 = details
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+
+  // Determine if this is a content creator project
+  const isContentCreator = ['youtube', 'tiktok'].includes(scriptType);
 
   // Only companies where user has create permissions
   const creatableCompanies = companyMemberships.filter((m) =>
@@ -598,6 +602,14 @@ function NewProjectModal({
 
     try {
       const supabase = createClient();
+      
+      // Set project type based on script type
+      let finalProjectType: ProjectType = projectType;
+      if (scriptType === 'youtube') finalProjectType = 'youtube';
+      else if (scriptType === 'tiktok') finalProjectType = 'tiktok';
+      else if (scriptType === 'podcast') finalProjectType = 'podcast';
+      else finalProjectType = 'film';
+      
       const { data, error: insertError } = await supabase
         .from('projects')
         .insert({
@@ -606,6 +618,7 @@ function NewProjectModal({
           format,
           genre,
           script_type: scriptType,
+          project_type: finalProjectType,
           created_by: userId,
           company_id: selectedCompanyId || null,
         })
@@ -723,8 +736,8 @@ function NewProjectModal({
           )}
 
           <Input
-            label="Project Title"
-            placeholder="The Midnight Hour"
+            label={isContentCreator ? 'Video Title' : 'Project Title'}
+            placeholder={isContentCreator ? 'How I Make $10k/Month as a Creator' : 'The Midnight Hour'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -732,46 +745,75 @@ function NewProjectModal({
           />
 
           <Textarea
-            label="Logline"
-            placeholder="A hard-boiled detective uncovers a conspiracy that reaches the highest levels of power..."
+            label={isContentCreator ? 'Video Concept' : 'Logline'}
+            placeholder={isContentCreator 
+              ? 'In this video, I break down my exact strategies for...'
+              : 'A hard-boiled detective uncovers a conspiracy that reaches the highest levels of power...'}
             value={logline}
             onChange={(e) => setLogline(e.target.value)}
             rows={3}
           />
 
-          <Select
-            label="Format"
-            value={format}
-            onChange={(e) => setFormat(e.target.value)}
-            options={FORMAT_OPTIONS}
-          />
+          {!isContentCreator && (
+            <>
+              <Select
+                label="Format"
+                value={format}
+                onChange={(e) => setFormat(e.target.value)}
+                options={FORMAT_OPTIONS}
+              />
 
-          {scriptType === 'episodic' && (
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Season Number" type="number" min={1} value="" onChange={() => {}} placeholder="1" />
-              <Input label="Episodes Planned" type="number" min={1} value="" onChange={() => {}} placeholder="8" />
-            </div>
+              {scriptType === 'episodic' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <Input label="Season Number" type="number" min={1} value="" onChange={() => {}} placeholder="1" />
+                  <Input label="Episodes Planned" type="number" min={1} value="" onChange={() => {}} placeholder="8" />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-surface-300">Genre</label>
+                <div className="flex flex-wrap gap-2">
+                  {GENRE_OPTIONS.map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => toggleGenre(g)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        genre.includes(g)
+                          ? 'bg-brand-600 text-white'
+                          : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-surface-300">Genre</label>
-            <div className="flex flex-wrap gap-2">
-              {GENRE_OPTIONS.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => toggleGenre(g)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                    genre.includes(g)
-                      ? 'bg-brand-600 text-white'
-                      : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
+          {isContentCreator && (
+            <div className="bg-surface-800/50 rounded-xl p-4 border border-surface-700">
+              <p className="text-sm text-surface-300 mb-3">🎉 You&apos;ll get access to:</p>
+              <ul className="text-xs text-surface-400 space-y-1.5">
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> Script editor with Hook, Intro, CTA templates
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> Thumbnail planner with A/B testing
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> SEO optimizer (title, tags, description)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> Sponsor segment tracker
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span> Upload checklist
+                </li>
+              </ul>
             </div>
-          </div>
+          )}
 
           {error && (
             <p className="text-sm text-red-400 bg-red-400/10 rounded-lg px-4 py-2">{error}</p>

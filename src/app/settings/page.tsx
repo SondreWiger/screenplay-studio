@@ -46,6 +46,13 @@ export default function UserSettingsPage() {
   const [showProductionTools, setShowProductionTools] = useState(true);
   const [showCollaboration, setShowCollaboration] = useState(true);
   const [preferredScriptType, setPreferredScriptType] = useState<ScriptType>('screenplay');
+  const [accentColor, setAccentColor] = useState('brand');
+  const [sidebarTabs, setSidebarTabs] = useState<Record<string, boolean>>({
+    script: true, scenes: true, characters: true, locations: true,
+    shots: true, storyboard: true, schedule: true, budget: true,
+    documents: true, moodboard: true, ideas: true, mindmap: true,
+    team: true, thumbnails: true, seo: true, sponsors: true, broll: true, checklist: true,
+  });
 
   // Company
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -78,6 +85,8 @@ export default function UserSettingsPage() {
     setShowProductionTools(user.show_production_tools !== false);
     setShowCollaboration(user.show_collaboration !== false);
     setPreferredScriptType(user.preferred_script_type || 'screenplay');
+    setAccentColor(user.accent_color || 'brand');
+    if (user.sidebar_tabs) setSidebarTabs(prev => ({ ...prev, ...user.sidebar_tabs }));
 
     loadCompanies();
   }, [user, authLoading]);
@@ -138,7 +147,12 @@ export default function UserSettingsPage() {
       show_production_tools: showProductionTools,
       show_collaboration: showCollaboration,
       preferred_script_type: preferredScriptType,
+      accent_color: accentColor,
+      sidebar_tabs: sidebarTabs,
     }).eq('id', user.id);
+
+    // Apply accent color to document immediately
+    document.documentElement.setAttribute('data-accent', accentColor);
 
     useAuthStore.getState().setUser({
       ...user,
@@ -147,6 +161,8 @@ export default function UserSettingsPage() {
       show_production_tools: showProductionTools,
       show_collaboration: showCollaboration,
       preferred_script_type: preferredScriptType,
+      accent_color: accentColor,
+      sidebar_tabs: sidebarTabs,
     });
 
     setSaving(false);
@@ -205,7 +221,7 @@ export default function UserSettingsPage() {
     <div className="min-h-screen bg-surface-950">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-surface-800 bg-surface-950/80 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto flex items-center justify-between px-6 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -215,14 +231,14 @@ export default function UserSettingsPage() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Tab bar */}
-        <div className="flex gap-1 mb-8 p-1 rounded-xl bg-surface-900 w-fit">
+        <div className="flex gap-1 mb-4 md:mb-8 p-1 rounded-xl bg-surface-900 w-fit overflow-x-auto max-w-full">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                 tab === t.key
                   ? 'bg-surface-800 text-white shadow-sm'
                   : 'text-surface-400 hover:text-white'
@@ -275,7 +291,7 @@ export default function UserSettingsPage() {
               {/* Profile Theme */}
               <div className="mt-6">
                 <label className="block text-sm font-medium text-surface-300 mb-3">Profile Theme</label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { key: 'default', label: 'Default', gradient: 'from-stone-900 to-stone-800' },
                     { key: 'midnight', label: 'Midnight', gradient: 'from-indigo-950 to-slate-900' },
@@ -455,7 +471,7 @@ export default function UserSettingsPage() {
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">Default Script Type</h2>
               <p className="text-sm text-surface-400 mb-4">Pre-selected when you create new projects.</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {SCRIPT_TYPE_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
@@ -471,6 +487,91 @@ export default function UserSettingsPage() {
                   </button>
                 ))}
               </div>
+            </Card>
+
+            {/* Accent Color */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Accent Color</h2>
+              <p className="text-sm text-surface-400 mb-4">Personalize the interface with your preferred color.</p>
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                {[
+                  { key: 'brand', color: '#dd574e', label: 'Red (Default)' },
+                  { key: 'blue', color: '#3b82f6', label: 'Blue' },
+                  { key: 'green', color: '#10b981', label: 'Green' },
+                  { key: 'purple', color: '#8b5cf6', label: 'Purple' },
+                  { key: 'pink', color: '#ec4899', label: 'Pink' },
+                  { key: 'orange', color: '#f97316', label: 'Orange' },
+                  { key: 'cyan', color: '#06b6d4', label: 'Cyan' },
+                  { key: 'amber', color: '#f59e0b', label: 'Amber' },
+                  { key: 'lime', color: '#84cc16', label: 'Lime' },
+                  { key: 'rose', color: '#f43f5e', label: 'Rose' },
+                  { key: 'indigo', color: '#6366f1', label: 'Indigo' },
+                  { key: 'teal', color: '#14b8a6', label: 'Teal' },
+                ].map((c) => (
+                  <button
+                    key={c.key}
+                    onClick={() => setAccentColor(c.key)}
+                    title={c.label}
+                    className={`relative h-10 rounded-lg border-2 transition-all ${
+                      accentColor === c.key
+                        ? 'border-white scale-105 ring-2 ring-white/20'
+                        : 'border-transparent hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: c.color }}
+                  >
+                    {accentColor === c.key && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-surface-500 mt-3">Changes apply when you save preferences.</p>
+            </Card>
+
+            {/* Sidebar Tabs */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Project Sidebar Tabs</h2>
+              <p className="text-sm text-surface-400 mb-4">Choose which tabs appear in project sidebars. Hidden tabs are still accessible from the menu.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {[
+                  { key: 'script', label: '📝 Script', desc: 'Write your screenplay' },
+                  { key: 'scenes', label: '🎬 Scenes', desc: 'Scene breakdown' },
+                  { key: 'characters', label: '👤 Characters', desc: 'Character profiles' },
+                  { key: 'locations', label: '📍 Locations', desc: 'Filming locations' },
+                  { key: 'shots', label: '🎥 Shots', desc: 'Shot list' },
+                  { key: 'storyboard', label: '🖼️ Storyboard', desc: 'Visual planning' },
+                  { key: 'schedule', label: '📅 Schedule', desc: 'Production calendar' },
+                  { key: 'budget', label: '💰 Budget', desc: 'Cost tracking' },
+                  { key: 'documents', label: '📄 Documents', desc: 'Attachments' },
+                  { key: 'moodboard', label: '🎨 Moodboard', desc: 'Visual inspiration' },
+                  { key: 'ideas', label: '💡 Ideas', desc: 'Idea capture' },
+                  { key: 'mindmap', label: '🧠 Mind Map', desc: 'Story mapping' },
+                  { key: 'team', label: '👥 Team', desc: 'Collaborators' },
+                  // Content creator specific
+                  { key: 'thumbnails', label: '🖼️ Thumbnails', desc: 'Thumbnail planner' },
+                  { key: 'seo', label: '📊 SEO', desc: 'Video optimization' },
+                  { key: 'sponsors', label: '💼 Sponsors', desc: 'Sponsorship tracking' },
+                  { key: 'broll', label: '🎞️ B-Roll', desc: 'Footage planning' },
+                  { key: 'checklist', label: '✅ Checklist', desc: 'Upload checklist' },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
+                    className={`p-2 rounded-lg border text-left transition-all ${
+                      sidebarTabs[tab.key]
+                        ? 'border-brand-500/40 bg-brand-500/5'
+                        : 'border-surface-700 opacity-40'
+                    }`}
+                  >
+                    <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-surface-500 mt-3">You can also customize per-project in project settings.</p>
             </Card>
 
             <div className="flex items-center gap-3">
@@ -512,7 +613,7 @@ export default function UserSettingsPage() {
                           Manage
                         </Link>
                       </div>
-                      <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
                         <div>
                           <p className="text-surface-500">Plan</p>
                           <p className="text-surface-300 capitalize">{company.plan}</p>

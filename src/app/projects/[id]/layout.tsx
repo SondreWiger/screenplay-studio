@@ -43,8 +43,23 @@ export default function ProjectLayout({
 
   useNotifications(user?.id);
 
+  // Merge user + project accent color (project overrides user)
+  const effectiveAccent = currentProject?.accent_color || user?.accent_color || 'brand';
+
+  // Merge user + project sidebar tabs (project overrides user)
+  const effectiveSidebarTabs: Record<string, boolean> | null =
+    currentProject?.sidebar_tabs
+      ? { ...(user?.sidebar_tabs || {}), ...currentProject.sidebar_tabs }
+      : user?.sidebar_tabs || null;
+
   // Close mobile menu on navigation
   useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
+
+  // Apply accent color to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-accent', effectiveAccent);
+    return () => { document.documentElement.removeAttribute('data-accent'); };
+  }, [effectiveAccent]);
 
   // ⌘+B toggle sidebar
   useEffect(() => {
@@ -118,11 +133,65 @@ export default function ProjectLayout({
 
   const showProduction = user?.show_production_tools !== false;
   const showCollab = user?.show_collaboration !== false;
+  
+  // Check if this is a content creator project
+  const isContentCreator = ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(currentProject.project_type || '') 
+    || ['youtube', 'tiktok'].includes(currentProject.script_type || '');
 
-  type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean };
+  type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean; contentCreator?: boolean; filmOnly?: boolean };
   type NavCategory = { category: string; items: NavItem[] };
 
-  const navCategories: NavCategory[] = [
+  // Build navigation based on project type
+  const navCategories: NavCategory[] = isContentCreator ? [
+    // Content Creator Navigation
+    {
+      category: '',
+      items: [
+        { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
+      ],
+    },
+    {
+      category: 'Script',
+      items: [
+        { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
+        { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
+      ],
+    },
+    {
+      category: 'Video',
+      items: [
+        { label: 'Thumbnails', href: `/projects/${params.id}/thumbnails`, icon: 'thumbnails', always: true },
+        { label: 'B-Roll', href: `/projects/${params.id}/broll`, icon: 'shots', always: true },
+        { label: 'Storyboard', href: `/projects/${params.id}/storyboard`, icon: 'storyboard', always: true },
+        { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
+      ],
+    },
+    {
+      category: 'Publish',
+      items: [
+        { label: 'SEO & Metadata', href: `/projects/${params.id}/seo`, icon: 'seo', always: true },
+        { label: 'Sponsors', href: `/projects/${params.id}/sponsors`, icon: 'sponsors', always: true },
+        { label: 'Checklist', href: `/projects/${params.id}/checklist`, icon: 'checklist', always: true },
+        { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
+      ],
+    },
+    {
+      category: 'Collaboration',
+      items: [
+        { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
+        { label: 'Comments', href: `/projects/${params.id}/comments`, icon: 'comments', collab: true },
+        { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+      ],
+    },
+    ...(!isViewer ? [{
+      category: '',
+      items: [
+        { label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings', always: true },
+      ],
+    }] : []),
+  ] : [
+    // Film/TV Navigation (original)
     {
       category: '',
       items: [
@@ -175,6 +244,10 @@ export default function ProjectLayout({
   ];
 
   const isItemVisible = (item: NavItem) => {
+    // Check sidebar tab preferences (overview and settings always visible)
+    if (effectiveSidebarTabs && item.icon !== 'overview' && item.icon !== 'settings') {
+      if (effectiveSidebarTabs[item.icon] === false) return false;
+    }
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
@@ -206,6 +279,11 @@ export default function ProjectLayout({
     onset: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
     comments: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>,
     showcase: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>,
+    // Content Creator Icons
+    thumbnails: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+    seo: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+    sponsors: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    checklist: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>,
   };
 
   // Active page label for mobile header
