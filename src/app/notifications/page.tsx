@@ -17,6 +17,7 @@ const FILTER_OPTIONS: { key: 'all' | NotificationType; label: string }[] = [
   { key: 'company_invitation', label: 'Company Invites' },
   { key: 'project_comment', label: 'Project Comments' },
   { key: 'task_assigned', label: 'Tasks' },
+  { key: 'ticket_reply', label: 'Support' },
 ];
 
 export default function NotificationsPage() {

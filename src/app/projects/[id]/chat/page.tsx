@@ -6,7 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Input, Modal, Avatar, Badge, LoadingSpinner } from '@/components/ui';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
-import type { ProjectChannel, ChannelMessage, ProjectMember, UserRole } from '@/lib/types';
+import type { ProjectChannel, ChannelMessage, ProjectMember, UserRole, ProductionRole } from '@/lib/types';
+import { PRODUCTION_ROLES } from '@/lib/types';
 
 // ============================================================
 // Role → colour mapping for chat name display
@@ -77,6 +78,12 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     if (m) return m.role;
     if (currentProject?.created_by === userId) return 'owner';
     return 'viewer';
+  };
+
+  const getProductionRoleLabel = (userId: string): string | null => {
+    const m = memberMap.get(userId);
+    if (!m?.production_role) return null;
+    return PRODUCTION_ROLES.find((r) => r.value === m.production_role)?.label || null;
   };
 
   // ============================================================
@@ -497,6 +504,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                     const senderRole = getRoleForUser(msg.sender_id);
                     const roleColor = ROLE_COLORS[senderRole];
                     const roleBadge = ROLE_BADGES[senderRole];
+                    const prodRole = getProductionRoleLabel(msg.sender_id);
 
                     return (
                       <div key={msg.id} className={cn('group hover:bg-white/[0.02] rounded-lg px-2 py-0.5', showHeader && 'mt-3 pt-1')}>
@@ -516,6 +524,11 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                                 <span className={cn('text-[9px] px-1.5 py-0.5 rounded-full font-medium', roleBadge.color)}>
                                   {roleBadge.label}
                                 </span>
+                                {prodRole && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-brand-500/20 text-brand-400">
+                                    {prodRole}
+                                  </span>
+                                )}
                                 <span className="text-[10px] text-surface-600">{formatTime(msg.created_at)}</span>
                               </div>
                               <p className="text-sm text-surface-200 break-words mt-0.5">{msg.content}</p>
@@ -602,7 +615,12 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                           <p className={cn('text-xs font-medium truncate', ROLE_COLORS[role])}>
                             {m.profile?.full_name || m.profile?.email || 'User'}
                           </p>
-                          {m.job_title && (
+                          {m.production_role && (
+                            <p className="text-[10px] text-brand-400 truncate">
+                              {PRODUCTION_ROLES.find((r) => r.value === m.production_role)?.label || m.production_role}
+                            </p>
+                          )}
+                          {!m.production_role && m.job_title && (
                             <p className="text-[10px] text-surface-600 truncate">{m.job_title}</p>
                           )}
                         </div>

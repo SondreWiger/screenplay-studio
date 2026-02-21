@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -19,6 +19,8 @@ const PAGE_LABELS: Record<string, string> = {
   shots: 'Shot List', schedule: 'Schedule', ideas: 'Ideas',
   budget: 'Budget', team: 'Team', settings: 'Settings',
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
+  storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
+  showcase: 'Showcase',
 };
 
 export default function ProjectLayout({
@@ -43,6 +45,18 @@ export default function ProjectLayout({
 
   // Close mobile menu on navigation
   useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
+
+  // ⌘+B toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        setSidebarCollapsed((v) => !v);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -74,6 +88,15 @@ export default function ProjectLayout({
         return;
       }
 
+      // Guard: only allow access if user owns or is a member of this project
+      const isMember = (membersRes.data || []).some((m: any) => m.user_id === user?.id);
+      const isOwner = projectRes.data?.created_by === user?.id;
+      if (!isMember && !isOwner) {
+        console.warn('Access denied: not a member or owner');
+        router.push('/dashboard');
+        return;
+      }
+
       setCurrentProject(projectRes.data);
       setMembers(membersRes.data || []);
     } catch (err) {
@@ -96,38 +119,72 @@ export default function ProjectLayout({
   const showProduction = user?.show_production_tools !== false;
   const showCollab = user?.show_collaboration !== false;
 
-  const navItems = [
-    { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
-    { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
-    { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
-    { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters', always: true },
-    { label: 'Mind Map', href: `/projects/${params.id}/mindmap`, icon: 'mindmap', always: true },
-    { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
-    { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', always: false, production: true },
-    { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', always: false, production: true },
-    { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', always: false, production: true },
-    { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', always: false, production: true },
-    { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
-    { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', always: false, collab: true },
-    { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', always: false, production: true },
-    { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', always: false, collab: true },
-    // Viewers can't access settings
-    ...(!isViewer ? [{ label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings', always: true }] : []),
+  type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean };
+  type NavCategory = { category: string; items: NavItem[] };
+
+  const navCategories: NavCategory[] = [
+    {
+      category: '',
+      items: [
+        { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
+      ],
+    },
+    {
+      category: 'Writing',
+      items: [
+        { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
+        { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
+      ],
+    },
+    {
+      category: 'Creative',
+      items: [
+        { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters', always: true },
+        { label: 'Mind Map', href: `/projects/${params.id}/mindmap`, icon: 'mindmap', always: true },
+        { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
+        { label: 'Storyboard', href: `/projects/${params.id}/storyboard`, icon: 'storyboard', always: true },
+      ],
+    },
+    {
+      category: 'Production',
+      items: [
+        { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', production: true },
+        { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', production: true },
+        { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', production: true },
+        { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
+        { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', production: true },
+        { label: 'On Set', href: `/projects/${params.id}/onset`, icon: 'onset', production: true },
+      ],
+    },
+    {
+      category: 'Collaboration',
+      items: [
+        { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
+        { label: 'Comments', href: `/projects/${params.id}/comments`, icon: 'comments', collab: true },
+        { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+      ],
+    },
+    ...(!isViewer ? [{
+      category: '',
+      items: [
+        { label: 'Showcase', href: `/projects/${params.id}/showcase`, icon: 'showcase', always: true },
+        { label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings', always: true },
+      ],
+    }] : []),
   ];
 
-  const visibleItems = navItems.filter((item) => {
+  const isItemVisible = (item: NavItem) => {
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
     return false;
-  });
+  };
 
-  const hiddenItems = navItems.filter((item) => {
-    if (item.always) return false;
-    if (item.production && !showProduction) return true;
-    if (item.collab && !showCollab) return true;
-    return false;
-  });
+  // Flat lists for backward compat
+  const allItems = navCategories.flatMap(c => c.items);
+  const visibleItems = allItems.filter(isItemVisible);
+  const hiddenItems = allItems.filter(i => !i.always && !isItemVisible(i));
 
   const icons: Record<string, React.ReactNode> = {
     overview: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
@@ -145,6 +202,10 @@ export default function ProjectLayout({
     budget: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     team: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
     settings: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+    storyboard: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5h6v6H4V5zm10 0h6v6h-6V5zM4 15h6v4H4v-4zm10-2h6v6h-6v-6z" /></svg>,
+    onset: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
+    comments: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>,
+    showcase: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>,
   };
 
   // Active page label for mobile header
@@ -180,24 +241,42 @@ export default function ProjectLayout({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-        {visibleItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        {navCategories.map((cat, catIdx) => {
+          const catVisibleItems = cat.items.filter(isItemVisible);
+          if (catVisibleItems.length === 0) return null;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className={cn(
-                'sidebar-link',
-                isActive && 'active',
-                !mobile && sidebarCollapsed && 'justify-center px-2'
+            <div key={cat.category || catIdx}>
+              {cat.category && (mobile || !sidebarCollapsed) && (
+                <div className="pt-3 pb-1 first:pt-0">
+                  <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-wider px-3">{cat.category}</p>
+                </div>
               )}
-              title={!mobile && sidebarCollapsed ? item.label : undefined}
-            >
-              {icons[item.icon]}
-              {(mobile || !sidebarCollapsed) && <span>{item.label}</span>}
-            </Link>
+              {cat.category && (!mobile && sidebarCollapsed) && catIdx > 0 && (
+                <div className="my-2 border-t border-surface-800/50" />
+              )}
+              <div className="space-y-0.5">
+                {catVisibleItems.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        'sidebar-link',
+                        isActive && 'active',
+                        !mobile && sidebarCollapsed && 'justify-center px-2'
+                      )}
+                      title={!mobile && sidebarCollapsed ? item.label : undefined}
+                    >
+                      {icons[item.icon]}
+                      {(mobile || !sidebarCollapsed) && <span>{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
 
@@ -266,6 +345,8 @@ export default function ProjectLayout({
           )}
           <button
             onClick={() => setSidebarCollapsed((v) => !v)}
+            aria-label={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
+            title={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             className={cn("flex items-center justify-center p-2 rounded-lg text-surface-500 hover:text-white hover:bg-white/5 transition-colors", sidebarCollapsed && "w-full")}
           >
             <svg className={cn('w-4 h-4 transition-transform', sidebarCollapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">

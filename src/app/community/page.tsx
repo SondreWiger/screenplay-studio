@@ -83,6 +83,17 @@ export default function CommunityPage() {
     router.refresh();
   };
 
+  const isMod = user?.role === 'moderator' || user?.role === 'admin';
+
+  const handleDeletePost = async (e: React.MouseEvent, postId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Delete this post? This cannot be undone.')) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('community_posts').delete().eq('id', postId);
+    if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
+  };
+
   // Filter & sort
   const filtered = posts
     .filter((p) => !selectedCategory || p.categories?.some((c) => c.slug === selectedCategory))
@@ -110,6 +121,7 @@ export default function CommunityPage() {
 
           <div className="hidden md:flex items-center gap-6">
             <Link href="/community" className="text-sm font-semibold text-stone-900 border-b-2 border-brand-500 pb-0.5">Feed</Link>
+            <Link href="/community/showcase" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Showcase</Link>
             <Link href="/community/challenges" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Challenges</Link>
             <Link href="/community/free-scripts" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Free Scripts</Link>
             <Link href="/community/chat" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Chat</Link>
@@ -232,6 +244,9 @@ export default function CommunityPage() {
 
             {/* Quick links */}
             <div className="mt-8 pt-6 border-t border-stone-200">
+              <Link href="/community/showcase" className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-900 transition-colors py-1.5">
+                🎬 Finished Projects
+              </Link>
               <Link href="/community/challenges" className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-900 transition-colors py-1.5">
                 🏆 Writing Challenges
               </Link>
@@ -313,6 +328,8 @@ export default function CommunityPage() {
                             )}
                             <span className="text-stone-600 font-medium">{post.author?.full_name || 'Anonymous'}</span>
                           </Link>
+                          {post.author?.role === 'moderator' && <span className="px-1 py-0.5 text-[8px] font-bold text-green-700 bg-green-50 rounded border border-green-200">MOD</span>}
+                          {post.author?.role === 'admin' && <span className="px-1 py-0.5 text-[8px] font-bold text-red-700 bg-red-50 rounded border border-red-200">ADMIN</span>}
                           <span>{timeAgo(post.created_at)}</span>
                           <span className="flex items-center gap-1">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -337,6 +354,16 @@ export default function CommunityPage() {
                           )}
                           {post.allow_edits && (
                             <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-700 bg-purple-50 rounded-full">Open to Edits</span>
+                          )}
+                          {/* Mod delete */}
+                          {user && (user.id === post.author_id || isMod) && (
+                            <button
+                              onClick={(e) => handleDeletePost(e, post.id)}
+                              className="ml-auto px-2 py-0.5 text-[10px] font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-full transition-colors flex items-center gap-1"
+                            >
+                              {user.id !== post.author_id && <span className="text-amber-600">MOD</span>}
+                              ✕ Delete
+                            </button>
                           )}
                         </div>
                       </div>

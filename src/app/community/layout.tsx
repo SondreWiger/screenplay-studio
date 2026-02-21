@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SupportButton } from '@/components/SupportButton';
 
 export const metadata: Metadata = {
   title: 'Community — Screenplay Studio',
@@ -6,5 +7,10 @@ export const metadata: Metadata = {
 };
 
 export default function CommunityLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      {children}
+      <SupportButton />
+    </>
+  );
 }

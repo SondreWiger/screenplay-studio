@@ -6,8 +6,9 @@ import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/lib/types';
-import { GENRE_OPTIONS, FORMAT_OPTIONS } from '@/lib/types';
+import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const STATUSES = [
   { value: 'development', label: 'Development', color: 'bg-yellow-500' },
@@ -15,6 +16,7 @@ const STATUSES = [
   { value: 'production', label: 'Production', color: 'bg-green-500' },
   { value: 'post_production', label: 'Post-Production', color: 'bg-purple-500' },
   { value: 'completed', label: 'Completed', color: 'bg-surface-500' },
+  { value: 'archived', label: 'Archived', color: 'bg-surface-700' },
 ];
 
 export default function SettingsPage({ params }: { params: { id: string } }) {
@@ -27,6 +29,9 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const [form, setForm] = useState<any>({});
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [coverUrlInput, setCoverUrlInput] = useState('');
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [language, setLanguage] = useState('');
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { fetchProject(); }, [params.id]);
@@ -39,6 +44,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       setProject(data);
       setForm(data || {});
       setCoverUrl(data?.cover_url || null);
+      setLanguage(data?.language || '');
     } catch (err) {
       console.error('Unexpected error fetching project settings:', err);
     } finally {
@@ -109,6 +115,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
     await supabase.from('projects').update({
       title: form.title, logline: form.logline, synopsis: form.synopsis,
       genre: form.genre, format: form.format, status: form.status,
+      language: language || null,
     }).eq('id', params.id);
     setSaving(false);
     setSaved(true);
@@ -165,6 +172,15 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               </select>
             </div>
           </div>
+          <div>
+            <label className="block text-sm font-medium text-surface-300 mb-1.5">Language</label>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)}
+              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
+              <option value="">Select language...</option>
+              {LANGUAGE_OPTIONS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+            </select>
+            <p className="text-[11px] text-surface-500 mt-1">Primary language of the script / film.</p>
+          </div>
         </div>
         <div className="flex items-center gap-3 mt-6 pt-6 border-t border-surface-800">
           <Button onClick={handleSave} loading={saving}>
@@ -200,7 +216,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               onChange={handleCoverUpload}
               className="hidden"
             />
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant="secondary"
                 size="sm"
@@ -210,7 +226,17 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                {coverUrl ? 'Replace Image' : 'Upload Image'}
+                Upload Image
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowUrlInput(!showUrlInput)}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                Paste URL
               </Button>
               {coverUrl && (
                 <Button variant="ghost" size="sm" onClick={handleRemoveCover}>
@@ -218,7 +244,25 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                 </Button>
               )}
             </div>
-            <p className="text-[11px] text-surface-500">Recommended: 800x450 (16:9). Max 5MB. JPG, PNG, or WebP.</p>
+            {showUrlInput && (
+              <div className="flex gap-2">
+                <Input
+                  value={coverUrlInput}
+                  onChange={(e) => setCoverUrlInput(e.target.value)}
+                  placeholder="https://... (paste image URL)"
+                  className="flex-1"
+                />
+                <Button size="sm" onClick={async () => {
+                  if (!coverUrlInput.trim()) return;
+                  const supabase = createClient();
+                  await supabase.from('projects').update({ cover_url: coverUrlInput.trim() }).eq('id', params.id);
+                  setCoverUrl(coverUrlInput.trim());
+                  setCoverUrlInput('');
+                  setShowUrlInput(false);
+                }}>Set</Button>
+              </div>
+            )}
+            <p className="text-[11px] text-surface-500">Recommended: 800x450 (16:9). Max 5MB. JPG, PNG, or WebP. Or paste a URL.</p>
           </div>
         </div>
       </Card>
@@ -273,6 +317,27 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
             a.download = `${project.title.replace(/\s+/g, '_')}_export.json`;
             a.click(); URL.revokeObjectURL(url);
           }}>Export JSON</Button>
+        </div>
+      </Card>
+
+      {/* Showcase & Finished Production */}
+      <Card className="p-6 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white mb-1">Showcase & Finished Production</h2>
+            <p className="text-sm text-surface-400">
+              Configure how your project appears in the community showcase, add set photos, trivia, and more.
+            </p>
+          </div>
+          <Link
+            href={`/projects/${params.id}/showcase`}
+            className="px-4 py-2 text-sm font-medium text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 rounded-lg transition-colors flex items-center gap-2 shrink-0"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+            Open Showcase Settings
+          </Link>
         </div>
       </Card>
 

@@ -23,6 +23,12 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentDocRef = useRef<string | null>(null);
+  const localEditPendingRef = useRef(false);
+  const [remoteEditors, setRemoteEditors] = useState<{ userId: string; docId: string; name: string }[]>([]);
+
+  // Keep ref in sync with currentDoc
+  useEffect(() => { currentDocRef.current = currentDoc?.id || null; }, [currentDoc?.id]);
 
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : undefined);
@@ -33,6 +39,102 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     if (!params.id) return;
     fetchData();
   }, [params.id]);
+
+  // ── Realtime subscriptions for collaborative editing ──
+  useEffect(() => {
+    if (!params.id || !user) return;
+
+    const supabase = createClient();
+
+    // Subscribe to document changes
+    const docsChannel = supabase
+      .channel(`project-documents-${params.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_documents',
+          filter: `project_id=eq.${params.id}`,
+        },
+        (payload) => {
+          const newRecord = payload.new as ProjectDocument | undefined;
+          // Ignore changes made by the current user
+          if (newRecord && newRecord.last_edited_by === user.id) return;
+          if (payload.eventType === 'DELETE') {
+            const oldRecord = payload.old as any;
+            if (oldRecord?.last_edited_by === user.id) return;
+          }
+
+          if (payload.eventType === 'INSERT') {
+            const newDoc = payload.new as ProjectDocument;
+            setDocuments((prev) => {
+              if (prev.some((d) => d.id === newDoc.id)) return prev;
+              return [newDoc, ...prev];
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = payload.new as ProjectDocument;
+            setDocuments((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+            // Update currentDoc if it's the one being viewed, but only if user isn't mid-edit
+            if (currentDocRef.current === updated.id && !localEditPendingRef.current) {
+              setCurrentDoc(updated);
+            }
+            // Show remote editor indicator briefly
+            const member = members.find((m) => m.user_id === updated.last_edited_by);
+            const editorName = member?.profile?.display_name || member?.profile?.email || 'Someone';
+            setRemoteEditors((prev) => {
+              const filtered = prev.filter((e) => e.userId !== updated.last_edited_by);
+              return [...filtered, { userId: updated.last_edited_by || '', docId: updated.id, name: editorName || '' }];
+            });
+            // Clear remote editor indicator after 3s
+            setTimeout(() => {
+              setRemoteEditors((prev) => prev.filter((e) => e.docId !== updated.id || e.userId !== updated.last_edited_by));
+            }, 3000);
+          } else if (payload.eventType === 'DELETE') {
+            const deleted = payload.old as { id: string };
+            setDocuments((prev) => prev.filter((d) => d.id !== deleted.id));
+            if (currentDocRef.current === deleted.id) {
+              setCurrentDoc(null);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to folder changes
+    const foldersChannel = supabase
+      .channel(`project-folders-${params.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_folders',
+          filter: `project_id=eq.${params.id}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newFolder = payload.new as ProjectFolder;
+            setFolders((prev) => {
+              if (prev.some((f) => f.id === newFolder.id)) return prev;
+              return [...prev, newFolder];
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = payload.new as ProjectFolder;
+            setFolders((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
+          } else if (payload.eventType === 'DELETE') {
+            const deleted = payload.old as { id: string };
+            setFolders((prev) => prev.filter((f) => f.id !== deleted.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(docsChannel);
+      supabase.removeChannel(foldersChannel);
+    };
+  }, [params.id, user?.id]);
 
   const fetchData = async () => {
     const supabase = createClient();
@@ -74,6 +176,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   const handleContentChange = (content: string) => {
     if (!currentDoc) return;
     setCurrentDoc({ ...currentDoc, content });
+    localEditPendingRef.current = true;
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
       setSaving(true);
@@ -84,6 +187,15 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
       }).eq('id', currentDoc.id);
       setSaving(false);
       setLastSaved(new Date());
+      localEditPendingRef.current = false;
+      // Also update documents array so sidebar word count stays current
+      setDocuments((prev) =>
+        prev.map((d) =>
+          d.id === currentDoc.id
+            ? { ...d, content, word_count: content.split(/\s+/).filter(Boolean).length, updated_at: new Date().toISOString() }
+            : d
+        )
+      );
     }, 800);
   };
 
@@ -206,7 +318,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
       <div className="w-64 border-r border-surface-800 flex flex-col bg-surface-950">
         <div className="p-3 border-b border-surface-800">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-surface-500 uppercase tracking-wider">Documents</span>
+            <span className="text-xs font-medium text-surface-500 uppercase tracking-wider flex items-center gap-2">
+              Documents
+              <span className="flex items-center gap-1 text-[9px] text-green-500 normal-case tracking-normal font-normal">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                Live
+              </span>
+            </span>
             {canEdit && (
               <div className="flex items-center gap-1">
                 <button onClick={() => setShowNewFolder(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-white/10" title="New Folder">
@@ -354,6 +472,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Saved
                     </span>
                   )}
+                  {/* Remote collaborator indicators */}
+                  {remoteEditors.filter((e) => e.docId === currentDoc?.id).map((editor) => (
+                    <span key={editor.userId} className="flex items-center gap-1 text-[10px] text-brand-400 animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
+                      {editor.name} editing
+                    </span>
+                  ))}
                 </div>
               </div>
               <div className="flex items-center gap-1">

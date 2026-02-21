@@ -67,9 +67,20 @@ export const useProjectStore = create<ProjectState>((set) => ({
     const supabase = createClient();
     set({ loading: true });
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) { set({ projects: [], loading: false }); return; }
+
+      // Get projects where user is a member
+      const { data: memberships } = await supabase
+        .from('project_members')
+        .select('project_id')
+        .eq('user_id', user.id);
+      const memberProjectIds = (memberships || []).map((m: any) => m.project_id);
+
       const { data } = await supabase
         .from('projects')
         .select('*')
+        .or(`created_by.eq.${user.id}${memberProjectIds.length ? `,id.in.(${memberProjectIds.join(',')})` : ''}`)
         .order('updated_at', { ascending: false });
       set({ projects: data || [], loading: false });
     } catch (err) {

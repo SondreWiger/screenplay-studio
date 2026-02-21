@@ -64,6 +64,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canEdit) return;
     if (!confirm('Delete this shot?')) return;
     const supabase = createClient();
     await supabase.from('shots').delete().eq('id', id);
@@ -71,6 +72,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
   };
 
   const toggleComplete = async (shot: Shot) => {
+    if (!canEdit) return;
     const supabase = createClient();
     const updated = { ...shot, is_completed: !shot.is_completed, takes_completed: !shot.is_completed ? shot.takes_needed : 0 };
     await supabase.from('shots').update({ is_completed: updated.is_completed, takes_completed: updated.takes_completed }).eq('id', shot.id);
@@ -78,6 +80,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
   };
 
   const updateTakes = async (shot: Shot, delta: number) => {
+    if (!canEdit) return;
     const newTakes = Math.max(0, Math.min(shot.takes_needed, shot.takes_completed + delta));
     if (newTakes === shot.takes_completed) return;
     const isComplete = newTakes >= shot.takes_needed;

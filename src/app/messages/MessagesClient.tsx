@@ -8,6 +8,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Button, Card, Modal, Input, Avatar, Badge, LoadingSpinner } from '@/components/ui';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
+import { notifyConversationMembers } from '@/lib/notifications';
 import Link from 'next/link';
 import type { Conversation, ConversationMember, DirectMessage, Profile } from '@/lib/types';
 
@@ -267,6 +268,15 @@ export default function MessagesClient() {
 
       setNewMessage('');
       inputRef.current?.focus();
+
+      // Notify other members of the conversation
+      const senderName = (user as any)?.display_name || (user as any)?.full_name || (user as any)?.email || 'Someone';
+      notifyConversationMembers({
+        conversationId: selectedConvo.id,
+        senderId: user!.id,
+        senderName,
+        messagePreview: newMessage.trim(),
+      });
 
       // Update conversations list
       setConversations((prev) =>

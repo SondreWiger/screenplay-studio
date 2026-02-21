@@ -46,6 +46,7 @@ export async function updateSession(request: NextRequest) {
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://fonts.googleapis.com",
+      "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -65,9 +66,24 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ── Admin route — only allow the designated admin user ────
-  const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
-  if (request.nextUrl.pathname.startsWith('/admin') && user?.id !== ADMIN_UID) {
+  // ── Admin / Mod panel route — allow admin UID, admins, and moderators ──
+  if (request.nextUrl.pathname.startsWith('/admin') && user) {
+    const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+    if (user.id !== ADMIN_UID) {
+      // Fetch profile to check role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      const role = profile?.role;
+      if (role !== 'admin' && role !== 'moderator') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
+      }
+    }
+  } else if (request.nextUrl.pathname.startsWith('/admin') && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);

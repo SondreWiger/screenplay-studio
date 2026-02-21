@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
@@ -20,7 +20,17 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   const [filter, setFilter] = useState<'all' | 'confirmed' | 'scouting' | 'needs_setup'>('all');
   const [syncing, setSyncing] = useState(false);
 
+  const hasSynced = useRef(false);
+
   useEffect(() => { fetchLocations(); }, [params.id]);
+
+  // Auto-sync locations from script on first load
+  useEffect(() => {
+    if (!loading && !hasSynced.current && canEdit) {
+      hasSynced.current = true;
+      handleAutoSync();
+    }
+  }, [loading]);
 
   const fetchLocations = async () => {
     try {
@@ -112,6 +122,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   const needsSetup = (l: Location) => !l.description && !l.address && !l.is_confirmed;
 
   const handleDelete = async (id: string) => {
+    if (!canEdit) return;
     if (!confirm('Delete this location?')) return;
     const supabase = createClient();
     await supabase.from('locations').delete().eq('id', id);

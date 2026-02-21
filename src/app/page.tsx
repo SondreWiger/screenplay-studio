@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { SiteVersion } from '@/components/SiteVersion';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isLoggedIn = !!user;
+
   return (
     <div className="min-h-screen bg-surface-950 relative overflow-hidden">
       {/* Background effects — layered glows */}
@@ -40,15 +45,26 @@ export default function LandingPage() {
           <Link href="/community" className="px-4 py-2 text-sm font-medium text-surface-300 hover:text-white transition-colors">
             Community
           </Link>
-          <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-surface-300 hover:text-white transition-colors">
-            Sign In
-          </Link>
-          <Link
-            href="/auth/register"
-            className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-lg shadow-brand-600/25"
-          >
-            Get Started
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-lg shadow-brand-600/25"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-surface-300 hover:text-white transition-colors">
+                Sign In
+              </Link>
+              <Link
+                href="/auth/register"
+                className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-lg shadow-brand-600/25"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -75,10 +91,10 @@ export default function LandingPage() {
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/auth/register"
+              href={isLoggedIn ? '/dashboard' : '/auth/register'}
               className="group relative px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 rounded-xl transition-all shadow-xl shadow-brand-600/20 hover:shadow-brand-500/30 hover:-translate-y-0.5"
             >
-              <span className="relative z-10">Start Writing — Free</span>
+              <span className="relative z-10">{isLoggedIn ? 'Go to Dashboard' : 'Start Writing — Free'}</span>
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-brand-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
             </Link>
             <Link
@@ -249,15 +265,15 @@ export default function LandingPage() {
         {/* CTA */}
         <div className="mt-40 text-center">
           <div className="max-w-2xl mx-auto rounded-3xl border border-surface-700 bg-gradient-to-br from-surface-900 to-surface-800 p-12 glow-brand">
-            <h2 className="text-3xl font-bold text-white">Ready to bring your story to life?</h2>
+            <h2 className="text-3xl font-bold text-white">{isLoggedIn ? 'Welcome back!' : 'Ready to bring your story to life?'}</h2>
             <p className="mt-4 text-surface-400">
-              Join filmmakers using Screenplay Studio to write, plan, and produce.
+              {isLoggedIn ? 'Continue working on your projects.' : 'Join filmmakers using Screenplay Studio to write, plan, and produce.'}
             </p>
             <Link
-              href="/auth/register"
+              href={isLoggedIn ? '/dashboard' : '/auth/register'}
               className="inline-block mt-8 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-500 rounded-xl shadow-xl shadow-brand-600/20 hover:shadow-brand-500/30 transition-all"
             >
-              Create Your First Project
+              {isLoggedIn ? 'Go to Dashboard' : 'Create Your First Project'}
             </Link>
           </div>
         </div>

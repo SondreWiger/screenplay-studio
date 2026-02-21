@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo } from '@/lib/utils';
+import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { CommunityPost, CommunityCategory } from '@/lib/types';
 
 // ============================================================
@@ -20,6 +21,7 @@ export default function FreeScriptsPage() {
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
+  const [filterLanguage, setFilterLanguage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -96,8 +98,10 @@ export default function FreeScriptsPage() {
   };
 
   // Filter & sort
+  const allLanguages = Array.from(new Set(posts.map((p) => p.language).filter(Boolean))).sort() as string[];
   const filtered = posts
     .filter((p) => !selectedCategory || p.categories?.some((c) => c.slug === selectedCategory))
+    .filter((p) => !filterLanguage || p.language === filterLanguage)
     .sort((a, b) => {
       if (sortBy === 'popular') return b.upvote_count - a.upvote_count;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -167,6 +171,18 @@ export default function FreeScriptsPage() {
                 {s}
               </button>
             ))}
+            {allLanguages.length > 0 && (
+              <select
+                value={filterLanguage || ''}
+                onChange={(e) => setFilterLanguage(e.target.value || null)}
+                className="bg-stone-100 border border-stone-200 rounded-lg px-3 py-1.5 text-xs text-stone-600 appearance-none cursor-pointer"
+              >
+                <option value="">All Languages</option>
+                {allLanguages.map((l) => (
+                  <option key={l} value={l}>{LANGUAGE_OPTIONS.find((lo) => lo.value === l)?.label || l}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 

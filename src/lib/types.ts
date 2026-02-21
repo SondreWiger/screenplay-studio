@@ -8,7 +8,7 @@ export type ScriptElementType =
   | 'scene_heading' | 'action' | 'character' | 'dialogue' | 'parenthetical'
   | 'transition' | 'shot' | 'note' | 'page_break' | 'title_page'
   | 'centered' | 'lyrics' | 'synopsis' | 'section';
-export type SceneTime = 'DAY' | 'NIGHT' | 'DAWN' | 'DUSK' | 'MORNING' | 'AFTERNOON' | 'EVENING' | 'CONTINUOUS' | 'LATER' | 'MOMENTS_LATER';
+export type SceneTime = string; // Accepts any time-of-day value from scripts (DAY, NIGHT, MAGIC HOUR, etc.)
 export type SceneLocationType = 'INT' | 'EXT' | 'INT_EXT' | 'EXT_INT';
 export type RevisionColor = 'white' | 'blue' | 'pink' | 'yellow' | 'green' | 'goldenrod' | 'buff' | 'salmon' | 'cherry' | 'tan';
 export type IdeaStatus = 'spark' | 'developing' | 'ready' | 'used' | 'discarded';
@@ -39,6 +39,32 @@ export type UsageIntent = 'writer' | 'producer' | 'both' | 'student';
 export type ScriptType = 'screenplay' | 'stageplay' | 'episodic' | 'sketch' | 'comic' | 'podcast';
 export type CompanyRole = 'owner' | 'admin' | 'manager' | 'member' | 'viewer';
 export type CompanyPlan = 'free' | 'pro' | 'enterprise';
+export type SystemRole = 'writer' | 'moderator' | 'admin';
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
+export type TicketCategory = 'general' | 'bug' | 'abuse' | 'content_report' | 'feature_request';
+
+export const LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English' },
+  { value: 'no', label: 'Norwegian' },
+  { value: 'sv', label: 'Swedish' },
+  { value: 'da', label: 'Danish' },
+  { value: 'fi', label: 'Finnish' },
+  { value: 'de', label: 'German' },
+  { value: 'fr', label: 'French' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'it', label: 'Italian' },
+  { value: 'nl', label: 'Dutch' },
+  { value: 'pl', label: 'Polish' },
+  { value: 'ru', label: 'Russian' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'other', label: 'Other' },
+];
 
 // ============================================================
 // Database Row Types
@@ -51,7 +77,7 @@ export interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
-  role: string;
+  role: SystemRole;
   // Onboarding & preferences
   onboarding_completed: boolean;
   usage_intent: UsageIntent;
@@ -96,20 +122,93 @@ export interface Project {
   episode_count: number | null;
   season_number: number | null;
   company_id: string | null;
+  wrap_url: string | null;
+  is_showcased: boolean;
+  showcase_description: string | null;
+  showcase_script: boolean;
+  showcase_mindmap: boolean;
+  showcase_moodboard: boolean;
+  set_photos: string[];
+  external_links: Record<string, string>;
+  language: string | null;
+  production_trivia: { title: string; content: string }[];
   created_by: string;
   created_at: string;
   updated_at: string;
 }
+
+export type ProductionRole = 'director' | 'producer' | 'dp' | 'ad' | 'pa' | 'gaffer' | 'grip' | 'sound_mixer' | 'boom_op' | 'art_director' | 'wardrobe' | 'makeup' | 'editor' | 'vfx' | 'colorist' | 'composer' | 'actor' | 'extra' | 'script_supervisor' | 'stunt_coordinator' | 'location_manager' | 'craft_services' | 'other' | '';
+
+export const PRODUCTION_ROLES: { value: ProductionRole; label: string }[] = [
+  { value: 'director', label: 'Director' },
+  { value: 'producer', label: 'Producer' },
+  { value: 'dp', label: 'DP / Cinematographer' },
+  { value: 'ad', label: '1st AD' },
+  { value: 'pa', label: 'PA' },
+  { value: 'gaffer', label: 'Gaffer' },
+  { value: 'grip', label: 'Grip' },
+  { value: 'sound_mixer', label: 'Sound Mixer' },
+  { value: 'boom_op', label: 'Boom Operator' },
+  { value: 'art_director', label: 'Art Director' },
+  { value: 'wardrobe', label: 'Wardrobe' },
+  { value: 'makeup', label: 'Makeup / Hair' },
+  { value: 'editor', label: 'Editor' },
+  { value: 'vfx', label: 'VFX Artist' },
+  { value: 'colorist', label: 'Colorist' },
+  { value: 'composer', label: 'Composer' },
+  { value: 'actor', label: 'Actor / Talent' },
+  { value: 'extra', label: 'Extra / Background' },
+  { value: 'script_supervisor', label: 'Script Supervisor' },
+  { value: 'stunt_coordinator', label: 'Stunt Coordinator' },
+  { value: 'location_manager', label: 'Location Manager' },
+  { value: 'craft_services', label: 'Craft Services' },
+  { value: 'other', label: 'Other' },
+];
 
 export interface ProjectMember {
   id: string;
   project_id: string;
   user_id: string;
   role: UserRole;
+  production_role: ProductionRole;
+  character_name: string | null;
   department: string | null;
   job_title: string | null;
   invited_by: string | null;
   joined_at: string;
+  profile?: Profile;
+}
+
+export interface ExternalCredit {
+  id: string;
+  project_id: string;
+  name: string;
+  production_role: string;
+  character_name: string | null;
+  external_url: string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+export interface ShowcaseComment {
+  id: string;
+  project_id: string;
+  user_id: string;
+  content: string;
+  parent_id: string | null;
+  created_at: string;
+  profile?: Profile;
+}
+
+export interface ShowcaseReview {
+  id: string;
+  project_id: string;
+  user_id: string;
+  rating: number;
+  title: string | null;
+  content: string | null;
+  created_at: string;
+  updated_at: string;
   profile?: Profile;
 }
 
@@ -466,6 +565,7 @@ export interface CommunityPost {
   upvote_count: number;
   comment_count: number;
   distro_count: number;
+  language: string | null;
   created_at: string;
   updated_at: string;
   author?: Profile;
@@ -771,6 +871,7 @@ export type NotificationType =
   | 'production_rejected'
   | 'chat_mention'
   | 'direct_message'
+  | 'ticket_reply'
   | 'general';
 
 // ============================================================
@@ -1071,6 +1172,55 @@ export const REVISION_COLOR_HEX: Record<RevisionColor, string> = {
   cherry: '#f1aeb5',
   tan: '#d2b48c',
 };
+
+// ============================================================
+// Moderation & Support Types
+// ============================================================
+
+export interface SupportTicket {
+  id: string;
+  user_id: string;
+  subject: string;
+  category: TicketCategory;
+  status: TicketStatus;
+  priority: TicketPriority;
+  reported_content_type: string | null;
+  reported_content_id: string | null;
+  created_at: string;
+  updated_at: string;
+  profile?: Profile;
+  messages?: TicketMessage[];
+}
+
+export interface TicketMessage {
+  id: string;
+  ticket_id: string;
+  user_id: string;
+  content: string;
+  is_staff: boolean;
+  created_at: string;
+  profile?: Profile;
+}
+
+export interface ModAction {
+  id: string;
+  mod_user_id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string;
+  reason: string | null;
+  ticket_id: string | null;
+  created_at: string;
+  profile?: Profile;
+}
+
+export const TICKET_CATEGORY_OPTIONS: { value: TicketCategory; label: string }[] = [
+  { value: 'general', label: 'General Support' },
+  { value: 'bug', label: 'Bug Report' },
+  { value: 'abuse', label: 'Report Abuse' },
+  { value: 'content_report', label: 'Content Report' },
+  { value: 'feature_request', label: 'Feature Request' },
+];
 
 export const GENRE_OPTIONS = [
   'Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime',

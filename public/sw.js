@@ -17,9 +17,9 @@ self.addEventListener('push', (event) => {
       body: data.body || '',
       icon: '/icon-192.png',
       badge: '/icon-badge.png',
-      tag: data.tag || 'screenplay-studio',
+      tag: data.tag || `ss-${Date.now()}`,
       data: {
-        url: data.url || '/',
+        url: data.url || '/notifications',
       },
       actions: data.actions || [],
       vibrate: [100, 50, 100],
@@ -35,6 +35,7 @@ self.addEventListener('push', (event) => {
       self.registration.showNotification('Screenplay Studio', {
         body: event.data.text(),
         icon: '/icon-192.png',
+        tag: `ss-text-${Date.now()}`,
       })
     );
   }
@@ -43,7 +44,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const url = event.notification.data?.url || '/dashboard';
+  const url = event.notification.data?.url || '/notifications';
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {

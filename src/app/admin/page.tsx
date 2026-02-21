@@ -7,9 +7,13 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select } from '@/components/ui';
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
-import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge } from '@/lib/types';
+import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage } from '@/lib/types';
+import { triggerPush } from '@/lib/notifications';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+const MOD_TABS: Tab[] = ['tickets', 'community'];
+const isStaff = (role?: string) => role === 'moderator' || role === 'admin';
+const isFullAdmin = (id?: string, role?: string) => id === ADMIN_UID || role === 'admin';
 
 interface PlatformStats {
   totalUsers: number;
@@ -46,7 +50,7 @@ interface UserRow {
   projectCount?: number;
 }
 
-type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'system';
+type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'tickets' | 'system';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -71,18 +75,35 @@ export default function AdminPage() {
   const [challengeThemes, setChallengeThemes] = useState<ChallengeTheme[]>([]);
   const [challenges, setChallenges] = useState<CommunityChallenge[]>([]);
 
+  // Tickets
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [ticketMessages, setTicketMessages] = useState<TicketMessage[]>([]);
+  const [ticketReply, setTicketReply] = useState('');
+
   useEffect(() => {
     if (authLoading) return;
-    if (!user || user.id !== ADMIN_UID) {
+    if (!user || !isStaff(user.role)) {
       router.replace('/dashboard');
       return;
     }
-    loadStats();
-    loadUsers();
-    loadProjects();
-    loadBlogPosts();
+    // Full admins get all data; mods only get tickets + community
+    if (isFullAdmin(user.id, user.role)) {
+      loadStats();
+      loadUsers();
+      loadProjects();
+      loadBlogPosts();
+      loadSiteVersion();
+    } else {
+      // Mods don't call loadStats, so clear loading immediately
+      setLoading(false);
+    }
     loadCommunityData();
-    loadSiteVersion();
+    loadTickets();
+    // Default mods to 'tickets' tab
+    if (!isFullAdmin(user.id, user.role)) {
+      setActiveTab('tickets');
+    }
   }, [user, authLoading]);
 
   const loadSiteVersion = async () => {
@@ -232,6 +253,100 @@ export default function AdminPage() {
     }
   };
 
+  const loadTickets = async () => {
+    try {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('support_tickets')
+        .select('*, profile:profiles(*)')
+        .order('updated_at', { ascending: false });
+      setTickets(data || []);
+    } catch (err) {
+      console.error('Error loading tickets:', err);
+    }
+  };
+
+  const loadTicketMessages = async (ticketId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('ticket_messages')
+      .select('*, profile:profiles(*)')
+      .eq('ticket_id', ticketId)
+      .order('created_at', { ascending: true });
+    setTicketMessages(data || []);
+  };
+
+  const handleSelectTicket = async (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    await loadTicketMessages(ticketId);
+  };
+
+  const handleTicketReply = async () => {
+    if (!ticketReply.trim() || !selectedTicketId || !user) return;
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('ticket_messages')
+      .insert({ ticket_id: selectedTicketId, user_id: user.id, content: ticketReply.trim(), is_staff: true })
+      .select('*, profile:profiles(*)')
+      .single();
+    if (!error && data) {
+      setTicketMessages((prev) => [...prev, data]);
+      setTicketReply('');
+      await supabase.from('support_tickets').update({ updated_at: new Date().toISOString() }).eq('id', selectedTicketId);
+      // Send notification to the ticket owner
+      const ticket = tickets.find((t) => t.id === selectedTicketId);
+      if (ticket && ticket.user_id !== user.id) {
+        const notifTitle = 'New reply on your support ticket';
+        const notifBody = `Staff replied to "${ticket.subject}"`;
+        const notifLink = `/support?ticket=${ticket.id}`;
+        await supabase.from('notifications').insert({
+          user_id: ticket.user_id,
+          type: 'ticket_reply',
+          title: notifTitle,
+          body: notifBody,
+          link: notifLink,
+          actor_id: user.id,
+          entity_type: 'support_ticket',
+          entity_id: ticket.id,
+        });
+        // Trigger Web Push delivery
+        triggerPush(ticket.user_id, notifTitle, notifBody, notifLink);
+        // Trigger email notification
+        const { data: ownerProfile } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', ticket.user_id).single();
+        if (ownerProfile?.email) {
+          fetch('/api/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: { email: ownerProfile.email, name: ownerProfile.display_name || ownerProfile.full_name || undefined },
+              subject: `Re: ${ticket.subject} — Screenplay Studio Support`,
+              heading: 'New reply on your support ticket',
+              body: `Our team responded to your ticket: <strong>${ticket.subject}</strong>`,
+              ctaLabel: 'View Ticket',
+              ctaUrl: `/support?ticket=${ticket.id}`,
+            }),
+          }).catch(() => {}); // best-effort
+        }
+      }
+    }
+  };
+
+  const handleUpdateTicketStatus = async (ticketId: string, status: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from('support_tickets').update({ status, updated_at: new Date().toISOString() }).eq('id', ticketId);
+    if (!error) {
+      setTickets((prev) => prev.map((t) => t.id === ticketId ? { ...t, status: status as any } : t));
+    }
+  };
+
+  const handleUpdateTicketPriority = async (ticketId: string, priority: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from('support_tickets').update({ priority, updated_at: new Date().toISOString() }).eq('id', ticketId);
+    if (!error) {
+      setTickets((prev) => prev.map((t) => t.id === ticketId ? { ...t, priority: priority as any } : t));
+    }
+  };
+
   const handleDeleteCommunityPost = async (id: string) => {
     if (!confirm('Delete this community post?')) return;
     const supabase = createClient();
@@ -352,7 +467,8 @@ export default function AdminPage() {
   };
 
   if (authLoading || loading) return <LoadingPage />;
-  if (!user || user.id !== ADMIN_UID) return null;
+  if (!user || !isStaff(user.role)) return null;
+  const isFull = isFullAdmin(user.id, user.role);
 
   const filteredUsers = users.filter((u) =>
     !userSearch || (u.email + ' ' + (u.full_name || '')).toLowerCase().includes(userSearch.toLowerCase())
@@ -362,7 +478,7 @@ export default function AdminPage() {
     !projectSearch || p.title.toLowerCase().includes(projectSearch.toLowerCase())
   );
 
-  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+  const allTabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     {
       key: 'overview', label: 'Overview',
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
@@ -387,8 +503,13 @@ export default function AdminPage() {
       key: 'community' as Tab, label: 'Community',
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
     },
-
+    {
+      key: 'tickets' as Tab, label: 'Tickets',
+      icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>,
+    },
   ];
+  // Mods only see tickets + community; full admins see everything
+  const tabs = isFull ? allTabs : allTabs.filter((t) => MOD_TABS.includes(t.key));
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-950">
@@ -402,8 +523,8 @@ export default function AdminPage() {
               </div>
             </Link>
             <div>
-              <h2 className="text-sm font-semibold text-white">Admin Panel</h2>
-              <p className="text-[11px] text-surface-500">Platform Management</p>
+              <h2 className="text-sm font-semibold text-white">{isFull ? 'Admin Panel' : 'Mod Panel'}</h2>
+              <p className="text-[11px] text-surface-500">{isFull ? 'Platform Management' : 'Moderation Tools'}</p>
             </div>
           </div>
         </div>
@@ -487,6 +608,19 @@ export default function AdminPage() {
               onSaveTheme={handleSaveTheme}
               onDeleteTheme={handleDeleteTheme}
               onCreateChallenge={handleCreateCustomChallenge}
+            />
+          )}
+          {activeTab === 'tickets' && (
+            <TicketsTab
+              tickets={tickets}
+              selectedTicketId={selectedTicketId}
+              messages={ticketMessages}
+              replyText={ticketReply}
+              onSelectTicket={handleSelectTicket}
+              onReply={handleTicketReply}
+              onReplyChange={setTicketReply}
+              onStatusChange={handleUpdateTicketStatus}
+              onPriorityChange={handleUpdateTicketPriority}
             />
           )}
         </div>
@@ -679,8 +813,8 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
                 <td className="px-4 py-3 text-sm text-surface-300">{u.email}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
-                    <Badge variant={u.id === ADMIN_UID ? 'warning' : 'default'} size="sm">
-                      {u.id === ADMIN_UID ? 'Admin' : u.role || 'user'}
+                    <Badge variant={u.role === 'admin' || u.id === ADMIN_UID ? 'warning' : u.role === 'moderator' ? 'success' : 'default'} size="sm">
+                      {u.role === 'admin' || u.id === ADMIN_UID ? 'Admin' : u.role === 'moderator' ? 'Moderator' : u.role || 'user'}
                     </Badge>
                     {u.is_pro && <Badge variant="success" size="sm">PRO</Badge>}
                   </div>
@@ -1811,5 +1945,224 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
         </div>
       </div>
     </Modal>
+  );
+}
+
+// ============================================================
+// Tickets Tab — manage support tickets
+// ============================================================
+
+const STATUS_COLORS: Record<string, string> = {
+  open: 'text-green-400 bg-green-500/10 border-green-500/20',
+  in_progress: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+  resolved: 'text-surface-400 bg-surface-500/10 border-surface-500/20',
+  closed: 'text-surface-500 bg-surface-500/5 border-surface-700',
+};
+
+const PRIORITY_COLORS: Record<string, string> = {
+  low: 'text-surface-400',
+  normal: 'text-surface-200',
+  high: 'text-amber-400',
+  urgent: 'text-red-400',
+};
+
+function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTicket, onReply, onReplyChange, onStatusChange, onPriorityChange }: {
+  tickets: SupportTicket[];
+  selectedTicketId: string | null;
+  messages: TicketMessage[];
+  replyText: string;
+  onSelectTicket: (id: string) => void;
+  onReply: () => void;
+  onReplyChange: (text: string) => void;
+  onStatusChange: (id: string, status: string) => void;
+  onPriorityChange: (id: string, priority: string) => void;
+}) {
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const selected = tickets.find((t) => t.id === selectedTicketId);
+
+  const filtered = tickets.filter((t) => statusFilter === 'all' || t.status === statusFilter);
+
+  const openCount = tickets.filter((t) => t.status === 'open').length;
+  const inProgressCount = tickets.filter((t) => t.status === 'in_progress').length;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-white">Support Tickets</h2>
+          <p className="text-sm text-surface-400 mt-1">
+            {openCount} open · {inProgressCount} in progress · {tickets.length} total
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {['all', 'open', 'in_progress', 'resolved', 'closed'].map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-lg transition-colors capitalize',
+                statusFilter === s ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+              )}
+            >
+              {s.replace('_', ' ')}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-6" style={{ height: 'calc(100vh - 260px)' }}>
+        {/* Ticket list */}
+        <div className="w-96 shrink-0 overflow-y-auto space-y-2 pr-2">
+          {filtered.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-3xl mb-2">🎫</div>
+              <p className="text-sm text-surface-500">No tickets</p>
+            </div>
+          ) : (
+            filtered.map((ticket) => (
+              <button
+                key={ticket.id}
+                onClick={() => onSelectTicket(ticket.id)}
+                className={cn(
+                  'w-full text-left p-4 rounded-xl border transition-all',
+                  selectedTicketId === ticket.id
+                    ? 'border-brand-500/30 bg-brand-500/5'
+                    : 'border-surface-800 bg-surface-900 hover:border-surface-700'
+                )}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className="text-sm font-semibold text-white line-clamp-1">{ticket.subject}</p>
+                  <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded border capitalize ${STATUS_COLORS[ticket.status]}`}>
+                    {ticket.status.replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="text-surface-400">{ticket.profile?.full_name || ticket.profile?.email || 'User'}</span>
+                  <span className="text-surface-600">·</span>
+                  <span className="text-surface-500 capitalize">{ticket.category.replace('_', ' ')}</span>
+                  <span className="text-surface-600">·</span>
+                  <span className={`font-semibold capitalize ${PRIORITY_COLORS[ticket.priority]}`}>{ticket.priority}</span>
+                  <span className="text-surface-600">·</span>
+                  <span className="text-surface-500">{timeAgo(ticket.updated_at)}</span>
+                </div>
+                {ticket.reported_content_type && (
+                  <p className="text-[10px] text-surface-500 mt-1">
+                    Reported: {ticket.reported_content_type} · {ticket.reported_content_id?.slice(0, 8)}…
+                  </p>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+
+        {/* Ticket detail & conversation */}
+        <div className="flex-1 min-w-0">
+          {selected ? (
+            <div className="bg-surface-900 border border-surface-800 rounded-xl flex flex-col h-full">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-surface-800">
+                <h3 className="text-lg font-bold text-white">{selected.subject}</h3>
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  <span className="text-xs text-surface-400">
+                    by {selected.profile?.full_name || 'User'} ({selected.profile?.email})
+                  </span>
+                  <span className="text-surface-600">·</span>
+                  <span className="text-xs text-surface-500">{timeAgo(selected.created_at)}</span>
+
+                  {/* Status control */}
+                  <select
+                    value={selected.status}
+                    onChange={(e) => onStatusChange(selected.id, e.target.value)}
+                    className="ml-auto text-xs bg-surface-800 border border-surface-700 text-white rounded-lg px-2 py-1 focus:outline-none"
+                  >
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+
+                  {/* Priority control */}
+                  <select
+                    value={selected.priority}
+                    onChange={(e) => onPriorityChange(selected.id, e.target.value)}
+                    className="text-xs bg-surface-800 border border-surface-700 text-white rounded-lg px-2 py-1 focus:outline-none"
+                  >
+                    <option value="low">Low</option>
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+                {selected.reported_content_type && (
+                  <p className="text-xs text-amber-400/70 mt-2">
+                    ⚠ Reported: {selected.reported_content_type} · ID: {selected.reported_content_id}
+                  </p>
+                )}
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`flex gap-3 ${msg.is_staff ? 'flex-row-reverse' : ''}`}>
+                    <div className="shrink-0">
+                      {msg.profile?.avatar_url ? (
+                        <img src={msg.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-surface-400">
+                          {(msg.profile?.full_name || '?')[0].toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className={`max-w-[70%] ${msg.is_staff ? 'text-right' : ''}`}>
+                      <div className={`flex items-center gap-2 mb-1 ${msg.is_staff ? 'justify-end' : ''}`}>
+                        <span className="text-xs font-semibold text-surface-300">{msg.profile?.full_name || 'User'}</span>
+                        {msg.is_staff && (
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold text-brand-400 bg-brand-500/10 rounded border border-brand-500/20">STAFF</span>
+                        )}
+                        <span className="text-[10px] text-surface-500">{timeAgo(msg.created_at)}</span>
+                      </div>
+                      <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
+                        msg.is_staff
+                          ? 'bg-brand-600/10 text-brand-200 border border-brand-500/20'
+                          : 'bg-surface-800 text-surface-200 border border-surface-700'
+                      }`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Reply */}
+              {(selected.status === 'open' || selected.status === 'in_progress') && (
+                <div className="px-6 py-4 border-t border-surface-800">
+                  <div className="flex gap-2">
+                    <input
+                      value={replyText}
+                      onChange={(e) => onReplyChange(e.target.value)}
+                      placeholder="Type a staff reply..."
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none"
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onReply(); } }}
+                    />
+                    <button
+                      onClick={onReply}
+                      disabled={!replyText.trim()}
+                      className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-500 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      Reply
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="text-4xl mb-3">🎫</div>
+              <p className="text-sm text-surface-400">Select a ticket to view</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

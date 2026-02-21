@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select, KeyboardShortcuts } from '@/components/ui';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { SupportButton } from '@/components/SupportButton';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import type { Project, ScriptType, Company, CompanyMember, CompanyRole } from '@/lib/types';
@@ -73,12 +74,23 @@ export default function DashboardPage() {
   }, [user, authLoading]);
 
   const fetchProjects = async () => {
+    if (!user?.id) return;
     try {
       const supabase = createClient();
+
+      // Get project IDs where user is a member (but not creator)
+      const { data: memberships } = await supabase
+        .from('project_members')
+        .select('project_id')
+        .eq('user_id', user.id);
+      const memberProjectIds = (memberships || []).map((m) => m.project_id);
+
+      // Fetch projects the user created OR is a member of (personal, non-company)
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .is('company_id', null)
+        .or(`created_by.eq.${user.id}${memberProjectIds.length ? `,id.in.(${memberProjectIds.join(',')})` : ''}`)
         .order('updated_at', { ascending: false });
       if (error) console.error('Error fetching projects:', error.message);
       setProjects(data || []);
@@ -175,10 +187,10 @@ export default function DashboardPage() {
                 Company
               </Link>
             )}
-            {user?.id === ADMIN_UID && (
-              <Link href="/admin" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors border border-red-500/20">
+            {(user?.id === ADMIN_UID || user?.role === 'moderator' || user?.role === 'admin') && (
+              <Link href="/admin" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${user?.role === 'admin' || user?.id === ADMIN_UID ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20 border-red-500/20' : 'text-green-400 bg-green-500/10 hover:bg-green-500/20 border-green-500/20'}`}>
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                Admin
+                {user?.role === 'admin' || user?.id === ADMIN_UID ? 'Admin' : 'Mod Panel'}
               </Link>
             )}
             <Button onClick={() => setShowNewProject(true)}>
@@ -261,7 +273,7 @@ export default function DashboardPage() {
           {(() => {
             const allP = [...projects, ...Object.values(companyProjects).flat()];
             return (
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 sm:gap-6">
                 {[
                   { label: 'Projects', value: allP.length },
                   { label: 'In Dev', value: allP.filter(p => p.status === 'development').length },
@@ -313,7 +325,7 @@ export default function DashboardPage() {
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-700 bg-surface-900 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none transition-colors"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {['all', 'development', 'pre_production', 'production', 'completed'].map((status) => (
               <button
                 key={status}
@@ -541,6 +553,8 @@ export default function DashboardPage() {
           <span>shortcuts</span>
         </button>
       </div>
+
+      <SupportButton />
     </div>
   );
 }

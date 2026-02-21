@@ -148,6 +148,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
   // ---- Handlers ----
 
   const handleDelete = async (id: string) => {
+    if (!canEdit) return;
     const supabase = createClient();
     await supabase.from('budget_items').delete().eq('id', id);
     setItems((prev) => prev.filter((i) => i.id !== id));
@@ -156,6 +157,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
   };
 
   const handleTogglePaid = async (item: BudgetItem) => {
+    if (!canEdit) return;
     const supabase = createClient();
     const newPaid = !item.is_paid;
     await supabase.from('budget_items').update({ is_paid: newPaid }).eq('id', item.id);
@@ -163,6 +165,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
   };
 
   const handleDuplicate = async (item: BudgetItem) => {
+    if (!canEdit) return;
     const supabase = createClient();
     const { id: _id, created_at: _ca, updated_at: _ua, ...rest } = item;
     const { data } = await supabase.from('budget_items').insert({

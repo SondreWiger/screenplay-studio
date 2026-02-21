@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
@@ -43,7 +43,17 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   const [showImport, setShowImport] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
+  const hasSynced = useRef(false);
+
   useEffect(() => { fetchData(); }, [params.id]);
+
+  // Auto-sync scenes from script on first load
+  useEffect(() => {
+    if (!loading && !hasSynced.current && canEdit) {
+      hasSynced.current = true;
+      handleAutoSync();
+    }
+  }, [loading]);
 
   const fetchData = async () => {
     try {
@@ -118,6 +128,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canEdit) return;
     if (!confirm('Delete this scene?')) return;
     const supabase = createClient();
     await supabase.from('scenes').delete().eq('id', id);

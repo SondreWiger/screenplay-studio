@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { slugify, formatDate } from '@/lib/utils';
 import { ScreenplayRenderer, type ScreenplayElement } from '@/components/ScreenplayRenderer';
+import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { CommunityCategory, Project, Script, ScriptElement } from '@/lib/types';
 
 // ============================================================
@@ -43,6 +44,7 @@ export default function ShareScriptPage() {
   const [allowEdits, setAllowEdits] = useState(false);
   const [allowDistros, setAllowDistros] = useState(false);
   const [allowFreeUse, setAllowFreeUse] = useState(false);
+  const [scriptLanguage, setScriptLanguage] = useState('');
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
@@ -62,9 +64,11 @@ export default function ShareScriptPage() {
 
   const loadData = async () => {
     const supabase = createClient();
+
+    // Only load projects the user owns
     const [catsRes, projRes] = await Promise.all([
       supabase.from('community_categories').select('*').order('display_order'),
-      supabase.from('projects').select('*').order('updated_at', { ascending: false }),
+      supabase.from('projects').select('*').eq('created_by', user!.id).order('updated_at', { ascending: false }),
     ]);
     setCategories(catsRes.data || []);
     setProjects(projRes.data || []);
@@ -177,6 +181,7 @@ export default function ShareScriptPage() {
           allow_distros: allowDistros,
           allow_free_use: allowFreeUse,
           copyright_disclaimer_accepted: needsDisclaimer && disclaimerAccepted,
+          language: scriptLanguage || null,
           status: 'published',
         })
         .select('id')
@@ -273,6 +278,21 @@ export default function ShareScriptPage() {
               placeholder="https://..."
               className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 transition-colors"
             />
+          </div>
+
+          {/* Language */}
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1.5">Language (optional)</label>
+            <select
+              value={scriptLanguage}
+              onChange={(e) => setScriptLanguage(e.target.value)}
+              className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 transition-colors appearance-none cursor-pointer"
+            >
+              <option value="">Select language...</option>
+              {LANGUAGE_OPTIONS.map((l) => (
+                <option key={l.value} value={l.value}>{l.label}</option>
+              ))}
+            </select>
           </div>
 
           {/* Script Source — project picker or plain text */}

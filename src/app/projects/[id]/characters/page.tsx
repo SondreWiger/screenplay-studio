@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Avatar, EmptyState, LoadingSpinner } from '@/components/ui';
@@ -21,9 +21,19 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const [filter, setFilter] = useState<'all' | 'main' | 'supporting' | 'needs_setup'>('all');
   const [syncing, setSyncing] = useState(false);
 
+  const hasSynced = useRef(false);
+
   useEffect(() => {
     fetchCharacters();
   }, [params.id]);
+
+  // Auto-sync characters from script on first load
+  useEffect(() => {
+    if (!loading && !hasSynced.current && canEdit) {
+      hasSynced.current = true;
+      handleAutoSync();
+    }
+  }, [loading]);
 
   const fetchCharacters = async () => {
     try {
@@ -45,6 +55,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canEdit) return;
     if (!confirm('Delete this character?')) return;
     const supabase = createClient();
     await supabase.from('characters').delete().eq('id', id);

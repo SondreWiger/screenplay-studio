@@ -59,6 +59,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canEdit) return;
     if (!confirm('Delete this idea?')) return;
     const supabase = createClient();
     await supabase.from('ideas').delete().eq('id', id);
@@ -67,7 +68,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
   };
 
   const handleDrop = async (status: IdeaStatus) => {
-    if (!draggedId) return;
+    if (!canEdit || !draggedId) return;
     const supabase = createClient();
     await supabase.from('ideas').update({ status }).eq('id', draggedId);
     setIdeas(ideas.map((i) => i.id === draggedId ? { ...i, status } : i));

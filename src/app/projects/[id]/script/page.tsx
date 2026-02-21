@@ -4,8 +4,8 @@ import { useEffect, useState, useRef, useCallback, memo, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Badge, Modal, Input, Select, LoadingSpinner } from '@/components/ui';
-import { cn } from '@/lib/utils';
+import { Button, Badge, Modal, Input, Select, LoadingSpinner, Avatar, Textarea } from '@/components/ui';
+import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
 
 // ============================================================
@@ -84,7 +84,7 @@ interface CollabCursor {
   name: string;
   colorIdx: number;
 }
-import type { ScriptElement, ScriptElementType, Script, ScriptDraft } from '@/lib/types';
+import type { ScriptElement, ScriptElementType, Script, ScriptDraft, Comment, CommentType, Profile } from '@/lib/types';
 import { ELEMENT_LABELS, REVISION_COLOR_HEX } from '@/lib/types';
 
 // ============================================================
@@ -211,6 +211,98 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+
+  // ── Inline comments ──────────────────────────────────────────
+  const [scriptComments, setScriptComments] = useState<(Comment & { profile?: Profile })[]>([]);
+  const [commentPanelElement, setCommentPanelElement] = useState<string | null>(null); // element id
+  const [showCommentPanel, setShowCommentPanel] = useState(false);
+  const [newCommentText, setNewCommentText] = useState('');
+  const [newCommentType, setNewCommentType] = useState<CommentType>('note');
+  const [postingComment, setPostingComment] = useState(false);
+
+  // Map: element_id → comment count (for badge display)
+  const commentCountMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    scriptComments.forEach((c) => {
+      map[c.entity_id] = (map[c.entity_id] || 0) + 1;
+    });
+    return map;
+  }, [scriptComments]);
+
+  const fetchScriptComments = useCallback(async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('comments')
+      .select('*, profile:profiles!created_by(*)')
+      .eq('project_id', params.id)
+      .eq('entity_type', 'script_element')
+      .order('created_at', { ascending: true });
+    setScriptComments(data || []);
+  }, [params.id]);
+
+  // Subscribe to comments via realtime
+  useEffect(() => {
+    fetchScriptComments();
+    const supabase = createClient();
+    const channel = supabase.channel(`script-comments:${params.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: `project_id=eq.${params.id}` }, () => {
+        fetchScriptComments();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [params.id, fetchScriptComments]);
+
+  const handlePostScriptComment = async (elementId: string) => {
+    if (!newCommentText.trim() || !user) return;
+    setPostingComment(true);
+    const supabase = createClient();
+    await supabase.from('comments').insert({
+      project_id: params.id,
+      entity_type: 'script_element',
+      entity_id: elementId,
+      parent_id: null,
+      content: newCommentText.trim(),
+      comment_type: newCommentType,
+      created_by: user.id,
+    });
+    setNewCommentText('');
+    setNewCommentType('note');
+    setPostingComment(false);
+  };
+
+  const handleReplyScriptComment = async (parentId: string, content: string, type: CommentType) => {
+    if (!user) return;
+    const supabase = createClient();
+    const parentComment = scriptComments.find(c => c.id === parentId);
+    await supabase.from('comments').insert({
+      project_id: params.id,
+      entity_type: 'script_element',
+      entity_id: parentComment?.entity_id || commentPanelElement || '',
+      parent_id: parentId,
+      content,
+      comment_type: type,
+      created_by: user.id,
+    });
+  };
+
+  const handleResolveComment = async (id: string) => {
+    const supabase = createClient();
+    await supabase.from('comments').update({ is_resolved: true, resolved_by: user?.id }).eq('id', id);
+    fetchScriptComments();
+  };
+
+  const handleDeleteComment = async (id: string) => {
+    if (!confirm('Delete this comment?')) return;
+    const supabase = createClient();
+    await supabase.from('comments').delete().eq('id', id);
+    fetchScriptComments();
+  };
+
+  const openCommentPanel = useCallback((elementId: string) => {
+    setCommentPanelElement(elementId);
+    setShowCommentPanel(true);
+    setNewCommentText('');
+  }, []);
 
   useEffect(() => { fetchScripts(params.id); }, [params.id]);
   useEffect(() => { if (currentScript) { fetchElements(currentScript.id); loadDrafts(); } }, [currentScript?.id]);
@@ -923,6 +1015,18 @@ ${pageHTML}
             <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Search (Cmd+F)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
+            <button
+              onClick={() => setShowCommentPanel(!showCommentPanel)}
+              className={cn('p-1.5 rounded transition-colors relative', showCommentPanel ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')}
+              title="Comments"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+              {scriptComments.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-brand-500 text-[7px] font-bold text-white flex items-center justify-center">
+                  {scriptComments.filter(c => !c.parent_id).length}
+                </span>
+              )}
+            </button>
             <button onClick={() => setShowTitlePage(true)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Title Page">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
             </button>
@@ -1211,6 +1315,8 @@ ${pageHTML}
                   displaySettings={displaySettings}
                   characterColorMap={characterColorMap}
                   sceneNumberMap={sceneNumberMap}
+                  commentCount={commentCountMap[element.id] || 0}
+                  onComment={openCommentPanel}
                 />
               ))
             )}
@@ -1231,6 +1337,31 @@ ${pageHTML}
         </div>
       </div>
 
+      {/* ── Comment Panel (right sidebar) ────────────────────── */}
+      {showCommentPanel && (
+        <ScriptCommentPanel
+          elementId={commentPanelElement}
+          elements={elements}
+          comments={scriptComments}
+          userId={user?.id || ''}
+          darkMode={darkMode}
+          onClose={() => { setShowCommentPanel(false); setCommentPanelElement(null); }}
+          onPost={handlePostScriptComment}
+          onReply={handleReplyScriptComment}
+          onResolve={handleResolveComment}
+          onDelete={handleDeleteComment}
+          onSelectElement={(id) => {
+            setCommentPanelElement(id);
+            document.getElementById(`el-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
+          newCommentText={newCommentText}
+          setNewCommentText={setNewCommentText}
+          newCommentType={newCommentType}
+          setNewCommentType={setNewCommentType}
+          posting={postingComment}
+        />
+      )}
+
       {/* Modals */}
       <TitlePageModal isOpen={showTitlePage} onClose={() => setShowTitlePage(false)} script={currentScript} />
       <NewScriptModal isOpen={showNewScript} onClose={() => setShowNewScript(false)}
@@ -1238,6 +1369,218 @@ ${pageHTML}
         onCreated={() => { fetchScripts(params.id); setShowNewScript(false); }}
       />
     </div>
+  );
+}
+
+// ============================================================
+// SCRIPT COMMENT PANEL — right sidebar for inline comments
+// ============================================================
+
+interface ScriptCommentPanelProps {
+  elementId: string | null;
+  elements: ScriptElement[];
+  comments: (Comment & { profile?: Profile })[];
+  userId: string;
+  darkMode: boolean;
+  onClose: () => void;
+  onPost: (elementId: string) => Promise<void>;
+  onReply: (parentId: string, content: string, type: CommentType) => Promise<void>;
+  onResolve: (id: string) => void;
+  onDelete: (id: string) => void;
+  onSelectElement: (id: string) => void;
+  newCommentText: string;
+  setNewCommentText: (v: string) => void;
+  newCommentType: CommentType;
+  setNewCommentType: (v: CommentType) => void;
+  posting: boolean;
+}
+
+function ScriptCommentPanel({
+  elementId, elements, comments, userId, darkMode,
+  onClose, onPost, onReply, onResolve, onDelete, onSelectElement,
+  newCommentText, setNewCommentText, newCommentType, setNewCommentType, posting,
+}: ScriptCommentPanelProps) {
+  // Get unique elements that have comments
+  const commentedElementIds = useMemo(() => {
+    const ids = new Set<string>();
+    comments.forEach(c => { if (!c.parent_id) ids.add(c.entity_id); });
+    return Array.from(ids);
+  }, [comments]);
+
+  const selectedElement = elements.find(e => e.id === elementId);
+  const elementComments = elementId
+    ? comments.filter(c => c.entity_id === elementId)
+    : [];
+  const rootComments = elementComments.filter(c => !c.parent_id);
+
+  // Mini thread component
+  function MiniThread({ comment, depth }: { comment: Comment & { profile?: Profile }; depth: number }) {
+    const [showReply, setShowReply] = useState(false);
+    const [replyText, setReplyText] = useState('');
+    const [replyType, setReplyType] = useState<CommentType>('note');
+    const [submitting, setSubmitting] = useState(false);
+    const replies = elementComments.filter(c => c.parent_id === comment.id);
+
+    const handleReply = async () => {
+      if (!replyText.trim()) return;
+      setSubmitting(true);
+      await onReply(comment.id, replyText.trim(), replyType);
+      setReplyText('');
+      setShowReply(false);
+      setSubmitting(false);
+    };
+
+    return (
+      <div className={cn(depth > 0 && 'ml-4 border-l border-surface-800 pl-3')}>
+        <div className="py-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Avatar src={comment.profile?.avatar_url} name={comment.profile?.full_name || 'User'} size="sm" />
+            <span className="text-xs font-medium text-surface-300">{comment.profile?.full_name || 'Anonymous'}</span>
+            {comment.comment_type === 'issue' && !comment.is_resolved && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">Issue</span>
+            )}
+            {comment.comment_type === 'suggestion' && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium">Suggestion</span>
+            )}
+            {comment.is_resolved && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium">Resolved</span>
+            )}
+            <span className="text-[10px] text-surface-600 ml-auto">{timeAgo(comment.created_at)}</span>
+          </div>
+          <p className="text-sm text-surface-300 whitespace-pre-wrap">{comment.content}</p>
+          <div className="flex items-center gap-3 mt-1">
+            <button onClick={() => setShowReply(!showReply)} className="text-[11px] text-surface-500 hover:text-brand-400">Reply</button>
+            {comment.comment_type === 'issue' && !comment.is_resolved && (
+              <button onClick={() => onResolve(comment.id)} className="text-[11px] text-surface-500 hover:text-green-400">Resolve</button>
+            )}
+            {comment.created_by === userId && (
+              <button onClick={() => onDelete(comment.id)} className="text-[11px] text-surface-500 hover:text-red-400">Delete</button>
+            )}
+          </div>
+          {showReply && (
+            <div className="mt-2 space-y-2">
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Reply..."
+                rows={2}
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none resize-none"
+              />
+              <div className="flex items-center gap-2">
+                <select value={replyType} onChange={(e) => setReplyType(e.target.value as CommentType)}
+                  className="rounded-lg border border-surface-700 bg-surface-900 px-2 py-1.5 text-xs text-white" aria-label="Comment type">
+                  <option value="note">Note</option>
+                  <option value="suggestion">Suggestion</option>
+                  <option value="issue">Issue</option>
+                </select>
+                <Button size="sm" onClick={handleReply} loading={submitting}>Reply</Button>
+              </div>
+            </div>
+          )}
+        </div>
+        {replies.map(r => <MiniThread key={r.id} comment={r} depth={depth + 1} />)}
+      </div>
+    );
+  }
+
+  return (
+    <aside className="w-80 lg:w-96 border-l border-surface-800 flex flex-col bg-surface-950 shrink-0 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-surface-800 px-4 py-3">
+        <h3 className="text-sm font-semibold text-white">Script Comments</h3>
+        <button onClick={onClose} className="p-1 rounded text-surface-400 hover:text-white hover:bg-white/5">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      {/* Element selector — list of elements with comments */}
+      {commentedElementIds.length > 0 && !elementId && (
+        <div className="border-b border-surface-800 px-3 py-2 overflow-y-auto max-h-60">
+          <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-2">Elements with comments</p>
+          {commentedElementIds.map(id => {
+            const el = elements.find(e => e.id === id);
+            const count = comments.filter(c => c.entity_id === id && !c.parent_id).length;
+            return (
+              <button key={id} onClick={() => onSelectElement(id)}
+                className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 flex items-center gap-2 mb-0.5">
+                <span className="text-[9px] text-surface-600 font-medium uppercase shrink-0">{ELEMENT_LABELS[el?.element_type || 'action']}</span>
+                <span className="truncate flex-1">{el?.content || 'Empty'}</span>
+                <span className="text-[9px] bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full shrink-0">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Selected element context */}
+      {selectedElement && (
+        <div className="border-b border-surface-800 px-4 py-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[9px] text-surface-500 uppercase font-medium tracking-wider">{ELEMENT_LABELS[selectedElement.element_type]}</span>
+            <button onClick={() => onSelectElement('')} className="text-[10px] text-surface-500 hover:text-white ml-auto">
+              ← All comments
+            </button>
+          </div>
+          <p className={cn('text-sm line-clamp-3', darkMode ? 'text-surface-300' : 'text-gray-600')}>
+            {selectedElement.content || <span className="italic text-surface-600">Empty element</span>}
+          </p>
+        </div>
+      )}
+
+      {/* Comments thread */}
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        {elementId ? (
+          rootComments.length === 0 ? (
+            <p className="text-sm text-surface-500 text-center py-8">No comments on this element yet</p>
+          ) : (
+            rootComments.map(c => <MiniThread key={c.id} comment={c} depth={0} />)
+          )
+        ) : (
+          <div className="text-center py-8">
+            <svg className="w-8 h-8 text-surface-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+            <p className="text-sm text-surface-500">Click the comment icon on any script element to start a thread</p>
+            {commentedElementIds.length > 0 && (
+              <p className="text-xs text-surface-600 mt-2">
+                {commentedElementIds.length} element{commentedElementIds.length !== 1 ? 's' : ''} with comments
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* New comment form */}
+      {elementId && (
+        <div className="border-t border-surface-800 px-4 py-3">
+          <textarea
+            value={newCommentText}
+            onChange={(e) => setNewCommentText(e.target.value)}
+            placeholder="Add a comment..."
+            rows={2}
+            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none resize-none"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                onPost(elementId);
+              }
+            }}
+          />
+          <div className="flex items-center justify-between mt-2">
+            <select value={newCommentType} onChange={(e) => setNewCommentType(e.target.value as CommentType)}
+              className="rounded-lg border border-surface-700 bg-surface-900 px-2 py-1.5 text-xs text-white" aria-label="Comment type">
+              <option value="note">Note</option>
+              <option value="suggestion">Suggestion</option>
+              <option value="issue">Issue</option>
+            </select>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-surface-600">⌘↵</span>
+              <Button size="sm" onClick={() => onPost(elementId)} loading={posting} disabled={!newCommentText.trim()}>
+                Post
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </aside>
   );
 }
 
@@ -1260,6 +1603,8 @@ interface LineEditorProps {
   displaySettings: DisplaySettings;
   characterColorMap: Record<string, number>;
   sceneNumberMap: Record<string, string>;
+  commentCount: number;
+  onComment: (elementId: string) => void;
 }
 
 const LineEditor = memo(function LineEditor({
@@ -1276,6 +1621,8 @@ const LineEditor = memo(function LineEditor({
   displaySettings,
   characterColorMap,
   sceneNumberMap,
+  commentCount,
+  onComment,
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector
   const element = useScriptStore((s) => s.elements.find((e) => e.id === elementId));
@@ -1639,6 +1986,26 @@ const LineEditor = memo(function LineEditor({
           </button>
         </div>
 
+        {/* Comment button — right side */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onComment(elementId); }}
+          className={cn(
+            'absolute -right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full transition-all',
+            commentCount > 0
+              ? 'text-brand-400 bg-brand-500/15 opacity-100'
+              : 'text-surface-500 opacity-0 group-hover:opacity-100 hover:bg-surface-700 hover:text-white'
+          )}
+          title={commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : 'Add comment'}
+          aria-label={commentCount > 0 ? `${commentCount} comments on this element` : 'Add comment'}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+          {commentCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center">
+              {commentCount > 9 ? '9+' : commentCount}
+            </span>
+          )}
+        </button>
+
         {showTypeMenu && (
           <div className="absolute -left-24 top-6 z-20 bg-surface-800 border border-surface-700 rounded-lg shadow-lg py-1 min-w-[140px]">
             {ELEMENT_CYCLE.map((type) => (
@@ -1692,10 +2059,11 @@ const LineEditor = memo(function LineEditor({
     && prev.projectId === next.projectId
     && prev.canEdit === next.canEdit
     && prev.displaySettings === next.displaySettings
-    && prev.characterColorMap === next.characterColorMap;
+    && prev.characterColorMap === next.characterColorMap
+    && prev.commentCount === next.commentCount;
   // Note: element content changes are handled by the Zustand selector
-  // inside the component, not through props. onFocused is intentionally
-  // excluded — it's a stable parent callback.
+  // inside the component, not through props. onFocused and onComment
+  // are intentionally excluded — they're stable parent callbacks.
 });
 
 // ============================================================

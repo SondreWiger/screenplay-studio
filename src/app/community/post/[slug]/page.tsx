@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { ScriptContentViewer } from '@/components/ScreenplayRenderer';
-import { formatDate, timeAgo } from '@/lib/utils';
+import { formatDate, timeAgo, cn } from '@/lib/utils';
+import { sendNotification } from '@/lib/notifications';
 import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction } from '@/lib/types';
 
 // ============================================================
@@ -82,13 +83,9 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
 
     setCategories((catsRes.data || []).map((j: any) => j.category));
 
-    // Thread comments
+    // Store all comments flat for infinite nesting
     const allComments = commentsRes.data || [];
-    const topLevel = allComments.filter((c: any) => !c.parent_id);
-    topLevel.forEach((c: any) => {
-      c.replies = allComments.filter((r: any) => r.parent_id === c.id);
-    });
-    setComments(topLevel);
+    setComments(allComments);
     setDistros(distrosRes.data || []);
     setProductions(prodRes.data || []);
     setHasUpvoted((upvoteRes.data || []).length > 0);
@@ -101,6 +98,20 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
     const { data } = await supabase.rpc('toggle_community_upvote', { p_post_id: post.id });
     setHasUpvoted(!!data);
     setPost((prev) => prev ? { ...prev, upvote_count: prev.upvote_count + (data ? 1 : -1) } : prev);
+    // Notify post author on upvote (not on un-upvote)
+    if (data && post.author_id !== user.id) {
+      const actorName = (user as any)?.display_name || (user as any)?.full_name || 'Someone';
+      sendNotification({
+        userId: post.author_id,
+        type: 'community_upvote',
+        title: `${actorName} liked your post`,
+        body: post.title,
+        link: `/community/post/${post.slug}`,
+        actorId: user.id,
+        entityType: 'community_post',
+        entityId: post.id,
+      });
+    }
   };
 
   const handleComment = async (parentId?: string) => {
@@ -125,15 +136,44 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         .single();
 
       if (data) {
+        // Add to flat comments list (nesting handled by recursive component)
+        setComments((prev) => [...prev, data]);
         if (parentId) {
-          setComments((prev) =>
-            prev.map((c) => c.id === parentId ? { ...c, replies: [...(c.replies || []), data] } : c)
-          );
           setReplyText('');
           setReplyingTo(null);
         } else {
-          setComments((prev) => [...prev, { ...data, replies: [] }]);
           setCommentText('');
+        }
+        // Notify post author about the comment
+        if (post.author_id !== user.id) {
+          const actorName = (user as any)?.display_name || (user as any)?.full_name || 'Someone';
+          sendNotification({
+            userId: post.author_id,
+            type: 'community_comment',
+            title: `${actorName} commented on your post`,
+            body: content.length > 120 ? content.slice(0, 120) + '…' : content,
+            link: `/community/post/${post.slug}`,
+            actorId: user.id,
+            entityType: 'community_post',
+            entityId: post.id,
+          });
+        }
+        // If replying, notify parent comment author
+        if (parentId) {
+          const parentComment = comments.find((c) => c.id === parentId);
+          if (parentComment && parentComment.author_id !== user.id && parentComment.author_id !== post.author_id) {
+            const actorName = (user as any)?.display_name || (user as any)?.full_name || 'Someone';
+            sendNotification({
+              userId: parentComment.author_id,
+              type: 'community_reply',
+              title: `${actorName} replied to your comment`,
+              body: content.length > 120 ? content.slice(0, 120) + '…' : content,
+              link: `/community/post/${post.slug}`,
+              actorId: user.id,
+              entityType: 'community_comment',
+              entityId: data.id,
+            });
+          }
         }
       }
     } catch (err) {
@@ -142,6 +182,21 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
       setSubmitting(false);
     }
   };
+
+  const handleDeleteComment = async (commentId: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from('community_comments').delete().eq('id', commentId);
+    if (!error) setComments((prev) => prev.filter((c) => c.id !== commentId && c.parent_id !== commentId));
+  };
+
+  const handleDeletePost = async () => {
+    if (!post || !confirm('Are you sure you want to delete this post? This cannot be undone.')) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('community_posts').delete().eq('id', post.id);
+    if (!error) router.push('/community');
+  };
+
+  const isMod = user?.role === 'moderator' || user?.role === 'admin';
 
   const handleCreateDistro = async () => {
     if (!user || !post) return;
@@ -260,7 +315,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   }
 
   const filteredComments = comments.filter((c) =>
-    activeTab === 'suggestions' ? c.comment_type === 'suggestion' : c.comment_type === 'comment'
+    !c.parent_id && (activeTab === 'suggestions' ? c.comment_type === 'suggestion' : c.comment_type === 'comment')
   );
 
   return (
@@ -359,6 +414,28 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                 <svg className="w-4 h-4" fill={hasUpvoted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
                 <span className="text-sm font-semibold">{post.upvote_count}</span>
               </button>
+
+              {/* Delete post — owner or mod/admin */}
+              {user && (user.id === post.author_id || isMod) && (
+                <button
+                  onClick={handleDeletePost}
+                  className="px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1.5 border border-red-200"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  {user.id !== post.author_id ? 'Remove (mod)' : 'Delete'}
+                </button>
+              )}
+
+              {/* Report */}
+              {user && user.id !== post.author_id && (
+                <Link
+                  href={`/support?type=community_post&id=${post.id}&subject=${encodeURIComponent(`Report post: ${post.title}`)}`}
+                  className="px-3 py-2 text-xs font-medium text-stone-400 hover:text-stone-600 bg-stone-50 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1.5 border border-stone-200"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+                  Report
+                </Link>
+              )}
             </div>
           </div>
 
@@ -518,81 +595,21 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
 
             <div className="space-y-4">
               {filteredComments.map((comment) => (
-                <div key={comment.id} className="rounded-xl border border-stone-200 bg-white p-5">
-                  <div className="flex items-start gap-3">
-                    <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
-                      {comment.author?.avatar_url ? (
-                        <img src={comment.author.avatar_url} alt="" className="w-8 h-8 rounded-full hover:ring-2 ring-brand-300 transition-all" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-500 hover:ring-2 ring-brand-300 transition-all">
-                          {(comment.author?.full_name || '?')[0]}
-                        </div>
-                      )}
-                    </Link>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className="text-sm font-semibold text-stone-800 hover:text-brand-600 transition-colors">{comment.author?.full_name || 'Anonymous'}</Link>
-                        <span className="text-xs text-stone-400">{timeAgo(comment.created_at)}</span>
-                        {comment.comment_type === 'suggestion' && (
-                          <span className="px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 rounded">Suggestion</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-stone-700 mt-1 whitespace-pre-wrap">{comment.content}</p>
-                      {user && (
-                        <button
-                          onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                          className="text-xs text-brand-600 hover:text-brand-700 mt-2 transition-colors"
-                        >
-                          Reply
-                        </button>
-                      )}
-
-                      {/* Reply form */}
-                      {replyingTo === comment.id && (
-                        <div className="mt-3 flex gap-2">
-                          <input
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder="Write a reply..."
-                            className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleComment(comment.id); }}
-                          />
-                          <button
-                            onClick={() => handleComment(comment.id)}
-                            disabled={!replyText.trim() || submitting}
-                            className="px-3 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg disabled:opacity-50"
-                          >Reply</button>
-                        </div>
-                      )}
-
-                      {/* Replies */}
-                      {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-4 ml-4 pl-4 border-l-2 border-stone-100 space-y-3">
-                          {comment.replies.map((reply: CommunityComment) => (
-                            <div key={reply.id} className="flex items-start gap-2">
-                              <Link href={`/u/${reply.author?.username || reply.author?.id || ''}`}>
-                                {reply.author?.avatar_url ? (
-                                  <img src={reply.author.avatar_url} alt="" className="w-6 h-6 rounded-full hover:ring-2 ring-brand-300 transition-all" />
-                                ) : (
-                                  <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-[9px] font-bold text-stone-500 hover:ring-2 ring-brand-300 transition-all">
-                                    {(reply.author?.full_name || '?')[0]}
-                                  </div>
-                                )}
-                              </Link>
-                              <div>
-                                <div className="flex items-center gap-1.5">
-                                  <Link href={`/u/${reply.author?.username || reply.author?.id || ''}`} className="text-xs font-semibold text-stone-700 hover:text-brand-600 transition-colors">{reply.author?.full_name}</Link>
-                                  <span className="text-[10px] text-stone-400">{timeAgo(reply.created_at)}</span>
-                                </div>
-                                <p className="text-xs text-stone-600 mt-0.5">{reply.content}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <CommunityCommentThread
+                  key={comment.id}
+                  comment={comment}
+                  allComments={comments}
+                  depth={0}
+                  user={user}
+                  replyingTo={replyingTo}
+                  setReplyingTo={setReplyingTo}
+                  replyText={replyText}
+                  setReplyText={setReplyText}
+                  submitting={submitting}
+                  handleComment={handleComment}
+                  onDelete={handleDeleteComment}
+                  isMod={isMod}
+                />
               ))}
             </div>
           </div>
@@ -750,6 +767,124 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// Recursive comment thread component for infinite nesting
+function CommunityCommentThread({ comment, allComments, depth, user, replyingTo, setReplyingTo, replyText, setReplyText, submitting, handleComment, onDelete, isMod }: {
+  comment: CommunityComment;
+  allComments: CommunityComment[];
+  depth: number;
+  user: any;
+  replyingTo: string | null;
+  setReplyingTo: (id: string | null) => void;
+  replyText: string;
+  setReplyText: (text: string) => void;
+  submitting: boolean;
+  handleComment: (parentId?: string) => void;
+  onDelete?: (id: string) => void;
+  isMod?: boolean;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  const replies = allComments.filter(c => c.parent_id === comment.id);
+  const maxIndent = 5;
+  const isRoot = depth === 0;
+
+  return (
+    <div className={cn(!isRoot && 'ml-4 sm:ml-6')}>
+      <div className={cn(
+        isRoot ? 'rounded-xl border border-stone-200 bg-white p-5' : 'pt-3',
+      )}>
+        <div className="flex items-start gap-3">
+          <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
+            {comment.author?.avatar_url ? (
+              <img src={comment.author.avatar_url} alt="" className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-brand-300 transition-all')} />
+            ) : (
+              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-stone-200 flex items-center justify-center font-bold text-stone-500 hover:ring-2 ring-brand-300 transition-all')}>
+                {(comment.author?.full_name || '?')[0]}
+              </div>
+            )}
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className={cn(isRoot ? 'text-sm' : 'text-xs', 'font-semibold text-stone-800 hover:text-brand-600 transition-colors')}>{comment.author?.full_name || 'Anonymous'}</Link>
+              {comment.author?.role === 'moderator' && <span className="px-1 py-0.5 text-[8px] font-bold text-green-700 bg-green-50 rounded border border-green-200">MOD</span>}
+              {comment.author?.role === 'admin' && <span className="px-1 py-0.5 text-[8px] font-bold text-red-700 bg-red-50 rounded border border-red-200">ADMIN</span>}
+              <span className="text-[10px] text-stone-400">{timeAgo(comment.created_at)}</span>
+              {comment.comment_type === 'suggestion' && (
+                <span className="px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 rounded">Suggestion</span>
+              )}
+            </div>
+            <p className={cn(isRoot ? 'text-sm' : 'text-xs', 'text-stone-700 mt-1 whitespace-pre-wrap')}>{comment.content}</p>
+            <div className="flex items-center gap-3 mt-1">
+              {user && (
+                <button
+                  onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                  className="text-xs text-brand-600 hover:text-brand-700 transition-colors"
+                >
+                  Reply
+                </button>
+              )}
+              {user && onDelete && (user.id === comment.author_id || isMod) && (
+                <button
+                  onClick={() => onDelete(comment.id)}
+                  className="text-xs text-red-400 hover:text-red-600 transition-colors flex items-center gap-1"
+                >
+                  {user.id !== comment.author_id && <span className="text-[9px] font-semibold text-amber-600">MOD</span>}
+                  Delete
+                </button>
+              )}
+              {replies.length > 0 && (
+                <button onClick={() => setCollapsed(!collapsed)} className="text-[10px] text-stone-400 hover:text-stone-700 transition-colors">
+                  {collapsed ? `Show ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}` : replies.length > 2 ? `Hide replies` : ''}
+                </button>
+              )}
+            </div>
+
+            {/* Reply form */}
+            {replyingTo === comment.id && (
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Write a reply..."
+                  className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleComment(comment.id); }}
+                />
+                <button
+                  onClick={() => handleComment(comment.id)}
+                  disabled={!replyText.trim() || submitting}
+                  className="px-3 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg disabled:opacity-50"
+                >Reply</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Nested replies */}
+      {!collapsed && replies.length > 0 && (
+        <div className={cn(depth < maxIndent ? 'border-l-2 border-stone-100 ml-4 pl-0' : '')}>
+          {replies.map(reply => (
+            <CommunityCommentThread
+              key={reply.id}
+              comment={reply}
+              allComments={allComments}
+              depth={depth + 1}
+              user={user}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              replyText={replyText}
+              setReplyText={setReplyText}
+              submitting={submitting}
+              handleComment={handleComment}
+              onDelete={onDelete}
+              isMod={isMod}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
