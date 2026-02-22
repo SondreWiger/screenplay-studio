@@ -157,9 +157,11 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         .order('version', { ascending: false });
       const scripts = data || [];
       set({ scripts });
-      if (scripts.length > 0 && !get().currentScript) {
+      if (scripts.length > 0) {
         const active = scripts.find((s) => s.is_active) || scripts[0];
         set({ currentScript: active });
+      } else {
+        set({ currentScript: null, elements: [] });
       }
     } catch (err) {
       console.error('Error fetching scripts:', err);

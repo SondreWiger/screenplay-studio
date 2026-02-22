@@ -5,23 +5,38 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Input } from '@/components/ui';
+import { validatePassword } from '@/lib/security';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const passwordValidation = validatePassword(password);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot check
+    if (honeypot) return;
+
     setLoading(true);
     setError('');
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (!agreedToTerms) {
+      setError('You must agree to the Terms of Service and Privacy Policy');
+      setLoading(false);
+      return;
+    }
+
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.issues[0]);
       setLoading(false);
       return;
     }
@@ -120,6 +135,18 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
+            {/* Honeypot — hidden from real users, catches bots */}
+            <div className="absolute -top-[9999px] -left-[9999px]" aria-hidden="true">
+              <input
+                type="text"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
+
             {error && (
               <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
                 {error}
@@ -144,16 +171,49 @@ export default function RegisterPage() {
               required
             />
 
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div>
+              <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              {password.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {[
+                    { label: '8+ characters', met: password.length >= 8 },
+                    { label: 'Uppercase letter', met: /[A-Z]/.test(password) },
+                    { label: 'Lowercase letter', met: /[a-z]/.test(password) },
+                    { label: 'Number', met: /\d/.test(password) },
+                    { label: 'Special character', met: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
+                  ].map((rule) => (
+                    <div key={rule.label} className="flex items-center gap-2 text-xs">
+                      <span className={rule.met ? 'text-green-400' : 'text-surface-600'}>{rule.met ? '✓' : '○'}</span>
+                      <span className={rule.met ? 'text-surface-300' : 'text-surface-500'}>{rule.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-            <Button type="submit" className="w-full" loading={loading}>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500 focus:ring-offset-0"
+              />
+              <span className="text-xs text-surface-400">
+                I agree to the{' '}
+                <Link href="/legal/terms" className="text-brand-400 hover:text-brand-300 underline" target="_blank">Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/legal/privacy" className="text-brand-400 hover:text-brand-300 underline" target="_blank">Privacy Policy</Link>
+              </span>
+            </label>
+
+            <Button type="submit" className="w-full" loading={loading} disabled={!agreedToTerms}>
               Create Account
             </Button>
           </form>

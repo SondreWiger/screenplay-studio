@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import type { Company, CompanyMember, Project, Profile } from '@/lib/types';
+import type { Company, CompanyMember, Project, Profile, CompanyBlogPost } from '@/lib/types';
 
 // ============================================================
 // Company Public Page — /<slug>
@@ -13,6 +13,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
   const [company, setCompany] = useState<Company | null>(null);
   const [members, setMembers] = useState<CompanyMember[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [blogPosts, setBlogPosts] = useState<CompanyBlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -60,6 +61,18 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
 
     setMembers(mems);
     setProjects(projs);
+
+    // Fetch published blog posts
+    const { data: posts } = await supabase
+      .from('company_blog_posts')
+      .select('*')
+      .eq('company_id', co.id)
+      .eq('published', true)
+      .order('pinned', { ascending: false })
+      .order('published_at', { ascending: false })
+      .limit(6);
+    setBlogPosts(posts || []);
+
     setLoading(false);
   };
 
@@ -178,6 +191,47 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* Blog */}
+        {blogPosts.length > 0 && (
+          <section className="mb-16">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-stone-900">Blog</h2>
+              <Link href={`/company/${company.slug}/blog`} className="text-sm font-medium hover:underline" style={{ color: company.brand_color }}>
+                View all posts →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {blogPosts.map((post) => (
+                <Link key={post.id} href={`/company/${company.slug}/blog/${post.slug}`}
+                  className="block bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-lg transition-shadow group">
+                  {post.cover_image_url ? (
+                    <img src={post.cover_image_url} alt="" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-40 flex items-center justify-center" style={{ backgroundColor: company.brand_color + '10' }}>
+                      <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    {post.pinned && <span className="text-[10px] font-semibold uppercase text-amber-600 mb-1 block">📌 Pinned</span>}
+                    <h3 className="font-semibold text-stone-900 line-clamp-2 group-hover:underline">{post.title}</h3>
+                    {post.excerpt && <p className="text-sm text-stone-500 mt-1 line-clamp-2">{post.excerpt}</p>}
+                    <div className="flex items-center gap-2 mt-3">
+                      {post.tags?.length > 0 && post.tags.slice(0, 2).map((tag: string) => (
+                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-500">{tag}</span>
+                      ))}
+                      {post.published_at && (
+                        <span className="text-xs text-stone-400 ml-auto">{new Date(post.published_at).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </section>
         )}

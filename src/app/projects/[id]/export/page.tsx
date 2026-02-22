@@ -1,0 +1,694 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useProFeatures } from '@/hooks/useProFeatures';
+import { useProjectStore } from '@/lib/stores';
+import { Button, Card, Badge, Modal, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
+
+// ============================================================
+// Advanced Export — Pro feature
+// Branded PDF/DOCX/HTML/Fountain export with watermark & cover
+// ============================================================
+
+type ExportFormat = 'pdf' | 'docx' | 'fountain' | 'html' | 'fdx';
+
+interface ExportConfig {
+  format: ExportFormat;
+  includeTitle: boolean;
+  includeCover: boolean;
+  coverLogoUrl: string;
+  coverCompanyName: string;
+  coverSubtitle: string;
+  watermarkText: string;
+  watermarkEnabled: boolean;
+  headerLeft: string;
+  headerRight: string;
+  footerEnabled: boolean;
+  pageNumbers: boolean;
+  sceneNumbers: boolean;
+  draftLabel: string;
+  contactInfo: string;
+  colorCoding: boolean;
+  revisionColor: string;
+  fontSize: number;
+}
+
+const defaultConfig: ExportConfig = {
+  format: 'pdf',
+  includeTitle: true,
+  includeCover: true,
+  coverLogoUrl: '',
+  coverCompanyName: '',
+  coverSubtitle: '',
+  watermarkText: 'CONFIDENTIAL',
+  watermarkEnabled: false,
+  headerLeft: '',
+  headerRight: '',
+  footerEnabled: true,
+  pageNumbers: true,
+  sceneNumbers: true,
+  draftLabel: '',
+  contactInfo: '',
+  colorCoding: false,
+  revisionColor: '#60a5fa',
+  fontSize: 12,
+};
+
+const FORMATS: { id: ExportFormat; label: string; icon: string; desc: string }[] = [
+  { id: 'pdf', label: 'PDF', icon: '📄', desc: 'Industry standard, print-ready' },
+  { id: 'docx', label: 'DOCX', icon: '📝', desc: 'Microsoft Word, editable' },
+  { id: 'fountain', label: 'Fountain', icon: '⛲', desc: 'Plain text markup format' },
+  { id: 'html', label: 'HTML', icon: '🌐', desc: 'Web-ready, embeddable' },
+  { id: 'fdx', label: 'FDX', icon: '🎬', desc: 'Final Draft compatible' },
+];
+
+const REVISION_COLORS = [
+  { label: 'White', value: '#ffffff' },
+  { label: 'Blue', value: '#60a5fa' },
+  { label: 'Pink', value: '#f472b6' },
+  { label: 'Yellow', value: '#fbbf24' },
+  { label: 'Green', value: '#34d399' },
+  { label: 'Goldenrod', value: '#daa520' },
+  { label: 'Buff', value: '#f0dc82' },
+  { label: 'Salmon', value: '#fa8072' },
+  { label: 'Cherry', value: '#de3163' },
+  { label: 'Tan', value: '#d2b48c' },
+];
+
+export default function ExportPage({ params }: { params: { id: string } }) {
+  const { user } = useAuth();
+  const { isPro, hasAdvancedExports } = useProFeatures();
+  const { currentProject } = useProjectStore();
+  const [scripts, setScripts] = useState<any[]>([]);
+  const [selectedScript, setSelectedScript] = useState<string>('');
+  const [config, setConfig] = useState<ExportConfig>(defaultConfig);
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchFormats, setBatchFormats] = useState<ExportFormat[]>(['pdf']);
+  const [exportHistory, setExportHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchData();
+  }, [params.id]);
+
+  const fetchData = async () => {
+    const supabase = createClient();
+    const [scriptRes] = await Promise.all([
+      supabase.from('scripts')
+        .select('id, title, content, updated_at')
+        .eq('project_id', params.id)
+        .order('created_at', { ascending: true }),
+    ]);
+    const scr = scriptRes.data || [];
+    setScripts(scr);
+    if (scr.length > 0) setSelectedScript(scr[0].id);
+
+    // Hydrate cover info from project branding if available
+    if (currentProject?.custom_branding) {
+      setConfig(prev => ({
+        ...prev,
+        coverLogoUrl: currentProject.custom_branding?.logo_url || '',
+        coverCompanyName: currentProject.custom_branding?.company_name || '',
+        watermarkText: currentProject.custom_branding?.watermark || 'CONFIDENTIAL',
+      }));
+    }
+    setLoading(false);
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const formats = batchMode ? batchFormats : [config.format];
+      for (const fmt of formats) {
+        const script = scripts.find(s => s.id === selectedScript);
+        if (!script) continue;
+
+        const exportData = {
+          project_name: currentProject?.title || 'Untitled',
+          script_title: script.title,
+          content: script.content,
+          format: fmt,
+          config: { ...config, format: fmt },
+        };
+
+        if (fmt === 'pdf') {
+          // PDF: open print-ready page in new window
+          const html = generateScreenplayHTML(exportData);
+          const win = window.open('', '_blank');
+          if (win) {
+            win.document.write(html);
+            win.document.close();
+            setTimeout(() => win.print(), 500);
+          }
+        } else {
+          // All other formats: download as blob
+          const blob = generateExport(exportData);
+          const ext = fmt === 'docx' ? 'doc' : fmt;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${script.title || 'script'}.${ext}`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }
+      toast(`Exported ${formats.length} file${formats.length > 1 ? 's' : ''}`, 'success');
+    } catch (err) {
+      toast('Export failed', 'error');
+    }
+    setExporting(false);
+  };
+
+  const updateConfig = (key: keyof ExportConfig, value: any) => {
+    setConfig(prev => ({ ...prev, [key]: value }));
+  };
+
+  if (!hasAdvancedExports || !isPro) return null;
+
+  return (
+    <div className="p-3 sm:p-4 md:p-8 max-w-5xl">
+      <ToastContainer />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Advanced Export</h1>
+            <Badge variant="warning">⭐ Pro</Badge>
+          </div>
+          <p className="text-sm text-surface-400 mt-1">Branded, production-ready exports in multiple formats.</p>
+        </div>
+      </div>
+
+      {loading ? <LoadingSpinner className="py-32" /> : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Config */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Script Select */}
+            {scripts.length > 1 && (
+              <Card className="p-4">
+                <label className="block text-xs font-medium text-surface-400 mb-2">Script</label>
+                <select
+                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white"
+                  value={selectedScript}
+                  onChange={e => setSelectedScript(e.target.value)}
+                >
+                  {scripts.map(s => (
+                    <option key={s.id} value={s.id}>{s.title || 'Untitled'}</option>
+                  ))}
+                </select>
+              </Card>
+            )}
+
+            {/* Format */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-xs font-medium text-surface-400">Format</label>
+                <label className="flex items-center gap-2 text-xs text-surface-400">
+                  <input
+                    type="checkbox"
+                    checked={batchMode}
+                    onChange={e => setBatchMode(e.target.checked)}
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  />
+                  Batch export
+                </label>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                {FORMATS.map(f => {
+                  const isActive = batchMode
+                    ? batchFormats.includes(f.id)
+                    : config.format === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => {
+                        if (batchMode) {
+                          setBatchFormats(prev =>
+                            prev.includes(f.id) ? prev.filter(x => x !== f.id) : [...prev, f.id]
+                          );
+                        } else {
+                          updateConfig('format', f.id);
+                        }
+                      }}
+                      className={`p-3 rounded-lg border text-center transition-all ${
+                        isActive
+                          ? 'bg-brand-500/10 border-brand-500 text-brand-400'
+                          : 'bg-surface-800/50 border-surface-700 text-surface-400 hover:border-surface-600'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{f.icon}</div>
+                      <div className="text-xs font-medium">{f.label}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* Cover Page */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-xs font-medium text-surface-400">Cover Page</label>
+                <input
+                  type="checkbox"
+                  checked={config.includeCover}
+                  onChange={e => updateConfig('includeCover', e.target.checked)}
+                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                />
+              </div>
+              {config.includeCover && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Company / Studio Name</label>
+                    <input
+                      type="text"
+                      value={config.coverCompanyName}
+                      onChange={e => updateConfig('coverCompanyName', e.target.value)}
+                      placeholder="Acme Productions"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Subtitle</label>
+                    <input
+                      type="text"
+                      value={config.coverSubtitle}
+                      onChange={e => updateConfig('coverSubtitle', e.target.value)}
+                      placeholder="Original Screenplay by..."
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Contact Info</label>
+                    <input
+                      type="text"
+                      value={config.contactInfo}
+                      onChange={e => updateConfig('contactInfo', e.target.value)}
+                      placeholder="agent@example.com"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Draft Label</label>
+                    <input
+                      type="text"
+                      value={config.draftLabel}
+                      onChange={e => updateConfig('draftLabel', e.target.value)}
+                      placeholder="THIRD DRAFT — June 2025"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Logo URL (optional)</label>
+                    <input
+                      type="url"
+                      value={config.coverLogoUrl}
+                      onChange={e => updateConfig('coverLogoUrl', e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    />
+                  </div>
+                </div>
+              )}
+            </Card>
+
+            {/* Watermark */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-xs font-medium text-surface-400">Watermark</label>
+                <input
+                  type="checkbox"
+                  checked={config.watermarkEnabled}
+                  onChange={e => updateConfig('watermarkEnabled', e.target.checked)}
+                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                />
+              </div>
+              {config.watermarkEnabled && (
+                <input
+                  type="text"
+                  value={config.watermarkText}
+                  onChange={e => updateConfig('watermarkText', e.target.value)}
+                  placeholder="CONFIDENTIAL"
+                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                />
+              )}
+            </Card>
+
+            {/* Page Options */}
+            <Card className="p-4">
+              <label className="block text-xs font-medium text-surface-400 mb-3">Page Options</label>
+              <div className="grid grid-cols-2 gap-4">
+                <label className="flex items-center gap-2 text-sm text-surface-300">
+                  <input
+                    type="checkbox"
+                    checked={config.pageNumbers}
+                    onChange={e => updateConfig('pageNumbers', e.target.checked)}
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  />
+                  Page numbers
+                </label>
+                <label className="flex items-center gap-2 text-sm text-surface-300">
+                  <input
+                    type="checkbox"
+                    checked={config.sceneNumbers}
+                    onChange={e => updateConfig('sceneNumbers', e.target.checked)}
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  />
+                  Scene numbers
+                </label>
+                <label className="flex items-center gap-2 text-sm text-surface-300">
+                  <input
+                    type="checkbox"
+                    checked={config.includeTitle}
+                    onChange={e => updateConfig('includeTitle', e.target.checked)}
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  />
+                  Title page
+                </label>
+                <label className="flex items-center gap-2 text-sm text-surface-300">
+                  <input
+                    type="checkbox"
+                    checked={config.footerEnabled}
+                    onChange={e => updateConfig('footerEnabled', e.target.checked)}
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  />
+                  Footer
+                </label>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Header Left</label>
+                  <input
+                    type="text"
+                    value={config.headerLeft}
+                    onChange={e => updateConfig('headerLeft', e.target.value)}
+                    placeholder="Project name..."
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Header Right</label>
+                  <input
+                    type="text"
+                    value={config.headerRight}
+                    onChange={e => updateConfig('headerRight', e.target.value)}
+                    placeholder="Date..."
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Revision Colors */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-xs font-medium text-surface-400">Revision Color Coding</label>
+                <input
+                  type="checkbox"
+                  checked={config.colorCoding}
+                  onChange={e => updateConfig('colorCoding', e.target.checked)}
+                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                />
+              </div>
+              {config.colorCoding && (
+                <div className="flex flex-wrap gap-2">
+                  {REVISION_COLORS.map(c => (
+                    <button
+                      key={c.value}
+                      onClick={() => updateConfig('revisionColor', c.value)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-all ${
+                        config.revisionColor === c.value
+                          ? 'border-brand-500 bg-brand-500/10'
+                          : 'border-surface-700 hover:border-surface-600'
+                      }`}
+                    >
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c.value }} />
+                      <span className="text-surface-300">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* Font Size */}
+            <Card className="p-4">
+              <label className="block text-xs font-medium text-surface-400 mb-3">Font Size: {config.fontSize}pt</label>
+              <input
+                type="range"
+                min={8}
+                max={16}
+                value={config.fontSize}
+                onChange={e => updateConfig('fontSize', Number(e.target.value))}
+                className="w-full accent-brand-500"
+              />
+              <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+                <span>8pt</span><span>12pt</span><span>16pt</span>
+              </div>
+            </Card>
+          </div>
+
+          {/* Right: Preview & Export */}
+          <div className="space-y-4">
+            <Card className="p-4 sticky top-4">
+              <h3 className="text-sm font-medium text-white mb-3">Export Preview</h3>
+              <div className="aspect-[8.5/11] bg-white rounded-lg overflow-hidden relative mb-4">
+                <div className="p-4 text-[6px] leading-tight text-gray-800 font-mono" style={{ fontSize: `${config.fontSize * 0.5}px` }}>
+                  {config.includeCover && (
+                    <div className="text-center mb-4">
+                      {config.coverLogoUrl && <div className="mb-1 text-[4px] text-gray-400">[Logo]</div>}
+                      {config.coverCompanyName && <div className="text-[5px] text-gray-500 mb-1">{config.coverCompanyName}</div>}
+                      <div className="text-[8px] font-bold mb-0.5">{currentProject?.title || 'Script Title'}</div>
+                      {config.coverSubtitle && <div className="text-[5px] text-gray-500">{config.coverSubtitle}</div>}
+                      {config.draftLabel && <div className="text-[4px] text-gray-400 mt-1">{config.draftLabel}</div>}
+                      <div className="border-b border-gray-200 mt-2 mb-2" />
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    {config.sceneNumbers && <span className="text-gray-400">1. </span>}
+                    <span className="font-bold">INT. OFFICE - DAY</span>
+                    <p className="text-gray-600 ml-0">A modern office. Sunlight streams through floor-to-ceiling windows.</p>
+                    <p className="text-center font-bold text-gray-800 mt-1">ALEX</p>
+                    <p className="text-center text-gray-700">This is going to change everything.</p>
+                  </div>
+                </div>
+                {config.watermarkEnabled && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none rotate-[-30deg]">
+                    <span className="text-red-200/30 text-2xl font-bold uppercase tracking-widest">{config.watermarkText}</span>
+                  </div>
+                )}
+                {config.pageNumbers && (
+                  <div className="absolute bottom-1 right-2 text-[4px] text-gray-400">1.</div>
+                )}
+              </div>
+
+              <Button
+                className="w-full mb-2"
+                onClick={handleExport}
+                loading={exporting}
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                {batchMode ? `Export ${batchFormats.length} format${batchFormats.length !== 1 ? 's' : ''}` : `Export as ${config.format.toUpperCase()}`}
+              </Button>
+
+              <div className="text-[10px] text-surface-500 text-center">
+                {batchMode ? batchFormats.map(f => f.toUpperCase()).join(' + ') : `${config.format.toUpperCase()} format`}
+                {config.watermarkEnabled && ' • Watermarked'}
+                {config.includeCover && ' • Cover page'}
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Screenplay HTML builder (shared between PDF & HTML export) ──
+
+function generateScreenplayHTML(data: any): string {
+  const { content, config: cfg } = data;
+  const elements = Array.isArray(content) ? content : [];
+  let sceneNum = 0;
+
+  const bodyParts: string[] = [];
+
+  // Cover page
+  if (cfg.includeCover) {
+    bodyParts.push('<div class="cover-page">');
+    if (cfg.coverLogoUrl) bodyParts.push(`<img src="${cfg.coverLogoUrl}" alt="" style="max-height:60px;margin-bottom:20px;" />`);
+    if (cfg.coverCompanyName) bodyParts.push(`<div class="cover-company">${esc(cfg.coverCompanyName)}</div>`);
+    bodyParts.push(`<h1 class="cover-title">${esc(data.script_title || data.project_name)}</h1>`);
+    if (cfg.coverSubtitle) bodyParts.push(`<div class="cover-subtitle">${esc(cfg.coverSubtitle)}</div>`);
+    if (cfg.draftLabel) bodyParts.push(`<div class="cover-draft">${esc(cfg.draftLabel)}</div>`);
+    if (cfg.contactInfo) bodyParts.push(`<div class="cover-contact">${esc(cfg.contactInfo)}</div>`);
+    bodyParts.push('</div><div style="page-break-after:always"></div>');
+  }
+
+  // Script body
+  for (const el of elements) {
+    const type = (el.type || '').toLowerCase();
+    const text = el.text || '';
+    if (type === 'scene_heading' || type === 'heading') {
+      sceneNum++;
+      const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
+      bodyParts.push(`<p class="scene-heading">${num}${esc(text)}</p>`);
+    } else if (type === 'character') {
+      bodyParts.push(`<p class="character">${esc(text)}</p>`);
+    } else if (type === 'dialogue') {
+      bodyParts.push(`<p class="dialogue">${esc(text)}</p>`);
+    } else if (type === 'parenthetical') {
+      bodyParts.push(`<p class="parenthetical">(${esc(text)})</p>`);
+    } else if (type === 'transition') {
+      bodyParts.push(`<p class="transition">${esc(text)}</p>`);
+    } else {
+      bodyParts.push(`<p class="action">${esc(text)}</p>`);
+    }
+  }
+
+  const watermarkCSS = cfg.watermarkEnabled
+    ? `body::after{content:"${cfg.watermarkText}";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80pt;color:rgba(200,0,0,0.06);pointer-events:none;z-index:9999;white-space:nowrap;}`
+    : '';
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>${esc(data.script_title || data.project_name)}</title>
+<style>
+@page{size:letter;margin:1in;}
+body{font-family:'Courier New',Courier,monospace;font-size:${cfg.fontSize}pt;line-height:1.5;color:#111;max-width:7.5in;margin:0 auto;padding:40px 20px;}
+${watermarkCSS}
+.cover-page{text-align:center;padding-top:3in;}
+.cover-company{font-size:14pt;color:#555;margin-bottom:12px;}
+.cover-title{font-size:24pt;margin:0 0 12px 0;text-transform:uppercase;}
+.cover-subtitle{font-size:12pt;color:#555;margin-bottom:8px;}
+.cover-draft{font-size:10pt;color:#888;margin-top:24px;}
+.cover-contact{font-size:10pt;color:#888;margin-top:48px;white-space:pre-line;}
+.scene-heading{font-weight:bold;text-transform:uppercase;margin-top:24px;margin-bottom:12px;}
+.scene-num{margin-right:12px;color:#888;}
+.action{margin:6px 0;}
+.character{text-align:center;text-transform:uppercase;font-weight:bold;margin-top:18px;margin-bottom:0;padding-left:2in;}
+.dialogue{text-align:left;margin:0;padding-left:1.5in;padding-right:1.5in;}
+.parenthetical{text-align:left;padding-left:1.8in;padding-right:1.8in;font-style:italic;color:#555;margin:0;}
+.transition{text-align:right;text-transform:uppercase;margin:18px 0;}
+@media print{body{max-width:none;padding:0;margin:0;}}
+</style></head>
+<body>${bodyParts.join('\n')}</body></html>`;
+}
+
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Generate downloadable export blob ──
+
+function generateExport(data: any): Blob {
+  const { content, format, config: cfg } = data;
+  const elements = Array.isArray(content) ? content : [];
+
+  if (format === 'html') {
+    return new Blob([generateScreenplayHTML(data)], { type: 'text/html' });
+  }
+
+  if (format === 'fountain') {
+    const fountain: string[] = [];
+    fountain.push(`Title: ${data.script_title}`);
+    if (cfg.coverCompanyName) fountain.push(`Credit: ${cfg.coverCompanyName}`);
+    if (cfg.coverSubtitle) fountain.push(`Author: ${cfg.coverSubtitle}`);
+    if (cfg.draftLabel) fountain.push(`Draft date: ${cfg.draftLabel}`);
+    if (cfg.contactInfo) fountain.push(`Contact: ${cfg.contactInfo}`);
+    fountain.push('', '===', '');
+    for (const el of elements) {
+      const type = (el.type || '').toLowerCase();
+      const text = el.text || '';
+      if (type === 'scene_heading' || type === 'heading') {
+        fountain.push('', text.startsWith('INT.') || text.startsWith('EXT.') ? text : `.${text}`, '');
+      } else if (type === 'character') {
+        fountain.push('', text.toUpperCase());
+      } else if (type === 'dialogue') {
+        fountain.push(text);
+      } else if (type === 'parenthetical') {
+        fountain.push(`(${text})`);
+      } else if (type === 'transition') {
+        fountain.push('', `> ${text}`);
+      } else {
+        fountain.push('', text);
+      }
+    }
+    return new Blob([fountain.join('\n')], { type: 'text/plain;charset=utf-8' });
+  }
+
+  if (format === 'fdx') {
+    // Final Draft XML (FDX) format
+    const fdxParts: string[] = [];
+    fdxParts.push('<?xml version="1.0" encoding="UTF-8"?>');
+    fdxParts.push('<FinalDraft DocumentType="Script" Template="No" Version="5">');
+    fdxParts.push('<Content>');
+    for (const el of elements) {
+      const type = (el.type || '').toLowerCase();
+      const text = el.text || '';
+      let fdxType = 'Action';
+      if (type === 'scene_heading' || type === 'heading') fdxType = 'Scene Heading';
+      else if (type === 'character') fdxType = 'Character';
+      else if (type === 'dialogue') fdxType = 'Dialogue';
+      else if (type === 'parenthetical') fdxType = 'Parenthetical';
+      else if (type === 'transition') fdxType = 'Transition';
+      else if (type === 'general' || type === 'note') fdxType = 'General';
+      fdxParts.push(`<Paragraph Type="${fdxType}">`);
+      fdxParts.push(`<Text>${esc(text)}</Text>`);
+      fdxParts.push('</Paragraph>');
+    }
+    fdxParts.push('</Content>');
+
+    // Title page
+    if (cfg.includeCover) {
+      fdxParts.push('<TitlePage>');
+      fdxParts.push('<Content>');
+      fdxParts.push(`<Paragraph Type="Title"><Text>${esc(data.script_title || data.project_name)}</Text></Paragraph>`);
+      if (cfg.coverSubtitle) fdxParts.push(`<Paragraph Type="Author"><Text>${esc(cfg.coverSubtitle)}</Text></Paragraph>`);
+      if (cfg.contactInfo) fdxParts.push(`<Paragraph Type="Contact"><Text>${esc(cfg.contactInfo)}</Text></Paragraph>`);
+      if (cfg.draftLabel) fdxParts.push(`<Paragraph Type="Draft"><Text>${esc(cfg.draftLabel)}</Text></Paragraph>`);
+      fdxParts.push('</Content>');
+      fdxParts.push('</TitlePage>');
+    }
+
+    fdxParts.push('</FinalDraft>');
+    return new Blob([fdxParts.join('\n')], { type: 'application/xml;charset=utf-8' });
+  }
+
+  if (format === 'docx') {
+    // Word-compatible HTML (Word opens .doc HTML files natively)
+    const htmlContent = generateScreenplayHTML(data);
+    const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->
+${htmlContent.match(/<style>[\s\S]*?<\/style>/)?.[0] || ''}
+</head>
+<body>${htmlContent.match(/<body>([\s\S]*?)<\/body>/)?.[1] || ''}</body></html>`;
+    return new Blob([wordHtml], { type: 'application/msword;charset=utf-8' });
+  }
+
+  // Fallback: plain text
+  const lines: string[] = [];
+  let sceneNum = 0;
+  if (cfg.includeCover) {
+    if (cfg.coverCompanyName) lines.push(cfg.coverCompanyName);
+    lines.push('', data.script_title || data.project_name, '');
+    if (cfg.coverSubtitle) lines.push(cfg.coverSubtitle);
+    if (cfg.draftLabel) lines.push(cfg.draftLabel);
+    if (cfg.contactInfo) lines.push('', cfg.contactInfo);
+    lines.push('', '---', '');
+  }
+  for (const el of elements) {
+    const type = (el.type || '').toLowerCase();
+    const text = el.text || '';
+    if (type === 'scene_heading' || type === 'heading') { sceneNum++; lines.push('', cfg.sceneNumbers ? `${sceneNum}. ${text}` : text, ''); }
+    else if (type === 'character') lines.push('', `\t\t\t${text}`);
+    else if (type === 'dialogue') lines.push(`\t\t${text}`);
+    else if (type === 'parenthetical') lines.push(`\t\t(${text})`);
+    else if (type === 'transition') lines.push('', `\t\t\t\t\t${text}`, '');
+    else lines.push(text);
+  }
+  return new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+}

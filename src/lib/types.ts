@@ -115,7 +115,174 @@ export interface Profile {
   // Client customisation
   accent_color?: string | null;
   sidebar_tabs?: Record<string, boolean> | null;
+  // Storage
+  storage_used_bytes?: number;
+  storage_limit_bytes?: number;
 }
+
+// ── Pro Subscription Types ──────────────────────────────────
+export type SubscriptionPlan = 'pro' | 'project_pro' | 'enterprise';
+export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'trialing';
+export type BillingCycle = 'yearly' | 'monthly' | 'one_time';
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  billing_cycle: BillingCycle;
+  price_cents: number;
+  currency: string;
+  current_period_start: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  paypal_customer_id: string | null;
+  paypal_subscription_id: string | null;
+  payment_method: string;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamLicense {
+  id: string;
+  purchaser_id: string;
+  company_id: string | null;
+  recipient_id: string | null;
+  recipient_email: string | null;
+  status: 'pending' | 'active' | 'revoked' | 'expired';
+  plan: SubscriptionPlan;
+  price_cents: number;
+  subscription_id: string | null;
+  redeemed_at: string | null;
+  expires_at: string;
+  created_at: string;
+  // Joined fields
+  recipient?: Profile;
+  purchaser?: Profile;
+}
+
+export interface ScriptVersion {
+  id: string;
+  script_id: string;
+  project_id: string;
+  user_id: string;
+  version_number: number;
+  title: string | null;
+  content: any;
+  word_count: number;
+  page_count: number;
+  change_summary: string | null;
+  is_auto_save: boolean;
+  created_at: string;
+  // Joined
+  user?: Profile;
+}
+
+export interface ExternalShare {
+  id: string;
+  project_id: string;
+  created_by: string;
+  share_type: 'script' | 'storyboard' | 'moodboard' | 'full';
+  access_token: string;
+  title: string | null;
+  password_hash: string | null;
+  allow_comments: boolean;
+  allow_download: boolean;
+  watermark_text: string | null;
+  expires_at: string | null;
+  max_views: number | null;
+  view_count: number;
+  is_active: boolean;
+  branding: { logo_url?: string; company_name?: string; color?: string };
+  content_snapshot: {
+    project?: { title?: string; logline?: string; genre?: any; format?: string; cover_url?: string };
+    scripts?: { title?: string; content?: any; updated_at?: string }[];
+  } | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewSession {
+  id: string;
+  share_id: string;
+  project_id: string;
+  reviewer_name: string;
+  reviewer_email: string | null;
+  reviewer_token: string;
+  status: 'pending' | 'in_progress' | 'submitted';
+  overall_rating: number | null;
+  overall_notes: string | null;
+  created_at: string;
+  submitted_at: string | null;
+  annotations?: ReviewAnnotation[];
+}
+
+export interface ReviewAnnotation {
+  id: string;
+  session_id: string;
+  element_type: string | null;
+  element_index: number | null;
+  content: string;
+  annotation_type: 'note' | 'approval' | 'revision_request' | 'question';
+  resolved: boolean;
+  created_at: string;
+}
+
+export interface ProjectAnalyticsEvent {
+  id: string;
+  project_id: string;
+  user_id: string | null;
+  event_type: string;
+  event_data: Record<string, any>;
+  page: string | null;
+  word_count_delta: number;
+  created_at: string;
+}
+
+// Pro feature limits
+export const PRO_LIMITS = {
+  free: {
+    storage_bytes: 50 * 1024 * 1024 * 1024,       // 50 GB — generous free tier
+    max_team_size: Infinity,                       // No limits — DaVinci model
+    max_projects: Infinity,                        // No limits — DaVinci model
+    max_export_formats: ['pdf', 'fdx', 'json'],
+    version_history: false,
+    external_shares: false,
+    client_review: false,
+    analytics_dashboard: false,
+    custom_branding: false,
+    priority_support: false,
+    api_access: false,
+    advanced_scheduling: false,
+    watermarked_exports: false,
+    bulk_export: false,
+    advanced_exports: false,
+  },
+  pro: {
+    storage_bytes: 200 * 1024 * 1024 * 1024,      // 200 GB
+    max_team_size: Infinity,
+    max_projects: Infinity,
+    max_export_formats: ['pdf', 'fdx', 'json', 'html', 'docx', 'fountain'],
+    version_history: true,
+    external_shares: true,
+    client_review: true,
+    analytics_dashboard: true,
+    custom_branding: true,
+    priority_support: true,
+    api_access: true,
+    advanced_scheduling: true,
+    watermarked_exports: true,
+    bulk_export: true,
+    advanced_exports: true,
+  },
+} as const;
+
+export const PRO_PRICING = {
+  yearly: { amount: 200, currency: 'USD', per_month: 16.67 },
+  team_yearly: { amount: 160, currency: 'USD', per_month: 13.33, discount: 20 },
+  project_lifetime: { amount: 100, currency: 'USD' },
+} as const;
 
 export interface Project {
   id: string;
@@ -149,6 +316,9 @@ export interface Project {
   updated_at: string;
   accent_color?: string | null;
   sidebar_tabs?: Record<string, boolean> | null;
+  custom_branding?: { logo_url?: string; company_name?: string; watermark?: string; color?: string } | null;
+  pro_enabled?: boolean;
+  max_team_size?: number;
 }
 
 export type ProductionRole = 'director' | 'producer' | 'dp' | 'ad' | 'pa' | 'gaffer' | 'grip' | 'sound_mixer' | 'boom_op' | 'art_director' | 'wardrobe' | 'makeup' | 'editor' | 'vfx' | 'colorist' | 'composer' | 'actor' | 'extra' | 'script_supervisor' | 'stunt_coordinator' | 'location_manager' | 'craft_services' | 'other' | '';

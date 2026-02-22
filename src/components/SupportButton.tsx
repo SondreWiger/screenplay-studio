@@ -65,7 +65,7 @@ export function SupportButton() {
               </div>
             </Link>
             <Link
-              href="/community-guidelines"
+              href="/legal/community-guidelines"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >
@@ -76,7 +76,7 @@ export function SupportButton() {
               </div>
             </Link>
             <Link
-              href="/acceptable-use"
+              href="/legal/acceptable-use"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >

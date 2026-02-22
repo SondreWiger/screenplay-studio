@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotificationStore } from '@/lib/stores';
 import { NotificationRow } from '@/components/notifications/NotificationBell';
 import { Button, Card, LoadingPage } from '@/components/ui';
+import { AppHeader } from '@/components/AppHeader';
 import type { NotificationType } from '@/lib/types';
 
 const FILTER_OPTIONS: { key: 'all' | NotificationType; label: string }[] = [
@@ -62,26 +63,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-surface-950">
-      <header className="sticky top-0 z-40 border-b border-surface-800 bg-surface-950/80 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </Link>
-            <h1 className="text-lg font-semibold text-white">Notifications</h1>
-            {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 text-[11px] font-bold">
-                {unreadCount} unread
-              </span>
-            )}
-          </div>
-          {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-              Mark all as read
-            </Button>
-          )}
-        </div>
-      </header>
+      <AppHeader actions={unreadCount > 0 ? <Button variant="ghost" size="sm" onClick={markAllAsRead}>Mark all as read</Button> : undefined} />
 
       <div className="max-w-3xl mx-auto px-6 py-6">
         {/* Filters */}

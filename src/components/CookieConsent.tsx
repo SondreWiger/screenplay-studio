@@ -87,8 +87,11 @@ export function CookieConsentBanner() {
             <p className="text-xs text-surface-400 leading-relaxed">
               We use cookies to improve your experience. Necessary cookies are always active.
               You can choose which optional cookies to allow.{' '}
-              <a href="/privacy" className="text-brand-400 hover:text-brand-300 underline">
+              <a href="/legal/privacy" className="text-brand-400 hover:text-brand-300 underline">
                 Privacy Policy
+              </a>{' · '}
+              <a href="/legal/cookies" className="text-brand-400 hover:text-brand-300 underline">
+                Cookie Policy
               </a>
             </p>
           </div>

@@ -30,6 +30,7 @@ export default function DashboardPage() {
   // Company state
   const [companyMemberships, setCompanyMemberships] = useState<(CompanyMember & { company: Company })[]>([]);
   const [companyProjects, setCompanyProjects] = useState<Record<string, Project[]>>({});
+  const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
 
   // Initialise realtime notifications
   useNotifications(user?.id);
@@ -71,6 +72,7 @@ export default function DashboardPage() {
     }
     fetchProjects();
     fetchCompanyData();
+    fetchPendingInvitations();
   }, [user, authLoading]);
 
   const fetchProjects = async () => {
@@ -149,6 +151,34 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchPendingInvitations = async () => {
+    if (!user?.id) return;
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.rpc('get_pending_invitations');
+      if (data && Array.isArray(data)) {
+        setPendingInvitations(data);
+      }
+    } catch (err) {
+      // Silently fail — not critical
+    }
+  };
+
+  const acceptInvitation = async (invitationId: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.rpc('accept_company_invitation', { p_invitation_id: invitationId });
+    if (!error) {
+      setPendingInvitations(prev => prev.filter(i => i.id !== invitationId));
+      fetchCompanyData();
+    }
+  };
+
+  const declineInvitation = async (invitationId: string) => {
+    const supabase = createClient();
+    await supabase.rpc('decline_company_invitation', { p_invitation_id: invitationId });
+    setPendingInvitations(prev => prev.filter(i => i.id !== invitationId));
+  };
+
   if (authLoading || (!user && loading)) return <LoadingPage />;
 
   const statusColors: Record<string, string> = {
@@ -216,14 +246,33 @@ export default function DashboardPage() {
                   <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                   <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border border-surface-700 bg-surface-900 shadow-2xl py-1.5">
                     <div className="px-4 py-2.5 border-b border-surface-800">
-                      <p className="text-sm font-medium text-white truncate">{user?.display_name || user?.full_name || 'User'}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-white truncate">{user?.display_name || user?.full_name || 'User'}</p>
+                        {user?.is_pro && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 font-semibold">PRO</span>}
+                      </div>
                       <p className="text-[11px] text-surface-500 truncate">{user?.email}</p>
                     </div>
-                    <Link href="/settings" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
-                      onClick={() => setShowUserMenu(false)}>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                      Settings
-                    </Link>
+                    {!user?.is_pro && (
+                      <Link href="/settings" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
+                        onClick={() => setShowUserMenu(false)}>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        Settings
+                      </Link>
+                    )}
+                    {user?.is_pro && (
+                      <Link href="/settings/billing" className="flex items-center gap-2.5 px-4 py-2 text-xs text-amber-400 hover:bg-amber-500/10 transition-colors"
+                        onClick={() => setShowUserMenu(false)}>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l3.057 7.811L12 7.5l3.943 3.311L19 3M5 3l.783 4M19 3l-.783 4M5.783 7L3 21h18l-2.783-14M5.783 7h12.434" /></svg>
+                        Pro &amp; Billing
+                      </Link>
+                    )}
+                    {user?.is_pro && (
+                      <Link href="/settings" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
+                        onClick={() => setShowUserMenu(false)}>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        Settings
+                      </Link>
+                    )}
                     <Link href="/notifications" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
                       onClick={() => setShowUserMenu(false)}>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
@@ -261,11 +310,36 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        {/* Pending Company Invitations Banner */}
+        {pendingInvitations.length > 0 && (
+          <div className="mb-6 space-y-3">
+            {pendingInvitations.map((inv: any) => (
+              <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ backgroundColor: inv.company_color || '#3B82F6' }}>
+                    {inv.company_logo ? <img src={inv.company_logo} alt="" className="w-full h-full object-cover rounded-lg" /> : inv.company_name?.[0] || '?'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      <span className="text-brand-400">{inv.company_name}</span> invited you to join as <span className="capitalize text-brand-300">{inv.role}</span>
+                    </p>
+                    {inv.invited_by_name && <p className="text-xs text-surface-500">Invited by {inv.invited_by_name}</p>}
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button size="sm" onClick={() => acceptInvitation(inv.id)}>Accept</Button>
+                  <Button size="sm" variant="ghost" onClick={() => declineInvitation(inv.id)}>Decline</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {/* Welcome + Stats row */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
               Welcome back{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}
+              {user?.is_pro && <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 font-semibold">⭐ Pro</span>}
             </h2>
             <p className="mt-0.5 text-sm text-surface-500">Your film projects and recent work</p>
           </div>

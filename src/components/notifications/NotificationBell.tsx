@@ -304,10 +304,10 @@ function CompanyInviteActions({ notification }: { notification: Notification }) 
     if (!meta.invitation_id) return;
     setLoading(true);
 
-    await supabase
-      .from('company_invitations')
-      .delete()
-      .eq('id', meta.invitation_id);
+    // Use SECURITY DEFINER RPC to bypass RLS
+    await supabase.rpc('decline_company_invitation', {
+      p_invitation_id: meta.invitation_id,
+    });
 
     await supabase
       .from('notifications')

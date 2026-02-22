@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore, usePresenceStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
 import { Avatar, Badge, LoadingPage } from '@/components/ui';
@@ -20,7 +21,8 @@ const PAGE_LABELS: Record<string, string> = {
   budget: 'Budget', team: 'Team', settings: 'Settings',
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
-  showcase: 'Showcase',
+  showcase: 'Showcase', share: 'Share Portal', analytics: 'Analytics',
+  versions: 'Version History', export: 'Advanced Export',
 };
 
 export default function ProjectLayout({
@@ -31,6 +33,7 @@ export default function ProjectLayout({
   params: { id: string };
 }) {
   const { user, loading: authLoading } = useAuth();
+  const { isPro } = useProFeatures();
   const pathname = usePathname();
   const router = useRouter();
   const { currentProject, setCurrentProject, members, setMembers } = useProjectStore();
@@ -138,7 +141,7 @@ export default function ProjectLayout({
   const isContentCreator = ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(currentProject.project_type || '') 
     || ['youtube', 'tiktok'].includes(currentProject.script_type || '');
 
-  type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean; contentCreator?: boolean; filmOnly?: boolean };
+  type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean; contentCreator?: boolean; filmOnly?: boolean; pro?: boolean };
   type NavCategory = { category: string; items: NavItem[] };
 
   // Build navigation based on project type
@@ -182,6 +185,19 @@ export default function ProjectLayout({
         { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
         { label: 'Comments', href: `/projects/${params.id}/comments`, icon: 'comments', collab: true },
         { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+      ],
+    },
+    {
+      category: 'Pro',
+      items: [
+        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
+        { label: 'Analytics', href: `/projects/${params.id}/analytics`, icon: 'analytics', pro: true },
+        { label: 'Versions', href: `/projects/${params.id}/versions`, icon: 'versions', pro: true },
+        { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
+        { label: 'AI Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
+        { label: 'Brand Kit', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
+        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -234,6 +250,21 @@ export default function ProjectLayout({
         { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
       ],
     },
+    {
+      category: 'Pro',
+      items: [
+        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
+        { label: 'Analytics', href: `/projects/${params.id}/analytics`, icon: 'analytics', pro: true },
+        { label: 'Versions', href: `/projects/${params.id}/versions`, icon: 'versions', pro: true },
+        { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
+        { label: 'AI Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
+        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
+        { label: 'Custom Branding', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
+        { label: 'Reports', href: `/projects/${params.id}/reports`, icon: 'reports', pro: true },
+        { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+      ],
+    },
     ...(!isViewer ? [{
       category: '',
       items: [
@@ -248,6 +279,8 @@ export default function ProjectLayout({
     if (effectiveSidebarTabs && item.icon !== 'overview' && item.icon !== 'settings') {
       if (effectiveSidebarTabs[item.icon] === false) return false;
     }
+    // Pro items visible to Pro users OR projects with per-project Pro enabled
+    if (item.pro) return isPro || currentProject?.pro_enabled === true;
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
@@ -257,7 +290,8 @@ export default function ProjectLayout({
   // Flat lists for backward compat
   const allItems = navCategories.flatMap(c => c.items);
   const visibleItems = allItems.filter(isItemVisible);
-  const hiddenItems = allItems.filter(i => !i.always && !isItemVisible(i));
+  // Never show Pro items in "More Tools" for free users — DaVinci model: Pro is invisible, not locked
+  const hiddenItems = allItems.filter(i => !i.always && !i.pro && !isItemVisible(i));
 
   const icons: Record<string, React.ReactNode> = {
     overview: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
@@ -284,6 +318,18 @@ export default function ProjectLayout({
     seo: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
     sponsors: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     checklist: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>,
+    // Pro feature icons
+    share: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>,
+    analytics: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+    versions: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    export: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+    // New Pro feature icons
+    ai: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 00.659 1.591L19 14.5m-4.75-11.396c.251.023.501.05.75.082M12 3v5.386m0 0a2.25 2.25 0 001.5 2.122M12 8.386a2.25 2.25 0 00-1.5 2.122M5 14.5l3.5 3.5L12 14.5l3.5 3.5L19 14.5m-7 3.5V21" /></svg>,
+    review: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+    branding: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" /></svg>,
+    revisions: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>,
+    reports: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" /></svg>,
+    casting: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>,
   };
 
   // Active page label for mobile header

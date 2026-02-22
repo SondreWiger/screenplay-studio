@@ -20,19 +20,33 @@ function LoginForm() {
   const redirect = searchParams.get('redirect') || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot check — bots fill hidden fields
+    if (honeypot) return;
+
     setLoading(true);
     setError('');
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    // Track login attempt (fire-and-forget)
+    if (data?.user) {
+      fetch('/api/auth/track-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'email', success: !authError }),
+      }).catch(() => {});
+    }
 
     if (authError) {
       setError(authError.message);
@@ -109,6 +123,18 @@ function LoginForm() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {/* Honeypot — hidden from real users, catches bots */}
+            <div className="absolute -top-[9999px] -left-[9999px]" aria-hidden="true">
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
+
             {error && (
               <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
                 {error}
@@ -132,6 +158,12 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
+            <div className="flex justify-end">
+              <Link href="/auth/forgot-password" className="text-xs text-brand-400 hover:text-brand-300">
+                Forgot password?
+              </Link>
+            </div>
 
             <Button type="submit" className="w-full" loading={loading}>
               Sign In

@@ -473,6 +473,35 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
         </div>
       </Card>
 
+      {/* Per-project Pro upgrade */}
+      {!project?.pro_enabled && (
+        <Card className="p-6 border-emerald-500/20">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-lg flex-shrink-0">🎬</div>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-white mb-1">Upgrade This Production to Pro</h2>
+              <p className="text-sm text-surface-400 mb-3">
+                Unlock AI Analysis, Client Review, Brand Kit, Revisions, Reports, and Casting tools on this production — with a one-time $100 payment. All team members get access. No subscription needed.
+              </p>
+              <Link href={`/pro?upgrade_project=${params.id}`}>
+                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-500">Upgrade for $100 — One Time</Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
+      {project?.pro_enabled && (
+        <Card className="p-6 border-emerald-500/20">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-lg">✓</div>
+            <div>
+              <h2 className="text-sm font-semibold text-emerald-400">Pro Enabled on This Project</h2>
+              <p className="text-xs text-surface-500">All Pro tools are unlocked for this project permanently.</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Danger zone */}
       <Card className="p-6 border-red-500/20">
         <h2 className="text-lg font-semibold text-red-400 mb-2">Danger Zone</h2>

@@ -11,7 +11,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 
 const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || '';
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:support@screenplaystudio.app';
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:support@screenplaystudio.fun';
 const PUSH_API_SECRET = process.env.PUSH_API_SECRET || '';
 
 // Configure VAPID credentials once at module load

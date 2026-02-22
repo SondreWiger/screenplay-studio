@@ -262,17 +262,23 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const hasAutoFocused = useRef(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) { hasAutoFocused.current = false; return; }
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onClose(); }
+      if (e.key === 'Escape') { e.stopPropagation(); onCloseRef.current(); }
     };
     document.addEventListener('keydown', handleKeyDown);
-    // Focus the modal container so keyboard events work immediately
-    modalRef.current?.focus();
+    // Only focus the modal container on initial open, not on every re-render
+    if (!hasAutoFocused.current) {
+      modalRef.current?.focus();
+      hasAutoFocused.current = true;
+    }
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

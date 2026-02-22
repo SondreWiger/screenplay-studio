@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingPage } from '@/components/ui';
+import { AppHeader } from '@/components/AppHeader';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import type { UsageIntent, ScriptType, Company } from '@/lib/types';
 
@@ -14,7 +15,7 @@ import type { UsageIntent, ScriptType, Company } from '@/lib/types';
 // User Settings — profile, preferences, company
 // ============================================================
 
-type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy';
+type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security';
 
 export default function UserSettingsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -215,21 +216,12 @@ export default function UserSettingsPage() {
     { key: 'preferences', label: 'Preferences', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg> },
     { key: 'company', label: 'Company', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
     { key: 'privacy', label: 'Privacy & Data', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
+    { key: 'security', label: 'Security', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> },
   ];
 
   return (
     <div className="min-h-screen bg-surface-950">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-surface-800 bg-surface-950/80 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </Link>
-            <h1 className="text-lg font-semibold text-white">Settings</h1>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Tab bar */}
@@ -248,6 +240,14 @@ export default function UserSettingsPage() {
               {t.label}
             </button>
           ))}
+          {/* Billing link navigates to its own page */}
+          <Link
+            href="/settings/billing"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap text-surface-400 hover:text-white"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+            Billing
+          </Link>
         </div>
 
         {/* Profile Tab */}
@@ -882,9 +882,69 @@ export default function UserSettingsPage() {
               <p className="text-[10px] text-surface-600 mt-3">
                 By proceeding, you acknowledge that this action is permanent and irreversible.
                 <br />
-                <a href="/privacy" className="text-brand-400 hover:text-brand-300">Read our Privacy Policy</a>
+                <a href="/legal/privacy" className="text-brand-400 hover:text-brand-300">Read our Privacy Policy</a>
               </p>
             </Card>
+          </div>
+        )}
+
+        {/* Security Tab */}
+        {tab === 'security' && (
+          <div className="space-y-6">
+            <div className="bg-surface-900 rounded-xl border border-surface-800 p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Account Security</h3>
+              <p className="text-sm text-surface-400 mb-4">
+                View your login history, manage active sessions, and review security events.
+              </p>
+              <Link href="/settings/security" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                Open Security Dashboard
+              </Link>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Card>
+                <h4 className="text-sm font-semibold text-white mb-1">Password</h4>
+                <p className="text-xs text-surface-400 mb-3">Change your password to keep your account secure.</p>
+                <Button variant="secondary" size="sm" onClick={async () => {
+                  const supabase = createClient();
+                  const { data: { user: u } } = await supabase.auth.getUser();
+                  if (u?.email) {
+                    await supabase.auth.resetPasswordForEmail(u.email, { redirectTo: `${window.location.origin}/auth/callback` });
+                    alert('Password reset email sent!');
+                  }
+                }}>
+                  Reset Password
+                </Button>
+              </Card>
+              <Card>
+                <h4 className="text-sm font-semibold text-white mb-1">Email Verification</h4>
+                <p className="text-xs text-surface-400 mb-3">Your email is used for login and important notifications.</p>
+                <p className="text-xs text-emerald-400">✓ Email verified</p>
+              </Card>
+              <Card>
+                <h4 className="text-sm font-semibold text-white mb-1">Data Export</h4>
+                <p className="text-xs text-surface-400 mb-3">Download a copy of all your data (GDPR right of access).</p>
+                <Button variant="secondary" size="sm" onClick={async () => {
+                  try {
+                    const res = await fetch('/api/user/data-export', { method: 'POST' });
+                    if (!res.ok) throw new Error('Export failed');
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = `screenplay-studio-data-export-${new Date().toISOString().split('T')[0]}.json`;
+                    a.click(); URL.revokeObjectURL(url);
+                  } catch { alert('Export failed. Please try again.'); }
+                }}>
+                  Export My Data
+                </Button>
+              </Card>
+              <Card>
+                <h4 className="text-sm font-semibold text-white mb-1">Legal Agreements</h4>
+                <p className="text-xs text-surface-400 mb-3">Review the terms and policies that govern your use.</p>
+                <Link href="/legal" className="text-xs text-amber-400 hover:text-amber-300">View Legal Center →</Link>
+              </Card>
+            </div>
           </div>
         )}
       </div>

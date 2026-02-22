@@ -318,11 +318,14 @@ export default async function LandingPage() {
             </div>
           </div>
           <div className="flex flex-wrap gap-4 text-xs text-surface-600">
-            <a href="/terms" className="hover:text-brand-400 transition-colors">Terms of Service</a>
-            <a href="/privacy" className="hover:text-brand-400 transition-colors">Privacy Policy</a>
-            <a href="/community-guidelines" className="hover:text-brand-400 transition-colors">Community Guidelines</a>
-            <a href="/acceptable-use" className="hover:text-brand-400 transition-colors">Acceptable Use</a>
-            <a href="/content-policy" className="hover:text-brand-400 transition-colors">Content Policy</a>
+            <a href="/legal" className="hover:text-brand-400 transition-colors">Legal Center</a>
+            <a href="/legal/terms" className="hover:text-brand-400 transition-colors">Terms of Service</a>
+            <a href="/legal/privacy" className="hover:text-brand-400 transition-colors">Privacy Policy</a>
+            <a href="/legal/community-guidelines" className="hover:text-brand-400 transition-colors">Community Guidelines</a>
+            <a href="/legal/acceptable-use" className="hover:text-brand-400 transition-colors">Acceptable Use</a>
+            <a href="/legal/content-policy" className="hover:text-brand-400 transition-colors">Content Policy</a>
+            <a href="/legal/security" className="hover:text-brand-400 transition-colors">Security</a>
+            <a href="/legal/blog" className="hover:text-brand-400 transition-colors">Legal Blog</a>
           </div>
         </div>
       </footer>

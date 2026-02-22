@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Input, Textarea, LoadingPage } from '@/components/ui';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { AppHeader } from '@/components/AppHeader';
 import { useNotifications } from '@/hooks/useNotifications';
 import type {
   Company, CompanyMember, CompanyTeam,
@@ -163,6 +164,8 @@ export default function CompanyDashboard() {
 
   const canManage = myRole === 'owner' || myRole === 'admin';
 
+  const [lastInviteLink, setLastInviteLink] = useState('');
+
   const sendInvite = async () => {
     if (!company || !inviteEmail.trim()) return;
     setSaving(true);
@@ -180,8 +183,10 @@ export default function CompanyDashboard() {
       company_id: company.id, user_id: user!.id, action: 'invited_member',
       entity_type: 'invitation', metadata: { email: inviteEmail.trim(), role: inviteRole },
     });
+    // Build the invite link so admin can share it directly
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    setLastInviteLink(`${origin}/company/invite/${token}`);
     setInviteEmail('');
-    setShowInviteModal(false);
     loadCompany();
     setSaving(false);
   };
@@ -383,16 +388,10 @@ export default function CompanyDashboard() {
 
   return (
     <div className="min-h-screen bg-surface-950">
-      {/* Header */}
-      <header className="border-b border-surface-800 bg-surface-950">
+      <AppHeader />
+      {/* Company Header */}
+      <div className="border-b border-surface-800 bg-surface-950">
         <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Link href="/dashboard" className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </Link>
-            <span className="text-surface-500 text-sm flex-1">Dashboard</span>
-            <NotificationBell />
-          </div>
           <div className="flex items-center gap-4">
             {company.logo_url ? (
               <img src={company.logo_url} alt="" className="w-14 h-14 rounded-xl object-cover" />
@@ -430,7 +429,7 @@ export default function CompanyDashboard() {
             ))}
           </div>
         </div>
-      </header>
+      </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Overview */}
@@ -451,6 +450,55 @@ export default function CompanyDashboard() {
                 </Card>
               ))}
             </div>
+
+            {/* Quick Actions */}
+            {canManage && (
+              <Card className="p-5">
+                <h3 className="text-sm font-semibold text-surface-400 mb-3">Quick Actions</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button onClick={() => { setTab('members'); setShowInviteModal(true); }} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
+                    <span className="text-lg">➕</span>
+                    <p className="text-xs font-medium text-white mt-1">Invite Member</p>
+                  </button>
+                  <button onClick={() => { setTab('teams'); setShowTeamModal(true); }} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
+                    <span className="text-lg">🏢</span>
+                    <p className="text-xs font-medium text-white mt-1">Create Team</p>
+                  </button>
+                  <button onClick={() => setTab('blog')} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
+                    <span className="text-lg">✏️</span>
+                    <p className="text-xs font-medium text-white mt-1">Write Blog Post</p>
+                  </button>
+                  <button onClick={() => setTab('settings')} className="p-3 rounded-lg bg-surface-800/60 hover:bg-surface-800 transition-colors text-left">
+                    <span className="text-lg">⚙️</span>
+                    <p className="text-xs font-medium text-white mt-1">Company Settings</p>
+                  </button>
+                </div>
+              </Card>
+            )}
+
+            {/* Getting Started Checklist — show if company is new/sparse */}
+            {(members.length <= 1 || teams.length === 0 || projects.length === 0) && canManage && (
+              <Card className="p-5 border border-brand-500/20">
+                <h3 className="text-sm font-semibold text-white mb-3">🚀 Getting Started</h3>
+                <div className="space-y-2">
+                  {[
+                    { done: !!company.description, label: 'Add a company description', action: () => setTab('settings') },
+                    { done: members.length > 1, label: 'Invite your first team member', action: () => { setTab('members'); setShowInviteModal(true); } },
+                    { done: teams.length > 0, label: 'Create your first team', action: () => { setTab('teams'); setShowTeamModal(true); } },
+                    { done: projects.length > 0, label: 'Assign a project to the company', action: () => setTab('projects') },
+                    { done: company.public_page_enabled, label: 'Enable your public company page', action: () => setTab('settings') },
+                  ].map((step, i) => (
+                    <button key={i} onClick={step.action} className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-surface-800/50 transition-colors text-left">
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 ${step.done ? 'bg-green-500/20 text-green-400' : 'bg-surface-800 text-surface-500'}`}>
+                        {step.done ? '✓' : (i + 1)}
+                      </span>
+                      <span className={`text-sm ${step.done ? 'text-surface-500 line-through' : 'text-surface-300'}`}>{step.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            )}
+
             {company.description && (
               <Card className="p-6">
                 <h3 className="text-sm font-semibold text-surface-400 mb-2">About</h3>
@@ -475,7 +523,7 @@ export default function CompanyDashboard() {
               <Card className="p-6">
                 <h3 className="text-sm font-semibold text-surface-400 mb-4">Recent Activity</h3>
                 <div className="space-y-3">
-                  {activity.slice(0, 5).map((act) => (
+                  {activity.slice(0, 8).map((act) => (
                     <div key={act.id} className="flex items-center gap-3 text-sm">
                       <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                         {(act as any).profile?.display_name?.[0] || '?'}
@@ -855,26 +903,52 @@ export default function CompanyDashboard() {
 
       {/* Invite Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInviteModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => { setShowInviteModal(false); setLastInviteLink(''); }}>
           <div className="w-full max-w-md p-6 rounded-xl border border-surface-800 bg-surface-900" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold text-white mb-6">Invite Member</h2>
-            <div className="space-y-4">
-              <Input label="Email" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="colleague@example.com" />
-              <div>
-                <label className="block text-sm font-medium text-surface-300 mb-1.5">Role</label>
-                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as CompanyRole)}
-                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500">
-                  <option value="admin">Admin — Full access</option>
-                  <option value="manager">Manager — Manage projects & members</option>
-                  <option value="member">Member — Edit content</option>
-                  <option value="viewer">Viewer — Read only</option>
-                </select>
+
+            {lastInviteLink ? (
+              <div className="space-y-4">
+                <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-4 text-center">
+                  <p className="text-sm text-green-400 font-medium mb-1">Invitation sent!</p>
+                  <p className="text-xs text-surface-400">If the recipient doesn't have an account yet, share this link directly:</p>
+                </div>
+                <div className="flex gap-2">
+                  <input readOnly value={lastInviteLink} className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-surface-300 outline-none" />
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(lastInviteLink); }}
+                    className="px-3 py-2 rounded-lg bg-brand-600 text-white text-xs font-medium hover:bg-brand-700 transition-colors"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <p className="text-[10px] text-surface-500 text-center">Link expires in 7 days. They'll also see a banner on their dashboard if they're registered.</p>
+                <div className="flex justify-between items-center pt-2">
+                  <button onClick={() => setLastInviteLink('')} className="text-xs text-brand-400 hover:text-brand-300">Invite another</button>
+                  <Button variant="ghost" onClick={() => { setShowInviteModal(false); setLastInviteLink(''); }}>Done</Button>
+                </div>
               </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-800">
-              <Button variant="ghost" onClick={() => setShowInviteModal(false)}>Cancel</Button>
-              <Button onClick={sendInvite} loading={saving} disabled={!inviteEmail.trim()}>Send Invite</Button>
-            </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <Input label="Email" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="colleague@example.com" />
+                  <div>
+                    <label className="block text-sm font-medium text-surface-300 mb-1.5">Role</label>
+                    <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as CompanyRole)}
+                      className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500">
+                      <option value="admin">Admin — Full access</option>
+                      <option value="manager">Manager — Manage projects & members</option>
+                      <option value="member">Member — Edit content</option>
+                      <option value="viewer">Viewer — Read only</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-800">
+                  <Button variant="ghost" onClick={() => setShowInviteModal(false)}>Cancel</Button>
+                  <Button onClick={sendInvite} loading={saving} disabled={!inviteEmail.trim()}>Send Invite</Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
