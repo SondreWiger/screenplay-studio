@@ -20,11 +20,30 @@ export default function RegisterPage() {
 
   const passwordValidation = validatePassword(password);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Honeypot check
     if (honeypot) return;
+
+    // Read from DOM to handle autofill edge cases
+    const form = e.currentTarget;
+    const formEmail = (form.elements.namedItem('email') as HTMLInputElement)?.value || email;
+    const formPassword = (form.elements.namedItem('password') as HTMLInputElement)?.value || password;
+    const formName = (form.elements.namedItem('name') as HTMLInputElement)?.value || fullName;
+
+    if (!formName.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+    if (!formEmail) {
+      setError('Please enter your email');
+      return;
+    }
+    if (!formPassword) {
+      setError('Please enter a password');
+      return;
+    }
 
     setLoading(true);
     setError('');
@@ -43,11 +62,11 @@ export default function RegisterPage() {
 
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signUp({
-      email,
-      password,
+      email: formEmail,
+      password: formPassword,
       options: {
         data: {
-          full_name: fullName,
+          full_name: formName,
         },
       },
     });
@@ -134,7 +153,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={handleRegister} noValidate className="space-y-4">
             {/* Honeypot — hidden from real users, catches bots */}
             <div className="absolute -top-[9999px] -left-[9999px]" aria-hidden="true">
               <input
@@ -156,6 +175,8 @@ export default function RegisterPage() {
             <Input
               label="Full Name"
               type="text"
+              name="name"
+              autoComplete="name"
               placeholder="Steven Spielberg"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -165,6 +186,8 @@ export default function RegisterPage() {
             <Input
               label="Email"
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -175,6 +198,8 @@ export default function RegisterPage() {
               <Input
                 label="Password"
                 type="password"
+                name="password"
+                autoComplete="new-password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

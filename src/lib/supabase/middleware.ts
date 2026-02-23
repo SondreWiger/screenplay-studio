@@ -146,6 +146,16 @@ export async function updateSession(request: NextRequest) {
   supabaseResponse.headers.set('X-RateLimit-Limit', String(maxRequests));
   supabaseResponse.headers.set('X-RateLimit-Remaining', String(rateResult.remaining));
 
+  // Helper: create a redirect that preserves any refreshed auth cookies
+  function redirectWithCookies(url: URL) {
+    const redirectResponse = NextResponse.redirect(url);
+    // Copy refreshed auth cookies from supabaseResponse so tokens aren't lost
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value);
+    });
+    return redirectResponse;
+  }
+
   // ── Protected routes ──────────────────────────────────────
   const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding'];
   const isProtected = protectedPaths.some((path) =>
@@ -156,7 +166,7 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     url.searchParams.set('redirect', request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url);
   }
 
   // ── Admin / Mod panel route — allow admin UID, admins, and moderators ──
@@ -173,13 +183,13 @@ export async function updateSession(request: NextRequest) {
       if (role !== 'admin' && role !== 'moderator') {
         const url = request.nextUrl.clone();
         url.pathname = '/dashboard';
-        return NextResponse.redirect(url);
+        return redirectWithCookies(url);
       }
     }
   } else if (request.nextUrl.pathname.startsWith('/admin') && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url);
   }
 
   // ── Redirect logged-in users away from auth pages ─────────
@@ -195,7 +205,7 @@ export async function updateSession(request: NextRequest) {
     const safeRedirect = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
     url.pathname = safeRedirect;
     url.search = '';
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url);
   }
 
   return supabaseResponse;

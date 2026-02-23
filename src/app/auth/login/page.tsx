@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -18,60 +18,103 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [honeypot, setHoneypot] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+  const [showDebug, setShowDebug] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const log = useCallback((msg: string) => {
+    const ts = new Date().toLocaleTimeString();
+    const entry = `[${ts}] ${msg}`;
+    console.log('[LOGIN]', msg);
+    setDebugLog(prev => [...prev, entry]);
+  }, []);
 
-    // Honeypot check — bots fill hidden fields
-    if (honeypot) return;
-
-    setLoading(true);
-    setError('');
-
+  // Clear any stale auth cookies on mount
+  useEffect(() => {
+    log('Mount — checking for existing session...');
     const supabase = createClient();
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        log(`Active session found for ${user.email} — redirecting to ${redirect}`);
+        router.replace(redirect);
+      } else {
+        log('No active session — clearing stale cookies');
+        supabase.auth.signOut().catch(() => {});
+      }
+    }).catch((err) => {
+      log(`getUser error: ${err?.message || err} — clearing cookies`);
+      supabase.auth.signOut().catch(() => {});
     });
+  }, [redirect, router, log]);
 
-    // Track login attempt (fire-and-forget)
-    if (data?.user) {
-      fetch('/api/auth/track-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ method: 'email', success: !authError }),
-      }).catch(() => {});
-    }
+  // Use a plain click handler on the button as backup
+  const doLogin = useCallback(async () => {
+    // Read values directly from DOM refs — most reliable with autofill
+    const emailVal = emailRef.current?.value || '';
+    const passVal = passwordRef.current?.value || '';
 
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
+    log(`Submit — email: "${emailVal}" (${emailVal.length} chars), password: ${'*'.repeat(passVal.length)} (${passVal.length} chars)`);
+
+    if (!emailVal || !passVal) {
+      const msg = !emailVal && !passVal 
+        ? 'Both fields are empty — browser autofill may not have filled them'
+        : !emailVal ? 'Email is empty' : 'Password is empty';
+      setError(msg);
+      log(`Validation failed: ${msg}`);
       return;
     }
 
-    // Mark session as active for this browser session
-    sessionStorage.setItem('ss_session_active', '1');
-    router.push(redirect);
-    router.refresh();
+    setLoading(true);
+    setError('');
+    log('Calling supabase.auth.signInWithPassword...');
+
+    try {
+      const supabase = createClient();
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: emailVal,
+        password: passVal,
+      });
+
+      if (authError) {
+        log(`Auth error: ${authError.message} (status: ${authError.status})`);
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      log(`Success! User: ${data?.user?.email} — redirecting to ${redirect}`);
+
+      // Track login attempt (fire-and-forget)
+      fetch('/api/auth/track-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'email', success: true }),
+      }).catch(() => {});
+
+      sessionStorage.setItem('ss_session_active', '1');
+      router.push(redirect);
+      router.refresh();
+    } catch (err: any) {
+      log(`Exception: ${err?.message || err}`);
+      setError(`Unexpected error: ${err?.message || 'Unknown'}`);
+      setLoading(false);
+    }
+  }, [redirect, router, log]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    log('Form onSubmit fired');
+    doLogin();
   };
 
-  const handleGoogleLogin = async () => {
-    setError('');
-    const supabase = createClient();
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
-      },
-    });
-    if (oauthError) {
-      setError(oauthError.message);
-    }
+  const handleButtonClick = () => {
+    log('Button onClick fired');
+    // The form onSubmit should handle it, but as a safety net:
+    // if for some reason onSubmit doesn't fire, we still run login
   };
 
   return (
@@ -100,6 +143,7 @@ function LoginForm() {
 
           {/* Google Login */}
           <button
+            type="button"
             disabled
             className="w-full flex items-center justify-center gap-3 rounded-lg border border-surface-700 bg-surface-800/50 px-4 py-2.5 text-sm font-medium text-surface-500 cursor-not-allowed mb-2 opacity-60"
           >
@@ -122,42 +166,36 @@ function LoginForm() {
             </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Honeypot — hidden from real users, catches bots */}
-            <div className="absolute -top-[9999px] -left-[9999px]" aria-hidden="true">
-              <input
-                type="text"
-                name="website"
-                tabIndex={-1}
-                autoComplete="off"
-                value={honeypot}
-                onChange={(e) => setHoneypot(e.target.value)}
-              />
-            </div>
-
+          <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-4">
             {error && (
               <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
                 {error}
               </div>
             )}
 
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-surface-300">Email</label>
+              <input
+                ref={emailRef}
+                type="email"
+                name="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors duration-200"
+              />
+            </div>
 
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-surface-300">Password</label>
+              <input
+                ref={passwordRef}
+                type="password"
+                name="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors duration-200"
+              />
+            </div>
 
             <div className="flex justify-end">
               <Link href="/auth/forgot-password" className="text-xs text-brand-400 hover:text-brand-300">
@@ -165,9 +203,20 @@ function LoginForm() {
               </Link>
             </div>
 
-            <Button type="submit" className="w-full" loading={loading}>
-              Sign In
-            </Button>
+            <button
+              type="submit"
+              disabled={loading}
+              onClick={handleButtonClick}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950 disabled:opacity-50 disabled:cursor-not-allowed bg-brand-600 text-white hover:bg-brand-700 shadow-sm px-4 py-2 text-sm"
+            >
+              {loading && (
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              )}
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-surface-400">
@@ -176,6 +225,25 @@ function LoginForm() {
               Create one
             </Link>
           </p>
+        </div>
+
+        {/* Debug log panel */}
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => setShowDebug(!showDebug)}
+            className="text-xs text-surface-600 hover:text-surface-400 transition-colors"
+          >
+            {showDebug ? 'Hide' : 'Show'} debug log ({debugLog.length})
+          </button>
+          {showDebug && (
+            <div className="mt-2 rounded-lg bg-black/60 border border-surface-800 p-3 max-h-48 overflow-y-auto font-mono text-[11px] text-surface-400 space-y-0.5">
+              {debugLog.length === 0 && <p className="text-surface-600">No events yet...</p>}
+              {debugLog.map((entry, i) => (
+                <p key={i} className={entry.includes('error') || entry.includes('Error') || entry.includes('failed') ? 'text-red-400' : entry.includes('Success') ? 'text-green-400' : ''}>{entry}</p>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
