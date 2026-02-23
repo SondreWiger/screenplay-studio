@@ -1,7 +1,19 @@
 import { MetadataRoute } from 'next';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
+
+// Regenerate sitemap on each request (includes dynamic DB content)
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache for 1 hour
+
+// Use a plain Supabase client (no cookies) — sitemap runs at build time with no request context
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date().toISOString();
@@ -37,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic public showcase pages — fetch from DB
   let showcasePages: MetadataRoute.Sitemap = [];
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getSupabase();
     const { data: projects } = await supabase
       .from('projects')
       .select('id, updated_at')
@@ -60,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Public user profiles
   let profilePages: MetadataRoute.Sitemap = [];
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getSupabase();
     const { data: profiles } = await supabase
       .from('profiles')
       .select('username, updated_at')
@@ -82,7 +94,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Blog posts
   let blogPages: MetadataRoute.Sitemap = [];
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getSupabase();
     const { data: posts } = await supabase
       .from('blog_posts')
       .select('slug, updated_at')
@@ -106,7 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Legal blog posts
   let legalBlogPages: MetadataRoute.Sitemap = [];
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getSupabase();
     const { data: posts } = await supabase
       .from('legal_posts')
       .select('slug, updated_at')
