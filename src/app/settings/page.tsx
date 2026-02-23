@@ -10,10 +10,82 @@ import { Button, Card, Input, Textarea, LoadingPage } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import type { UsageIntent, ScriptType, Company } from '@/lib/types';
+import type { InsiderTier } from '@/hooks/useFeatureFlags';
+import { useFeatureAccess } from '@/components/FeatureGate';
 
 // ============================================================
 // User Settings — profile, preferences, company
 // ============================================================
+
+// ── Insider Program Card ─────────────────────────────────────
+function InsiderProgramCard() {
+  const { user } = useAuth();
+  const [tier, setTier] = useState<InsiderTier>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (user) setTier((user as any).insider_tier ?? null);
+  }, [user]);
+
+  const changeTier = async (newTier: InsiderTier) => {
+    if (!user) return;
+    setSaving(true);
+    const supabase = createClient();
+    await supabase.from('profiles').update({ insider_tier: newTier }).eq('id', user.id);
+    setTier(newTier);
+    setSaving(false);
+    setSaved(true);
+    // update zustand
+    useAuthStore.getState().setUser?.({ ...user, insider_tier: newTier } as any);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const options: { value: InsiderTier; label: string; icon: string; desc: string; color: string; border: string }[] = [
+    { value: null, label: 'Stable', icon: '✅', desc: 'Only released features — the recommended experience.', color: 'text-emerald-400', border: 'border-emerald-500 bg-emerald-500/10' },
+    { value: 'beta', label: 'Beta', icon: '🧪', desc: 'Early access to features in testing. May have minor bugs.', color: 'text-amber-400', border: 'border-amber-500 bg-amber-500/10' },
+    { value: 'alpha', label: 'Alpha', icon: '🔬', desc: 'Bleeding edge — see everything first. Expect rough edges.', color: 'text-purple-400', border: 'border-purple-500 bg-purple-500/10' },
+  ];
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-start justify-between mb-2">
+        <div>
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+            Insider Program
+          </h2>
+          <p className="text-sm text-surface-400">Choose which features you want early access to.</p>
+        </div>
+        {saved && <span className="text-xs text-green-400 font-medium mt-1">Updated!</span>}
+      </div>
+
+      <div className="grid gap-3 mt-4">
+        {options.map((opt) => (
+          <button
+            key={String(opt.value)}
+            onClick={() => changeTier(opt.value)}
+            disabled={saving}
+            className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all ${
+              tier === opt.value ? opt.border : 'border-surface-700 hover:border-surface-600'
+            }`}
+          >
+            <span className="text-xl">{opt.icon}</span>
+            <div className="flex-1 min-w-0">
+              <p className={`font-semibold ${tier === opt.value ? opt.color : 'text-white'}`}>{opt.label}</p>
+              <p className="text-xs text-surface-400 mt-0.5">{opt.desc}</p>
+            </div>
+            {tier === opt.value && (
+              <svg className={`w-5 h-5 mt-0.5 shrink-0 ${opt.color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-[11px] text-surface-600 mt-3">Alpha includes all beta features. You can switch back at any time.</p>
+    </Card>
+  );
+}
 
 type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security';
 
@@ -23,6 +95,7 @@ export default function UserSettingsPage() {
   const [tab, setTab] = useState<SettingsTab>('profile');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const { canUse: canUseFeature } = useFeatureAccess();
 
   // Profile form
   const [fullName, setFullName] = useState('');
@@ -241,13 +314,15 @@ export default function UserSettingsPage() {
             </button>
           ))}
           {/* Billing link navigates to its own page */}
-          <Link
-            href="/settings/billing"
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap text-surface-400 hover:text-white"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-            Billing
-          </Link>
+          {canUseFeature('pro_subscription') && (
+            <Link
+              href="/settings/billing"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap text-surface-400 hover:text-white"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              Billing
+            </Link>
+          )}
         </div>
 
         {/* Profile Tab */}
@@ -573,6 +648,9 @@ export default function UserSettingsPage() {
               </div>
               <p className="text-xs text-surface-500 mt-3">You can also customize per-project in project settings.</p>
             </Card>
+
+            {/* Insider Program */}
+            <InsiderProgramCard />
 
             <div className="flex items-center gap-3">
               <Button onClick={savePreferences} loading={saving}>

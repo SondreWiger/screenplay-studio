@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 // Tracks request counts per IP per window
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 120; // 120 req/min for normal users
-const RATE_LIMIT_AUTH_MAX = 10; // 10 auth attempts per minute
+const RATE_LIMIT_AUTH_MAX = 30; // 30 auth attempts per minute
 const RATE_LIMIT_API_MAX = 60; // 60 API calls per minute
 
 interface RateEntry {

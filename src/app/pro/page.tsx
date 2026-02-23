@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { Button, Card, Badge, LoadingPage } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
+import { useFeatureAccess } from '@/components/FeatureGate';
 import { PRO_PRICING } from '@/lib/types';
 
 // ============================================================
@@ -86,6 +87,7 @@ export default function ProUpgradePage() {
   const { user, loading: authLoading } = useAuth();
   const { isPro, activateDevBypass, subscription } = useProFeatures();
   const router = useRouter();
+  const { canUse: canUseFeature, loading: flagsLoading } = useFeatureAccess();
   const [activating, setActivating] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState<'pro' | 'team' | 'project_lifetime'>('pro');
@@ -106,6 +108,18 @@ export default function ProUpgradePage() {
   }, []);
 
   if (authLoading) return <LoadingPage />;
+
+  // Gate: if pro_subscription flag is not accessible, redirect
+  if (!flagsLoading && !canUseFeature('pro_subscription')) {
+    return (
+      <div className="min-h-screen bg-surface-950">
+        <AppHeader />
+        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+          <p className="text-surface-400">Pro subscriptions are not available yet.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handlePayPalCheckout = async (plan: 'pro' | 'team' | 'project_lifetime') => {
     if (!user) { router.push('/auth/login'); return; }

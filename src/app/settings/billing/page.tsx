@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures, formatBytes } from '@/hooks/useProFeatures';
 import { Button, Card, Badge, LoadingPage, Progress } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
+import { useFeatureAccess } from '@/components/FeatureGate';
 import type { Subscription, TeamLicense } from '@/lib/types';
 
 // ============================================================
@@ -16,6 +17,7 @@ import type { Subscription, TeamLicense } from '@/lib/types';
 export default function BillingPage() {
   const { user, loading: authLoading } = useAuth();
   const { isPro, subscription, storageUsed, storageLimit, loading: proLoading, refreshSubscription } = useProFeatures();
+  const { canUse: canUseFeature, loading: flagsLoading } = useFeatureAccess();
   const [licenses, setLicenses] = useState<TeamLicense[]>([]);
   const [cancelling, setCancelling] = useState(false);
 
@@ -23,6 +25,18 @@ export default function BillingPage() {
     if (!user) return;
     fetchLicenses();
   }, [user?.id]);
+
+  // Gate: if pro_subscription flag is not accessible, redirect
+  if (!authLoading && !flagsLoading && !canUseFeature('pro_subscription')) {
+    return (
+      <div className="min-h-screen bg-surface-950">
+        <AppHeader />
+        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+          <p className="text-surface-400">Billing is not available yet.</p>
+        </div>
+      </div>
+    );
+  }
 
   const fetchLicenses = async () => {
     const supabase = createClient();

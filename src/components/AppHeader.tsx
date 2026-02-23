@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { useFeatureAccess } from '@/components/FeatureGate';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Avatar } from '@/components/ui';
 
@@ -27,13 +28,14 @@ type AppHeaderProps = {
 export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderProps) {
   const { user } = useAuth();
   const pathname = usePathname();
+  const { canUse: canUseFeature } = useFeatureAccess();
 
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/settings', label: 'Settings', match: ['/settings'] },
     { href: '/company', label: 'Company', match: ['/company'] },
     { href: '/blog', label: 'Blog', match: ['/blog'] },
-    { href: '/community', label: 'Community', match: ['/community'] },
+    ...(canUseFeature('community') ? [{ href: '/community', label: 'Community', match: ['/community'] }] : []),
   ];
 
   const isActive = (link: typeof navLinks[0]) => {

@@ -118,6 +118,8 @@ export interface Profile {
   // Storage
   storage_used_bytes?: number;
   storage_limit_bytes?: number;
+  // Insider program
+  insider_tier?: 'alpha' | 'beta' | null;
 }
 
 // ── Pro Subscription Types ──────────────────────────────────

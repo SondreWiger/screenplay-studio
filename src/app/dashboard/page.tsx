@@ -9,6 +9,7 @@ import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select, KeyboardShortcuts } from '@/components/ui';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
+import { useFeatureAccess } from '@/components/FeatureGate';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole } from '@/lib/types';
@@ -19,6 +20,7 @@ const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { canUse: canUseFeature } = useFeatureAccess();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewProject, setShowNewProject] = useState(false);
@@ -207,7 +209,7 @@ export default function DashboardPage() {
             <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
               Blog
             </Link>
-            {user?.show_community !== false && (
+            {user?.show_community !== false && canUseFeature('community') && (
               <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
                 Community
               </Link>
@@ -259,7 +261,7 @@ export default function DashboardPage() {
                         Settings
                       </Link>
                     )}
-                    {user?.is_pro && (
+                    {user?.is_pro && canUseFeature('pro_subscription') && (
                       <Link href="/settings/billing" className="flex items-center gap-2.5 px-4 py-2 text-xs text-amber-400 hover:bg-amber-500/10 transition-colors"
                         onClick={() => setShowUserMenu(false)}>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l3.057 7.811L12 7.5l3.943 3.311L19 3M5 3l.783 4M19 3l-.783 4M5.783 7L3 21h18l-2.783-14M5.783 7h12.434" /></svg>
@@ -278,7 +280,7 @@ export default function DashboardPage() {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
                       Notifications
                     </Link>
-                    {user?.show_community === false && (
+                    {user?.show_community === false && canUseFeature('community') && (
                       <Link href="/community" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
                         onClick={() => setShowUserMenu(false)}>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>

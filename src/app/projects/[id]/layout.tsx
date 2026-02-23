@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
+import { useFeatureAccess } from '@/components/FeatureGate';
 import { useProjectStore, usePresenceStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
 import { Avatar, Badge, LoadingPage } from '@/components/ui';
@@ -43,6 +44,7 @@ export default function ProjectLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMoreTools, setShowMoreTools] = useState(false);
+  const { canUse: canUseFeature } = useFeatureAccess();
 
   useNotifications(user?.id);
 
@@ -279,8 +281,12 @@ export default function ProjectLayout({
     if (effectiveSidebarTabs && item.icon !== 'overview' && item.icon !== 'settings') {
       if (effectiveSidebarTabs[item.icon] === false) return false;
     }
-    // Pro items visible to Pro users OR projects with per-project Pro enabled
-    if (item.pro) return isPro || currentProject?.pro_enabled === true;
+    // Feature flag gating — hide if flag is disabled or user lacks insider tier
+    if (item.icon !== 'overview' && item.icon !== 'settings') {
+      if (!canUseFeature(item.icon)) return false;
+    }
+    // Pro items: visible to Pro subscribers, per-project Pro, OR alpha/beta insiders with flag access
+    if (item.pro) return isPro || currentProject?.pro_enabled === true || canUseFeature(item.icon);
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
