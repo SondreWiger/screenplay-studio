@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/components/ui';
 import type { FeatureFlag, FeatureTier, FeatureCategory } from '@/hooks/useFeatureFlags';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
@@ -91,7 +92,7 @@ export default function FeatureFlagsPage() {
       setNewKey(''); setNewName(''); setNewDesc(''); setNewTier('beta'); setNewCategory('general');
       setShowAdd(false);
     }
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
   };
 
   const deleteFlag = async (flagId: string) => {

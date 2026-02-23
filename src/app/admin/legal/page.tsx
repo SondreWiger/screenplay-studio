@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Badge, Modal, Input, Textarea, Select } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, Select, toast } from '@/components/ui';
 import { cn, formatDate } from '@/lib/utils';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -352,7 +352,7 @@ export default function AdminLegalPage() {
       setEditorOpen(false);
       loadPosts();
     } else {
-      alert(`Error saving post: ${error.message}`);
+      toast.error(`Error saving post: ${error.message}`);
     }
   }
 

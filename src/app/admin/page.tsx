@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select } from '@/components/ui';
+import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select, toast } from '@/components/ui';
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
 import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage } from '@/lib/types';
 import { triggerPush } from '@/lib/notifications';
@@ -749,7 +749,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           <div className="space-y-3">
             {stats.recentProjects.map((p: any) => (
               <div key={p.id} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-orange-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
                   {p.title?.[0] || '?'}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -974,7 +974,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
               onClick={() => loadProjectStats(p.id)}
               className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-surface-800/30 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-orange-500 flex items-center justify-center text-sm font-bold text-white shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
                 {p.title?.[0] || '?'}
               </div>
               <div className="min-w-0 flex-1">
@@ -1875,7 +1875,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
       onSaved();
     } catch (err) {
       console.error('Error saving blog post:', err);
-      alert('Failed to save post');
+      toast.error('Failed to save post');
     } finally {
       setSaving(false);
     }

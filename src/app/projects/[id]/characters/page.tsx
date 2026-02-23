@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Avatar, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, randomColor } from '@/lib/utils';
 import Link from 'next/link';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Character, ScriptElement } from '@/lib/types';
 
 export default function CharactersPage({ params }: { params: { id: string } }) {
@@ -14,6 +15,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
@@ -56,7 +58,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
 
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
-    if (!confirm('Delete this character?')) return;
+    const ok = await confirm({ message: 'Delete this character?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('characters').delete().eq('id', id);
     setCharacters(characters.filter((c) => c.id !== id));
@@ -273,6 +275,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
         onDelete={handleDelete}
         canEdit={canEdit}
       />
+      <ConfirmDialog />
     </div>
   );
 }

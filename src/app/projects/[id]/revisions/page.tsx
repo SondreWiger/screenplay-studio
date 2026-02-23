@@ -61,11 +61,11 @@ function getColorName(dbValue: string): string {
   return REVISION_COLORS.find(c => c.value === dbValue)?.name || dbValue;
 }
 
-/** Calculate page count from elements (~250 words/page). */
+/** Calculate page count from elements (~56 lines/page, industry standard). */
 function calcStats(elements: SnapshotElement[] | null): { pages: number; words: number } {
   if (!elements || elements.length === 0) return { pages: 0, words: 0 };
   const words = elements.reduce((sum, el) => sum + (el.content?.split(/\s+/).filter(Boolean).length || 0), 0);
-  return { pages: Math.max(1, Math.ceil(words / 250)), words };
+  return { pages: Math.max(1, Math.ceil(elements.length / 56)), words };
 }
 
 /** LCS-based line diff. Falls back to set-based diff for very large scripts. */
@@ -347,7 +347,7 @@ export default function RevisionsPage() {
   if (loading) return <LoadingPage />;
 
   return (
-    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
       <ToastContainer />
 
       {/* Header */}

@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { Button, Card, Badge, LoadingPage } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
+import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { PRO_PRICING } from '@/lib/types';
 
@@ -16,62 +17,62 @@ import { PRO_PRICING } from '@/lib/types';
 
 const PRO_FEATURES = [
   {
-    icon: '📦',
+    icon: 'cube',
     title: '50 GB Cloud Storage',
     desc: 'Store high-res storyboards, mood boards, reference images, and production assets. 50× the free tier.',
   },
   {
-    icon: '👥',
+    icon: 'users',
     title: 'Unlimited Team Size',
     desc: 'Add your entire production crew — no seat limits. Free accounts support up to 5 members.',
   },
   {
-    icon: '📤',
+    icon: 'share',
     title: 'External Share Portals',
     desc: 'Share scripts, storyboards, and lookbooks with clients and stakeholders via secure, branded links. Password protection and expiry dates included.',
   },
   {
-    icon: '📝',
+    icon: 'edit',
     title: 'Client Review System',
     desc: 'Collect line-level feedback from clients and producers. They don\'t need an account — just a link. Track approvals, revision requests, and notes.',
   },
   {
-    icon: '📊',
+    icon: 'chart',
     title: 'Team Analytics Dashboard',
     desc: 'Track writing velocity, team activity, deadline adherence, and production progress with real-time charts.',
   },
   {
-    icon: '🔄',
+    icon: 'refresh',
     title: 'Full Version History',
     desc: 'Every revision saved automatically. Compare any two versions side-by-side with a visual diff. Restore any previous version instantly.',
   },
   {
-    icon: '🏢',
+    icon: 'building',
     title: 'Custom Branding',
     desc: 'Your company logo on shared portals, watermarked script exports, and branded PDF covers for client-facing materials.',
   },
   {
-    icon: '📑',
+    icon: 'document',
     title: 'Advanced Export Formats',
     desc: 'Export to DOCX, HTML, and Fountain in addition to PDF, FDX, and JSON. Batch-export entire projects. Custom watermarks on every page.',
   },
   {
-    icon: '📅',
+    icon: 'calendar',
     title: 'Advanced Scheduling',
     desc: 'Gantt chart view, resource allocation, conflict detection, and automated day-out-of-days reports for multi-day shoots.',
   },
   {
-    icon: '♾️',
+    icon: 'folder',
     title: 'Unlimited Projects',
     desc: 'No cap on the number of active projects. Free accounts support up to 10.',
   },
   {
-    icon: '🔗',
+    icon: 'link',
     title: 'API Access & Webhooks',
     desc: 'Integrate with your existing pipeline — Notion, Slack, Frame.io, Google Drive. Automate exports and notifications.',
   },
   {
-    icon: '⚡',
+    icon: 'bolt',
     title: 'Priority Support',
     desc: 'Direct email support with 24-hour response time. Access to the Pro feedback channel for feature requests.',
   },
@@ -170,8 +171,8 @@ export default function ProUpgradePage() {
     return (
       <div className="min-h-screen bg-surface-950 px-4 py-16">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-3xl">
-            ⭐
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+            <Icon name="star" size="xl" className="text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">You're already on Pro!</h1>
           <p className="text-surface-400 mb-8">
@@ -198,7 +199,7 @@ export default function ProUpgradePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-500/10 via-transparent to-transparent" />
         <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-12 text-center">
           <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-4 py-1.5 mb-6">
-            <span className="text-amber-400 text-sm font-medium">⭐ Screenplay Studio Pro</span>
+            <span className="text-amber-400 text-sm font-medium">Screenplay Studio Pro</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
             Production-grade tools<br />
@@ -282,8 +283,8 @@ export default function ProUpgradePage() {
           <div onClick={(e) => e.stopPropagation()}>
           <Card className="p-8 max-w-md mx-4 border-2 border-amber-500/30">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-2xl">
-                {checkoutPlan === 'project_lifetime' ? '🎬' : '⭐'}
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                <Icon name={checkoutPlan === 'project_lifetime' ? 'film' : 'star'} size="xl" className="text-white" />
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Checkout</h2>
               <p className="text-sm text-surface-400">
@@ -348,7 +349,7 @@ export default function ProUpgradePage() {
                 onClick={handleDevBypass}
                 loading={activating}
               >
-                🔧 Activate Dev Bypass (Free)
+                Activate Dev Bypass (Free)
               </Button>
               <p className="text-[10px] text-surface-600 text-center">Dev bypass activates Pro for 1 year at no cost. For development and testing only.</p>
             </div>
@@ -366,7 +367,7 @@ export default function ProUpgradePage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRO_FEATURES.map((f) => (
             <Card key={f.title} className="p-5">
-              <div className="text-2xl mb-3">{f.icon}</div>
+              <div className="mb-3"><Icon name={f.icon} size="lg" className="text-amber-400" /></div>
               <h3 className="text-sm font-semibold text-white mb-1">{f.title}</h3>
               <p className="text-xs text-surface-400 leading-relaxed">{f.desc}</p>
             </Card>
@@ -442,7 +443,7 @@ export default function ProUpgradePage() {
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500" onClick={() => { if (user) { setCheckoutPlan('project_lifetime'); setShowCheckout(true); } else router.push('/auth/login'); }}>
-            🎬 Per Production — ${PRO_PRICING.project_lifetime.amount}
+            Per Production — ${PRO_PRICING.project_lifetime.amount}
           </Button>
           <Button size="lg" variant="secondary" onClick={() => { if (user) { setCheckoutPlan('pro'); setShowCheckout(true); } else router.push('/auth/login'); }}>
             Yearly — ${PRO_PRICING.yearly.amount}/yr

@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, usePresenceStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, EmptyState, LoadingSpinner, Avatar } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, EmptyState, LoadingSpinner, Avatar, toast } from '@/components/ui';
 import { cn, getInitials, randomColor, timeAgo, formatDate } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { ProjectMember, Profile, UserRole, UserPresence, ProductionRole, ExternalCredit, Character } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
 
@@ -41,6 +42,7 @@ interface MemberWithProfile extends ProjectMember {
 export default function TeamPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { onlineUsers } = usePresenceStore();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -75,14 +77,14 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   };
 
   const handleRemove = async (memberId: string) => {
-    if (!confirm('Remove this team member?')) return;
+    const ok = await confirm({ message: 'Remove this team member?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     try {
       const supabase = createClient();
       const { error: delError } = await supabase.from('project_members').delete().eq('id', memberId);
-      if (delError) { alert(delError.message); return; }
+      if (delError) { toast.error(delError.message); return; }
       setMembers(members.filter((m) => m.id !== memberId));
     } catch {
-      alert('Failed to remove member');
+      toast.error('Failed to remove member');
     }
   };
 
@@ -90,11 +92,11 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     try {
       const supabase = createClient();
       const { error: updateError } = await supabase.from('project_members').update({ role }).eq('id', memberId);
-      if (updateError) { alert(updateError.message); return; }
+      if (updateError) { toast.error(updateError.message); return; }
       setMembers(members.map((m) => m.id === memberId ? { ...m, role } : m));
       setEditingMember(null);
     } catch {
-      alert('Failed to update role');
+      toast.error('Failed to update role');
     }
   };
 
@@ -102,10 +104,10 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     try {
       const supabase = createClient();
       const { error: updateError } = await supabase.from('project_members').update({ production_role: productionRole || null }).eq('id', memberId);
-      if (updateError) { alert(updateError.message); return; }
+      if (updateError) { toast.error(updateError.message); return; }
       setMembers(members.map((m) => m.id === memberId ? { ...m, production_role: productionRole as any } : m));
     } catch {
-      alert('Failed to update production role');
+      toast.error('Failed to update production role');
     }
   };
 
@@ -113,10 +115,10 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     try {
       const supabase = createClient();
       const { error: updateError } = await supabase.from('project_members').update({ character_name: characterName || null }).eq('id', memberId);
-      if (updateError) { alert(updateError.message); return; }
+      if (updateError) { toast.error(updateError.message); return; }
       setMembers(members.map((m) => m.id === memberId ? { ...m, character_name: characterName || null } : m));
     } catch {
-      alert('Failed to update character name');
+      toast.error('Failed to update character name');
     }
   };
 
@@ -129,7 +131,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   };
 
   const handleDeleteCredit = async (creditId: string) => {
-    if (!confirm('Remove this credit?')) return;
+    const ok = await confirm({ message: 'Remove this credit?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('external_credits').delete().eq('id', creditId);
     setExternalCredits(externalCredits.filter((c) => c.id !== creditId));
@@ -152,7 +154,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   if (loading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl">
+    <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Team</h1>
@@ -483,6 +485,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           }}
         />
       )}
+      <ConfirmDialog />
     </div>
   );
 }

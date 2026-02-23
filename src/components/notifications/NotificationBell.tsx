@@ -7,29 +7,30 @@ import { createClient } from '@/lib/supabase/client';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import type { Notification, NotificationType, CompanyRole } from '@/lib/types';
 import { timeAgo } from '@/lib/utils';
+import { toast } from '@/components/ui';
 
 // ============================================================
 // ICON MAP
 // ============================================================
 
-const TYPE_ICON: Record<NotificationType, { emoji: string; color: string }> = {
-  community_comment: { emoji: '💬', color: 'bg-blue-500/20' },
-  community_reply: { emoji: '↩️', color: 'bg-blue-500/20' },
-  community_upvote: { emoji: '❤️', color: 'bg-pink-500/20' },
-  project_invitation: { emoji: '📁', color: 'bg-green-500/20' },
-  project_comment: { emoji: '📝', color: 'bg-indigo-500/20' },
-  company_invitation: { emoji: '🏢', color: 'bg-yellow-500/20' },
-  company_blog_comment: { emoji: '📰', color: 'bg-teal-500/20' },
-  task_assigned: { emoji: '✅', color: 'bg-orange-500/20' },
-  schedule_created: { emoji: '📅', color: 'bg-red-500/20' },
-  schedule_reminder: { emoji: '⏰', color: 'bg-amber-500/20' },
-  production_submitted: { emoji: '🎬', color: 'bg-purple-500/20' },
-  production_approved: { emoji: '🎉', color: 'bg-green-500/20' },
-  production_rejected: { emoji: '❌', color: 'bg-red-500/20' },
-  chat_mention: { emoji: '💬', color: 'bg-cyan-500/20' },
-  direct_message: { emoji: '💬', color: 'blue' },
-  ticket_reply: { emoji: '🎫', color: 'bg-brand-500/20' },
-  general: { emoji: '🔔', color: 'bg-surface-700' },
+const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
+  community_comment: { label: 'MSG', color: 'bg-blue-500/20' },
+  community_reply: { label: 'RE', color: 'bg-blue-500/20' },
+  community_upvote: { label: 'LKE', color: 'bg-pink-500/20' },
+  project_invitation: { label: 'INV', color: 'bg-green-500/20' },
+  project_comment: { label: 'CMT', color: 'bg-indigo-500/20' },
+  company_invitation: { label: 'INV', color: 'bg-yellow-500/20' },
+  company_blog_comment: { label: 'BLG', color: 'bg-teal-500/20' },
+  task_assigned: { label: 'TSK', color: 'bg-orange-500/20' },
+  schedule_created: { label: 'CAL', color: 'bg-red-500/20' },
+  schedule_reminder: { label: 'REM', color: 'bg-amber-500/20' },
+  production_submitted: { label: 'SUB', color: 'bg-purple-500/20' },
+  production_approved: { label: 'OK', color: 'bg-green-500/20' },
+  production_rejected: { label: 'REJ', color: 'bg-red-500/20' },
+  chat_mention: { label: '@', color: 'bg-cyan-500/20' },
+  direct_message: { label: 'DM', color: 'blue' },
+  ticket_reply: { label: 'TKT', color: 'bg-brand-500/20' },
+  general: { label: 'NEW', color: 'bg-surface-700' },
 };
 
 // ============================================================
@@ -204,7 +205,7 @@ export function NotificationRow({
         {n.actor?.avatar_url ? (
           <img src={n.actor.avatar_url} alt="" className="w-9 h-9 rounded-lg object-cover" />
         ) : (
-          icon.emoji
+          <span className="font-semibold text-[10px] leading-none">{icon.label}</span>
         )}
       </div>
 
@@ -281,7 +282,7 @@ function CompanyInviteActions({ notification }: { notification: Notification }) 
 
     if (error) {
       console.error('Accept invitation error:', error);
-      alert('Failed to accept invitation: ' + error.message);
+      toast.error('Failed to accept invitation: ' + error.message);
       setLoading(false);
       return;
     }

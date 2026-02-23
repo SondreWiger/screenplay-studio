@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Input, Modal, toast, ToastContainer } from '@/components/ui';
+import { Button, Card, Badge, Input, Modal, Toggle, toast, ToastContainer } from '@/components/ui';
 import type { ExternalShare } from '@/lib/types';
 
 // ============================================================
@@ -57,7 +57,7 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
     setCreating(true);
     const supabase = createClient();
 
-    // Snapshot project + script content so the public viewer doesn't need auth
+    // Snapshot project + content so the public viewer doesn't need auth
     let contentSnapshot: any = {};
     try {
       const { data: proj } = await supabase
@@ -68,12 +68,78 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
       contentSnapshot.project = proj || {};
 
       if (['script', 'full'].includes(shareType)) {
+        // Get scripts
         const { data: scripts } = await supabase
           .from('scripts')
-          .select('title, content, updated_at')
+          .select('id, title, content, updated_at')
           .eq('project_id', params.id)
           .order('created_at', { ascending: true });
         contentSnapshot.scripts = scripts || [];
+
+        // Get actual script_elements for rich content
+        if (scripts && scripts.length > 0) {
+          const { data: elements } = await supabase
+            .from('script_elements')
+            .select('element_type, content, sort_order, scene_number')
+            .eq('script_id', scripts[0].id)
+            .eq('is_omitted', false)
+            .order('sort_order');
+
+          // Derive character names positionally for the snapshot
+          const enriched: any[] = [];
+          let charName: string | null = null;
+          for (const e of (elements || [])) {
+            if (e.element_type === 'character') {
+              charName = (e.content || '').replace(/\s*\(.*\)\s*$/, '').trim();
+            }
+            enriched.push({
+              type: e.element_type,
+              text: e.content,
+              scene_number: e.scene_number,
+              character_name: e.element_type === 'dialogue' || e.element_type === 'parenthetical' ? charName : null,
+            });
+            if (e.element_type !== 'dialogue' && e.element_type !== 'parenthetical' && e.element_type !== 'character') {
+              charName = null;
+            }
+          }
+          contentSnapshot.script_elements = enriched;
+        }
+      }
+
+      if (['storyboard', 'full'].includes(shareType)) {
+        const { data: shots } = await supabase
+          .from('shots')
+          .select('id, scene_id, shot_type, shot_size, description, image_url, sort_order, notes')
+          .eq('project_id', params.id)
+          .order('sort_order');
+        contentSnapshot.shots = shots || [];
+
+        const { data: scenes } = await supabase
+          .from('scenes')
+          .select('id, scene_number, scene_heading, location_type, time_of_day')
+          .eq('project_id', params.id)
+          .order('scene_number');
+        contentSnapshot.scenes = scenes || [];
+      }
+
+      if (['moodboard', 'full'].includes(shareType)) {
+        // Moodboard images are typically in project metadata or a dedicated table
+        // Snapshot locations as visual reference data
+        const { data: locations } = await supabase
+          .from('locations')
+          .select('id, name, description, address, photos, location_type')
+          .eq('project_id', params.id);
+        contentSnapshot.locations = locations || [];
+      }
+
+      if (shareType === 'full') {
+        const { data: characters } = await supabase
+          .from('characters')
+          .select('id, name, full_name, description, age, gender, is_main, cast_actor, avatar_url, personality_traits')
+          .eq('project_id', params.id)
+          .order('is_main', { ascending: false })
+          .order('name');
+        contentSnapshot.characters = characters || [];
       }
     } catch (err) {
       console.error('Error snapshotting content:', err);
@@ -150,7 +216,22 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
     setMaxViews(null);
   };
 
-  if (!hasExternalShares || !isPro) return null;
+  const hasProAccess = isPro || currentProject?.pro_enabled === true;
+
+  if (!hasProAccess) {
+    return (
+      <div className="p-6 flex items-center justify-center h-full">
+        <Card className="max-w-md p-8 text-center">
+          <div className="text-4xl mb-4">
+            <svg className="w-12 h-12 mx-auto text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </div>
+          <h2 className="text-lg font-semibold text-white mb-2">Share Portal</h2>
+          <p className="text-sm text-surface-400 mb-4">Create secure, branded links to share project content with external stakeholders.</p>
+          <Badge variant="warning">Pro Feature</Badge>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-4xl">
@@ -302,14 +383,8 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
 
             {/* Toggles */}
             <div className="flex gap-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={allowComments} onChange={(e) => setAllowComments(e.target.checked)} className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-brand-500" />
-                <span className="text-sm text-surface-300">Allow comments</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={allowDownload} onChange={(e) => setAllowDownload(e.target.checked)} className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-brand-500" />
-                <span className="text-sm text-surface-300">Allow download</span>
-              </label>
+              <Toggle checked={allowComments} onChange={setAllowComments} label="Allow comments" size="sm" />
+              <Toggle checked={allowDownload} onChange={setAllowDownload} label="Allow download" size="sm" />
             </div>
 
             <div className="flex justify-end gap-3 pt-2">

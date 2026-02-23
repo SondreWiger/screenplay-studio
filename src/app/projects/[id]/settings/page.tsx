@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Input, Textarea, LoadingSpinner } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/lib/types';
 import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS } from '@/lib/types';
@@ -66,7 +66,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
     // Validate file type and size
     if (!file.type.startsWith('image/')) return;
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image must be less than 5MB');
+      toast.warning('Image must be less than 5MB');
       return;
     }
     setUploadingCover(true);
@@ -343,15 +343,15 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { key: 'script', label: '📝 Script' }, { key: 'scenes', label: '🎬 Scenes' },
-              { key: 'characters', label: '👤 Characters' }, { key: 'locations', label: '📍 Locations' },
-              { key: 'shots', label: '🎥 Shots' }, { key: 'storyboard', label: '🖼️ Storyboard' },
-              { key: 'schedule', label: '📅 Schedule' }, { key: 'budget', label: '💰 Budget' },
-              { key: 'documents', label: '📄 Documents' }, { key: 'moodboard', label: '🎨 Moodboard' },
-              { key: 'ideas', label: '💡 Ideas' }, { key: 'mindmap', label: '🧠 Mind Map' },
-              { key: 'team', label: '👥 Team' }, { key: 'thumbnails', label: '🖼️ Thumbnails' },
-              { key: 'seo', label: '📊 SEO' }, { key: 'sponsors', label: '💼 Sponsors' },
-              { key: 'broll', label: '🎞️ B-Roll' }, { key: 'checklist', label: '✅ Checklist' },
+              { key: 'script', label: 'Script' }, { key: 'scenes', label: 'Scenes' },
+              { key: 'characters', label: 'Characters' }, { key: 'locations', label: 'Locations' },
+              { key: 'shots', label: 'Shots' }, { key: 'storyboard', label: 'Storyboard' },
+              { key: 'schedule', label: 'Schedule' }, { key: 'budget', label: 'Budget' },
+              { key: 'documents', label: 'Documents' }, { key: 'moodboard', label: 'Moodboard' },
+              { key: 'ideas', label: 'Ideas' }, { key: 'mindmap', label: 'Mind Map' },
+              { key: 'team', label: 'Team' }, { key: 'thumbnails', label: 'Thumbnails' },
+              { key: 'seo', label: 'SEO' }, { key: 'sponsors', label: 'Sponsors' },
+              { key: 'broll', label: 'B-Roll' }, { key: 'checklist', label: 'Checklist' },
             ].map((tab) => {
               const isOn = projectSidebarTabs ? (projectSidebarTabs[tab.key] !== false) : true;
               return (
@@ -361,13 +361,16 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                     const prev = projectSidebarTabs || {};
                     setProjectSidebarTabs({ ...prev, [tab.key]: !isOn });
                   }}
-                  className={`p-2 rounded-lg border text-left transition-all ${
+                  className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
                     isOn
-                      ? 'border-brand-500/40 bg-brand-500/5'
-                      : 'border-surface-700 opacity-40'
+                      ? 'border-brand-500/40 bg-brand-500/10'
+                      : 'border-surface-700 bg-surface-900/50'
                   }`}
                 >
                   <p className={`text-xs font-medium ${isOn ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
+                  <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${isOn ? 'bg-brand-600' : 'bg-surface-700'}`}>
+                    <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${isOn ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
+                  </span>
                 </button>
               );
             })}

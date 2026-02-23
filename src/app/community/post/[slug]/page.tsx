@@ -9,6 +9,7 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { ScriptContentViewer } from '@/components/ScreenplayRenderer';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
+import { toast } from '@/components/ui';
 import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction } from '@/lib/types';
 
 // ============================================================
@@ -219,7 +220,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
     if (data) {
       setDistros((prev) => [data, ...prev]);
     }
-    if (error) alert('Failed to create distro: ' + error.message);
+    if (error) toast.error('Failed to create distro: ' + error.message);
   };
 
   const handleForkToProject = async () => {
@@ -241,7 +242,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         router.push(`/projects/${data}`);
       }
     } catch (err: any) {
-      alert('Failed to fork: ' + (err?.message || 'Unknown error'));
+      toast.error('Failed to fork: ' + (err?.message || 'Unknown error'));
     } finally {
       setForking(false);
     }
@@ -266,7 +267,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
       setFilmSubmitted(true);
       setFilmTitle(''); setFilmDesc(''); setFilmUrl(''); setFilmThumb('');
     } catch (err: any) {
-      alert('Failed to submit: ' + (err?.message || 'Unknown error'));
+      toast.error('Failed to submit: ' + (err?.message || 'Unknown error'));
     } finally {
       setSubmittingFilm(false);
     }

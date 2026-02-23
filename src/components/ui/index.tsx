@@ -397,10 +397,12 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
   return (
-    <div className={cn('flex gap-1 rounded-lg bg-surface-900 p-1', className)}>
+    <div role="tablist" className={cn('flex gap-1 rounded-lg bg-surface-900 p-1', className)}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          role="tab"
+          aria-selected={activeTab === tab.id}
           onClick={() => onChange(tab.id)}
           className={cn(
             'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200',
@@ -744,6 +746,56 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
         </div>
       </div>
     </div>
+  );
+}
+
+// ============================================================
+// TOGGLE / SWITCH
+// ============================================================
+
+interface ToggleProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label?: string;
+  description?: string;
+  disabled?: boolean;
+  size?: 'sm' | 'md';
+}
+
+export function Toggle({ checked, onChange, label, description, disabled, size = 'md' }: ToggleProps) {
+  const trackSize = size === 'sm' ? 'w-8 h-[18px]' : 'w-10 h-[22px]';
+  const thumbSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+  const thumbTranslate = size === 'sm' ? (checked ? 'translate-x-[14px]' : 'translate-x-[2px]') : (checked ? 'translate-x-[18px]' : 'translate-x-[2px]');
+
+  return (
+    <label className={cn('flex items-center gap-3 select-none', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer')}>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => !disabled && onChange(!checked)}
+        className={cn(
+          'relative inline-flex shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
+          trackSize,
+          checked ? 'bg-brand-600' : 'bg-surface-700',
+        )}
+      >
+        <span
+          className={cn(
+            'pointer-events-none inline-block rounded-full bg-white shadow-sm transform transition-transform duration-200 mt-[2px]',
+            thumbSize,
+            thumbTranslate,
+          )}
+        />
+      </button>
+      {(label || description) && (
+        <div className="min-w-0">
+          {label && <p className={cn('font-medium', size === 'sm' ? 'text-xs text-surface-300' : 'text-sm text-white')}>{label}</p>}
+          {description && <p className="text-xs text-surface-500 mt-0.5">{description}</p>}
+        </div>
+      )}
+    </label>
   );
 }
 

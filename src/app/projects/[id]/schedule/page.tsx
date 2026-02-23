@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn, formatDate, formatTime } from '@/lib/utils';
 import { useProjectStore } from '@/lib/stores';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { ScheduleEvent, Scene, Location as Loc, ScheduleEventType } from '@/lib/types';
 
 const EVENT_TYPES: { value: ScheduleEventType; label: string; color: string }[] = [
@@ -45,6 +46,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [dayViewDate, setDayViewDate] = useState(new Date());
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   useEffect(() => { fetchData(); }, [params.id]);
 
@@ -76,7 +78,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this event?')) return;
+    const ok = await confirm({ message: 'Delete this event?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('production_schedule').delete().eq('id', id);
     setEvents(events.filter((e) => e.id !== id));
@@ -241,6 +243,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
       <ScheduleEditor isOpen={showEditor} onClose={() => setShowEditor(false)} event={selectedEvent}
         projectId={params.id} userId={user?.id || ''} scenes={scenes} locations={locations}
         defaultDate={selectedDate} onSaved={() => { fetchData(); setShowEditor(false); }} onDelete={handleDelete} />
+      <ConfirmDialog />
     </div>
   );
 }
@@ -440,13 +443,13 @@ function ScheduleEditor({ isOpen, onClose, event, projectId, userId, scenes, loc
       };
       if (event) {
         const { error } = await supabase.from('production_schedule').update(payload).eq('id', event.id);
-        if (error) { alert(error.message); setLoading(false); return; }
+        if (error) { toast.error(error.message); setLoading(false); return; }
       } else {
         const { error } = await supabase.from('production_schedule').insert(payload);
-        if (error) { alert(error.message); setLoading(false); return; }
+        if (error) { toast.error(error.message); setLoading(false); return; }
       }
     } catch (err) {
-      alert('Failed to save event');
+      toast.error('Failed to save event');
     }
     setLoading(false);
     onSaved();

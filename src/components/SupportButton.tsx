@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Icon } from '@/components/ui/icons';
 
 // ============================================================
 // Floating Support Button — shows help menu with quick links
@@ -53,7 +54,7 @@ export function SupportButton() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-base">🎫</span>
+              <span className="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center"><Icon name="ticket" size="sm" className="text-brand-400" /></span>
               <div className="flex-1 min-w-0">
                 <span className="font-medium">Support Tickets</span>
                 {openTicketCount > 0 && (
@@ -69,7 +70,7 @@ export function SupportButton() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-base">📋</span>
+              <span className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center"><Icon name="clipboard" size="sm" className="text-green-400" /></span>
               <div>
                 <span className="font-medium">Community Guidelines</span>
                 <p className="text-[11px] text-surface-500 mt-0.5">Rules and best practices</p>
@@ -80,7 +81,7 @@ export function SupportButton() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-base">⚖️</span>
+              <span className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center"><Icon name="scale" size="sm" className="text-amber-400" /></span>
               <div>
                 <span className="font-medium">Acceptable Use Policy</span>
                 <p className="text-[11px] text-surface-500 mt-0.5">What&apos;s allowed on the platform</p>
@@ -93,7 +94,7 @@ export function SupportButton() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-base">❤️</span>
+              <span className="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center"><Icon name="heart" size="sm" className="text-pink-400" /></span>
               <div>
                 <span className="font-medium">Support the Developer</span>
                 <p className="text-[11px] text-surface-500 mt-0.5">Buy me a coffee on Ko-fi</p>

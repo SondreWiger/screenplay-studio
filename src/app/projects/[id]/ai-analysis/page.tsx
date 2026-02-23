@@ -18,10 +18,8 @@ type ScriptElement = {
   script_id: string;
   element_type: 'scene_heading' | 'action' | 'character' | 'dialogue' | 'parenthetical' | 'transition' | 'general' | 'shot';
   content: string;
-  scene_id: string | null;
+  scene_number: string | null;
   sort_order: number;
-  duration_estimate: number | null;
-  character_name: string | null;
 };
 
 type Scene = {
@@ -37,19 +35,19 @@ type Scene = {
   is_completed: boolean;
 };
 
+type Shot = {
+  id: string;
+  project_id: string;
+  scene_id: string | null;
+  is_completed: boolean;
+};
+
 type Character = {
   id: string;
   project_id: string;
   name: string;
   is_main: boolean;
   cast_actor: string | null;
-};
-
-type Shot = {
-  id: string;
-  project_id: string;
-  scene_id: string | null;
-  is_completed: boolean;
 };
 
 // ---- Analysis result types ----
@@ -145,7 +143,7 @@ function computeAnalysis(
     }
   }
 
-  const totalPages = Math.max(totalWords / 250, 0.1);
+  const totalPages = Math.max(Math.ceil(elements.length / 56), 1);
   const estimatedRuntime = Math.round(totalPages);
 
   const overview: OverviewStats = {
@@ -161,24 +159,35 @@ function computeAnalysis(
   };
 
   // ---- Character Dialogue Analysis ----
+  // Derive character names positionally: a 'character' element's content is the name,
+  // and subsequent 'dialogue'/'parenthetical' elements belong to that character.
   const charMap = new Map<string, { wordCount: number; lineCount: number; scenes: Set<string>; firstSort: number }>();
 
+  let currentCharName: string | null = null;
+  let currentSceneNum: string | null = null;
   for (const el of elements) {
-    if (el.element_type === 'dialogue' && el.character_name) {
-      const name = el.character_name.trim().toUpperCase();
+    if (el.element_type === 'scene_heading') {
+      currentSceneNum = el.scene_number || el.content || null;
+    } else if (el.element_type === 'character') {
+      currentCharName = (el.content || '').replace(/\s*\(.*\)\s*$/, '').trim().toUpperCase();
+    } else if ((el.element_type === 'dialogue' || el.element_type === 'parenthetical') && currentCharName) {
+      const name = currentCharName;
       if (!charMap.has(name)) {
         charMap.set(name, { wordCount: 0, lineCount: 0, scenes: new Set(), firstSort: el.sort_order });
       }
       const c = charMap.get(name)!;
       c.wordCount += wc(el.content);
-      c.lineCount += 1;
-      if (el.scene_id) c.scenes.add(el.scene_id);
+      if (el.element_type === 'dialogue') c.lineCount += 1;
+      if (currentSceneNum) c.scenes.add(currentSceneNum);
       if (el.sort_order < c.firstSort) c.firstSort = el.sort_order;
+    } else {
+      // Any other element type resets the current character
+      if (el.element_type !== 'parenthetical') currentCharName = null;
     }
   }
 
-  const sceneIdToNumber = new Map<string, number>();
-  scenes.forEach((s, i) => sceneIdToNumber.set(s.id, s.scene_number ?? i + 1));
+  const sceneNumToNumber = new Map<string, number>();
+  scenes.forEach((s, i) => sceneNumToNumber.set(s.id, s.scene_number ?? i + 1));
 
   const characterDialogues: CharacterDialogue[] = Array.from(charMap.entries())
     .map(([name, data]) => ({
@@ -188,33 +197,46 @@ function computeAnalysis(
       avgWordsPerLine: data.lineCount > 0 ? Math.round(data.wordCount / data.lineCount) : 0,
       sceneCount: data.scenes.size,
       firstScene: data.scenes.size > 0
-        ? Math.min(...Array.from(data.scenes).map(sid => sceneIdToNumber.get(sid) ?? 999))
+        ? Math.min(...Array.from(data.scenes).map(sn => {
+            const num = parseInt(sn, 10);
+            return isNaN(num) ? 999 : num;
+          }))
         : 999,
     }))
     .sort((a, b) => b.wordCount - a.wordCount);
 
   // ---- Scene Analysis ----
+  // Group elements by scene_number (which exists on script_elements)
   const sceneElementMap = new Map<string, ScriptElement[]>();
+  let currentScene: string | null = null;
   for (const el of elements) {
-    if (el.scene_id) {
-      if (!sceneElementMap.has(el.scene_id)) sceneElementMap.set(el.scene_id, []);
-      sceneElementMap.get(el.scene_id)!.push(el);
+    if (el.element_type === 'scene_heading') {
+      currentScene = el.scene_number || el.content || `scene_${el.sort_order}`;
+    }
+    if (currentScene) {
+      if (!sceneElementMap.has(currentScene)) sceneElementMap.set(currentScene, []);
+      sceneElementMap.get(currentScene)!.push(el);
     }
   }
 
   const sceneAnalyses: SceneAnalysis[] = scenes.map((scene, i) => {
-    const els = sceneElementMap.get(scene.id) || [];
+    const els = sceneElementMap.get(String(scene.scene_number ?? '')) || sceneElementMap.get(scene.scene_heading || '') || [];
     let sceneWords = 0, sceneDlg = 0, sceneAct = 0;
     const speakingChars = new Set<string>();
 
+    let sceneCharName: string | null = null;
     for (const el of els) {
       const w = wc(el.content);
       sceneWords += w;
-      if (el.element_type === 'dialogue' || el.element_type === 'parenthetical') {
+      if (el.element_type === 'character') {
+        sceneCharName = (el.content || '').replace(/\s*\(.*\)\s*$/, '').trim().toUpperCase();
+      } else if (el.element_type === 'dialogue' || el.element_type === 'parenthetical') {
         sceneDlg += w;
-        if (el.character_name) speakingChars.add(el.character_name.toUpperCase());
+        if (sceneCharName) speakingChars.add(sceneCharName);
       } else if (el.element_type === 'action') {
         sceneAct += w;
+      } else {
+        sceneCharName = null;
       }
     }
 
@@ -227,7 +249,7 @@ function computeAnalysis(
       actionWords: sceneAct,
       dialogueDensity: sceneWords > 0 ? sceneDlg / sceneWords : 0,
       speakingCharacters: speakingChars.size,
-      pageCount: Math.round((sceneWords / 250) * 10) / 10,
+      pageCount: Math.round((els.length / 56) * 10) / 10,
       locationType: scene.location_type || 'UNKNOWN',
       timeOfDay: scene.time_of_day || 'UNKNOWN',
     };
@@ -355,10 +377,11 @@ function ProgressRing({ value, max, label, color }: { value: number; max: number
 }
 
 // ---- Tab types ----
-type Tab = 'overview' | 'dialogue' | 'scenes' | 'pacing' | 'characters' | 'production';
+type Tab = 'overview' | 'feedback' | 'dialogue' | 'scenes' | 'pacing' | 'characters' | 'production';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'overview', label: 'Overview', icon: '📊' },
+  { key: 'feedback', label: 'Feedback', icon: '💡' },
   { key: 'dialogue', label: 'Dialogue', icon: '💬' },
   { key: 'scenes', label: 'Scenes', icon: '🎬' },
   { key: 'pacing', label: 'Pacing', icon: '⚡' },
@@ -380,7 +403,7 @@ export default function AIAnalysisPage() {
 
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState<FullAnalysis | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [activeTab, setActiveTab] = useState<Tab>('feedback');
   const [hasScript, setHasScript] = useState(true);
 
   const loadAnalysis = useCallback(async () => {
@@ -569,6 +592,161 @@ export default function AIAnalysisPage() {
           </div>
         </div>
       )}
+
+      {/* ============ FEEDBACK TAB ============ */}
+      {activeTab === 'feedback' && (() => {
+        // Generate actionable feedback based on computed analysis
+        type Feedback = { severity: 'success' | 'warning' | 'info' | 'error'; title: string; detail: string; category: string };
+        const feedbackItems: Feedback[] = [];
+
+        // Length assessment
+        if (overview.totalPages < 10) {
+          feedbackItems.push({ severity: 'info', title: 'Script is very short', detail: `At ${overview.totalPages} pages, this reads more like a short film. Feature films typically run 90-120 pages. Keep writing!`, category: 'Structure' });
+        } else if (overview.totalPages >= 80 && overview.totalPages <= 130) {
+          feedbackItems.push({ severity: 'success', title: 'Solid script length', detail: `${overview.totalPages} pages is in the sweet spot for a feature-length screenplay (90-120 pages ideal).`, category: 'Structure' });
+        } else if (overview.totalPages > 130) {
+          feedbackItems.push({ severity: 'warning', title: 'Script may be too long', detail: `At ${overview.totalPages} pages, consider trimming. Most readers expect 90-120 pages. Focus on tighter scenes and cutting redundant dialogue.`, category: 'Structure' });
+        }
+
+        // Dialogue ratio feedback
+        if (overview.dialogueRatio > 0.65) {
+          feedbackItems.push({ severity: 'warning', title: 'Dialogue-heavy script', detail: `${Math.round(overview.dialogueRatio * 100)}% of your script is dialogue. Film is a visual medium — try converting some dialogue into action, visual storytelling, or subtext. "Show, don't tell."`, category: 'Dialogue' });
+        } else if (overview.dialogueRatio < 0.25 && overview.totalWords > 500) {
+          feedbackItems.push({ severity: 'info', title: 'Very action-driven script', detail: `Only ${Math.round(overview.dialogueRatio * 100)}% dialogue. Great for visual storytelling, but ensure your characters have distinct, memorable voices when they do speak.`, category: 'Dialogue' });
+        } else if (overview.dialogueRatio >= 0.35 && overview.dialogueRatio <= 0.55) {
+          feedbackItems.push({ severity: 'success', title: 'Good dialogue-action balance', detail: `${Math.round(overview.dialogueRatio * 100)}% dialogue is within the industry sweet spot (35-55%). Your script balances visual storytelling with character voice.`, category: 'Dialogue' });
+        }
+
+        // Character dominance
+        if (characterDialogues.length >= 2) {
+          const totalDlg = characterDialogues.reduce((s, c) => s + c.wordCount, 0);
+          const topPct = totalDlg > 0 ? (characterDialogues[0].wordCount / totalDlg) * 100 : 0;
+          if (topPct > 50) {
+            feedbackItems.push({ severity: 'warning', title: `${characterDialogues[0].name} dominates dialogue`, detail: `${characterDialogues[0].name} speaks ${Math.round(topPct)}% of all dialogue. Consider developing other characters' voices. Strong ensembles share screen time.`, category: 'Characters' });
+          }
+          if (characterDialogues.length >= 3) {
+            const bottomChars = characterDialogues.slice(-3).filter(c => c.wordCount < 20);
+            if (bottomChars.length > 0) {
+              feedbackItems.push({ severity: 'info', title: 'Some characters barely speak', detail: `${bottomChars.map(c => c.name).join(', ')} ${bottomChars.length === 1 ? 'has' : 'have'} very little dialogue. Consider: do they need to be separate characters, or could they be combined?`, category: 'Characters' });
+            }
+          }
+        }
+
+        // Long dialogue blocks
+        const longTalkers = characterDialogues.filter(c => c.avgWordsPerLine > 35);
+        if (longTalkers.length > 0) {
+          feedbackItems.push({ severity: 'warning', title: 'Long dialogue blocks detected', detail: `${longTalkers.map(c => c.name).join(', ')} ${longTalkers.length === 1 ? 'averages' : 'average'} ${longTalkers[0].avgWordsPerLine}+ words per line. Keep dialogue snappy — break speeches into exchanges or add beat actions between lines.`, category: 'Dialogue' });
+        }
+
+        // Scene count & pacing
+        if (sceneAnalyses.length > 0) {
+          const avgSceneWords = overview.totalWords / sceneAnalyses.length;
+          if (avgSceneWords > 600) {
+            feedbackItems.push({ severity: 'warning', title: 'Scenes tend to run long', detail: `Average scene is ${Math.round(avgSceneWords)} words. Consider breaking long scenes or entering later/leaving earlier. Get in late, get out early.`, category: 'Pacing' });
+          } else if (avgSceneWords < 100 && overview.totalWords > 500) {
+            feedbackItems.push({ severity: 'info', title: 'Many very short scenes', detail: `Average scene is only ${Math.round(avgSceneWords)} words. While fast pacing works for montages and action, ensure key dramatic moments have room to breathe.`, category: 'Pacing' });
+          }
+
+          // Long scenes specifically
+          const veryLongScenes = sceneAnalyses.filter(s => s.pageCount > 5);
+          if (veryLongScenes.length > 0) {
+            feedbackItems.push({ severity: 'warning', title: `${veryLongScenes.length} scene${veryLongScenes.length > 1 ? 's' : ''} over 5 pages`, detail: `Scenes over 5 pages can lose momentum: ${veryLongScenes.slice(0, 3).map(s => s.heading).join(', ')}. Consider splitting them or cutting the fat.`, category: 'Pacing' });
+          }
+        }
+
+        // INT/EXT variety
+        const totalIE = intExtRatio.interior + intExtRatio.exterior + intExtRatio.intExt;
+        if (totalIE > 3) {
+          if (intExtRatio.exterior === 0) {
+            feedbackItems.push({ severity: 'info', title: 'No exterior scenes', detail: 'All scenes are interiors. Adding exterior scenes can provide visual variety, establish setting, and give the cinematographer more to work with.', category: 'Scenes' });
+          } else if (intExtRatio.interior === 0) {
+            feedbackItems.push({ severity: 'info', title: 'No interior scenes', detail: 'All scenes are exteriors. Interior scenes can provide intimacy and contrast.', category: 'Scenes' });
+          }
+          const intPct = (intExtRatio.interior / totalIE) * 100;
+          if (intPct > 80) {
+            feedbackItems.push({ severity: 'info', title: 'Very interior-heavy', detail: `${Math.round(intPct)}% of scenes are interiors. More exteriors can open up the visual canvas and reduce production costs in some locations.`, category: 'Scenes' });
+          }
+        }
+
+        // Day/Night
+        if (dayNightRatio.night > dayNightRatio.day && dayNightRatio.night > 3) {
+          feedbackItems.push({ severity: 'info', title: 'Mostly night scenes', detail: `Night scenes dominate your script. Night shoots are expensive and tiring for crew. Consider if some scenes could work during day.`, category: 'Production' });
+        }
+
+        // Number of speaking characters
+        if (characterDialogues.length > 25) {
+          feedbackItems.push({ severity: 'warning', title: 'Large speaking cast', detail: `${characterDialogues.length} speaking characters is a lot. Audiences struggle to track more than 8-12 distinct characters. Consider consolidating minor roles.`, category: 'Characters' });
+        }
+
+        // Character intro pacing
+        if (characterDialogues.length >= 4) {
+          const lateIntros = characterDialogues.filter(c => c.firstScene > sceneAnalyses.length * 0.7);
+          if (lateIntros.length > 2) {
+            feedbackItems.push({ severity: 'info', title: 'Late character introductions', detail: `${lateIntros.map(c => c.name).join(', ')} first appear after 70% of the script. Introducing new characters late can confuse audiences — unless they serve a crucial third-act purpose.`, category: 'Characters' });
+          }
+        }
+
+        // Production readiness
+        if (productionStats.scenesTotal > 0 && productionStats.scenesCompleted === productionStats.scenesTotal) {
+          feedbackItems.push({ severity: 'success', title: 'All scenes marked complete', detail: 'Great progress — every scene is marked as complete. Time to review the full read-through.', category: 'Production' });
+        }
+        if (productionStats.castTotal > 0 && productionStats.castCoverage === productionStats.castTotal) {
+          feedbackItems.push({ severity: 'success', title: 'Full cast coverage', detail: 'All characters have actors assigned. The casting is complete.', category: 'Production' });
+        } else if (productionStats.castTotal > 0 && productionStats.castCoverage < productionStats.castTotal * 0.5) {
+          feedbackItems.push({ severity: 'info', title: 'Casting incomplete', detail: `Only ${productionStats.castCoverage} of ${productionStats.castTotal} characters have actors. Head to the Casting page to continue.`, category: 'Production' });
+        }
+
+        // Positive feedback if things look good
+        if (feedbackItems.filter(f => f.severity === 'warning' || f.severity === 'error').length === 0) {
+          feedbackItems.push({ severity: 'success', title: 'Looking good overall!', detail: 'No major structural issues detected. Your script has good balance and pacing. Keep polishing — focus on making every line count.', category: 'General' });
+        }
+
+        const severityColors = {
+          success: 'border-green-500/30 bg-green-500/5',
+          warning: 'border-amber-500/30 bg-amber-500/5',
+          info: 'border-blue-500/30 bg-blue-500/5',
+          error: 'border-red-500/30 bg-red-500/5',
+        };
+        const severityIcons = {
+          success: '✅', warning: '⚠️', info: '💡', error: '❌',
+        };
+
+        const categories = Array.from(new Set(feedbackItems.map(f => f.category)));
+
+        return (
+          <div className="space-y-6">
+            <Card className="p-5 border border-brand-500/20">
+              <h3 className="text-base font-semibold text-white mb-2">Script Feedback</h3>
+              <p className="text-sm text-surface-400">Actionable suggestions based on analysis of your {overview.totalElements.toLocaleString()} script elements, {overview.totalScenes} scenes, and {characterDialogues.length} speaking characters.</p>
+            </Card>
+
+            {categories.map(cat => (
+              <div key={cat}>
+                <h4 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3">{cat}</h4>
+                <div className="space-y-3">
+                  {feedbackItems.filter(f => f.category === cat).map((item, idx) => (
+                    <Card key={idx} className={`p-4 border ${severityColors[item.severity]}`}>
+                      <div className="flex items-start gap-3">
+                        <span className="text-lg shrink-0 mt-0.5">{severityIcons[item.severity]}</span>
+                        <div>
+                          <h4 className="text-sm font-semibold text-white">{item.title}</h4>
+                          <p className="text-sm text-surface-400 mt-1">{item.detail}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <Card className="p-4 bg-surface-900/50">
+              <p className="text-xs text-surface-500 text-center">
+                These suggestions are generated from structural analysis of your script data. They follow industry guidelines and best practices from professional screenwriting resources. Use your creative judgment — rules are made to be broken.
+              </p>
+            </Card>
+          </div>
+        );
+      })()}
 
       {/* ============ DIALOGUE TAB ============ */}
       {activeTab === 'dialogue' && (

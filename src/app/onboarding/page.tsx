@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
-import { Button, LoadingPage } from '@/components/ui';
+import { Button, LoadingPage, Input } from '@/components/ui';
+import { Icon } from '@/components/ui/icons';
 import type { UsageIntent, ScriptType } from '@/lib/types';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 
@@ -14,17 +15,17 @@ import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 // ============================================================
 
 const USAGE_OPTIONS: { value: UsageIntent; label: string; description: string; icon: string }[] = [
-  { value: 'writer', label: 'Writer', description: 'I want to write screenplays and scripts', icon: '✍️' },
-  { value: 'producer', label: 'Producer / Filmmaker', description: 'I want to manage productions and collaborate', icon: '🎥' },
-  { value: 'both', label: 'Writer & Producer', description: 'I write and produce — I want it all', icon: '🎬' },
-  { value: 'content_creator', label: 'Content Creator', description: 'YouTube, TikTok, podcasts — I make online content', icon: '▶️' },
-  { value: 'student', label: 'Student / Learning', description: 'I\'m learning screenwriting and filmmaking', icon: '📚' },
+  { value: 'writer', label: 'Writer', description: 'I want to write screenplays and scripts', icon: 'edit' },
+  { value: 'producer', label: 'Producer / Filmmaker', description: 'I want to manage productions and collaborate', icon: 'camera' },
+  { value: 'both', label: 'Writer & Producer', description: 'I write and produce — I want it all', icon: 'film' },
+  { value: 'content_creator', label: 'Content Creator', description: 'YouTube, TikTok, podcasts — I make online content', icon: 'play' },
+  { value: 'student', label: 'Student / Learning', description: 'I\'m learning screenwriting and filmmaking', icon: 'book' },
 ];
 
 const FEATURE_TOGGLES = [
-  { key: 'show_community' as const, label: 'Community Hub', description: 'Share scripts, get feedback, join challenges', icon: '🌐' },
-  { key: 'show_production_tools' as const, label: 'Production Tools', description: 'Locations, shots, schedule, budget tracking', icon: '🎞️' },
-  { key: 'show_collaboration' as const, label: 'Collaboration', description: 'Team members, real-time editing, comments', icon: '👥' },
+  { key: 'show_community' as const, label: 'Community Hub', description: 'Share scripts, get feedback, join challenges', icon: 'globe' },
+  { key: 'show_production_tools' as const, label: 'Production Tools', description: 'Locations, shots, schedule, budget tracking', icon: 'film' },
+  { key: 'show_collaboration' as const, label: 'Collaboration', description: 'Team members, real-time editing, comments', icon: 'users' },
 ];
 
 export default function OnboardingPage() {
@@ -126,7 +127,7 @@ export default function OnboardingPage() {
     }
 
     setSaving(false);
-    router.replace('/dashboard');
+    router.replace('/dashboard?tour=1');
   };
 
   if (authLoading) return <LoadingPage />;
@@ -135,7 +136,7 @@ export default function OnboardingPage() {
     // Step 0: Welcome + Display Name
     <div key="welcome" className="space-y-8">
       <div className="text-center">
-        <div className="w-20 h-20 bg-gradient-to-br from-brand-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand-500/20">
+        <div className="w-20 h-20 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
           </svg>
@@ -149,12 +150,11 @@ export default function OnboardingPage() {
       <div className="max-w-sm mx-auto space-y-4">
         <div>
           <label className="block text-sm font-medium text-surface-300 mb-1.5">What should we call you?</label>
-          <input
+          <Input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder={user?.full_name || 'Your display name'}
-            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-3 text-white placeholder:text-surface-600 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-colors"
           />
         </div>
       </div>
@@ -178,7 +178,7 @@ export default function OnboardingPage() {
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600 hover:bg-surface-800'
             }`}
           >
-            <span className="text-2xl">{opt.icon}</span>
+            <Icon name={opt.icon} size="lg" className={usageIntent === opt.value ? 'text-brand-400' : 'text-surface-400'} />
             <h3 className={`mt-2 text-sm font-semibold ${usageIntent === opt.value ? 'text-brand-400' : 'text-white'}`}>
               {opt.label}
             </h3>
@@ -206,7 +206,7 @@ export default function OnboardingPage() {
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600 hover:bg-surface-800'
             }`}
           >
-            <span className="text-xl">{opt.icon}</span>
+            <Icon name={opt.icon} size="md" className={scriptType === opt.value ? 'text-brand-400' : 'text-surface-400'} />
             <h3 className={`mt-1.5 text-sm font-semibold ${scriptType === opt.value ? 'text-brand-400' : 'text-white'}`}>
               {opt.label}
             </h3>
@@ -245,7 +245,7 @@ export default function OnboardingPage() {
                   : 'border-surface-700 bg-surface-900 opacity-60'
               }`}
             >
-              <span className="text-xl shrink-0">{feat.icon}</span>
+              <Icon name={feat.icon} size="md" className="text-surface-300" />
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-white">{feat.label}</h3>
                 <p className="text-[11px] text-surface-400">{feat.description}</p>
@@ -280,7 +280,7 @@ export default function OnboardingPage() {
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600'
             }`}
           >
-            <span className="text-2xl">{'\u{1F9D1}'}</span>
+            <svg className="w-8 h-8 text-surface-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             <h3 className={`mt-2 text-sm font-semibold ${!wantsCompany ? 'text-brand-400' : 'text-white'}`}>Just me</h3>
             <p className="text-[11px] text-surface-400 mt-1">Solo projects</p>
           </button>
@@ -292,7 +292,7 @@ export default function OnboardingPage() {
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600'
             }`}
           >
-            <span className="text-2xl">{'\u{1F3E2}'}</span>
+            <svg className="w-8 h-8 text-surface-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
             <h3 className={`mt-2 text-sm font-semibold ${wantsCompany ? 'text-brand-400' : 'text-white'}`}>Team / Company</h3>
             <p className="text-[11px] text-surface-400 mt-1">Collaborate together</p>
           </button>
@@ -301,12 +301,11 @@ export default function OnboardingPage() {
         {wantsCompany && (
           <div className="animate-slide-up">
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Company Name</label>
-            <input
+            <Input
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder="Acme Pictures"
-              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-3 text-white placeholder:text-surface-600 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-colors"
               autoFocus
             />
             <p className="text-[11px] text-surface-500 mt-1.5">You can invite team members after setup.</p>
@@ -321,7 +320,7 @@ export default function OnboardingPage() {
       {/* Progress bar */}
       <div className="w-full h-1 bg-surface-900">
         <div
-          className="h-full bg-gradient-to-r from-brand-500 to-orange-500 transition-all duration-500"
+          className="h-full bg-brand-500 transition-all duration-500"
           style={{ width: `${((step + 1) / steps.length) * 100}%` }}
         />
       </div>

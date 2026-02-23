@@ -23,7 +23,7 @@ const PAGE_LABELS: Record<string, string> = {
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
   showcase: 'Showcase', share: 'Share Portal', analytics: 'Analytics',
-  versions: 'Version History', export: 'Advanced Export',
+  export: 'Advanced Export', casting: 'Casting', 'ai-analysis': 'Script Analysis',
 };
 
 export default function ProjectLayout({
@@ -170,6 +170,8 @@ export default function ProjectLayout({
         { label: 'B-Roll', href: `/projects/${params.id}/broll`, icon: 'shots', always: true },
         { label: 'Storyboard', href: `/projects/${params.id}/storyboard`, icon: 'storyboard', always: true },
         { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
+        { label: 'Mind Map', href: `/projects/${params.id}/mindmap`, icon: 'mindmap', always: true },
+        { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', always: true },
       ],
     },
     {
@@ -194,12 +196,12 @@ export default function ProjectLayout({
       items: [
         { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
         { label: 'Analytics', href: `/projects/${params.id}/analytics`, icon: 'analytics', pro: true },
-        { label: 'Versions', href: `/projects/${params.id}/versions`, icon: 'versions', pro: true },
+        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
         { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
-        { label: 'AI Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
         { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
         { label: 'Brand Kit', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
-        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
+        { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -237,7 +239,7 @@ export default function ProjectLayout({
       category: 'Production',
       items: [
         { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', production: true },
-        { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', production: true },
+        { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', always: true },
         { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', production: true },
         { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
         { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', production: true },
@@ -257,9 +259,8 @@ export default function ProjectLayout({
       items: [
         { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
         { label: 'Analytics', href: `/projects/${params.id}/analytics`, icon: 'analytics', pro: true },
-        { label: 'Versions', href: `/projects/${params.id}/versions`, icon: 'versions', pro: true },
         { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
-        { label: 'AI Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
         { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
         { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
         { label: 'Custom Branding', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
@@ -285,8 +286,8 @@ export default function ProjectLayout({
     if (item.icon !== 'overview' && item.icon !== 'settings') {
       if (!canUseFeature(item.icon)) return false;
     }
-    // Pro items: visible to Pro subscribers, per-project Pro, OR alpha/beta insiders with flag access
-    if (item.pro) return isPro || currentProject?.pro_enabled === true || canUseFeature(item.icon);
+    // Pro items: visible only to Pro subscribers or per-project Pro
+    if (item.pro) return isPro || currentProject?.pro_enabled === true;
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
@@ -349,7 +350,7 @@ export default function ProjectLayout({
       <div className="border-b border-surface-800 p-4">
         <div className="flex items-center gap-3">
           <Link href="/dashboard" className="shrink-0" onClick={() => setMobileMenuOpen(false)}>
-            <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">
+            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
               {currentProject.title[0]}
             </div>
           </Link>
@@ -497,7 +498,7 @@ export default function ProjectLayout({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 bg-gradient-to-br from-brand-500 to-orange-500 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+            <div className="w-6 h-6 bg-brand-600 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0">
               {currentProject.title[0]}
             </div>
             <span className="text-sm font-medium text-white truncate">{pageLabel}</span>

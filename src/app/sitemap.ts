@@ -9,18 +9,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${BASE_URL}/dashboard`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${BASE_URL}/pro`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/community`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE_URL}/community/showcase`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE_URL}/community/challenges`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
     { url: `${BASE_URL}/community/free-scripts`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
-    { url: `${BASE_URL}/community/chat`, lastModified: now, changeFrequency: 'hourly', priority: 0.5 },
     { url: `${BASE_URL}/community/share`, lastModified: now, changeFrequency: 'daily', priority: 0.6 },
-    { url: `${BASE_URL}/auth/login`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${BASE_URL}/auth/register`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/support`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/trailer`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${BASE_URL}/sitemap-visual`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
     // Legal pages
     { url: `${BASE_URL}/legal`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/legal/terms`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
@@ -81,6 +79,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {}
 
+  // Blog posts
+  let blogPages: MetadataRoute.Sitemap = [];
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data: posts } = await supabase
+      .from('blog_posts')
+      .select('slug, updated_at')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(500);
+
+    if (posts) {
+      blogPages = [
+        { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 },
+        ...posts.map(p => ({
+          url: `${BASE_URL}/blog/${p.slug}`,
+          lastModified: p.updated_at,
+          changeFrequency: 'weekly' as const,
+          priority: 0.6,
+        })),
+      ];
+    }
+  } catch {}
+
   // Legal blog posts
   let legalBlogPages: MetadataRoute.Sitemap = [];
   try {
@@ -102,5 +124,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {}
 
-  return [...staticPages, ...showcasePages, ...profilePages, ...legalBlogPages];
+  return [...staticPages, ...showcasePages, ...profilePages, ...blogPages, ...legalBlogPages];
 }

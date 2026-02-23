@@ -57,11 +57,11 @@ const defaultConfig: ExportConfig = {
 };
 
 const FORMATS: { id: ExportFormat; label: string; icon: string; desc: string }[] = [
-  { id: 'pdf', label: 'PDF', icon: '📄', desc: 'Industry standard, print-ready' },
-  { id: 'docx', label: 'DOCX', icon: '📝', desc: 'Microsoft Word, editable' },
-  { id: 'fountain', label: 'Fountain', icon: '⛲', desc: 'Plain text markup format' },
-  { id: 'html', label: 'HTML', icon: '🌐', desc: 'Web-ready, embeddable' },
-  { id: 'fdx', label: 'FDX', icon: '🎬', desc: 'Final Draft compatible' },
+  { id: 'pdf', label: 'PDF', icon: 'PDF', desc: 'Industry standard, print-ready' },
+  { id: 'docx', label: 'DOCX', icon: 'DOC', desc: 'Microsoft Word, editable' },
+  { id: 'fountain', label: 'Fountain', icon: '.FTN', desc: 'Plain text markup format' },
+  { id: 'html', label: 'HTML', icon: 'HTML', desc: 'Web-ready, embeddable' },
+  { id: 'fdx', label: 'FDX', icon: 'FDX', desc: 'Final Draft compatible' },
 ];
 
 const REVISION_COLORS = [
@@ -83,6 +83,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
   const { currentProject } = useProjectStore();
   const [scripts, setScripts] = useState<any[]>([]);
   const [selectedScript, setSelectedScript] = useState<string>('');
+  const [elements, setElements] = useState<Record<string, any[]>>({});
   const [config, setConfig] = useState<ExportConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -107,13 +108,34 @@ export default function ExportPage({ params }: { params: { id: string } }) {
     setScripts(scr);
     if (scr.length > 0) setSelectedScript(scr[0].id);
 
+    // Fetch actual script_elements for each script (the real content source)
+    const elemsByScript: Record<string, any[]> = {};
+    for (const s of scr) {
+      const { data: elems } = await supabase
+        .from('script_elements')
+        .select('element_type, content, sort_order, scene_number, revision_color, is_revised, is_omitted')
+        .eq('script_id', s.id)
+        .order('sort_order');
+      elemsByScript[s.id] = (elems || []).filter((e: any) => !e.is_omitted).map((e: any) => ({
+        type: e.element_type,
+        text: e.content,
+        scene_number: e.scene_number,
+        revision_color: e.revision_color,
+        is_revised: e.is_revised,
+      }));
+    }
+    setElements(elemsByScript);
+
     // Hydrate cover info from project branding if available
     if (currentProject?.custom_branding) {
+      const b = currentProject.custom_branding as Record<string, any>;
       setConfig(prev => ({
         ...prev,
-        coverLogoUrl: currentProject.custom_branding?.logo_url || '',
-        coverCompanyName: currentProject.custom_branding?.company_name || '',
-        watermarkText: currentProject.custom_branding?.watermark || 'CONFIDENTIAL',
+        coverLogoUrl: b.logo_url || '',
+        coverCompanyName: b.company_name || '',
+        watermarkText: b.watermark || 'CONFIDENTIAL',
+        watermarkEnabled: !!b.watermark,
+        coverSubtitle: b.cover_subtitle || '',
       }));
     }
     setLoading(false);
@@ -127,22 +149,63 @@ export default function ExportPage({ params }: { params: { id: string } }) {
         const script = scripts.find(s => s.id === selectedScript);
         if (!script) continue;
 
+        // Use script_elements (the actual content), falling back to scripts.content
+        const scriptElements = elements[selectedScript] || [];
+        const content = scriptElements.length > 0
+          ? scriptElements
+          : (Array.isArray(script.content) ? script.content : []);
+
+        if (content.length === 0) {
+          toast('No script content to export. Write your script first.', 'warning');
+          setExporting(false);
+          return;
+        }
+
+        // Apply branding from custom_branding if available
+        const branding = currentProject?.custom_branding as Record<string, any> | null;
+        const appliedConfig = { ...config, format: fmt };
+        if (branding) {
+          if (!appliedConfig.coverCompanyName && branding.company_name) appliedConfig.coverCompanyName = branding.company_name;
+          if (!appliedConfig.coverLogoUrl && branding.logo_url) appliedConfig.coverLogoUrl = branding.logo_url;
+          if (!appliedConfig.watermarkText && branding.watermark) appliedConfig.watermarkText = branding.watermark;
+          if (!appliedConfig.coverSubtitle && branding.cover_subtitle) appliedConfig.coverSubtitle = branding.cover_subtitle;
+        }
+
         const exportData = {
           project_name: currentProject?.title || 'Untitled',
           script_title: script.title,
-          content: script.content,
+          content,
           format: fmt,
-          config: { ...config, format: fmt },
+          config: appliedConfig,
+          fontFamily: branding?.font_family || 'Courier New',
+          coverTitle: branding?.cover_title || '',
+          watermarkOpacity: branding?.watermark_opacity ?? 6,
+          headerTemplate: branding?.header_template || 'minimal',
+          primaryColor: branding?.primary_color || '#3B82F6',
+          secondaryColor: branding?.secondary_color || '#F59E0B',
         };
 
         if (fmt === 'pdf') {
-          // PDF: open print-ready page in new window
+          // PDF: generate HTML and open in a new tab for printing
           const html = generateScreenplayHTML(exportData);
-          const win = window.open('', '_blank');
+          const blob = new Blob([html], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          const win = window.open(url, '_blank');
           if (win) {
-            win.document.write(html);
-            win.document.close();
-            setTimeout(() => win.print(), 500);
+            win.onload = () => {
+              setTimeout(() => {
+                win.print();
+                URL.revokeObjectURL(url);
+              }, 300);
+            };
+          } else {
+            // Fallback: download as HTML if popup blocked
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${script.title || 'script'}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast('Popup blocked — downloaded as HTML instead. Open the file and print to PDF.', 'warning');
           }
         } else {
           // All other formats: download as blob
@@ -167,10 +230,25 @@ export default function ExportPage({ params }: { params: { id: string } }) {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
-  if (!hasAdvancedExports || !isPro) return null;
+  const hasProAccess = isPro || currentProject?.pro_enabled === true;
+
+  if (!hasProAccess) {
+    return (
+      <div className="p-6 flex items-center justify-center h-full">
+        <Card className="max-w-md p-8 text-center">
+          <div className="text-4xl mb-4">
+            <svg className="w-12 h-12 mx-auto text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          </div>
+          <h2 className="text-lg font-semibold text-white mb-2">Advanced Export</h2>
+          <p className="text-sm text-surface-400 mb-4">Export your screenplay in PDF, DOCX, Fountain, HTML, and FDX formats with custom branding and watermarks.</p>
+          <Badge variant="warning">Pro Feature</Badge>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-3 sm:p-4 md:p-8 max-w-5xl">
+    <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
       <ToastContainer />
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -508,9 +586,11 @@ export default function ExportPage({ params }: { params: { id: string } }) {
 // ── Screenplay HTML builder (shared between PDF & HTML export) ──
 
 function generateScreenplayHTML(data: any): string {
-  const { content, config: cfg } = data;
+  const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, secondaryColor } = data;
   const elements = Array.isArray(content) ? content : [];
   let sceneNum = 0;
+  const font = fontFamily || 'Courier New';
+  const wmOpacity = (watermarkOpacity ?? 6) / 100;
 
   const bodyParts: string[] = [];
 
@@ -519,11 +599,25 @@ function generateScreenplayHTML(data: any): string {
     bodyParts.push('<div class="cover-page">');
     if (cfg.coverLogoUrl) bodyParts.push(`<img src="${cfg.coverLogoUrl}" alt="" style="max-height:60px;margin-bottom:20px;" />`);
     if (cfg.coverCompanyName) bodyParts.push(`<div class="cover-company">${esc(cfg.coverCompanyName)}</div>`);
-    bodyParts.push(`<h1 class="cover-title">${esc(data.script_title || data.project_name)}</h1>`);
+    const title = coverTitle || cfg.coverTitle || data.script_title || data.project_name;
+    bodyParts.push(`<h1 class="cover-title">${esc(title)}</h1>`);
     if (cfg.coverSubtitle) bodyParts.push(`<div class="cover-subtitle">${esc(cfg.coverSubtitle)}</div>`);
     if (cfg.draftLabel) bodyParts.push(`<div class="cover-draft">${esc(cfg.draftLabel)}</div>`);
     if (cfg.contactInfo) bodyParts.push(`<div class="cover-contact">${esc(cfg.contactInfo)}</div>`);
     bodyParts.push('</div><div style="page-break-after:always"></div>');
+  }
+
+  // Header based on template
+  const hdrTemplate = headerTemplate || 'minimal';
+  if (hdrTemplate === 'classic' || hdrTemplate === 'branded') {
+    bodyParts.push('<div class="page-header">');
+    if (hdrTemplate === 'branded') {
+      if (cfg.coverLogoUrl) bodyParts.push(`<img src="${cfg.coverLogoUrl}" alt="" style="max-height:20px;vertical-align:middle;margin-right:8px;" />`);
+      if (cfg.coverCompanyName) bodyParts.push(`<span class="header-company">${esc(cfg.coverCompanyName)}</span>`);
+    }
+    if (cfg.draftLabel) bodyParts.push(`<span class="header-draft">${esc(cfg.draftLabel)}</span>`);
+    bodyParts.push(`<span class="header-date">${new Date().toLocaleDateString()}</span>`);
+    bodyParts.push('</div>');
   }
 
   // Script body
@@ -548,14 +642,16 @@ function generateScreenplayHTML(data: any): string {
   }
 
   const watermarkCSS = cfg.watermarkEnabled
-    ? `body::after{content:"${cfg.watermarkText}";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80pt;color:rgba(200,0,0,0.06);pointer-events:none;z-index:9999;white-space:nowrap;}`
+    ? `body::after{content:"${cfg.watermarkText}";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80pt;color:rgba(200,0,0,${wmOpacity});pointer-events:none;z-index:9999;white-space:nowrap;}`
     : '';
+
+  const accentColor = primaryColor || '#3B82F6';
 
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${esc(data.script_title || data.project_name)}</title>
 <style>
 @page{size:letter;margin:1in;}
-body{font-family:'Courier New',Courier,monospace;font-size:${cfg.fontSize}pt;line-height:1.5;color:#111;max-width:7.5in;margin:0 auto;padding:40px 20px;}
+body{font-family:'${font}',Courier,monospace;font-size:${cfg.fontSize}pt;line-height:1.5;color:#111;max-width:7.5in;margin:0 auto;padding:40px 20px;}
 ${watermarkCSS}
 .cover-page{text-align:center;padding-top:3in;}
 .cover-company{font-size:14pt;color:#555;margin-bottom:12px;}
@@ -563,14 +659,18 @@ ${watermarkCSS}
 .cover-subtitle{font-size:12pt;color:#555;margin-bottom:8px;}
 .cover-draft{font-size:10pt;color:#888;margin-top:24px;}
 .cover-contact{font-size:10pt;color:#888;margin-top:48px;white-space:pre-line;}
-.scene-heading{font-weight:bold;text-transform:uppercase;margin-top:24px;margin-bottom:12px;}
-.scene-num{margin-right:12px;color:#888;}
+.page-header{display:flex;align-items:center;justify-content:space-between;font-size:8pt;color:#888;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:24px;}
+.header-company{font-weight:bold;color:#555;}
+.header-draft{margin-left:auto;margin-right:12px;}
+.header-date{color:#aaa;}
+.scene-heading{font-weight:bold;text-transform:uppercase;margin-top:24px;margin-bottom:12px;border-bottom:1px solid ${accentColor}20;padding-bottom:4px;}
+.scene-num{margin-right:12px;color:${accentColor};}
 .action{margin:6px 0;}
 .character{text-align:center;text-transform:uppercase;font-weight:bold;margin-top:18px;margin-bottom:0;padding-left:2in;}
 .dialogue{text-align:left;margin:0;padding-left:1.5in;padding-right:1.5in;}
 .parenthetical{text-align:left;padding-left:1.8in;padding-right:1.8in;font-style:italic;color:#555;margin:0;}
 .transition{text-align:right;text-transform:uppercase;margin:18px 0;}
-@media print{body{max-width:none;padding:0;margin:0;}}
+@media print{body{max-width:none;padding:0;margin:0;}.page-header{position:running(header);}}
 </style></head>
 <body>${bodyParts.join('\n')}</body></html>`;
 }

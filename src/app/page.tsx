@@ -9,12 +9,8 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen bg-surface-950 relative overflow-hidden">
-      {/* Background effects — layered glows */}
+      {/* Subtle grid pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-60 -right-60 w-[500px] h-[500px] bg-brand-600/8 rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 -left-60 w-[500px] h-[500px] bg-brand-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-20 right-1/4 w-[700px] h-[700px] bg-orange-500/4 rounded-full blur-[150px]" />
-        {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px]" />
       </div>
 
@@ -31,8 +27,8 @@ export default async function LandingPage() {
       {/* Nav */}
       <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20">
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
             </svg>
           </div>
@@ -71,31 +67,29 @@ export default async function LandingPage() {
       {/* Hero */}
       <main className="relative z-10 max-w-7xl mx-auto px-8 pt-16 pb-32">
         <div className="text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-600/10 border border-brand-600/20 text-brand-400 text-sm font-medium mb-8 backdrop-blur-sm">
-            <span className="w-2 h-2 bg-brand-500 rounded-full animate-pulse-subtle" />
-            Professional Film Production Suite
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-900 border border-surface-800 text-surface-300 text-sm font-medium mb-8">
+            <span className="w-1.5 h-1.5 bg-brand-500 rounded-full" />
+            Open-source screenwriting suite
           </div>
 
           <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.9]">
-            <span className="text-white">From script</span>
+            <span className="text-white">Write.</span>
             <br />
-            <span className="text-white">to </span>
-            <span className="gradient-text">screen.</span>
+            <span className="text-white">Plan. </span>
+            <span className="text-brand-400">Produce.</span>
           </h1>
 
           <p className="mt-8 text-lg md:text-xl text-surface-400 max-w-2xl mx-auto leading-relaxed">
-            Write screenplays with industry-standard formatting, break down scenes,
-            plan shots, manage budgets, schedule production — all in one place.
-            Free and open. No paywalls. No limits.
+            Screenplay Studio is a free, all-in-one workspace for screenwriters and
+            filmmakers. Format scripts, break down scenes, plan shots, track budgets
+            and schedules — no account limits, no paywalls.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href={isLoggedIn ? '/dashboard' : '/auth/register'}
-              className="group relative px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 rounded-xl transition-all shadow-xl shadow-brand-600/20 hover:shadow-brand-500/30 hover:-translate-y-0.5"
-            >
-              <span className="relative z-10">{isLoggedIn ? 'Go to Dashboard' : 'Start Writing — Free'}</span>
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-brand-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
+              className="px-8 py-4 text-base font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors">
+              <span>{isLoggedIn ? 'Go to Dashboard' : 'Start Writing — Free'}</span>
             </Link>
             <Link
               href="#features"
@@ -108,7 +102,7 @@ export default async function LandingPage() {
           {/* Tool badges */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
             {['Script Editor', 'Scene Breakdown', 'Shot Lists', 'Scheduling', 'Budget', 'Team', 'Characters', 'Locations'].map((t) => (
-              <span key={t} className="px-3 py-1.5 text-[11px] font-medium text-surface-400 bg-surface-900/60 border border-surface-800 rounded-full backdrop-blur-sm">
+              <span key={t} className="px-3 py-1.5 text-[11px] font-medium text-surface-400 bg-surface-900 border border-surface-800 rounded-full">
                 {t}
               </span>
             ))}
@@ -118,11 +112,9 @@ export default async function LandingPage() {
         {/* Script Preview Mock — floating editor */}
         <div className="mt-20 relative">
           <div className="absolute inset-0 bg-gradient-to-t from-surface-950 via-transparent to-transparent z-10 pointer-events-none" />
-          {/* Ambient glow behind the editor */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-brand-500/5 rounded-full blur-[100px] pointer-events-none" />
-          <div className="max-w-4xl mx-auto rounded-2xl border border-surface-700/50 bg-surface-900/90 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
+          <div className="max-w-4xl mx-auto rounded-2xl border border-surface-700/50 bg-surface-900 overflow-hidden">
             {/* Window chrome */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-surface-800/70 bg-surface-900/50">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-surface-800/70 bg-surface-900">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-500/80" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
@@ -183,8 +175,8 @@ export default async function LandingPage() {
         {/* Features */}
         <div id="features" className="mt-40">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white">Everything for Production</h2>
-            <p className="mt-4 text-lg text-surface-400">From first draft to final cut — all the tools you need</p>
+            <h2 className="text-4xl font-bold text-white">The full production toolkit</h2>
+            <p className="mt-4 text-lg text-surface-400">Everything screenwriters and filmmakers need, in one place</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -192,69 +184,73 @@ export default async function LandingPage() {
               {
                 title: 'Screenplay Editor',
                 desc: 'Industry-standard Courier Prime formatting. Scene headings, action, dialogue, parentheticals, transitions — all auto-formatted as you type.',
-                icon: '✍️',
+                iconPath: 'M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10',
               },
               {
                 title: 'Real-time Collaboration',
                 desc: 'Multiple writers working simultaneously. See cursors, track presence, and collaborate with inline comments and suggestions.',
-                icon: '👥',
+                iconPath: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
               },
               {
                 title: 'Character Bible',
                 desc: 'Deep character profiles with backstory, arcs, relationships, personality traits, voice notes, and casting information.',
-                icon: '🎭',
+                iconPath: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z',
               },
               {
                 title: 'Location Scouting',
                 desc: 'Track locations with photos, contacts, permits, availability, cost per day, parking, power, and sound considerations.',
-                icon: '📍',
+                iconPath: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z',
               },
               {
                 title: 'Scene Breakdown',
                 desc: 'Full breakdown sheets with props, costumes, special effects, stunts, vehicles, music cues, and VFX requirements.',
-                icon: '🎬',
+                iconPath: 'M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4',
               },
               {
                 title: 'Shot List & Storyboard',
                 desc: 'Plan every shot with type, movement, lens, lighting, and sound notes. Attach storyboard frames and reference images.',
-                icon: '📸',
+                iconPath: 'M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316zM16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z',
               },
               {
                 title: 'Production Schedule',
                 desc: 'Calendar-based scheduling with shooting days, rehearsals, location scouts, call/wrap times, and weather backup plans.',
-                icon: '📅',
+                iconPath: 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5',
               },
               {
                 title: 'Ideas Board',
-                desc: 'Kanban-style brainstorming board. Capture sparks of inspiration, develop them, and organize by category and priority.',
-                icon: '💡',
+                desc: 'Kanban-style brainstorming board. Capture ideas, develop them, organize by category and priority.',
+                iconPath: 'M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18',
               },
               {
                 title: 'Budget Tracking',
                 desc: 'Full production budget with categories, estimated vs actual costs, vendor tracking, and payment status.',
-                icon: '💰',
+                iconPath: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
               },
               {
                 title: 'Revision Tracking',
                 desc: 'Industry-standard colored revision pages. Track every change with full revision history and snapshot comparisons.',
-                icon: '📝',
+                iconPath: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z',
               },
               {
                 title: 'Team Management',
                 desc: 'Invite crew members with role-based access. Writers, editors, viewers — everyone sees exactly what they need.',
-                icon: '🎪',
+                iconPath: 'M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z',
               },
               {
                 title: 'Export & Print',
                 desc: 'Export to industry-standard PDF format. Print-ready screenplay pages with proper margins and pagination.',
-                icon: '📤',
+                iconPath: 'M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5',
               },
             ].map((feature) => (
               <div
                 key={feature.title}
-                className="group rounded-2xl border border-surface-800 bg-surface-900/30 p-6 hover:border-surface-600 hover:bg-surface-800/30 transition-all duration-300"
+                className="group rounded-2xl border border-surface-800 bg-surface-900/30 p-6 hover:border-surface-600 hover:bg-surface-800/30 transition-all duration-200"
               >
-                <div className="text-3xl mb-4">{feature.icon}</div>
+                <div className="w-10 h-10 rounded-lg bg-surface-800 flex items-center justify-center mb-4 text-surface-300 group-hover:text-white transition-colors">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={feature.iconPath} />
+                  </svg>
+                </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
                 <p className="text-sm text-surface-400 leading-relaxed">{feature.desc}</p>
               </div>
@@ -264,14 +260,14 @@ export default async function LandingPage() {
 
         {/* CTA */}
         <div className="mt-40 text-center">
-          <div className="max-w-2xl mx-auto rounded-3xl border border-surface-700 bg-gradient-to-br from-surface-900 to-surface-800 p-12 glow-brand">
-            <h2 className="text-3xl font-bold text-white">{isLoggedIn ? 'Welcome back!' : 'Ready to bring your story to life?'}</h2>
+          <div className="max-w-2xl mx-auto rounded-3xl border border-surface-700 bg-surface-900 p-12">
+            <h2 className="text-3xl font-bold text-white">{isLoggedIn ? 'Welcome back!' : 'Ready to start writing?'}</h2>
             <p className="mt-4 text-surface-400">
-              {isLoggedIn ? 'Continue working on your projects.' : 'Join filmmakers using Screenplay Studio to write, plan, and produce.'}
+              {isLoggedIn ? 'Continue working on your projects.' : 'Join writers and filmmakers already using Screenplay Studio.'}
             </p>
             <Link
               href={isLoggedIn ? '/dashboard' : '/auth/register'}
-              className="inline-block mt-8 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-500 rounded-xl shadow-xl shadow-brand-600/20 hover:shadow-brand-500/30 transition-all"
+              className="inline-block mt-8 px-8 py-4 text-base font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors"
             >
               {isLoggedIn ? 'Go to Dashboard' : 'Create Your First Project'}
             </Link>
@@ -283,9 +279,9 @@ export default async function LandingPage() {
       <section className="relative z-10 border-t border-surface-800 py-16 px-8">
         <div className="max-w-2xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600/10 border border-brand-600/20 mb-6">
-            <span className="text-2xl">&#x2764;&#xFE0F;</span>
+            <svg className="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="currentColor"><path d="M7.5 7.5C4.5 7.5 3 9.5 3 12c0 5 8 9.5 9 10 1-.5 9-5 9-10 0-2.5-1.5-4.5-4.5-4.5-1.8 0-3 1-3.5 1.5C12.5 8.5 11.3 7.5 9.5 7.5h-2z" /></svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Made with love by a solo developer</h2>
+          <h2 className="text-2xl font-bold text-white mb-3">Built by a solo developer</h2>
           <p className="text-surface-400 leading-relaxed mb-2">
             Screenplay Studio is self-funded, built, and maintained by a single developer.
             The platform is completely free to use — no subscriptions, no paywalls, no ads.
@@ -299,7 +295,7 @@ export default async function LandingPage() {
             href="https://ko-fi.com/northemdevelopment"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-[#FF5E5B] hover:bg-[#e54e4b] text-white font-semibold text-sm transition-colors shadow-lg shadow-[#FF5E5B]/20"
+            className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-[#FF5E5B] hover:bg-[#e54e4b] text-white font-semibold text-sm transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M7.5 7.5C4.5 7.5 3 9.5 3 12c0 5 8 9.5 9 10 1-.5 9-5 9-10 0-2.5-1.5-4.5-4.5-4.5-1.8 0-3 1-3.5 1.5C12.5 8.5 11.3 7.5 9.5 7.5h-2z" /></svg>
             Support on Ko-fi

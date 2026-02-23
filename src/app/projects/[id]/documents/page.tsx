@@ -3,10 +3,11 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Input, Modal, Badge, LoadingSpinner } from '@/components/ui';
+import { Button, Input, Modal, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { ProjectDocument, ProjectFolder, DocumentType } from '@/lib/types';
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_TYPE_ICONS } from '@/lib/types';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 export default function DocumentsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -26,6 +27,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   const currentDocRef = useRef<string | null>(null);
   const localEditPendingRef = useRef(false);
   const [remoteEditors, setRemoteEditors] = useState<{ userId: string; docId: string; name: string }[]>([]);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   // Keep ref in sync with currentDoc
   useEffect(() => { currentDocRef.current = currentDoc?.id || null; }, [currentDoc?.id]);
@@ -234,7 +236,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
 
   // Delete document
   const handleDeleteDoc = async (docId: string) => {
-    if (!confirm('Delete this document? This cannot be undone.')) return;
+    const ok = await confirm({ message: 'Delete this document? This cannot be undone.', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('project_documents').delete().eq('id', docId);
     setDocuments(documents.filter((d) => d.id !== docId));
@@ -243,7 +245,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
 
   // Delete folder
   const handleDeleteFolder = async (folderId: string) => {
-    if (!confirm('Delete this folder and all its contents?')) return;
+    const ok = await confirm({ message: 'Delete this folder and all its contents?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('project_folders').delete().eq('id', folderId);
     setFolders(folders.filter((f) => f.id !== folderId));
@@ -286,7 +288,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
 </body>
 </html>`;
     const win = window.open('', '_blank');
-    if (!win) { alert('Please allow popups to export PDF.'); return; }
+    if (!win) { toast.warning('Please allow popups to export PDF.'); return; }
     win.document.write(html);
     win.document.close();
   }, []);
@@ -402,10 +404,10 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   currentDoc?.id === doc.id ? 'bg-brand-600/10 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
                 )}
               >
-                <span className="shrink-0">{DOCUMENT_TYPE_ICONS[doc.doc_type]}</span>
+                <span className="shrink-0 text-[9px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[doc.doc_type]}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
-                    {doc.is_pinned && <span className="text-[8px]">📌</span>}
+                    {doc.is_pinned && <span className="text-[8px]">PIN</span>}
                     <span className="truncate">{doc.title}</span>
                   </div>
                   <span className="text-[10px] text-surface-600">
@@ -552,6 +554,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
         onClose={() => setShowNewFolder(false)}
         onCreate={handleCreateFolder}
       />
+      <ConfirmDialog />
     </div>
   );
 }
@@ -593,7 +596,7 @@ function NewDocumentModal({ isOpen, onClose, onCreate }: {
                     : 'border-surface-700 text-surface-400 hover:border-surface-600 hover:text-white'
                 )}
               >
-                <span>{DOCUMENT_TYPE_ICONS[key]}</span>
+                <span className="text-[10px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[key]}</span>
                 <span>{label}</span>
               </button>
             ))}

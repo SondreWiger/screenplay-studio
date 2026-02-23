@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Scene, Location, Character, SceneLocationType, SceneTime, ScriptElement } from '@/lib/types';
 
 // Parse a scene heading like "INT. COFFEE SHOP - NIGHT" into components
@@ -34,6 +35,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -129,7 +131,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
 
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
-    if (!confirm('Delete this scene?')) return;
+    const ok = await confirm({ message: 'Delete this scene?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('scenes').delete().eq('id', id);
     setScenes(scenes.filter((s) => s.id !== id));
@@ -248,6 +250,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
         existingScenes={scenes}
         onImported={() => { fetchData(); setShowImport(false); }}
       />
+      <ConfirmDialog />
     </div>
   );
 }
@@ -511,7 +514,7 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
     if (scenesToCreate.length > 0) {
       const { error } = await supabase.from('scenes').insert(scenesToCreate);
       if (error) {
-        alert('Import failed: ' + error.message);
+        toast.error('Import failed: ' + error.message);
         setImporting(false);
         return;
       }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore } from '@/lib/stores';
-import { Card, Badge, Progress, Button } from '@/components/ui';
+import { Card, Badge, Progress, Button, LoadingPage } from '@/components/ui';
 import { formatDate, formatCurrency, timeAgo } from '@/lib/utils';
 import type { Script, Character, Location, Scene, Shot, Idea, BudgetItem, ScheduleEvent } from '@/lib/types';
 import Link from 'next/link';
@@ -117,7 +117,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     }
   };
 
-  if (!currentProject) return null;
+  if (!currentProject) return <LoadingPage />;
 
   // Duration display logic
   const estimatedMinutes = stats.totalDurationMinutes || Math.round(stats.totalPageCount * 1); // ~1 min per page industry standard

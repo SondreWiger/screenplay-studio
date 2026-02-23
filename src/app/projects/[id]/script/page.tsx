@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, memo, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Badge, Modal, Input, Select, LoadingSpinner, Avatar, Textarea } from '@/components/ui';
+import { Button, Badge, Modal, Input, Select, LoadingSpinner, Avatar, Textarea, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
 
@@ -780,7 +780,7 @@ ${pageHTML}
 
     const win = window.open('', '_blank');
     if (!win) {
-      alert('Please allow popups to export PDF.');
+      toast.warning('Please allow popups to export PDF.');
       return;
     }
     win.document.write(html);
@@ -815,7 +815,7 @@ ${pageHTML}
         }
 
         if (!currentScript) {
-          alert('Please select or create a script first.');
+          toast.warning('Please select or create a script first.');
           return;
         }
 
@@ -863,9 +863,9 @@ ${pageHTML}
         // Refresh
         fetchElements(currentScript.id);
         setShowImportExport(false);
-        alert(`Successfully imported ${count} elements from ${file.name}!`);
+        toast.success(`Successfully imported ${count} elements from ${file.name}!`);
       } catch (err: any) {
-        alert('Import error: ' + (err.message || 'Unknown error'));
+        toast.error('Import error: ' + (err.message || 'Unknown error'));
       }
     };
     input.click();

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Input, Textarea, LoadingPage } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { AppHeader } from '@/components/AppHeader';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -110,48 +110,48 @@ export default function CompanyDashboard() {
     setCompany(co);
     setSettingsForm(co);
 
-    const { data: mems } = await supabase.from('company_members')
-      .select('*, profile:profiles!user_id(*)')
-      .eq('company_id', co.id)
-      .order('role');
-    setMembers(mems || []);
+    // Fetch all company data in parallel
+    const [memsRes, tsRes, psRes, invsRes, bPostsRes, actsRes] = await Promise.all([
+      supabase.from('company_members')
+        .select('*, profile:profiles!user_id(*)')
+        .eq('company_id', co.id)
+        .order('role'),
+      supabase.from('company_teams')
+        .select('*')
+        .eq('company_id', co.id)
+        .order('name'),
+      supabase.from('projects')
+        .select('*')
+        .eq('company_id', co.id)
+        .order('updated_at', { ascending: false }),
+      supabase.from('company_invitations')
+        .select('*')
+        .eq('company_id', co.id)
+        .eq('accepted', false)
+        .order('created_at', { ascending: false }),
+      supabase.from('company_blog_posts')
+        .select('*, author:profiles!author_id(*)')
+        .eq('company_id', co.id)
+        .order('pinned', { ascending: false })
+        .order('created_at', { ascending: false }),
+      supabase.from('company_activity_log')
+        .select('*, profile:profiles(*)')
+        .eq('company_id', co.id)
+        .order('created_at', { ascending: false })
+        .limit(50),
+    ]);
 
-    const me = (mems || []).find((m: CompanyMember) => m.user_id === user.id);
+    const mems = memsRes.data || [];
+    setMembers(mems);
+
+    const me = mems.find((m: CompanyMember) => m.user_id === user.id);
     setMyRole(me?.role || (co.owner_id === user.id ? 'owner' : null));
 
-    const { data: ts } = await supabase.from('company_teams')
-      .select('*')
-      .eq('company_id', co.id)
-      .order('name');
-    setTeams(ts || []);
-
-    const { data: ps } = await supabase.from('projects')
-      .select('*')
-      .eq('company_id', co.id)
-      .order('updated_at', { ascending: false });
-    setProjects(ps || []);
-
-    const { data: invs } = await supabase.from('company_invitations')
-      .select('*')
-      .eq('company_id', co.id)
-      .eq('accepted', false)
-      .order('created_at', { ascending: false });
-    setInvitations(invs || []);
-
-    // Load blog posts
-    const { data: bPosts } = await supabase.from('company_blog_posts')
-      .select('*, author:profiles!author_id(*)')
-      .eq('company_id', co.id)
-      .order('pinned', { ascending: false })
-      .order('created_at', { ascending: false });
-    setBlogPosts(bPosts || []);
-
-    const { data: acts } = await supabase.from('company_activity_log')
-      .select('*, profile:profiles(*)')
-      .eq('company_id', co.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-    setActivity(acts || []);
+    setTeams(tsRes.data || []);
+    setProjects(psRes.data || []);
+    setInvitations(invsRes.data || []);
+    setBlogPosts(bPostsRes.data || []);
+    setActivity(actsRes.data || []);
 
     setLoading(false);
   }, [user]);
@@ -222,7 +222,7 @@ export default function CompanyDashboard() {
     });
     if (error) {
       console.error('Add to team error:', error.message);
-      alert(error.message.includes('duplicate') ? 'Already a team member' : `Error: ${error.message}`);
+      toast.error(error.message.includes('duplicate') ? 'Already a team member' : `Error: ${error.message}`);
     } else {
       await supabase.from('company_activity_log').insert({
         company_id: company.id, user_id: user!.id, action: 'added_team_member',

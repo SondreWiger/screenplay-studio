@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +9,8 @@ import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select, KeyboardShortcuts } from '@/components/ui';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
+import { GuidedTour } from '@/components/GuidedTour';
+import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
@@ -36,6 +38,18 @@ export default function DashboardPage() {
 
   // Initialise realtime notifications
   useNotifications(user?.id);
+
+  // Guided tour (triggered after onboarding via ?tour=1 query param)
+  const searchParams = useSearchParams();
+  const [showTour, setShowTour] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('tour') === '1') {
+      setShowTour(true);
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, [searchParams]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -193,12 +207,12 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-950">
+    <div className="min-h-screen bg-surface-950" id="main-content">
       {/* Top Bar */}
       <header className="sticky top-0 z-40 border-b border-surface-800 bg-surface-950/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-brand-600 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
               </svg>
@@ -631,6 +645,11 @@ export default function DashboardPage() {
       </div>
 
       <SupportButton />
+
+      {/* Guided Tour */}
+      {showTour && (
+        <GuidedTour onComplete={() => setShowTour(false)} />
+      )}
     </div>
   );
 }
@@ -747,7 +766,7 @@ function NewProjectModal({
                     : 'border-surface-700 bg-surface-800/50 hover:border-surface-600'
                 }`}
               >
-                <span className="text-xl">{opt.icon}</span>
+                <Icon name={opt.icon} size="md" className={scriptType === opt.value ? 'text-brand-400' : 'text-surface-400'} />
                 <h3 className={`mt-1.5 text-sm font-semibold ${scriptType === opt.value ? 'text-brand-400' : 'text-white'}`}>{opt.label}</h3>
                 <p className="mt-0.5 text-[10px] text-surface-500">{opt.description}</p>
               </button>
@@ -762,7 +781,8 @@ function NewProjectModal({
           <div className="flex items-center gap-2 mb-2">
             <button type="button" onClick={() => setStep(0)} className="text-xs text-surface-400 hover:text-white transition-colors flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              {SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.icon} {SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.label}
+              <Icon name={SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.icon || 'film'} size="sm" className="text-surface-400" />
+              {SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.label}
             </button>
           </div>
 

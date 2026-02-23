@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Location, SceneLocationType } from '@/lib/types';
 
 // Dynamic import with SSR disabled for Leaflet
@@ -27,6 +28,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -138,7 +140,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
 
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
-    if (!confirm('Delete this location?')) return;
+    const ok = await confirm({ message: 'Delete this location?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('locations').delete().eq('id', id);
     setLocations(locations.filter((l) => l.id !== id));
@@ -301,6 +303,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
         onDelete={handleDelete}
         canEdit={canEdit}
       />
+      <ConfirmDialog />
     </div>
   );
 }

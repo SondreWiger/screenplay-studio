@@ -160,7 +160,7 @@ export default function TrailerPage() {
           <div className={`col-span-2 rounded-2xl border border-surface-800 bg-surface-900/60 p-6 shadow-2xl trailer-slide-in ${stage === 0 ? 'animate-scale-in' : ''}`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">SS</div>
+                <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">SS</div>
                 <div className="text-sm text-surface-300 font-medium">Live Editor Preview</div>
               </div>
               <div className="text-[11px] text-surface-500">simulated • {formatTime(new Date().toISOString())}</div>

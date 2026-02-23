@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { BudgetItem, BudgetCategory } from '@/lib/types';
 
 // ============================================================
@@ -12,20 +13,20 @@ import type { BudgetItem, BudgetCategory } from '@/lib/types';
 // ============================================================
 
 const CATEGORIES: { value: BudgetCategory; label: string; icon: string; color: string }[] = [
-  { value: 'above_the_line', label: 'Above the Line', icon: '🎬', color: '#f59e0b' },
-  { value: 'below_the_line', label: 'Below the Line', icon: '🎥', color: '#3b82f6' },
-  { value: 'talent', label: 'Talent / Cast', icon: '🎭', color: '#8b5cf6' },
-  { value: 'production', label: 'Production', icon: '🎞️', color: '#10b981' },
-  { value: 'equipment', label: 'Equipment', icon: '📷', color: '#6366f1' },
-  { value: 'locations', label: 'Locations', icon: '📍', color: '#ef4444' },
-  { value: 'props_costumes', label: 'Props & Costumes', icon: '👗', color: '#ec4899' },
-  { value: 'post_production', label: 'Post-Production', icon: '🖥️', color: '#14b8a6' },
-  { value: 'transportation', label: 'Transportation', icon: '🚐', color: '#f97316' },
-  { value: 'catering', label: 'Catering', icon: '🍽️', color: '#84cc16' },
-  { value: 'insurance', label: 'Insurance', icon: '🛡️', color: '#64748b' },
-  { value: 'marketing', label: 'Marketing', icon: '📣', color: '#d946ef' },
-  { value: 'contingency', label: 'Contingency', icon: '💰', color: '#eab308' },
-  { value: 'other', label: 'Other', icon: '📦', color: '#78716c' },
+  { value: 'above_the_line', label: 'Above the Line', icon: 'ATL', color: '#f59e0b' },
+  { value: 'below_the_line', label: 'Below the Line', icon: 'BTL', color: '#3b82f6' },
+  { value: 'talent', label: 'Talent / Cast', icon: 'TAL', color: '#8b5cf6' },
+  { value: 'production', label: 'Production', icon: 'PRD', color: '#10b981' },
+  { value: 'equipment', label: 'Equipment', icon: 'EQP', color: '#6366f1' },
+  { value: 'locations', label: 'Locations', icon: 'LOC', color: '#ef4444' },
+  { value: 'props_costumes', label: 'Props & Costumes', icon: 'P&C', color: '#ec4899' },
+  { value: 'post_production', label: 'Post-Production', icon: 'PST', color: '#14b8a6' },
+  { value: 'transportation', label: 'Transportation', icon: 'TRN', color: '#f97316' },
+  { value: 'catering', label: 'Catering', icon: 'CTR', color: '#84cc16' },
+  { value: 'insurance', label: 'Insurance', icon: 'INS', color: '#64748b' },
+  { value: 'marketing', label: 'Marketing', icon: 'MKT', color: '#d946ef' },
+  { value: 'contingency', label: 'Contingency', icon: 'CTG', color: '#eab308' },
+  { value: 'other', label: 'Other', icon: 'OTH', color: '#78716c' },
 ];
 
 const getCategoryMeta = (value: string) => CATEGORIES.find((c) => c.value === value) || CATEGORIES[CATEGORIES.length - 1];
@@ -752,6 +753,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [useUnitCost, setUseUnitCost] = useState(false);
+  const { confirm: confirmBudget, ConfirmDialog: BudgetConfirmDialog } = useConfirmDialog();
 
   useEffect(() => {
     if (item) {
@@ -1007,8 +1009,8 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
         <div className="flex gap-2">
           {canEdit && item && (
             <>
-              <Button variant="danger" size="sm" onClick={() => {
-                if (confirm('Delete this budget item?')) onDelete(item.id);
+              <Button variant="danger" size="sm" onClick={async () => {
+                const ok = await confirmBudget({ message: 'Delete this budget item?', variant: 'danger', confirmLabel: 'Delete' }); if (ok) onDelete(item.id);
               }}>Delete</Button>
               <button
                 onClick={() => { onDuplicate(item); onClose(); }}
@@ -1024,6 +1026,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
           {canEdit && <Button onClick={handleSave} loading={saving}>{item ? 'Save Changes' : form.is_income ? 'Add Income' : 'Add Expense'}</Button>}
         </div>
       </div>
+      <BudgetConfirmDialog />
     </Modal>
   );
 }

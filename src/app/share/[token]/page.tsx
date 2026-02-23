@@ -14,6 +14,11 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
   const [share, setShare] = useState<ExternalShare | null>(null);
   const [project, setProject] = useState<any>(null);
   const [scriptContent, setScriptContent] = useState<any[]>([]);
+  const [scriptElements, setScriptElements] = useState<any[]>([]);
+  const [shots, setShots] = useState<any[]>([]);
+  const [scenes, setScenes] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
+  const [characters, setCharacters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [passwordInput, setPasswordInput] = useState('');
@@ -93,16 +98,21 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
 
   const loadContent = async (shareData: ExternalShare, supabase: any) => {
     try {
-      // Increment view count (may fail for anon users without UPDATE policy — that's ok)
+      // Increment view count
       supabase.from('external_shares').update({
         view_count: (shareData.view_count || 0) + 1,
       }).eq('id', shareData.id).then(() => {});
 
-      // Use snapshot data stored at share creation time (no auth needed)
+      // Use snapshot data stored at share creation time
       if (shareData.content_snapshot) {
         const snap = shareData.content_snapshot as any;
         if (snap.project) setProject(snap.project);
         if (snap.scripts) setScriptContent(snap.scripts);
+        if (snap.script_elements) setScriptElements(snap.script_elements);
+        if (snap.shots) setShots(snap.shots);
+        if (snap.scenes) setScenes(snap.scenes);
+        if (snap.locations) setLocations(snap.locations);
+        if (snap.characters) setCharacters(snap.characters);
       }
     } catch (err) {
       console.error('Error loading content:', err);
@@ -186,7 +196,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
             {share?.branding?.logo_url ? (
               <img src={share.branding.logo_url} alt="" className="h-8 w-auto" />
             ) : (
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-orange-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">
+              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
                 SS
               </div>
             )}
@@ -235,55 +245,177 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
           </div>
         )}
 
-        {/* Script content */}
-        {scriptContent.length > 0 && (
+        {/* Script content — prefer script_elements over scripts.content */}
+        {(scriptElements.length > 0 || scriptContent.length > 0) && (
           <div className="space-y-6">
-            {scriptContent.map((script, idx) => (
-              <Card key={idx} className="p-6 sm:p-8">
-                {script.title && <h3 className="text-lg font-semibold text-white mb-4 pb-3 border-b border-surface-800">{script.title}</h3>}
+            {scriptElements.length > 0 ? (
+              <Card key="elements" className="p-6 sm:p-8">
                 <div className="screenplay-content space-y-2">
-                  {Array.isArray(script.content) ? (
-                    script.content.map((element: any, elIdx: number) => (
-                      <div
-                        key={elIdx}
-                        className={`script-element ${element.type || 'action'}`}
-                        data-element-type={element.type}
-                      >
-                        {element.type === 'scene_heading' && (
-                          <p className="font-bold text-white uppercase tracking-wide">{element.text}</p>
-                        )}
-                        {element.type === 'action' && (
-                          <p className="text-surface-300">{element.text}</p>
-                        )}
-                        {element.type === 'character' && (
-                          <p className="text-center font-semibold text-white uppercase mt-4">{element.text}</p>
-                        )}
-                        {element.type === 'dialogue' && (
-                          <p className="text-surface-300 mx-auto max-w-md text-center">{element.text}</p>
-                        )}
-                        {element.type === 'parenthetical' && (
-                          <p className="text-surface-500 italic mx-auto max-w-sm text-center">({element.text})</p>
-                        )}
-                        {element.type === 'transition' && (
-                          <p className="text-right text-surface-400 uppercase">{element.text}</p>
-                        )}
-                        {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && (
-                          <p className="text-surface-400">{element.text}</p>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-surface-400 whitespace-pre-wrap">{typeof script.content === 'string' ? script.content : JSON.stringify(script.content, null, 2)}</p>
-                  )}
+                  {scriptElements.map((element: any, elIdx: number) => (
+                    <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
+                      {element.type === 'scene_heading' && (
+                        <p className="font-bold text-white uppercase tracking-wide mt-6">{element.text}</p>
+                      )}
+                      {element.type === 'action' && (
+                        <p className="text-surface-300">{element.text}</p>
+                      )}
+                      {element.type === 'character' && (
+                        <p className="text-center font-semibold text-white uppercase mt-4">{element.text}</p>
+                      )}
+                      {element.type === 'dialogue' && (
+                        <p className="text-surface-300 mx-auto max-w-md text-center">{element.text}</p>
+                      )}
+                      {element.type === 'parenthetical' && (
+                        <p className="text-surface-500 italic mx-auto max-w-sm text-center">({element.text})</p>
+                      )}
+                      {element.type === 'transition' && (
+                        <p className="text-right text-surface-400 uppercase">{element.text}</p>
+                      )}
+                      {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && element.text && (
+                        <p className="text-surface-400">{element.text}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </Card>
-            ))}
+            ) : (
+              scriptContent.map((script, idx) => (
+                <Card key={idx} className="p-6 sm:p-8">
+                  {script.title && <h3 className="text-lg font-semibold text-white mb-4 pb-3 border-b border-surface-800">{script.title}</h3>}
+                  <div className="screenplay-content space-y-2">
+                    {Array.isArray(script.content) ? (
+                      script.content.map((element: any, elIdx: number) => (
+                        <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
+                          {element.type === 'scene_heading' && <p className="font-bold text-white uppercase tracking-wide">{element.text}</p>}
+                          {element.type === 'action' && <p className="text-surface-300">{element.text}</p>}
+                          {element.type === 'character' && <p className="text-center font-semibold text-white uppercase mt-4">{element.text}</p>}
+                          {element.type === 'dialogue' && <p className="text-surface-300 mx-auto max-w-md text-center">{element.text}</p>}
+                          {element.type === 'parenthetical' && <p className="text-surface-500 italic mx-auto max-w-sm text-center">({element.text})</p>}
+                          {element.type === 'transition' && <p className="text-right text-surface-400 uppercase">{element.text}</p>}
+                          {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && <p className="text-surface-400">{element.text}</p>}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-surface-400 whitespace-pre-wrap">{typeof script.content === 'string' ? script.content : JSON.stringify(script.content, null, 2)}</p>
+                    )}
+                  </div>
+                </Card>
+              ))
+            )}
           </div>
         )}
 
-        {scriptContent.length === 0 && share?.share_type !== 'script' && (
+        {/* Storyboard content */}
+        {shots.length > 0 && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-white">Storyboard</h3>
+            {(() => {
+              // Group shots by scene
+              const sceneMap = new Map<string, any>();
+              for (const s of scenes) sceneMap.set(s.id, s);
+              const grouped = new Map<string, any[]>();
+              for (const shot of shots) {
+                const key = shot.scene_id || 'unassigned';
+                if (!grouped.has(key)) grouped.set(key, []);
+                grouped.get(key)!.push(shot);
+              }
+              return Array.from(grouped.entries()).map(([sceneId, sceneShots]) => {
+                const scene = sceneMap.get(sceneId);
+                return (
+                  <Card key={sceneId} className="p-5">
+                    {scene && (
+                      <h4 className="text-sm font-semibold text-white mb-3">
+                        {scene.scene_heading || `Scene ${scene.scene_number}`}
+                      </h4>
+                    )}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {sceneShots.map((shot: any) => (
+                        <div key={shot.id} className="rounded-lg border border-surface-800 overflow-hidden">
+                          {shot.image_url ? (
+                            <img src={shot.image_url} alt={shot.description || ''} className="w-full aspect-video object-cover" />
+                          ) : (
+                            <div className="w-full aspect-video bg-surface-800 flex items-center justify-center text-surface-600 text-xs">
+                              No image
+                            </div>
+                          )}
+                          <div className="p-2">
+                            <p className="text-xs font-medium text-surface-300">
+                              {[shot.shot_type, shot.shot_size].filter(Boolean).join(' — ') || 'Shot'}
+                            </p>
+                            {shot.description && <p className="text-[11px] text-surface-500 mt-0.5 line-clamp-2">{shot.description}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                );
+              });
+            })()}
+          </div>
+        )}
+
+        {/* Locations / Moodboard content */}
+        {locations.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Locations</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {locations.map((loc: any) => (
+                <Card key={loc.id} className="p-4">
+                  <h4 className="text-sm font-semibold text-white">{loc.name}</h4>
+                  {loc.location_type && <p className="text-xs text-surface-500 mt-0.5">{loc.location_type}</p>}
+                  {loc.description && <p className="text-sm text-surface-400 mt-2">{loc.description}</p>}
+                  {loc.address && <p className="text-xs text-surface-500 mt-1">{loc.address}</p>}
+                  {loc.photos && loc.photos.length > 0 && (
+                    <div className="flex gap-2 mt-3 overflow-x-auto">
+                      {loc.photos.slice(0, 4).map((photo: string, i: number) => (
+                        <img key={i} src={photo} alt="" className="w-24 h-16 object-cover rounded" />
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Characters (full project share) */}
+        {characters.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Characters</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {characters.map((char: any) => (
+                <Card key={char.id} className="p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    {char.avatar_url ? (
+                      <img src={char.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center text-sm font-bold text-white">
+                        {char.name?.[0]?.toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="text-sm font-semibold text-white">{char.name}</h4>
+                      <div className="flex items-center gap-2">
+                        {char.is_main && <span className="text-[10px] text-amber-400 font-medium">Lead</span>}
+                        {char.age && <span className="text-[10px] text-surface-500">{char.age}</span>}
+                        {char.gender && <span className="text-[10px] text-surface-500">{char.gender}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  {char.description && <p className="text-sm text-surface-400 line-clamp-3">{char.description}</p>}
+                  {char.cast_actor && <p className="text-xs text-brand-400 mt-2">Actor: {char.cast_actor}</p>}
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* No content fallback */}
+        {scriptContent.length === 0 && scriptElements.length === 0 && shots.length === 0 && locations.length === 0 && characters.length === 0 && (
           <Card className="p-12 text-center">
-            <p className="text-surface-400">Content loading...</p>
+            <div className="text-4xl mb-4">📄</div>
+            <h3 className="text-lg font-semibold text-white mb-2">No content available</h3>
+            <p className="text-surface-400 text-sm">This share link doesn't contain any viewable content yet. The project owner may need to re-create the share link.</p>
           </Card>
         )}
 

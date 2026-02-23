@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Modal, Input, Badge, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { MoodBoardItem, MoodBoardItemType, MoodBoardSection, MoodBoardConnection } from '@/lib/types';
 
 // ============================================================
@@ -12,12 +13,12 @@ import type { MoodBoardItem, MoodBoardItemType, MoodBoardSection, MoodBoardConne
 // ============================================================
 
 const BOARD_SECTIONS: { value: MoodBoardSection; label: string; icon: string }[] = [
-  { value: 'general', label: 'General', icon: '🎨' },
-  { value: 'characters', label: 'Characters', icon: '👤' },
-  { value: 'locations', label: 'Locations', icon: '📍' },
-  { value: 'atmosphere', label: 'Atmosphere', icon: '🌙' },
-  { value: 'costumes', label: 'Costumes', icon: '👗' },
-  { value: 'props', label: 'Props', icon: '🎭' },
+  { value: 'general', label: 'General', icon: 'GEN' },
+  { value: 'characters', label: 'Characters', icon: 'CHR' },
+  { value: 'locations', label: 'Locations', icon: 'LOC' },
+  { value: 'atmosphere', label: 'Atmosphere', icon: 'ATM' },
+  { value: 'costumes', label: 'Costumes', icon: 'CST' },
+  { value: 'props', label: 'Props', icon: 'PRP' },
 ];
 
 const PRESET_COLORS = [
@@ -33,6 +34,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   // Data
   const [items, setItems] = useState<MoodBoardItem[]>([]);
@@ -157,7 +159,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
   };
 
   const deleteItem = async (id: string) => {
-    if (!confirm('Delete this item?')) return;
+    const ok = await confirm({ message: 'Delete this item?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('mood_board_items').delete().eq('id', id);
     setItems((prev) => prev.filter((it) => it.id !== id));
@@ -766,7 +768,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
 
               <div className="pt-2 border-t border-surface-800">
                 <button
-                  onClick={() => { if (confirm('Delete this connection?')) deleteConnection(selectedConnection.id); }}
+                  onClick={async () => { const ok = await confirm({ message: 'Delete this connection?', variant: 'danger', confirmLabel: 'Delete' }); if (ok) deleteConnection(selectedConnection.id); }}
                   className="w-full text-xs py-1.5 bg-red-500/10 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors"
                 >
                   Delete Connection
@@ -984,6 +986,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </Modal>
+      <ConfirmDialog />
     </div>
   );
 }

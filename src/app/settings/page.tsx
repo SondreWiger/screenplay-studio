@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Input, Textarea, LoadingPage } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
+import { Icon } from '@/components/ui/icons';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import type { UsageIntent, ScriptType, Company } from '@/lib/types';
 import type { InsiderTier } from '@/hooks/useFeatureFlags';
@@ -42,9 +43,9 @@ function InsiderProgramCard() {
   };
 
   const options: { value: InsiderTier; label: string; icon: string; desc: string; color: string; border: string }[] = [
-    { value: null, label: 'Stable', icon: '✅', desc: 'Only released features — the recommended experience.', color: 'text-emerald-400', border: 'border-emerald-500 bg-emerald-500/10' },
-    { value: 'beta', label: 'Beta', icon: '🧪', desc: 'Early access to features in testing. May have minor bugs.', color: 'text-amber-400', border: 'border-amber-500 bg-amber-500/10' },
-    { value: 'alpha', label: 'Alpha', icon: '🔬', desc: 'Bleeding edge — see everything first. Expect rough edges.', color: 'text-purple-400', border: 'border-purple-500 bg-purple-500/10' },
+    { value: null, label: 'Stable', icon: 'shield', desc: 'Only released features — the recommended experience.', color: 'text-emerald-400', border: 'border-emerald-500 bg-emerald-500/10' },
+    { value: 'beta', label: 'Beta', icon: 'wrench', desc: 'Early access to features in testing. May have minor bugs.', color: 'text-amber-400', border: 'border-amber-500 bg-amber-500/10' },
+    { value: 'alpha', label: 'Alpha', icon: 'sparkles', desc: 'Bleeding edge — see everything first. Expect rough edges.', color: 'text-purple-400', border: 'border-purple-500 bg-purple-500/10' },
   ];
 
   return (
@@ -70,7 +71,7 @@ function InsiderProgramCard() {
               tier === opt.value ? opt.border : 'border-surface-700 hover:border-surface-600'
             }`}
           >
-            <span className="text-xl">{opt.icon}</span>
+            <Icon name={opt.icon} size="md" className={tier === opt.value ? opt.color : 'text-surface-400'} />
             <div className="flex-1 min-w-0">
               <p className={`font-semibold ${tier === opt.value ? opt.color : 'text-white'}`}>{opt.label}</p>
               <p className="text-xs text-surface-400 mt-0.5">{opt.desc}</p>
@@ -196,9 +197,9 @@ export default function UserSettingsPage() {
 
     if (error) {
       if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
-        alert('That username is already taken. Please choose a different one.');
+        toast.warning('That username is already taken. Please choose a different one.');
       } else {
-        alert('Failed to save: ' + error.message);
+        toast.error('Failed to save: ' + error.message);
       }
       setSaving(false);
       return;
@@ -257,7 +258,7 @@ export default function UserSettingsPage() {
 
     if (error) {
       console.error('Company creation error:', error.message, error.details, error.hint, error.code);
-      alert(`Failed to create company: ${error.message}`);
+      toast.error(`Failed to create company: ${error.message}`);
       setCreatingCompany(false);
       return;
     }
@@ -403,17 +404,17 @@ export default function UserSettingsPage() {
               <p className="text-sm text-surface-400 mb-6">Add links to your social profiles. Leave blank to hide.</p>
               <div className="space-y-3">
                 {[
-                  { key: 'twitter', label: 'Twitter / X', placeholder: 'https://x.com/username', icon: '𝕏' },
-                  { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/username', icon: '📷' },
-                  { key: 'imdb', label: 'IMDb', placeholder: 'https://imdb.com/name/nm...', icon: '🎬' },
-                  { key: 'letterboxd', label: 'Letterboxd', placeholder: 'https://letterboxd.com/username', icon: '🎞️' },
-                  { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/in/username', icon: '💼' },
-                  { key: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@channel', icon: '▶️' },
-                  { key: 'vimeo', label: 'Vimeo', placeholder: 'https://vimeo.com/username', icon: '🎥' },
-                  { key: 'github', label: 'GitHub', placeholder: 'https://github.com/username', icon: '💻' },
+                  { key: 'twitter', label: 'Twitter / X', placeholder: 'https://x.com/username', abbr: 'X' },
+                  { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/username', abbr: 'IG' },
+                  { key: 'imdb', label: 'IMDb', placeholder: 'https://imdb.com/name/nm...', abbr: 'IM' },
+                  { key: 'letterboxd', label: 'Letterboxd', placeholder: 'https://letterboxd.com/username', abbr: 'LB' },
+                  { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/in/username', abbr: 'LI' },
+                  { key: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@channel', abbr: 'YT' },
+                  { key: 'vimeo', label: 'Vimeo', placeholder: 'https://vimeo.com/username', abbr: 'VM' },
+                  { key: 'github', label: 'GitHub', placeholder: 'https://github.com/username', abbr: 'GH' },
                 ].map((social) => (
                   <div key={social.key} className="flex items-center gap-3">
-                    <span className="text-lg w-6 text-center shrink-0">{social.icon}</span>
+                    <span className="text-xs font-bold w-6 text-center shrink-0 text-surface-400">{social.abbr}</span>
                     <input
                       type="text"
                       value={socialLinks[social.key] || ''}
@@ -491,10 +492,10 @@ export default function UserSettingsPage() {
               <p className="text-sm text-surface-400 mb-6">This adjusts your default workspace layout.</p>
               <div className="grid grid-cols-2 gap-3">
                 {([
-                  { value: 'writer' as UsageIntent, label: 'Writer', icon: '✍️' },
-                  { value: 'producer' as UsageIntent, label: 'Producer', icon: '🎥' },
-                  { value: 'both' as UsageIntent, label: 'Both', icon: '🎬' },
-                  { value: 'student' as UsageIntent, label: 'Student', icon: '📚' },
+                  { value: 'writer' as UsageIntent, label: 'Writer', icon: 'edit' },
+                  { value: 'producer' as UsageIntent, label: 'Producer', icon: 'camera' },
+                  { value: 'both' as UsageIntent, label: 'Both', icon: 'film' },
+                  { value: 'student' as UsageIntent, label: 'Student', icon: 'book' },
                 ]).map((opt) => (
                   <button
                     key={opt.value}
@@ -505,7 +506,7 @@ export default function UserSettingsPage() {
                         : 'border-surface-700 hover:border-surface-600'
                     }`}
                   >
-                    <span className="text-lg">{opt.icon}</span>
+                    <Icon name={opt.icon} size="md" className={usageIntent === opt.value ? 'text-brand-400' : 'text-surface-400'} />
                     <span className={`text-sm font-medium ${usageIntent === opt.value ? 'text-brand-400' : 'text-white'}`}>{opt.label}</span>
                   </button>
                 ))}
@@ -519,9 +520,9 @@ export default function UserSettingsPage() {
               </p>
               <div className="space-y-3">
                 {[
-                  { key: 'community' as const, label: 'Community Hub', desc: 'Share scripts, get feedback, join challenges', icon: '🌐', value: showCommunity, set: setShowCommunity },
-                  { key: 'production' as const, label: 'Production Tools', desc: 'Locations, shots, schedule, budget', icon: '🎞️', value: showProductionTools, set: setShowProductionTools },
-                  { key: 'collab' as const, label: 'Collaboration', desc: 'Team members, real-time editing', icon: '👥', value: showCollaboration, set: setShowCollaboration },
+                  { key: 'community' as const, label: 'Community Hub', desc: 'Share scripts, get feedback, join challenges', icon: 'globe', value: showCommunity, set: setShowCommunity },
+                  { key: 'production' as const, label: 'Production Tools', desc: 'Locations, shots, schedule, budget', icon: 'film', value: showProductionTools, set: setShowProductionTools },
+                  { key: 'collab' as const, label: 'Collaboration', desc: 'Team members, real-time editing', icon: 'users', value: showCollaboration, set: setShowCollaboration },
                 ].map((feat) => (
                   <button
                     key={feat.key}
@@ -530,7 +531,7 @@ export default function UserSettingsPage() {
                       feat.value ? 'border-brand-500/40 bg-brand-500/5' : 'border-surface-700 opacity-50'
                     }`}
                   >
-                    <span className="text-xl shrink-0">{feat.icon}</span>
+                    <Icon name={feat.icon} size="md" className="text-surface-300" />
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold text-white">{feat.label}</h3>
                       <p className="text-[11px] text-surface-400">{feat.desc}</p>
@@ -557,7 +558,7 @@ export default function UserSettingsPage() {
                         : 'border-surface-700 hover:border-surface-600'
                     }`}
                   >
-                    <span className="text-lg">{opt.icon}</span>
+                    <Icon name={opt.icon} size="md" className={preferredScriptType === opt.value ? 'text-brand-400' : 'text-surface-400'} />
                     <p className={`text-xs font-medium mt-1 ${preferredScriptType === opt.value ? 'text-brand-400' : 'text-white'}`}>{opt.label}</p>
                   </button>
                 ))}
@@ -613,40 +614,55 @@ export default function UserSettingsPage() {
               <p className="text-sm text-surface-400 mb-4">Choose which tabs appear in project sidebars. Hidden tabs are still accessible from the menu.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {[
-                  { key: 'script', label: '📝 Script', desc: 'Write your screenplay' },
-                  { key: 'scenes', label: '🎬 Scenes', desc: 'Scene breakdown' },
-                  { key: 'characters', label: '👤 Characters', desc: 'Character profiles' },
-                  { key: 'locations', label: '📍 Locations', desc: 'Filming locations' },
-                  { key: 'shots', label: '🎥 Shots', desc: 'Shot list' },
-                  { key: 'storyboard', label: '🖼️ Storyboard', desc: 'Visual planning' },
-                  { key: 'schedule', label: '📅 Schedule', desc: 'Production calendar' },
-                  { key: 'budget', label: '💰 Budget', desc: 'Cost tracking' },
-                  { key: 'documents', label: '📄 Documents', desc: 'Attachments' },
-                  { key: 'moodboard', label: '🎨 Moodboard', desc: 'Visual inspiration' },
-                  { key: 'ideas', label: '💡 Ideas', desc: 'Idea capture' },
-                  { key: 'mindmap', label: '🧠 Mind Map', desc: 'Story mapping' },
-                  { key: 'team', label: '👥 Team', desc: 'Collaborators' },
+                  { key: 'script', label: 'Script', desc: 'Write your screenplay' },
+                  { key: 'scenes', label: 'Scenes', desc: 'Scene breakdown' },
+                  { key: 'characters', label: 'Characters', desc: 'Character profiles' },
+                  { key: 'locations', label: 'Locations', desc: 'Filming locations' },
+                  { key: 'shots', label: 'Shots', desc: 'Shot list' },
+                  { key: 'storyboard', label: 'Storyboard', desc: 'Visual planning' },
+                  { key: 'schedule', label: 'Schedule', desc: 'Production calendar' },
+                  { key: 'budget', label: 'Budget', desc: 'Cost tracking' },
+                  { key: 'documents', label: 'Documents', desc: 'Attachments' },
+                  { key: 'moodboard', label: 'Moodboard', desc: 'Visual inspiration' },
+                  { key: 'ideas', label: 'Ideas', desc: 'Idea capture' },
+                  { key: 'mindmap', label: 'Mind Map', desc: 'Story mapping' },
+                  { key: 'team', label: 'Team', desc: 'Collaborators' },
                   // Content creator specific
-                  { key: 'thumbnails', label: '🖼️ Thumbnails', desc: 'Thumbnail planner' },
-                  { key: 'seo', label: '📊 SEO', desc: 'Video optimization' },
-                  { key: 'sponsors', label: '💼 Sponsors', desc: 'Sponsorship tracking' },
-                  { key: 'broll', label: '🎞️ B-Roll', desc: 'Footage planning' },
-                  { key: 'checklist', label: '✅ Checklist', desc: 'Upload checklist' },
+                  { key: 'thumbnails', label: 'Thumbnails', desc: 'Thumbnail planner' },
+                  { key: 'seo', label: 'SEO', desc: 'Video optimization' },
+                  { key: 'sponsors', label: 'Sponsors', desc: 'Sponsorship tracking' },
+                  { key: 'broll', label: 'B-Roll', desc: 'Footage planning' },
+                  { key: 'checklist', label: 'Checklist', desc: 'Upload checklist' },
                 ].map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
-                    className={`p-2 rounded-lg border text-left transition-all ${
+                    className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
                       sidebarTabs[tab.key]
-                        ? 'border-brand-500/40 bg-brand-500/5'
-                        : 'border-surface-700 opacity-40'
+                        ? 'border-brand-500/40 bg-brand-500/10'
+                        : 'border-surface-700 bg-surface-900/50'
                     }`}
                   >
                     <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
+                    <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-brand-600' : 'bg-surface-700'}`}>
+                      <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${sidebarTabs[tab.key] ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
+                    </span>
                   </button>
                 ))}
               </div>
               <p className="text-xs text-surface-500 mt-3">You can also customize per-project in project settings.</p>
+            </Card>
+
+            {/* Guided Tour */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Guided Tour</h2>
+              <p className="text-sm text-surface-400 mb-4">Replay the feature walkthrough from when you first signed up.</p>
+              <Button variant="secondary" size="sm" onClick={() => {
+                window.location.href = '/dashboard?tour=1';
+              }}>
+                <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Replay Tour
+              </Button>
             </Card>
 
             {/* Insider Program */}
@@ -850,50 +866,12 @@ export default function UserSettingsPage() {
               </Button>
             </Card>
 
-            {/* Privacy Settings */}
+            {/* Privacy note — settings are on the Profile tab */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Privacy Settings</h2>
-              <div className="space-y-4">
-                <label className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-white">Show Email on Profile</span>
-                    <p className="text-xs text-surface-500">Allow other users to see your email address.</p>
-                  </div>
-                  <input type="checkbox" checked={showEmail}
-                    onChange={(e) => setShowEmail(e.target.checked)}
-                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
-                </label>
-                <label className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-white">Show Projects on Profile</span>
-                    <p className="text-xs text-surface-500">Display your projects publicly on your profile.</p>
-                  </div>
-                  <input type="checkbox" checked={showProjects}
-                    onChange={(e) => setShowProjects(e.target.checked)}
-                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
-                </label>
-                <label className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-white">Show Activity</span>
-                    <p className="text-xs text-surface-500">Display your recent activity on your profile.</p>
-                  </div>
-                  <input type="checkbox" checked={showActivity}
-                    onChange={(e) => setShowActivity(e.target.checked)}
-                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
-                </label>
-                <label className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-white">Allow Direct Messages</span>
-                    <p className="text-xs text-surface-500">Let other users send you direct messages.</p>
-                  </div>
-                  <input type="checkbox" checked={allowDms}
-                    onChange={(e) => setAllowDms(e.target.checked)}
-                    className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
-                </label>
-              </div>
-              <div className="mt-4 pt-4 border-t border-surface-800">
-                <Button onClick={saveProfile} loading={saving}>Save Privacy Settings</Button>
-              </div>
+              <h2 className="text-lg font-semibold text-white mb-2">Privacy Settings</h2>
+              <p className="text-sm text-surface-400">
+                Profile visibility toggles (email, projects, activity, DMs) are on the <button onClick={() => setTab('profile')} className="text-brand-400 hover:text-brand-300 underline">Profile tab</button>.
+              </p>
             </Card>
 
             {/* Delete Account */}
@@ -952,7 +930,7 @@ export default function UserSettingsPage() {
                   router.push('/');
                 } catch (err) {
                   console.error('Account deletion error:', err);
-                  alert('An error occurred. Please contact support.');
+                  toast.error('An error occurred. Please contact support.');
                 }
               }}>
                 Delete My Account
@@ -989,7 +967,7 @@ export default function UserSettingsPage() {
                   const { data: { user: u } } = await supabase.auth.getUser();
                   if (u?.email) {
                     await supabase.auth.resetPasswordForEmail(u.email, { redirectTo: `${window.location.origin}/auth/callback` });
-                    alert('Password reset email sent!');
+                    toast.success('Password reset email sent!');
                   }
                 }}>
                   Reset Password
@@ -1012,7 +990,7 @@ export default function UserSettingsPage() {
                     const a = document.createElement('a');
                     a.href = url; a.download = `screenplay-studio-data-export-${new Date().toISOString().split('T')[0]}.json`;
                     a.click(); URL.revokeObjectURL(url);
-                  } catch { alert('Export failed. Please try again.'); }
+                  } catch { toast.error('Export failed. Please try again.'); }
                 }}>
                   Export My Data
                 </Button>

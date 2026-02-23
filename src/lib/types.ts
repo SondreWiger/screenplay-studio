@@ -318,7 +318,19 @@ export interface Project {
   updated_at: string;
   accent_color?: string | null;
   sidebar_tabs?: Record<string, boolean> | null;
-  custom_branding?: { logo_url?: string; company_name?: string; watermark?: string; color?: string } | null;
+  custom_branding?: {
+    primary_color?: string;
+    secondary_color?: string;
+    logo_url?: string;
+    company_name?: string;
+    watermark?: string;
+    watermark_opacity?: number;
+    cover_title?: string;
+    cover_subtitle?: string;
+    font_family?: string;
+    header_template?: string;
+    color?: string;
+  } | null;
   pro_enabled?: boolean;
   max_team_size?: number;
 }
@@ -1312,11 +1324,11 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
 };
 
 export const DOCUMENT_TYPE_ICONS: Record<DocumentType, string> = {
-  plain_text: '📄',
-  notes: '📝',
-  outline: '📋',
-  treatment: '📑',
-  research: '🔍',
+  plain_text: 'DOC',
+  notes: 'NOTE',
+  outline: 'BRIEF',
+  treatment: 'REF',
+  research: 'RES',
 };
 
 export const ELEMENT_LABELS: Record<ScriptElementType, string> = {
@@ -1466,24 +1478,24 @@ export const FORMAT_OPTIONS = [
 ];
 
 export const SCRIPT_TYPE_OPTIONS: { value: ScriptType; label: string; description: string; icon: string }[] = [
-  { value: 'screenplay', label: 'Screenplay', description: 'Standard film/TV screenplay format', icon: '🎬' },
-  { value: 'stageplay', label: 'Stage Play', description: 'Theatre script formatting', icon: '🎭' },
-  { value: 'episodic', label: 'Episodic Series', description: 'Multi-episode TV/web series', icon: '📺' },
-  { value: 'sketch', label: 'Sketch / Short', description: 'Comedy sketches and short-form content', icon: '😄' },
-  { value: 'comic', label: 'Comic / Graphic Novel', description: 'Panel-based visual storytelling', icon: '📖' },
-  { value: 'podcast', label: 'Podcast / Audio Drama', description: 'Audio-first scripted content', icon: '🎙️' },
-  { value: 'youtube', label: 'YouTube Video', description: 'Long-form video content with hooks & CTAs', icon: '▶️' },
-  { value: 'tiktok', label: 'TikTok / Reels / Shorts', description: 'Short-form vertical video content', icon: '📱' },
+  { value: 'screenplay', label: 'Screenplay', description: 'Standard film/TV screenplay format', icon: 'film' },
+  { value: 'stageplay', label: 'Stage Play', description: 'Theatre script formatting', icon: 'theater' },
+  { value: 'episodic', label: 'Episodic Series', description: 'Multi-episode TV/web series', icon: 'tv' },
+  { value: 'sketch', label: 'Sketch / Short', description: 'Comedy sketches and short-form content', icon: 'scissors' },
+  { value: 'comic', label: 'Comic / Graphic Novel', description: 'Panel-based visual storytelling', icon: 'book' },
+  { value: 'podcast', label: 'Podcast / Audio Drama', description: 'Audio-first scripted content', icon: 'mic' },
+  { value: 'youtube', label: 'YouTube Video', description: 'Long-form video content with hooks & CTAs', icon: 'play' },
+  { value: 'tiktok', label: 'TikTok / Reels / Shorts', description: 'Short-form vertical video content', icon: 'phone' },
 ];
 
 export const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string; description: string; icon: string }[] = [
-  { value: 'film', label: 'Film / TV', description: 'Traditional film, TV, or web series production', icon: '🎬' },
-  { value: 'youtube', label: 'YouTube', description: 'Long-form YouTube videos and series', icon: '▶️' },
-  { value: 'tiktok', label: 'TikTok / Shorts', description: 'Short-form vertical video content', icon: '📱' },
-  { value: 'podcast', label: 'Podcast', description: 'Audio podcasts and video podcasts', icon: '🎙️' },
-  { value: 'documentary', label: 'Documentary', description: 'Documentary films and series', icon: '🎥' },
-  { value: 'educational', label: 'Course / Tutorial', description: 'Educational content and online courses', icon: '📚' },
-  { value: 'livestream', label: 'Livestream', description: 'Live streaming content planning', icon: '🔴' },
+  { value: 'film', label: 'Film / TV', description: 'Traditional film, TV, or web series production', icon: 'film' },
+  { value: 'youtube', label: 'YouTube', description: 'Long-form YouTube videos and series', icon: 'play' },
+  { value: 'tiktok', label: 'TikTok / Shorts', description: 'Short-form vertical video content', icon: 'phone' },
+  { value: 'podcast', label: 'Podcast', description: 'Audio podcasts and video podcasts', icon: 'mic' },
+  { value: 'documentary', label: 'Documentary', description: 'Documentary films and series', icon: 'camera' },
+  { value: 'educational', label: 'Course / Tutorial', description: 'Educational content and online courses', icon: 'book' },
+  { value: 'livestream', label: 'Livestream', description: 'Live streaming content planning', icon: 'radio' },
 ];
 
 // ============================================================

@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Shot, Scene, ShotType, ShotMovement } from '@/lib/types';
 
 const SHOT_TYPES: { value: ShotType; label: string }[] = [
@@ -36,6 +37,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [shots, setShots] = useState<Shot[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
 
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
-    if (!confirm('Delete this shot?')) return;
+    const ok = await confirm({ message: 'Delete this shot?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('shots').delete().eq('id', id);
     setShots(shots.filter((s) => s.id !== id));
@@ -193,6 +195,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
       <ShotEditor isOpen={showEditor} onClose={() => setShowEditor(false)} shot={selectedShot}
         projectId={params.id} userId={user?.id || ''} scenes={scenes}
         onSaved={() => { fetchData(); setShowEditor(false); }} onDelete={handleDelete} canEdit={canEdit} />
+      <ConfirmDialog />
     </div>
   );
 }
@@ -221,13 +224,13 @@ function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved,
         scene_id: form.scene_id || null, duration_seconds: form.duration_seconds ? parseInt(form.duration_seconds) : null };
       if (shot) {
         const { error } = await supabase.from('shots').update(payload).eq('id', shot.id);
-        if (error) { alert(error.message); setLoading(false); return; }
+        if (error) { toast.error(error.message); setLoading(false); return; }
       } else {
         const { error } = await supabase.from('shots').insert(payload);
-        if (error) { alert(error.message); setLoading(false); return; }
+        if (error) { toast.error(error.message); setLoading(false); return; }
       }
     } catch (err) {
-      alert('Failed to save shot');
+      toast.error('Failed to save shot');
     }
     setLoading(false);
     onSaved();

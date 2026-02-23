@@ -53,6 +53,14 @@ type Scene = {
   page_count: number;
 };
 
+type ScriptElement = {
+  id: string;
+  element_type: string;
+  content: string;
+  scene_number: string | null;
+  sort_order: number;
+};
+
 type FilterMode = 'all' | 'cast' | 'uncast';
 
 export default function CastingPage() {
@@ -66,6 +74,7 @@ export default function CastingPage() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
+  const [scriptElements, setScriptElements] = useState<ScriptElement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
 
@@ -79,13 +88,35 @@ export default function CastingPage() {
   const [editNotes, setEditNotes] = useState('');
   const [showTeamPicker, setShowTeamPicker] = useState(false);
 
+  // Casting Call state
+  const [showCastingCallBuilder, setShowCastingCallBuilder] = useState(false);
+  const [castingCallLinks, setCastingCallLinks] = useState<any[]>([]);
+  const [castingInstructions, setCastingInstructions] = useState('');
+  const [castingCharacterIds, setCastingCharacterIds] = useState<string[]>([]);
+  const [castingQuestions, setCastingQuestions] = useState<{ label: string; type: 'text' | 'textarea' | 'select'; options?: string[]; required: boolean }[]>([
+    { label: 'Full Name', type: 'text', required: true },
+    { label: 'Email', type: 'text', required: true },
+    { label: 'Phone Number', type: 'text', required: false },
+    { label: 'Experience / Credits', type: 'textarea', required: false },
+  ]);
+  const [castingCallTitle, setCastingCallTitle] = useState('');
+  const [creatingCall, setCreatingCall] = useState(false);
+  const [submissionCounts, setSubmissionCounts] = useState<Record<string, number>>({});
+
   const supabase = createClient();
 
   // ── Load data ──────────────────────────────────────────────
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [charRes, teamRes, sceneRes] = await Promise.all([
+      // First get script ID
+      const { data: scripts } = await supabase
+        .from('scripts')
+        .select('id')
+        .eq('project_id', projectId)
+        .limit(1);
+
+      const [charRes, teamRes, sceneRes, elemRes] = await Promise.all([
         supabase
           .from('characters')
           .select('id, name, full_name, age, gender, description, backstory, is_main, personality_traits, color, cast_actor, cast_notes, avatar_url')
@@ -101,6 +132,14 @@ export default function CastingPage() {
           .select('id, scene_number, scene_heading, cast_ids, page_count')
           .eq('project_id', projectId)
           .order('scene_number'),
+        scripts?.[0]?.id
+          ? supabase
+              .from('script_elements')
+              .select('id, element_type, content, scene_number, sort_order')
+              .eq('script_id', scripts[0].id)
+              .in('element_type', ['character', 'dialogue'])
+              .order('sort_order')
+          : Promise.resolve({ data: [] }),
       ]);
 
       if (charRes.data) setCharacters(charRes.data as Character[]);
@@ -112,6 +151,25 @@ export default function CastingPage() {
         setTeamMembers(mapped);
       }
       if (sceneRes.data) setScenes(sceneRes.data as Scene[]);
+      if (elemRes.data) setScriptElements(elemRes.data as ScriptElement[]);
+
+      // Load casting call links
+      const { data: shares } = await supabase
+        .from('external_shares')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('share_type', 'casting')
+        .order('created_at', { ascending: false });
+      if (shares) {
+        setCastingCallLinks(shares);
+        // Count submissions per link
+        const counts: Record<string, number> = {};
+        for (const s of shares) {
+          const snapshot = s.content_snapshot as any;
+          counts[s.id] = snapshot?.submissions?.length || 0;
+        }
+        setSubmissionCounts(counts);
+      }
     } catch (err) {
       console.error('Failed to load casting data:', err);
       toast('Failed to load casting data', 'error');
@@ -126,17 +184,61 @@ export default function CastingPage() {
   }, [hasProAccess, loadData]);
 
   // ── Derived data ───────────────────────────────────────────
+  // Build a map of character_id -> scene numbers they appear in.
+  // Prefers cast_ids on scenes, but also detects character names in script_elements.
   const sceneCountMap = useMemo(() => {
     const map: Record<string, string[]> = {};
+
+    // Method 1: from scene.cast_ids 
     for (const scene of scenes) {
-      if (!scene.cast_ids) continue;
+      if (!scene.cast_ids || scene.cast_ids.length === 0) continue;
       for (const cid of scene.cast_ids) {
         if (!map[cid]) map[cid] = [];
         map[cid].push(scene.scene_number || scene.id);
       }
     }
+
+    // Method 2: from script_elements (positional character name → scene_number)
+    // This catches characters that appear in dialogue but aren't linked via cast_ids
+    if (scriptElements.length > 0) {
+      const charNameToId = new Map<string, string>();
+      for (const c of characters) {
+        charNameToId.set(c.name.toUpperCase(), c.id);
+      }
+
+      // Derive character names positionally: 'character' element content is the name,
+      // subsequent 'dialogue' elements belong to that character until the next 'character'
+      let currentCharName: string | null = null;
+      let currentSceneNum: string | null = null;
+      const charSceneSet = new Map<string, Set<string>>();
+
+      for (const el of scriptElements) {
+        if (el.element_type === 'character') {
+          currentCharName = (el.content || '').replace(/\s*\(.*\)\s*$/, '').trim().toUpperCase();
+          currentSceneNum = el.scene_number || currentSceneNum;
+        } else if (el.element_type === 'dialogue' && currentCharName) {
+          const charId = charNameToId.get(currentCharName);
+          if (charId && currentSceneNum) {
+            if (!charSceneSet.has(charId)) charSceneSet.set(charId, new Set());
+            charSceneSet.get(charId)!.add(currentSceneNum);
+          }
+        }
+      }
+
+      // Merge: only add scenes not already captured by cast_ids
+      charSceneSet.forEach((sceneNums, charId) => {
+        const existing = new Set(map[charId] || []);
+        sceneNums.forEach(sn => {
+          if (!existing.has(sn)) {
+            if (!map[charId]) map[charId] = [];
+            map[charId].push(sn);
+          }
+        });
+      });
+    }
+
     return map;
-  }, [scenes]);
+  }, [scenes, scriptElements, characters]);
 
   const scenesForCharacter = useCallback((charId: string): Scene[] => {
     return scenes.filter((s) => s.cast_ids && s.cast_ids.includes(charId));
@@ -241,6 +343,78 @@ export default function CastingPage() {
     setShowTeamPicker(false);
   };
 
+  // ── Casting Call actions ───────────────────────────────────
+  const addQuestion = () => {
+    setCastingQuestions(prev => [...prev, { label: '', type: 'text', required: false }]);
+  };
+  const removeQuestion = (idx: number) => {
+    setCastingQuestions(prev => prev.filter((_, i) => i !== idx));
+  };
+  const updateQuestion = (idx: number, field: string, value: any) => {
+    setCastingQuestions(prev => prev.map((q, i) => i === idx ? { ...q, [field]: value } : q));
+  };
+  const toggleCastingChar = (id: string) => {
+    setCastingCharacterIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const createCastingCall = async () => {
+    if (!user) return;
+    setCreatingCall(true);
+    try {
+      const selectedChars = characters.filter(c => castingCharacterIds.includes(c.id)).map(c => ({
+        id: c.id,
+        name: c.name,
+        full_name: c.full_name,
+        age: c.age,
+        gender: c.gender,
+        description: c.description,
+        is_main: c.is_main,
+      }));
+      const payload = {
+        project_id: projectId,
+        created_by: user.id,
+        share_type: 'casting',
+        title: castingCallTitle || `Casting Call — ${currentProject?.title || 'Untitled'}`,
+        allow_comments: false,
+        allow_download: false,
+        is_active: true,
+        content_snapshot: {
+          instructions: castingInstructions,
+          questions: castingQuestions.filter(q => q.label.trim()),
+          characters: selectedChars,
+          project_title: currentProject?.title || 'Untitled',
+          submissions: [],
+        },
+      };
+      const { data, error } = await supabase.from('external_shares').insert(payload).select().single();
+      if (error) throw error;
+      setCastingCallLinks(prev => [data, ...prev]);
+      setShowCastingCallBuilder(false);
+      setCastingCallTitle('');
+      setCastingInstructions('');
+      setCastingCharacterIds([]);
+      toast('Casting call link created!', 'success');
+    } catch (err) {
+      console.error(err);
+      toast('Failed to create casting call', 'error');
+    } finally {
+      setCreatingCall(false);
+    }
+  };
+
+  const deleteCastingCall = async (id: string) => {
+    const { error } = await supabase.from('external_shares').delete().eq('id', id);
+    if (error) { toast('Failed to delete', 'error'); return; }
+    setCastingCallLinks(prev => prev.filter(l => l.id !== id));
+    toast('Casting call deleted', 'success');
+  };
+
+  const copyCastingLink = (token: string) => {
+    const url = `${window.location.origin}/casting/${token}`;
+    navigator.clipboard.writeText(url);
+    toast('Link copied to clipboard', 'success');
+  };
+
   // ── Role type label ────────────────────────────────────────
   const roleLabel = (char: Character) => {
     if (char.is_main) return 'Lead';
@@ -318,6 +492,155 @@ export default function CastingPage() {
             />
           </div>
         </div>
+      )}
+
+      {/* ── Casting Call Section ────────────────────────────────── */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-white">Casting Calls</h3>
+            <p className="text-xs text-surface-400 mt-0.5">Share a public form for actors to submit applications</p>
+          </div>
+          <Button size="sm" onClick={() => setShowCastingCallBuilder(true)}>
+            <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            New Casting Call
+          </Button>
+        </div>
+
+        {/* Existing casting call links */}
+        {castingCallLinks.length > 0 ? (
+          <div className="space-y-2">
+            {castingCallLinks.map((link) => (
+              <div key={link.id} className="flex items-center justify-between p-3 rounded-lg bg-surface-800/50 border border-surface-700">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{link.title}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[10px] text-surface-500">{new Date(link.created_at).toLocaleDateString()}</span>
+                    <span className="text-[10px] text-surface-500">{link.view_count} views</span>
+                    <span className="text-[10px] text-amber-400">{submissionCounts[link.id] || 0} submissions</span>
+                    {!link.is_active && <Badge variant="default">Inactive</Badge>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 ml-3">
+                  <Button size="sm" variant="ghost" onClick={() => copyCastingLink(link.access_token)}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    Copy Link
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => window.open(`/casting/${link.access_token}`, '_blank')}>
+                    View
+                  </Button>
+                  <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300" onClick={() => deleteCastingCall(link.id)}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <p className="text-sm text-surface-400">No casting calls yet. Create one to share a public audition form.</p>
+          </div>
+        )}
+      </Card>
+
+      {/* ── Casting Call Builder Modal ─────────────────────────── */}
+      {showCastingCallBuilder && (
+        <Modal isOpen onClose={() => setShowCastingCallBuilder(false)} title="Create Casting Call" size="lg">
+          <div className="space-y-5 p-1 max-h-[70vh] overflow-y-auto">
+            {/* Title */}
+            <div>
+              <label className="block text-sm text-surface-400 mb-1.5">Call Title</label>
+              <Input
+                placeholder={`Casting Call — ${currentProject?.title || 'Untitled'}`}
+                value={castingCallTitle}
+                onChange={(e) => setCastingCallTitle(e.target.value)}
+              />
+            </div>
+
+            {/* Instructions */}
+            <div>
+              <label className="block text-sm text-surface-400 mb-1.5">Instructions for Applicants</label>
+              <Textarea
+                placeholder="Describe what you're looking for, audition details, deadline, etc."
+                value={castingInstructions}
+                onChange={(e) => setCastingInstructions(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            {/* Select Characters */}
+            <div>
+              <label className="block text-sm text-surface-400 mb-2">Roles Available</label>
+              <p className="text-[11px] text-surface-500 mb-2">Select which characters are open for casting</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                {characters.filter(c => !c.cast_actor).map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => toggleCastingChar(c.id)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-left text-xs transition-colors ${
+                      castingCharacterIds.includes(c.id)
+                        ? 'border-amber-500 bg-amber-500/10 text-white'
+                        : 'border-surface-700 text-surface-300 hover:border-surface-600'
+                    }`}
+                  >
+                    <div className="w-6 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: c.color || '#666' }} />
+                    <div className="truncate">
+                      <p className="font-medium truncate">{c.name}</p>
+                      {c.age && <p className="text-[10px] text-surface-500">{c.age}{c.gender ? ` · ${c.gender}` : ''}</p>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {castingCharacterIds.length > 0 && (
+                <p className="text-[11px] text-amber-400 mt-2">{castingCharacterIds.length} role(s) selected</p>
+              )}
+            </div>
+
+            {/* Custom Questions */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm text-surface-400">Application Questions</label>
+                <button onClick={addQuestion} className="text-[11px] text-brand-400 hover:text-brand-300">+ Add Question</button>
+              </div>
+              <div className="space-y-2">
+                {castingQuestions.map((q, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <Input
+                      placeholder="Question label..."
+                      value={q.label}
+                      onChange={(e) => updateQuestion(idx, 'label', e.target.value)}
+                      className="flex-1"
+                    />
+                    <select
+                      value={q.type}
+                      onChange={(e) => updateQuestion(idx, 'type', e.target.value)}
+                      className="rounded-lg border border-surface-700 bg-surface-900 px-2 py-2 text-xs text-white"
+                    >
+                      <option value="text">Short Text</option>
+                      <option value="textarea">Long Text</option>
+                      <option value="select">Select</option>
+                    </select>
+                    <label className="flex items-center gap-1 text-[10px] text-surface-400 whitespace-nowrap pt-2.5">
+                      <input type="checkbox" checked={q.required} onChange={() => updateQuestion(idx, 'required', !q.required)} className="accent-amber-500" />
+                      Req.
+                    </label>
+                    <button onClick={() => removeQuestion(idx)} className="text-red-400 hover:text-red-300 pt-2.5">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2 border-t border-surface-800">
+              <Button variant="ghost" onClick={() => setShowCastingCallBuilder(false)}>Cancel</Button>
+              <Button onClick={createCastingCall} loading={creatingCall} disabled={castingCharacterIds.length === 0}>
+                Create Casting Call
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {/* Filter & Search */}

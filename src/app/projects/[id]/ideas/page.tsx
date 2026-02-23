@@ -3,16 +3,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Idea, IdeaStatus, IdeaCategory } from '@/lib/types';
 
 const STATUS_COLUMNS: { value: IdeaStatus; label: string; color: string }[] = [
-  { value: 'spark', label: '✨ Spark', color: 'border-yellow-500/30' },
-  { value: 'developing', label: '🔧 Developing', color: 'border-blue-500/30' },
-  { value: 'ready', label: '✅ Ready', color: 'border-green-500/30' },
-  { value: 'used', label: '🎬 Used', color: 'border-purple-500/30' },
-  { value: 'discarded', label: '🗑️ Discarded', color: 'border-surface-600/30' },
+  { value: 'spark', label: 'Spark', color: 'border-yellow-500/30' },
+  { value: 'developing', label: 'Developing', color: 'border-blue-500/30' },
+  { value: 'ready', label: 'Ready', color: 'border-green-500/30' },
+  { value: 'used', label: 'Used', color: 'border-purple-500/30' },
+  { value: 'discarded', label: 'Discarded', color: 'border-surface-600/30' },
 ];
 
 const CATEGORIES: { value: IdeaCategory; label: string }[] = [
@@ -35,6 +36,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
@@ -60,7 +62,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
 
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
-    if (!confirm('Delete this idea?')) return;
+    const ok = await confirm({ message: 'Delete this idea?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('ideas').delete().eq('id', id);
     setIdeas(ideas.filter((i) => i.id !== id));
@@ -163,6 +165,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
       <IdeaEditor isOpen={showEditor} onClose={() => setShowEditor(false)} idea={selectedIdea}
         projectId={params.id} userId={user?.id || ''}
         onSaved={() => { fetchIdeas(); setShowEditor(false); }} onDelete={handleDelete} canEdit={canEdit} />
+      <ConfirmDialog />
     </div>
   );
 }
@@ -197,13 +200,13 @@ function IdeaEditor({ isOpen, onClose, idea, projectId, userId, onSaved, onDelet
       const payload = { ...form, project_id: projectId, created_by: userId };
       if (idea) {
         const { error } = await supabase.from('ideas').update(payload).eq('id', idea.id);
-        if (error) { alert(error.message); setLoading(false); return; }
+        if (error) { toast.error(error.message); setLoading(false); return; }
       } else {
         const { error } = await supabase.from('ideas').insert(payload);
-        if (error) { alert(error.message); setLoading(false); return; }
+        if (error) { toast.error(error.message); setLoading(false); return; }
       }
     } catch (err) {
-      alert('Failed to save idea');
+      toast.error('Failed to save idea');
     }
     setLoading(false);
     onSaved();
