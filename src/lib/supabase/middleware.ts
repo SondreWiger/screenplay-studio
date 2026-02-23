@@ -171,8 +171,8 @@ export async function updateSession(request: NextRequest) {
 
   // ── Admin / Mod panel route — allow admin UID, admins, and moderators ──
   if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
-    if (user.id !== ADMIN_UID) {
+    const ADMIN_UID = process.env.ADMIN_UID || '';
+    if (!ADMIN_UID || user.id !== ADMIN_UID) {
       // Fetch profile to check role
       const { data: profile } = await supabase
         .from('profiles')

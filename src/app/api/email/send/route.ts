@@ -11,9 +11,12 @@ const PUSH_API_SECRET = process.env.PUSH_API_SECRET || '';
 
 export async function POST(req: NextRequest) {
   try {
-    // Auth: accept with PUSH_API_SECRET or when secret is not configured (dev)
+    // Auth: require PUSH_API_SECRET in production
     const secret = req.headers.get('x-push-secret');
-    if (PUSH_API_SECRET && secret !== PUSH_API_SECRET) {
+    if (!PUSH_API_SECRET) {
+      return NextResponse.json({ error: 'PUSH_API_SECRET not configured' }, { status: 500 });
+    }
+    if (secret !== PUSH_API_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

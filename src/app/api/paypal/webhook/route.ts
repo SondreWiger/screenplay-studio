@@ -33,8 +33,6 @@ export async function POST(req: NextRequest) {
     const eventType = event.event_type;
     const resource = event.resource;
 
-    console.log(`PayPal webhook: ${eventType}`, resource?.id);
-
     const admin = createAdminSupabaseClient();
 
     switch (eventType) {
@@ -85,7 +83,7 @@ export async function POST(req: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled PayPal event: ${eventType}`);
+        // Unhandled event type — ignore
     }
 
     return NextResponse.json({ received: true });

@@ -5,7 +5,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.f
 
 // Regenerate sitemap on each request (includes dynamic DB content)
 export const dynamic = 'force-dynamic';
-export const revalidate = 3600; // Cache for 1 hour
 
 // Use a plain Supabase client (no cookies) — sitemap runs at build time with no request context
 function getSupabase() {
@@ -28,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/community/free-scripts`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE_URL}/community/share`, lastModified: now, changeFrequency: 'daily', priority: 0.6 },
     { url: `${BASE_URL}/support`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
-    { url: `${BASE_URL}/trailer`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+
     { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE_URL}/sitemap-visual`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
     // Legal pages

@@ -25,8 +25,8 @@ function LoginForm() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const log = useCallback((msg: string) => {
-    console.log('[LOGIN]', msg);
+  const log = useCallback((_msg: string) => {
+    // Debug logging removed for production
   }, []);
 
   // Clear any stale auth cookies on mount

@@ -17,7 +17,7 @@ import { formatDate, timeAgo, cn } from '@/lib/utils';
 import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, PROJECT_TYPE_OPTIONS } from '@/lib/types';
 
-const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
 export default function DashboardPage() {
   return (

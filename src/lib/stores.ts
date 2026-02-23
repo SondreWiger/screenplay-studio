@@ -194,7 +194,6 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       ...element,
       sort_order: element.sort_order ?? maxOrder + 1,
     };
-    console.log('[addElement] Inserting:', insertData);
     const { data, error } = await supabase
       .from('script_elements')
       .insert(insertData)
@@ -204,7 +203,6 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       console.error('[addElement] Supabase error:', error.message, error.details, error.hint);
     }
     if (data && !error) {
-      console.log('[addElement] Success:', data.id);
       set({ elements: [...get().elements, data].sort((a, b) => a.sort_order - b.sort_order) });
     }
     set({ saving: false });

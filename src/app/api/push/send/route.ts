@@ -22,10 +22,12 @@ if (VAPID_PUBLIC && VAPID_PRIVATE) {
 export async function POST(req: NextRequest) {
   try {
     // ---- Auth ----
-    // Accept requests with a valid PUSH_API_SECRET header (DB trigger / cron)
-    // OR when PUSH_API_SECRET is not configured (dev mode, or client-side calls)
+    // Require PUSH_API_SECRET header (DB trigger / cron / client-side calls)
     const secret = req.headers.get('x-push-secret');
-    if (PUSH_API_SECRET && secret !== PUSH_API_SECRET) {
+    if (!PUSH_API_SECRET) {
+      return NextResponse.json({ error: 'PUSH_API_SECRET not configured' }, { status: 500 });
+    }
+    if (secret !== PUSH_API_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

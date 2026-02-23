@@ -21,7 +21,6 @@ const siteStructure: SitemapNode[] = [
       { label: 'Blog', href: '/blog', description: 'Articles & guides', badge: 'public', children: [
         { label: 'Post', href: '/blog/[slug]', description: 'Individual blog post', badge: 'dynamic' },
       ]},
-      { label: 'Trailer', href: '/trailer', description: 'Platform trailer', badge: 'public' },
       { label: 'Support', href: '/support', description: 'Help & contact', badge: 'public' },
     ],
   },
