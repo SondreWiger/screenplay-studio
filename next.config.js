@@ -30,12 +30,20 @@ const nextConfig = {
         ],
       },
       {
-        // Prevent caching of API routes
-        source: '/api/:path*',
+        // Prevent caching of API routes (except RSS feed)
+        source: '/api/((?!rss).*)',
         headers: [
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'Expires', value: '0' },
+        ],
+      },
+      {
+        // RSS feed — allow caching and cross-origin access for bots
+        source: '/api/rss',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600' },
         ],
       },
       {
@@ -52,6 +60,15 @@ const nextConfig = {
           { key: 'X-Robots-Tag', value: 'noindex, noai, noimageai' },
         ],
       },
+    ];
+  },
+  async rewrites() {
+    return [
+      // Standard feed URL aliases
+      { source: '/feed.xml', destination: '/api/rss' },
+      { source: '/feed', destination: '/api/rss' },
+      { source: '/rss', destination: '/api/rss' },
+      { source: '/rss.xml', destination: '/api/rss' },
     ];
   },
   async redirects() {
