@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -20,6 +20,14 @@ import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, PROJECT_TYPE_OPTION
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { canUse: canUseFeature } = useFeatureAccess();
