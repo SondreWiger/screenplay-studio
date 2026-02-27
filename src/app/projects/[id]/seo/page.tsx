@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
-import { Button, Badge, Input, Textarea, Select } from '@/components/ui';
+import { Button, Badge, Input, Textarea, Select, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { VideoSEO, VideoChapter, Thumbnail } from '@/lib/types';
 
@@ -227,7 +227,7 @@ export default function SEOPage() {
     
     // Create SEO record if it doesn't exist
     if (!seoData) {
-      const { data: newSeo } = await supabase
+      const { data: newSeo, error: seoError } = await supabase
         .from('video_seo')
         .insert({
           project_id: projectId,
@@ -236,6 +236,7 @@ export default function SEOPage() {
         })
         .select()
         .single();
+      if (seoError) { toast.error('Failed to create SEO record'); setLoading(false); return; }
       setSeo(newSeo);
     } else {
       setSeo(seoData);
@@ -300,7 +301,7 @@ export default function SEOPage() {
   // Chapters
   const addChapter = async () => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('video_chapters')
       .insert({
         project_id: projectId,
@@ -311,6 +312,7 @@ export default function SEOPage() {
       .select()
       .single();
     
+    if (error) { toast.error('Failed to add chapter'); return; }
     if (data) {
       setChapters([...chapters, data]);
     }

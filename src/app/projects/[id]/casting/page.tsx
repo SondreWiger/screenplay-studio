@@ -712,7 +712,7 @@ export default function CastingPage() {
                     }}
                   >
                     {char.avatar_url ? (
-                      <img src={char.avatar_url} alt="" className="w-full h-full rounded-xl object-cover" />
+                      <img src={char.avatar_url} alt={char.name || 'Character avatar'} className="w-full h-full rounded-xl object-cover" />
                     ) : (
                       char.name.charAt(0).toUpperCase()
                     )}
@@ -786,7 +786,7 @@ export default function CastingPage() {
                 }}
               >
                 {selectedChar.avatar_url ? (
-                  <img src={selectedChar.avatar_url} alt="" className="w-full h-full rounded-xl object-cover" />
+                  <img src={selectedChar.avatar_url} alt={selectedChar.name || 'Character avatar'} className="w-full h-full rounded-xl object-cover" />
                 ) : (
                   selectedChar.name.charAt(0).toUpperCase()
                 )}

@@ -48,7 +48,7 @@ export default function CommunityPage() {
 
     // Fetch categories for each post
     if (rawPosts.length > 0) {
-      const postIds = rawPosts.map((p: any) => p.id);
+      const postIds = rawPosts.map((p: { id: string }) => p.id);
       const { data: junctions } = await supabase
         .from('community_post_categories')
         .select('post_id, category:community_categories(*)')
@@ -61,7 +61,7 @@ export default function CommunityPage() {
         catMap.set(j.post_id, arr);
       });
 
-      rawPosts.forEach((p: any) => {
+      rawPosts.forEach((p: CommunityPost) => {
         p.categories = catMap.get(p.id) || [];
       });
     }
@@ -142,7 +142,7 @@ export default function CommunityPage() {
                 <button onClick={handleSignOut} className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Sign Out</button>
                 <Link href={`/u/${user.username || user.id}`}>
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
                   ) : (
                     <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600 hover:ring-2 ring-brand-300 transition-all">
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -320,7 +320,7 @@ export default function CommunityPage() {
                             className="flex items-center gap-1 hover:text-stone-700 transition-colors"
                           >
                             {post.author?.avatar_url ? (
-                              <img src={post.author.avatar_url} alt="" className="w-4 h-4 rounded-full" />
+                              <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" />
                             ) : (
                               <div className="w-4 h-4 rounded-full bg-stone-200 flex items-center justify-center text-[8px] font-bold text-stone-500">
                                 {(post.author?.full_name || '?')[0]}
@@ -371,7 +371,7 @@ export default function CommunityPage() {
                       {/* Cover image */}
                       {post.cover_image_url && (
                         <div className="hidden sm:block w-28 h-20 rounded-lg overflow-hidden shrink-0">
-                          <img src={post.cover_image_url} alt="" className="w-full h-full object-cover" />
+                          <img src={post.cover_image_url} alt={post.title || 'Post cover'} className="w-full h-full object-cover" />
                         </div>
                       )}
                     </div>

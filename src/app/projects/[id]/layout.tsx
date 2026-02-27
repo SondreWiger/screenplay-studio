@@ -13,7 +13,7 @@ import { Avatar, Badge, LoadingPage } from '@/components/ui';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
 import { cn, getInitials } from '@/lib/utils';
-import type { Project, ProjectMember, Profile, UserRole } from '@/lib/types';
+import type { Project, ProjectMember, Profile, UserRole, UserPresence } from '@/lib/types';
 
 const PAGE_LABELS: Record<string, string> = {
   overview: 'Overview', script: 'Script Editor', documents: 'Documents',
@@ -24,6 +24,14 @@ const PAGE_LABELS: Record<string, string> = {
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
   showcase: 'Showcase', share: 'Share Portal', analytics: 'Analytics',
   export: 'Advanced Export', casting: 'Casting', 'ai-analysis': 'Script Analysis',
+  // Broadcast Production
+  rundown: 'Rundown', stories: 'Stories', 'wire-desk': 'Wire Desk',
+  sources: 'Sources', graphics: 'Graphics / CG', prompter: 'Prompter',
+  'as-run': 'As-Run Log', 'broadcast-settings': 'Broadcast Settings',
+  'vision-mixer': 'Vision Mixer', 'master-control': 'Master Control',
+  'stream-ingest': 'Stream Ingest', output: 'Output / Restream',
+  multiviewer: 'Multiviewer', comms: 'Comms / Intercom',
+  'mos-devices': 'MOS Devices',
 };
 
 export default function ProjectLayout({
@@ -109,7 +117,7 @@ export default function ProjectLayout({
       }
 
       // Guard: only allow access if user owns or is a member of this project
-      const isMember = (membersRes.data || []).some((m: any) => m.user_id === user?.id);
+      const isMember = (membersRes.data || []).some((m: { user_id: string }) => m.user_id === user?.id);
       const isOwner = projectRes.data?.created_by === user?.id;
       if (!isMember && !isOwner) {
         console.warn('Access denied: not a member or owner');
@@ -142,12 +150,77 @@ export default function ProjectLayout({
   // Check if this is a content creator project
   const isContentCreator = ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(currentProject.project_type || '') 
     || ['youtube', 'tiktok'].includes(currentProject.script_type || '');
+  
+  // Check if this is a TV production project
+  const isTvProduction = currentProject.project_type === 'tv_production';
 
   type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean; contentCreator?: boolean; filmOnly?: boolean; pro?: boolean };
   type NavCategory = { category: string; items: NavItem[] };
 
   // Build navigation based on project type
-  const navCategories: NavCategory[] = isContentCreator ? [
+  const navCategories: NavCategory[] = isTvProduction ? [
+    // Broadcast Production Navigation — real NRCS + broadcast tools
+    {
+      category: '',
+      items: [
+        { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
+      ],
+    },
+    {
+      category: 'Content',
+      items: [
+        { label: 'Stories', href: `/projects/${params.id}/stories`, icon: 'stories', always: true },
+        { label: 'Rundown', href: `/projects/${params.id}/rundown`, icon: 'rundown', always: true },
+        { label: 'Wire Desk', href: `/projects/${params.id}/wire-desk`, icon: 'wiredesk', always: true },
+        { label: 'Scripts', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+      ],
+    },
+    {
+      category: 'Production',
+      items: [
+        { label: 'Vision Mixer', href: `/projects/${params.id}/vision-mixer`, icon: 'visionmixer', always: true },
+        { label: 'Master Control', href: `/projects/${params.id}/master-control`, icon: 'mastercontrol', always: true },
+        { label: 'Sources', href: `/projects/${params.id}/sources`, icon: 'sources', always: true },
+        { label: 'Graphics', href: `/projects/${params.id}/graphics`, icon: 'graphics', always: true },
+        { label: 'Prompter', href: `/projects/${params.id}/prompter`, icon: 'prompter', always: true },
+      ],
+    },
+    {
+      category: 'Streaming',
+      items: [
+        { label: 'Stream Ingest', href: `/projects/${params.id}/stream-ingest`, icon: 'streamingest', always: true },
+        { label: 'Output', href: `/projects/${params.id}/output`, icon: 'output', always: true },
+      ],
+    },
+    {
+      category: 'Monitoring',
+      items: [
+        { label: 'Multiviewer', href: `/projects/${params.id}/multiviewer`, icon: 'multiviewer', always: true },
+        { label: 'As-Run Log', href: `/projects/${params.id}/as-run`, icon: 'asrun', always: true },
+      ],
+    },
+    {
+      category: 'Infrastructure',
+      items: [
+        { label: 'Comms', href: `/projects/${params.id}/comms`, icon: 'comms', always: true },
+        { label: 'MOS Devices', href: `/projects/${params.id}/mos-devices`, icon: 'mosdevices', always: true },
+      ],
+    },
+    {
+      category: 'Collaboration',
+      items: [
+        { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
+        { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+        { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
+      ],
+    },
+    ...(!isViewer ? [{
+      category: '',
+      items: [
+        { label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings', always: true },
+      ],
+    }] : []),
+  ] : isContentCreator ? [
     // Content Creator Navigation
     {
       category: '',
@@ -337,6 +410,21 @@ export default function ProjectLayout({
     revisions: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>,
     reports: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" /></svg>,
     casting: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>,
+    // TV / Broadcast Production Icons
+    rundown: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>,
+    visionmixer: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="9" height="8" rx="1" strokeWidth={1.5}/><rect x="13" y="3" width="9" height="8" rx="1" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.5 14v3m0 0l-3 3m3-3l3 3M17.5 14v3m0 0l-3 3m3-3l3 3"/></svg>,
+    mastercontrol: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>,
+    streamingest: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>,
+    output: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>,
+    multiviewer: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="9" height="7" rx="1" strokeWidth={1.5}/><rect x="13" y="3" width="9" height="7" rx="1" strokeWidth={1.5}/><rect x="2" y="13" width="9" height="7" rx="1" strokeWidth={1.5}/><rect x="13" y="13" width="9" height="7" rx="1" strokeWidth={1.5}/></svg>,
+    comms: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>,
+    mosdevices: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>,
+    stories: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" /></svg>,
+    wiredesk: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg>,
+    sources: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>,
+    prompter: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75l4.5 3.75-4.5 3.75V10.5z" /></svg>,
+    graphics: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" /></svg>,
+    asrun: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>,
   };
 
   // Active page label for mobile header
@@ -350,7 +438,7 @@ export default function ProjectLayout({
       <div className="border-b border-surface-800 p-4">
         <div className="flex items-center gap-3">
           <Link href="/dashboard" className="shrink-0" onClick={() => setMobileMenuOpen(false)}>
-            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white ${isTvProduction ? 'bg-amber-600' : 'bg-brand-600'}`}>
               {currentProject.title[0]}
             </div>
           </Link>
@@ -447,13 +535,14 @@ export default function ProjectLayout({
         <div className="border-t border-surface-800 p-4">
           <p className="text-[11px] font-medium text-surface-500 uppercase tracking-wider mb-3">Online Now</p>
           <div className="space-y-2">
-            {onlineUsers.slice(0, 5).map((presence: any) => {
-              const pl = PAGE_LABELS[presence.current_page] || presence.current_page;
+            {onlineUsers.slice(0, 5).map((presence) => {
+              const p = presence as UserPresence & { full_name?: string; email?: string; avatar_url?: string };
+              const pl = PAGE_LABELS[p.current_page || ''] || p.current_page;
               return (
-                <div key={presence.user_id} className="flex items-center gap-2">
-                  <Avatar src={presence.avatar_url} name={presence.full_name || presence.email} size="sm" online />
+                <div key={p.user_id} className="flex items-center gap-2">
+                  <Avatar src={p.avatar_url} name={p.full_name || p.email} size="sm" online />
                   <div className="min-w-0">
-                    <p className="text-xs text-surface-300 truncate">{presence.full_name || presence.email || 'User'}</p>
+                    <p className="text-xs text-surface-300 truncate">{p.full_name || p.email || 'User'}</p>
                     <p className="text-[10px] text-green-400">{pl}</p>
                   </div>
                 </div>

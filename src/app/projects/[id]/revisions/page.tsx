@@ -23,7 +23,7 @@ type SnapshotElement = {
   revision_color: string;
   is_revised: boolean;
   is_omitted: boolean;
-  metadata: Record<string, any>;
+  metadata: Record<string, string | number | boolean | null>;
 };
 
 type Revision = {
@@ -143,7 +143,7 @@ export default function RevisionsPage() {
   const fetchData = useCallback(async () => {
     const supabase = createClient();
 
-    const { data: scriptData } = await supabase
+    const { data: scriptData, error: scriptError } = await supabase
       .from('scripts')
       .select('id, version, revision_color')
       .eq('project_id', projectId)
@@ -151,7 +151,8 @@ export default function RevisionsPage() {
       .limit(1)
       .single();
 
-    if (!scriptData) {
+    if (scriptError || !scriptData) {
+      if (scriptError) toast.error('Failed to load active script');
       setActiveScript(null);
       setRevisions([]);
       setLoading(false);
@@ -165,7 +166,7 @@ export default function RevisionsPage() {
       .eq('script_id', scriptData.id)
       .order('version', { ascending: false });
 
-    const mapped: Revision[] = (revData || []).map((r: any) => {
+    const mapped: Revision[] = (revData || []).map((r: { id: string; script_id: string; version: number; revision_color?: string; notes?: string; snapshot?: SnapshotElement[] | null; created_by: string; created_at: string; author?: { full_name?: string; email?: string } }) => {
       const snap: SnapshotElement[] | null = r.snapshot ? (Array.isArray(r.snapshot) ? r.snapshot : []) : null;
       const stats = calcStats(snap);
       return {
@@ -173,7 +174,7 @@ export default function RevisionsPage() {
         script_id: r.script_id,
         version: r.version,
         revision_color: r.revision_color || 'white',
-        notes: r.notes,
+        notes: r.notes ?? null,
         snapshot: snap,
         created_by: r.created_by,
         created_at: r.created_at,
@@ -232,9 +233,9 @@ export default function RevisionsPage() {
 
       toast(`Revision ${nextVersion} (${getColorName(nextColor)}) saved`, 'success');
       await fetchData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to create revision:', err);
-      toast(err.message || 'Failed to create revision', 'error');
+      toast(err instanceof Error ? err.message : 'Failed to create revision', 'error');
     } finally {
       setCreating(false);
     }
@@ -288,9 +289,9 @@ export default function RevisionsPage() {
 
       toast(`Restored to revision v${rev.version}`, 'success');
       await fetchData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Restore failed:', err);
-      toast(err.message || 'Failed to restore revision', 'error');
+      toast(err instanceof Error ? err.message : 'Failed to restore revision', 'error');
     } finally {
       setRestoring(null);
     }

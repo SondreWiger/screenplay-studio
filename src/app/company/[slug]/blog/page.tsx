@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Card, LoadingPage } from '@/components/ui';
+import { Card, LoadingPage, toast } from '@/components/ui';
 import type { Company, CompanyBlogPost } from '@/lib/types';
 
 export default function CompanyBlogPage() {
@@ -22,13 +22,17 @@ export default function CompanyBlogPage() {
   const loadBlog = async () => {
     const supabase = createClient();
 
-    const { data: co } = await supabase
+    const { data: co, error: coError } = await supabase
       .from('companies')
       .select('*')
       .eq('slug', slug)
       .single();
 
-    if (!co) { setLoading(false); return; }
+    if (coError || !co) {
+      if (coError) toast.error('Failed to load company');
+      setLoading(false);
+      return;
+    }
     setCompany(co);
 
     const { data: blogPosts } = await supabase
@@ -70,7 +74,7 @@ export default function CompanyBlogPage() {
           </div>
           <div className="flex items-center gap-4">
             {company.logo_url ? (
-              <img src={company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+              <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-10 h-10 rounded-lg object-cover" />
             ) : (
               <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
@@ -122,7 +126,7 @@ export default function CompanyBlogPage() {
               <Link key={post.id} href={`/company/${slug}/blog/${post.slug}`}>
                 <Card hover className="overflow-hidden group mb-4">
                   {post.cover_image_url && (
-                    <img src={post.cover_image_url} alt="" className="w-full h-48 object-cover" />
+                    <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-48 object-cover" />
                   )}
                   <div className="p-6">
                     <div className="flex items-center gap-2 mb-2">
@@ -151,7 +155,7 @@ export default function CompanyBlogPage() {
             <Link key={post.id} href={`/company/${slug}/blog/${post.slug}`}>
               <Card hover className="p-5 group flex gap-5 items-start">
                 {post.cover_image_url && (
-                  <img src={post.cover_image_url} alt="" className="w-24 h-16 rounded-lg object-cover shrink-0" />
+                  <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-24 h-16 rounded-lg object-cover shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-semibold text-white group-hover:text-brand-400 transition-colors">{post.title}</h3>

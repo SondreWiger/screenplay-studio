@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { Button, Card, Modal, Input, Avatar, Badge, LoadingSpinner } from '@/components/ui';
+import { Button, Card, Modal, Input, Avatar, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
 import { notifyConversationMembers } from '@/lib/notifications';
 import Link from 'next/link';
@@ -109,13 +109,15 @@ export default function MessagesClient() {
         const myMembership = convMembers.find((m) => m.user_id === user!.id);
 
         // Get last message
-        const { data: lastMsg } = await supabase
+        const { data: lastMsg, error: lastMsgError } = await supabase
           .from('direct_messages')
           .select('*, sender:profiles!sender_id(*)')
           .eq('conversation_id', conv.id)
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
+
+        if (lastMsgError) console.error('Failed to fetch last message:', lastMsgError.message);
 
         // Count unread
         let unreadCount = 0;
@@ -209,11 +211,16 @@ export default function MessagesClient() {
         { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `conversation_id=eq.${selectedConvo.id}` },
         async (payload) => {
           // Fetch the message with sender profile
-          const { data: msg } = await supabase
+          const { data: msg, error: msgError } = await supabase
             .from('direct_messages')
             .select('*, sender:profiles!sender_id(*)')
             .eq('id', payload.new.id)
             .single();
+
+          if (msgError) {
+            console.error('Failed to fetch message:', msgError.message);
+            return;
+          }
 
           if (msg) {
             setMessages((prev) => {
@@ -270,7 +277,7 @@ export default function MessagesClient() {
       inputRef.current?.focus();
 
       // Notify other members of the conversation
-      const senderName = (user as any)?.display_name || (user as any)?.full_name || (user as any)?.email || 'Someone';
+      const senderName = (user as Profile)?.display_name || (user as Profile)?.full_name || (user as Profile)?.email || 'Someone';
       notifyConversationMembers({
         conversationId: selectedConvo.id,
         senderId: user!.id,
@@ -389,7 +396,7 @@ export default function MessagesClient() {
     await fetchConversations();
 
     // Select the new conversation
-    const enrichedConv = { ...conv, members: memberInserts.map((m) => ({ ...m, profile: m.user_id === user!.id ? user : selectedUsers.find((u) => u.id === m.user_id) })) } as any;
+    const enrichedConv = { ...conv, members: memberInserts.map((m) => ({ ...m, profile: m.user_id === user!.id ? user : selectedUsers.find((u) => u.id === m.user_id) })) } as Conversation;
     selectConvo(enrichedConv);
   };
 

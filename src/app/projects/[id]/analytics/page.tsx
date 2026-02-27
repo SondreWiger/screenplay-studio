@@ -97,15 +97,16 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
       supabase.from('locations').select('id').eq('project_id', params.id),
     ]);
 
-    const elements = (elemRes.data || []) as any[];
-    const scenes = (sceneRes.data || []) as any[];
-    const characters = (charRes.data || []) as any[];
-    const shots = (shotRes.data || []) as any[];
-    const comments = (commentRes.data || []) as any[];
-    const teamMembers = (memberRes.data || []) as any[];
-    const locations = (locationRes.data || []) as any[];
+    type ScriptElementRow = { id: string; element_type: string; content: string; created_at: string; created_by: string; last_edited_by: string };
+    const elements = (elemRes.data || []) as ScriptElementRow[];
+    const scenes = (sceneRes.data || []) as { id: string; is_completed: boolean; created_at: string }[];
+    const characters = (charRes.data || []) as { id: string; is_main: boolean; cast_actor: string | null; created_at: string }[];
+    const shots = (shotRes.data || []) as { id: string; is_completed: boolean; created_at: string }[];
+    const comments = (commentRes.data || []) as { id: string; is_resolved: boolean; created_at: string; user_id: string }[];
+    const teamMembers = (memberRes.data || []) as { id: string; user_id: string; role: string; created_at: string; profiles?: { full_name?: string; display_name?: string; avatar_url?: string; email?: string } }[];
+    const locations = (locationRes.data || []) as { id: string }[];
 
-    const filterByDate = (items: any[]) => {
+    const filterByDate = <T extends { created_at: string }>(items: T[]): T[] => {
       if (!sinceDate) return items;
       return items.filter(i => i.created_at && i.created_at >= sinceDate);
     };
@@ -132,14 +133,14 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
       totalWords,
       totalPages,
       totalScenes: scenes.length,
-      completedScenes: scenes.filter((s: any) => s.is_completed).length,
+      completedScenes: scenes.filter((s) => s.is_completed).length,
       totalCharacters: characters.length,
-      mainCharacters: characters.filter((c: any) => c.is_main).length,
-      castCharacters: characters.filter((c: any) => c.cast_actor).length,
+      mainCharacters: characters.filter((c) => c.is_main).length,
+      castCharacters: characters.filter((c) => c.cast_actor).length,
       totalShots: shots.length,
-      completedShots: shots.filter((s: any) => s.is_completed).length,
+      completedShots: shots.filter((s) => s.is_completed).length,
       totalComments: comments.length,
-      resolvedComments: comments.filter((c: any) => c.is_resolved).length,
+      resolvedComments: comments.filter((c) => c.is_resolved).length,
       teamMembers: teamMembers.length,
       scriptsCount: scriptIds.length,
       dialogueWords,
@@ -186,8 +187,8 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     setMemberActivity(
       Array.from(memberMap.entries())
         .map(([userId, data]) => {
-          const member = teamMembers.find((m: any) => m.user_id === userId);
-          const profile = (member as any)?.profiles;
+          const member = teamMembers.find((m) => m.user_id === userId);
+          const profile = member?.profiles;
           return {
             userId,
             name: profile?.full_name || profile?.display_name || profile?.email || 'Unknown',
@@ -389,7 +390,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                 {memberActivity.map((m) => (
                   <div key={m.userId} className="flex items-center gap-4 p-3 rounded-lg bg-surface-800/30 hover:bg-surface-800/50 transition-colors">
                     {m.avatar ? (
-                      <img src={m.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
+                      <img src={m.avatar} alt={m.name || 'Team member avatar'} className="w-9 h-9 rounded-full object-cover" />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-surface-700 flex items-center justify-center text-xs font-semibold text-white">
                         {m.name[0]?.toUpperCase()}

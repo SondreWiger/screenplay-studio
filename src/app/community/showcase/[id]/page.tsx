@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo } from '@/lib/utils';
+import { toast } from '@/components/ui';
 import { PRODUCTION_ROLES, LANGUAGE_OPTIONS } from '@/lib/types';
 import type { Project, Profile, ProjectMember, Character, ExternalCredit, ShowcaseComment, ShowcaseReview } from '@/lib/types';
 
@@ -231,12 +232,13 @@ export default function ShowcaseDetailPage() {
 
       if (!error && data) {
         // Re-fetch with profile join
-        const { data: full } = await supabase
+        const { data: full, error: refetchErr } = await supabase
           .from('showcase_reviews')
           .select('*, profile:profiles(*)')
           .eq('id', data.id)
           .single();
 
+        if (refetchErr) toast.error('Failed to refresh review data');
         const review = full || data;
         setReviews((prev) => {
           const idx = prev.findIndex((r) => r.id === review.id || r.user_id === user.id);
@@ -604,7 +606,7 @@ export default function ShowcaseDetailPage() {
                     <div key={card.id} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {/* Avatar */}
                       {card.actorAvatar ? (
-                        <img src={card.actorAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                        <img src={card.actorAvatar} alt={card.actorName || card.characterName || 'Cast avatar'} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${card.actorName ? 'bg-white/10 text-white/40' : 'bg-amber-500/10 text-amber-400/60'}`}>
                           {(card.actorName || card.characterName || '?')[0].toUpperCase()}
@@ -659,7 +661,7 @@ export default function ShowcaseDetailPage() {
                   {crewByRole.map((member) => (
                     <div key={member.id} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {member.profile?.avatar_url ? (
-                        <img src={member.profile.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                        <img src={member.profile.avatar_url} alt={member.profile.full_name || 'Team member'} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white/40">
                           {(member.profile?.full_name || '?')[0]}
@@ -679,7 +681,7 @@ export default function ShowcaseDetailPage() {
                   {externalCrew.map((credit) => (
                     <div key={credit.id} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {credit.avatar_url ? (
-                        <img src={credit.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                        <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white/40">
                           {credit.name[0].toUpperCase()}
@@ -906,7 +908,7 @@ export default function ShowcaseDetailPage() {
                     <div key={review.id} className="bg-white/[0.02] border border-white/[0.05] rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         {review.profile?.avatar_url ? (
-                          <img src={review.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          <img src={review.profile.avatar_url} alt={review.profile.full_name || 'Reviewer avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
                             {(review.profile?.full_name || '?')[0].toUpperCase()}
@@ -1013,7 +1015,7 @@ export default function ShowcaseDetailPage() {
                   {comments.map((comment) => (
                     <div key={comment.id} className="flex gap-3 bg-white/[0.02] border border-white/[0.05] rounded-lg p-3">
                       {comment.profile?.avatar_url ? (
-                        <img src={comment.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                        <img src={comment.profile.avatar_url} alt={comment.profile.full_name || 'Commenter avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
                           {(comment.profile?.full_name || '?')[0].toUpperCase()}
@@ -1134,7 +1136,7 @@ export default function ShowcaseDetailPage() {
                 <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">Creator</h3>
                 <div className="flex items-center gap-3">
                   {project.author.avatar_url ? (
-                    <img src={project.author.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+                    <img src={project.author.avatar_url} alt={project.author.full_name || 'Author avatar'} className="w-12 h-12 rounded-full object-cover" />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-lg font-bold text-amber-400">
                       {(project.author.full_name || '?')[0]}

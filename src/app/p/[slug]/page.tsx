@@ -144,7 +144,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
               {projects.map((project) => (
                 <div key={project.id} className="bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-lg transition-shadow">
                   {project.poster_url ? (
-                    <img src={project.poster_url} alt="" className="w-full h-48 object-cover" />
+                    <img src={project.poster_url} alt={project.title || 'Project poster'} className="w-full h-48 object-cover" />
                   ) : (
                     <div className="w-full h-48 flex items-center justify-center" style={{ backgroundColor: company.brand_color + '15' }}>
                       <svg className="w-12 h-12 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -178,7 +178,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                 return (
                   <div key={m.id} className="text-center">
                     {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-24 h-24 rounded-full mx-auto object-cover" />
+                      <img src={profile.avatar_url} alt={profile.full_name || profile.username || 'Team member'} className="w-24 h-24 rounded-full mx-auto object-cover" />
                     ) : (
                       <div className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-stone-400 bg-stone-100">
                         {(profile?.display_name || profile?.full_name || '?')[0].toUpperCase()}
@@ -209,7 +209,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                 <Link key={post.id} href={`/company/${company.slug}/blog/${post.slug}`}
                   className="block bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-lg transition-shadow group">
                   {post.cover_image_url ? (
-                    <img src={post.cover_image_url} alt="" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-40 flex items-center justify-center" style={{ backgroundColor: company.brand_color + '10' }}>
                       <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -67,7 +67,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         console.error('Error fetching members:', fetchError.message);
         setError(fetchError.message);
       }
-      setMembers((data || []).map((m: any) => ({ ...m, profile: m.profile })));
+      setMembers((data || []).map((m: ProjectMember & { profile: Profile }) => ({ ...m, profile: m.profile })));
     } catch (err) {
       console.error('Unexpected error:', err);
       setError('Failed to load team members');
@@ -105,7 +105,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
       const supabase = createClient();
       const { error: updateError } = await supabase.from('project_members').update({ production_role: productionRole || null }).eq('id', memberId);
       if (updateError) { toast.error(updateError.message); return; }
-      setMembers(members.map((m) => m.id === memberId ? { ...m, production_role: productionRole as any } : m));
+      setMembers(members.map((m) => m.id === memberId ? { ...m, production_role: productionRole as ProductionRole } : m));
     } catch {
       toast.error('Failed to update production role');
     }
@@ -145,8 +145,8 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     } catch {}
   };
 
-  const isOnline = (userId: string) => onlineUsers.some((u: any) => u.user_id === userId);
-  const getUserPresence = (userId: string) => onlineUsers.find((u: any) => u.user_id === userId);
+  const isOnline = (userId: string) => onlineUsers.some((u: { user_id: string }) => u.user_id === userId);
+  const getUserPresence = (userId: string) => onlineUsers.find((u: { user_id: string }) => u.user_id === userId);
 
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role;
   const canManage = currentUserRole === 'owner' || currentUserRole === 'admin';
@@ -200,22 +200,23 @@ export default function TeamPage({ params }: { params: { id: string } }) {
             Active Now
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {onlineUsers.map((presence: any) => {
+            {onlineUsers.map((presence) => {
+              const p = presence as UserPresence & { full_name?: string; email?: string; avatar_url?: string };
               const pagePath = presence.current_page || '';
               const pageSegment = pagePath.split('/').pop() || 'overview';
               const pageLabel = PAGE_LABELS[pageSegment] || pageSegment;
               return (
-                <Card key={presence.user_id} className="p-3 border-green-500/20">
+                <Card key={p.user_id} className="p-3 border-green-500/20">
                   <div className="flex items-center gap-3">
                     <Avatar
-                      src={presence.avatar_url}
-                      name={presence.full_name || presence.email}
+                      src={p.avatar_url}
+                      name={p.full_name || p.email}
                       size="md"
                       online
                     />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-white truncate">
-                        {presence.full_name || presence.email || 'User'}
+                        {p.full_name || p.email || 'User'}
                       </p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="text-[11px] text-green-400">Viewing</span>
@@ -240,7 +241,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           const role = ROLES.find((r) => r.value === member.role);
           const online = isOnline(member.user_id);
           const presence = getUserPresence(member.user_id);
-          const pagePath = (presence as any)?.current_page || '';
+          const pagePath = (presence as UserPresence & { current_page?: string })?.current_page || '';
           const pageSegment = pagePath.split('/').pop() || '';
           const pageLabel = PAGE_LABELS[pageSegment];
 
@@ -422,7 +423,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
               <Card key={credit.id} className="overflow-hidden">
                 <div className="flex items-center gap-4 p-4">
                   {credit.avatar_url ? (
-                    <img src={credit.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-surface-800 flex items-center justify-center text-sm font-bold text-surface-400">
                       {credit.name[0].toUpperCase()}
@@ -512,7 +513,7 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
       if (profileErr || !profile) { setError('No user found with that email. They need to create an account first.'); setLoading(false); return; }
 
       // Check if already a member
-      const { data: existing } = await supabase.from('project_members').select('id').eq('project_id', projectId).eq('user_id', profile.id).single();
+      const { data: existing } = await supabase.from('project_members').select('id').eq('project_id', projectId).eq('user_id', profile.id).maybeSingle();
       if (existing) { setError('This user is already a team member.'); setLoading(false); return; }
 
       const { error: insertErr } = await supabase.from('project_members').insert({

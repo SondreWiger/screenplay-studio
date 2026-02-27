@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
-import { Button, Badge, Input, EmptyState } from '@/components/ui';
+import { Button, Badge, Input, EmptyState, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { UploadChecklistItem } from '@/lib/types';
 import { DEFAULT_UPLOAD_CHECKLIST } from '@/lib/types';
@@ -107,7 +107,7 @@ export default function ChecklistPage() {
     if (!newItem.trim()) return;
     const supabase = createClient();
     
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('upload_checklist')
       .insert({
         project_id: projectId,
@@ -119,6 +119,7 @@ export default function ChecklistPage() {
       .select()
       .single();
 
+    if (error) { toast.error('Failed to add checklist item'); return; }
     if (data) {
       setItems([...items, data]);
       setNewItem('');

@@ -200,7 +200,7 @@ export default function DeepDiveMoodboardPage() {
                       <span className="text-xs text-white/30">Link</span>
                     </div>
                     {item.image_url && (
-                      <img src={item.image_url} alt="" className="w-full aspect-video object-cover rounded-lg mb-2" loading="lazy" />
+                      <img src={item.image_url} alt={item.title || 'Moodboard image'} className="w-full aspect-video object-cover rounded-lg mb-2" loading="lazy" />
                     )}
                   </div>
                 )}

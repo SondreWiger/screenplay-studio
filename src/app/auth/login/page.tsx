@@ -94,9 +94,10 @@ function LoginForm() {
       sessionStorage.setItem('ss_session_active', '1');
       router.push(redirect);
       router.refresh();
-    } catch (err: any) {
-      log(`Exception: ${err?.message || err}`);
-      setError(`Unexpected error: ${err?.message || 'Unknown'}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown';
+      log(`Exception: ${message}`);
+      setError(`Unexpected error: ${message}`);
       setLoading(false);
     }
   }, [redirect, router, log]);

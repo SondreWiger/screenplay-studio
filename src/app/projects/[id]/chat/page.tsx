@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Input, Modal, Avatar, Badge, LoadingSpinner } from '@/components/ui';
+import { Button, Input, Modal, Avatar, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
 import type { ProjectChannel, ChannelMessage, ProjectMember, UserRole, ProductionRole } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
@@ -195,11 +195,16 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
           filter: `channel_id=eq.${selectedChannel.id}`,
         },
         async (payload) => {
-          const { data: msg } = await supabase
+          const { data: msg, error: msgError } = await supabase
             .from('channel_messages')
             .select('*, sender:profiles!sender_id(*)')
             .eq('id', payload.new.id)
             .single();
+
+          if (msgError) {
+            console.error('Failed to fetch channel message:', msgError.message);
+            return;
+          }
 
           if (msg) {
             setMessages((prev) => {

@@ -105,7 +105,7 @@ export function useNotifications(userId: string | undefined) {
           const { data } = await supabase
             .from('notifications')
             .select('*, actor:profiles!notifications_actor_id_fkey(*)')
-            .eq('id', (payload.new as any).id)
+            .eq('id', (payload.new as { id: string }).id)
             .single();
           if (data) {
             const notif = data as Notification;

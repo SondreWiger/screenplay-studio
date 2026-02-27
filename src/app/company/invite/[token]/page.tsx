@@ -15,8 +15,8 @@ import { Button, Card, LoadingPage } from '@/components/ui';
 export default function AcceptInvitePage({ params }: { params: { token: string } }) {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [invitation, setInvitation] = useState<any>(null);
-  const [company, setCompany] = useState<any>(null);
+  const [invitation, setInvitation] = useState<{ id: string; company_id: string; email: string; role: string; token: string; accepted: boolean; expires_at?: string; company?: { name: string; logo_url?: string; brand_color?: string; slug?: string } } | null>(null);
+  const [company, setCompany] = useState<{ name: string; logo_url?: string; brand_color?: string; slug?: string } | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'accepting' | 'success' | 'error' | 'login'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -127,7 +127,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
       <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
         <Card className="p-8 max-w-md w-full text-center">
           {company?.logo_url ? (
-            <img src={company.logo_url} alt="" className="h-12 w-auto mx-auto mb-4" />
+            <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" />
           ) : company ? (
             <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
               {company.name?.[0] || '?'}
@@ -190,7 +190,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
     <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
       <Card className="p-8 max-w-md w-full text-center">
         {company?.logo_url ? (
-          <img src={company.logo_url} alt="" className="h-12 w-auto mx-auto mb-4" />
+          <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" />
         ) : company ? (
           <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
             {company.name?.[0] || '?'}

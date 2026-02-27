@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
-import { Button, Badge, Input, Textarea, EmptyState, Modal } from '@/components/ui';
+import { Button, Badge, Input, Textarea, EmptyState, Modal, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Thumbnail } from '@/lib/types';
 
@@ -61,6 +61,7 @@ export default function ThumbnailsPage() {
       .select()
       .single();
     
+    if (error) { toast.error('Failed to create thumbnail'); return; }
     if (data) {
       setThumbnails([...thumbnails, data]);
       resetForm();

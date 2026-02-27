@@ -75,7 +75,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
         .from('project_members')
         .select('project_id')
         .eq('user_id', user.id);
-      const memberProjectIds = (memberships || []).map((m: any) => m.project_id);
+      const memberProjectIds = (memberships || []).map((m: { project_id: string }) => m.project_id);
 
       const { data } = await supabase
         .from('projects')

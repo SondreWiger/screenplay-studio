@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Button, Badge, Input, Textarea } from '@/components/ui';
+import { Button, Badge, Input, Textarea, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Location, LocationMarker, LocationRoute, MarkerType, RouteType } from '@/lib/types';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents, useMap } from 'react-leaflet';
@@ -135,6 +135,7 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
         project_id: projectId, name, marker_type: newMarkerType,
         lat, lng, color: MARKER_COLORS[newMarkerType], tags: [], location_ids: [],
       }).select().single();
+      if (error) { toast.error('Failed to add marker'); return; }
       if (data) {
         const migratedData = { ...data, location_ids: data.location_ids || [] };
         setMarkers((p) => [...p, migratedData]);
@@ -181,11 +182,12 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
   const finishRoute = async () => {
     if (routePoints.length < 2) return;
     const supabase = createClient();
-    const { data } = await supabase.from('location_routes').insert({
+    const { data, error } = await supabase.from('location_routes').insert({
       project_id: projectId, name: routeForm.name || `${newRouteType} route`,
       route_type: newRouteType, color: routeForm.color || ROUTE_COLORS[newRouteType],
       coordinates: routePoints, notes: routeForm.notes || null,
     }).select().single();
+    if (error) { toast.error('Failed to create route'); return; }
     if (data) setRoutes((p) => [...p, data]);
     setRoutePoints([]);
     setMode('view');

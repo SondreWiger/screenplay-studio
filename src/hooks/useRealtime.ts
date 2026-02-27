@@ -33,7 +33,7 @@ export function useRealtime(projectId: string) {
 
           // For DELETE, check old record's last_edited_by as well
           if (payload.eventType === 'DELETE') {
-            const oldRecord = payload.old as any;
+            const oldRecord = payload.old as { id: string; last_edited_by?: string };
             if (oldRecord?.last_edited_by === user.id) return;
           }
 
@@ -79,9 +79,9 @@ export function useRealtime(projectId: string) {
             current_page: page,
             is_online: true,
             last_seen: new Date().toISOString(),
-            full_name: (user as any).full_name || (user as any).email || '',
-            email: (user as any).email || '',
-            avatar_url: (user as any).avatar_url || '',
+            full_name: user.full_name || user.email || '',
+            email: user.email || '',
+            avatar_url: user.avatar_url || '',
             focused_element_id: null,
           });
         }
@@ -107,9 +107,9 @@ export function useRealtime(projectId: string) {
           current_page: page,
           is_online: true,
           last_seen: new Date().toISOString(),
-          full_name: (user as any).full_name || (user as any).email || '',
-          email: (user as any).email || '',
-          avatar_url: (user as any).avatar_url || '',
+          full_name: user.full_name || user.email || '',
+          email: user.email || '',
+          avatar_url: user.avatar_url || '',
           focused_element_id: elementId || null,
         });
       } catch {} // channel may not be joined yet

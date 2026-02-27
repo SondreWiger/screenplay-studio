@@ -65,7 +65,7 @@ export async function GET() {
     const items = (posts || []).map((post: any) => {
       const authorName = post.author?.full_name || post.author?.display_name || 'Screenplay Studio';
       const pubDate = post.published_at ? new Date(post.published_at).toUTCString() : new Date().toUTCString();
-      const contentHtml = sectionsToHtml(post.sections || [], post.cover_image_url);
+      const contentHtml = sectionsToHtml(post.sections || [], post.cover_image_url || undefined);
       const tags = (post.tags || []) as string[];
 
       const categoryTags = tags.map((t) => `      <category>${escapeXml(t)}</category>`).join('\n');

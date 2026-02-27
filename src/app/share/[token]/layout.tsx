@@ -19,12 +19,12 @@ export async function generateMetadata({ params }: { params: { token: string } }
 
   const title = share.title || 'Shared Content';
   const shareTypeLabel = share.share_type === 'script' ? 'Script' : share.share_type === 'storyboard' ? 'Storyboard' : share.share_type === 'full' ? 'Full Project' : 'Content';
-  const projectTitle = (share.content_snapshot as any)?.project?.title || '';
+  const projectTitle = (share.content_snapshot as { project?: { title?: string; cover_url?: string } } | null)?.project?.title || '';
   const description = projectTitle
     ? `${shareTypeLabel} shared from "${projectTitle}" on Screenplay Studio.`
     : `${shareTypeLabel} shared via Screenplay Studio.`;
-  const coverUrl = (share.content_snapshot as any)?.project?.cover_url;
-  const brandLogo = (share.branding as any)?.logo_url;
+  const coverUrl = (share.content_snapshot as { project?: { title?: string; cover_url?: string } } | null)?.project?.cover_url;
+  const brandLogo = (share.branding as { logo_url?: string } | null)?.logo_url;
 
   return {
     title: `${title} — Screenplay Studio`,
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: { token: string } }
       url: `${BASE_URL}/share/${params.token}`,
       siteName: 'Screenplay Studio',
       images: (coverUrl || brandLogo)
-        ? [{ url: coverUrl || brandLogo, width: 1200, height: 630, alt: title }]
+        ? [{ url: (coverUrl || brandLogo)!, width: 1200, height: 630, alt: title }]
         : [{ url: '/api/og?title=' + encodeURIComponent(title), width: 1200, height: 630, alt: 'Screenplay Studio' }],
     },
     twitter: {

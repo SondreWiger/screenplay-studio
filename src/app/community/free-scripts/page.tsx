@@ -10,6 +10,8 @@ import { formatDate, timeAgo } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { CommunityPost, CommunityCategory } from '@/lib/types';
 
+type EnrichedPost = CommunityPost & { _productionCount?: number };
+
 // ============================================================
 // Free-to-Use Scripts — library of openly-licensed scripts
 // ============================================================
@@ -48,7 +50,7 @@ export default function FreeScriptsPage() {
 
     // Fetch categories for each post
     if (rawPosts.length > 0) {
-      const postIds = rawPosts.map((p: any) => p.id);
+      const postIds = rawPosts.map((p: { id: string }) => p.id);
       const { data: junctions } = await supabase
         .from('community_post_categories')
         .select('post_id, category:community_categories(*)')
@@ -61,14 +63,14 @@ export default function FreeScriptsPage() {
         catMap.set(j.post_id, arr);
       });
 
-      rawPosts.forEach((p: any) => {
+      rawPosts.forEach((p: CommunityPost) => {
         p.categories = catMap.get(p.id) || [];
       });
     }
 
     // Fetch production counts
     if (rawPosts.length > 0) {
-      const postIds = rawPosts.map((p: any) => p.id);
+      const postIds = rawPosts.map((p: { id: string }) => p.id);
       const { data: prodCounts } = await supabase
         .from('script_productions')
         .select('post_id')
@@ -76,11 +78,11 @@ export default function FreeScriptsPage() {
         .eq('status', 'approved');
 
       const countMap = new Map<string, number>();
-      (prodCounts || []).forEach((p: any) => {
+      (prodCounts || []).forEach((p: { post_id: string }) => {
         countMap.set(p.post_id, (countMap.get(p.post_id) || 0) + 1);
       });
 
-      rawPosts.forEach((p: any) => {
+      rawPosts.forEach((p: EnrichedPost) => {
         p._productionCount = countMap.get(p.id) || 0;
       });
     }
@@ -258,7 +260,7 @@ export default function FreeScriptsPage() {
                     {/* Cover image */}
                     {post.cover_image_url && (
                       <div className="h-36 bg-stone-100 overflow-hidden">
-                        <img src={post.cover_image_url} alt="" className="w-full h-full object-cover" />
+                        <img src={post.cover_image_url} alt={post.title || 'Script cover'} className="w-full h-full object-cover" />
                       </div>
                     )}
 
@@ -290,7 +292,7 @@ export default function FreeScriptsPage() {
                       <div className="flex items-center gap-3 mt-3 text-xs text-stone-400">
                         <span className="flex items-center gap-1">
                           {post.author?.avatar_url ? (
-                            <img src={post.author.avatar_url} alt="" className="w-4 h-4 rounded-full" />
+                            <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" />
                           ) : (
                             <div className="w-4 h-4 rounded-full bg-stone-200 flex items-center justify-center text-[8px] font-bold text-stone-500">
                               {(post.author?.full_name || '?')[0]}
@@ -311,9 +313,9 @@ export default function FreeScriptsPage() {
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                           {post.comment_count}
                         </span>
-                        {(post as any)._productionCount > 0 && (
+                        {(post as EnrichedPost)._productionCount && (post as EnrichedPost)._productionCount! > 0 && (
                           <span className="flex items-center gap-1 text-green-600 font-medium">
-                            🎬 {(post as any)._productionCount} production{(post as any)._productionCount !== 1 ? 's' : ''}
+                            🎬 {(post as EnrichedPost)._productionCount} production{(post as EnrichedPost)._productionCount !== 1 ? 's' : ''}
                           </span>
                         )}
                         <span className="ml-auto text-green-600 font-semibold">Free to Use</span>

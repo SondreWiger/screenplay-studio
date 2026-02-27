@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Input, Textarea, LoadingPage } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
 import type {
   Company, CompanyMember, CompanyTeam, CompanyTeamMember,
   CompanyInvitation, CompanyActivityLog, CompanyRole, Profile, Project
@@ -66,8 +66,12 @@ export default function CompanyPage() {
     if (!user) return;
     setLoading(true);
 
-    const { data: co } = await supabase.from('companies').select('*').eq('slug', slug).single();
-    if (!co) { router.replace('/dashboard'); return; }
+    const { data: co, error: coError } = await supabase.from('companies').select('*').eq('slug', slug).single();
+    if (coError || !co) {
+      if (coError) toast.error('Failed to load company');
+      router.replace('/dashboard');
+      return;
+    }
     setCompany(co);
     setSettingsForm(co);
 
@@ -243,7 +247,7 @@ export default function CompanyPage() {
           </div>
           <div className="flex items-center gap-4">
             {company.logo_url ? (
-              <img src={company.logo_url} alt="" className="w-14 h-14 rounded-xl object-cover" />
+              <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" />
             ) : (
               <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
@@ -353,7 +357,7 @@ export default function CompanyPage() {
                 <Card key={m.id} className="p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-surface-800 flex items-center justify-center text-sm font-bold text-white shrink-0">
                     {(m.profile as Profile | undefined)?.avatar_url ? (
-                      <img src={(m.profile as Profile).avatar_url!} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <img src={(m.profile as Profile).avatar_url!} alt={(m.profile as Profile).full_name || 'Team member'} className="w-10 h-10 rounded-full object-cover" />
                     ) : (
                       (m.profile as Profile | undefined)?.display_name?.[0] || '?'
                     )}
@@ -474,7 +478,7 @@ export default function CompanyPage() {
                 <Link key={project.id} href={`/projects/${project.id}`}>
                   <Card className="p-4 flex items-center gap-4 hover:bg-surface-800/50 transition-colors cursor-pointer">
                     {project.poster_url ? (
-                      <img src={project.poster_url} alt="" className="w-12 h-16 rounded-lg object-cover" />
+                      <img src={project.poster_url} alt={project.title || 'Project poster'} className="w-12 h-16 rounded-lg object-cover" />
                     ) : (
                       <div className="w-12 h-16 rounded-lg bg-surface-800 flex items-center justify-center text-surface-500">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>

@@ -197,9 +197,9 @@ export default function ShareScriptPage() {
       }
 
       router.push(`/community/post/${slug.trim()}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error sharing script:', err);
-      setError(err.message || 'Failed to share script');
+      setError(err instanceof Error ? err.message : 'Failed to share script');
     } finally {
       setSubmitting(false);
     }

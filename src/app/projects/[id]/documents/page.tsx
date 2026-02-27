@@ -204,7 +204,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   // Create new document
   const handleCreateDoc = async (title: string, docType: DocumentType) => {
     const supabase = createClient();
-    const { data } = await supabase.from('project_documents').insert({
+    const { data, error } = await supabase.from('project_documents').insert({
       project_id: params.id,
       folder_id: currentFolder,
       title,
@@ -212,6 +212,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
       created_by: user?.id,
       last_edited_by: user?.id,
     }).select().single();
+    if (error) { toast.error('Failed to create document'); return; }
     if (data) {
       setDocuments([data, ...documents]);
       setCurrentDoc(data);
@@ -222,12 +223,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   // Create new folder
   const handleCreateFolder = async (name: string) => {
     const supabase = createClient();
-    const { data } = await supabase.from('project_folders').insert({
+    const { data, error } = await supabase.from('project_folders').insert({
       project_id: params.id,
       parent_folder_id: currentFolder,
       name,
       created_by: user?.id,
     }).select().single();
+    if (error) { toast.error('Failed to create folder'); return; }
     if (data) {
       setFolders([...folders, data]);
     }

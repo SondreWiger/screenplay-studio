@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { BudgetItem, BudgetCategory } from '@/lib/types';
@@ -169,11 +169,12 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
     if (!canEdit) return;
     const supabase = createClient();
     const { id: _id, created_at: _ca, updated_at: _ua, ...rest } = item;
-    const { data } = await supabase.from('budget_items').insert({
+    const { data, error } = await supabase.from('budget_items').insert({
       ...rest,
       description: item.description + ' (copy)',
       is_paid: false,
     }).select().single();
+    if (error) { toast.error('Failed to duplicate budget item'); return; }
     if (data) setItems((prev) => [...prev, data]);
   };
 

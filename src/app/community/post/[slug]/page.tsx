@@ -10,7 +10,7 @@ import { ScriptContentViewer } from '@/components/ScreenplayRenderer';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
 import { toast } from '@/components/ui';
-import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction } from '@/lib/types';
+import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction, Profile } from '@/lib/types';
 
 // ============================================================
 // Post Detail — view a community-shared script
@@ -101,7 +101,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
     setPost((prev) => prev ? { ...prev, upvote_count: prev.upvote_count + (data ? 1 : -1) } : prev);
     // Notify post author on upvote (not on un-upvote)
     if (data && post.author_id !== user.id) {
-      const actorName = (user as any)?.display_name || (user as any)?.full_name || 'Someone';
+      const actorName = (user as Profile)?.display_name || (user as Profile)?.full_name || 'Someone';
       sendNotification({
         userId: post.author_id,
         type: 'community_upvote',
@@ -124,7 +124,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
     try {
       const supabase = createClient();
       const commentType = activeTab === 'suggestions' ? 'suggestion' : 'comment';
-      const { data } = await supabase
+      const { data, error: commentError } = await supabase
         .from('community_comments')
         .insert({
           post_id: post.id,
@@ -135,6 +135,12 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         })
         .select('*, author:profiles!author_id(*)')
         .single();
+
+      if (commentError) {
+        toast.error('Failed to post comment: ' + commentError.message);
+        setSubmitting(false);
+        return;
+      }
 
       if (data) {
         // Add to flat comments list (nesting handled by recursive component)
@@ -147,7 +153,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         }
         // Notify post author about the comment
         if (post.author_id !== user.id) {
-          const actorName = (user as any)?.display_name || (user as any)?.full_name || 'Someone';
+          const actorName = (user as Profile)?.display_name || (user as Profile)?.full_name || 'Someone';
           sendNotification({
             userId: post.author_id,
             type: 'community_comment',
@@ -163,7 +169,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         if (parentId) {
           const parentComment = comments.find((c) => c.id === parentId);
           if (parentComment && parentComment.author_id !== user.id && parentComment.author_id !== post.author_id) {
-            const actorName = (user as any)?.display_name || (user as any)?.full_name || 'Someone';
+            const actorName = (user as Profile)?.display_name || (user as Profile)?.full_name || 'Someone';
             sendNotification({
               userId: parentComment.author_id,
               type: 'community_reply',
@@ -241,8 +247,8 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
       if (data) {
         router.push(`/projects/${data}`);
       }
-    } catch (err: any) {
-      toast.error('Failed to fork: ' + (err?.message || 'Unknown error'));
+    } catch (err: unknown) {
+      toast.error('Failed to fork: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setForking(false);
     }
@@ -266,8 +272,8 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
       if (error) throw error;
       setFilmSubmitted(true);
       setFilmTitle(''); setFilmDesc(''); setFilmUrl(''); setFilmThumb('');
-    } catch (err: any) {
-      toast.error('Failed to submit: ' + (err?.message || 'Unknown error'));
+    } catch (err: unknown) {
+      toast.error('Failed to submit: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setSubmittingFilm(false);
     }
@@ -335,7 +341,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                 <Link href="/dashboard" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
                 <Link href={`/u/${user.username || user.id}`}>
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
                   ) : (
                     <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600 hover:ring-2 ring-brand-300 transition-all">
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -378,7 +384,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               className="flex items-center gap-3 group"
             >
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt="" className="w-10 h-10 rounded-full group-hover:ring-2 ring-brand-300 transition-all" />
+                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-brand-300 transition-all" />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-sm font-bold text-brand-600 group-hover:ring-2 ring-brand-300 transition-all">
                   {(post.author?.full_name || 'A')[0]}
@@ -453,7 +459,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         {/* Cover image */}
         {post.cover_image_url && (
           <div className="rounded-xl overflow-hidden mb-8 max-h-72">
-            <img src={post.cover_image_url} alt="" className="w-full h-full object-cover" />
+            <img src={post.cover_image_url} alt={post.title || 'Post cover'} className="w-full h-full object-cover" />
           </div>
         )}
 
@@ -667,7 +673,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                   >
                     {prod.thumbnail_url && (
                       <div className="rounded-lg overflow-hidden mb-3 h-32">
-                        <img src={prod.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                        <img src={prod.thumbnail_url} alt={prod.title || 'Production thumbnail'} className="w-full h-full object-cover" />
                       </div>
                     )}
                     <h4 className="text-sm font-semibold text-stone-900">{prod.title}</h4>
@@ -777,7 +783,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
   comment: CommunityComment;
   allComments: CommunityComment[];
   depth: number;
-  user: any;
+  user: Profile | null;
   replyingTo: string | null;
   setReplyingTo: (id: string | null) => void;
   replyText: string;
@@ -800,7 +806,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
         <div className="flex items-start gap-3">
           <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
             {comment.author?.avatar_url ? (
-              <img src={comment.author.avatar_url} alt="" className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-brand-300 transition-all')} />
+              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-brand-300 transition-all')} />
             ) : (
               <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-stone-200 flex items-center justify-center font-bold text-stone-500 hover:ring-2 ring-brand-300 transition-all')}>
                 {(comment.author?.full_name || '?')[0]}

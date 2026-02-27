@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
-import { Button, LoadingPage, Input } from '@/components/ui';
+import { Button, LoadingPage, Input, toast } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
 import type { UsageIntent, ScriptType } from '@/lib/types';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
@@ -111,12 +111,13 @@ export default function OnboardingPage() {
     // Create company if user wants one
     if (wantsCompany && companyName.trim()) {
       const slug = companyName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const { data: co } = await supabase.from('companies').insert({
+      const { data: co, error: companyError } = await supabase.from('companies').insert({
         name: companyName.trim(),
         slug,
         owner_id: user.id,
       }).select().single();
 
+      if (companyError) { toast.error('Failed to create company'); setSaving(false); return; }
       if (co) {
         await supabase.from('profiles').update({ company_id: co.id }).eq('id', user.id);
         useAuthStore.getState().setUser({

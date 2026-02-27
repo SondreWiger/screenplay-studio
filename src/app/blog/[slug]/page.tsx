@@ -218,7 +218,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 </button>
                 <div className="flex items-center gap-2">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full" />
                   ) : (
                     <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -256,7 +256,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             )}
             <div className="mt-8 flex items-center gap-4 pb-8 border-b border-stone-200">
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt="" className="w-10 h-10 rounded-full" />
+                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full" />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-sm font-bold text-brand-600">
                   {(post.author?.full_name || 'A')[0]}
@@ -355,7 +355,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 <div className="mb-10">
                   <div className="flex gap-3">
                     {user.avatar_url ? (
-                      <img src={user.avatar_url} alt="" className="w-9 h-9 rounded-full flex-shrink-0" />
+                      <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-9 h-9 rounded-full flex-shrink-0" />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600 flex-shrink-0">
                         {(user.full_name || user.email || 'U')[0]}
@@ -499,7 +499,7 @@ function CommentCard({
     <div className="group">
       <div className="flex gap-3">
         {comment.author?.avatar_url ? (
-          <img src={comment.author.avatar_url} alt="" className="w-8 h-8 rounded-full flex-shrink-0" />
+          <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className="w-8 h-8 rounded-full flex-shrink-0" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-600 flex-shrink-0">
             {initials}
@@ -562,7 +562,7 @@ function CommentCard({
               {comment.replies.map((reply) => (
                 <div key={reply.id} className="flex gap-3">
                   {reply.author?.avatar_url ? (
-                    <img src={reply.author.avatar_url} alt="" className="w-6 h-6 rounded-full flex-shrink-0" />
+                    <img src={reply.author.avatar_url} alt={reply.author.full_name || 'Reply author avatar'} className="w-6 h-6 rounded-full flex-shrink-0" />
                   ) : (
                     <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-600 flex-shrink-0">
                       {(reply.author?.full_name || reply.author_name || '?')[0]?.toUpperCase()}

@@ -219,8 +219,8 @@ export default function SecuritySettingsPage() {
       if (!res.ok) throw new Error(data.error || 'Failed');
       setMessage({ type: 'success', text: data.message });
       fetchData();
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Failed to schedule deletion.' });
+    } catch (err: unknown) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to schedule deletion.' });
     } finally {
       setDeletingAccount(false);
     }
@@ -236,8 +236,8 @@ export default function SecuritySettingsPage() {
       if (!res.ok) throw new Error(data.error || 'Failed');
       setMessage({ type: 'success', text: 'Account deletion cancelled.' });
       fetchData();
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Failed to cancel deletion.' });
+    } catch (err: unknown) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to cancel deletion.' });
     } finally {
       setCancellingDeletion(false);
     }

@@ -88,7 +88,7 @@ export default function BlogPage() {
                 </button>
                 <div className="flex items-center gap-2">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full" />
                   ) : (
                     <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -208,7 +208,7 @@ export default function BlogPage() {
                   )}
                   <div className="mt-6 flex items-center gap-3">
                     {featured.author?.avatar_url ? (
-                      <img src={featured.author.avatar_url} alt="" className="w-8 h-8 rounded-full" />
+                      <img src={featured.author.avatar_url} alt={featured.author.full_name || 'Author avatar'} className="w-8 h-8 rounded-full" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
                         {(featured.author?.full_name || 'A')[0]}

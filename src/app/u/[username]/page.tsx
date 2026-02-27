@@ -285,7 +285,7 @@ export default function UserProfilePage({ params }: { params: { username: string
       {/* Hero banner — larger, more dramatic */}
       <div className={`relative h-56 md:h-72 bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
         {profile.banner_url ? (
-          <img src={profile.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={profile.banner_url} alt={`${displayName}'s profile banner`} className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           /* Animated subtle grid pattern for non-banner profiles */
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
@@ -460,7 +460,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                 <div key={project.id} className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-all group`}>
                   {project.poster_url || project.cover_url ? (
                     <div className="aspect-[16/10] overflow-hidden">
-                      <img src={project.poster_url || project.cover_url || ''} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
                   ) : (
                     <div className={`aspect-[16/10] bg-gradient-to-br ${theme.gradient} flex items-center justify-center`}>
@@ -595,7 +595,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                       </div>
                       {post.cover_image_url && (
                         <div className="hidden sm:block w-24 h-16 rounded-lg overflow-hidden shrink-0">
-                          <img src={post.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         </div>
                       )}
                     </div>
@@ -620,7 +620,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                   <div key={project.id} className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-all group`}>
                     {project.poster_url || project.cover_url ? (
                       <div className="aspect-[16/10] overflow-hidden">
-                        <img src={project.poster_url || project.cover_url || ''} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
                     ) : (
                       <div className={`aspect-[16/10] bg-gradient-to-br ${theme.gradient} flex items-center justify-center`}>

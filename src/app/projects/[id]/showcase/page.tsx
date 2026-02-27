@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Input, Textarea, LoadingSpinner } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import type { Project } from '@/lib/types';
 
 type SetPhoto = {
@@ -48,7 +48,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
     try {
       const supabase = createClient();
       const { data, error } = await supabase.from('projects').select('*').eq('id', params.id).single();
-      if (error) console.error('Showcase settings fetch error:', error.message);
+      if (error) { toast.error('Failed to load showcase settings'); setLoading(false); return; }
       setProject(data);
       setWrapUrl(data?.wrap_url || '');
       setIsShowcased(data?.is_showcased || false);
@@ -190,7 +190,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
                     {/* Preview */}
                     {photo.url && (
                       <div className="w-24 h-16 rounded-lg overflow-hidden bg-surface-800 shrink-0">
-                        <img src={photo.url} alt="" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                        <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
                       </div>
                     )}
                     <div className="flex-1 space-y-2">

@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { ScriptContentViewer, ScreenplayRenderer } from '@/components/ScreenplayRenderer';
 import { formatDate, formatDateTime, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil, timeAgo, cn } from '@/lib/utils';
+import { toast } from '@/components/ui';
 import type { CommunityChallenge, ChallengeSubmission, Profile, Project } from '@/lib/types';
 
 // ============================================================
@@ -46,13 +47,17 @@ export default function ChallengeDetailPage() {
   const fetchData = useCallback(async () => {
     const supabase = createClient();
 
-    const { data: ch } = await supabase
+    const { data: ch, error: chError } = await supabase
       .from('community_challenges')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (!ch) { setLoading(false); return; }
+    if (chError || !ch) {
+      if (chError) toast.error('Failed to load challenge');
+      setLoading(false);
+      return;
+    }
     setChallenge(ch);
 
     // Fetch submissions with author

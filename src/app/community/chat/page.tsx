@@ -323,7 +323,7 @@ export default function ChatPage() {
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-500 shrink-0" style={author?.avatar_url ? {} : { backgroundColor: `hsl(${(msg.author_id.charCodeAt(0) * 47) % 360}, 40%, 90%)`, color: `hsl(${(msg.author_id.charCodeAt(0) * 47) % 360}, 40%, 40%)` }}>
                         {author?.avatar_url ? (
-                          <img src={author.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                          <img src={author.avatar_url} alt={author.full_name || 'Chat user avatar'} className="w-full h-full rounded-full object-cover" />
                         ) : (
                           (author?.full_name || author?.email || '?')[0].toUpperCase()
                         )}

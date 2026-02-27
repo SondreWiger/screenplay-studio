@@ -79,10 +79,10 @@ function CheckoutContent() {
 
       setRedirect(data.redirect || '/settings/billing');
       setStatus('success');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Capture failed:', err);
       setStatus('error');
-      setError(err.message || 'Something went wrong. Please contact support.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please contact support.');
     }
   };
 

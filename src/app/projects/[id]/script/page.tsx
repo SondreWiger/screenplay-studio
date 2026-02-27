@@ -84,7 +84,7 @@ interface CollabCursor {
   name: string;
   colorIdx: number;
 }
-import type { ScriptElement, ScriptElementType, Script, ScriptDraft, Comment, CommentType, Profile } from '@/lib/types';
+import type { ScriptElement, ScriptElementType, Script, ScriptDraft, Comment, CommentType, Profile, UserPresence, TitlePageData } from '@/lib/types';
 import { ELEMENT_LABELS, REVISION_COLOR_HEX } from '@/lib/types';
 
 // ============================================================
@@ -271,10 +271,10 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
   // Detect YouTube/Content Creator project
   const isContentCreator = useMemo(() => {
-    const projectType = (currentProject as any)?.project_type;
-    const scriptType = (currentProject as any)?.script_type;
-    return ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(projectType) ||
-           ['youtube', 'tiktok'].includes(scriptType);
+    const projectType = currentProject?.project_type;
+    const scriptType = currentProject?.script_type;
+    return ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(projectType || '') ||
+           ['youtube', 'tiktok'].includes(scriptType || '');
   }, [currentProject]);
 
   // Element cycle based on project type
@@ -531,12 +531,13 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const collabMap = useMemo(() => {
     const map: Record<string, CollabCursor[]> = {};
     scriptUsers.forEach((u, i) => {
-      const focusedId = (u as any).focused_element_id;
+      const presence = u as UserPresence & { focused_element_id?: string; full_name?: string; email?: string; avatar_url?: string };
+      const focusedId = presence.focused_element_id;
       if (!focusedId) return;
       if (!map[focusedId]) map[focusedId] = [];
       map[focusedId].push({
         userId: u.user_id,
-        name: (u as any).full_name || (u as any).email || 'User',
+        name: presence.full_name || presence.email || 'User',
         colorIdx: i % COLLAB_COLORS.length,
       });
     });
@@ -570,7 +571,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     const els = store.elements;
     if (!script) return;
 
-    const titlePage = script.title_page_data || {} as any;
+    const titlePage = script.title_page_data || ({} as TitlePageData);
     const hasTitlePage = titlePage.title || titlePage.author;
 
     // Build element HTML
@@ -801,7 +802,7 @@ ${pageHTML}
       const text = await file.text();
 
       try {
-        let titlePage: any = {};
+        let titlePage: TitlePageData = {};
         let importedElements: Partial<ScriptElement>[] = [];
 
         if (format === 'fdx') {
@@ -864,8 +865,8 @@ ${pageHTML}
         fetchElements(currentScript.id);
         setShowImportExport(false);
         toast.success(`Successfully imported ${count} elements from ${file.name}!`);
-      } catch (err: any) {
-        toast.error('Import error: ' + (err.message || 'Unknown error'));
+      } catch (err: unknown) {
+        toast.error('Import error: ' + (err instanceof Error ? err.message : 'Unknown error'));
       }
     };
     input.click();
@@ -1126,7 +1127,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 {scriptUsers.map((u) => (
                   <div key={u.user_id} className="flex items-center gap-1 px-1.5 py-0.5 bg-green-500/10 rounded text-[10px] text-green-400">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    {(u as any).full_name || (u as any).email || 'User'}
+                    {(u as UserPresence & { full_name?: string; email?: string }).full_name || (u as UserPresence & { full_name?: string; email?: string }).email || 'User'}
                   </div>
                 ))}
               </div>
@@ -2119,9 +2120,9 @@ const LineEditor = memo(function LineEditor({
         current_page: 'script',
         is_online: true,
         last_seen: new Date().toISOString(),
-        full_name: (auth.user as any).full_name || (auth.user as any).email || '',
-        email: (auth.user as any).email || '',
-        avatar_url: (auth.user as any).avatar_url || '',
+        full_name: auth.user.full_name || auth.user.email || '',
+        email: auth.user.email || '',
+        avatar_url: auth.user.avatar_url || '',
         focused_element_id: elId,
       });
     } catch {}
@@ -2300,7 +2301,7 @@ const LineEditor = memo(function LineEditor({
 // ============================================================
 
 function TitlePageModal({ isOpen, onClose, script }: { isOpen: boolean; onClose: () => void; script: Script | null }) {
-  const [data, setData] = useState(script?.title_page_data || {} as any);
+  const [data, setData] = useState<TitlePageData>(script?.title_page_data || {});
   const { setCurrentScript } = useScriptStore();
   useEffect(() => { if (script) setData(script.title_page_data || {}); }, [script]);
 
@@ -2316,13 +2317,13 @@ function TitlePageModal({ isOpen, onClose, script }: { isOpen: boolean; onClose:
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Title Page" size="md">
       <div className="space-y-4">
-        <Input label="Title" value={data.title || ''} onChange={(e: any) => setData({ ...data, title: e.target.value })} />
-        <Input label="Written by" value={data.author || ''} onChange={(e: any) => setData({ ...data, author: e.target.value })} />
-        <Input label="Credit" value={data.credit || ''} onChange={(e: any) => setData({ ...data, credit: e.target.value })} placeholder="Written by / Screenplay by" />
-        <Input label="Source" value={data.source || ''} onChange={(e: any) => setData({ ...data, source: e.target.value })} placeholder="Based on..." />
-        <Input label="Draft Date" value={data.draft_date || ''} onChange={(e: any) => setData({ ...data, draft_date: e.target.value })} />
-        <Input label="Contact" value={data.contact || ''} onChange={(e: any) => setData({ ...data, contact: e.target.value })} />
-        <Input label="Copyright" value={data.copyright || ''} onChange={(e: any) => setData({ ...data, copyright: e.target.value })} />
+        <Input label="Title" value={data.title || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, title: e.target.value })} />
+        <Input label="Written by" value={data.author || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, author: e.target.value })} />
+        <Input label="Credit" value={data.credit || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, credit: e.target.value })} placeholder="Written by / Screenplay by" />
+        <Input label="Source" value={data.source || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, source: e.target.value })} placeholder="Based on..." />
+        <Input label="Draft Date" value={data.draft_date || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, draft_date: e.target.value })} />
+        <Input label="Contact" value={data.contact || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, contact: e.target.value })} />
+        <Input label="Copyright" value={data.copyright || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, copyright: e.target.value })} />
         <div className="flex justify-end gap-3 pt-4">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>Save Title Page</Button>
@@ -2360,7 +2361,7 @@ function NewScriptModal({ isOpen, onClose, projectId, userId, onCreated }: {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="New Script Version" size="sm">
       <form onSubmit={handleCreate} className="space-y-4">
-        <Input label="Script Title" value={title} onChange={(e: any) => setTitle(e.target.value)} placeholder="Draft 2" required autoFocus />
+        <Input label="Script Title" value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Draft 2" required autoFocus />
         <div className="flex justify-end gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button type="submit" loading={loading}>Create</Button>

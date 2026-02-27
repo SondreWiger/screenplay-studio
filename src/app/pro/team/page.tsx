@@ -81,15 +81,15 @@ export default function TeamLicensingPage() {
       sessionStorage.setItem('paypal_team_emails', JSON.stringify(validEmails));
       sessionStorage.setItem('paypal_team_company', selectedCompany);
 
-      const approveLink = data.links?.find((l: any) => l.rel === 'payer-action' || l.rel === 'approve');
+      const approveLink = data.links?.find((l: { rel: string; href: string }) => l.rel === 'payer-action' || l.rel === 'approve');
       if (approveLink?.href) {
         window.location.href = approveLink.href;
       } else {
         throw new Error('No approval URL returned from PayPal');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('PayPal team checkout error:', err);
-      setPaypalError(err.message);
+      setPaypalError(err instanceof Error ? err.message : 'An error occurred');
       setPaypalLoading(false);
     }
   };

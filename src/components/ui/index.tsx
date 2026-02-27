@@ -293,8 +293,9 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   return createPortal(
     <div className="fixed inset-0 z-[9999] overflow-y-auto" ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true">
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div className="relative min-h-full flex items-start justify-center p-4 pt-[8vh] pb-8">
+      <div className="relative min-h-full flex items-start justify-center p-4 pt-[8vh] pb-8" onClick={onClose}>
         <div
+          onClick={(e) => e.stopPropagation()}
           className={cn(
             'relative w-full rounded-2xl border border-surface-700 bg-surface-900 shadow-2xl animate-slide-up',
             sizes[size]

@@ -85,7 +85,7 @@ export default function CompanyDashboard() {
         .select('company_id')
         .eq('user_id', user.id)
         .limit(1)
-        .single();
+        .maybeSingle();
       companyId = membership?.company_id || null;
     }
 
@@ -96,7 +96,7 @@ export default function CompanyDashboard() {
         .select('id')
         .eq('owner_id', user.id)
         .limit(1)
-        .single();
+        .maybeSingle();
       companyId = owned?.id || null;
     }
 
@@ -105,8 +105,12 @@ export default function CompanyDashboard() {
       return;
     }
 
-    const { data: co } = await supabase.from('companies').select('*').eq('id', companyId).single();
-    if (!co) { setLoading(false); return; }
+    const { data: co, error: coError } = await supabase.from('companies').select('*').eq('id', companyId).single();
+    if (coError || !co) {
+      if (coError) toast.error('Failed to load company');
+      setLoading(false);
+      return;
+    }
     setCompany(co);
     setSettingsForm(co);
 
@@ -394,7 +398,7 @@ export default function CompanyDashboard() {
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="flex items-center gap-4">
             {company.logo_url ? (
-              <img src={company.logo_url} alt="" className="w-14 h-14 rounded-xl object-cover" />
+              <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" />
             ) : (
               <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
@@ -526,10 +530,10 @@ export default function CompanyDashboard() {
                   {activity.slice(0, 8).map((act) => (
                     <div key={act.id} className="flex items-center gap-3 text-sm">
                       <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                        {(act as any).profile?.display_name?.[0] || '?'}
+                        {(act as CompanyActivityLog & { profile?: { display_name?: string } }).profile?.display_name?.[0] || '?'}
                       </div>
                       <p className="text-surface-300">
-                        <span className="text-white font-medium">{(act as any).profile?.display_name || 'Someone'}</span>
+                        <span className="text-white font-medium">{(act as CompanyActivityLog & { profile?: { display_name?: string } }).profile?.display_name || 'Someone'}</span>
                         {' '}{act.action.replace(/_/g, ' ')}
                       </p>
                       <span className="text-surface-500 text-xs ml-auto shrink-0">{new Date(act.created_at).toLocaleDateString()}</span>
@@ -553,14 +557,14 @@ export default function CompanyDashboard() {
               {members.map((m) => (
                 <Card key={m.id} className="p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-surface-800 flex items-center justify-center text-sm font-bold text-white shrink-0">
-                    {(m as any).profile?.avatar_url ? (
-                      <img src={(m as any).profile.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    {(m as CompanyMember & { profile?: Profile }).profile?.avatar_url ? (
+                      <img src={(m as CompanyMember & { profile?: Profile }).profile!.avatar_url!} alt={'Team member avatar'} className="w-10 h-10 rounded-full object-cover" />
                     ) : (
-                      (m as any).profile?.display_name?.[0] || (m as any).profile?.full_name?.[0] || '?'
+                      (m as CompanyMember & { profile?: Profile }).profile?.display_name?.[0] || (m as CompanyMember & { profile?: Profile }).profile?.full_name?.[0] || '?'
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white">{(m as any).profile?.display_name || (m as any).profile?.full_name || 'Member'}</p>
+                    <p className="text-sm font-medium text-white">{(m as CompanyMember & { profile?: Profile }).profile?.display_name || (m as CompanyMember & { profile?: Profile }).profile?.full_name || 'Member'}</p>
                     <p className="text-xs text-surface-400">{m.job_title || m.role} {m.department ? `· ${m.department}` : ''}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
@@ -681,7 +685,7 @@ export default function CompanyDashboard() {
                 <Link key={project.id} href={`/projects/${project.id}`}>
                   <Card className="p-4 flex items-center gap-4 hover:bg-surface-800/50 transition-colors cursor-pointer">
                     {project.poster_url ? (
-                      <img src={project.poster_url} alt="" className="w-12 h-16 rounded-lg object-cover" />
+                      <img src={project.poster_url} alt={project.title || 'Project poster'} className="w-12 h-16 rounded-lg object-cover" />
                     ) : (
                       <div className="w-12 h-16 rounded-lg bg-surface-800 flex items-center justify-center text-surface-500">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
@@ -776,7 +780,7 @@ export default function CompanyDashboard() {
               <Card key={post.id} className="p-5">
                 <div className="flex items-start gap-4">
                   {post.cover_image_url && (
-                    <img src={post.cover_image_url} alt="" className="w-20 h-14 rounded-lg object-cover shrink-0" />
+                    <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-20 h-14 rounded-lg object-cover shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -790,7 +794,7 @@ export default function CompanyDashboard() {
                     <h3 className="text-sm font-semibold text-white">{post.title}</h3>
                     {post.excerpt && <p className="text-xs text-surface-400 mt-0.5 line-clamp-2">{post.excerpt}</p>}
                     <div className="flex items-center gap-3 mt-2 text-[11px] text-surface-500">
-                      <span>{(post as any).author?.display_name || 'Unknown'}</span>
+                      <span>{(post as CompanyBlogPost & { author?: { display_name?: string } }).author?.display_name || 'Unknown'}</span>
                       <span>·</span>
                       <span>{new Date(post.created_at).toLocaleDateString()}</span>
                       {post.tags.length > 0 && (
@@ -884,11 +888,11 @@ export default function CompanyDashboard() {
               activity.map((act) => (
                 <Card key={act.id} className="p-4 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-surface-800 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                    {(act as any).profile?.display_name?.[0] || '?'}
+                    {(act as CompanyActivityLog & { profile?: { display_name?: string } }).profile?.display_name?.[0] || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-surface-300">
-                      <span className="text-white font-medium">{(act as any).profile?.display_name || 'System'}</span>
+                      <span className="text-white font-medium">{(act as CompanyActivityLog & { profile?: { display_name?: string } }).profile?.display_name || 'System'}</span>
                       {' '}{act.action.replace(/_/g, ' ')}
                       {act.entity_type && <span className="text-surface-500"> · {act.entity_type}</span>}
                     </p>
@@ -1014,10 +1018,10 @@ export default function CompanyDashboard() {
                   }`}
                 >
                   <div className="w-8 h-8 rounded-full bg-surface-800 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                    {(m as any).profile?.display_name?.[0] || '?'}
+                    {(m as CompanyMember & { profile?: Profile }).profile?.display_name?.[0] || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white">{(m as any).profile?.display_name || (m as any).profile?.full_name || 'Member'}</p>
+                    <p className="text-sm text-white">{(m as CompanyMember & { profile?: Profile }).profile?.display_name || (m as CompanyMember & { profile?: Profile }).profile?.full_name || 'Member'}</p>
                     <p className="text-[11px] text-surface-400">{m.role}</p>
                   </div>
                   {selectedMemberForTeam === m.id && (

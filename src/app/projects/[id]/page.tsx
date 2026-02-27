@@ -66,8 +66,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       const shotsData = shots.data || [];
 
       // Calculate estimated duration from scenes
-      const totalDurationMinutes = scenesData.reduce((sum: number, s: any) => sum + (s.estimated_duration_minutes || 0), 0);
-      const totalPageCount = scenesData.reduce((sum: number, s: any) => sum + (s.page_count || 0), 0);
+      const totalDurationMinutes = scenesData.reduce((sum: number, s: { estimated_duration_minutes?: number }) => sum + (s.estimated_duration_minutes || 0), 0);
+      const totalPageCount = scenesData.reduce((sum: number, s: { page_count?: number }) => sum + (s.page_count || 0), 0);
 
       setStats({
         scripts: scripts.data?.length || 0,
@@ -76,11 +76,11 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         scenes: scenesData.length,
         shots: shotsData.length,
         ideas: ideas.data?.length || 0,
-        budgetTotal: budgetData.reduce((sum: number, b: any) => sum + (b.estimated_amount || 0), 0),
-        budgetSpent: budgetData.reduce((sum: number, b: any) => sum + (b.actual_amount || 0), 0),
+        budgetTotal: budgetData.reduce((sum: number, b: { estimated_amount?: number }) => sum + (b.estimated_amount || 0), 0),
+        budgetSpent: budgetData.reduce((sum: number, b: { actual_amount?: number }) => sum + (b.actual_amount || 0), 0),
         upcomingEvents: events.data?.length || 0,
-        completedScenes: scenesData.filter((s: any) => s.is_completed).length,
-        completedShots: shotsData.filter((s: any) => s.is_completed).length,
+        completedScenes: scenesData.filter((s: { is_completed?: boolean }) => s.is_completed).length,
+        completedShots: shotsData.filter((s: { is_completed?: boolean }) => s.is_completed).length,
         totalDurationMinutes,
         totalPageCount,
         members: members.data?.length || 0,
@@ -91,22 +91,22 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       // Build activity timeline from recent changes across all tables
       const activityItems: ActivityItem[] = [];
 
-      (scripts.data || []).slice(0, 5).forEach((s: any) => {
+      (scripts.data || []).slice(0, 5).forEach((s: { id: string; title: string; updated_at: string }) => {
         activityItems.push({ id: 'script-' + s.id, type: 'script', label: s.title, detail: 'Script updated', timestamp: s.updated_at, icon: 'script', color: '#6366f1' });
       });
-      (characters.data || []).slice(0, 5).forEach((c: any) => {
+      (characters.data || []).slice(0, 5).forEach((c: { id: string; name: string; updated_at: string }) => {
         activityItems.push({ id: 'char-' + c.id, type: 'character', label: c.name, detail: 'Character updated', timestamp: c.updated_at, icon: 'character', color: '#ec4899' });
       });
-      (locations.data || []).slice(0, 5).forEach((l: any) => {
+      (locations.data || []).slice(0, 5).forEach((l: { id: string; name: string; updated_at: string }) => {
         activityItems.push({ id: 'loc-' + l.id, type: 'location', label: l.name, detail: 'Location updated', timestamp: l.updated_at, icon: 'location', color: '#14b8a6' });
       });
-      scenesData.slice(0, 5).forEach((s: any) => {
+      scenesData.slice(0, 5).forEach((s: { id: string; scene_number?: string; is_completed?: boolean; updated_at: string }) => {
         activityItems.push({ id: 'scene-' + s.id, type: 'scene', label: 'Scene ' + (s.scene_number || ''), detail: s.is_completed ? 'Scene completed' : 'Scene updated', timestamp: s.updated_at, icon: 'scene', color: '#f59e0b' });
       });
-      shotsData.slice(0, 5).forEach((s: any) => {
+      shotsData.slice(0, 5).forEach((s: { id: string; shot_number?: string; is_completed?: boolean; updated_at: string }) => {
         activityItems.push({ id: 'shot-' + s.id, type: 'shot', label: 'Shot ' + (s.shot_number || ''), detail: s.is_completed ? 'Shot completed' : 'Shot updated', timestamp: s.updated_at, icon: 'shot', color: '#3b82f6' });
       });
-      (ideas.data || []).slice(0, 5).forEach((i: any) => {
+      (ideas.data || []).slice(0, 5).forEach((i: { id: string; title: string; updated_at: string }) => {
         activityItems.push({ id: 'idea-' + i.id, type: 'idea', label: i.title, detail: 'Idea updated', timestamp: i.updated_at, icon: 'idea', color: '#a855f7' });
       });
 

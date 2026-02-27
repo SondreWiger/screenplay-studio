@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
-import { Button, Badge, Input, Textarea, Select, EmptyState, Modal } from '@/components/ui';
+import { Button, Badge, Input, Textarea, Select, EmptyState, Modal, toast } from '@/components/ui';
 import { cn, formatDate } from '@/lib/utils';
 import type { SponsorSegment, SponsorSegmentType } from '@/lib/types';
 
@@ -69,7 +69,7 @@ export default function SponsorsPage() {
 
   const handleCreate = async () => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('sponsor_segments')
       .insert({
         project_id: projectId,
@@ -91,6 +91,7 @@ export default function SponsorsPage() {
       .select()
       .single();
 
+    if (error) { toast.error('Failed to create sponsor segment'); return; }
     if (data) {
       setSponsors([...sponsors, data]);
       resetForm();

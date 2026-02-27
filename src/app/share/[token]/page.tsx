@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Button, Card, Input, LoadingPage } from '@/components/ui';
+import { Button, Card, Input, LoadingPage, toast } from '@/components/ui';
 import type { ExternalShare, ReviewSession } from '@/lib/types';
 
 // ============================================================
@@ -12,13 +12,13 @@ import type { ExternalShare, ReviewSession } from '@/lib/types';
 
 export default function ShareViewerPage({ params }: { params: { token: string } }) {
   const [share, setShare] = useState<ExternalShare | null>(null);
-  const [project, setProject] = useState<any>(null);
-  const [scriptContent, setScriptContent] = useState<any[]>([]);
-  const [scriptElements, setScriptElements] = useState<any[]>([]);
-  const [shots, setShots] = useState<any[]>([]);
-  const [scenes, setScenes] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
-  const [characters, setCharacters] = useState<any[]>([]);
+  const [project, setProject] = useState<{ title: string; logline?: string; genre?: string[]; format?: string; cover_url?: string } | null>(null);
+  const [scriptContent, setScriptContent] = useState<{ title?: string; content: { type?: string; text: string }[] | string }[]>([]);
+  const [scriptElements, setScriptElements] = useState<{ type?: string; text: string }[]>([]);
+  const [shots, setShots] = useState<{ id: string; scene_id?: string; image_url?: string; description?: string; shot_type?: string; shot_size?: string }[]>([]);
+  const [scenes, setScenes] = useState<{ id: string; scene_heading?: string; scene_number?: string }[]>([]);
+  const [locations, setLocations] = useState<{ id: string; name: string; location_type?: string; description?: string; address?: string; photos?: string[] }[]>([]);
+  const [characters, setCharacters] = useState<{ id: string; name: string; avatar_url?: string; is_main?: boolean; description?: string; age?: string; role_type?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [passwordInput, setPasswordInput] = useState('');
@@ -96,7 +96,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
     await loadContent(share, supabase);
   };
 
-  const loadContent = async (shareData: ExternalShare, supabase: any) => {
+  const loadContent = async (shareData: ExternalShare, supabase: ReturnType<typeof createClient>) => {
     try {
       // Increment view count
       supabase.from('external_shares').update({
@@ -105,14 +105,14 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
 
       // Use snapshot data stored at share creation time
       if (shareData.content_snapshot) {
-        const snap = shareData.content_snapshot as any;
-        if (snap.project) setProject(snap.project);
-        if (snap.scripts) setScriptContent(snap.scripts);
-        if (snap.script_elements) setScriptElements(snap.script_elements);
-        if (snap.shots) setShots(snap.shots);
-        if (snap.scenes) setScenes(snap.scenes);
-        if (snap.locations) setLocations(snap.locations);
-        if (snap.characters) setCharacters(snap.characters);
+        const snap = shareData.content_snapshot as Record<string, unknown>;
+        if (snap.project) setProject(snap.project as typeof project);
+        if (snap.scripts) setScriptContent(snap.scripts as typeof scriptContent);
+        if (snap.script_elements) setScriptElements(snap.script_elements as typeof scriptElements);
+        if (snap.shots) setShots(snap.shots as typeof shots);
+        if (snap.scenes) setScenes(snap.scenes as typeof scenes);
+        if (snap.locations) setLocations(snap.locations as typeof locations);
+        if (snap.characters) setCharacters(snap.characters as typeof characters);
       }
     } catch (err) {
       console.error('Error loading content:', err);
@@ -124,13 +124,14 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
   const startReview = async () => {
     if (!share || !reviewerName.trim()) return;
     const supabase = createClient();
-    const { data } = await supabase.from('review_sessions').insert({
+    const { data, error } = await supabase.from('review_sessions').insert({
       share_id: share.id,
       project_id: share.project_id,
       reviewer_name: reviewerName.trim(),
       reviewer_email: reviewerEmail.trim() || null,
       status: 'in_progress',
     }).select().single();
+    if (error) { toast.error('Failed to start review session'); return; }
     if (data) setReviewSession(data);
     setShowReviewForm(false);
   };
@@ -194,7 +195,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {share?.branding?.logo_url ? (
-              <img src={share.branding.logo_url} alt="" className="h-8 w-auto" />
+              <img src={share.branding.logo_url} alt={'Branding logo'} className="h-8 w-auto" />
             ) : (
               <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
                 SS
@@ -251,7 +252,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
             {scriptElements.length > 0 ? (
               <Card key="elements" className="p-6 sm:p-8">
                 <div className="screenplay-content space-y-2">
-                  {scriptElements.map((element: any, elIdx: number) => (
+                  {scriptElements.map((element, elIdx: number) => (
                     <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
                       {element.type === 'scene_heading' && (
                         <p className="font-bold text-white uppercase tracking-wide mt-6">{element.text}</p>
@@ -284,7 +285,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                   {script.title && <h3 className="text-lg font-semibold text-white mb-4 pb-3 border-b border-surface-800">{script.title}</h3>}
                   <div className="screenplay-content space-y-2">
                     {Array.isArray(script.content) ? (
-                      script.content.map((element: any, elIdx: number) => (
+                      (script.content as { type?: string; text: string }[]).map((element, elIdx: number) => (
                         <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
                           {element.type === 'scene_heading' && <p className="font-bold text-white uppercase tracking-wide">{element.text}</p>}
                           {element.type === 'action' && <p className="text-surface-300">{element.text}</p>}
@@ -329,7 +330,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                       </h4>
                     )}
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {sceneShots.map((shot: any) => (
+                      {sceneShots.map((shot) => (
                         <div key={shot.id} className="rounded-lg border border-surface-800 overflow-hidden">
                           {shot.image_url ? (
                             <img src={shot.image_url} alt={shot.description || ''} className="w-full aspect-video object-cover" />
@@ -359,7 +360,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Locations</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {locations.map((loc: any) => (
+              {locations.map((loc) => (
                 <Card key={loc.id} className="p-4">
                   <h4 className="text-sm font-semibold text-white">{loc.name}</h4>
                   {loc.location_type && <p className="text-xs text-surface-500 mt-0.5">{loc.location_type}</p>}
@@ -368,7 +369,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                   {loc.photos && loc.photos.length > 0 && (
                     <div className="flex gap-2 mt-3 overflow-x-auto">
                       {loc.photos.slice(0, 4).map((photo: string, i: number) => (
-                        <img key={i} src={photo} alt="" className="w-24 h-16 object-cover rounded" />
+                        <img key={i} src={photo} alt={`Location photo ${i + 1}`} className="w-24 h-16 object-cover rounded" />
                       ))}
                     </div>
                   )}
@@ -383,11 +384,11 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Characters</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {characters.map((char: any) => (
+              {characters.map((char) => (
                 <Card key={char.id} className="p-4">
                   <div className="flex items-center gap-3 mb-2">
                     {char.avatar_url ? (
-                      <img src={char.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <img src={char.avatar_url} alt={char.name || 'Character avatar'} className="w-10 h-10 rounded-full object-cover" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center text-sm font-bold text-white">
                         {char.name?.[0]?.toUpperCase()}
@@ -398,12 +399,12 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                       <div className="flex items-center gap-2">
                         {char.is_main && <span className="text-[10px] text-amber-400 font-medium">Lead</span>}
                         {char.age && <span className="text-[10px] text-surface-500">{char.age}</span>}
-                        {char.gender && <span className="text-[10px] text-surface-500">{char.gender}</span>}
+                        {(char as any).gender && <span className="text-[10px] text-surface-500">{(char as any).gender}</span>}
                       </div>
                     </div>
                   </div>
                   {char.description && <p className="text-sm text-surface-400 line-clamp-3">{char.description}</p>}
-                  {char.cast_actor && <p className="text-xs text-brand-400 mt-2">Actor: {char.cast_actor}</p>}
+                  {(char as any).cast_actor && <p className="text-xs text-brand-400 mt-2">Actor: {(char as any).cast_actor}</p>}
                 </Card>
               ))}
             </div>

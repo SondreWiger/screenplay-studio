@@ -131,7 +131,7 @@ export default function ShowcasePage() {
                 <Link href="/dashboard" className="text-xs text-white/50 hover:text-white transition-colors">Dashboard</Link>
                 <Link href={`/u/${user.username || user.id}`}>
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full hover:ring-2 ring-amber-400 transition-all" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full hover:ring-2 ring-amber-400 transition-all" />
                   ) : (
                     <div className="w-7 h-7 rounded-full bg-amber-900/50 flex items-center justify-center text-xs font-bold text-amber-400 hover:ring-2 ring-amber-400 transition-all">
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -325,7 +325,7 @@ export default function ShowcasePage() {
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-2">
                         {project.author?.avatar_url ? (
-                          <img src={project.author.avatar_url} alt="" className="w-5 h-5 rounded-full" />
+                          <img src={project.author.avatar_url} alt={project.author.full_name || 'Author avatar'} className="w-5 h-5 rounded-full" />
                         ) : (
                           <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white/50">
                             {(project.author?.full_name || '?')[0]}

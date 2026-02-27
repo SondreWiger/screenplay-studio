@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, LoadingPage, Avatar, Textarea } from '@/components/ui';
+import { Button, Card, LoadingPage, Avatar, Textarea, toast } from '@/components/ui';
 import { timeAgo } from '@/lib/utils';
 import type { Company, CompanyBlogPost, CompanyBlogComment, Profile } from '@/lib/types';
 
@@ -29,23 +29,31 @@ export default function CompanyBlogPostPage() {
   const loadPost = async () => {
     const supabase = createClient();
 
-    const { data: co } = await supabase
+    const { data: co, error: coError } = await supabase
       .from('companies')
       .select('*')
       .eq('slug', slug)
       .single();
 
-    if (!co) { setLoading(false); return; }
+    if (coError || !co) {
+      if (coError) toast.error('Failed to load company');
+      setLoading(false);
+      return;
+    }
     setCompany(co);
 
-    const { data: blogPost } = await supabase
+    const { data: blogPost, error: postError } = await supabase
       .from('company_blog_posts')
       .select('*, author:profiles!author_id(*)')
       .eq('company_id', co.id)
       .eq('slug', postSlug)
       .single();
 
-    if (!blogPost) { setLoading(false); return; }
+    if (postError || !blogPost) {
+      if (postError) toast.error('Failed to load blog post');
+      setLoading(false);
+      return;
+    }
     setPost(blogPost);
 
     // Increment view count
@@ -153,7 +161,7 @@ export default function CompanyBlogPostPage() {
       <article className="max-w-3xl mx-auto px-6 py-8">
         {/* Cover */}
         {post.cover_image_url && (
-          <img src={post.cover_image_url} alt="" className="w-full h-64 object-cover rounded-xl mb-8" />
+          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-64 object-cover rounded-xl mb-8" />
         )}
 
         {/* Meta */}

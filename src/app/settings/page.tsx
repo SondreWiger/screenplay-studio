@@ -10,7 +10,7 @@ import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/
 import { AppHeader } from '@/components/AppHeader';
 import { Icon } from '@/components/ui/icons';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
-import type { UsageIntent, ScriptType, Company } from '@/lib/types';
+import type { UsageIntent, ScriptType, Company, Profile } from '@/lib/types';
 import type { InsiderTier } from '@/hooks/useFeatureFlags';
 import { useFeatureAccess } from '@/components/FeatureGate';
 
@@ -26,7 +26,7 @@ function InsiderProgramCard() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (user) setTier((user as any).insider_tier ?? null);
+    if (user) setTier(user.insider_tier ?? null);
   }, [user]);
 
   const changeTier = async (newTier: InsiderTier) => {
@@ -38,7 +38,7 @@ function InsiderProgramCard() {
     setSaving(false);
     setSaved(true);
     // update zustand
-    useAuthStore.getState().setUser?.({ ...user, insider_tier: newTier } as any);
+    useAuthStore.getState().setUser?.({ ...user, insider_tier: newTier } as Profile);
     setTimeout(() => setSaved(false), 3000);
   };
 
@@ -688,7 +688,7 @@ export default function UserSettingsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
                           {company.logo_url ? (
-                            <img src={company.logo_url} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                            <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-12 h-12 rounded-xl object-cover" />
                           ) : (
                             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold text-white" style={{ backgroundColor: company.brand_color }}>
                               {company.name[0]}

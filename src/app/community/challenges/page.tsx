@@ -87,7 +87,7 @@ export default function ChallengesPage() {
                 <Link href="/dashboard" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
                 <button onClick={handleSignOut} className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Sign Out</button>
                 {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full" />
+                  <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full" />
                 ) : (
                   <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
                     {(user.full_name || user.email || '?')[0].toUpperCase()}

@@ -116,7 +116,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
         .select('element_type, content, sort_order, scene_number, revision_color, is_revised, is_omitted')
         .eq('script_id', s.id)
         .order('sort_order');
-      elemsByScript[s.id] = (elems || []).filter((e: any) => !e.is_omitted).map((e: any) => ({
+      elemsByScript[s.id] = (elems || []).filter((e: { is_omitted?: boolean }) => !e.is_omitted).map((e: { element_type: string; content: string; scene_number?: string; revision_color?: string; is_revised?: boolean }) => ({
         type: e.element_type,
         text: e.content,
         scene_number: e.scene_number,
@@ -128,7 +128,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
 
     // Hydrate cover info from project branding if available
     if (currentProject?.custom_branding) {
-      const b = currentProject.custom_branding as Record<string, any>;
+      const b = currentProject.custom_branding;
       setConfig(prev => ({
         ...prev,
         coverLogoUrl: b.logo_url || '',
@@ -162,7 +162,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
         }
 
         // Apply branding from custom_branding if available
-        const branding = currentProject?.custom_branding as Record<string, any> | null;
+        const branding = currentProject?.custom_branding;
         const appliedConfig = { ...config, format: fmt };
         if (branding) {
           if (!appliedConfig.coverCompanyName && branding.company_name) appliedConfig.coverCompanyName = branding.company_name;
@@ -226,7 +226,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
     setExporting(false);
   };
 
-  const updateConfig = (key: keyof ExportConfig, value: any) => {
+  const updateConfig = (key: keyof ExportConfig, value: string | number | boolean | null) => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 

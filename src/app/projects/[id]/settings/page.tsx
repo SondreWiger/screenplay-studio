@@ -46,7 +46,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
     try {
       const supabase = createClient();
       const { data, error } = await supabase.from('projects').select('*').eq('id', params.id).single();
-      if (error) console.error('Settings fetch error:', error.message);
+      if (error) { toast.error('Failed to load project settings'); setLoading(false); return; }
       setProject(data);
       setForm(data || {});
       setCoverUrl(data?.cover_url || null);

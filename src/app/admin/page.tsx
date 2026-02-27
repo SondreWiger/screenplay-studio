@@ -313,7 +313,8 @@ export default function AdminPage() {
         // Trigger Web Push delivery
         triggerPush(ticket.user_id, notifTitle, notifBody, notifLink);
         // Trigger email notification
-        const { data: ownerProfile } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', ticket.user_id).single();
+        const { data: ownerProfile, error: profileError } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', ticket.user_id).single();
+        if (profileError) console.error('Failed to fetch ticket owner profile:', profileError.message);
         if (ownerProfile?.email) {
           fetch('/api/email/send', {
             method: 'POST',
@@ -1603,7 +1604,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
                   <div className="flex items-start gap-4">
                     {prod.thumbnail_url && (
                       <div className="w-20 h-14 rounded-lg overflow-hidden shrink-0">
-                        <img src={prod.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                        <img src={prod.thumbnail_url} alt={prod.title || 'Production thumbnail'} className="w-full h-full object-cover" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -2144,7 +2145,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                   <div key={msg.id} className={`flex gap-3 ${msg.is_staff ? 'flex-row-reverse' : ''}`}>
                     <div className="shrink-0">
                       {msg.profile?.avatar_url ? (
-                        <img src={msg.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        <img src={msg.profile.avatar_url} alt={msg.profile.full_name || 'User avatar'} className="w-8 h-8 rounded-full object-cover" />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-surface-400">
                           {(msg.profile?.full_name || '?')[0].toUpperCase()}

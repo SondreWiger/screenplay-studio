@@ -143,7 +143,7 @@ function DashboardContent() {
         return;
       }
 
-      const validMemberships = (memberships || []).filter((m: any) => m.company) as (CompanyMember & { company: Company })[];
+      const validMemberships = (memberships || []).filter((m: { company?: Company }) => m.company) as (CompanyMember & { company: Company })[];
       setCompanyMemberships(validMemberships);
 
       // Fetch projects for each company
@@ -205,7 +205,7 @@ function DashboardContent() {
 
   if (authLoading || (!user && loading)) return <LoadingPage />;
 
-  const statusColors: Record<string, string> = {
+  const statusColors: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
     development: 'info',
     pre_production: 'warning',
     production: 'success',
@@ -337,11 +337,11 @@ function DashboardContent() {
         {/* Pending Company Invitations Banner */}
         {pendingInvitations.length > 0 && (
           <div className="mb-6 space-y-3">
-            {pendingInvitations.map((inv: any) => (
+            {pendingInvitations.map((inv: { id: string; company_name?: string; company_logo?: string; company_color?: string; role: string; invited_by_name?: string }) => (
               <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ backgroundColor: inv.company_color || '#3B82F6' }}>
-                    {inv.company_logo ? <img src={inv.company_logo} alt="" className="w-full h-full object-cover rounded-lg" /> : inv.company_name?.[0] || '?'}
+                    {inv.company_logo ? <img src={inv.company_logo} alt={inv.company_name || 'Company logo'} className="w-full h-full object-cover rounded-lg" /> : inv.company_name?.[0] || '?'}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">
@@ -478,7 +478,7 @@ function DashboardContent() {
                   {/* Cover */}
                   <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
                     {project.cover_url ? (
-                      <img src={project.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
@@ -488,7 +488,7 @@ function DashboardContent() {
                     )}
                     <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
                     <div className="absolute top-2.5 right-2.5">
-                      <Badge variant={statusColors[project.status] as any}>
+                      <Badge variant={statusColors[project.status]}>
                         {project.status.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -528,7 +528,7 @@ function DashboardContent() {
               <div className="mb-4 flex items-center gap-3">
                 <Link href="/company" className="flex items-center gap-3 group">
                   {company.logo_url ? (
-                    <img src={company.logo_url} alt="" className="w-7 h-7 rounded-lg object-cover" />
+                    <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-7 h-7 rounded-lg object-cover" />
                   ) : (
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
@@ -572,7 +572,7 @@ function DashboardContent() {
                       <Card hover className="overflow-hidden group">
                         <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
                           {project.cover_url ? (
-                            <img src={project.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
@@ -591,7 +591,7 @@ function DashboardContent() {
                             </div>
                           </div>
                           <div className="absolute top-2.5 right-2.5">
-                            <Badge variant={statusColors[project.status] as any}>
+                            <Badge variant={statusColors[project.status]}>
                               {project.status.replace('_', ' ')}
                             </Badge>
                           </div>
@@ -689,6 +689,7 @@ function NewProjectModal({
 
   // Determine if this is a content creator project
   const isContentCreator = ['youtube', 'tiktok'].includes(scriptType);
+  const isTvProduction = projectType === 'tv_production';
 
   // Only companies where user has create permissions
   const creatableCompanies = companyMemberships.filter((m) =>
@@ -708,7 +709,8 @@ function NewProjectModal({
       
       // Set project type based on script type
       let finalProjectType: ProjectType = projectType;
-      if (scriptType === 'youtube') finalProjectType = 'youtube';
+      if (projectType === 'tv_production') finalProjectType = 'tv_production';
+      else if (scriptType === 'youtube') finalProjectType = 'youtube';
       else if (scriptType === 'tiktok') finalProjectType = 'tiktok';
       else if (scriptType === 'podcast') finalProjectType = 'podcast';
       else finalProjectType = 'film';
@@ -754,10 +756,46 @@ function NewProjectModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={step === 0 ? 'What are you writing?' : 'Project Details'} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={step === 0 ? 'What are you creating?' : 'Project Details'} size="lg">
       {step === 0 ? (
         <div className="space-y-6">
-          <p className="text-sm text-surface-400">Choose the type of script. This sets the default formatting for your editor.</p>
+          <p className="text-sm text-surface-400">Choose the type of project you want to create.</p>
+          
+          {/* TV Production — Featured Card */}
+          <button
+            type="button"
+            onClick={() => {
+              setProjectType('tv_production');
+              setScriptType('screenplay');
+              setStep(1);
+            }}
+            className={`w-full text-left p-5 rounded-xl border-2 transition-all group ${
+              projectType === 'tv_production'
+                ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
+                : 'border-surface-700 bg-gradient-to-br from-surface-800/80 to-surface-900/80 hover:border-amber-500/50 hover:bg-surface-800'
+            }`}
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /><circle cx="19" cy="5" r="3" strokeWidth={1.5} fill="none" stroke="currentColor" className="text-red-400" /><circle cx="19" cy="5" r="1" fill="currentColor" className="text-red-400 animate-pulse" /></svg>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-amber-400">TV Production</h3>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold uppercase tracking-wider">Pro</span>
+                </div>
+                <p className="mt-0.5 text-xs text-surface-400">Professional broadcast & studio production — Rundown, Dagsplan, Autocue, Call Sheets, Crew Management</p>
+              </div>
+            </div>
+          </button>
+          
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-surface-800" />
+            <span className="text-[10px] text-surface-600 uppercase tracking-wider font-medium">or choose a script type</span>
+            <div className="flex-1 h-px bg-surface-800" />
+          </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {SCRIPT_TYPE_OPTIONS.map((opt) => (
               <button
@@ -787,10 +825,19 @@ function NewProjectModal({
       ) : (
         <form onSubmit={handleCreate} className="space-y-6">
           <div className="flex items-center gap-2 mb-2">
-            <button type="button" onClick={() => setStep(0)} className="text-xs text-surface-400 hover:text-white transition-colors flex items-center gap-1">
+            <button type="button" onClick={() => { setStep(0); setProjectType('film'); }} className="text-xs text-surface-400 hover:text-white transition-colors flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              <Icon name={SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.icon || 'film'} size="sm" className="text-surface-400" />
-              {SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.label}
+              {isTvProduction ? (
+                <>
+                  <svg className="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
+                  <span className="text-amber-400">TV Production</span>
+                </>
+              ) : (
+                <>
+                  <Icon name={SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.icon || 'film'} size="sm" className="text-surface-400" />
+                  {SCRIPT_TYPE_OPTIONS.find(o => o.value === scriptType)?.label}
+                </>
+              )}
             </button>
           </div>
 
@@ -823,7 +870,7 @@ function NewProjectModal({
                     }`}
                   >
                     {m.company.logo_url ? (
-                      <img src={m.company.logo_url} alt="" className="w-4 h-4 rounded object-cover" />
+                      <img src={m.company.logo_url} alt={m.company.name || 'Company logo'} className="w-4 h-4 rounded object-cover" />
                     ) : (
                       <div
                         className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold text-white"
@@ -840,8 +887,8 @@ function NewProjectModal({
           )}
 
           <Input
-            label={isContentCreator ? 'Video Title' : 'Project Title'}
-            placeholder={isContentCreator ? 'How I Make $10k/Month as a Creator' : 'The Midnight Hour'}
+            label={isTvProduction ? 'Production Name' : isContentCreator ? 'Video Title' : 'Project Title'}
+            placeholder={isTvProduction ? 'Dagsrevyen 24. desember' : isContentCreator ? 'How I Make $10k/Month as a Creator' : 'The Midnight Hour'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -849,8 +896,10 @@ function NewProjectModal({
           />
 
           <Textarea
-            label={isContentCreator ? 'Video Concept' : 'Logline'}
-            placeholder={isContentCreator 
+            label={isTvProduction ? 'Production Description' : isContentCreator ? 'Video Concept' : 'Logline'}
+            placeholder={isTvProduction 
+              ? 'Live broadcast from Studio 1, 45 minutes, 3-camera setup...'
+              : isContentCreator 
               ? 'In this video, I break down my exact strategies for...'
               : 'A hard-boiled detective uncovers a conspiracy that reaches the highest levels of power...'}
             value={logline}
@@ -858,7 +907,7 @@ function NewProjectModal({
             rows={3}
           />
 
-          {!isContentCreator && (
+          {!isContentCreator && !isTvProduction && (
             <>
               <Select
                 label="Format"
@@ -914,6 +963,32 @@ function NewProjectModal({
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> Upload checklist
+                </li>
+              </ul>
+            </div>
+          )}
+
+          {isTvProduction && (
+            <div className="bg-gradient-to-br from-amber-500/5 to-surface-800/50 rounded-xl p-4 border border-amber-500/20">
+              <p className="text-sm text-amber-300 mb-3 font-semibold">Professional Production Tools</p>
+              <ul className="text-xs text-surface-400 space-y-1.5">
+                <li className="flex items-center gap-2">
+                  <span className="text-amber-400">✓</span> Rundown editor with live timing
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-amber-400">✓</span> Dagsplan — day scheduling with crew calls
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-amber-400">✓</span> HTML-based autocue / teleprompter
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-amber-400">✓</span> Call sheet generator
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-amber-400">✓</span> Crew & equipment management
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-amber-400">✓</span> Real-time team chat
                 </li>
               </ul>
             </div>
