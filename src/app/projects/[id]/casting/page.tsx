@@ -422,7 +422,7 @@ export default function CastingPage() {
   };
 
   const roleBadgeColor = (char: Character) => {
-    if (char.is_main) return 'bg-amber-500/20 text-amber-400';
+    if (char.is_main) return 'bg-[#FF5F1F]/20 text-[#FF5F1F]';
     return 'bg-surface-700 text-surface-300';
   };
 
@@ -432,7 +432,7 @@ export default function CastingPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">🎭</div>
-          <h2 className="text-xl font-bold text-white mb-2">Casting</h2>
+          <h2 className="text-xl font-black text-white mb-2">Casting</h2>
           <p className="text-sm text-surface-400 mb-6">
             Connect characters with team members, assign actors, and track casting status across your project.
           </p>
@@ -452,7 +452,7 @@ export default function CastingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Casting</h1>
+          <h1 className="text-2xl font-black text-white">Casting</h1>
           <p className="text-sm text-surface-400 mt-1">
             Connect characters with actors &amp; team members
           </p>
@@ -470,7 +470,7 @@ export default function CastingPage() {
           { label: 'Total Scenes', value: scenes.length, color: 'text-surface-300' },
         ].map((s) => (
           <div key={s.label} className="rounded-lg bg-surface-900 border border-surface-800 p-3 text-center">
-            <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+            <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
             <p className="text-[10px] text-surface-500 uppercase tracking-wide">{s.label}</p>
           </div>
         ))}
@@ -600,7 +600,7 @@ export default function CastingPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm text-surface-400">Application Questions</label>
-                <button onClick={addQuestion} className="text-[11px] text-brand-400 hover:text-brand-300">+ Add Question</button>
+                <button onClick={addQuestion} className="text-[11px] text-[#FF5F1F] hover:text-[#FF8F5F]">+ Add Question</button>
               </div>
               <div className="space-y-2">
                 {castingQuestions.map((q, idx) => (
@@ -779,7 +779,7 @@ export default function CastingPage() {
             {/* Character info header */}
             <div className="flex items-start gap-4">
               <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shrink-0"
+                className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-black shrink-0"
                 style={{
                   backgroundColor: selectedChar.color ? `${selectedChar.color}20` : '#6366f120',
                   color: selectedChar.color || '#6366f1',
@@ -866,7 +866,7 @@ export default function CastingPage() {
                         onClick={() => setShowTeamPicker(!showTeamPicker)}
                         className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
                           showTeamPicker
-                            ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                            ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-amber-500/40'
                             : 'bg-surface-800 text-surface-300 border-surface-700 hover:border-surface-600'
                         }`}
                         title="Pick from team"

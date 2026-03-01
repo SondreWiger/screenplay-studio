@@ -104,47 +104,65 @@ export default function CommunityPage() {
     });
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+      {/* Dot-grid texture */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#faf9f7]/90 backdrop-blur-md border-b border-stone-200">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+      <nav
+        className="sticky top-0 z-30 backdrop-blur-xl"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}
+      >
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
-              </svg>
+            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-lg font-bold text-stone-900 group-hover:text-brand-600 transition-colors">
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
               Community
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/community" className="text-sm font-semibold text-stone-900 border-b-2 border-brand-500 pb-0.5">Feed</Link>
-            <Link href="/community/showcase" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Showcase</Link>
-            <Link href="/community/challenges" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Challenges</Link>
-            <Link href="/community/free-scripts" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Free Scripts</Link>
-            <Link href="/community/chat" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Chat</Link>
-            <Link href="/messages" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Messages</Link>
-            <Link href="/blog" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Blog</Link>
+          <div className="hidden md:flex items-center gap-5">
+            {[
+              { href: '/community', label: 'Feed', active: true },
+              { href: '/community/showcase', label: 'Showcase' },
+              { href: '/community/challenges', label: 'Challenges' },
+              { href: '/community/free-scripts', label: 'Free Scripts' },
+              { href: '/community/chat', label: 'Chat' },
+              { href: '/messages', label: 'Messages' },
+              { href: '/blog', label: 'Blog' },
+            ].map(l => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="text-[11px] font-mono uppercase tracking-widest transition-colors"
+                style={{ color: l.active ? '#FF5F1F' : 'rgba(255,255,255,0.45)', paddingBottom: l.active ? '2px' : undefined, borderBottom: l.active ? '1px solid #FF5F1F' : undefined }}
+              >
+                {l.label}
+              </Link>
+            ))}
           </div>
 
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link
-                  href="/community/share"
-                  className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors"
-                >
+                <Link href="/community/share" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>
                   Share Script
                 </Link>
-                <Link href="/dashboard" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
-                <button onClick={handleSignOut} className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Sign Out</button>
+                <Link href="/dashboard" className="text-[11px] font-mono text-white/50 uppercase tracking-widest hover:text-white/60 transition-colors">Dashboard</Link>
+                <button onClick={handleSignOut} className="text-[11px] font-mono text-white/50 uppercase tracking-widest hover:text-white/60 transition-colors">Sign Out</button>
                 <Link href={`/u/${user.username || user.id}`}>
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600 hover:ring-2 ring-brand-300 transition-all">
+                    <div className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
                     </div>
                   )}
@@ -152,8 +170,8 @@ export default function CommunityPage() {
               </>
             ) : (
               <>
-                <Link href="/auth/login?redirect=/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Sign In</Link>
-                <Link href="/auth/register?redirect=/community" className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">Get Started</Link>
+                <Link href="/auth/login?redirect=/community" className="text-[11px] font-mono text-white/50 uppercase tracking-widest hover:text-white/60 transition-colors">Sign In</Link>
+                <Link href="/auth/register?redirect=/community" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>Get Started</Link>
               </>
             )}
           </div>
@@ -164,12 +182,12 @@ export default function CommunityPage() {
       {activeChallenge && (() => {
         const phase = getChallengePhase(activeChallenge);
         return phase !== 'completed' ? (
-          <div className="bg-gradient-to-r from-brand-600 to-orange-500 text-white">
+          <div className="text-white" style={{ background: '#FF5F1F' }}>
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-white/70">Weekly Challenge</span>
-                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-white/20 rounded-full">{getPhaseLabel(phase)}</span>
+                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-surface-900/20 rounded-full">{getPhaseLabel(phase)}</span>
                 </div>
                 <h2 className="text-lg font-bold">{activeChallenge.title.replace('Weekly Challenge: ', '')}</h2>
                 <p className="text-sm text-white/80 mt-1 max-w-lg line-clamp-2">{activeChallenge.description}</p>
@@ -183,7 +201,7 @@ export default function CommunityPage() {
                 </div>
                 <Link
                   href={`/community/challenges/${activeChallenge.id}`}
-                  className="px-4 py-2 text-sm font-medium bg-white text-brand-700 hover:bg-white/90 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium bg-surface-900 text-[#E54E15] hover:bg-surface-900/90 rounded-lg transition-colors"
                 >
                   {phase === 'submissions' ? 'Submit' : 'View'}
                 </Link>
@@ -197,17 +215,24 @@ export default function CommunityPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">Community Scripts</h1>
-            <p className="text-stone-500 mt-1">Discover, share, and collaborate on screenplays</p>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
+              <span className="ss-label">Community</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>COMMUNITY SCRIPTS</h1>
+            <p className="text-white/50 text-sm mt-1">Discover, share, and collaborate on screenplays</p>
           </div>
           <div className="flex items-center gap-2">
             {(['newest', 'popular', 'discussed'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-colors ${
-                  sortBy === s ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
-                }`}
+                className="text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 transition-colors"
+              style={{
+                  color: sortBy === s ? '#FF5F1F' : 'rgba(255,255,255,0.45)',
+                  border: sortBy === s ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
+                  background: sortBy === s ? 'rgba(255,95,31,0.08)' : 'transparent',
+                }}
               >
                 {s}
               </button>
@@ -218,12 +243,12 @@ export default function CommunityPage() {
         <div className="flex gap-8">
           {/* Sidebar — categories */}
           <aside className="hidden lg:block w-56 shrink-0">
-            <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">Categories</h3>
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Categories</h3>
             <div className="space-y-1">
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                  !selectedCategory ? 'bg-brand-50 text-brand-700 font-medium' : 'text-stone-600 hover:bg-stone-100'
+                  !selectedCategory ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium' : 'text-white/60 hover:bg-surface-800'
                 }`}
               >
                 All Scripts
@@ -233,7 +258,7 @@ export default function CommunityPage() {
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug)}
                   className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${
-                    selectedCategory === cat.slug ? 'bg-brand-50 text-brand-700 font-medium' : 'text-stone-600 hover:bg-stone-100'
+                    selectedCategory === cat.slug ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium' : 'text-white/60 hover:bg-surface-800'
                   }`}
                 >
                   <span>{cat.icon}</span>
@@ -243,14 +268,14 @@ export default function CommunityPage() {
             </div>
 
             {/* Quick links */}
-            <div className="mt-8 pt-6 border-t border-stone-200">
-              <Link href="/community/showcase" className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-900 transition-colors py-1.5">
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <Link href="/community/showcase" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
                 🎬 Finished Projects
               </Link>
-              <Link href="/community/challenges" className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-900 transition-colors py-1.5">
+              <Link href="/community/challenges" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
                 🏆 Writing Challenges
               </Link>
-              <Link href="/community/free-scripts" className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-900 transition-colors py-1.5">
+              <Link href="/community/free-scripts" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
                 📖 Free-to-Use Scripts
               </Link>
             </div>
@@ -260,15 +285,15 @@ export default function CommunityPage() {
           <div className="flex-1 min-w-0">
             {loading ? (
               <div className="flex justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-5xl mb-4">📝</div>
-                <p className="text-lg font-semibold text-stone-700 mb-2">No scripts shared yet</p>
-                <p className="text-sm text-stone-500 mb-6">Be the first to share your work with the community!</p>
+                <p className="text-lg font-semibold text-white/70 mb-2">No scripts shared yet</p>
+                <p className="text-sm text-white/40 mb-6">Be the first to share your work with the community!</p>
                 {user && (
-                  <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
+                  <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors">
                     Share Your Script
                   </Link>
                 )}
@@ -279,13 +304,13 @@ export default function CommunityPage() {
                   <Link
                     key={post.id}
                     href={`/community/post/${post.slug}`}
-                    className="block rounded-xl border border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm transition-all p-5"
+                    className="block rounded-xl border border-white/[0.12] bg-surface-800/50 hover:border-white/20 hover:bg-surface-800/70 transition-all p-5"
                   >
                     <div className="flex items-start gap-4">
                       {/* Upvote count */}
                       <div className="flex flex-col items-center gap-0.5 pt-1 shrink-0">
-                        <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-                        <span className="text-sm font-semibold text-stone-700">{post.upvote_count}</span>
+                        <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                        <span className="text-sm font-semibold text-white/70">{post.upvote_count}</span>
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -307,29 +332,29 @@ export default function CommunityPage() {
                           </div>
                         )}
 
-                        <h3 className="text-base font-semibold text-stone-900 line-clamp-1">{post.title}</h3>
+                        <h3 className="text-base font-semibold text-white line-clamp-1">{post.title}</h3>
                         {post.description && (
-                          <p className="text-sm text-stone-500 mt-1 line-clamp-2">{post.description}</p>
+                            <p className="text-sm text-white/55 mt-1 line-clamp-2">{post.description}</p>
                         )}
 
                         {/* Meta row */}
-                        <div className="flex items-center gap-4 mt-3 text-xs text-stone-400">
+                          <div className="flex items-center gap-4 mt-3 text-xs text-white/50">
                           <Link
                             href={`/u/${post.author?.username || post.author?.id || ''}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-1 hover:text-stone-700 transition-colors"
+                            className="flex items-center gap-1 hover:text-white/70 transition-colors"
                           >
                             {post.author?.avatar_url ? (
                               <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" />
                             ) : (
-                              <div className="w-4 h-4 rounded-full bg-stone-200 flex items-center justify-center text-[8px] font-bold text-stone-500">
+                              <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[8px] font-bold text-white/40">
                                 {(post.author?.full_name || '?')[0]}
                               </div>
                             )}
-                            <span className="text-stone-600 font-medium">{post.author?.full_name || 'Anonymous'}</span>
+                            <span className="text-white/60 font-medium">{post.author?.full_name || 'Anonymous'}</span>
                           </Link>
-                          {post.author?.role === 'moderator' && <span className="px-1 py-0.5 text-[8px] font-bold text-green-700 bg-green-50 rounded border border-green-200">MOD</span>}
-                          {post.author?.role === 'admin' && <span className="px-1 py-0.5 text-[8px] font-bold text-red-700 bg-red-50 rounded border border-red-200">ADMIN</span>}
+                          {post.author?.role === 'moderator' && <span className="px-1 py-0.5 text-[8px] font-bold text-green-400 bg-green-400/10 rounded">MOD</span>}
+                          {post.author?.role === 'admin' && <span className="px-1 py-0.5 text-[8px] font-bold text-[#FF5F1F] bg-[#FF5F1F]/10 rounded">ADMIN</span>}
                           <span>{timeAgo(post.created_at)}</span>
                           <span className="flex items-center gap-1">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -384,30 +409,50 @@ export default function CommunityPage() {
       </div>
 
       {/* Mobile category bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-4 py-2 z-20">
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-2 z-20 backdrop-blur-xl"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.95)' }}
+      >
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`shrink-0 px-3 py-1.5 text-xs rounded-full ${!selectedCategory ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-600'}`}
+            className="shrink-0 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors"
+            style={{
+              color: !selectedCategory ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
+              border: !selectedCategory ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
+              background: !selectedCategory ? 'rgba(255,95,31,0.08)' : 'transparent',
+            }}
           >All</button>
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.slug)}
-              className={`shrink-0 px-3 py-1.5 text-xs rounded-full ${selectedCategory === cat.slug ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-600'}`}
+              className="shrink-0 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors"
+              style={{
+                color: selectedCategory === cat.slug ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
+                border: selectedCategory === cat.slug ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
+                background: selectedCategory === cat.slug ? 'rgba(255,95,31,0.08)' : 'transparent',
+              }}
             >{cat.icon} {cat.name}</button>
           ))}
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#faf9f7] border-t border-stone-200 py-10 px-6 mt-10">
+      <footer className="py-10 px-6 mt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-semibold text-stone-700">Screenplay Studio Community</span>
-          <div className="flex items-center gap-6 text-sm text-stone-500">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <Link href="/blog" className="hover:text-stone-900 transition-colors">Blog</Link>
-            <Link href="/community/challenges" className="hover:text-stone-900 transition-colors">Challenges</Link>
+          <div className="flex items-center gap-2.5">
+            <div className="w-5 h-5 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+            </div>
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-widest">Screenplay Studio Community</span>
+          </div>
+          <div className="flex items-center gap-6">
+            {['/', '/blog', '/community/challenges'].map((href, i) => (
+              <Link key={href} href={href} className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors">
+                {['Home', 'Blog', 'Challenges'][i]}
+              </Link>
+            ))}
             <SiteVersion light />
           </div>
         </div>

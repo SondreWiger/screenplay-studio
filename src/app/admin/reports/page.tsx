@@ -45,14 +45,14 @@ const CONTENT_TYPE_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const REASON_BADGE_COLORS: Record<string, string> = {
-  spam: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  spam: 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-yellow-500/30',
   harassment: 'bg-red-500/20 text-red-400 border-red-500/30',
   hate_speech: 'bg-red-500/20 text-red-400 border-red-500/30',
   copyright: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   nsfw: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
   illegal: 'bg-red-500/20 text-red-400 border-red-500/30',
   impersonation: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  misinformation: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  misinformation: 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-amber-500/30',
   other: 'bg-surface-700/50 text-surface-300 border-surface-600',
 };
 
@@ -435,7 +435,7 @@ export default function ReportsPage() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Admin
           </Link>
-          <h1 className="text-2xl font-bold text-white">Content Reports &amp; Moderation</h1>
+          <h1 className="text-2xl font-black text-white">Content Reports &amp; Moderation</h1>
           <p className="text-sm text-surface-400 mt-1">Review reports, moderate content, and track actions</p>
         </div>
         <Button onClick={loadAll} variant="secondary" size="sm">
@@ -453,7 +453,7 @@ export default function ReportsPage() {
         ].map((s) => (
           <Card key={s.label} className="p-4">
             <p className="text-xs text-surface-400 mb-1">{s.label}</p>
-            <p className={cn('text-2xl font-bold', s.color)}>
+            <p className={cn('text-2xl font-black', s.color)}>
               {'isText' in s ? s.value : (s.value as number).toLocaleString()}
             </p>
           </Card>

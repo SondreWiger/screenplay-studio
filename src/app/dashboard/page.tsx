@@ -215,17 +215,18 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-950" id="main-content">
+    <div className="min-h-screen" style={{ background: '#070710' }} id="main-content">
       {/* Top Bar */}
-      <header className="sticky top-0 z-40 border-b border-surface-800 bg-surface-950/80 backdrop-blur-xl">
+      <header
+        className="sticky top-0 z-40 backdrop-blur-xl"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.88)' }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-brand-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
-              </svg>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <h1 className="text-base sm:text-lg font-semibold text-white">Screenplay Studio</h1>
+            <h1 className="text-sm sm:text-base font-black text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
@@ -338,14 +339,14 @@ function DashboardContent() {
         {pendingInvitations.length > 0 && (
           <div className="mb-6 space-y-3">
             {pendingInvitations.map((inv: { id: string; company_name?: string; company_logo?: string; company_color?: string; role: string; invited_by_name?: string }) => (
-              <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
+              <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#FF5F1F]/30 bg-[#FF5F1F]/5 p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ backgroundColor: inv.company_color || '#3B82F6' }}>
                     {inv.company_logo ? <img src={inv.company_logo} alt={inv.company_name || 'Company logo'} className="w-full h-full object-cover rounded-lg" /> : inv.company_name?.[0] || '?'}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">
-                      <span className="text-brand-400">{inv.company_name}</span> invited you to join as <span className="capitalize text-brand-300">{inv.role}</span>
+                      <span className="text-[#FF5F1F]">{inv.company_name}</span> invited you to join as <span className="capitalize text-[#FF8F5F]">{inv.role}</span>
                     </p>
                     {inv.invited_by_name && <p className="text-xs text-surface-500">Invited by {inv.invited_by_name}</p>}
                   </div>
@@ -361,11 +362,15 @@ function DashboardContent() {
         {/* Welcome + Stats row */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              Welcome back{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}
-              {user?.is_pro && <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 font-semibold">⭐ Pro</span>}
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
+              <span className="ss-label">Dashboard</span>
+            </div>
+            <h2 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.03em' }}>
+              WELCOME BACK{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
+              {user?.is_pro && <span className="text-xs px-2 py-0.5 font-black uppercase tracking-wider" style={{ background: 'rgba(255,95,31,0.12)', color: '#FF5F1F', border: '1px solid rgba(255,95,31,0.2)' }}>Pro</span>}
             </h2>
-            <p className="mt-0.5 text-sm text-surface-500">Your film projects and recent work</p>
+            <p className="mt-1 text-sm text-white/30">Your film projects and recent work</p>
           </div>
           {/* Inline Stats */}
           {(() => {
@@ -379,8 +384,8 @@ function DashboardContent() {
                   { label: 'Done', value: allP.filter(p => p.status === 'completed').length },
                 ].map((s) => (
                   <div key={s.label} className="text-center">
-                    <p className="text-lg font-semibold text-white">{s.value}</p>
-                    <p className="text-[10px] text-surface-500 uppercase tracking-wider">{s.label}</p>
+                    <p className="text-xl font-black text-white ss-stat-num">{s.value}</p>
+                    <p className="text-[9px] font-mono text-white/25 uppercase tracking-wider">{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -392,11 +397,11 @@ function DashboardContent() {
         {lastProject && (
           <button
             onClick={() => router.push(`/projects/${lastProject.id}/script`)}
-            className="w-full mb-8 group rounded-xl border border-surface-800 bg-gradient-to-r from-surface-900 to-surface-900/50 hover:border-brand-500/40 p-5 text-left transition-all hover:shadow-lg hover:shadow-brand-500/5"
+            className="w-full mb-8 group rounded-xl border border-surface-800 bg-gradient-to-r from-surface-900 to-surface-900/50 hover:border-[#FF5F1F]/40 p-5 text-left transition-all hover:shadow-lg hover:shadow-brand-500/5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400 group-hover:bg-brand-500/20 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] group-hover:bg-[#FF5F1F]/20 transition-colors">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </div>
                 <div>
@@ -406,7 +411,7 @@ function DashboardContent() {
               </div>
               <div className="flex items-center gap-2 text-xs text-surface-500">
                 <span>Last edited {timeAgo(lastProject.updated_at)}</span>
-                <svg className="w-4 h-4 text-surface-600 group-hover:text-brand-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                <svg className="w-4 h-4 text-surface-600 group-hover:text-[#FF5F1F] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </div>
             </div>
           </button>
@@ -420,7 +425,7 @@ function DashboardContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search projects..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-700 bg-surface-900 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-700 bg-surface-900 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none transition-colors"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -431,7 +436,7 @@ function DashboardContent() {
                 className={cn(
                   'px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap',
                   filterStatus === status
-                    ? 'bg-brand-600 text-white'
+                    ? 'bg-[#E54E15] text-white'
                     : 'text-surface-400 hover:text-white hover:bg-surface-800'
                 )}
               >
@@ -450,7 +455,7 @@ function DashboardContent() {
         {filteredProjects.length === 0 && (searchQuery || filterStatus !== 'all') ? (
           <div className="text-center py-12 text-surface-500 text-sm mb-8">
             No projects match your filters.{' '}
-            <button onClick={() => { setSearchQuery(''); setFilterStatus('all'); }} className="text-brand-400 hover:text-brand-300 transition-colors">Clear filters</button>
+            <button onClick={() => { setSearchQuery(''); setFilterStatus('all'); }} className="text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors">Clear filters</button>
           </div>
         ) : projects.length === 0 ? (
           <EmptyState
@@ -495,7 +500,7 @@ function DashboardContent() {
                   </div>
 
                   <div className="p-4">
-                    <h3 className="text-base font-semibold text-white group-hover:text-brand-400 transition-colors truncate">
+                    <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
                       {project.title}
                     </h3>
                     {project.logline && (
@@ -537,7 +542,7 @@ function DashboardContent() {
                       {company.name[0]}
                     </div>
                   )}
-                  <h3 className="text-lg font-semibold text-white group-hover:text-brand-400 transition-colors">{company.name}</h3>
+                  <h3 className="text-lg font-semibold text-white group-hover:text-[#FF5F1F] transition-colors">{company.name}</h3>
                 </Link>
                 <Badge size="sm" variant="default">{membership.role}</Badge>
                 <span className="text-xs text-surface-500">({cProjects.length} project{cProjects.length !== 1 ? 's' : ''})</span>
@@ -597,7 +602,7 @@ function DashboardContent() {
                           </div>
                         </div>
                         <div className="p-4">
-                          <h3 className="text-base font-semibold text-white group-hover:text-brand-400 transition-colors truncate">
+                          <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
                             {project.title}
                           </h3>
                           {project.logline && (
@@ -686,10 +691,13 @@ function NewProjectModal({
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0); // 0 = script type, 1 = details
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [seasonNumber, setSeasonNumber] = useState('1');
+  const [episodeCount, setEpisodeCount] = useState('');
 
   // Determine if this is a content creator project
   const isContentCreator = ['youtube', 'tiktok'].includes(scriptType);
   const isTvProduction = projectType === 'tv_production';
+  const isEpisodic = scriptType === 'episodic';
 
   // Only companies where user has create permissions
   const creatableCompanies = companyMemberships.filter((m) =>
@@ -726,6 +734,10 @@ function NewProjectModal({
           project_type: finalProjectType,
           created_by: userId,
           company_id: selectedCompanyId || null,
+          ...(scriptType === 'episodic' ? {
+            season_number: seasonNumber ? parseInt(seasonNumber, 10) : 1,
+            episode_count: episodeCount ? parseInt(episodeCount, 10) : null,
+          } : {}),
         })
         .select()
         .single();
@@ -738,7 +750,7 @@ function NewProjectModal({
       }
 
       if (data) {
-        router.push(`/projects/${data.id}`);
+        router.push(scriptType === 'episodic' ? `/projects/${data.id}/episodes` : `/projects/${data.id}`);
         onCreated();
       }
     } catch (err) {
@@ -808,12 +820,12 @@ function NewProjectModal({
                 }}
                 className={`text-left p-4 rounded-xl border-2 transition-all ${
                   scriptType === opt.value
-                    ? 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500/30'
+                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
                     : 'border-surface-700 bg-surface-800/50 hover:border-surface-600'
                 }`}
               >
-                <Icon name={opt.icon} size="md" className={scriptType === opt.value ? 'text-brand-400' : 'text-surface-400'} />
-                <h3 className={`mt-1.5 text-sm font-semibold ${scriptType === opt.value ? 'text-brand-400' : 'text-white'}`}>{opt.label}</h3>
+                <Icon name={opt.icon} size="md" className={scriptType === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
+                <h3 className={`mt-1.5 text-sm font-semibold ${scriptType === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>{opt.label}</h3>
                 <p className="mt-0.5 text-[10px] text-surface-500">{opt.description}</p>
               </button>
             ))}
@@ -851,7 +863,7 @@ function NewProjectModal({
                   onClick={() => setSelectedCompanyId(null)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm ${
                     selectedCompanyId === null
-                      ? 'border-brand-500 bg-brand-500/10 text-brand-400 ring-1 ring-brand-500/30'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
                       : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
                   }`}
                 >
@@ -865,7 +877,7 @@ function NewProjectModal({
                     onClick={() => setSelectedCompanyId(m.company_id)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm ${
                       selectedCompanyId === m.company_id
-                        ? 'border-brand-500 bg-brand-500/10 text-brand-400 ring-1 ring-brand-500/30'
+                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
                         : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
                     }`}
                   >
@@ -916,10 +928,10 @@ function NewProjectModal({
                 options={FORMAT_OPTIONS}
               />
 
-              {scriptType === 'episodic' && (
+              {isEpisodic && (
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Season Number" type="number" min={1} value="" onChange={() => {}} placeholder="1" />
-                  <Input label="Episodes Planned" type="number" min={1} value="" onChange={() => {}} placeholder="8" />
+                  <Input label="Season Number" type="number" min={1} value={seasonNumber} onChange={(e) => setSeasonNumber(e.target.value)} placeholder="1" />
+                  <Input label="Episodes Planned" type="number" min={1} value={episodeCount} onChange={(e) => setEpisodeCount(e.target.value)} placeholder="8" />
                 </div>
               )}
 
@@ -933,7 +945,7 @@ function NewProjectModal({
                       onClick={() => toggleGenre(g)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                         genre.includes(g)
-                          ? 'bg-brand-600 text-white'
+                          ? 'bg-[#E54E15] text-white'
                           : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
                       }`}
                     >
@@ -943,6 +955,19 @@ function NewProjectModal({
                 </div>
               </div>
             </>
+          )}
+
+          {isEpisodic && (
+            <div className="bg-surface-800/50 rounded-xl p-4 border border-surface-700">
+              <p className="text-sm text-surface-300 mb-3">📺 Your series gets:</p>
+              <ul className="text-xs text-surface-400 space-y-1.5">
+                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Episode manager — one script per episode, tracked together</li>
+                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Season + episode numbering &amp; arc planning</li>
+                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Series-wide character, location &amp; scene tracking</li>
+                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Per-episode production scheduling &amp; shot lists</li>
+                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Real-time collaboration across the entire season</li>
+              </ul>
+            </div>
           )}
 
           {isContentCreator && (

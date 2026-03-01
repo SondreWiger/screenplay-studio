@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import type { BrollItem, BrollStatus } from '@/lib/types';
 
 const STATUS_COLORS: Record<BrollStatus, string> = {
-  needed: 'bg-yellow-500/20 text-yellow-400',
+  needed: 'bg-[#FF5F1F]/20 text-[#FF5F1F]',
   found: 'bg-blue-500/20 text-blue-400',
   filmed: 'bg-purple-500/20 text-purple-400',
   edited: 'bg-green-500/20 text-green-400',
@@ -122,7 +122,7 @@ export default function BRollPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -132,7 +132,7 @@ export default function BRollPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">B-Roll</h1>
+          <h1 className="text-2xl font-black text-white">B-Roll</h1>
           <p className="text-surface-400 text-sm mt-1">
             Track supplementary footage for your video
           </p>
@@ -152,10 +152,10 @@ export default function BRollPage() {
             onClick={() => setFilter(filter === status ? 'all' : status)}
             className={cn(
               'bg-surface-900 border rounded-xl p-4 text-center transition-all',
-              filter === status ? 'border-brand-500' : 'border-surface-800 hover:border-surface-700'
+              filter === status ? 'border-[#FF5F1F]' : 'border-surface-800 hover:border-surface-700'
             )}
           >
-            <p className="text-2xl font-bold text-white">{stats[status]}</p>
+            <p className="text-2xl font-black text-white">{stats[status]}</p>
             <Badge className={cn('mt-1 text-xs', STATUS_COLORS[status])}>
               {STATUS_LABELS[status]}
             </Badge>
@@ -283,7 +283,7 @@ export default function BRollPage() {
                     </Badge>
                     
                     {item.source_url && (
-                      <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-400 hover:underline">
+                      <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline">
                         🔗 Source
                       </a>
                     )}

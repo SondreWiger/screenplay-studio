@@ -114,7 +114,7 @@ export default function LegalBlogPage() {
         {/* Header */}
         <div className="mb-10">
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Legal Updates</p>
-          <h1 className="text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-3xl font-black tracking-tight text-white">
             Legal Blog
           </h1>
           <p className="mt-2 text-sm text-surface-500">

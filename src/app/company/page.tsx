@@ -363,7 +363,7 @@ export default function CompanyDashboard() {
           <div className="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">No Company Yet</h1>
+          <h1 className="text-2xl font-black text-white mb-2">No Company Yet</h1>
           <p className="text-surface-400 mb-8">Create a company to collaborate with your team, manage projects together, and set granular permissions.</p>
           <div className="flex gap-3 justify-center">
             <Link href="/settings">
@@ -400,12 +400,12 @@ export default function CompanyDashboard() {
             {company.logo_url ? (
               <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" />
             ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
               </div>
             )}
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-white">{company.name}</h1>
+              <h1 className="text-2xl font-black text-white">{company.name}</h1>
               {company.tagline && <p className="text-sm text-surface-400 mt-0.5">{company.tagline}</p>}
             </div>
             {company.public_page_enabled && (
@@ -424,7 +424,7 @@ export default function CompanyDashboard() {
                 onClick={() => setTab(t.key)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   tab === t.key
-                    ? 'border-brand-500 text-white'
+                    ? 'border-[#FF5F1F] text-white'
                     : 'border-transparent text-surface-400 hover:text-white'
                 }`}
               >
@@ -449,7 +449,7 @@ export default function CompanyDashboard() {
               ].map((stat) => (
                 <Card key={stat.label} className="p-4 text-center">
                   <span className="text-2xl">{stat.icon}</span>
-                  <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                  <p className="text-2xl font-black text-white mt-1">{stat.value}</p>
                   <p className="text-xs text-surface-400">{stat.label}</p>
                 </Card>
               ))}
@@ -482,7 +482,7 @@ export default function CompanyDashboard() {
 
             {/* Getting Started Checklist — show if company is new/sparse */}
             {(members.length <= 1 || teams.length === 0 || projects.length === 0) && canManage && (
-              <Card className="p-5 border border-brand-500/20">
+              <Card className="p-5 border border-[#FF5F1F]/20">
                 <h3 className="text-sm font-semibold text-white mb-3">🚀 Getting Started</h3>
                 <div className="space-y-2">
                   {[
@@ -513,7 +513,7 @@ export default function CompanyDashboard() {
               {company.website && (
                 <Card className="p-4">
                   <p className="text-xs text-surface-500">Website</p>
-                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-brand-400 hover:underline">{company.website}</a>
+                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-[#FF5F1F] hover:underline">{company.website}</a>
                 </Card>
               )}
               {company.email && (
@@ -568,7 +568,7 @@ export default function CompanyDashboard() {
                     <p className="text-xs text-surface-400">{m.job_title || m.role} {m.department ? `· ${m.department}` : ''}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-                    m.role === 'owner' ? 'bg-yellow-500/20 text-yellow-400' :
+                    m.role === 'owner' ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' :
                     m.role === 'admin' ? 'bg-blue-500/20 text-blue-400' :
                     m.role === 'manager' ? 'bg-green-500/20 text-green-400' :
                     'bg-surface-700 text-surface-300'
@@ -657,7 +657,7 @@ export default function CompanyDashboard() {
                       <div className="mt-4 pt-3 border-t border-surface-800 flex justify-between items-center">
                         <button
                           onClick={() => setShowAddToTeamModal(team.id)}
-                          className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1"
+                          className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] flex items-center gap-1"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                           Add Member
@@ -757,8 +757,8 @@ export default function CompanyDashboard() {
                     <p className="text-sm font-medium text-white">Allow Comments</p>
                     <p className="text-[11px] text-surface-400">Let readers comment on this post</p>
                   </div>
-                  <div className={`ml-auto w-10 h-6 rounded-full shrink-0 transition-colors relative ${blogForm.allow_comments ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${blogForm.allow_comments ? 'left-5' : 'left-1'}`} />
+                  <div className={`ml-auto w-10 h-6 rounded-full shrink-0 transition-colors relative ${blogForm.allow_comments ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-surface-900 shadow transition-transform ${blogForm.allow_comments ? 'left-5' : 'left-1'}`} />
                   </div>
                 </button>
                 <div className="flex justify-end gap-2 pt-4 border-t border-surface-800">
@@ -784,7 +784,7 @@ export default function CompanyDashboard() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      {post.pinned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400 font-bold">PINNED</span>}
+                      {post.pinned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FF5F1F]/20 text-[#FF5F1F] font-bold">PINNED</span>}
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide ${
                         post.status === 'published' ? 'bg-green-500/20 text-green-400' :
                         post.status === 'draft' ? 'bg-surface-700 text-surface-400' :
@@ -812,7 +812,7 @@ export default function CompanyDashboard() {
                       <button onClick={() => togglePinPost(post)} className="text-xs text-surface-400 hover:text-yellow-400 px-2 py-1" title={post.pinned ? 'Unpin' : 'Pin'}>
                         📌
                       </button>
-                      <button onClick={() => editBlogPost(post)} className="text-xs text-brand-400 hover:text-brand-300 px-2 py-1">Edit</button>
+                      <button onClick={() => editBlogPost(post)} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] px-2 py-1">Edit</button>
                       <button onClick={() => deleteBlogPost(post.id)} className="text-xs text-red-400 hover:text-red-300 px-2 py-1">Delete</button>
                     </div>
                   )}
@@ -866,8 +866,8 @@ export default function CompanyDashboard() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-400">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[18px]' : 'left-0.5'}`} />
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-surface-900 shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[18px]' : 'left-0.5'}`} />
                     </div>
                   </button>
                 ))}
@@ -921,14 +921,14 @@ export default function CompanyDashboard() {
                   <input readOnly value={lastInviteLink} className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-surface-300 outline-none" />
                   <button
                     onClick={() => { navigator.clipboard.writeText(lastInviteLink); }}
-                    className="px-3 py-2 rounded-lg bg-brand-600 text-white text-xs font-medium hover:bg-brand-700 transition-colors"
+                    className="px-3 py-2 rounded-lg bg-[#E54E15] text-white text-xs font-medium hover:bg-[#CC4312] transition-colors"
                   >
                     Copy
                   </button>
                 </div>
                 <p className="text-[10px] text-surface-500 text-center">Link expires in 7 days. They'll also see a banner on their dashboard if they're registered.</p>
                 <div className="flex justify-between items-center pt-2">
-                  <button onClick={() => setLastInviteLink('')} className="text-xs text-brand-400 hover:text-brand-300">Invite another</button>
+                  <button onClick={() => setLastInviteLink('')} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">Invite another</button>
                   <Button variant="ghost" onClick={() => { setShowInviteModal(false); setLastInviteLink(''); }}>Done</Button>
                 </div>
               </div>
@@ -939,7 +939,7 @@ export default function CompanyDashboard() {
                   <div>
                     <label className="block text-sm font-medium text-surface-300 mb-1.5">Role</label>
                     <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as CompanyRole)}
-                      className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500">
+                      className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]">
                       <option value="admin">Admin — Full access</option>
                       <option value="manager">Manager — Manage projects & members</option>
                       <option value="member">Member — Edit content</option>
@@ -985,7 +985,7 @@ export default function CompanyDashboard() {
                     <label key={perm.key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-800 cursor-pointer">
                       <input type="checkbox" checked={(teamPerms as Record<string, boolean>)[perm.key]}
                         onChange={(e) => setTeamPerms({ ...teamPerms, [perm.key]: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500" />
+                        className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
                       <span className="text-sm text-surface-300">{perm.label}</span>
                     </label>
                   ))}
@@ -1013,7 +1013,7 @@ export default function CompanyDashboard() {
                   onClick={() => setSelectedMemberForTeam(m.id)}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors text-left ${
                     selectedMemberForTeam === m.id
-                      ? 'border-brand-500 bg-brand-500/10'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                       : 'border-surface-700 hover:border-surface-600'
                   }`}
                 >
@@ -1025,7 +1025,7 @@ export default function CompanyDashboard() {
                     <p className="text-[11px] text-surface-400">{m.role}</p>
                   </div>
                   {selectedMemberForTeam === m.id && (
-                    <svg className="w-5 h-5 text-brand-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <svg className="w-5 h-5 text-[#FF5F1F] shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                   )}
                 </button>
               ))}

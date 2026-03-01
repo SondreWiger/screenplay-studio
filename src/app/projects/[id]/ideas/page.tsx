@@ -86,7 +86,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Ideas Board</h1>
+          <h1 className="text-2xl font-black text-white">Ideas Board</h1>
           <p className="text-sm text-surface-400 mt-1">{ideas.length} ideas captured</p>
         </div>
         {canEdit && <Button onClick={() => { setSelectedIdea(null); setShowEditor(true); }}>
@@ -99,12 +99,12 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
         <button onClick={() => setFilterCategory('all')} className={cn(
           'px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
-          filterCategory === 'all' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+          filterCategory === 'all' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
         )}>All</button>
         {CATEGORIES.map((c) => (
           <button key={c.value} onClick={() => setFilterCategory(c.value)} className={cn(
             'px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
-            filterCategory === c.value ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+            filterCategory === c.value ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
           )}>{c.label}</button>
         ))}
       </div>
@@ -117,7 +117,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
             <div key={col.value}
               className={cn(
                 'rounded-xl border-2 border-dashed transition-colors p-3',
-                dragOverCol === col.value ? 'border-brand-500/50 bg-brand-600/5' : col.color,
+                dragOverCol === col.value ? 'border-[#FF5F1F]/50 bg-[#E54E15]/5' : col.color,
               )}
               onDragOver={(e) => { e.preventDefault(); setDragOverCol(col.value); }}
               onDragLeave={() => setDragOverCol(null)}

@@ -37,6 +37,8 @@ export const ICON_TO_FLAG: Record<string, string> = {
   mindmap: 'mindmap',
   documents: 'documents',
   script: 'script_editor',
+  episodes: 'script_editor',  // Episodes page is part of the script editor feature
+  'arc-planner': 'script_editor',  // Arc planner is part of the episodic writing workflow
   // Pro tools
   analytics: 'pro_analytics',
   export: 'pro_export',

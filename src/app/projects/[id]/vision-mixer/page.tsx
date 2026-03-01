@@ -253,13 +253,13 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                 previewSource.connection_url ? (
                   <div className="relative w-full h-full bg-gradient-to-br from-green-950/30 to-surface-950 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-green-400/60 mb-2">{previewSource.short_name || previewSource.name}</div>
+                      <div className="text-4xl font-black text-green-400/60 mb-2">{previewSource.short_name || previewSource.name}</div>
                       <div className="text-xs text-surface-500">{previewSource.source_type} • {previewSource.protocol || 'SDI'}</div>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-green-400/40">{previewSource.short_name || previewSource.name}</div>
+                    <div className="text-3xl font-black text-green-400/40">{previewSource.short_name || previewSource.name}</div>
                     <div className="text-xs text-surface-600 mt-1">{previewSource.source_type}</div>
                   </div>
                 )
@@ -285,11 +285,11 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
             </div>
             <div className="flex items-center justify-center h-full">
               {switcherState?.ftb_active ? (
-                <div className="text-red-800 text-xl font-bold animate-pulse">FADE TO BLACK</div>
+                <div className="text-red-800 text-xl font-black animate-pulse">FADE TO BLACK</div>
               ) : programSource ? (
                 <div className="relative w-full h-full bg-gradient-to-br from-red-950/30 to-surface-950 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-red-400/60 mb-2">{programSource.short_name || programSource.name}</div>
+                    <div className="text-4xl font-black text-red-400/60 mb-2">{programSource.short_name || programSource.name}</div>
                     <div className="text-xs text-surface-500">{programSource.source_type} • {programSource.protocol || 'SDI'}</div>
                     {switcherState?.pip_enabled && switcherState.pip_source_id && (
                       <div className="mt-2 text-[10px] text-amber-400">PiP: {getSourceName(switcherState.pip_source_id)}</div>

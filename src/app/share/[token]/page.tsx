@@ -157,7 +157,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
       <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
         <Card className="p-8 max-w-md text-center">
           <div className="text-4xl mb-4">🔗</div>
-          <h1 className="text-xl font-bold text-white mb-2">Link Unavailable</h1>
+          <h1 className="text-xl font-black text-white mb-2">Link Unavailable</h1>
           <p className="text-sm text-surface-400">{error}</p>
         </Card>
       </div>
@@ -171,7 +171,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
         <Card className="p-8 max-w-sm w-full">
           <div className="text-center mb-6">
             <div className="text-3xl mb-3">🔒</div>
-            <h1 className="text-xl font-bold text-white mb-1">Password Protected</h1>
+            <h1 className="text-xl font-black text-white mb-1">Password Protected</h1>
             <p className="text-sm text-surface-400">Enter the password to view this content.</p>
           </div>
           {error && <p className="text-sm text-red-400 text-center mb-3">{error}</p>}
@@ -197,7 +197,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
             {share?.branding?.logo_url ? (
               <img src={share.branding.logo_url} alt={'Branding logo'} className="h-8 w-auto" />
             ) : (
-              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-xs font-bold text-white">
+              <div className="w-8 h-8 bg-[#E54E15] rounded-lg flex items-center justify-center text-xs font-bold text-white">
                 SS
               </div>
             )}
@@ -240,7 +240,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
         {/* Project header */}
         {project && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-1">{project.title}</h2>
+            <h2 className="text-2xl font-black text-white mb-1">{project.title}</h2>
             {project.logline && <p className="text-surface-400">{project.logline}</p>}
             {project.genre && <p className="text-xs text-surface-500 mt-2">{Array.isArray(project.genre) ? project.genre.join(', ') : project.genre} • {project.format}</p>}
           </div>
@@ -404,7 +404,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                     </div>
                   </div>
                   {char.description && <p className="text-sm text-surface-400 line-clamp-3">{char.description}</p>}
-                  {(char as any).cast_actor && <p className="text-xs text-brand-400 mt-2">Actor: {(char as any).cast_actor}</p>}
+                  {(char as any).cast_actor && <p className="text-xs text-[#FF5F1F] mt-2">Actor: {(char as any).cast_actor}</p>}
                 </Card>
               ))}
             </div>
@@ -422,7 +422,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
 
         {/* Review rating */}
         {reviewSession && reviewSession.status !== 'submitted' && (
-          <Card className="p-6 mt-8 border border-brand-500/20">
+          <Card className="p-6 mt-8 border border-[#FF5F1F]/20">
             <h3 className="text-lg font-semibold text-white mb-4">Your Review</h3>
             <div className="mb-4">
               <label className="block text-sm text-surface-300 mb-2">Overall Rating</label>

@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore } from '@/lib/stores';
 import { Card, Badge, Progress, Button, LoadingPage } from '@/components/ui';
-import { formatDate, formatCurrency, timeAgo } from '@/lib/utils';
+import { formatDate, formatCurrency, timeAgo, cn } from '@/lib/utils';
+import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
 import type { Script, Character, Location, Scene, Shot, Idea, BudgetItem, ScheduleEvent } from '@/lib/types';
 import Link from 'next/link';
 
@@ -16,6 +17,146 @@ interface ActivityItem {
   timestamp: string;
   icon: string;
   color: string;
+}
+
+// ── Inline sparkline (no deps) ───────────────────────────────
+function MiniSparkline({ values, color = '#6366f1' }: { values: number[]; color?: string }) {
+  if (values.length < 2) return null;
+  const max = Math.max(...values, 1);
+  const w = 160;
+  const h = 40;
+  const step = w / (values.length - 1);
+  const pts = values
+    .map((v, i) => `${i * step},${h - (v / max) * h}`)
+    .join(' ');
+  const fill = values
+    .map((v, i) => `${i * step},${h - (v / max) * h}`)
+    .concat([`${w},${h}`, `0,${h}`])
+    .join(' ');
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
+      <polygon points={fill} fill={color} fillOpacity={0.15} />
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ── WorkTimeCard ─────────────────────────────────────────────
+interface WorkTimeData {
+  my_total_seconds: number;
+  team_total_seconds: number;
+  daily: { date: string; seconds: number }[];
+  context_breakdown: Record<string, number>;
+}
+
+function WorkTimeCard({ projectId }: { projectId: string }) {
+  const [data, setData]     = useState<WorkTimeData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/work-session?projectId=${projectId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: WorkTimeData | null) => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [projectId]);
+
+  const dailyValues = (data?.daily ?? []).map((d) => d.seconds);
+  const peakDay     = data?.daily?.reduce(
+    (best, d) => d.seconds > best.seconds ? d : best,
+    { date: '', seconds: 0 },
+  );
+
+  // Context labels
+  const ctxColour: Record<string, string> = {
+    script:       '#6366f1',
+    documents:    '#22d3ee',
+    'arc-planner': '#a855f7',
+    general:      '#6b7280',
+  };
+
+  const ctxEntries = Object.entries(data?.context_breakdown ?? {})
+    .sort(([, a], [, b]) => b - a);
+
+  return (
+    <Card className="p-6 border-surface-800/80">
+      <p className="section-title mb-5">Working Time</p>
+
+      {loading ? (
+        <p className="text-xs text-surface-500">Loading…</p>
+      ) : !data ? (
+        <p className="text-xs text-surface-500">No sessions yet — open the script or documents editor to start tracking.</p>
+      ) : (
+        <>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <div>
+              <p className="stat-label">My time</p>
+              <p className="text-3xl font-black text-white leading-tight mt-1">{formatWorkSeconds(data.my_total_seconds)}</p>
+            </div>
+            <div>
+              <p className="stat-label">Team total</p>
+              <p className="text-3xl font-black text-white leading-tight mt-1">{formatWorkSeconds(data.team_total_seconds)}</p>
+            </div>
+          </div>
+
+          {/* 30-day sparkline */}
+          {dailyValues.some((v) => v > 0) && (
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[11px] text-surface-500">Last 30 days</p>
+                {peakDay && peakDay.seconds > 0 && (
+                  <p className="text-[11px] text-surface-500">
+                    Peak: <span className="text-white">{formatWorkSeconds(peakDay.seconds)}</span> on {peakDay.date.slice(5)}
+                  </p>
+                )}
+              </div>
+              <MiniSparkline values={dailyValues} color="#6366f1" />
+              <div className="flex justify-between text-[10px] text-surface-600 mt-0.5">
+                <span>{data.daily[0]?.date.slice(5)}</span>
+                <span>{data.daily[data.daily.length - 1]?.date.slice(5)}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Context breakdown */}
+          {ctxEntries.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px] text-surface-500 uppercase tracking-wider">Where you worked</p>
+              {ctxEntries.map(([ctx, secs]) => (
+                <div key={ctx}>
+                  <div className="flex justify-between text-xs mb-0.5">
+                    <span className="text-surface-300 capitalize">{ctx.replace(/-/g, ' ')}</span>
+                    <span className="text-surface-400">{formatWorkSeconds(secs)}</span>
+                  </div>
+                  <div className="h-1.5 bg-surface-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        backgroundColor: ctxColour[ctx] ?? '#6366f1',
+                        width: `${data.my_total_seconds > 0 ? (secs / data.my_total_seconds) * 100 : 0}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Hourly rate helper note */}
+          <p className="text-[11px] text-surface-600 mt-4">
+            💡 Billing hourly? My time = {(data.my_total_seconds / 3600).toFixed(2)} hrs (exact)
+          </p>
+        </>
+      )}
+    </Card>
+  );
 }
 
 export default function ProjectOverviewPage({ params }: { params: { id: string } }) {
@@ -35,6 +176,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     totalDurationMinutes: 0,
     totalPageCount: 0,
     members: 0,
+    documents: 0,
+    scriptLines: 0,
   });
   const [recentScripts, setRecentScripts] = useState<Script[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<ScheduleEvent[]>([]);
@@ -49,7 +192,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
   const fetchStats = async () => {
     try {
       const supabase = createClient();
-      const [scripts, characters, locations, scenes, shots, ideas, budget, events, members] = await Promise.all([
+      const [scripts, characters, locations, scenes, shots, ideas, budget, events, members, documents] = await Promise.all([
         supabase.from('scripts').select('*').eq('project_id', params.id).order('updated_at', { ascending: false }),
         supabase.from('characters').select('id, name, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
         supabase.from('locations').select('id, name, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
@@ -59,7 +202,19 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         supabase.from('budget_items').select('estimated_amount, actual_amount').eq('project_id', params.id),
         supabase.from('production_schedule').select('*').eq('project_id', params.id).gte('start_time', new Date().toISOString()).order('start_time', { ascending: true }).limit(5),
         supabase.from('project_members').select('id').eq('project_id', params.id),
+        supabase.from('project_documents').select('id', { count: 'exact', head: true }).eq('project_id', params.id),
       ]);
+
+      // Count script lines (script_elements) using actual script IDs
+      const scriptIds = (scripts.data || []).map((s: { id: string }) => s.id);
+      let scriptLines = 0;
+      if (scriptIds.length > 0) {
+        const { count } = await supabase
+          .from('script_elements')
+          .select('id', { count: 'exact', head: true })
+          .in('script_id', scriptIds);
+        scriptLines = count ?? 0;
+      }
 
       const budgetData = budget.data || [];
       const scenesData = scenes.data || [];
@@ -84,6 +239,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         totalDurationMinutes,
         totalPageCount,
         members: members.data?.length || 0,
+        documents: documents.count ?? 0,
+        scriptLines,
       });
       setRecentScripts((scripts.data || []).slice(0, 3));
       setUpcomingEvents((events.data || []).slice(0, 5));
@@ -120,130 +277,110 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
   if (!currentProject) return <LoadingPage />;
 
   // Duration display logic
-  const estimatedMinutes = stats.totalDurationMinutes || Math.round(stats.totalPageCount * 1); // ~1 min per page industry standard
+  const estimatedMinutes = stats.totalDurationMinutes || Math.round(stats.totalPageCount * 1);
   const targetMinutes = currentProject.target_length_minutes || 0;
   const durationHours = Math.floor(estimatedMinutes / 60);
   const durationMins = estimatedMinutes % 60;
   const durationStr = durationHours > 0 ? durationHours + 'h ' + durationMins + 'm' : durationMins + ' min';
   const targetStr = targetMinutes > 0 ? (Math.floor(targetMinutes / 60) > 0 ? Math.floor(targetMinutes / 60) + 'h ' + (targetMinutes % 60) + 'm' : targetMinutes + ' min') : '';
 
+  const statusColor =
+    currentProject.status === 'production' ? '#22c55e' :
+    currentProject.status === 'completed' || currentProject.status === 'post_production' ? '#60a5fa' :
+    currentProject.status === 'pre_production' ? '#f59e0b' : '#a78bfa';
+
   return (
-    <div className="p-4 md:p-8 max-w-6xl">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">{currentProject.title}</h1>
+    <div className="page-root">
+
+      {/* ── Page Header ─────────────────────────────── */}
+      <div className="mb-10">
+        <div className="flex items-start justify-between gap-6">
+          <div className="min-w-0">
+            <h1 className="page-title">{currentProject.title}</h1>
             {currentProject.logline && (
-              <p className="mt-2 text-surface-400 max-w-2xl">{currentProject.logline}</p>
+              <p className="page-subtitle max-w-2xl mt-2">{currentProject.logline}</p>
             )}
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide"
+                style={{ background: statusColor + '18', color: statusColor, border: `1px solid ${statusColor}35` }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor }} />
+                {currentProject.status.replace(/_/g, ' ')}
+              </span>
               <Badge variant="info">{currentProject.format}</Badge>
               {currentProject.genre?.map((g: string) => (
                 <Badge key={g}>{g}</Badge>
               ))}
             </div>
           </div>
-          <Badge
-            variant={
-              currentProject.status === 'production' ? 'success' :
-              currentProject.status === 'completed' ? 'success' : 'info'
-            }
-            size="md"
-          >
-            {currentProject.status.replace('_', ' ')}
-          </Badge>
+          {estimatedMinutes > 0 && (
+            <div className="shrink-0 text-right hidden md:block">
+              <p className="stat-value" style={{ color: 'rgb(var(--brand-400))' }}>{durationStr}</p>
+              <p className="stat-label">estimated runtime</p>
+              {targetMinutes > 0 && (
+                <p className="text-[11px] text-surface-600 mt-1">target: {targetStr}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Quick Stats + Duration */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8 stagger-children">
+      {/* ── Primary Stats ────────────────────────────── */}
+      <div className="mb-3">
+        <p className="section-title">Project Numbers</p>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-10 stagger-children">
         {[
-          { label: 'Scripts', value: stats.scripts, href: 'script', color: '#6366f1' },
-          { label: 'Characters', value: stats.characters, href: 'characters', color: '#ec4899' },
-          { label: 'Mind Map', value: '→', href: 'mindmap', color: '#f97316' },
-          { label: 'Locations', value: stats.locations, href: 'locations', color: '#14b8a6' },
-          { label: 'Scenes', value: stats.scenes, href: 'scenes', color: '#f59e0b' },
-          { label: 'Shots', value: stats.shots, href: 'shots', color: '#3b82f6' },
-          { label: 'Ideas', value: stats.ideas, href: 'ideas', color: '#a855f7' },
+          { label: 'Scripts',     value: stats.scripts,    href: 'script',     color: '#818cf8' },
+          { label: 'Characters',  value: stats.characters, href: 'characters', color: '#f472b6' },
+          { label: 'Locations',   value: stats.locations,  href: 'locations',  color: '#2dd4bf' },
+          { label: 'Scenes',      value: stats.scenes,     href: 'scenes',     color: '#fbbf24' },
+          { label: 'Shots',       value: stats.shots,      href: 'shots',      color: '#60a5fa' },
         ].map((stat) => (
-          <Link key={stat.label} href={'/projects/' + params.id + '/' + stat.href}>
-            <Card hover className="p-4 text-center">
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
-              <p className="text-xs text-surface-500 mt-1">{stat.label}</p>
-              <div className="mt-2 h-0.5 rounded-full" style={{ backgroundColor: stat.color, opacity: 0.3 }}>
-                <div className="h-full rounded-full" style={{ backgroundColor: stat.color, width: '100%' }} />
-              </div>
-            </Card>
+          <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
+            <div
+              className="stat-card group"
+              style={{ '--stat-color': stat.color } as React.CSSProperties}
+            >
+              <p className="stat-value group-hover:text-white" style={{ color: stat.color }}>{stat.value}</p>
+              <p className="stat-label">{stat.label}</p>
+            </div>
           </Link>
         ))}
       </div>
 
-      {/* Duration Estimate Card */}
-      {(estimatedMinutes > 0 || targetMinutes > 0) && (
-        <Card className="p-6 mb-8 border-brand-500/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+      {/* ── Secondary Stats ───────────────────────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+        {[
+          { label: 'Documents',    value: stats.documents,                  href: 'documents', color: '#22d3ee' },
+          { label: 'Script Lines', value: stats.scriptLines.toLocaleString(), href: 'script',  color: '#a78bfa' },
+          { label: 'Ideas',        value: stats.ideas,                      href: 'ideas',     color: '#fb923c' },
+          { label: 'Team Members', value: stats.members,                    href: 'team',      color: '#34d399' },
+        ].map((stat) => (
+          <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
+            <div className="card-row group hover:cursor-pointer">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-black transition-transform group-hover:scale-110"
+                style={{ background: stat.color + '18', color: stat.color }}
+              >
+                {typeof stat.value === 'number' ? stat.value : <span className="text-xs">{stat.value}</span>}
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Estimated Runtime</h3>
-                <p className="text-sm text-surface-400">
-                  {stats.totalDurationMinutes > 0
-                    ? 'Based on scene durations'
-                    : stats.totalPageCount > 0
-                    ? 'Based on page count (~1 min/page)'
-                    : 'Add scene durations or page counts to estimate'}
-                </p>
-              </div>
+              <p className="stat-label leading-none">{stat.label}</p>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-white">{estimatedMinutes > 0 ? durationStr : '\u2014'}</p>
-              {targetMinutes > 0 && (
-                <p className="text-sm mt-1">
-                  <span className="text-surface-400">Target: {targetStr}</span>
-                  {estimatedMinutes > 0 && (
-                    <span className={estimatedMinutes > targetMinutes * 1.1 ? ' text-red-400 ml-2' : estimatedMinutes < targetMinutes * 0.9 ? ' text-yellow-400 ml-2' : ' text-green-400 ml-2'}>
-                      ({estimatedMinutes > targetMinutes ? '+' : ''}{estimatedMinutes - targetMinutes} min)
-                    </span>
-                  )}
-                </p>
-              )}
-            </div>
-          </div>
-          {targetMinutes > 0 && estimatedMinutes > 0 && (
-            <div className="mt-4">
-              <Progress
-                label=""
-                value={Math.min(estimatedMinutes, targetMinutes)}
-                max={targetMinutes}
-                color={estimatedMinutes > targetMinutes * 1.1 ? '#ef4444' : estimatedMinutes < targetMinutes * 0.9 ? '#f59e0b' : '#22c55e'}
-              />
-            </div>
-          )}
-        </Card>
-      )}
+          </Link>
+        ))}
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Main Content Grid ─────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
         {/* Production Progress */}
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-white mb-6">Production Progress</h3>
+          <p className="section-title">Production Progress</p>
           <div className="space-y-5">
-            <Progress
-              label="Scenes Completed"
-              value={stats.completedScenes}
-              max={Math.max(stats.scenes, 1)}
-              color="#22c55e"
-            />
-            <Progress
-              label="Shots Completed"
-              value={stats.completedShots}
-              max={Math.max(stats.shots, 1)}
-              color="#3b82f6"
-            />
+            <Progress label="Scenes Complete" value={stats.completedScenes} max={Math.max(stats.scenes, 1)} color="#22c55e" />
+            <Progress label="Shots Complete"  value={stats.completedShots}  max={Math.max(stats.shots, 1)}  color="#60a5fa" />
             <Progress
               label="Budget Used"
               value={stats.budgetSpent}
@@ -251,37 +388,52 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               color={stats.budgetSpent > stats.budgetTotal * 0.9 ? '#ef4444' : '#f59e0b'}
             />
           </div>
-
           {stats.budgetTotal > 0 && (
-            <div className="mt-6 pt-4 border-t border-surface-800 flex justify-between text-sm">
-              <span className="text-surface-400">Budget: {formatCurrency(stats.budgetSpent)} / {formatCurrency(stats.budgetTotal)}</span>
-              <span className={stats.budgetSpent > stats.budgetTotal ? 'text-red-400' : 'text-green-400'}>
-                {formatCurrency(stats.budgetTotal - stats.budgetSpent)} remaining
+            <div className="mt-5 pt-4 border-t border-surface-800/60 flex justify-between items-center">
+              <span className="text-xs text-surface-500">{formatCurrency(stats.budgetSpent)} spent of {formatCurrency(stats.budgetTotal)}</span>
+              <span className={cn('text-xs font-bold', stats.budgetSpent > stats.budgetTotal ? 'text-red-400' : 'text-green-400')}>
+                {formatCurrency(stats.budgetTotal - stats.budgetSpent)} left
               </span>
             </div>
           )}
         </Card>
 
+        {/* Working Time */}
+        <WorkTimeCard projectId={params.id} />
+
         {/* Activity Timeline */}
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-white mb-6">Recent Activity</h3>
+          <div className="flex items-center justify-between mb-5">
+            <p className="section-title mb-0">Recent Activity</p>
+            {activity.length > 0 && (
+              <button
+                onClick={() => setActivityExpanded((v) => !v)}
+                className="text-[10px] font-bold uppercase tracking-wider text-surface-600 hover:text-white transition-colors"
+              >
+                {activityExpanded ? 'Show less' : 'Show all'}
+              </button>
+            )}
+          </div>
           {activity.length === 0 ? (
-            <p className="text-sm text-surface-500">No activity yet. Start by adding scripts, characters, or scenes.</p>
+            <p className="text-sm text-surface-500">No activity yet — add scripts, characters, or scenes to start.</p>
           ) : (
             <div className="relative">
-              <div className="absolute left-3 top-2 bottom-2 w-px bg-surface-800" />
-              <div className="space-y-4">
-                {activity.map((item) => (
-                  <div key={item.id} className="flex items-start gap-3 relative">
-                    <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center z-10" style={{ backgroundColor: item.color + '20' }}>
+              <div className="absolute left-3 top-1 bottom-1 w-px" style={{ background: 'linear-gradient(to bottom, rgb(var(--brand-500)/0.3), transparent)' }} />
+              <div className="space-y-3">
+                {(activityExpanded ? activity : activity.slice(0, 6)).map((item) => (
+                  <div key={item.id} className="flex items-start gap-3 group">
+                    <div
+                      className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center z-10 mt-0.5 ring-2 ring-surface-950 transition-transform group-hover:scale-110"
+                      style={{ backgroundColor: item.color + '25' }}
+                    >
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
                     </div>
                     <div className="min-w-0 flex-1 pb-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-white truncate">{item.label}</p>
+                        <p className="text-sm font-semibold text-white truncate">{item.label}</p>
                         <Badge size="sm">{item.type}</Badge>
                       </div>
-                      <p className="text-xs text-surface-500 mt-0.5">{item.detail} \u00B7 {timeAgo(item.timestamp)}</p>
+                      <p className="text-[11px] text-surface-500 mt-0.5">{item.detail} · {timeAgo(item.timestamp)}</p>
                     </div>
                   </div>
                 ))}
@@ -292,56 +444,53 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
         {/* Upcoming Schedule */}
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-white">Upcoming Schedule</h3>
-            <Link href={'/projects/' + params.id + '/schedule'}>
-              <Button variant="ghost" size="sm">View All</Button>
+          <div className="flex items-center justify-between mb-5">
+            <p className="section-title mb-0">Upcoming Schedule</p>
+            <Link href={`/projects/${params.id}/schedule`}>
+              <Button variant="ghost" size="sm">View All →</Button>
             </Link>
           </div>
           {upcomingEvents.length === 0 ? (
-            <p className="text-sm text-surface-500">No upcoming events scheduled</p>
+            <p className="text-sm text-surface-500">No upcoming events scheduled.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {upcomingEvents.map((event) => (
-                <div key={event.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-800/50">
-                  <div
-                    className="w-1 h-10 rounded-full shrink-0"
-                    style={{ backgroundColor: event.color }}
-                  />
+                <div key={event.id} className="card-row">
+                  <div className="w-1 h-9 rounded-full shrink-0" style={{ backgroundColor: event.color || '#6366f1' }} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-white truncate">{event.title}</p>
-                    <p className="text-xs text-surface-500">
-                      {formatDate(event.start_time)} &bull; {event.event_type.replace('_', ' ')}
-                    </p>
+                    <p className="text-sm font-semibold text-white truncate">{event.title}</p>
+                    <p className="text-[11px] text-surface-500">{formatDate(event.start_time)} · {event.event_type.replace('_', ' ')}</p>
                   </div>
-                  {event.is_confirmed && <Badge variant="success" size="sm">Confirmed</Badge>}
+                  {event.is_confirmed && <Badge variant="success" size="sm">confirmed</Badge>}
                 </div>
               ))}
             </div>
           )}
         </Card>
 
-        {/* Recent Scripts */}
+        {/* Scripts */}
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-white">Scripts</h3>
-            <Link href={'/projects/' + params.id + '/script'}>
-              <Button variant="ghost" size="sm">Open Editor</Button>
+          <div className="flex items-center justify-between mb-5">
+            <p className="section-title mb-0">Scripts</p>
+            <Link href={`/projects/${params.id}/script`}>
+              <Button variant="ghost" size="sm">Open Editor →</Button>
             </Link>
           </div>
           {recentScripts.length === 0 ? (
-            <p className="text-sm text-surface-500">No scripts yet</p>
+            <p className="text-sm text-surface-500">No scripts yet — create one in the editor.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {recentScripts.map((script) => (
-                <Link key={script.id} href={'/projects/' + params.id + '/script'}>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-800/50 hover:bg-surface-800 transition-colors cursor-pointer">
-                    <svg className="w-5 h-5 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                <Link key={script.id} href={`/projects/${params.id}/script`}>
+                  <div className="card-row group">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgb(99 102 241 / 0.15)', color: '#818cf8' }}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-white truncate">{script.title}</p>
-                      <p className="text-xs text-surface-500">v{script.version} &bull; {formatDate(script.updated_at)}</p>
+                      <p className="text-sm font-semibold text-white truncate group-hover:text-[#FF8F5F] transition-colors">{script.title}</p>
+                      <p className="text-[11px] text-surface-500">v{script.version} · {formatDate(script.updated_at)}</p>
                     </div>
                     <Badge size="sm">{script.revision_color}</Badge>
                   </div>
@@ -351,52 +500,37 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           )}
         </Card>
 
-        {/* Creative Tools Integration */}
+        {/* Creative Tools */}
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Creative Tools</h3>
-          <p className="text-xs text-surface-500 mb-4">Your project's creative workspace — everything connected.</p>
-          <div className="grid grid-cols-2 gap-3">
-            <Link href={'/projects/' + params.id + '/mindmap'}>
-              <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 hover:border-orange-500/40 transition-all group cursor-pointer">
-                <svg className="w-6 h-6 text-orange-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg>
-                <p className="text-sm font-medium text-white">Mind Map</p>
-                <p className="text-[11px] text-surface-500 mt-0.5">Character relationships</p>
-              </div>
-            </Link>
-            <Link href={'/projects/' + params.id + '/moodboard'}>
-              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all group cursor-pointer">
-                <svg className="w-6 h-6 text-purple-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg>
-                <p className="text-sm font-medium text-white">Mood Board</p>
-                <p className="text-[11px] text-surface-500 mt-0.5">Visual references & palette</p>
-              </div>
-            </Link>
-            <Link href={'/projects/' + params.id + '/characters'}>
-              <div className="p-4 rounded-xl bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-500/20 hover:border-pink-500/40 transition-all group cursor-pointer">
-                <svg className="w-6 h-6 text-pink-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <p className="text-sm font-medium text-white">Characters</p>
-                <p className="text-[11px] text-surface-500 mt-0.5">{stats.characters} cast members</p>
-              </div>
-            </Link>
-            <Link href={'/projects/' + params.id + '/ideas'}>
-              <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 hover:border-yellow-500/40 transition-all group cursor-pointer">
-                <svg className="w-6 h-6 text-yellow-400 mb-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                <p className="text-sm font-medium text-white">Ideas</p>
-                <p className="text-[11px] text-surface-500 mt-0.5">{stats.ideas} ideas & inspirations</p>
-              </div>
-            </Link>
+          <p className="section-title">Creative Tools</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {[
+              { href: 'mindmap',   label: 'Mind Map',    sub: 'Character web',       color: '#f97316', from: 'from-orange-500/10', to: 'to-red-500/10',    border: 'border-orange-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
+              { href: 'moodboard', label: 'Mood Board',  sub: 'Visual references',   color: '#a855f7', from: 'from-purple-500/10', to: 'to-pink-500/10',   border: 'border-purple-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg> },
+              { href: 'corkboard', label: 'Corkboard',   sub: `${stats.scenes} scenes`,  color: '#fbbf24', from: 'from-yellow-500/10', to: 'to-amber-500/10',  border: 'border-yellow-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
+              { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure',    color: '#60a5fa', from: 'from-blue-500/10',   to: 'to-indigo-500/10', border: 'border-blue-500/20',   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
+            ].map((tool) => (
+              <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
+                <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border, `hover:${tool.border.replace('20', '40')}`)}>
+                  <div className="mb-2.5 transition-transform group-hover:scale-110" style={{ color: tool.color }}>{tool.icon}</div>
+                  <p className="text-sm font-bold text-white">{tool.label}</p>
+                  <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </Card>
 
         {/* Synopsis */}
         {currentProject.synopsis && (
           <Card className="p-6 lg:col-span-2">
-            <h3 className="text-lg font-semibold text-white mb-4">Synopsis</h3>
-            <p className="text-sm text-surface-300 leading-relaxed whitespace-pre-wrap">
-              {currentProject.synopsis}
-            </p>
+            <p className="section-title">Synopsis</p>
+            <p className="text-sm text-surface-300 leading-relaxed whitespace-pre-wrap">{currentProject.synopsis}</p>
           </Card>
         )}
+
       </div>
     </div>
   );
 }
+

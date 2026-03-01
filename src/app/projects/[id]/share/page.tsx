@@ -239,7 +239,7 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Share Portal</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white">Share Portal</h1>
             <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">Create secure, branded links to share project content with external stakeholders.</p>
@@ -282,7 +282,7 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
                       <code className="text-xs text-surface-400 bg-surface-800/50 px-2 py-1 rounded font-mono truncate max-w-xs">
                         {getShareUrl(share.access_token)}
                       </code>
-                      <button onClick={() => copyLink(share.access_token)} className="text-xs text-brand-400 hover:text-brand-300 whitespace-nowrap">
+                      <button onClick={() => copyLink(share.access_token)} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] whitespace-nowrap">
                         Copy
                       </button>
                     </div>
@@ -330,7 +330,7 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
                     key={t.value}
                     onClick={() => setShareType(t.value)}
                     className={`p-3 rounded-lg border-2 text-left transition-all ${
-                      shareType === t.value ? 'border-brand-500 bg-brand-500/10' : 'border-surface-700 hover:border-surface-600'
+                      shareType === t.value ? 'border-[#FF5F1F] bg-[#FF5F1F]/10' : 'border-surface-700 hover:border-surface-600'
                     }`}
                   >
                     <span className="text-lg">{t.icon}</span>

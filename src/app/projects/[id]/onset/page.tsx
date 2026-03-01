@@ -88,7 +88,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
       {/* Header - compact for mobile */}
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-xl font-black text-white flex items-center gap-2">
             <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /></svg>
             On Set
           </h1>
@@ -145,12 +145,12 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
             <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
               <button onClick={() => setFilterScene('all')} className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-colors',
-                filterScene === 'all' ? 'bg-brand-600/20 text-brand-400' : 'bg-surface-900 text-surface-400'
+                filterScene === 'all' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'bg-surface-900 text-surface-400'
               )}>All</button>
               {scenes.map((s) => (
                 <button key={s.id} onClick={() => setFilterScene(s.id)} className={cn(
                   'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-colors',
-                  filterScene === s.id ? 'bg-brand-600/20 text-brand-400' : 'bg-surface-900 text-surface-400'
+                  filterScene === s.id ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'bg-surface-900 text-surface-400'
                 )}>Sc. {s.scene_number || '?'}</button>
               ))}
             </div>
@@ -279,7 +279,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                           <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                         ) : (
                           <>
-                            <span className="text-xl font-bold leading-none">{scene.scene_number || '?'}</span>
+                            <span className="text-xl font-black leading-none">{scene.scene_number || '?'}</span>
                             <span className="text-[9px] mt-0.5 opacity-60">WRAP</span>
                           </>
                         )}

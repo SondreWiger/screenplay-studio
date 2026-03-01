@@ -150,7 +150,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-neutral-900 flex items-center justify-center">
             <svg className="w-8 h-8 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
           </div>
-          <h1 className="text-xl font-bold text-white mb-2">Casting Call Not Found</h1>
+          <h1 className="text-xl font-black text-white mb-2">Casting Call Not Found</h1>
           <p className="text-sm text-neutral-400">This casting call link may have expired or been deactivated.</p>
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
           <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-green-500/20 flex items-center justify-center">
             <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Application Submitted!</h1>
+          <h1 className="text-2xl font-black text-white mb-2">Application Submitted!</h1>
           <p className="text-sm text-neutral-400 mb-6">
             Thank you for your interest in <span className="text-white font-medium">{projectTitle}</span>.
             The production team will review your submission and get in touch if there&apos;s a match.
@@ -183,7 +183,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
       <div className="border-b border-neutral-800 bg-neutral-900/50">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <p className="text-xs text-amber-400 uppercase tracking-wider font-medium mb-1">Casting Call</p>
-          <h1 className="text-2xl font-bold">{callTitle}</h1>
+          <h1 className="text-2xl font-black">{callTitle}</h1>
           {projectTitle && <p className="text-sm text-neutral-400 mt-1">for &ldquo;{projectTitle}&rdquo;</p>}
         </div>
       </div>
@@ -215,7 +215,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-semibold text-white">{char.name}</p>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${char.is_main ? 'bg-amber-500/20 text-amber-400' : 'bg-neutral-800 text-neutral-400'}`}>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${char.is_main ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' : 'bg-neutral-800 text-neutral-400'}`}>
                       {char.is_main ? 'Lead' : 'Supporting'}
                     </span>
                   </div>

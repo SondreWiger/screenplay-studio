@@ -12,18 +12,24 @@ import { useRealtime } from '@/hooks/useRealtime';
 import { Avatar, Badge, LoadingPage } from '@/components/ui';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { cn, getInitials } from '@/lib/utils';
 import type { Project, ProjectMember, Profile, UserRole, UserPresence } from '@/lib/types';
 
 const PAGE_LABELS: Record<string, string> = {
   overview: 'Overview', script: 'Script Editor', documents: 'Documents',
   characters: 'Characters', locations: 'Locations', scenes: 'Scenes',
+  episodes: 'Episodes',
+  'arc-planner': 'Arc Planner',
   shots: 'Shot List', schedule: 'Schedule', ideas: 'Ideas',
   budget: 'Budget', team: 'Team', settings: 'Settings',
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
   showcase: 'Showcase', share: 'Share Portal', analytics: 'Analytics',
   export: 'Advanced Export', casting: 'Casting', 'ai-analysis': 'Script Analysis',
+  // New pages
+  corkboard: 'Corkboard', 'beat-sheet': 'Beat Sheet', invoice: 'Invoice Generator',
+  submissions: 'Submission Tracker', breakdown: 'Production Breakdown',
   // Broadcast Production
   rundown: 'Rundown', stories: 'Stories', 'wire-desk': 'Wire Desk',
   sources: 'Sources', graphics: 'Graphics / CG', prompter: 'Prompter',
@@ -52,7 +58,17 @@ export default function ProjectLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMoreTools, setShowMoreTools] = useState(false);
+  // Pre-collapse heavy categories so the sidebar doesn't feel overwhelming
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['Pro', 'Collaboration']));
   const { canUse: canUseFeature } = useFeatureAccess();
+
+  const toggleSection = (cat: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      return next;
+    });
+  };
 
   useNotifications(user?.id);
 
@@ -153,6 +169,8 @@ export default function ProjectLayout({
   
   // Check if this is a TV production project
   const isTvProduction = currentProject.project_type === 'tv_production';
+  // Check if this is an episodic series project
+  const isEpisodic = currentProject.script_type === 'episodic';
 
   type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean; contentCreator?: boolean; filmOnly?: boolean; pro?: boolean };
   type NavCategory = { category: string; items: NavItem[] };
@@ -294,7 +312,10 @@ export default function ProjectLayout({
     {
       category: 'Writing',
       items: [
+        ...(isEpisodic ? [{ label: 'Episodes', href: `/projects/${params.id}/episodes`, icon: 'episodes', always: true }] : []),
+        { label: 'Arc Planner', href: `/projects/${params.id}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Beat Sheet', href: `/projects/${params.id}/beat-sheet`, icon: 'beat-sheet', always: true },
         { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
         { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
       ],
@@ -312,10 +333,12 @@ export default function ProjectLayout({
       category: 'Production',
       items: [
         { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', production: true },
+        { label: 'Corkboard', href: `/projects/${params.id}/corkboard`, icon: 'corkboard', production: true },
         { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', always: true },
         { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', production: true },
         { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
         { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', production: true },
+        { label: 'Breakdown', href: `/projects/${params.id}/breakdown`, icon: 'breakdown', production: true },
         { label: 'On Set', href: `/projects/${params.id}/onset`, icon: 'onset', production: true },
       ],
     },
@@ -339,6 +362,8 @@ export default function ProjectLayout({
         { label: 'Custom Branding', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
         { label: 'Reports', href: `/projects/${params.id}/reports`, icon: 'reports', pro: true },
         { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Submissions', href: `/projects/${params.id}/submissions`, icon: 'submissions', pro: true },
+        { label: 'Invoice', href: `/projects/${params.id}/invoice`, icon: 'invoice', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -374,6 +399,8 @@ export default function ProjectLayout({
   const hiddenItems = allItems.filter(i => !i.always && !i.pro && !isItemVisible(i));
 
   const icons: Record<string, React.ReactNode> = {
+    episodes: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /><circle cx="12" cy="12" r="2" strokeWidth={1.5} /></svg>,
+    'arc-planner': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
     overview: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
     script: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
     documents: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>,
@@ -425,6 +452,12 @@ export default function ProjectLayout({
     prompter: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75l4.5 3.75-4.5 3.75V10.5z" /></svg>,
     graphics: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" /></svg>,
     asrun: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>,
+    // New feature icons
+    corkboard: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6h5v5H3V6zm7 0h5v5h-5V6zm7 0h4v5h-4V6zM3 14h5v4H3v-4zm7 0h5v4h-5v-4zm7 0h4v4h-4v-4z" /></svg>,
+    'beat-sheet': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5h18M3 12h18M3 19h18" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 5v14M12 5v7M17 5v14" /></svg>,
+    submissions: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+    invoice: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l2 2 4-4M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6M9 10h3" /></svg>,
+    breakdown: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M3 14h18M10 4v16M6 4v4M18 4v4" /><rect x="3" y="4" width="18" height="16" rx="1" strokeWidth={1.5} /></svg>,
   };
 
   // Active page label for mobile header
@@ -434,82 +467,134 @@ export default function ProjectLayout({
   // Sidebar content — shared between desktop and mobile
   const sidebarContent = (mobile?: boolean) => (
     <>
-      {/* Project Header */}
-      <div className="border-b border-surface-800 p-4">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="shrink-0" onClick={() => setMobileMenuOpen(false)}>
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white ${isTvProduction ? 'bg-amber-600' : 'bg-brand-600'}`}>
-              {currentProject.title[0]}
+      {/* ── Project Header ───────────────────────────────────── */}
+      <div className="relative overflow-hidden border-b border-surface-800/60 px-4 py-4">
+        {/* Ambient glow behind the logo */}
+        <div className="absolute -top-6 -left-4 w-24 h-24 rounded-full blur-2xl opacity-30 pointer-events-none"
+          style={{ background: isTvProduction ? '#d97706' : 'rgb(var(--brand-600))' }} />
+
+        <div className="relative flex items-center gap-3">
+          <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="shrink-0 group">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black text-white transition-all duration-200 group-hover:scale-105"
+              style={{
+                background: isTvProduction
+                  ? 'linear-gradient(135deg, #d97706, #92400e)'
+                  : 'linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)))',
+                boxShadow: isTvProduction
+                  ? '0 2px 12px rgba(217, 119, 6, 0.5)'
+                  : '0 2px 12px rgb(var(--brand-600) / 0.5)',
+              }}
+            >
+              {currentProject.title[0].toUpperCase()}
             </div>
           </Link>
+
           {(mobile || !sidebarCollapsed) && (
             <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-semibold text-white truncate">{currentProject.title}</h2>
-              <div className="flex items-center gap-2">
-                <p className="text-[11px] text-surface-500 capitalize">{currentProject.status.replace('_', ' ')}</p>
-                {isViewer && <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400 font-medium">View Only</span>}
+              <h2 className="text-sm font-bold text-white truncate leading-tight">{currentProject.title}</h2>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {/* Status dot */}
+                <span className={cn(
+                  'inline-block w-1.5 h-1.5 rounded-full',
+                  currentProject.status === 'production' ? 'bg-green-400' :
+                  (currentProject.status === 'development' || currentProject.status === 'pre_production') ? 'bg-amber-400' :
+                  (currentProject.status === 'completed' || currentProject.status === 'post_production') ? 'bg-blue-400' : 'bg-surface-500'
+                )} />
+                <p className="text-[10px] font-medium text-surface-500 capitalize">{currentProject.status.replace('_', ' ')}</p>
+                {isViewer && (
+                  <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide"
+                    style={{ background: 'rgb(var(--brand-900) / 0.6)', color: 'rgb(var(--brand-400))' }}>
+                    View Only
+                  </span>
+                )}
               </div>
             </div>
           )}
+
           {mobile && (
-            <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-surface-500 hover:text-white">
+            <button onClick={() => setMobileMenuOpen(false)} className="p-1.5 rounded-lg text-surface-500 hover:text-white hover:bg-surface-900/5 transition-colors ml-auto">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           )}
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+      {/* ── Navigation ───────────────────────────────────────────── */}
+      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
         {navCategories.map((cat, catIdx) => {
           const catVisibleItems = cat.items.filter(isItemVisible);
           if (catVisibleItems.length === 0) return null;
+          const isSectionCollapsed = cat.category ? collapsedSections.has(cat.category) : false;
+          const hasActivePage = catVisibleItems.some(
+            (item) => pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href))
+          );
           return (
-            <div key={cat.category || catIdx}>
+            <div key={cat.category || catIdx} className={catIdx > 0 ? 'pt-1' : ''}>
               {cat.category && (mobile || !sidebarCollapsed) && (
-                <div className="pt-3 pb-1 first:pt-0">
-                  <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-wider px-3">{cat.category}</p>
-                </div>
+                <button
+                  onClick={() => toggleSection(cat.category)}
+                  className="w-full flex items-center justify-between px-3 py-1.5 mb-0.5 rounded-lg group transition-colors hover:bg-surface-900/3"
+                >
+                  <span className={cn(
+                    'text-[9px] font-black uppercase tracking-[0.2em] transition-colors',
+                    hasActivePage ? 'text-[#FF5F1F]' : 'text-surface-600 group-hover:text-surface-400'
+                  )}>
+                    {cat.category}
+                  </span>
+                  <svg
+                    className={cn(
+                      'w-2.5 h-2.5 transition-transform duration-200',
+                      isSectionCollapsed ? '' : 'rotate-90',
+                      hasActivePage ? 'text-[#FF5F1F]' : 'text-surface-700 group-hover:text-surface-500'
+                    )}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               )}
               {cat.category && (!mobile && sidebarCollapsed) && catIdx > 0 && (
-                <div className="my-2 border-t border-surface-800/50" />
+                <div className="my-2 mx-2 border-t border-surface-800/50" />
               )}
-              <div className="space-y-0.5">
-                {catVisibleItems.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={cn(
-                        'sidebar-link',
-                        isActive && 'active',
-                        !mobile && sidebarCollapsed && 'justify-center px-2'
-                      )}
-                      title={!mobile && sidebarCollapsed ? item.label : undefined}
-                    >
-                      {icons[item.icon]}
-                      {(mobile || !sidebarCollapsed) && <span>{item.label}</span>}
-                    </Link>
-                  );
-                })}
-              </div>
+              {(!isSectionCollapsed || !cat.category || sidebarCollapsed) && (
+                <div className="space-y-0.5">
+                  {catVisibleItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={cn(
+                          'sidebar-link',
+                          isActive && 'active',
+                          !mobile && sidebarCollapsed && 'justify-center px-2'
+                        )}
+                        title={!mobile && sidebarCollapsed ? item.label : undefined}
+                      >
+                        {icons[item.icon]}
+                        {(mobile || !sidebarCollapsed) && <span>{item.label}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
 
         {/* More Tools (hidden items) */}
         {hiddenItems.length > 0 && (mobile || !sidebarCollapsed) && (
-          <>
+          <div className="mt-2">
             <button
               onClick={() => setShowMoreTools(!showMoreTools)}
-              className="sidebar-link w-full text-surface-500 hover:text-surface-300 mt-2"
+              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-all text-[10px] font-semibold uppercase tracking-wider"
             >
-              <svg className={cn('w-4 h-4 transition-transform', showMoreTools && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className={cn('w-3 h-3 transition-transform duration-200', showMoreTools && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
-              <span className="text-[11px]">More Tools</span>
+              More Tools
             </button>
             {showMoreTools && hiddenItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
@@ -518,7 +603,7 @@ export default function ProjectLayout({
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={cn('sidebar-link opacity-60 hover:opacity-100', isActive && 'active')}
+                  className={cn('sidebar-link opacity-50 hover:opacity-100', isActive && 'active opacity-100')}
                   title={item.label}
                 >
                   {icons[item.icon]}
@@ -526,24 +611,24 @@ export default function ProjectLayout({
                 </Link>
               );
             })}
-          </>
+          </div>
         )}
       </nav>
 
       {/* Online Users */}
       {(mobile || !sidebarCollapsed) && onlineUsers.length > 0 && (
-        <div className="border-t border-surface-800 p-4">
-          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-wider mb-3">Online Now</p>
-          <div className="space-y-2">
-            {onlineUsers.slice(0, 5).map((presence) => {
+        <div className="border-t border-surface-800/50 px-3 py-3">
+          <p className="meta-label mb-2 px-2">Live now</p>
+          <div className="space-y-1">
+            {onlineUsers.slice(0, 4).map((presence) => {
               const p = presence as UserPresence & { full_name?: string; email?: string; avatar_url?: string };
               const pl = PAGE_LABELS[p.current_page || ''] || p.current_page;
               return (
-                <div key={p.user_id} className="flex items-center gap-2">
+                <div key={p.user_id} className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-surface-900/4 transition-colors">
                   <Avatar src={p.avatar_url} name={p.full_name || p.email} size="sm" online />
-                  <div className="min-w-0">
-                    <p className="text-xs text-surface-300 truncate">{p.full_name || p.email || 'User'}</p>
-                    <p className="text-[10px] text-green-400">{pl}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-surface-300 truncate leading-tight">{p.full_name || p.email || 'User'}</p>
+                    <p className="text-[9px] text-green-400 truncate">{pl}</p>
                   </div>
                 </div>
               );
@@ -554,10 +639,11 @@ export default function ProjectLayout({
 
       {/* Collapse Toggle (desktop only) */}
       {!mobile && (
-        <div className="border-t border-surface-800 p-2 flex items-center justify-between">
+        <div className="border-t border-surface-800/50 p-2 flex items-center justify-between">
           {!sidebarCollapsed && (
             <div className="flex items-center gap-1">
-              <Link href="/messages" className="p-2 rounded-lg text-surface-500 hover:text-white hover:bg-white/5 transition-colors" title="Messages">
+              <OfflineIndicator />
+              <Link href="/messages" className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all" title="Messages">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
               </Link>
               <NotificationBell />
@@ -567,9 +653,12 @@ export default function ProjectLayout({
             onClick={() => setSidebarCollapsed((v) => !v)}
             aria-label={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             title={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
-            className={cn("flex items-center justify-center p-2 rounded-lg text-surface-500 hover:text-white hover:bg-white/5 transition-colors", sidebarCollapsed && "w-full")}
+            className={cn(
+              'flex items-center justify-center p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all',
+              sidebarCollapsed && 'w-full'
+            )}
           >
-            <svg className={cn('w-4 h-4 transition-transform', sidebarCollapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={cn('w-4 h-4 transition-transform duration-300', sidebarCollapsed && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
             </svg>
           </button>
@@ -579,19 +668,35 @@ export default function ProjectLayout({
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-950">
-      {/* Mobile header bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden bg-surface-950 border-b border-surface-800">
-        <div className="flex items-center justify-between px-3 py-2">
-          <button onClick={() => setMobileMenuOpen(true)} className="p-2 text-surface-400 hover:text-white">
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: '#070710' }}>
+
+      {/* Mobile header */}
+      <div className="fixed top-0 left-0 right-0 z-40 md:hidden"
+        style={{ backgroundColor: 'rgba(7, 7, 16, 0.95)', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)', backdropFilter: 'blur(16px)' }}
+      >
+        {/* Gradient top line on mobile too */}
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--brand-500) / 0.4), transparent)' }} />
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/8 transition-all"
+          >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 bg-brand-600 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-              {currentProject.title[0]}
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black text-white shrink-0"
+              style={{ background: 'linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)))' }}
+            >
+              {currentProject.title[0].toUpperCase()}
             </div>
-            <span className="text-sm font-medium text-white truncate">{pageLabel}</span>
-            {isViewer && <span className="text-[8px] px-1 py-0.5 rounded bg-surface-800 text-surface-400 font-medium shrink-0">View Only</span>}
+            <span className="text-sm font-semibold text-white truncate">{pageLabel}</span>
+            {isViewer && (
+              <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide shrink-0"
+                style={{ background: 'rgb(var(--brand-900) / 0.6)', color: 'rgb(var(--brand-400))' }}>
+                View Only
+              </span>
+            )}
           </div>
           <NotificationBell />
         </div>
@@ -600,23 +705,33 @@ export default function ProjectLayout({
       {/* Mobile sidebar overlay */}
       {mobileMenuOpen && (
         <>
-          <div className="fixed inset-0 bg-black/60 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
-          <aside className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col bg-surface-950 border-r border-surface-800 md:hidden animate-slide-right">
+          <div
+            className="fixed inset-0 z-40 md:hidden"
+            style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <aside
+            className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col md:hidden animate-slide-right"
+            style={{ background: '#0a0a16', borderRight: '1px solid rgb(var(--brand-900) / 0.4)' }}
+          >
             {sidebarContent(true)}
           </aside>
         </>
       )}
 
       {/* Desktop sidebar */}
-      <aside className={cn(
-        'hidden md:flex flex-col border-r border-surface-800 bg-surface-950 transition-all duration-300',
-        sidebarCollapsed ? 'w-16' : 'w-64'
-      )}>
+      <aside
+        className={cn(
+          'hidden md:flex flex-col transition-all duration-300',
+          sidebarCollapsed ? 'w-14' : 'w-60'
+        )}
+        style={{ background: '#0a0a16', borderRight: '1px solid rgb(var(--brand-900) / 0.35)' }}
+      >
         {sidebarContent(false)}
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0" style={{ background: '#070710' }}>
         <div className="animate-fade-in-up">
           {children}
         </div>

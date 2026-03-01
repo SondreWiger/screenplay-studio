@@ -84,7 +84,7 @@ export default function DeepDiveMoodboardPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">🎨</div>
-        <h1 className="text-2xl font-bold">Not Available</h1>
+        <h1 className="text-2xl font-black">Not Available</h1>
         <p className="text-white/40">{error || 'Something went wrong.'}</p>
         <Link href={`/community/showcase/${params.id}`} className="mt-4 px-5 py-2.5 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">
           Back to Project
@@ -103,14 +103,14 @@ export default function DeepDiveMoodboardPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
               <span className="text-sm font-medium">Back to Project</span>
             </Link>
-            <div className="h-4 w-px bg-white/10" />
+            <div className="h-4 w-px bg-surface-900/10" />
             <span className="text-sm text-white/40 truncate max-w-[200px]">{project.title}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-pink-400 bg-pink-500/10 rounded-full border border-pink-500/20">
               Moodboard
             </span>
-            <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/30 bg-white/5 rounded-full">
+            <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/50 bg-surface-900/5 rounded-full">
               Read-only
             </span>
           </div>
@@ -118,11 +118,11 @@ export default function DeepDiveMoodboardPage() {
       </nav>
 
       {/* Header */}
-      <div className="border-b border-white/10 bg-white/[0.02]">
+      <div className="border-b border-white/10 bg-surface-900/[0.02]">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center gap-3 mb-2">
             <svg className="w-6 h-6 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            <h1 className="text-2xl font-bold">Moodboard</h1>
+            <h1 className="text-2xl font-black">Moodboard</h1>
           </div>
           <p className="text-white/40 text-sm">
             Visual inspiration and references for <span className="text-white/60 font-medium">{project.title}</span>
@@ -132,14 +132,14 @@ export default function DeepDiveMoodboardPage() {
       </div>
 
       {/* Section filter */}
-      <div className="border-b border-white/10 bg-white/[0.01]">
+      <div className="border-b border-white/10 bg-surface-900/[0.01]">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto">
           <button
             onClick={() => setActiveSection('all')}
             className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
               activeSection === 'all'
                 ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
-                : 'text-white/40 hover:text-white/60 bg-white/[0.04] border border-white/[0.06]'
+                : 'text-white/40 hover:text-white/60 bg-surface-900/[0.04] border border-white/[0.06]'
             }`}
           >
             All ({items.length})
@@ -151,7 +151,7 @@ export default function DeepDiveMoodboardPage() {
               className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                 activeSection === section.value
                   ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
-                  : 'text-white/40 hover:text-white/60 bg-white/[0.04] border border-white/[0.06]'
+                  : 'text-white/40 hover:text-white/60 bg-surface-900/[0.04] border border-white/[0.06]'
               }`}
             >
               {section.icon} {section.label} ({section.count})
@@ -165,7 +165,7 @@ export default function DeepDiveMoodboardPage() {
         {filteredItems.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-4xl mb-3">🎨</p>
-            <p className="text-white/30">No items in this section</p>
+            <p className="text-white/50">No items in this section</p>
           </div>
         ) : (
           <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
@@ -173,7 +173,7 @@ export default function DeepDiveMoodboardPage() {
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
-                className="break-inside-avoid bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-pink-500/30 transition-all group"
+                className="break-inside-avoid bg-surface-900/[0.03] border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-pink-500/30 transition-all group"
               >
                 {/* Image items */}
                 {item.item_type === 'image' && item.image_url && (
@@ -196,8 +196,8 @@ export default function DeepDiveMoodboardPage() {
                 {item.item_type === 'link' && (
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                      <span className="text-xs text-white/30">Link</span>
+                      <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                      <span className="text-xs text-white/50">Link</span>
                     </div>
                     {item.image_url && (
                       <img src={item.image_url} alt={item.title || 'Moodboard image'} className="w-full aspect-video object-cover rounded-lg mb-2" loading="lazy" />
@@ -228,7 +228,7 @@ export default function DeepDiveMoodboardPage() {
                 {item.tags && item.tags.length > 0 && (
                   <div className="px-3 pb-3 flex flex-wrap gap-1">
                     {item.tags.map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 text-[10px] text-white/30 bg-white/[0.04] rounded-full">{tag}</span>
+                      <span key={tag} className="px-2 py-0.5 text-[10px] text-white/50 bg-surface-900/[0.04] rounded-full">{tag}</span>
                     ))}
                   </div>
                 )}
@@ -272,7 +272,7 @@ export default function DeepDiveMoodboardPage() {
             {/* Content */}
             <div className="p-6">
               {selectedItem.title && (
-                <h2 className="text-xl font-bold text-white/90 mb-2">{selectedItem.title}</h2>
+                <h2 className="text-xl font-black text-white/90 mb-2">{selectedItem.title}</h2>
               )}
               {selectedItem.content && (
                 <p className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap mb-4">{selectedItem.content}</p>
@@ -292,15 +292,15 @@ export default function DeepDiveMoodboardPage() {
               )}
 
               {/* Meta */}
-              <div className="flex flex-wrap items-center gap-3 text-xs text-white/30">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-white/50">
                 <span className="capitalize">{selectedItem.item_type}</span>
-                <span className="h-3 w-px bg-white/10" />
+                <span className="h-3 w-px bg-surface-900/10" />
                 <span>{BOARD_SECTIONS.find((s) => s.value === selectedItem.board_section)?.icon} {BOARD_SECTIONS.find((s) => s.value === selectedItem.board_section)?.label}</span>
                 {selectedItem.tags && selectedItem.tags.length > 0 && (
                   <>
-                    <span className="h-3 w-px bg-white/10" />
+                    <span className="h-3 w-px bg-surface-900/10" />
                     {selectedItem.tags.map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 bg-white/[0.04] rounded-full">{tag}</span>
+                      <span key={tag} className="px-2 py-0.5 bg-surface-900/[0.04] rounded-full">{tag}</span>
                     ))}
                   </>
                 )}
@@ -313,7 +313,7 @@ export default function DeepDiveMoodboardPage() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href={`/community/showcase/${params.id}`} className="text-sm text-white/30 hover:text-white transition-colors flex items-center gap-2">
+          <Link href={`/community/showcase/${params.id}`} className="text-sm text-white/50 hover:text-white transition-colors flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             Back to {project.title}
           </Link>

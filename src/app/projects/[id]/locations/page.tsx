@@ -16,7 +16,7 @@ const LocationMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full bg-surface-900">
-        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
       </div>
     ),
   }
@@ -157,7 +157,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
     <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Locations</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-white">Locations</h1>
           <p className="text-xs sm:text-sm text-surface-400 mt-1">
             {locations.filter((l) => l.is_confirmed).length} confirmed / {locations.length} total
             {locations.filter(needsSetup).length > 0 && (
@@ -216,7 +216,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
             {(['all', 'confirmed', 'scouting', 'needs_setup'] as const).map((f) => (
               <button key={f} onClick={() => setFilter(f)} className={cn(
                 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors',
-                filter === f ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+                filter === f ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
               )}>
                 {f === 'needs_setup' ? `Needs Setup (${locations.filter(needsSetup).length})` : f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
               </button>

@@ -74,7 +74,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter(opt.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 filter === opt.key
-                  ? 'bg-brand-600 text-white'
+                  ? 'bg-[#E54E15] text-white'
                   : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
               }`}
             >
@@ -86,7 +86,7 @@ export default function NotificationsPage() {
               onClick={() => setShowUnreadOnly(!showUnreadOnly)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 showUnreadOnly
-                  ? 'bg-brand-600 text-white'
+                  ? 'bg-[#E54E15] text-white'
                   : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
               }`}
             >

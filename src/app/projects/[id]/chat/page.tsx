@@ -22,7 +22,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
 };
 
 const ROLE_BADGES: Record<UserRole, { label: string; color: string }> = {
-  owner: { label: 'Owner', color: 'bg-amber-500/20 text-amber-400' },
+  owner: { label: 'Owner', color: 'bg-[#FF5F1F]/20 text-[#FF5F1F]' },
   admin: { label: 'Admin', color: 'bg-red-500/20 text-red-400' },
   writer: { label: 'Writer', color: 'bg-sky-500/20 text-sky-400' },
   editor: { label: 'Editor', color: 'bg-emerald-500/20 text-emerald-400' },
@@ -379,7 +379,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowMembers((v) => !v)}
-            className={cn('p-1.5 rounded-lg transition-colors', showMembers ? 'bg-white/10 text-white' : 'text-surface-400 hover:text-white')}
+            className={cn('p-1.5 rounded-lg transition-colors', showMembers ? 'bg-surface-900/10 text-white' : 'text-surface-400 hover:text-white')}
             title="Toggle members"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -400,7 +400,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
             {isAdmin && (
               <button
                 onClick={() => setShowCreateChannel(true)}
-                className="p-1 rounded hover:bg-white/10 text-surface-400 hover:text-white transition-colors"
+                className="p-1 rounded hover:bg-surface-900/10 text-surface-400 hover:text-white transition-colors"
                 title="New channel"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -423,8 +423,8 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                     key={ch.id}
                     onClick={() => selectChannel(ch)}
                     className={cn(
-                      'w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-white/5 transition-colors group rounded-md mx-1',
-                      isActive && 'bg-white/10 text-white',
+                      'w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-surface-900/5 transition-colors group rounded-md mx-1',
+                      isActive && 'bg-surface-900/10 text-white',
                       !isActive && 'text-surface-400',
                     )}
                     style={{ width: 'calc(100% - 8px)' }}
@@ -465,7 +465,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                   <div className="flex items-center gap-2">
                     <h2 className="text-sm font-semibold text-white">#{selectedChannel.name}</h2>
                     {isAdmin && (
-                      <button onClick={openEditChannel} className="p-0.5 rounded hover:bg-white/10 text-surface-500 hover:text-white transition-colors">
+                      <button onClick={openEditChannel} className="p-0.5 rounded hover:bg-surface-900/10 text-surface-500 hover:text-white transition-colors">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                       </button>
                     )}
@@ -512,7 +512,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                     const prodRole = getProductionRoleLabel(msg.sender_id);
 
                     return (
-                      <div key={msg.id} className={cn('group hover:bg-white/[0.02] rounded-lg px-2 py-0.5', showHeader && 'mt-3 pt-1')}>
+                      <div key={msg.id} className={cn('group hover:bg-surface-900/[0.02] rounded-lg px-2 py-0.5', showHeader && 'mt-3 pt-1')}>
                         {showHeader ? (
                           <div className="flex items-start gap-3">
                             <Avatar
@@ -530,7 +530,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                                   {roleBadge.label}
                                 </span>
                                 {prodRole && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-brand-500/20 text-brand-400">
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-[#FF5F1F]/20 text-[#FF5F1F]">
                                     {prodRole}
                                   </span>
                                 )}
@@ -568,7 +568,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={`Message #${selectedChannel.name}...`}
-                    className="flex-1 px-4 py-2.5 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/50 placeholder-surface-500"
+                    className="flex-1 px-4 py-2.5 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/50 placeholder-surface-500"
                     rows={1}
                     style={{ maxHeight: '120px' }}
                     onInput={(e) => {
@@ -614,14 +614,14 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                       {role}s — {roleMembers.length}
                     </p>
                     {roleMembers.map((m) => (
-                      <div key={m.user_id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/5">
+                      <div key={m.user_id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-900/5">
                         <Avatar src={m.profile?.avatar_url} name={m.profile?.full_name} size="sm" />
                         <div className="min-w-0 flex-1">
                           <p className={cn('text-xs font-medium truncate', ROLE_COLORS[role])}>
                             {m.profile?.full_name || m.profile?.email || 'User'}
                           </p>
                           {m.production_role && (
-                            <p className="text-[10px] text-brand-400 truncate">
+                            <p className="text-[10px] text-[#FF5F1F] truncate">
                               {PRODUCTION_ROLES.find((r) => r.value === m.production_role)?.label || m.production_role}
                             </p>
                           )}
@@ -641,7 +641,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                   <p className={cn('text-[10px] font-bold uppercase tracking-wider mb-1 px-2', ROLE_COLORS.owner)}>
                     Owner — 1
                   </p>
-                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/5">
+                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-900/5">
                     <Avatar src={user?.avatar_url} name={user?.full_name} size="sm" />
                     <p className={cn('text-xs font-medium truncate', ROLE_COLORS.owner)}>
                       {user?.full_name || user?.email || 'Project Owner'}

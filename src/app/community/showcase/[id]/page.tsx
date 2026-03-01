@@ -280,7 +280,7 @@ export default function ShowcaseDetailPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">🎬</div>
-        <h1 className="text-2xl font-bold">Project not found</h1>
+        <h1 className="text-2xl font-black">Project not found</h1>
         <p className="text-white/40">This project may not be showcased or doesn&apos;t exist.</p>
         <Link href="/community/showcase" className="mt-4 px-5 py-2.5 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">
           Browse Projects
@@ -487,7 +487,7 @@ export default function ShowcaseDetailPage() {
               )}
 
               <div className="flex-1">
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{project.title}</h1>
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight">{project.title}</h1>
 
                 {/* Meta badges */}
                 <div className="flex flex-wrap items-center gap-3 mt-3">
@@ -497,7 +497,7 @@ export default function ShowcaseDetailPage() {
                     </span>
                   )}
                   {project.genre && project.genre.length > 0 && project.genre.map((g) => (
-                    <span key={g} className="px-3 py-1 text-xs font-medium text-white/60 bg-white/5 rounded-full border border-white/10">
+                    <span key={g} className="px-3 py-1 text-xs font-medium text-white/60 bg-surface-900/5 rounded-full border border-white/10">
                       {g}
                     </span>
                   ))}
@@ -516,7 +516,7 @@ export default function ShowcaseDetailPage() {
                   <div className="flex items-center gap-2 mt-3">
                     <StarRating rating={avgRating} size="sm" />
                     <span className="text-sm font-semibold text-amber-400">{avgRating.toFixed(1)}</span>
-                    <span className="text-xs text-white/30">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</span>
+                    <span className="text-xs text-white/50">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</span>
                   </div>
                 )}
 
@@ -562,7 +562,7 @@ export default function ShowcaseDetailPage() {
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-white/10 my-8" />
+            <div className="h-px bg-surface-900/10 my-8" />
 
             {/* Synopsis / Description */}
             {(project.showcase_description || project.synopsis || project.logline) && (
@@ -589,8 +589,8 @@ export default function ShowcaseDetailPage() {
                   { label: 'Scenes', value: sceneCount > 0 ? sceneCount.toString() : '—' },
                   { label: 'Shots', value: shotCount > 0 ? shotCount.toString() : '—' },
                 ].map((stat) => (
-                  <div key={stat.label} className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-white/30 mb-1">{stat.label}</p>
+                  <div key={stat.label} className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-4">
+                    <p className="text-[11px] uppercase tracking-wider text-white/50 mb-1">{stat.label}</p>
                     <p className="text-lg font-semibold text-white/80">{stat.value}</p>
                   </div>
                 ))}
@@ -603,12 +603,12 @@ export default function ShowcaseDetailPage() {
                 <h2 className="text-lg font-semibold mb-4 text-white/90">Cast</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {unifiedCast.map((card) => (
-                    <div key={card.id} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
+                    <div key={card.id} className="flex items-center gap-3 bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {/* Avatar */}
                       {card.actorAvatar ? (
                         <img src={card.actorAvatar} alt={card.actorName || card.characterName || 'Cast avatar'} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${card.actorName ? 'bg-white/10 text-white/40' : 'bg-amber-500/10 text-amber-400/60'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${card.actorName ? 'bg-surface-900/10 text-white/40' : 'bg-amber-500/10 text-amber-400/60'}`}>
                           {(card.actorName || card.characterName || '?')[0].toUpperCase()}
                         </div>
                       )}
@@ -620,7 +620,7 @@ export default function ShowcaseDetailPage() {
                         {/* Actor info */}
                         {card.actorName ? (
                           <div className="flex items-center gap-1.5">
-                            {card.characterName && <span className="text-xs text-white/30">played by</span>}
+                            {card.characterName && <span className="text-xs text-white/50">played by</span>}
                             {card.actorLink ? (
                               <Link
                                 href={card.actorLink}
@@ -640,11 +640,11 @@ export default function ShowcaseDetailPage() {
                             )}
                           </div>
                         ) : (
-                          <p className="text-xs text-white/30">{card.characterDesc || 'Character'}</p>
+                          <p className="text-xs text-white/50">{card.characterDesc || 'Character'}</p>
                         )}
                         {/* If no character name but actor has one assigned */}
                         {!card.characterName && card.actorName && (
-                          <p className="text-xs text-white/30">{getRoleLabel(card.role)}</p>
+                          <p className="text-xs text-white/50">{getRoleLabel(card.role)}</p>
                         )}
                       </div>
                     </div>
@@ -659,11 +659,11 @@ export default function ShowcaseDetailPage() {
                 <h2 className="text-lg font-semibold mb-4 text-white/90">Crew</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {crewByRole.map((member) => (
-                    <div key={member.id} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
+                    <div key={member.id} className="flex items-center gap-3 bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {member.profile?.avatar_url ? (
                         <img src={member.profile.avatar_url} alt={member.profile.full_name || 'Team member'} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white/40">
+                        <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/40">
                           {(member.profile?.full_name || '?')[0]}
                         </div>
                       )}
@@ -679,11 +679,11 @@ export default function ShowcaseDetailPage() {
                     </div>
                   ))}
                   {externalCrew.map((credit) => (
-                    <div key={credit.id} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
+                    <div key={credit.id} className="flex items-center gap-3 bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {credit.avatar_url ? (
                         <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white/40">
+                        <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/40">
                           {credit.name[0].toUpperCase()}
                         </div>
                       )}
@@ -713,7 +713,7 @@ export default function ShowcaseDetailPage() {
                 </h2>
                 <div className="space-y-3">
                   {(project.production_trivia as { title: string; content: string }[]).map((item, idx) => (
-                    <div key={idx} className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4">
+                    <div key={idx} className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-4">
                       {item.title && (
                         <h3 className="text-sm font-semibold text-amber-400/80 mb-1">{item.title}</h3>
                       )}
@@ -732,14 +732,14 @@ export default function ShowcaseDetailPage() {
                 <h2 className="text-lg font-semibold mb-4 text-white/90 flex items-center gap-2">
                   <svg className="w-5 h-5 text-amber-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   Set Photos
-                  <span className="text-xs font-normal text-white/30 ml-1">({setPhotos.length})</span>
+                  <span className="text-xs font-normal text-white/50 ml-1">({setPhotos.length})</span>
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {setPhotos.map((photo, idx) => (
                     <button
                       key={idx}
                       onClick={() => setLightboxPhoto(photo)}
-                      className="text-left aspect-video bg-white/[0.03] border border-white/[0.06] rounded-lg overflow-hidden hover:border-amber-500/30 transition-all group relative"
+                      className="text-left aspect-video bg-surface-900/[0.03] border border-white/[0.06] rounded-lg overflow-hidden hover:border-amber-500/30 transition-all group relative"
                     >
                       <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -774,7 +774,7 @@ export default function ShowcaseDetailPage() {
                     className="w-full max-h-[80vh] object-contain rounded-xl"
                   />
                   {(lightboxPhoto.caption || lightboxPhoto.scene || lightboxPhoto.context) && (
-                    <div className="mt-3 bg-white/[0.05] border border-white/[0.08] rounded-lg p-4">
+                    <div className="mt-3 bg-surface-900/[0.05] border border-white/[0.08] rounded-lg p-4">
                       <div className="flex items-center gap-3 flex-wrap">
                         {lightboxPhoto.scene && (
                           <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20">
@@ -782,7 +782,7 @@ export default function ShowcaseDetailPage() {
                           </span>
                         )}
                         {lightboxPhoto.context && (
-                          <span className="px-2 py-0.5 text-[10px] font-medium text-white/50 bg-white/[0.05] rounded-full border border-white/10">
+                          <span className="px-2 py-0.5 text-[10px] font-medium text-white/50 bg-surface-900/[0.05] rounded-full border border-white/10">
                             {lightboxPhoto.context}
                           </span>
                         )}
@@ -819,7 +819,7 @@ export default function ShowcaseDetailPage() {
                 <h2 className="text-lg font-semibold text-white/90 flex items-center gap-2">
                   <svg className="w-5 h-5 text-amber-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                   Reviews
-                  <span className="text-xs font-normal text-white/30 ml-1">({reviews.length})</span>
+                  <span className="text-xs font-normal text-white/50 ml-1">({reviews.length})</span>
                 </h2>
                 {user && !userReview && !showReviewForm && (
                   <button
@@ -833,7 +833,7 @@ export default function ShowcaseDetailPage() {
 
               {/* Review form */}
               {showReviewForm && user && (
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-5 mb-4">
+                <div className="bg-surface-900/[0.03] border border-white/[0.08] rounded-xl p-5 mb-4">
                   <h3 className="text-sm font-semibold text-white/70 mb-3">{userReview ? 'Edit Your Review' : 'Your Review'}</h3>
                   <div className="mb-4">
                     <label className="text-xs text-white/40 mb-1.5 block">Rating</label>
@@ -845,7 +845,7 @@ export default function ShowcaseDetailPage() {
                       value={reviewTitle}
                       onChange={(e) => setReviewTitle(e.target.value)}
                       placeholder="Summarize your thoughts..."
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/20 focus:outline-none focus:border-amber-500/40"
+                      className="w-full bg-surface-900/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/20 focus:outline-none focus:border-amber-500/40"
                     />
                   </div>
                   <div className="mb-4">
@@ -855,7 +855,7 @@ export default function ShowcaseDetailPage() {
                       onChange={(e) => setReviewContent(e.target.value)}
                       placeholder="Tell others what you liked or disliked..."
                       rows={3}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/20 focus:outline-none focus:border-amber-500/40 resize-none"
+                      className="w-full bg-surface-900/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/20 focus:outline-none focus:border-amber-500/40 resize-none"
                     />
                   </div>
                   <div className="flex items-center justify-end gap-3">
@@ -878,22 +878,22 @@ export default function ShowcaseDetailPage() {
 
               {/* Rating summary */}
               {reviews.length > 0 && (
-                <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 mb-4">
+                <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-xl p-5 mb-4">
                   <div className="flex items-center gap-6">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-amber-400">{avgRating.toFixed(1)}</div>
+                      <div className="text-4xl font-black text-amber-400">{avgRating.toFixed(1)}</div>
                       <StarRating rating={avgRating} size="sm" />
-                      <div className="text-xs text-white/30 mt-1">{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</div>
+                      <div className="text-xs text-white/50 mt-1">{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</div>
                     </div>
                     <div className="flex-1 space-y-1">
                       {ratingDistribution.map(({ star, count, pct }) => (
                         <div key={star} className="flex items-center gap-2">
                           <span className="text-xs text-white/40 w-3 text-right">{star}</span>
                           <svg className="w-3 h-3 text-amber-400/60" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                          <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                          <div className="flex-1 h-2 bg-surface-900/[0.06] rounded-full overflow-hidden">
                             <div className="h-full bg-amber-400/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
                           </div>
-                          <span className="text-xs text-white/30 w-5">{count}</span>
+                          <span className="text-xs text-white/50 w-5">{count}</span>
                         </div>
                       ))}
                     </div>
@@ -905,12 +905,12 @@ export default function ShowcaseDetailPage() {
               {reviews.length > 0 ? (
                 <div className="space-y-3">
                   {reviews.map((review) => (
-                    <div key={review.id} className="bg-white/[0.02] border border-white/[0.05] rounded-lg p-4">
+                    <div key={review.id} className="bg-surface-900/[0.02] border border-white/[0.05] rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         {review.profile?.avatar_url ? (
                           <img src={review.profile.avatar_url} alt={review.profile.full_name || 'Reviewer avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
                             {(review.profile?.full_name || '?')[0].toUpperCase()}
                           </div>
                         )}
@@ -960,7 +960,7 @@ export default function ShowcaseDetailPage() {
 
               {/* Sign-in prompt */}
               {!user && (
-                <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4 mt-3 text-center">
+                <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-4 mt-3 text-center">
                   <p className="text-sm text-white/40">
                     <Link href="/auth/login" className="text-amber-400 hover:text-amber-300 transition-colors">Sign in</Link> to leave a review
                   </p>
@@ -973,7 +973,7 @@ export default function ShowcaseDetailPage() {
               <h2 className="text-lg font-semibold mb-4 text-white/90 flex items-center gap-2">
                 <svg className="w-5 h-5 text-amber-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                 Feedback
-                <span className="text-xs font-normal text-white/30 ml-1">({comments.length})</span>
+                <span className="text-xs font-normal text-white/50 ml-1">({comments.length})</span>
               </h2>
 
               {/* Comment input */}
@@ -988,7 +988,7 @@ export default function ShowcaseDetailPage() {
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Share your thoughts on this project..."
                       rows={2}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/20 focus:outline-none focus:border-amber-500/40 resize-none"
+                      className="w-full bg-surface-900/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/20 focus:outline-none focus:border-amber-500/40 resize-none"
                     />
                     <div className="flex justify-end mt-2">
                       <button
@@ -1002,7 +1002,7 @@ export default function ShowcaseDetailPage() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-4 mb-4 text-center">
+                <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-4 mb-4 text-center">
                   <p className="text-sm text-white/40">
                     <Link href="/auth/login" className="text-amber-400 hover:text-amber-300 transition-colors">Sign in</Link> to leave feedback
                   </p>
@@ -1013,11 +1013,11 @@ export default function ShowcaseDetailPage() {
               {comments.length > 0 ? (
                 <div className="space-y-3">
                   {comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3 bg-white/[0.02] border border-white/[0.05] rounded-lg p-3">
+                    <div key={comment.id} className="flex gap-3 bg-surface-900/[0.02] border border-white/[0.05] rounded-lg p-3">
                       {comment.profile?.avatar_url ? (
                         <img src={comment.profile.avatar_url} alt={comment.profile.full_name || 'Commenter avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
                           {(comment.profile?.full_name || '?')[0].toUpperCase()}
                         </div>
                       )}
@@ -1059,46 +1059,46 @@ export default function ShowcaseDetailPage() {
           {/* Sidebar */}
           <aside className="lg:w-72 shrink-0 space-y-6">
             {/* Project Info Card */}
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+            <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">Info</h3>
               <dl className="space-y-3 text-sm">
                 {project.format && (
                   <div>
-                    <dt className="text-white/30">Format</dt>
+                    <dt className="text-white/50">Format</dt>
                     <dd className="text-white/70 font-medium">{project.format}</dd>
                   </div>
                 )}
                 {project.genre && project.genre.length > 0 && (
                   <div>
-                    <dt className="text-white/30">Genre</dt>
+                    <dt className="text-white/50">Genre</dt>
                     <dd className="text-white/70 font-medium">{project.genre.join(', ')}</dd>
                   </div>
                 )}
                 {project.target_length_minutes && (
                   <div>
-                    <dt className="text-white/30">Runtime</dt>
+                    <dt className="text-white/50">Runtime</dt>
                     <dd className="text-white/70 font-medium">{project.target_length_minutes} minutes</dd>
                   </div>
                 )}
                 {project.script_type && (
                   <div>
-                    <dt className="text-white/30">Script Type</dt>
+                    <dt className="text-white/50">Script Type</dt>
                     <dd className="text-white/70 font-medium capitalize">{project.script_type}</dd>
                   </div>
                 )}
                 {project.episode_count && project.episode_count > 0 && (
                   <div>
-                    <dt className="text-white/30">Episodes</dt>
+                    <dt className="text-white/50">Episodes</dt>
                     <dd className="text-white/70 font-medium">{project.episode_count}{project.season_number ? ` (S${project.season_number})` : ''}</dd>
                   </div>
                 )}
                 <div>
-                  <dt className="text-white/30">Added</dt>
+                  <dt className="text-white/50">Added</dt>
                   <dd className="text-white/70 font-medium">{formatDate(project.created_at)}</dd>
                 </div>
                 {project.language && (
                   <div>
-                    <dt className="text-white/30">Language</dt>
+                    <dt className="text-white/50">Language</dt>
                     <dd className="text-white/70 font-medium">{LANGUAGE_OPTIONS.find((l) => l.value === project.language)?.label || project.language}</dd>
                   </div>
                 )}
@@ -1106,16 +1106,16 @@ export default function ShowcaseDetailPage() {
             </div>
 
             {/* Rating Card */}
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+            <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">Rating</h3>
               {reviews.length > 0 ? (
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-400">{avgRating.toFixed(1)}</div>
+                  <div className="text-3xl font-black text-amber-400">{avgRating.toFixed(1)}</div>
                   <div className="flex justify-center mt-1"><StarRating rating={avgRating} size="sm" /></div>
-                  <p className="text-xs text-white/30 mt-1">{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</p>
+                  <p className="text-xs text-white/50 mt-1">{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</p>
                 </div>
               ) : (
-                <p className="text-xs text-white/30 text-center">No ratings yet</p>
+                <p className="text-xs text-white/50 text-center">No ratings yet</p>
               )}
               {user && !userReview && (
                 <button
@@ -1131,7 +1131,7 @@ export default function ShowcaseDetailPage() {
             {project.author && (
               <Link
                 href={`/u/${project.author.username || project.created_by}`}
-                className="block bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 hover:border-amber-500/30 transition-colors"
+                className="block bg-surface-900/[0.03] border border-white/[0.06] rounded-xl p-5 hover:border-amber-500/30 transition-colors"
               >
                 <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">Creator</h3>
                 <div className="flex items-center gap-3">
@@ -1171,19 +1171,19 @@ export default function ShowcaseDetailPage() {
 
             {/* Deep Dive Section */}
             {(project.showcase_script || project.showcase_mindmap || project.showcase_moodboard) && (
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+              <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-xl p-5">
                 <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">Deep Dive</h3>
-                <p className="text-xs text-white/30 mb-4">Explore the creative process behind this production</p>
+                <p className="text-xs text-white/50 mb-4">Explore the creative process behind this production</p>
                 <div className="space-y-2">
                   {project.showcase_script && (
                     <Link
                       href={`/community/showcase/${params.id}/script`}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
                     >
                       <svg className="w-5 h-5 text-amber-400/60 group-hover:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                       <div>
                         <p className="font-medium">Read Script</p>
-                        <p className="text-[10px] text-white/30">Full screenplay</p>
+                        <p className="text-[10px] text-white/50">Full screenplay</p>
                       </div>
                       <svg className="w-4 h-4 ml-auto text-white/20 group-hover:text-amber-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                     </Link>
@@ -1191,12 +1191,12 @@ export default function ShowcaseDetailPage() {
                   {project.showcase_mindmap && (
                     <Link
                       href={`/community/showcase/${params.id}/mindmap`}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
                     >
                       <svg className="w-5 h-5 text-purple-400/60 group-hover:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                       <div>
                         <p className="font-medium">Explore Mind Map</p>
-                        <p className="text-[10px] text-white/30">Ideas &amp; connections</p>
+                        <p className="text-[10px] text-white/50">Ideas &amp; connections</p>
                       </div>
                       <svg className="w-4 h-4 ml-auto text-white/20 group-hover:text-purple-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                     </Link>
@@ -1204,12 +1204,12 @@ export default function ShowcaseDetailPage() {
                   {project.showcase_moodboard && (
                     <Link
                       href={`/community/showcase/${params.id}/moodboard`}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
                     >
                       <svg className="w-5 h-5 text-pink-400/60 group-hover:text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                       <div>
                         <p className="font-medium">View Moodboard</p>
-                        <p className="text-[10px] text-white/30">Visual inspiration</p>
+                        <p className="text-[10px] text-white/50">Visual inspiration</p>
                       </div>
                       <svg className="w-4 h-4 ml-auto text-white/20 group-hover:text-pink-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                     </Link>
@@ -1220,7 +1220,7 @@ export default function ShowcaseDetailPage() {
 
             {/* External Links */}
             {Object.keys(externalLinks).filter((k) => externalLinks[k]).length > 0 && (
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+              <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-xl p-5">
                 <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">Links</h3>
                 <div className="space-y-2">
                   {externalLinks.imdb && (
@@ -1250,7 +1250,7 @@ export default function ShowcaseDetailPage() {
                   {externalLinks.website && (
                     <a href={externalLinks.website} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-3 text-sm text-white/70 hover:text-amber-400 transition-colors">
-                      <span className="text-[10px] font-bold text-white/40 bg-white/5 px-1.5 py-0.5 rounded">WWW</span>
+                      <span className="text-[10px] font-bold text-white/40 bg-surface-900/5 px-1.5 py-0.5 rounded">WWW</span>
                       Official Website
                       <svg className="w-3 h-3 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                     </a>
@@ -1264,7 +1264,7 @@ export default function ShowcaseDetailPage() {
               <div className="space-y-2">
                 <Link
                   href={`/support?type=showcase&id=${params.id}&subject=${encodeURIComponent(`Report showcase: ${project.title}`)}`}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-xs font-medium text-white/40 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-lg transition-colors"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-xs font-medium text-white/40 bg-surface-900/[0.03] hover:bg-surface-900/[0.06] border border-white/[0.06] rounded-lg transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
                   Report this showcase
@@ -1277,8 +1277,8 @@ export default function ShowcaseDetailPage() {
         {/* More from this creator */}
         {moreProjects.length > 0 && (
           <section className="mt-16">
-            <div className="h-px bg-white/10 mb-8" />
-            <h2 className="text-xl font-bold mb-6">
+            <div className="h-px bg-surface-900/10 mb-8" />
+            <h2 className="text-xl font-black mb-6">
               More from{' '}
               <span className="text-amber-400">{project.author?.full_name || 'this creator'}</span>
             </h2>
@@ -1290,7 +1290,7 @@ export default function ShowcaseDetailPage() {
                   <Link
                     key={p.id}
                     href={`/community/showcase/${p.id}`}
-                    className="group rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden hover:border-amber-500/30 transition-all"
+                    className="group rounded-xl bg-surface-900/[0.03] border border-white/[0.06] overflow-hidden hover:border-amber-500/30 transition-all"
                   >
                     <div className="aspect-video relative bg-black overflow-hidden">
                       {thumb ? (
@@ -1303,7 +1303,7 @@ export default function ShowcaseDetailPage() {
                     </div>
                     <div className="p-3">
                       <h3 className="text-sm font-semibold text-white/80 group-hover:text-amber-400 transition-colors line-clamp-1">{p.title}</h3>
-                      {p.genre && <p className="text-[10px] text-white/30 mt-1">{p.genre.join(', ')}</p>}
+                      {p.genre && <p className="text-[10px] text-white/50 mt-1">{p.genre.join(', ')}</p>}
                     </div>
                   </Link>
                 );
@@ -1317,7 +1317,7 @@ export default function ShowcaseDetailPage() {
       <footer className="border-t border-white/5 py-10 px-6 mt-10">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-sm font-semibold text-white/50">Screenplay Studio</span>
-          <div className="flex items-center gap-6 text-sm text-white/30">
+          <div className="flex items-center gap-6 text-sm text-white/50">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/community/showcase" className="hover:text-white transition-colors">Showcase</Link>
             <Link href="/community" className="hover:text-white transition-colors">Community</Link>

@@ -16,7 +16,7 @@ import { PRODUCTION_ROLES } from '@/lib/types';
 
 // Theme presets for profile customisation
 const PROFILE_THEMES: Record<string, { gradient: string; accent: string; accentRgb: string; cardBg: string; textAccent: string }> = {
-  default:   { gradient: 'from-stone-900 via-stone-800 to-stone-900',   accent: 'brand-500',   accentRgb: '168,85,247', cardBg: 'bg-white/[0.04]',  textAccent: 'text-brand-400' },
+  default:   { gradient: 'from-[#0a0818] via-[#0d0b17] to-[#070710]',   accent: '#FF5F1F',   accentRgb: '255,95,31', cardBg: 'bg-white/[0.04]',  textAccent: 'text-[#FF5F1F]' },
   midnight:  { gradient: 'from-indigo-950 via-blue-900 to-slate-900',   accent: 'indigo-400',  accentRgb: '129,140,248', cardBg: 'bg-indigo-500/[0.06]', textAccent: 'text-indigo-400' },
   sunset:    { gradient: 'from-orange-700 via-rose-700 to-pink-800',    accent: 'orange-500',  accentRgb: '249,115,22', cardBg: 'bg-orange-500/[0.06]', textAccent: 'text-orange-400' },
   forest:    { gradient: 'from-emerald-900 via-teal-800 to-green-900',  accent: 'emerald-400', accentRgb: '52,211,153', cardBg: 'bg-emerald-500/[0.06]', textAccent: 'text-emerald-400' },
@@ -239,7 +239,7 @@ export default function UserProfilePage({ params }: { params: { username: string
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-amber-500" />
       </div>
     );
@@ -247,9 +247,9 @@ export default function UserProfilePage({ params }: { params: { username: string
 
   if (notFound || !profile) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#070710' }}>
         <div className="text-6xl">👤</div>
-        <h1 className="text-3xl font-bold text-white">User not found</h1>
+        <h1 className="text-3xl font-black text-white">User not found</h1>
         <p className="text-white/40">This profile doesn&apos;t exist or has been removed.</p>
         <Link href="/community" className="mt-2 px-6 py-3 bg-amber-500 text-black rounded-lg font-semibold hover:bg-amber-400 transition-colors">
           Browse Community
@@ -261,9 +261,9 @@ export default function UserProfilePage({ params }: { params: { username: string
   const displayName = profile.display_name || profile.full_name || 'User';
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen text-white" style={{ background: '#070710' }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/[0.06]">
+      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -290,7 +290,7 @@ export default function UserProfilePage({ params }: { params: { username: string
           /* Animated subtle grid pattern for non-banner profiles */
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#070710] via-[#070710]/40 to-transparent" />
         {/* Decorative accent glow */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-32 rounded-full blur-[100px] opacity-20" style={{ backgroundColor: `rgb(${theme.accentRgb})` }} />
       </div>
@@ -305,15 +305,15 @@ export default function UserProfilePage({ params }: { params: { username: string
                 <img
                   src={profile.avatar_url}
                   alt={displayName}
-                  className="w-36 h-36 rounded-2xl border-4 border-[#0a0a0a] object-cover shadow-2xl"
+                  className="w-36 h-36 rounded-2xl border-4 border-[#070710] object-cover shadow-2xl"
                 />
               ) : (
-                <div className="w-36 h-36 rounded-2xl border-4 border-[#0a0a0a] bg-white/10 backdrop-blur-sm flex items-center justify-center text-5xl font-bold text-white/60 shadow-2xl">
+                <div className="w-36 h-36 rounded-2xl border-4 border-[#070710] bg-white/10 backdrop-blur-sm flex items-center justify-center text-5xl font-bold text-white/60 shadow-2xl">
                   {displayName[0].toUpperCase()}
                 </div>
               )}
               {profile.is_pro && (
-                <div className="absolute -top-2 -right-2 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-black bg-amber-400 rounded-lg shadow-lg shadow-amber-400/20">
+                <div className="absolute -top-2 -right-2 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white" style={{ background: '#FF5F1F' }}>
                   PRO
                 </div>
               )}
@@ -323,7 +323,7 @@ export default function UserProfilePage({ params }: { params: { username: string
             <div className="flex-1 min-w-0 pt-4 md:pt-8">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div className="min-w-0">
-                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+                  <h1 className="text-3xl md:text-4xl font-black" style={{ letterSpacing: '-0.03em' }}>
                     {displayName}
                     {profile.role === 'moderator' && <span className="ml-3 px-2 py-0.5 text-xs font-bold text-green-400 bg-green-500/10 rounded-lg border border-green-500/20 align-middle">MOD</span>}
                     {profile.role === 'admin' && <span className="ml-3 px-2 py-0.5 text-xs font-bold text-red-400 bg-red-500/10 rounded-lg border border-red-500/20 align-middle">ADMIN</span>}
@@ -442,7 +442,7 @@ export default function UserProfilePage({ params }: { params: { username: string
           ].map((stat) => (
             <div key={stat.label} className={`rounded-xl ${theme.cardBg} border border-white/[0.06] p-4 text-center`}>
               <div className="text-xl mb-1">{stat.icon}</div>
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
+              <p className="text-2xl font-black text-white">{stat.value}</p>
               <p className="text-[11px] text-white/30 uppercase tracking-wider mt-0.5">{stat.label}</p>
             </div>
           ))}

@@ -144,7 +144,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-3xl">
-      <h1 className="text-xl sm:text-2xl font-bold text-white mb-4 md:mb-8">Project Settings</h1>
+      <h1 className="text-xl sm:text-2xl font-black text-white mb-4 md:mb-8">Project Settings</h1>
 
       {/* General settings */}
       <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
@@ -336,7 +336,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-surface-300">Sidebar Tabs</h3>
             {projectSidebarTabs && (
-              <button onClick={() => setProjectSidebarTabs(null)} className="text-xs text-brand-400 hover:text-brand-300">
+              <button onClick={() => setProjectSidebarTabs(null)} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">
                 Reset to default
               </button>
             )}
@@ -363,13 +363,13 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                   }}
                   className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
                     isOn
-                      ? 'border-brand-500/40 bg-brand-500/10'
+                      ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
                       : 'border-surface-700 bg-surface-900/50'
                   }`}
                 >
                   <p className={`text-xs font-medium ${isOn ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
-                  <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${isOn ? 'bg-brand-600' : 'bg-surface-700'}`}>
-                    <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${isOn ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
+                  <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${isOn ? 'bg-[#E54E15]' : 'bg-surface-700'}`}>
+                    <span className={`absolute w-2.5 h-2.5 rounded-full bg-surface-900 transform transition-transform ${isOn ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
                   </span>
                 </button>
               );
@@ -466,7 +466,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
           </div>
           <Link
             href={`/projects/${params.id}/showcase`}
-            className="px-4 py-2 text-sm font-medium text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 rounded-lg transition-colors flex items-center gap-2 shrink-0"
+            className="px-4 py-2 text-sm font-medium text-[#FF5F1F] bg-[#FF5F1F]/10 hover:bg-[#FF5F1F]/20 border border-[#FF5F1F]/20 rounded-lg transition-colors flex items-center gap-2 shrink-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />

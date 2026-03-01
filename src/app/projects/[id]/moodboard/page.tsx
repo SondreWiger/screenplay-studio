@@ -334,9 +334,9 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
     const baseClass = cn(
       'group relative overflow-hidden transition-all duration-200',
       isCanvas ? (canvasTool === 'connect' ? 'absolute cursor-crosshair' : 'absolute cursor-move') : 'cursor-pointer',
-      !isCanvas && 'rounded-xl hover:ring-2 hover:ring-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5',
+      !isCanvas && 'rounded-xl hover:ring-2 hover:ring-[#FF5F1F]/30 hover:shadow-lg hover:shadow-brand-500/5',
       isCanvas && isConnectSource && 'ring-2 ring-green-400 ring-offset-2 ring-offset-transparent',
-      isCanvas && isConnectTarget && 'hover:ring-2 hover:ring-brand-400',
+      isCanvas && isConnectTarget && 'hover:ring-2 hover:ring-[#FF5F1F]',
     );
 
     const style: React.CSSProperties = isCanvas
@@ -491,7 +491,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               onClick={() => setActiveSection('all')}
               className={cn(
                 'px-2.5 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap',
-                activeSection === 'all' ? 'bg-brand-500/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+                activeSection === 'all' ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
               )}
             >
               All
@@ -502,7 +502,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                 onClick={() => setActiveSection(section.value)}
                 className={cn(
                   'px-2.5 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap',
-                  activeSection === section.value ? 'bg-brand-500/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+                  activeSection === section.value ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
                 )}
               >
                 {section.icon} {section.label}
@@ -516,14 +516,14 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
           <div className="flex items-center bg-surface-900 rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('grid')}
-              className={cn('p-1.5 rounded-md transition-colors', viewMode === 'grid' ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white')}
+              className={cn('p-1.5 rounded-md transition-colors', viewMode === 'grid' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white')}
               title="Grid View"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
             </button>
             <button
               onClick={() => setViewMode('canvas')}
-              className={cn('p-1.5 rounded-md transition-colors', viewMode === 'canvas' ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white')}
+              className={cn('p-1.5 rounded-md transition-colors', viewMode === 'canvas' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white')}
               title="Canvas View"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg>
@@ -535,14 +535,14 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
             <div className="flex items-center bg-surface-900 rounded-lg p-0.5">
               <button
                 onClick={() => { setCanvasTool('move'); setConnectingFrom(null); }}
-                className={cn('px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors', canvasTool === 'move' ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white')}
+                className={cn('px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors', canvasTool === 'move' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white')}
                 title="Move items"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
               </button>
               <button
                 onClick={() => setCanvasTool('connect')}
-                className={cn('px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors', canvasTool === 'connect' ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white')}
+                className={cn('px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors', canvasTool === 'connect' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white')}
                 title="Connect items"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -703,7 +703,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                 ? 'Click a target item to connect'
                 : 'Click a source item to start connecting'
               }
-              <button onClick={() => { setCanvasTool('move'); setConnectingFrom(null); }} className="ml-3 text-brand-400 hover:text-brand-300 text-xs font-medium">Cancel</button>
+              <button onClick={() => { setCanvasTool('move'); setConnectingFrom(null); }} className="ml-3 text-[#FF5F1F] hover:text-[#FF8F5F] text-xs font-medium">Cancel</button>
             </div>
           )}
 
@@ -757,7 +757,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                       onClick={() => { updateConnection(selectedConnection.id, { line_style: s.value }); setSelectedConnection((prev) => prev ? { ...prev, line_style: s.value } : null); }}
                       className={cn(
                         'px-2 py-1 text-xs rounded transition-colors',
-                        selectedConnection.line_style === s.value ? 'bg-brand-500/20 text-brand-400' : 'bg-surface-800 text-surface-400 hover:text-white'
+                        selectedConnection.line_style === s.value ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' : 'bg-surface-800 text-surface-400 hover:text-white'
                       )}
                     >
                       {s.label}
@@ -798,7 +798,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                   onClick={() => setNewItemType(t.value)}
                   className={cn(
                     'flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs transition-colors',
-                    newItemType === t.value ? 'bg-brand-500/20 text-brand-400 ring-1 ring-brand-500/30' : 'bg-surface-800 text-surface-400 hover:text-white'
+                    newItemType === t.value ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30' : 'bg-surface-800 text-surface-400 hover:text-white'
                   )}
                 >
                   <span className="text-lg">{t.icon}</span>
@@ -854,7 +854,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               <textarea
                 value={newItemContent}
                 onChange={(e) => setNewItemContent(e.target.value)}
-                className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-white text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-white text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/50"
                 placeholder={newItemType === 'note' ? 'Quick note...' : 'Text content...'}
               />
             </div>
@@ -871,7 +871,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                 <textarea
                   value={newItemContent}
                   onChange={(e) => setNewItemContent(e.target.value)}
-                  className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-white text-sm resize-none h-16 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-white text-sm resize-none h-16 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/50"
                   placeholder="What this link is about..."
                 />
               </div>
@@ -888,7 +888,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                   onClick={() => setNewItemSection(s.value)}
                   className={cn(
                     'px-2.5 py-1 text-xs rounded-full transition-colors',
-                    newItemSection === s.value ? 'bg-brand-500/20 text-brand-400' : 'bg-surface-800 text-surface-400 hover:text-white'
+                    newItemSection === s.value ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' : 'bg-surface-800 text-surface-400 hover:text-white'
                   )}
                 >
                   {s.icon} {s.label}
@@ -927,7 +927,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               <textarea
                 value={editItem.content || ''}
                 onChange={(e) => setEditItem((prev) => ({ ...prev, content: e.target.value }))}
-                className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-white text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-lg text-white text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/50"
               />
             </div>
           )}
@@ -971,7 +971,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                   onClick={() => setEditItem((prev) => ({ ...prev, board_section: s.value }))}
                   className={cn(
                     'px-2.5 py-1 text-xs rounded-full transition-colors',
-                    editItem.board_section === s.value ? 'bg-brand-500/20 text-brand-400' : 'bg-surface-800 text-surface-400 hover:text-white'
+                    editItem.board_section === s.value ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' : 'bg-surface-800 text-surface-400 hover:text-white'
                   )}
                 >
                   {s.icon} {s.label}

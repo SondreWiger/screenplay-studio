@@ -129,14 +129,14 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
           {company?.logo_url ? (
             <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" />
           ) : company ? (
-            <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
+            <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
               {company.name?.[0] || '?'}
             </div>
           ) : null}
-          <h1 className="text-xl font-bold text-white mb-2">You're Invited!</h1>
+          <h1 className="text-xl font-black text-white mb-2">You're Invited!</h1>
           <p className="text-surface-400 mb-1">
             <span className="text-white font-semibold">{company?.name || 'A company'}</span> has invited you to join as{' '}
-            <span className="capitalize text-brand-400">{invitation?.role || 'member'}</span>.
+            <span className="capitalize text-[#FF5F1F]">{invitation?.role || 'member'}</span>.
           </p>
           <p className="text-sm text-surface-500 mb-6">Sign in or create an account to accept this invitation.</p>
           <div className="flex gap-3 justify-center">
@@ -157,7 +157,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
       <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
         <Card className="p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">⚠️</div>
-          <h1 className="text-xl font-bold text-white mb-2">Invitation Unavailable</h1>
+          <h1 className="text-xl font-black text-white mb-2">Invitation Unavailable</h1>
           <p className="text-sm text-surface-400 mb-6">{errorMsg}</p>
           <Button onClick={() => router.push('/dashboard')}>Go to Dashboard</Button>
         </Card>
@@ -170,9 +170,9 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
       <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
         <Card className="p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">🎉</div>
-          <h1 className="text-xl font-bold text-white mb-2">Welcome to {company?.name || 'the team'}!</h1>
+          <h1 className="text-xl font-black text-white mb-2">Welcome to {company?.name || 'the team'}!</h1>
           <p className="text-sm text-surface-400 mb-6">
-            You've joined as <span className="capitalize text-brand-400 font-medium">{invitation?.role || 'member'}</span>.
+            You've joined as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
           </p>
           <div className="flex gap-3 justify-center">
             <Button onClick={() => router.push(company?.slug ? `/company/${company.slug}` : '/company')}>
@@ -192,14 +192,14 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
         {company?.logo_url ? (
           <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" />
         ) : company ? (
-          <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
+          <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
             {company.name?.[0] || '?'}
           </div>
         ) : null}
 
-        <h1 className="text-xl font-bold text-white mb-2">Join {company?.name || 'Company'}</h1>
+        <h1 className="text-xl font-black text-white mb-2">Join {company?.name || 'Company'}</h1>
         <p className="text-surface-400 mb-1">
-          You've been invited to join as <span className="capitalize text-brand-400 font-medium">{invitation?.role || 'member'}</span>.
+          You've been invited to join as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
         </p>
         <p className="text-xs text-surface-500 mb-6">
           Invited to: <span className="text-surface-300">{invitation?.email}</span>

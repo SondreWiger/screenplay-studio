@@ -427,7 +427,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
                   value={editScriptText}
                   onChange={(e) => setEditScriptText(e.target.value)}
                   rows={20}
-                  className="w-full bg-surface-900 text-white border border-surface-700 rounded-lg px-4 py-3 text-base font-serif leading-relaxed placeholder-surface-600 focus:ring-1 focus:ring-brand-500 focus:border-brand-500"
+                  className="w-full bg-surface-900 text-white border border-surface-700 rounded-lg px-4 py-3 text-base font-serif leading-relaxed placeholder-surface-600 focus:ring-1 focus:ring-[#FF5F1F] focus:border-[#FF5F1F]"
                   placeholder="Enter the script/prompter text for this story...
 
 Example:
@@ -481,7 +481,7 @@ Firefighters from six stations were called to the scene at approximately 3:45 th
             <div className="flex-1 overflow-y-auto">
               {/* Meta info */}
               <div className="p-4 border-b border-surface-800 bg-surface-900/30">
-                <h1 className="text-xl font-bold text-white mb-2">{selectedStory.title}</h1>
+                <h1 className="text-xl font-black text-white mb-2">{selectedStory.title}</h1>
                 <div className="flex flex-wrap gap-3 text-xs text-surface-400">
                   <span>Type: <strong className="text-surface-300">{BROADCAST_STORY_TYPES.find(t => t.value === selectedStory.story_type)?.label}</strong></span>
                   {selectedStory.estimated_duration && (

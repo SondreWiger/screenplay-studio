@@ -204,7 +204,56 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
+        {/* Quick presets */}
+        {sources.length === 0 && (
+          <div className="px-4 pt-4">
+            <p className="text-xs text-surface-500 mb-2 uppercase tracking-wider font-bold">Quick presets</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: '🎨 Color Bars', name: 'Color Bars', short_name: 'CBARS', type: 'web_feed' as BroadcastSourceType, url: '/colorbar' },
+                { label: '📷 CAM 1', name: 'Camera 1', short_name: 'CAM1', type: 'camera' as BroadcastSourceType, url: '' },
+                { label: '📷 CAM 2', name: 'Camera 2', short_name: 'CAM2', type: 'camera' as BroadcastSourceType, url: '' },
+                { label: '🖥️ Graphics', name: 'Graphics', short_name: 'GFX', type: 'graphics' as BroadcastSourceType, url: '' },
+              ].map(preset => (
+                <button
+                  key={preset.label}
+                  onClick={() => {
+                    setForm(prev => ({ ...prev, name: preset.name, short_name: preset.short_name, source_type: preset.type, connection_url: preset.url }));
+                    setShowForm(true);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-surface-800 hover:bg-surface-700 border border-surface-700 hover:border-surface-600 text-surface-300 hover:text-white rounded transition-colors"
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto p-4">
+          {/* Colorbar preset shortcut (always visible) */}
+          {!sources.some(s => s.connection_url === '/colorbar') && (
+            <div className="mb-4 flex items-center gap-3 p-3 rounded-lg border border-dashed border-surface-700 bg-surface-900/40">
+              <div className="w-16 h-9 rounded flex-shrink-0 overflow-hidden" style={{ background: 'linear-gradient(to right,#c0c0c0 14%,#c0c000 28%,#00c0c0 42%,#00c000 57%,#c000c0 71%,#c00000 85%,#0000c0)' }} />
+              <div>
+                <p className="text-xs text-white font-medium">SMPTE Color Bars</p>
+                <p className="text-[10px] text-surface-500">Built-in test signal source (/colorbar)</p>
+              </div>
+              <button
+                onClick={async () => {
+                  const supabase = createClient();
+                  const { error } = await supabase.from('broadcast_sources').insert({
+                    project_id: projectId, name: 'Color Bars', short_name: 'CBARS',
+                    source_type: 'web_feed', connection_url: '/colorbar',
+                    is_active: true, is_primary: false, sort_order: 0,
+                  });
+                  if (error) toast.error(error.message); else { toast.success('Color Bars source added'); fetchSources(); }
+                }}
+                className="ml-auto px-3 py-1.5 text-xs bg-[#FF5F1F] hover:bg-[#E54E15] text-white rounded font-medium transition-colors"
+              >
+                + Add
+              </button>
+            </div>
+          )}
           {filtered.length === 0 ? (
             <EmptyState
               title="No Sources"
@@ -226,7 +275,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                       className={cn(
                         'relative text-left p-3 rounded-lg border transition-all',
                         selectedSource?.id === source.id
-                          ? 'border-brand-500 bg-surface-800'
+                          ? 'border-[#FF5F1F] bg-surface-800'
                           : 'border-surface-800 bg-surface-900 hover:border-surface-700',
                       )}
                     >
@@ -287,18 +336,47 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {/* Preview placeholder */}
+            {/* Preview */}
             <div className={cn(
-              'w-full aspect-video rounded-lg flex items-center justify-center',
-              SOURCE_TYPE_COLORS[selectedSource.source_type] || 'bg-surface-700',
+              'w-full aspect-video rounded-lg overflow-hidden flex items-center justify-center relative',
+              (selectedSource.source_type === 'web_feed' && selectedSource.connection_url) ? 'bg-black' : SOURCE_TYPE_COLORS[selectedSource.source_type] || 'bg-surface-700',
               !selectedSource.is_active && 'opacity-30',
             )}>
               {selectedSource.thumbnail_url ? (
-                <img src={selectedSource.thumbnail_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                <img src={selectedSource.thumbnail_url} alt="" className="w-full h-full object-cover" />
+              ) : selectedSource.source_type === 'web_feed' && selectedSource.connection_url ? (
+                <iframe
+                  src={selectedSource.connection_url}
+                  className="w-full h-full border-0 pointer-events-none"
+                  title={selectedSource.name}
+                  sandbox="allow-scripts allow-same-origin"
+                />
               ) : (
-                <span className="text-white/80 text-xs font-bold">
-                  {selectedSource.is_active ? 'PREVIEW (requires NDI/WebRTC bridge)' : 'INACTIVE'}
-                </span>
+                <div className="text-center px-3">
+                  {!selectedSource.is_active ? (
+                    <span className="text-white/50 text-xs font-bold">INACTIVE</span>
+                  ) : selectedSource.protocol === 'ndi' || selectedSource.source_type === 'ndi' ? (
+                    <>
+                      <div className="text-white/60 text-xs font-bold mb-1">NDI SOURCE</div>
+                      <div className="text-white/30 text-[10px]">Requires NDI bridge</div>
+                    </>
+                  ) : selectedSource.protocol === 'srt' || selectedSource.source_type === 'srt' ? (
+                    <>
+                      <div className="text-white/60 text-xs font-bold mb-1">SRT STREAM</div>
+                      <div className="text-white/30 text-[10px]">Requires SRT ingest</div>
+                    </>
+                  ) : selectedSource.protocol === 'webrtc' ? (
+                    <>
+                      <div className="text-white/60 text-xs font-bold mb-1">WebRTC</div>
+                      <div className="text-white/30 text-[10px]">Requires WebRTC bridge</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-white/60 text-xs font-bold mb-1">{(selectedSource.short_name || selectedSource.source_type).toUpperCase()}</div>
+                      <div className="text-white/30 text-[10px]">{selectedSource.protocol ? `${selectedSource.protocol.toUpperCase()} signal` : 'No signal'}</div>
+                    </>
+                  )}
+                </div>
               )}
             </div>
 

@@ -208,7 +208,7 @@ export default function ShareScriptPage() {
   if (authLoading || loadingData) {
     return (
       <div className="min-h-screen bg-[#faf9f7] flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
   }
@@ -216,19 +216,19 @@ export default function ShareScriptPage() {
   return (
     <div className="min-h-screen bg-[#faf9f7]">
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#faf9f7]/90 backdrop-blur-md border-b border-stone-200">
+      <nav className="sticky top-0 z-30 bg-[#faf9f7]/90 backdrop-blur-md border-b border-white/10">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors flex items-center gap-2">
+          <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Community
           </Link>
-          <span className="text-sm font-semibold text-stone-900">Share Script</span>
+          <span className="text-sm font-semibold text-white">Share Script</span>
         </div>
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold text-stone-900 tracking-tight mb-2">Share Your Script</h1>
-        <p className="text-stone-500 mb-8">Share your work with the community and get feedback.</p>
+        <h1 className="text-3xl font-black text-white tracking-tight mb-2">Share Your Script</h1>
+        <p className="text-white/40 mb-8">Share your work with the community and get feedback.</p>
 
         {error && (
           <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>
@@ -238,55 +238,55 @@ export default function ShareScriptPage() {
           {/* Title & Slug */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Title *</label>
+              <label className="block text-sm font-medium text-white/70 mb-1.5">Title *</label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="My Screenplay"
-                className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 transition-colors"
+                className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">URL Slug</label>
+              <label className="block text-sm font-medium text-white/70 mb-1.5">URL Slug</label>
               <input
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="my-screenplay"
-                className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 font-mono placeholder:text-stone-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 transition-colors"
+                className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 font-mono placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-white/70 mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="A brief description of your script — what it's about, what kind of feedback you're looking for..."
               rows={3}
-              className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 resize-none transition-colors"
+              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] resize-none transition-colors"
             />
           </div>
 
           {/* Cover Image */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">Cover Image URL (optional)</label>
+            <label className="block text-sm font-medium text-white/70 mb-1.5">Cover Image URL (optional)</label>
             <input
               value={coverUrl}
               onChange={(e) => setCoverUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 transition-colors"
+              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors"
             />
           </div>
 
           {/* Language */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">Language (optional)</label>
+            <label className="block text-sm font-medium text-white/70 mb-1.5">Language (optional)</label>
             <select
               value={scriptLanguage}
               onChange={(e) => setScriptLanguage(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 transition-colors appearance-none cursor-pointer"
+              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors appearance-none cursor-pointer"
             >
               <option value="">Select language...</option>
               {LANGUAGE_OPTIONS.map((l) => (
@@ -297,12 +297,12 @@ export default function ShareScriptPage() {
 
           {/* Script Source — project picker or plain text */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-3">Script Source *</label>
-            <div className="flex gap-1 mb-4 bg-stone-100 rounded-lg p-1 w-fit">
+            <label className="block text-sm font-medium text-white/70 mb-3">Script Source *</label>
+            <div className="flex gap-1 mb-4 bg-surface-800 rounded-lg p-1 w-fit">
               <button
                 onClick={() => setInputMode('project')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  inputMode === 'project' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-900'
+                  inputMode === 'project' ? 'bg-surface-900 text-white shadow-sm' : 'text-white/40 hover:text-white'
                 }`}
               >
                 📁 From My Projects
@@ -310,7 +310,7 @@ export default function ShareScriptPage() {
               <button
                 onClick={() => setInputMode('text')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  inputMode === 'text' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-900'
+                  inputMode === 'text' ? 'bg-surface-900 text-white shadow-sm' : 'text-white/40 hover:text-white'
                 }`}
               >
                 ✏️ Plain Text
@@ -321,10 +321,10 @@ export default function ShareScriptPage() {
               <div>
                 {/* Project grid */}
                 {projects.length === 0 ? (
-                  <div className="rounded-xl border-2 border-dashed border-stone-200 py-10 text-center">
+                  <div className="rounded-xl border-2 border-dashed border-white/10 py-10 text-center">
                     <div className="text-3xl mb-2">📝</div>
-                    <p className="text-sm text-stone-500 mb-1">No projects yet</p>
-                    <p className="text-xs text-stone-400">Create a project in the dashboard first, or use plain text mode.</p>
+                    <p className="text-sm text-white/40 mb-1">No projects yet</p>
+                    <p className="text-xs text-white/50">Create a project in the dashboard first, or use plain text mode.</p>
                   </div>
                 ) : (
                   <>
@@ -349,31 +349,31 @@ export default function ShareScriptPage() {
                             }}
                             className={`text-left rounded-xl border-2 p-4 transition-all ${
                               isSelected
-                                ? 'border-brand-400 bg-brand-50 ring-2 ring-brand-200'
-                                : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm'
+                                ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-2 ring-[#FF5F1F]/30'
+                                : 'border-white/10 bg-surface-900 hover:border-white/15 hover:shadow-sm'
                             }`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
-                                isSelected ? 'bg-brand-500 text-white' : 'bg-stone-100 text-stone-500'
+                                isSelected ? 'bg-[#FF5F1F] text-white' : 'bg-surface-800 text-white/40'
                               }`}>
                                 {p.title?.[0]?.toUpperCase() || '?'}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <h4 className={`text-sm font-semibold truncate ${isSelected ? 'text-brand-900' : 'text-stone-900'}`}>
+                                <h4 className={`text-sm font-semibold truncate ${isSelected ? 'text-[#CC4312]' : 'text-white'}`}>
                                   {p.title}
                                 </h4>
                                 {p.logline && (
-                                  <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">{p.logline}</p>
+                                  <p className="text-xs text-white/50 mt-0.5 line-clamp-1">{p.logline}</p>
                                 )}
-                                <div className="flex items-center gap-2 mt-1.5 text-[10px] text-stone-400">
+                                <div className="flex items-center gap-2 mt-1.5 text-[10px] text-white/50">
                                   <span className="capitalize">{(p.format || '').replace('_', ' ')}</span>
                                   {p.genre?.length > 0 && <span>· {p.genre.slice(0, 2).join(', ')}</span>}
                                   <span>· {formatDate(p.updated_at)}</span>
                                 </div>
                               </div>
                               {isSelected && (
-                                <svg className="w-5 h-5 text-brand-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-5 h-5 text-[#FF5F1F] shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                               )}
@@ -386,7 +386,7 @@ export default function ShareScriptPage() {
                     {/* Script version selector (if project has multiple scripts) */}
                     {selectedProject && projectScripts.length > 1 && (
                       <div className="mb-4">
-                        <label className="block text-xs font-medium text-stone-500 mb-1.5">Script Version</label>
+                        <label className="block text-xs font-medium text-white/40 mb-1.5">Script Version</label>
                         <div className="flex flex-wrap gap-2">
                           {projectScripts.map((s) => (
                             <button
@@ -394,8 +394,8 @@ export default function ShareScriptPage() {
                               onClick={() => { setSelectedScriptId(s.id); loadScriptElements(s.id); }}
                               className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                                 selectedScriptId === s.id
-                                  ? 'border-brand-400 bg-brand-50 text-brand-700'
-                                  : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
+                                  ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#E54E15]'
+                                  : 'border-white/10 bg-surface-900 text-white/60 hover:border-white/15'
                               }`}
                             >
                               v{s.version} — {s.title}
@@ -408,25 +408,25 @@ export default function ShareScriptPage() {
 
                     {/* Script preview */}
                     {loadingScript && (
-                      <div className="flex items-center justify-center py-12 rounded-xl border border-stone-200 bg-white">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
-                        <span className="ml-3 text-sm text-stone-500">Loading screenplay...</span>
+                      <div className="flex items-center justify-center py-12 rounded-xl border border-white/10 bg-surface-900">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
+                        <span className="ml-3 text-sm text-white/40">Loading screenplay...</span>
                       </div>
                     )}
 
                     {!loadingScript && selectedProject && scriptElements && scriptElements.length > 0 && (
-                      <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100 bg-stone-50">
+                      <div className="rounded-xl border border-white/10 bg-surface-900 overflow-hidden">
+                        <div className="flex items-center justify-between px-5 py-3 border-b border-white/07 bg-surface-900">
                           <div className="flex items-center gap-2">
                             <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                            <span className="text-xs font-semibold text-stone-700">Screenplay loaded</span>
-                            <span className="text-xs text-stone-400">({scriptElements.length} elements)</span>
+                            <span className="text-xs font-semibold text-white/70">Screenplay loaded</span>
+                            <span className="text-xs text-white/50">({scriptElements.length} elements)</span>
                           </div>
-                          <span className="text-[10px] text-stone-400 bg-stone-100 px-2 py-0.5 rounded font-medium">
+                          <span className="text-[10px] text-white/50 bg-surface-800 px-2 py-0.5 rounded font-medium">
                             Formatted screenplay
                           </span>
                         </div>
-                        <div className="max-h-[400px] overflow-y-auto px-8 py-6 bg-white">
+                        <div className="max-h-[400px] overflow-y-auto px-8 py-6 bg-surface-900">
                           <ScreenplayRenderer elements={scriptElements} />
                         </div>
                       </div>
@@ -449,16 +449,16 @@ export default function ShareScriptPage() {
                   onChange={(e) => { setScriptContent(e.target.value); setScriptElements(null); }}
                   placeholder="Paste or write your screenplay here..."
                   rows={16}
-                  className="w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 resize-none transition-colors font-mono leading-relaxed"
+                  className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] resize-none transition-colors font-mono leading-relaxed"
                 />
-                <p className="text-xs text-stone-400 mt-1">Tip: Use &quot;From My Projects&quot; to share with proper screenplay formatting.</p>
+                <p className="text-xs text-white/50 mt-1">Tip: Use &quot;From My Projects&quot; to share with proper screenplay formatting.</p>
               </div>
             )}
           </div>
 
           {/* Categories */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">Categories</label>
+            <label className="block text-sm font-medium text-white/70 mb-2">Categories</label>
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
                 <button
@@ -466,8 +466,8 @@ export default function ShareScriptPage() {
                   onClick={() => toggleCategory(cat.id)}
                   className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                     selectedCategories.includes(cat.id)
-                      ? 'border-brand-400 bg-brand-50 text-brand-700 font-medium'
-                      : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#E54E15] font-medium'
+                      : 'border-white/10 bg-surface-900 text-white/60 hover:border-white/15'
                   }`}
                 >
                   {cat.icon} {cat.name}
@@ -478,8 +478,8 @@ export default function ShareScriptPage() {
 
           {/* Permissions */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-3">Permissions</label>
-            <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-5">
+            <label className="block text-sm font-medium text-white/70 mb-3">Permissions</label>
+            <div className="space-y-3 rounded-xl border border-white/10 bg-surface-900 p-5">
               {[
                 { key: 'comments', label: 'Allow Comments', desc: 'Others can leave comments on your script', value: allowComments, setter: setAllowComments },
                 { key: 'suggestions', label: 'Allow Suggestions', desc: 'Others can submit suggestions for improvement', value: allowSuggestions, setter: setAllowSuggestions },
@@ -492,11 +492,11 @@ export default function ShareScriptPage() {
                     type="checkbox"
                     checked={value}
                     onChange={(e) => setter(e.target.checked)}
-                    className="mt-0.5 rounded border-stone-300 text-brand-500 focus:ring-brand-500"
+                    className="mt-0.5 rounded border-white/15 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   <div>
-                    <span className="text-sm font-medium text-stone-800">{label}</span>
-                    <p className="text-xs text-stone-400">{desc}</p>
+                    <span className="text-sm font-medium text-white/90">{label}</span>
+                    <p className="text-xs text-white/50">{desc}</p>
                   </div>
                 </label>
               ))}
@@ -534,12 +534,12 @@ export default function ShareScriptPage() {
           )}
 
           {/* Submit */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-stone-200">
-            <Link href="/community" className="px-5 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-800 transition-colors">Cancel</Link>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Link href="/community" className="px-5 py-2.5 text-sm font-medium text-white/60 hover:text-white/90 transition-colors">Cancel</Link>
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+              className="px-6 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
             >
               {submitting ? 'Sharing...' : 'Share with Community'}
             </button>

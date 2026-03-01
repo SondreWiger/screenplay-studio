@@ -137,12 +137,12 @@ export default function OnboardingPage() {
     // Step 0: Welcome + Display Name
     <div key="welcome" className="space-y-8">
       <div className="text-center">
-        <div className="w-20 h-20 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 bg-[#E54E15] rounded-2xl flex items-center justify-center mx-auto mb-6">
           <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2">Welcome to Screenplay Studio</h1>
+        <h1 className="text-3xl font-black text-white mb-2">Welcome to Screenplay Studio</h1>
         <p className="text-surface-400 max-w-md mx-auto">
           Let&apos;s set things up so the app works exactly how you need it. This takes about 30 seconds.
         </p>
@@ -164,7 +164,7 @@ export default function OnboardingPage() {
     // Step 1: Usage Intent
     <div key="intent" className="space-y-8">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">How will you use Screenplay Studio?</h2>
+        <h2 className="text-2xl font-black text-white mb-2">How will you use Screenplay Studio?</h2>
         <p className="text-surface-400">This helps us show you the right tools. You can always change this later.</p>
       </div>
 
@@ -175,12 +175,12 @@ export default function OnboardingPage() {
             onClick={() => applyIntentDefaults(opt.value)}
             className={`text-left p-5 rounded-xl border-2 transition-all ${
               usageIntent === opt.value
-                ? 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500/30'
+                ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600 hover:bg-surface-800'
             }`}
           >
-            <Icon name={opt.icon} size="lg" className={usageIntent === opt.value ? 'text-brand-400' : 'text-surface-400'} />
-            <h3 className={`mt-2 text-sm font-semibold ${usageIntent === opt.value ? 'text-brand-400' : 'text-white'}`}>
+            <Icon name={opt.icon} size="lg" className={usageIntent === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
+            <h3 className={`mt-2 text-sm font-semibold ${usageIntent === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>
               {opt.label}
             </h3>
             <p className="mt-1 text-xs text-surface-400">{opt.description}</p>
@@ -192,7 +192,7 @@ export default function OnboardingPage() {
     // Step 2: Script Type
     <div key="scripttype" className="space-y-8">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">What do you write?</h2>
+        <h2 className="text-2xl font-black text-white mb-2">What do you write?</h2>
         <p className="text-surface-400">We&apos;ll set the default formatting for new projects.</p>
       </div>
 
@@ -203,12 +203,12 @@ export default function OnboardingPage() {
             onClick={() => setScriptType(opt.value)}
             className={`text-left p-4 rounded-xl border-2 transition-all ${
               scriptType === opt.value
-                ? 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500/30'
+                ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600 hover:bg-surface-800'
             }`}
           >
-            <Icon name={opt.icon} size="md" className={scriptType === opt.value ? 'text-brand-400' : 'text-surface-400'} />
-            <h3 className={`mt-1.5 text-sm font-semibold ${scriptType === opt.value ? 'text-brand-400' : 'text-white'}`}>
+            <Icon name={opt.icon} size="md" className={scriptType === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
+            <h3 className={`mt-1.5 text-sm font-semibold ${scriptType === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>
               {opt.label}
             </h3>
             <p className="mt-0.5 text-[11px] text-surface-400">{opt.description}</p>
@@ -220,7 +220,7 @@ export default function OnboardingPage() {
     // Step 3: Feature Visibility
     <div key="features" className="space-y-8">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Customize your workspace</h2>
+        <h2 className="text-2xl font-black text-white mb-2">Customize your workspace</h2>
         <p className="text-surface-400">Toggle features on or off. Hidden tools are always accessible under &quot;More Tools&quot;.</p>
       </div>
 
@@ -242,7 +242,7 @@ export default function OnboardingPage() {
               onClick={toggle}
               className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
                 isOn
-                  ? 'border-brand-500/50 bg-brand-500/5'
+                  ? 'border-[#FF5F1F]/50 bg-[#FF5F1F]/5'
                   : 'border-surface-700 bg-surface-900 opacity-60'
               }`}
             >
@@ -251,8 +251,8 @@ export default function OnboardingPage() {
                 <h3 className="text-sm font-semibold text-white">{feat.label}</h3>
                 <p className="text-[11px] text-surface-400">{feat.description}</p>
               </div>
-              <div className={`w-11 h-6 rounded-full shrink-0 transition-colors relative ${isOn ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${isOn ? 'left-[22px]' : 'left-0.5'}`} />
+              <div className={`w-11 h-6 rounded-full shrink-0 transition-colors relative ${isOn ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-surface-900 shadow transition-transform ${isOn ? 'left-[22px]' : 'left-0.5'}`} />
               </div>
             </button>
           );
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
     // Step 4: Optional Company Creation
     <div key="company" className="space-y-8">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Work with a team?</h2>
+        <h2 className="text-2xl font-black text-white mb-2">Work with a team?</h2>
         <p className="text-surface-400">Create a company to collaborate, invite team members, and manage projects together. You can always do this later.</p>
       </div>
 
@@ -277,24 +277,24 @@ export default function OnboardingPage() {
             onClick={() => setWantsCompany(false)}
             className={`flex-1 p-5 rounded-xl border-2 text-center transition-all ${
               !wantsCompany
-                ? 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500/30'
+                ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600'
             }`}
           >
             <svg className="w-8 h-8 text-surface-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            <h3 className={`mt-2 text-sm font-semibold ${!wantsCompany ? 'text-brand-400' : 'text-white'}`}>Just me</h3>
+            <h3 className={`mt-2 text-sm font-semibold ${!wantsCompany ? 'text-[#FF5F1F]' : 'text-white'}`}>Just me</h3>
             <p className="text-[11px] text-surface-400 mt-1">Solo projects</p>
           </button>
           <button
             onClick={() => setWantsCompany(true)}
             className={`flex-1 p-5 rounded-xl border-2 text-center transition-all ${
               wantsCompany
-                ? 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500/30'
+                ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
                 : 'border-surface-700 bg-surface-900 hover:border-surface-600'
             }`}
           >
             <svg className="w-8 h-8 text-surface-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            <h3 className={`mt-2 text-sm font-semibold ${wantsCompany ? 'text-brand-400' : 'text-white'}`}>Team / Company</h3>
+            <h3 className={`mt-2 text-sm font-semibold ${wantsCompany ? 'text-[#FF5F1F]' : 'text-white'}`}>Team / Company</h3>
             <p className="text-[11px] text-surface-400 mt-1">Collaborate together</p>
           </button>
         </div>
@@ -321,7 +321,7 @@ export default function OnboardingPage() {
       {/* Progress bar */}
       <div className="w-full h-1 bg-surface-900">
         <div
-          className="h-full bg-brand-500 transition-all duration-500"
+          className="h-full bg-[#FF5F1F] transition-all duration-500"
           style={{ width: `${((step + 1) / steps.length) * 100}%` }}
         />
       </div>
@@ -341,7 +341,7 @@ export default function OnboardingPage() {
               <div
                 key={i}
                 className={`w-2 h-2 rounded-full transition-colors ${
-                  i === step ? 'bg-brand-500' : i < step ? 'bg-brand-500/40' : 'bg-surface-700'
+                  i === step ? 'bg-[#FF5F1F]' : i < step ? 'bg-[#FF5F1F]/40' : 'bg-surface-700'
                 }`}
               />
             ))}

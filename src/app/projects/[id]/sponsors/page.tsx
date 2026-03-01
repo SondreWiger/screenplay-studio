@@ -16,7 +16,7 @@ const SEGMENT_TYPES: { value: SponsorSegmentType; label: string; description: st
 ];
 
 const PAYMENT_STATUS_COLORS = {
-  pending: 'bg-yellow-500/20 text-yellow-400',
+  pending: 'bg-[#FF5F1F]/20 text-[#FF5F1F]',
   invoiced: 'bg-blue-500/20 text-blue-400',
   paid: 'bg-green-500/20 text-green-400',
 };
@@ -203,7 +203,7 @@ export default function SponsorsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -213,7 +213,7 @@ export default function SponsorsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Sponsors & Segments</h1>
+          <h1 className="text-2xl font-black text-white">Sponsors & Segments</h1>
           <p className="text-surface-400 text-sm mt-1">
             Track sponsorships, ad reads, and payments
           </p>
@@ -233,15 +233,15 @@ export default function SponsorsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-surface-900 border border-surface-800 rounded-xl p-4">
             <p className="text-surface-500 text-sm">Total Sponsors</p>
-            <p className="text-2xl font-bold text-white mt-1">{sponsors.length}</p>
+            <p className="text-2xl font-black text-white mt-1">{sponsors.length}</p>
           </div>
           <div className="bg-surface-900 border border-surface-800 rounded-xl p-4">
             <p className="text-surface-500 text-sm">Paid Revenue</p>
-            <p className="text-2xl font-bold text-green-400 mt-1">${totalEarnings.toLocaleString()}</p>
+            <p className="text-2xl font-black text-green-400 mt-1">${totalEarnings.toLocaleString()}</p>
           </div>
           <div className="bg-surface-900 border border-surface-800 rounded-xl p-4">
             <p className="text-surface-500 text-sm">Pending Revenue</p>
-            <p className="text-2xl font-bold text-yellow-400 mt-1">${pendingEarnings.toLocaleString()}</p>
+            <p className="text-2xl font-black text-yellow-400 mt-1">${pendingEarnings.toLocaleString()}</p>
           </div>
         </div>
       )}
@@ -288,7 +288,7 @@ export default function SponsorsPage() {
                       <ul className="text-sm text-surface-300 space-y-1">
                         {sponsor.talking_points.slice(0, 3).map((point, i) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-brand-400">•</span>
+                            <span className="text-[#FF5F1F]">•</span>
                             {point}
                           </li>
                         ))}
@@ -311,7 +311,7 @@ export default function SponsorsPage() {
                     {sponsor.cta_link && (
                       <div>
                         <span className="text-surface-500">Link: </span>
-                        <a href={sponsor.cta_link} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:underline">
+                        <a href={sponsor.cta_link} target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">
                           {sponsor.cta_link.replace(/^https?:\/\//, '').slice(0, 30)}...
                         </a>
                       </div>
@@ -321,7 +321,7 @@ export default function SponsorsPage() {
 
                 <div className="text-right shrink-0">
                   {sponsor.payment_amount && (
-                    <p className="text-xl font-bold text-white">${sponsor.payment_amount.toLocaleString()}</p>
+                    <p className="text-xl font-black text-white">${sponsor.payment_amount.toLocaleString()}</p>
                   )}
                   {sponsor.due_date && (
                     <p className="text-xs text-surface-500 mt-1">
@@ -372,11 +372,11 @@ export default function SponsorsPage() {
                   className={cn(
                     'p-3 rounded-lg border text-left transition-all',
                     form.segment_type === type.value
-                      ? 'border-brand-500 bg-brand-500/10'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                       : 'border-surface-700 hover:border-surface-600'
                   )}
                 >
-                  <p className={cn('text-sm font-medium', form.segment_type === type.value ? 'text-brand-400' : 'text-white')}>
+                  <p className={cn('text-sm font-medium', form.segment_type === type.value ? 'text-[#FF5F1F]' : 'text-white')}>
                     {type.label}
                   </p>
                   <p className="text-xs text-surface-500">{type.description}</p>

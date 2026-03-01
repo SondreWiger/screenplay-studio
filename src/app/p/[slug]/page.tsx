@@ -78,18 +78,18 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#faf9f7] flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#FF5F1F]" />
       </div>
     );
   }
 
   if (notFound || !company) {
     return (
-      <div className="min-h-screen bg-[#faf9f7] flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-bold text-stone-900 mb-2">Page Not Found</h1>
-        <p className="text-stone-500 mb-6">This company page doesn&apos;t exist or isn&apos;t public.</p>
-        <Link href="/" className="px-6 py-3 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors">
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#070710' }}>
+        <h1 className="text-3xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>PAGE NOT FOUND</h1>
+        <p className="text-white/40 mb-6 font-mono text-sm">This company page doesn&apos;t exist or isn&apos;t public.</p>
+        <Link href="/" className="ss-btn-orange text-sm">
           Go Home
         </Link>
       </div>
@@ -97,7 +97,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="min-h-screen text-white" style={{ background: '#070710' }}>
       {/* Hero */}
       <header
         className="relative"
@@ -113,11 +113,11 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
           {company.logo_url ? (
             <img src={company.logo_url} alt={company.name} className="w-20 h-20 rounded-2xl mx-auto mb-4 shadow-lg object-cover" />
           ) : (
-            <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl font-bold text-white bg-white/20 backdrop-blur">
+            <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl font-black text-white bg-white/20 backdrop-blur">
               {company.name[0]}
             </div>
           )}
-          <h1 className="text-4xl font-bold text-white mb-2">{company.name}</h1>
+          <h1 className="text-4xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>{company.name}</h1>
           {company.tagline && <p className="text-xl text-white/80">{company.tagline}</p>}
           {company.description && <p className="mt-4 text-white/60 max-w-2xl mx-auto">{company.description}</p>}
           <div className="flex justify-center gap-4 mt-6">
@@ -139,26 +139,26 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         {/* Projects */}
         {projects.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-2xl font-bold text-stone-900 mb-6">Projects</h2>
+            <h2 className="text-2xl font-black text-white mb-6" style={{ letterSpacing: '-0.03em' }}>PROJECTS</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
-                <div key={project.id} className="bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div key={project.id} className="overflow-hidden hover:opacity-90 transition-opacity" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
                   {project.poster_url ? (
                     <img src={project.poster_url} alt={project.title || 'Project poster'} className="w-full h-48 object-cover" />
                   ) : (
                     <div className="w-full h-48 flex items-center justify-center" style={{ backgroundColor: company.brand_color + '15' }}>
-                      <svg className="w-12 h-12 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-12 h-12 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
                       </svg>
                     </div>
                   )}
                   <div className="p-5">
-                    <h3 className="font-semibold text-stone-900">{project.title}</h3>
-                    {project.logline && <p className="text-sm text-stone-500 mt-1 line-clamp-2">{project.logline}</p>}
+                    <h3 className="font-black text-white" style={{ letterSpacing: '-0.02em' }}>{project.title}</h3>
+                    {project.logline && <p className="text-sm text-white/40 mt-1 line-clamp-2">{project.logline}</p>}
                     <div className="flex items-center gap-2 mt-3">
-                      <span className="text-xs text-stone-400 capitalize">{project.format}</span>
+                      <span className="text-xs font-mono text-white/30 capitalize">{project.format}</span>
                       {project.genre.length > 0 && (
-                        <span className="text-xs text-stone-400">· {project.genre.join(', ')}</span>
+                        <span className="text-xs font-mono text-white/30">· {project.genre.join(', ')}</span>
                       )}
                     </div>
                   </div>
@@ -171,7 +171,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         {/* Team */}
         {members.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-2xl font-bold text-stone-900 mb-6">Our Team</h2>
+            <h2 className="text-2xl font-black text-white mb-6" style={{ letterSpacing: '-0.03em' }}>OUR TEAM</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {members.map((m) => {
                 const profile = m.profile as Profile | undefined;
@@ -180,14 +180,14 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt={profile.full_name || profile.username || 'Team member'} className="w-24 h-24 rounded-full mx-auto object-cover" />
                     ) : (
-                      <div className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-stone-400 bg-stone-100">
+                      <div className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-2xl font-black text-white/40 bg-white/10">
                         {(profile?.display_name || profile?.full_name || '?')[0].toUpperCase()}
                       </div>
                     )}
-                    <h3 className="font-semibold text-stone-900 mt-3">{profile?.display_name || profile?.full_name || 'Team Member'}</h3>
-                    <p className="text-sm text-stone-500">{m.job_title || m.role}</p>
-                    {m.department && <p className="text-xs text-stone-400">{m.department}</p>}
-                    {m.bio && <p className="text-xs text-stone-400 mt-1 line-clamp-2">{m.bio}</p>}
+                    <h3 className="font-black text-white mt-3" style={{ letterSpacing: '-0.02em' }}>{profile?.display_name || profile?.full_name || 'Team Member'}</h3>
+                    <p className="text-sm text-white/50 font-mono">{m.job_title || m.role}</p>
+                    {m.department && <p className="text-xs text-white/30 font-mono">{m.department}</p>}
+                    {m.bio && <p className="text-xs text-white/30 mt-1 line-clamp-2">{m.bio}</p>}
                   </div>
                 );
               })}
@@ -199,7 +199,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         {blogPosts.length > 0 && (
           <section className="mb-16">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-stone-900">Blog</h2>
+              <h2 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>BLOG</h2>
               <Link href={`/company/${company.slug}/blog`} className="text-sm font-medium hover:underline" style={{ color: company.brand_color }}>
                 View all posts →
               </Link>
@@ -207,26 +207,26 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {blogPosts.map((post) => (
                 <Link key={post.id} href={`/company/${company.slug}/blog/${post.slug}`}
-                  className="block bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-lg transition-shadow group">
+                  className="block overflow-hidden hover:opacity-80 transition-opacity group" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
                   {post.cover_image_url ? (
                     <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-40 flex items-center justify-center" style={{ backgroundColor: company.brand_color + '10' }}>
-                      <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-8 h-8 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                       </svg>
                     </div>
                   )}
                   <div className="p-4">
-                    {post.pinned && <span className="text-[10px] font-semibold uppercase text-amber-600 mb-1 block">📌 Pinned</span>}
-                    <h3 className="font-semibold text-stone-900 line-clamp-2 group-hover:underline">{post.title}</h3>
-                    {post.excerpt && <p className="text-sm text-stone-500 mt-1 line-clamp-2">{post.excerpt}</p>}
+                    {post.pinned && <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF5F1F] mb-1 block">Pinned</span>}
+                    <h3 className="font-black text-white line-clamp-2" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
+                    {post.excerpt && <p className="text-sm text-white/40 mt-1 line-clamp-2">{post.excerpt}</p>}
                     <div className="flex items-center gap-2 mt-3">
                       {post.tags?.length > 0 && post.tags.slice(0, 2).map((tag: string) => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-500">{tag}</span>
+                        <span key={tag} className="text-[10px] px-2 py-0.5 font-mono uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{tag}</span>
                       ))}
                       {post.published_at && (
-                        <span className="text-xs text-stone-400 ml-auto">{new Date(post.published_at).toLocaleDateString()}</span>
+                        <span className="text-xs font-mono text-white/30 ml-auto">{new Date(post.published_at).toLocaleDateString()}</span>
                       )}
                     </div>
                   </div>
@@ -237,9 +237,9 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         )}
 
         {/* Footer */}
-        <footer className="pt-8 border-t border-stone-200 text-center">
-          <p className="text-sm text-stone-400">
-            {company.name} · Powered by <Link href="/" className="text-stone-600 hover:text-stone-900 transition-colors">Screenplay Studio</Link>
+        <footer className="pt-8 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <p className="text-xs font-mono text-white/30">
+            {company.name} · Powered by <Link href="/" className="text-white/50 hover:text-white transition-colors">Screenplay Studio</Link>
           </p>
         </footer>
       </div>

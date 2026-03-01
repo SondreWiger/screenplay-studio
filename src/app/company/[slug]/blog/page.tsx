@@ -81,7 +81,7 @@ export default function CompanyBlogPage() {
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-white">{company.name} Blog</h1>
+              <h1 className="text-2xl font-black text-white">{company.name} Blog</h1>
               {company.tagline && <p className="text-sm text-surface-400 mt-0.5">{company.tagline}</p>}
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function CompanyBlogPage() {
               <button
                 onClick={() => setSelectedTag(null)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  !selectedTag ? 'bg-brand-600 text-white' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
+                  !selectedTag ? 'bg-[#E54E15] text-white' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
                 }`}
               >
                 All
@@ -101,7 +101,7 @@ export default function CompanyBlogPage() {
                   key={tag}
                   onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                    selectedTag === tag ? 'bg-brand-600 text-white' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
+                    selectedTag === tag ? 'bg-[#E54E15] text-white' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
                   }`}
                 >
                   {tag}
@@ -135,7 +135,7 @@ export default function CompanyBlogPage() {
                         <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400">{tag}</span>
                       ))}
                     </div>
-                    <h2 className="text-xl font-bold text-white group-hover:text-brand-400 transition-colors">{post.title}</h2>
+                    <h2 className="text-xl font-black text-white group-hover:text-[#FF5F1F] transition-colors">{post.title}</h2>
                     {post.excerpt && <p className="text-sm text-surface-400 mt-2 line-clamp-2">{post.excerpt}</p>}
                     <div className="flex items-center gap-3 mt-4 text-xs text-surface-500">
                       <span>{(post as any).author?.display_name || 'Unknown'}</span>
@@ -158,7 +158,7 @@ export default function CompanyBlogPage() {
                   <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-24 h-16 rounded-lg object-cover shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-white group-hover:text-brand-400 transition-colors">{post.title}</h3>
+                  <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors">{post.title}</h3>
                   {post.excerpt && <p className="text-sm text-surface-400 mt-1 line-clamp-1">{post.excerpt}</p>}
                   <div className="flex items-center gap-3 mt-2 text-xs text-surface-500">
                     <span>{(post as any).author?.display_name || 'Unknown'}</span>

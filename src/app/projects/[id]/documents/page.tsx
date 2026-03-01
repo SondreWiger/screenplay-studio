@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import type { ProjectDocument, ProjectFolder, DocumentType } from '@/lib/types';
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_TYPE_ICONS } from '@/lib/types';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
 
 export default function DocumentsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -35,6 +36,10 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : undefined);
   const canEdit = currentUserRole && ['owner', 'admin', 'writer', 'editor'].includes(currentUserRole);
+
+  // ⏱ Work-time tracking
+  useWorkTimeTracker({ projectId: params.id, context: 'documents', disabled: !canEdit });
+
 
   // Fetch folders and documents
   useEffect(() => {
@@ -322,7 +327,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     <div className="flex h-full relative">
       {/* Mobile sidebar toggle */}
       <button onClick={() => setShowSidebar(!showSidebar)}
-        className="md:hidden fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-brand-600 text-white shadow-lg flex items-center justify-center">
+        className="md:hidden fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-[#E54E15] text-white shadow-lg flex items-center justify-center">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
         </svg>
@@ -348,10 +353,10 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
             </span>
             {canEdit && (
               <div className="flex items-center gap-1">
-                <button onClick={() => setShowNewFolder(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-white/10" title="New Folder">
+                <button onClick={() => setShowNewFolder(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="New Folder">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
                 </button>
-                <button onClick={() => setShowNewDoc(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-white/10" title="New Document">
+                <button onClick={() => setShowNewDoc(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="New Document">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 </button>
               </div>
@@ -380,7 +385,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
             <div key={folder.id} className="group">
               <button
                 onClick={() => setCurrentFolder(folder.id)}
-                className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
+                className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4 text-surface-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -403,7 +408,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 onClick={() => { setCurrentDoc(doc); setShowSidebar(false); }}
                 className={cn(
                   'w-full text-left px-2 py-1.5 rounded text-xs transition-colors flex items-center gap-2',
-                  currentDoc?.id === doc.id ? 'bg-brand-600/10 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+                  currentDoc?.id === doc.id ? 'bg-[#E54E15]/10 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
                 )}
               >
                 <span className="shrink-0 text-[9px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[doc.doc_type]}</span>
@@ -495,18 +500,18 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   )}
                   {/* Remote collaborator indicators */}
                   {remoteEditors.filter((e) => e.docId === currentDoc?.id).map((editor) => (
-                    <span key={editor.userId} className="flex items-center gap-1 text-[10px] text-brand-400 animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
+                    <span key={editor.userId} className="flex items-center gap-1 text-[10px] text-[#FF5F1F] animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF5F1F]" />
                       {editor.name} editing
                     </span>
                   ))}
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => handleExportPDF(currentDoc)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Export as PDF">
+                <button onClick={() => handleExportPDF(currentDoc)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Export as PDF">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                 </button>
-                <button onClick={() => handleExportText(currentDoc)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Export as TXT">
+                <button onClick={() => handleExportText(currentDoc)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Export as TXT">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 </button>
               </div>
@@ -594,7 +599,7 @@ function NewDocumentModal({ isOpen, onClose, onCreate }: {
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 rounded-lg border text-left text-sm transition-colors',
                   docType === key
-                    ? 'border-brand-500 bg-brand-500/10 text-brand-400'
+                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
                     : 'border-surface-700 text-surface-400 hover:border-surface-600 hover:text-white'
                 )}
               >

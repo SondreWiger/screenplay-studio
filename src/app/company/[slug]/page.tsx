@@ -240,7 +240,7 @@ export default function CompanyPage() {
       <header className="border-b border-surface-800 bg-surface-950">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="flex items-center gap-3 mb-6">
-            <Link href="/settings" className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
+            <Link href="/settings" className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/5 transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </Link>
             <span className="text-surface-500 text-sm">Settings</span>
@@ -249,12 +249,12 @@ export default function CompanyPage() {
             {company.logo_url ? (
               <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" />
             ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-white">{company.name}</h1>
+              <h1 className="text-2xl font-black text-white">{company.name}</h1>
               {company.tagline && <p className="text-sm text-surface-400 mt-0.5">{company.tagline}</p>}
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function CompanyPage() {
                 onClick={() => setTab(t.key)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   tab === t.key
-                    ? 'border-brand-500 text-white'
+                    ? 'border-[#FF5F1F] text-white'
                     : 'border-transparent text-surface-400 hover:text-white'
                 }`}
               >
@@ -292,7 +292,7 @@ export default function CompanyPage() {
               ].map((stat) => (
                 <Card key={stat.label} className="p-4 text-center">
                   <span className="text-2xl">{stat.icon}</span>
-                  <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                  <p className="text-2xl font-black text-white mt-1">{stat.value}</p>
                   <p className="text-xs text-surface-400">{stat.label}</p>
                 </Card>
               ))}
@@ -309,7 +309,7 @@ export default function CompanyPage() {
               {company.website && (
                 <Card className="p-4">
                   <p className="text-xs text-surface-500">Website</p>
-                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-brand-400 hover:underline">{company.website}</a>
+                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-[#FF5F1F] hover:underline">{company.website}</a>
                 </Card>
               )}
               {company.email && (
@@ -367,7 +367,7 @@ export default function CompanyPage() {
                     <p className="text-xs text-surface-400">{m.job_title || m.role} {m.department ? `· ${m.department}` : ''}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-                    m.role === 'owner' ? 'bg-yellow-500/20 text-yellow-400' :
+                    m.role === 'owner' ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' :
                     m.role === 'admin' ? 'bg-blue-500/20 text-blue-400' :
                     'bg-surface-700 text-surface-300'
                   }`}>{m.role}</span>
@@ -541,8 +541,8 @@ export default function CompanyPage() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-400">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[18px]' : 'left-0.5'}`} />
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-surface-900 shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[18px]' : 'left-0.5'}`} />
                     </div>
                   </button>
                 ))}
@@ -593,7 +593,7 @@ export default function CompanyPage() {
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as CompanyRole)}
-                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500"
+                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]"
                 >
                   <option value="admin">Admin — Full access</option>
                   <option value="manager">Manager — Manage projects & members</option>
@@ -640,7 +640,7 @@ export default function CompanyPage() {
                         type="checkbox"
                         checked={(teamPerms as Record<string, boolean>)[perm.key]}
                         onChange={(e) => setTeamPerms({ ...teamPerms, [perm.key]: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500"
+                        className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                       />
                       <span className="text-sm text-surface-300">{perm.label}</span>
                     </label>

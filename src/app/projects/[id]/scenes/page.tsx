@@ -147,7 +147,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Scene Breakdown</h1>
+          <h1 className="text-2xl font-black text-white">Scene Breakdown</h1>
           <p className="text-sm text-surface-400 mt-1">
             {completed}/{scenes.length} scenes completed &bull; {totalPages} pages total
             {setupNeeded > 0 && <span className="text-amber-400"> &bull; {setupNeeded} need setup</span>}
@@ -541,7 +541,7 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
             <p className="text-sm text-surface-400">
               {scriptElements.length} scene headings found. Select which to import.
             </p>
-            <button onClick={selectAll} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
+            <button onClick={selectAll} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors">
               {selected.size === scriptElements.filter(e => !linkedElementIds.has(e.id)).length ? 'Deselect All' : 'Select All'}
             </button>
           </div>
@@ -558,14 +558,14 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
                   className={cn(
                     'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors',
                     isLinked ? 'opacity-50 cursor-not-allowed bg-surface-800/30' :
-                    isSelected ? 'bg-brand-600/15 border border-brand-600/30' :
+                    isSelected ? 'bg-[#E54E15]/15 border border-[#E54E15]/30' :
                     'bg-surface-900 hover:bg-surface-800 border border-transparent'
                   )}
                 >
                   <div className={cn(
                     'w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
                     isLinked ? 'border-green-500 bg-green-500/20' :
-                    isSelected ? 'border-brand-500 bg-brand-500' : 'border-surface-600'
+                    isSelected ? 'border-[#FF5F1F] bg-[#FF5F1F]' : 'border-surface-600'
                   )}>
                     {(isLinked || isSelected) && (
                       <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

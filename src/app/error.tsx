@@ -20,7 +20,7 @@ export default function GlobalError({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
         </svg>
       </div>
-      <h1 className="text-2xl font-bold text-white">Something went wrong</h1>
+      <h1 className="text-2xl font-black text-white">Something went wrong</h1>
       <p className="mt-2 max-w-md text-sm text-surface-400">
         An unexpected error occurred. You can try again or go back to the dashboard.
       </p>
@@ -30,7 +30,7 @@ export default function GlobalError({
       <div className="mt-8 flex gap-3">
         <button
           onClick={reset}
-          className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-500"
+          className="rounded-lg bg-[#E54E15] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#FF5F1F]"
         >
           Try Again
         </button>

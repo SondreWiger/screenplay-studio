@@ -198,21 +198,30 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
 
               {/* Source Preview */}
               <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className={cn(
-                    'font-bold mb-1',
-                    isLargeInSpecial ? 'text-3xl' : 'text-xl',
-                    tally === 'program' ? 'text-red-400/60' :
-                    tally === 'preview' ? 'text-green-400/60' :
-                    'text-surface-600/60'
-                  )}>
-                    {src.short_name || src.name}
+                {src.connection_url && src.source_type === 'web_feed' ? (
+                  <iframe
+                    src={src.connection_url}
+                    className="w-full h-full border-0 pointer-events-none"
+                    title={src.name}
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <div className={cn(
+                      'font-bold mb-1',
+                      isLargeInSpecial ? 'text-3xl' : 'text-xl',
+                      tally === 'program' ? 'text-red-400/60' :
+                      tally === 'preview' ? 'text-green-400/60' :
+                      'text-surface-600/60'
+                    )}>
+                      {src.short_name || src.name}
+                    </div>
+                    <div className="text-[10px] text-surface-600">
+                      {src.source_type}
+                      {src.protocol && ` • ${src.protocol.toUpperCase()}`}
+                    </div>
                   </div>
-                  <div className="text-[10px] text-surface-600">
-                    {src.source_type}
-                    {src.protocol && ` • ${src.protocol.toUpperCase()}`}
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* UMD (Under Monitor Display) label */}

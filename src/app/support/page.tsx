@@ -17,8 +17,8 @@ import type { SupportTicket, TicketMessage, TicketCategory } from '@/lib/types';
 export default function SupportPageWrapper() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+      <div className="min-h-screen bg-[#070710] flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     }>
       <SupportPage />
@@ -29,13 +29,13 @@ export default function SupportPageWrapper() {
 const STATUS_COLORS: Record<string, string> = {
   open: 'text-green-600 bg-green-50 border-green-200',
   in_progress: 'text-blue-600 bg-blue-50 border-blue-200',
-  resolved: 'text-stone-600 bg-stone-100 border-stone-200',
-  closed: 'text-stone-400 bg-stone-50 border-stone-200',
+  resolved: 'text-white/60 bg-surface-800 border-white/10',
+  closed: 'text-white/30 bg-surface-900 border-white/10',
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: 'text-stone-500',
-  normal: 'text-stone-700',
+  low: 'text-white/40',
+  normal: 'text-white/70',
   high: 'text-amber-600',
   urgent: 'text-red-600',
 };
@@ -61,7 +61,13 @@ function SupportPage() {
     const type = searchParams.get('type');
     const id = searchParams.get('id');
     const subject = searchParams.get('subject');
-    if (type && id) {
+    const isBug = searchParams.get('bug');
+    if (isBug) {
+      setShowNewForm(true);
+      setNewCategory('bug');
+      setNewSubject('Bug Report');
+      setNewMessage('**What happened?**\n\n\n**Steps to reproduce:**\n1. \n2. \n\n**Expected behaviour:**\n\n\n**Browser / device:**\n');
+    } else if (type && id) {
       setShowNewForm(true);
       setNewCategory('content_report');
       setNewSubject(subject || `Report: ${type} ${id.slice(0, 8)}…`);
@@ -184,19 +190,19 @@ function SupportPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+      <div className="min-h-screen bg-[#070710] flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-stone-50 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-[#070710] flex flex-col items-center justify-center gap-4">
         <div className="text-5xl">🎫</div>
-        <h1 className="text-xl font-bold text-stone-800">Support Center</h1>
-        <p className="text-sm text-stone-500">Sign in to submit or view support tickets.</p>
-        <Link href="/auth/login?redirect=/support" className="px-5 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors">
+        <h1 className="text-xl font-black text-white/90">Support Center</h1>
+        <p className="text-sm text-white/40">Sign in to submit or view support tickets.</p>
+        <Link href="/auth/login?redirect=/support" className="px-5 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg hover:bg-[#CC4312] transition-colors">
           Sign In
         </Link>
       </div>
@@ -204,18 +210,18 @@ function SupportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#070710]">
       {/* Header */}
-      <header className="bg-white border-b border-stone-200">
+      <header className="bg-surface-900 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-lg font-bold text-stone-900">Screenplay Studio</Link>
-            <span className="text-stone-300">/</span>
-            <h1 className="text-lg font-semibold text-stone-700">Support</h1>
+            <Link href="/" className="text-lg font-bold text-white">Screenplay Studio</Link>
+            <span className="text-white/20">/</span>
+            <h1 className="text-lg font-semibold text-white/70">Support</h1>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
-            <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Community</Link>
+            <Link href="/dashboard" className="text-sm text-white/40 hover:text-white transition-colors">Dashboard</Link>
+            <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">Community</Link>
           </div>
         </div>
       </header>
@@ -226,7 +232,7 @@ function SupportPage() {
           <div className="w-80 shrink-0">
             <button
               onClick={() => { setShowNewForm(true); setSelectedTicket(null); }}
-              className="w-full px-4 py-3 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors mb-4 flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-xl transition-colors mb-4 flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               New Ticket
@@ -234,12 +240,12 @@ function SupportPage() {
 
             {loading ? (
               <div className="flex justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
               </div>
             ) : tickets.length === 0 ? (
               <div className="text-center py-10 px-4">
                 <div className="text-3xl mb-2">🎫</div>
-                <p className="text-sm text-stone-400">No tickets yet</p>
+                <p className="text-sm text-white/30">No tickets yet</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -249,20 +255,20 @@ function SupportPage() {
                     onClick={() => handleSelectTicket(ticket)}
                     className={`w-full text-left p-3 rounded-xl border transition-all ${
                       selectedTicket?.id === ticket.id
-                        ? 'border-brand-300 bg-brand-50 shadow-sm'
-                        : 'border-stone-200 bg-white hover:border-stone-300'
+                        ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10 shadow-sm'
+                        : 'border-white/10 bg-surface-900 hover:border-white/15'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-semibold text-stone-800 line-clamp-1">{ticket.subject}</p>
+                      <p className="text-sm font-semibold text-white/90 line-clamp-1">{ticket.subject}</p>
                       <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded border ${STATUS_COLORS[ticket.status]}`}>
                         {ticket.status.replace('_', ' ')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] text-stone-400 capitalize">{ticket.category.replace('_', ' ')}</span>
-                      <span className="text-[10px] text-stone-300">·</span>
-                      <span className="text-[10px] text-stone-400">{timeAgo(ticket.updated_at)}</span>
+                      <span className="text-[10px] text-white/30 capitalize">{ticket.category.replace('_', ' ')}</span>
+                      <span className="text-[10px] text-white/20">·</span>
+                      <span className="text-[10px] text-white/30">{timeAgo(ticket.updated_at)}</span>
                       {ticket.priority !== 'normal' && (
                         <span className={`text-[10px] font-semibold capitalize ${PRIORITY_COLORS[ticket.priority]}`}>
                           {ticket.priority}
@@ -279,26 +285,26 @@ function SupportPage() {
           <div className="flex-1 min-w-0">
             {showNewForm ? (
               /* New ticket form */
-              <div className="bg-white rounded-xl border border-stone-200 p-6">
-                <h2 className="text-lg font-bold text-stone-800 mb-6">New Support Ticket</h2>
+              <div className="bg-surface-900 rounded-xl border border-white/10 p-6">
+                <h2 className="text-lg font-bold text-white/90 mb-6">New Support Ticket</h2>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Subject</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Subject</label>
                     <input
                       value={newSubject}
                       onChange={(e) => setNewSubject(e.target.value)}
                       placeholder="Brief summary of your issue..."
-                      className="w-full px-4 py-2.5 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm placeholder:text-stone-400 focus:border-brand-400 focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Category</label>
                     <select
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value as TicketCategory)}
-                      className="w-full px-4 py-2.5 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm focus:border-brand-400 focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm focus:border-[#FF5F1F] focus:outline-none"
                     >
                       {TICKET_CATEGORY_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -307,13 +313,13 @@ function SupportPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Message</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Message</label>
                     <textarea
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Describe your issue in detail..."
                       rows={6}
-                      className="w-full px-4 py-2.5 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm placeholder:text-stone-400 focus:border-brand-400 focus:outline-none resize-none"
+                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none resize-none"
                     />
                   </div>
 
@@ -321,13 +327,13 @@ function SupportPage() {
                     <button
                       onClick={handleCreateTicket}
                       disabled={!newSubject.trim() || !newMessage.trim() || submitting}
-                      className="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50"
+                      className="px-6 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
                     >
                       {submitting ? 'Submitting...' : 'Submit Ticket'}
                     </button>
                     <button
                       onClick={() => setShowNewForm(false)}
-                      className="px-4 py-2.5 text-sm text-stone-500 hover:text-stone-700 transition-colors"
+                      className="px-4 py-2.5 text-sm text-white/40 hover:text-white/70 transition-colors"
                     >
                       Cancel
                     </button>
@@ -336,13 +342,13 @@ function SupportPage() {
               </div>
             ) : selectedTicket ? (
               /* Ticket conversation */
-              <div className="bg-white rounded-xl border border-stone-200 flex flex-col" style={{ height: 'calc(100vh - 180px)' }}>
+              <div className="bg-surface-900 rounded-xl border border-white/10 flex flex-col" style={{ height: 'calc(100vh - 180px)' }}>
                 {/* Ticket header */}
-                <div className="px-6 py-4 border-b border-stone-200">
+                <div className="px-6 py-4 border-b border-white/10">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h2 className="text-lg font-bold text-stone-800">{selectedTicket.subject}</h2>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-stone-400">
+                      <h2 className="text-lg font-bold text-white/90">{selectedTicket.subject}</h2>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-white/30">
                         <span className="capitalize">{selectedTicket.category.replace('_', ' ')}</span>
                         <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded border ${STATUS_COLORS[selectedTicket.status]}`}>
                           {selectedTicket.status.replace('_', ' ')}
@@ -353,7 +359,7 @@ function SupportPage() {
                         <span>{timeAgo(selectedTicket.created_at)}</span>
                       </div>
                       {selectedTicket.reported_content_type && (
-                        <p className="text-xs text-stone-400 mt-1">
+                        <p className="text-xs text-white/30 mt-1">
                           Reported: {selectedTicket.reported_content_type} · {selectedTicket.reported_content_id?.slice(0, 8)}…
                         </p>
                       )}
@@ -369,25 +375,25 @@ function SupportPage() {
                         {msg.profile?.avatar_url ? (
                           <img src={msg.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-500">
+                          <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-white/40">
                             {(msg.profile?.full_name || '?')[0].toUpperCase()}
                           </div>
                         )}
                       </div>
                       <div className={`max-w-[75%] ${msg.is_staff ? 'text-right' : ''}`}>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-semibold text-stone-700">
+                          <span className="text-xs font-semibold text-white/70">
                             {msg.profile?.full_name || 'User'}
                           </span>
                           {msg.is_staff && (
                             <span className="px-1.5 py-0.5 text-[9px] font-bold text-blue-700 bg-blue-50 rounded border border-blue-200">STAFF</span>
                           )}
-                          <span className="text-[10px] text-stone-400">{timeAgo(msg.created_at)}</span>
+                          <span className="text-[10px] text-white/30">{timeAgo(msg.created_at)}</span>
                         </div>
                         <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                           msg.is_staff
-                            ? 'bg-brand-50 text-brand-900 border border-brand-200'
-                            : 'bg-stone-100 text-stone-800'
+                            ? 'bg-[#FF5F1F]/10 text-[#CC4312] border border-[#FF5F1F]/30'
+                            : 'bg-surface-800 text-white/90'
                         }`}>
                           {msg.content}
                         </div>
@@ -395,25 +401,25 @@ function SupportPage() {
                     </div>
                   ))}
                   {messages.length === 0 && (
-                    <p className="text-sm text-stone-400 text-center py-8">No messages yet.</p>
+                    <p className="text-sm text-white/30 text-center py-8">No messages yet.</p>
                   )}
                 </div>
 
                 {/* Message input */}
                 {(selectedTicket.status === 'open' || selectedTicket.status === 'in_progress') && (
-                  <div className="px-6 py-4 border-t border-stone-200">
+                  <div className="px-6 py-4 border-t border-white/10">
                     <div className="flex gap-2">
                       <input
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm placeholder:text-stone-400 focus:border-brand-400 focus:outline-none"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none"
                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
                       />
                       <button
                         onClick={handleSendMessage}
                         disabled={!messageText.trim() || submitting}
-                        className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors disabled:opacity-50"
+                        className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
                       >
                         Send
                       </button>
@@ -421,8 +427,8 @@ function SupportPage() {
                   </div>
                 )}
                 {(selectedTicket.status === 'resolved' || selectedTicket.status === 'closed') && (
-                  <div className="px-6 py-3 border-t border-stone-200 bg-stone-50 text-center">
-                    <p className="text-xs text-stone-400">This ticket is {selectedTicket.status}.</p>
+                  <div className="px-6 py-3 border-t border-white/10 bg-surface-900 text-center">
+                    <p className="text-xs text-white/30">This ticket is {selectedTicket.status}.</p>
                   </div>
                 )}
               </div>
@@ -430,8 +436,8 @@ function SupportPage() {
               /* Empty state */
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="text-5xl mb-4">💬</div>
-                <h2 className="text-lg font-semibold text-stone-700 mb-2">Select a ticket or create a new one</h2>
-                <p className="text-sm text-stone-400 mb-6">We&apos;re here to help with any issues you encounter.</p>
+                <h2 className="text-lg font-semibold text-white/70 mb-2">Select a ticket or create a new one</h2>
+                <p className="text-sm text-white/30 mb-6">We&apos;re here to help with any issues you encounter.</p>
               </div>
             )}
           </div>
@@ -439,8 +445,8 @@ function SupportPage() {
       </div>
 
       {/* Footer */}
-      <footer className="max-w-6xl mx-auto px-4 py-6 mt-8 border-t border-stone-200 flex items-center justify-between">
-        <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">← Community</Link>
+      <footer className="max-w-6xl mx-auto px-4 py-6 mt-8 border-t border-white/10 flex items-center justify-between">
+        <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">← Community</Link>
         <SiteVersion light />
       </footer>
     </div>

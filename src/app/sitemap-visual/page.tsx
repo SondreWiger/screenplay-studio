@@ -279,7 +279,7 @@ export default function VisualSitemapPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <Link href="/" className="text-sm text-surface-400 hover:text-white transition-colors mb-4 inline-block">&larr; Back to home</Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Sitemap</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Sitemap</h1>
           <p className="text-surface-400 mt-2">Complete map of all {total} pages on Screenplay Studio.</p>
           <div className="flex flex-wrap gap-3 mt-4">
             {Object.entries(badgeColors).map(([key, val]) => (

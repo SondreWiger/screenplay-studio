@@ -161,7 +161,7 @@ export default function TeamLicensingPage() {
       <ToastContainer />
       <div className="max-w-4xl mx-auto px-4 py-8 md:py-16">
         <div className="flex items-center gap-3 mb-8">
-          <h1 className="text-2xl font-bold text-white">Team Licenses</h1>
+          <h1 className="text-2xl font-black text-white">Team Licenses</h1>
           <Badge variant="warning">20% Discount</Badge>
         </div>
 

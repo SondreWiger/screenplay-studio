@@ -159,7 +159,7 @@ export default function ChecklistPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -169,7 +169,7 @@ export default function ChecklistPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Upload Checklist</h1>
+          <h1 className="text-2xl font-black text-white">Upload Checklist</h1>
           <p className="text-surface-400 text-sm mt-1">
             Make sure everything is ready before publishing
           </p>
@@ -196,7 +196,7 @@ export default function ChecklistPage() {
           <div
             className={cn(
               'h-full transition-all duration-500',
-              progress === 100 ? 'bg-green-500' : 'bg-brand-500'
+              progress === 100 ? 'bg-green-500' : 'bg-[#FF5F1F]'
             )}
             style={{ width: `${progress}%` }}
           />
@@ -297,7 +297,7 @@ export default function ChecklistPage() {
       </div>
 
       {/* Tips */}
-      <div className="bg-gradient-to-r from-brand-500/10 to-orange-500/10 border border-brand-500/20 rounded-xl p-4">
+      <div className="bg-gradient-to-r from-brand-500/10 to-orange-500/10 border border-[#FF5F1F]/20 rounded-xl p-4">
         <h3 className="font-semibold text-white text-sm mb-2">💡 Publishing Tips</h3>
         <ul className="text-xs text-surface-400 space-y-1">
           <li>• Upload during your audience&apos;s peak hours (check your analytics)</li>

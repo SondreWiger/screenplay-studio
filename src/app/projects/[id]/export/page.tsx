@@ -253,7 +253,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Advanced Export</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white">Advanced Export</h1>
             <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">Branded, production-ready exports in multiple formats.</p>
@@ -289,7 +289,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={batchMode}
                     onChange={e => setBatchMode(e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   Batch export
                 </label>
@@ -313,7 +313,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       }}
                       className={`p-3 rounded-lg border text-center transition-all ${
                         isActive
-                          ? 'bg-brand-500/10 border-brand-500 text-brand-400'
+                          ? 'bg-[#FF5F1F]/10 border-[#FF5F1F] text-[#FF5F1F]'
                           : 'bg-surface-800/50 border-surface-700 text-surface-400 hover:border-surface-600'
                       }`}
                     >
@@ -333,7 +333,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   type="checkbox"
                   checked={config.includeCover}
                   onChange={e => updateConfig('includeCover', e.target.checked)}
-                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                 />
               </div>
               {config.includeCover && (
@@ -400,7 +400,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   type="checkbox"
                   checked={config.watermarkEnabled}
                   onChange={e => updateConfig('watermarkEnabled', e.target.checked)}
-                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                 />
               </div>
               {config.watermarkEnabled && (
@@ -423,7 +423,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.pageNumbers}
                     onChange={e => updateConfig('pageNumbers', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   Page numbers
                 </label>
@@ -432,7 +432,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.sceneNumbers}
                     onChange={e => updateConfig('sceneNumbers', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   Scene numbers
                 </label>
@@ -441,7 +441,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.includeTitle}
                     onChange={e => updateConfig('includeTitle', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   Title page
                 </label>
@@ -450,7 +450,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.footerEnabled}
                     onChange={e => updateConfig('footerEnabled', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   Footer
                 </label>
@@ -487,7 +487,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   type="checkbox"
                   checked={config.colorCoding}
                   onChange={e => updateConfig('colorCoding', e.target.checked)}
-                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                  className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                 />
               </div>
               {config.colorCoding && (
@@ -498,7 +498,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       onClick={() => updateConfig('revisionColor', c.value)}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-all ${
                         config.revisionColor === c.value
-                          ? 'border-brand-500 bg-brand-500/10'
+                          ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                           : 'border-surface-700 hover:border-surface-600'
                       }`}
                     >
@@ -531,29 +531,29 @@ export default function ExportPage({ params }: { params: { id: string } }) {
           <div className="space-y-4">
             <Card className="p-4 sticky top-4">
               <h3 className="text-sm font-medium text-white mb-3">Export Preview</h3>
-              <div className="aspect-[8.5/11] bg-white rounded-lg overflow-hidden relative mb-4">
-                <div className="p-4 text-[6px] leading-tight text-gray-800 font-mono" style={{ fontSize: `${config.fontSize * 0.5}px` }}>
+              <div className="aspect-[8.5/11] bg-surface-900 rounded-lg overflow-hidden relative mb-4">
+                <div className="p-4 text-[6px] leading-tight text-white/90 font-mono" style={{ fontSize: `${config.fontSize * 0.5}px` }}>
                   {config.includeCover && (
                     <div className="text-center mb-4">
                       {config.coverLogoUrl && <div className="mb-1 text-[4px] text-gray-400">[Logo]</div>}
-                      {config.coverCompanyName && <div className="text-[5px] text-gray-500 mb-1">{config.coverCompanyName}</div>}
+                      {config.coverCompanyName && <div className="text-[5px] text-white/40 mb-1">{config.coverCompanyName}</div>}
                       <div className="text-[8px] font-bold mb-0.5">{currentProject?.title || 'Script Title'}</div>
-                      {config.coverSubtitle && <div className="text-[5px] text-gray-500">{config.coverSubtitle}</div>}
+                      {config.coverSubtitle && <div className="text-[5px] text-white/40">{config.coverSubtitle}</div>}
                       {config.draftLabel && <div className="text-[4px] text-gray-400 mt-1">{config.draftLabel}</div>}
-                      <div className="border-b border-gray-200 mt-2 mb-2" />
+                      <div className="border-b border-white/10 mt-2 mb-2" />
                     </div>
                   )}
                   <div className="space-y-1">
                     {config.sceneNumbers && <span className="text-gray-400">1. </span>}
                     <span className="font-bold">INT. OFFICE - DAY</span>
-                    <p className="text-gray-600 ml-0">A modern office. Sunlight streams through floor-to-ceiling windows.</p>
-                    <p className="text-center font-bold text-gray-800 mt-1">ALEX</p>
-                    <p className="text-center text-gray-700">This is going to change everything.</p>
+                    <p className="text-white/60 ml-0">A modern office. Sunlight streams through floor-to-ceiling windows.</p>
+                    <p className="text-center font-bold text-white/90 mt-1">ALEX</p>
+                    <p className="text-center text-white/70">This is going to change everything.</p>
                   </div>
                 </div>
                 {config.watermarkEnabled && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none rotate-[-30deg]">
-                    <span className="text-red-200/30 text-2xl font-bold uppercase tracking-widest">{config.watermarkText}</span>
+                    <span className="text-red-200/30 text-2xl font-black uppercase tracking-widest">{config.watermarkText}</span>
                   </div>
                 )}
                 {config.pageNumbers && (

@@ -290,7 +290,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col gap-3 mb-5 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Storyboard</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white">Storyboard</h1>
             <p className="text-xs sm:text-sm text-surface-400 mt-1">
               {shots.length} shot{shots.length !== 1 ? 's' : ''} &middot; {withContent} with storyboard
             </p>
@@ -310,11 +310,11 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
       {/* Scene filter tabs */}
       {scenes.length > 0 && (
         <div className="flex gap-1.5 sm:gap-2 mb-5 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
-          <button onClick={() => setFilterScene('all')} className={cn('px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0', filterScene === 'all' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5')}>
+          <button onClick={() => setFilterScene('all')} className={cn('px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0', filterScene === 'all' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5')}>
             All Scenes
           </button>
           {scenes.map(s => (
-            <button key={s.id} onClick={() => setFilterScene(s.id)} className={cn('px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0', filterScene === s.id ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5')}>
+            <button key={s.id} onClick={() => setFilterScene(s.id)} className={cn('px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0', filterScene === s.id ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5')}>
               Scene {s.scene_number || '?'}
             </button>
           ))}
@@ -409,7 +409,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
           {/* Editor tabs */}
           <div className="flex gap-1 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
             {(['draw', 'image', 'refs', 'details'] as const).map(t => (
-              <button key={t} onClick={() => setEditorTab(t)} className={cn('px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0', editorTab === t ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5')}>
+              <button key={t} onClick={() => setEditorTab(t)} className={cn('px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0', editorTab === t ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5')}>
                 {t === 'draw' ? '✏️ Draw' : t === 'image' ? '🖼️ Image' : t === 'refs' ? '📎 Refs' : '📝 Notes'}
               </button>
             ))}
@@ -419,10 +419,10 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
           {editorTab === 'draw' && (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <button onClick={() => setDrawTool('pen')} className={cn('p-1.5 sm:p-2 rounded-lg transition-colors', drawTool === 'pen' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5')} title="Pen">
+                <button onClick={() => setDrawTool('pen')} className={cn('p-1.5 sm:p-2 rounded-lg transition-colors', drawTool === 'pen' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5')} title="Pen">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </button>
-                <button onClick={() => setDrawTool('eraser')} className={cn('p-1.5 sm:p-2 rounded-lg transition-colors', drawTool === 'eraser' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5')} title="Eraser">
+                <button onClick={() => setDrawTool('eraser')} className={cn('p-1.5 sm:p-2 rounded-lg transition-colors', drawTool === 'eraser' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5')} title="Eraser">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
                 <div className="h-5 w-px bg-surface-700 hidden sm:block" />

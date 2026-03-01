@@ -228,7 +228,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
 
     return (
       <div key={item.id}
-        className="flex items-center px-4 py-2.5 hover:bg-white/[0.02] border-b border-surface-800/30 last:border-0 group">
+        className="flex items-center px-4 py-2.5 hover:bg-surface-900/[0.02] border-b border-surface-800/30 last:border-0 group">
         {/* Description + vendor + due */}
         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => openEditor(item)}>
           <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Budget</h1>
+          <h1 className="text-2xl font-black text-white">Budget</h1>
           <p className="text-sm text-surface-400 mt-0.5">
             {items.length} line item{items.length !== 1 ? 's' : ''}
             {overdueCount > 0 && <span className="text-red-400 ml-2">· {overdueCount} overdue</span>}
@@ -356,7 +356,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <Card className="p-4">
           <p className="text-[11px] font-medium text-green-500/80 uppercase tracking-wider mb-1">Income</p>
-          <p className="text-xl font-bold text-green-400">{formatCurrency(totalIncomeActual)}</p>
+          <p className="text-xl font-black text-green-400">{formatCurrency(totalIncomeActual)}</p>
           <p className="text-xs text-surface-500 mt-1">
             {incomeItems.length} source{incomeItems.length !== 1 ? 's' : ''}
             {totalIncomeEstimated > 0 && totalIncomeEstimated !== totalIncomeActual && (
@@ -366,7 +366,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
         </Card>
         <Card className="p-4">
           <p className="text-[11px] font-medium text-red-500/80 uppercase tracking-wider mb-1">Expenses</p>
-          <p className="text-xl font-bold text-white">{formatCurrency(totalExpenseActual)}</p>
+          <p className="text-xl font-black text-white">{formatCurrency(totalExpenseActual)}</p>
           {totalExpenseEstimated > 0 && (
             <Progress value={Math.min(budgetUsedPct, 100)} max={100} showPercent={false}
               color={budgetUsedPct > 100 ? '#ef4444' : budgetUsedPct > 80 ? '#f59e0b' : '#10b981'} className="mt-2" />
@@ -374,7 +374,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
         </Card>
         <Card className="p-4">
           <p className="text-[11px] font-medium text-surface-500 uppercase tracking-wider mb-1">Net Balance</p>
-          <p className={cn('text-xl font-bold', netActual >= 0 ? 'text-green-400' : 'text-red-400')}>
+          <p className={cn('text-xl font-black', netActual >= 0 ? 'text-green-400' : 'text-red-400')}>
             {netActual >= 0 ? '+' : ''}{formatCurrency(netActual)}
           </p>
           <p className="text-xs text-surface-500 mt-1">
@@ -483,7 +483,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
         ) : (
           <div className="text-center py-16">
             <p className="text-sm text-surface-400">No items match the current filters.</p>
-            <button onClick={() => { setFilterCategory('all'); setFilterPaid('all'); setViewMode('all'); }} className="text-xs text-brand-400 hover:text-brand-300 mt-2">
+            <button onClick={() => { setFilterCategory('all'); setFilterPaid('all'); setViewMode('all'); }} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] mt-2">
               Clear filters
             </button>
           </div>
@@ -495,7 +495,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
             <div className="bg-surface-900 rounded-xl border border-green-500/20 overflow-hidden">
               {/* Income header */}
               <button onClick={() => toggleCat('__income__')}
-                className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
+                className="w-full flex items-center justify-between p-4 hover:bg-surface-900/[0.02] transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-green-500/10">
                     💵
@@ -569,7 +569,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
               <div key={group.value} className="bg-surface-900 rounded-xl border border-surface-800 overflow-hidden">
                 {/* Category header */}
                 <button onClick={() => toggleCat(group.value)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
+                  className="w-full flex items-center justify-between p-4 hover:bg-surface-900/[0.02] transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ backgroundColor: catMeta.color + '20' }}>
                       {catMeta.icon}
@@ -882,7 +882,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
               <select
                 value={form.category}
                 onChange={(e) => updateField('category', e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white focus:border-brand-500 focus:outline-none"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white focus:border-[#FF5F1F] focus:outline-none"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
@@ -905,7 +905,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
               type="checkbox"
               checked={useUnitCost}
               onChange={(e) => setUseUnitCost(e.target.checked)}
-              className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500"
+              className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
             />
             <span className="text-xs text-surface-400">Use quantity × unit cost</span>
           </label>
@@ -994,7 +994,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
             type="checkbox"
             checked={form.is_paid}
             onChange={(e) => updateField('is_paid', e.target.checked)}
-            className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500"
+            className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
           />
           <span className="text-sm text-surface-300">{form.is_income ? 'Funds Received' : 'Marked as Paid'}</span>
         </label>

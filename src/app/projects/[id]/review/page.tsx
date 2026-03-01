@@ -637,7 +637,7 @@ export default function ClientReviewPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">👁️</div>
-          <h2 className="text-xl font-bold text-white mb-2">Client Review Portal</h2>
+          <h2 className="text-xl font-black text-white mb-2">Client Review Portal</h2>
           <p className="text-sm text-surface-400 mb-6">
             Share scripts with clients for feedback and approval — without needing them to create an
             account.
@@ -656,7 +656,7 @@ export default function ClientReviewPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Client Review</h1>
+          <h1 className="text-2xl font-black text-white">Client Review</h1>
           <p className="text-sm text-surface-400 mt-1">
             Share project materials and manage reviewer feedback
           </p>
@@ -697,7 +697,7 @@ export default function ClientReviewPage() {
               <span className="text-xl">{s.icon}</span>
               <div>
                 <p
-                  className={`text-xl font-bold ${
+                  className={`text-xl font-black ${
                     s.highlight ? 'text-amber-400' : 'text-white'
                   }`}
                 >
@@ -724,7 +724,7 @@ export default function ClientReviewPage() {
           >
             {tab === 'links' ? 'Share Links' : 'Review Comments'}
             {tab === 'comments' && stats.unresolvedComments > 0 && (
-              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-bold">
+              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-[10px] font-bold">
                 {stats.unresolvedComments}
               </span>
             )}

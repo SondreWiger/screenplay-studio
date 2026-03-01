@@ -2,326 +2,524 @@ import Link from 'next/link';
 import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
+const ORANGE = '#FF5F1F';
+
+/** Thin horizontal rule — shared across all sections */
+function Rule() {
+  return (
+    <div className="max-w-screen-xl mx-auto px-6">
+      <div className="h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+    </div>
+  );
+}
+
+/** Consistent micro-label: tiny all-caps mono */
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+      {children}
+    </span>
+  );
+}
+
+/** Page-level eyebrow row: orange tick + label */
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-4 h-px shrink-0" style={{ background: ORANGE }} />
+      <Label>{children}</Label>
+    </div>
+  );
+}
+
 export default async function LandingPage() {
   const supabase = createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   const isLoggedIn = !!user;
 
   return (
-    <div className="min-h-screen bg-surface-950 relative overflow-hidden">
-      {/* Subtle grid pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      </div>
+    <div className="min-h-screen relative" style={{ backgroundColor: '#070710', color: '#fff' }}>
 
-      {/* Support banner */}
-      <div className="relative z-10 flex items-center justify-center px-4 py-2.5 bg-surface-900/60 border-b border-surface-800/50 backdrop-blur-sm">
-        <p className="text-xs text-surface-400">
-          Built &amp; run for free by a solo developer.{' '}
-          <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
-            Support the project &#x2764;
-          </a>
-        </p>
-      </div>
+      {/* ─── dot-grid texture ──────────────────────────────── */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          opacity: 0.032,
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
 
-      {/* Nav */}
-      <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
-            </svg>
+      {/* ─── SYSTEM BAR ────────────────────────────────────── */}
+      <div
+        className="relative z-10 border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+      >
+        <div className="max-w-screen-xl mx-auto px-6 h-8 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            {/* live indicator */}
+            <div className="flex items-center gap-1.5">
+              <div
+                className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
+                style={{ background: ORANGE }}
+              />
+              <Label>SCREENPLAY STUDIO — STYLESHEET v2.0</Label>
+            </div>
           </div>
-          <span className="text-xl font-bold text-white">Screenplay Studio</span>
+          <div className="hidden md:flex items-center gap-5">
+            <Label>EST. 2024</Label>
+            <span className="text-white/10">·</span>
+            <Label>ISSUE 001</Label>
+            <span className="text-white/10">·</span>
+            <SiteVersion />
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="/blog" className="px-4 py-2 text-sm font-medium text-surface-300 hover:text-white transition-colors">
-            Blog
-          </Link>
-          <Link href="/community" className="px-4 py-2 text-sm font-medium text-surface-300 hover:text-white transition-colors">
-            Community
-          </Link>
+      </div>
+
+      {/* ─── NAV ───────────────────────────────────────────── */}
+      <nav
+        className="relative z-10 max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+      >
+        {/* Logo */}
+        <Link href="/" className="group flex items-center gap-2.5">
+          <div
+            className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0 transition-transform duration-150 group-hover:scale-95"
+            style={{ background: ORANGE }}
+          >
+            SS
+          </div>
+          <div className="leading-none">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/80 leading-none">SCREENPLAY</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] leading-none" style={{ color: ORANGE }}>STUDIO</p>
+          </div>
+        </Link>
+
+        {/* Links */}
+        <div className="flex items-center">
+          {[['Blog', '/blog'], ['Community', '/community']].map(([label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className="relative px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/30 hover:text-white/70 transition-colors duration-150 group"
+            >
+              {label}
+              {/* underline slides in from left on hover */}
+              <span
+                className="absolute bottom-1.5 left-3.5 right-3.5 h-px origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                style={{ background: 'rgba(255,255,255,0.18)' }}
+              />
+            </Link>
+          ))}
+
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-lg shadow-brand-600/25"
+              className="group ml-3 inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-150 hover:-translate-y-px"
+              style={{ background: ORANGE }}
             >
               Dashboard
+              <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
             </Link>
           ) : (
             <>
-              <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-surface-300 hover:text-white transition-colors">
+              <Link
+                href="/auth/login"
+                className="relative px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/30 hover:text-white/70 transition-colors duration-150 group"
+              >
                 Sign In
+                <span
+                  className="absolute bottom-1.5 left-3.5 right-3.5 h-px origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                  style={{ background: 'rgba(255,255,255,0.18)' }}
+                />
               </Link>
               <Link
                 href="/auth/register"
-                className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-lg shadow-brand-600/25"
+                className="group ml-3 inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-150 hover:-translate-y-px"
+                style={{ background: ORANGE }}
               >
-                Get Started
+                Start Free
+                <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
               </Link>
             </>
           )}
         </div>
       </nav>
 
-      {/* Hero */}
-      <main className="relative z-10 max-w-7xl mx-auto px-8 pt-16 pb-32">
-        <div className="text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-900 border border-surface-800 text-surface-300 text-sm font-medium mb-8">
-            <span className="w-1.5 h-1.5 bg-brand-500 rounded-full" />
-            Open-source screenwriting suite
-          </div>
+      <main className="relative z-10">
 
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.9]">
-            <span className="text-white">Write.</span>
-            <br />
-            <span className="text-white">Plan. </span>
-            <span className="text-brand-400">Produce.</span>
+        {/* ─── HERO ──────────────────────────────────────────── */}
+        <section className="max-w-screen-xl mx-auto px-6 pt-16">
+          <Eyebrow>Professional Film Production Suite — No Limits</Eyebrow>
+
+          {/* Giant display type */}
+          <h1
+            className="select-none"
+            style={{
+              fontSize: 'clamp(5rem, 18vw, 16rem)',
+              fontWeight: 900,
+              lineHeight: 0.86,
+              letterSpacing: '-0.04em',
+              color: '#fff',
+            }}
+          >
+            WRITE.<br />
+            PLAN.<br />
+            <span style={{ color: ORANGE }}>PRODUCE.</span>
           </h1>
 
-          <p className="mt-8 text-lg md:text-xl text-surface-400 max-w-2xl mx-auto leading-relaxed">
-            Screenplay Studio is a free, all-in-one workspace for screenwriters and
-            filmmakers. Format scripts, break down scenes, plan shots, track budgets
-            and schedules — no account limits, no paywalls.
-          </p>
-
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href={isLoggedIn ? '/dashboard' : '/auth/register'}
-              className="px-8 py-4 text-base font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors">
-              <span>{isLoggedIn ? 'Go to Dashboard' : 'Start Writing — Free'}</span>
-            </Link>
-            <Link
-              href="#features"
-              className="px-8 py-4 text-base font-medium text-surface-300 border border-surface-700 hover:border-surface-500 hover:text-white rounded-xl transition-all hover:-translate-y-0.5"
-            >
-              Explore Features
-            </Link>
+          {/* ── orange ticker bar — sits flush below the headline ── */}
+          <div
+            className="mt-8 overflow-hidden"
+            style={{ background: ORANGE, height: '2.6rem' }}
+          >
+            <div className="flex items-center h-full">
+              <div className="animate-marquee flex items-center shrink-0 whitespace-nowrap">
+                {[
+                  'SCREENPLAY EDITOR','SCENE BREAKDOWN','SHOT LISTS','CHARACTERS',
+                  'ARC PLANNER','PRODUCTION SCHEDULE','BUDGET TRACKING',
+                  'TEAM COLLABORATION','SUBMISSIONS','CORKBOARD',
+                  'SCREENPLAY EDITOR','SCENE BREAKDOWN','SHOT LISTS','CHARACTERS',
+                  'ARC PLANNER','PRODUCTION SCHEDULE','BUDGET TRACKING',
+                  'TEAM COLLABORATION','SUBMISSIONS','CORKBOARD',
+                ].map((t, i) => (
+                  <span
+                    key={i}
+                    className="text-[9px] font-black uppercase tracking-[0.22em] text-black/40 px-5"
+                  >
+                    {t}<span className="ml-5 text-black/20">·</span>
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Tool badges */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-            {['Script Editor', 'Scene Breakdown', 'Shot Lists', 'Scheduling', 'Budget', 'Team', 'Characters', 'Locations'].map((t) => (
-              <span key={t} className="px-3 py-1.5 text-[11px] font-medium text-surface-400 bg-surface-900 border border-surface-800 rounded-full">
+          {/* coordinate annotation */}
+          <div className="hidden md:flex justify-end mt-2">
+            <Label>37°46′N · 122°25′W / PRODUCTION</Label>
+          </div>
+
+          {/* Hero sub-row */}
+          <div
+            className="mt-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pb-14 border-b"
+            style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+          >
+            <div>
+              <p className="text-sm text-white/40 max-w-[22rem] leading-loose">
+                All-in-one workspace for writers &amp; filmmakers.
+              </p>
+              <p className="text-sm text-white/20 max-w-[22rem] leading-loose">
+                No limits. No paywalls. No subscriptions.
+              </p>
+            </div>
+            <div className="shrink-0 flex flex-col items-start md:items-end gap-2">
+              <Link
+                href={isLoggedIn ? '/dashboard' : '/auth/register'}
+                className="group inline-flex items-center gap-2.5 px-8 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-150 hover:-translate-y-0.5"
+                style={{ background: ORANGE, boxShadow: `0 8px 40px ${ORANGE}28` }}
+              >
+                {isLoggedIn ? 'Open Dashboard' : 'Start Writing — Free'}
+                <span className="transition-transform duration-150 group-hover:translate-x-1">→</span>
+              </Link>
+              <Label>No credit card required</Label>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── STATS ─────────────────────────────────────────── */}
+        <section className="max-w-screen-xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+            {[
+              { num: '100%', label: 'Free To Use',    sub: 'No payment, ever',      live: false },
+              { num: 'LIVE', label: 'Collaboration',  sub: 'Real-time multi-user',  live: true  },
+              { num: '40+',  label: 'Tools Included', sub: 'Script to post',        live: false },
+              { num: '∞',    label: 'Projects',       sub: 'Unlimited everything',  live: false },
+            ].map((s) => (
+              <div
+                key={s.label}
+                className="group py-9 px-6 first:pl-0 last:pr-0 hover:bg-white/[0.018] transition-colors duration-200 cursor-default"
+                style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  {s.live && (
+                    <div
+                      className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
+                      style={{ background: ORANGE }}
+                    />
+                  )}
+                  <span
+                    className="font-black tracking-tight text-white leading-none transition-transform duration-200 group-hover:scale-[1.04] origin-left inline-block"
+                    style={{ fontSize: 'clamp(1.8rem, 4vw, 3.25rem)' }}
+                  >
+                    {s.num}
+                  </span>
+                </div>
+                <p
+                  className="text-[9px] font-black uppercase tracking-[0.22em] mb-1"
+                  style={{ color: ORANGE }}
+                >
+                  {s.label}
+                </p>
+                <p className="text-[10px] text-white/20">{s.sub}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Rule />
+
+        {/* ─── TOOL TAGS ─────────────────────────────────────── */}
+        <section className="max-w-screen-xl mx-auto px-6 py-6">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Label>Includes</Label>
+            <span className="text-white/15 mx-1">—</span>
+            {[
+              'Script Editor','Scene Breakdown','Shot Lists','Scheduling',
+              'Budget','Characters','Locations','Corkboard','Arc Planner',
+              'Beat Sheet','Submissions','Revision History','Team Access',
+              'AI Analysis','Mind Map','Export / PDF',
+            ].map((t) => (
+              <span
+                key={t}
+                className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/30 border
+                  transition-all duration-150 cursor-default
+                  hover:text-[#FF5F1F] hover:border-[rgba(255,95,31,0.35)] hover:bg-[rgba(255,95,31,0.05)]"
+                style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+              >
                 {t}
               </span>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Script Preview Mock — floating editor */}
-        <div className="mt-20 relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-surface-950 via-transparent to-transparent z-10 pointer-events-none" />
-          <div className="max-w-4xl mx-auto rounded-2xl border border-surface-700/50 bg-surface-900 overflow-hidden">
-            {/* Window chrome */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-surface-800/70 bg-surface-900">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                <div className="w-3 h-3 rounded-full bg-green-500/80" />
-              </div>
-              <div className="flex-1 flex items-center justify-center gap-2">
-                <svg className="w-3.5 h-3.5 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span className="text-xs text-surface-500 font-medium">THE_MIDNIGHT_HOUR.screenplay</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-subtle" />
-                <span className="text-[10px] text-surface-500">Auto-saved</span>
-              </div>
-            </div>
-            {/* Script content */}
-            <div className="p-8 font-screenplay text-sm leading-relaxed bg-white/[0.02]">
-              <p className="uppercase font-bold text-brand-400 mb-4 tracking-wider">FADE IN:</p>
-              <p className="uppercase font-bold text-blue-400 mb-3">EXT. CITY SKYLINE - NIGHT</p>
-              <p className="text-surface-300 mb-4 leading-relaxed">
-                Rain cascades down glass towers. The city breathes in neon.<br />
-                A FIGURE moves through the crowd — purposeful, alone.
-              </p>
-              <p className="uppercase text-center text-orange-400 mb-1 ml-32 font-semibold">DETECTIVE MARLOW</p>
-              <p className="text-center text-surface-500 mb-0.5 ml-20 italic text-xs">(into phone, urgent)</p>
-              <p className="text-surface-300 ml-16 mr-24 mb-4">
-                You said midnight. It&apos;s midnight. Where are you?
-              </p>
-              <p className="text-surface-300 mb-4 leading-relaxed">
-                A beat. Only rain. Then — a gunshot echoes across the water.
-              </p>
-              <p className="uppercase font-bold text-blue-400 mb-3">INT. WAREHOUSE - CONTINUOUS</p>
-              <p className="text-surface-300 leading-relaxed">
-                Darkness. The sound of dripping water. A flashlight beam cuts through<br />
-                the void, revealing...
-              </p>
-            </div>
-          </div>
-        </div>
+        <Rule />
 
-        {/* Stats strip */}
-        <div className="mt-24 max-w-3xl mx-auto grid grid-cols-3 gap-8 text-center">
-          <div>
-            <p className="text-3xl font-bold text-white">100%</p>
-            <p className="text-sm text-surface-500 mt-1">Free to use</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-white">Real-time</p>
-            <p className="text-sm text-surface-500 mt-1">Collaboration</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-white">Full suite</p>
-            <p className="text-sm text-surface-500 mt-1">Pre to post production</p>
-          </div>
-        </div>
+        {/* ─── FEATURES ──────────────────────────────────────── */}
+        <section className="max-w-screen-xl mx-auto px-6 py-24" id="features">
 
-        {/* Features */}
-        <div id="features" className="mt-40">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white">The full production toolkit</h2>
-            <p className="mt-4 text-lg text-surface-400">Everything screenwriters and filmmakers need, in one place</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                title: 'Screenplay Editor',
-                desc: 'Industry-standard Courier Prime formatting. Scene headings, action, dialogue, parentheticals, transitions — all auto-formatted as you type.',
-                iconPath: 'M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10',
-              },
-              {
-                title: 'Real-time Collaboration',
-                desc: 'Multiple writers working simultaneously. See cursors, track presence, and collaborate with inline comments and suggestions.',
-                iconPath: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
-              },
-              {
-                title: 'Character Bible',
-                desc: 'Deep character profiles with backstory, arcs, relationships, personality traits, voice notes, and casting information.',
-                iconPath: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z',
-              },
-              {
-                title: 'Location Scouting',
-                desc: 'Track locations with photos, contacts, permits, availability, cost per day, parking, power, and sound considerations.',
-                iconPath: 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z',
-              },
-              {
-                title: 'Scene Breakdown',
-                desc: 'Full breakdown sheets with props, costumes, special effects, stunts, vehicles, music cues, and VFX requirements.',
-                iconPath: 'M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4',
-              },
-              {
-                title: 'Shot List & Storyboard',
-                desc: 'Plan every shot with type, movement, lens, lighting, and sound notes. Attach storyboard frames and reference images.',
-                iconPath: 'M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316zM16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z',
-              },
-              {
-                title: 'Production Schedule',
-                desc: 'Calendar-based scheduling with shooting days, rehearsals, location scouts, call/wrap times, and weather backup plans.',
-                iconPath: 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5',
-              },
-              {
-                title: 'Ideas Board',
-                desc: 'Kanban-style brainstorming board. Capture ideas, develop them, organize by category and priority.',
-                iconPath: 'M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18',
-              },
-              {
-                title: 'Budget Tracking',
-                desc: 'Full production budget with categories, estimated vs actual costs, vendor tracking, and payment status.',
-                iconPath: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-              },
-              {
-                title: 'Revision Tracking',
-                desc: 'Industry-standard colored revision pages. Track every change with full revision history and snapshot comparisons.',
-                iconPath: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z',
-              },
-              {
-                title: 'Team Management',
-                desc: 'Invite crew members with role-based access. Writers, editors, viewers — everyone sees exactly what they need.',
-                iconPath: 'M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z',
-              },
-              {
-                title: 'Export & Print',
-                desc: 'Export to industry-standard PDF format. Print-ready screenplay pages with proper margins and pagination.',
-                iconPath: 'M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5',
-              },
-            ].map((feature) => (
-              <div
-                key={feature.title}
-                className="group rounded-2xl border border-surface-800 bg-surface-900/30 p-6 hover:border-surface-600 hover:bg-surface-800/30 transition-all duration-200"
+          <div className="flex items-end justify-between mb-16">
+            <div>
+              <Eyebrow>Feature Set · Catalogue Nº001</Eyebrow>
+              <h2
+                className="font-black text-white"
+                style={{ fontSize: 'clamp(2.5rem, 7vw, 6rem)', letterSpacing: '-0.03em', lineHeight: 0.92 }}
               >
-                <div className="w-10 h-10 rounded-lg bg-surface-800 flex items-center justify-center mb-4 text-surface-300 group-hover:text-white transition-colors">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={feature.iconPath} />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-sm text-surface-400 leading-relaxed">{feature.desc}</p>
-              </div>
-            ))}
+                EVERY TOOL<br />YOU NEED.
+              </h2>
+            </div>
+            <div className="hidden md:flex flex-col items-end gap-1.5">
+              <Label>Step Nº01 of 01</Label>
+              <Label>2026 · Production</Label>
+            </div>
           </div>
-        </div>
 
-        {/* CTA */}
-        <div className="mt-40 text-center">
-          <div className="max-w-2xl mx-auto rounded-3xl border border-surface-700 bg-surface-900 p-12">
-            <h2 className="text-3xl font-bold text-white">{isLoggedIn ? 'Welcome back!' : 'Ready to start writing?'}</h2>
-            <p className="mt-4 text-surface-400">
-              {isLoggedIn ? 'Continue working on your projects.' : 'Join writers and filmmakers already using Screenplay Studio.'}
-            </p>
-            <Link
-              href={isLoggedIn ? '/dashboard' : '/auth/register'}
-              className="inline-block mt-8 px-8 py-4 text-base font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors"
-            >
-              {isLoggedIn ? 'Go to Dashboard' : 'Create Your First Project'}
-            </Link>
+          {/* Grid with corner marks */}
+          <div className="relative">
+            {/* corner crosshairs */}
+            {[
+              'absolute -top-3 -left-3',
+              'absolute -top-3 -right-3 rotate-90',
+            ].map((cls, i) => (
+              <svg key={i} className={`${cls} w-5 h-5 pointer-events-none`} style={{ color: 'rgba(255,255,255,0.12)' }} viewBox="0 0 20 20" fill="none">
+                <path d="M6 1H1v5M14 1h5v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              </svg>
+            ))}
+            {[
+              'absolute -bottom-3 -left-3 -rotate-90',
+              'absolute -bottom-3 -right-3 rotate-180',
+            ].map((cls, i) => (
+              <svg key={i} className={`${cls} w-5 h-5 pointer-events-none`} style={{ color: 'rgba(255,255,255,0.12)' }} viewBox="0 0 20 20" fill="none">
+                <path d="M6 1H1v5M14 1h5v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              </svg>
+            ))}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+              style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+              {[
+                { n: '01', title: 'SCREENPLAY EDITOR',       desc: 'Industry-standard Courier Prime. Auto-formats scene headings, action, dialogue, parentheticals, and transitions as you type.' },
+                { n: '02', title: 'REAL-TIME COLLABORATION', desc: 'Multiple writers working simultaneously. Live cursors, presence tracking, and inline comments.' },
+                { n: '03', title: 'CHARACTER BIBLE',         desc: 'Deep profiles — backstory, arcs, relationships, personality traits, voice notes, and casting.' },
+                { n: '04', title: 'SCENE BREAKDOWN',         desc: 'Full breakdown sheets — props, costumes, SFX, stunts, vehicles, music cues, VFX requirements.' },
+                { n: '05', title: 'SHOT LIST + STORYBOARD',  desc: 'Every shot with type, movement, lens, lighting, and sound. Attach storyboard frames and references.' },
+                { n: '06', title: 'CORKBOARD',               desc: 'Visual scene cards with drag-and-drop reordering. Color-code, annotate, rearrange structure.' },
+                { n: '07', title: 'ARC PLANNER',             desc: 'Map story structure across acts. Character arcs, plot threads, thematic beats — fully visual.' },
+                { n: '08', title: 'BEAT SHEET',              desc: 'Link screenplay scenes to beat entries. Blake Snyder, Syd Field, or your own structure.' },
+                { n: '09', title: 'PRODUCTION SCHEDULE',     desc: 'Calendar scheduling with shooting days, call/wrap times, rehearsals, and location scouts.' },
+                { n: '10', title: 'BUDGET TRACKING',         desc: 'Full production budget — categories, estimated vs actual, vendor tracking, payment status.' },
+                { n: '11', title: 'SUBMISSION TRACKER',      desc: 'Track script submissions to agents, managers, producers, festivals. Status and follow-ups.' },
+                { n: '12', title: 'TEAM + ROLES',            desc: 'Invite crew with role-based access. Writers, editors, viewers — everyone sees what they need.' },
+              ].map((f, i) => (
+                <div
+                  key={f.n}
+                  className="group relative p-7 transition-colors duration-150 hover:bg-white/[0.025] cursor-default overflow-hidden"
+                  style={{
+                    borderRight: (i + 1) % 3 !== 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    borderBottom: i < 9 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                  }}
+                >
+                  {/* left accent bar slides in on hover */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-[2px] origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-250"
+                    style={{ background: ORANGE }}
+                  />
+                  <div className="flex items-start gap-4">
+                    <span
+                      className="text-[10px] font-black font-mono shrink-0 pt-0.5 transition-colors duration-150 group-hover:opacity-100 opacity-40"
+                      style={{ color: ORANGE }}
+                    >
+                      {f.n}
+                    </span>
+                    <div>
+                      <h3
+                        className="text-[10px] font-black uppercase leading-tight mb-2 text-white/50 group-hover:text-white transition-colors duration-150"
+                        style={{ letterSpacing: '0.1em' }}
+                      >
+                        {f.title}
+                      </h3>
+                      <p className="text-[11px] text-white/22 leading-relaxed group-hover:text-white/40 transition-colors duration-150">
+                        {f.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
+
+        <Rule />
+
+        {/* ─── CTA ───────────────────────────────────────────── */}
+        <section className="max-w-screen-xl mx-auto px-6 py-24">
+          <div className="relative overflow-hidden" style={{ background: ORANGE }}>
+            {/* dot grid overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                opacity: 0.07,
+                backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
+                backgroundSize: '14px 14px',
+              }}
+            />
+            {/* corner marks */}
+            <svg className="absolute top-4 left-4 w-5 h-5 opacity-20 pointer-events-none" viewBox="0 0 20 20" fill="none">
+              <path d="M6 1H1v5M14 1h5v5" stroke="#000" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <svg className="absolute bottom-4 right-4 w-5 h-5 opacity-20 pointer-events-none rotate-180" viewBox="0 0 20 20" fill="none">
+              <path d="M6 1H1v5M14 1h5v5" stroke="#000" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+
+            <div className="relative z-10 p-12 md:p-20 flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-4 h-px bg-black/25" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.28em] text-black/35">Ready · Start Now</span>
+                </div>
+                <h2
+                  className="font-black text-black"
+                  style={{ fontSize: 'clamp(3rem, 9vw, 7.5rem)', letterSpacing: '-0.035em', lineHeight: 0.88 }}
+                >
+                  {isLoggedIn
+                    ? <><span>WELCOME</span><br /><span>BACK.</span></>
+                    : <><span>YOUR</span><br /><span>STORY</span><br /><span>STARTS</span><br /><span>HERE.</span></>
+                  }
+                </h2>
+              </div>
+              <div className="shrink-0 flex flex-col items-start md:items-end gap-3">
+                <Link
+                  href={isLoggedIn ? '/dashboard' : '/auth/register'}
+                  className="group inline-flex items-center gap-2.5 px-10 py-5 text-[10px] font-black uppercase tracking-[0.16em] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-2xl"
+                  style={{ background: '#000', color: '#fff' }}
+                >
+                  {isLoggedIn ? 'Open Dashboard' : 'Create Free Account'}
+                  <span className="transition-transform duration-150 group-hover:translate-x-1">→</span>
+                </Link>
+                {!isLoggedIn && (
+                  <span className="text-[9px] font-mono text-black/30 tracking-wider">
+                    100% FREE · NO CREDIT CARD
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Rule />
+
+        {/* ─── SUPPORT ───────────────────────────────────────── */}
+        <section className="max-w-screen-xl mx-auto px-6 py-20">
+          <div className="grid md:grid-cols-2 gap-16 items-start">
+            <div>
+              <Eyebrow>About This Project</Eyebrow>
+              <h2
+                className="font-black text-white"
+                style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', letterSpacing: '-0.02em', lineHeight: 0.95 }}
+              >
+                BUILT BY A<br />SOLO DEVELOPER.
+              </h2>
+            </div>
+            <div className="flex flex-col justify-end gap-5">
+              <p className="text-sm text-white/35 leading-[1.85]">
+                Screenplay Studio is self-funded, built and maintained by one person.
+                Completely free — no subscriptions, no paywalls, no ads.
+                Every contribution goes directly towards server costs and new features.
+              </p>
+              <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              <a
+                href="https://ko-fi.com/northemdevelopment"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2.5 px-6 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all duration-150 hover:-translate-y-px w-fit"
+                style={{ background: '#FF5E5B' }}
+              >
+                <span>♥</span>
+                Support on Ko-fi
+                <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
       </main>
 
-      {/* Support section */}
-      <section className="relative z-10 border-t border-surface-800 py-16 px-8">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600/10 border border-brand-600/20 mb-6">
-            <svg className="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="currentColor"><path d="M7.5 7.5C4.5 7.5 3 9.5 3 12c0 5 8 9.5 9 10 1-.5 9-5 9-10 0-2.5-1.5-4.5-4.5-4.5-1.8 0-3 1-3.5 1.5C12.5 8.5 11.3 7.5 9.5 7.5h-2z" /></svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Built by a solo developer</h2>
-          <p className="text-surface-400 leading-relaxed mb-2">
-            Screenplay Studio is self-funded, built, and maintained by a single developer.
-            The platform is completely free to use — no subscriptions, no paywalls, no ads.
-          </p>
-          <p className="text-surface-400 leading-relaxed mb-8">
-            If you find this tool useful and want to help keep it running and growing,
-            consider supporting the project. Every contribution goes directly towards
-            server costs, development time, and new features.
-          </p>
-          <a
-            href="https://ko-fi.com/northemdevelopment"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-[#FF5E5B] hover:bg-[#e54e4b] text-white font-semibold text-sm transition-colors"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M7.5 7.5C4.5 7.5 3 9.5 3 12c0 5 8 9.5 9 10 1-.5 9-5 9-10 0-2.5-1.5-4.5-4.5-4.5-1.8 0-3 1-3.5 1.5C12.5 8.5 11.3 7.5 9.5 7.5h-2z" /></svg>
-            Support on Ko-fi
-          </a>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-surface-800 py-8 px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-surface-500">Screenplay Studio</p>
-            <div className="flex items-center gap-4">
-              <p className="text-sm text-surface-600">Professional film production suite</p>
+      {/* ─── FOOTER ────────────────────────────────────────── */}
+      <footer className="relative z-10 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+        <div className="max-w-screen-xl mx-auto px-6 py-7">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-5 h-5 flex items-center justify-center text-[7px] font-black text-white shrink-0"
+                style={{ background: ORANGE }}
+              >
+                SS
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/25">
+                SCREENPLAY STUDIO
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Label>Professional Film Production Suite</Label>
+              <span className="text-white/10">·</span>
               <SiteVersion />
             </div>
           </div>
-          <div className="flex flex-wrap gap-4 text-xs text-surface-600">
-            <a href="/legal" className="hover:text-brand-400 transition-colors">Legal Center</a>
-            <a href="/legal/terms" className="hover:text-brand-400 transition-colors">Terms of Service</a>
-            <a href="/legal/privacy" className="hover:text-brand-400 transition-colors">Privacy Policy</a>
-            <a href="/legal/community-guidelines" className="hover:text-brand-400 transition-colors">Community Guidelines</a>
-            <a href="/legal/acceptable-use" className="hover:text-brand-400 transition-colors">Acceptable Use</a>
-            <a href="/legal/content-policy" className="hover:text-brand-400 transition-colors">Content Policy</a>
-            <a href="/legal/security" className="hover:text-brand-400 transition-colors">Security</a>
-            <a href="/legal/blog" className="hover:text-brand-400 transition-colors">Legal Blog</a>
+          <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.05)' }} />
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {[
+              ['Legal', '/legal'],
+              ['Terms', '/legal/terms'],
+              ['Privacy', '/legal/privacy'],
+              ['Community Guidelines', '/legal/community-guidelines'],
+              ['Security', '/legal/security'],
+            ].map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/15 hover:text-white/50 transition-colors duration-150"
+              >
+                {label}
+              </a>
+            ))}
           </div>
         </div>
       </footer>

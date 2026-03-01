@@ -77,8 +77,8 @@ export function CookieConsentBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 animate-slide-up">
       <div className="max-w-2xl mx-auto bg-surface-900 border border-surface-700 rounded-xl shadow-2xl p-6">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 bg-brand-500/10 rounded-lg flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 bg-[#FF5F1F]/10 rounded-lg flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
@@ -87,10 +87,10 @@ export function CookieConsentBanner() {
             <p className="text-xs text-surface-400 leading-relaxed">
               We use cookies to improve your experience. Necessary cookies are always active.
               You can choose which optional cookies to allow.{' '}
-              <a href="/legal/privacy" className="text-brand-400 hover:text-brand-300 underline">
+              <a href="/legal/privacy" className="text-[#FF5F1F] hover:text-[#FF8F5F] underline">
                 Privacy Policy
               </a>{' · '}
-              <a href="/legal/cookies" className="text-brand-400 hover:text-brand-300 underline">
+              <a href="/legal/cookies" className="text-[#FF5F1F] hover:text-[#FF8F5F] underline">
                 Cookie Policy
               </a>
             </p>
@@ -104,7 +104,7 @@ export function CookieConsentBanner() {
                 <span className="text-xs font-medium text-white">Necessary</span>
                 <p className="text-[10px] text-surface-500">Required for the app to function. Cannot be disabled.</p>
               </div>
-              <input type="checkbox" checked disabled className="rounded border-surface-600 bg-surface-700 text-brand-500" />
+              <input type="checkbox" checked disabled className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F]" />
             </label>
             <label className="flex items-center justify-between">
               <div>
@@ -112,7 +112,7 @@ export function CookieConsentBanner() {
                 <p className="text-[10px] text-surface-500">Help us understand how you use the app.</p>
               </div>
               <input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)}
-                className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
             </label>
             <label className="flex items-center justify-between">
               <div>
@@ -120,7 +120,7 @@ export function CookieConsentBanner() {
                 <p className="text-[10px] text-surface-500">Personalized recommendations and offers.</p>
               </div>
               <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)}
-                className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
             </label>
           </div>
         )}
@@ -128,13 +128,13 @@ export function CookieConsentBanner() {
         <div className="flex items-center gap-2 flex-wrap">
           {showDetails ? (
             <button onClick={handleSavePreferences}
-              className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors">
+              className="px-4 py-2 bg-[#E54E15] hover:bg-[#FF5F1F] text-white rounded-lg text-xs font-medium transition-colors">
               Save Preferences
             </button>
           ) : (
             <>
               <button onClick={handleAcceptAll}
-                className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors">
+                className="px-4 py-2 bg-[#E54E15] hover:bg-[#FF5F1F] text-white rounded-lg text-xs font-medium transition-colors">
                 Accept All
               </button>
               <button onClick={handleAcceptNecessary}

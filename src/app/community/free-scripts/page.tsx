@@ -110,43 +110,42 @@ export default function FreeScriptsPage() {
     });
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="min-h-screen" style={{ background: '#070710' }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#faf9f7]/90 backdrop-blur-md border-b border-stone-200">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
-              </svg>
+      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
+          <Link href="/community" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-lg font-bold text-stone-900 group-hover:text-brand-600 transition-colors">Community</span>
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">Community</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Feed</Link>
-            <Link href="/community/challenges" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Challenges</Link>
-            <Link href="/community/free-scripts" className="text-sm font-semibold text-stone-900 border-b-2 border-brand-500 pb-0.5">Free Scripts</Link>
-            <Link href="/blog" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Blog</Link>
+          <div className="hidden md:flex items-center gap-5">
+            <Link href="/community" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Feed</Link>
+            <Link href="/community/showcase" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Showcase</Link>
+            <Link href="/community/challenges" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Challenges</Link>
+            <Link href="/community/free-scripts" className="text-[11px] font-mono uppercase tracking-widest text-white" style={{ borderBottom: '1px solid #FF5F1F', paddingBottom: '2px' }}>Scripts</Link>
+            <Link href="/blog" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Blog</Link>
           </div>
 
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link
-                  href="/community/share"
-                  className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors"
-                >
-                  Share Script
+                <Link href="/community/share" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Share</Link>
+                <Link href="/dashboard" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Dashboard</Link>
+                <Link href={`/u/${user.username || user.id}`}>
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6 rounded-full" style={{ boxShadow: '0 0 0 1.5px rgba(255,255,255,0.1)' }} />
+                  ) : (
+                    <div className="w-6 h-6 flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
+                      {(user.full_name || user.email || '?')[0].toUpperCase()}
+                    </div>
+                  )}
                 </Link>
-                <Link href="/dashboard" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
-                <button onClick={handleSignOut} className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Sign Out</button>
               </>
             ) : (
-              <>
-                <Link href="/auth/login?redirect=/community/free-scripts" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Sign In</Link>
-                <Link href="/auth/register?redirect=/community/free-scripts" className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">Get Started</Link>
-              </>
+              <Link href="/auth/login?redirect=/community/free-scripts" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Sign In</Link>
             )}
           </div>
         </div>
@@ -156,8 +155,8 @@ export default function FreeScriptsPage() {
         {/* Page header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900 tracking-tight">Free-to-Use Scripts</h1>
-            <p className="text-stone-500 mt-1 max-w-xl">
+            <h1 className="text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>FREE-TO-USE SCRIPTS</h1>
+            <p className="text-white/40 mt-1 max-w-xl font-mono text-sm">
               Scripts shared by writers for filmmakers to produce. Read, adapt, and create — always credit the author.
             </p>
           </div>
@@ -166,9 +165,10 @@ export default function FreeScriptsPage() {
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-colors ${
-                  sortBy === s ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-widest capitalize transition-colors ${
+                  sortBy === s ? 'text-white' : 'text-white/40 hover:text-white'
                 }`}
+                style={sortBy === s ? { background: '#FF5F1F' } : { border: '1px solid rgba(255,255,255,0.1)' }}
               >
                 {s}
               </button>
@@ -177,7 +177,8 @@ export default function FreeScriptsPage() {
               <select
                 value={filterLanguage || ''}
                 onChange={(e) => setFilterLanguage(e.target.value || null)}
-                className="bg-stone-100 border border-stone-200 rounded-lg px-3 py-1.5 text-xs text-stone-600 appearance-none cursor-pointer"
+                className="appearance-none cursor-pointer bg-transparent px-3 py-1.5 text-xs font-mono text-white/50 hover:text-white"
+                style={{ border: '1px solid rgba(255,255,255,0.1)' }}
               >
                 <option value="">All Languages</option>
                 {allLanguages.map((l) => (
@@ -189,12 +190,12 @@ export default function FreeScriptsPage() {
         </div>
 
         {/* Info banner */}
-        <div className="rounded-xl bg-green-50 border border-green-200 p-5 mb-8">
+        <div className="p-5 mb-8" style={{ background: 'rgba(255,95,31,0.06)', border: '1px solid rgba(255,95,31,0.2)' }}>
           <div className="flex items-start gap-3">
-            <span className="text-2xl">📖</span>
+            <div className="w-6 h-6 shrink-0 mt-0.5" style={{ background: '#FF5F1F' }} />
             <div>
-              <h3 className="text-sm font-semibold text-green-900 mb-1">For Filmmakers</h3>
-              <p className="text-xs text-green-700 leading-relaxed">
+              <h3 className="text-sm font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>FOR FILMMAKERS</h3>
+              <p className="text-xs font-mono text-white/50 leading-relaxed">
                 All scripts in this section have been explicitly marked as &quot;free to use&quot; by their authors.
                 You may produce films based on these scripts, but you must credit the original writer.
                 Check each script&apos;s details for specific permissions. If you produce something, submit it — the author would love to see!
@@ -206,12 +207,12 @@ export default function FreeScriptsPage() {
         <div className="flex gap-8">
           {/* Category filter sidebar */}
           <aside className="hidden lg:block w-52 shrink-0">
-            <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">Filter by Category</h3>
+            <h3 className="text-[9px] font-mono uppercase tracking-widest text-white/50 mb-3">Filter by Category</h3>
             <div className="space-y-1">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                  !selectedCategory ? 'bg-brand-50 text-brand-700 font-medium' : 'text-stone-600 hover:bg-stone-100'
+                className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors ${
+                  !selectedCategory ? 'text-[#FF5F1F]' : 'text-white/40 hover:text-white'
                 }`}
               >
                 All Scripts
@@ -220,8 +221,8 @@ export default function FreeScriptsPage() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug)}
-                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${
-                    selectedCategory === cat.slug ? 'bg-brand-50 text-brand-700 font-medium' : 'text-stone-600 hover:bg-stone-100'
+                  className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors flex items-center gap-2 ${
+                    selectedCategory === cat.slug ? 'text-[#FF5F1F]' : 'text-white/40 hover:text-white'
                   }`}
                 >
                   <span>{cat.icon}</span> {cat.name}
@@ -234,17 +235,17 @@ export default function FreeScriptsPage() {
           <div className="flex-1 min-w-0">
             {loading ? (
               <div className="flex justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#FF5F1F]" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
-                <div className="text-5xl mb-4">📜</div>
-                <p className="text-lg font-semibold text-stone-700 mb-2">No free scripts yet</p>
-                <p className="text-sm text-stone-500 mb-6">
+                <div className="w-12 h-12 mb-4 mx-auto" style={{ background: '#FF5F1F', opacity: 0.3 }} />
+                <p className="text-lg font-black text-white mb-2" style={{ letterSpacing: '-0.02em' }}>NO FREE SCRIPTS YET</p>
+                <p className="text-sm font-mono text-white/40 mb-6">
                   Be the first to share a script freely with filmmakers!
                 </p>
                 {user && (
-                  <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
+                  <Link href="/community/share" className="ss-btn-orange text-sm">
                     Share a Free Script
                   </Link>
                 )}
@@ -255,11 +256,12 @@ export default function FreeScriptsPage() {
                   <Link
                     key={post.id}
                     href={`/community/post/${post.slug}`}
-                    className="block rounded-xl border border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm transition-all overflow-hidden"
+                    className="block hover:opacity-80 transition-all overflow-hidden"
+                    style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                   >
                     {/* Cover image */}
                     {post.cover_image_url && (
-                      <div className="h-36 bg-stone-100 overflow-hidden">
+                      <div className="h-36 bg-white/5 overflow-hidden">
                         <img src={post.cover_image_url} alt={post.title || 'Script cover'} className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -283,28 +285,28 @@ export default function FreeScriptsPage() {
                         </div>
                       )}
 
-                      <h3 className="text-base font-semibold text-stone-900 line-clamp-1">{post.title}</h3>
+                      <h3 className="text-base font-black text-white line-clamp-1" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
                       {post.description && (
-                        <p className="text-sm text-stone-500 mt-1 line-clamp-2">{post.description}</p>
+                        <p className="text-sm text-white/40 mt-1 line-clamp-2">{post.description}</p>
                       )}
 
                       {/* Author + meta */}
-                      <div className="flex items-center gap-3 mt-3 text-xs text-stone-400">
+                      <div className="flex items-center gap-3 mt-3 text-xs font-mono text-white/50">
                         <span className="flex items-center gap-1">
                           {post.author?.avatar_url ? (
                             <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" />
                           ) : (
-                            <div className="w-4 h-4 rounded-full bg-stone-200 flex items-center justify-center text-[8px] font-bold text-stone-500">
+                            <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[8px] font-bold text-white">
                               {(post.author?.full_name || '?')[0]}
                             </div>
                           )}
-                          <span className="text-stone-600 font-medium">{post.author?.full_name || 'Anonymous'}</span>
+                          <span className="text-white/60 font-medium">{post.author?.full_name || 'Anonymous'}</span>
                         </span>
                         <span>{timeAgo(post.created_at)}</span>
                       </div>
 
                       {/* Stats row */}
-                      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-stone-100 text-xs text-stone-400">
+                      <div className="flex items-center gap-4 mt-3 pt-3 text-xs font-mono text-white/50" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                         <span className="flex items-center gap-1">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
                           {post.upvote_count}
@@ -318,16 +320,16 @@ export default function FreeScriptsPage() {
                             🎬 {(post as EnrichedPost)._productionCount} production{(post as EnrichedPost)._productionCount !== 1 ? 's' : ''}
                           </span>
                         )}
-                        <span className="ml-auto text-green-600 font-semibold">Free to Use</span>
+                        <span className="ml-auto text-[#FF5F1F] font-black">Free to Use</span>
                       </div>
 
                       {/* Permission badges */}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {post.allow_distros && (
-                          <span className="px-2 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded-full">Distros OK</span>
+                          <span className="px-2 py-0.5 text-[10px] font-mono uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>Distros OK</span>
                         )}
                         {post.allow_edits && (
-                          <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-700 bg-purple-50 rounded-full">Editable</span>
+                          <span className="px-2 py-0.5 text-[10px] font-mono uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>Editable</span>
                         )}
                       </div>
                     </div>
@@ -340,15 +342,15 @@ export default function FreeScriptsPage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#faf9f7] border-t border-stone-200 py-10 px-6 mt-10">
+      <footer className="py-10 px-6 mt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-semibold text-stone-700">Screenplay Studio Community</span>
-          <div className="flex items-center gap-6 text-sm text-stone-500">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <Link href="/community" className="hover:text-stone-900 transition-colors">Feed</Link>
-            <Link href="/community/challenges" className="hover:text-stone-900 transition-colors">Challenges</Link>
-            <Link href="/blog" className="hover:text-stone-900 transition-colors">Blog</Link>
-            <SiteVersion light />
+          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">Screenplay Studio Community</span>
+          <div className="flex items-center gap-6 text-[11px] font-mono uppercase tracking-widest text-white/50">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/community" className="hover:text-white transition-colors">Feed</Link>
+            <Link href="/community/challenges" className="hover:text-white transition-colors">Challenges</Link>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+            <SiteVersion />
           </div>
         </div>
       </footer>

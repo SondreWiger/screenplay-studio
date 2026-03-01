@@ -298,7 +298,7 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
       <div className="flex-1 relative min-h-[300px]">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-surface-900">
-            <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
+            <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
           </div>
         ) : (
           <MapContainer center={defaultCenter} zoom={12}
@@ -334,7 +334,7 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
                     )}
                     {canEdit && (
                       <div className="flex gap-2 mt-2 pt-2 border-t border-surface-700">
-                        <button className="text-xs text-brand-400 hover:text-brand-300"
+                        <button className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]"
                           onClick={() => {
                             setEditingMarker(m);
                             setMarkerForm({ name: m.name, description: m.description || '', location_ids: m.location_ids || [] });
@@ -392,7 +392,7 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
                         type="checkbox"
                         checked={markerForm.location_ids.includes(l.id)}
                         onChange={() => toggleLocationId(l.id)}
-                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500"
+                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                       />
                       <span className="text-sm text-white">{l.name}</span>
                     </label>

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+
+const ORANGE = '#FF5F1F';
 
 const LEGAL_NAV = [
   { href: '/legal', label: 'Legal Center' },
@@ -23,25 +24,48 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-surface-950">
-      {/* Header */}
-      <div className="border-b border-surface-800/60 bg-surface-950/90 backdrop-blur-xl sticky top-0 z-30">
+    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+      {/* Top nav bar */}
+      <div
+        className="sticky top-0 z-30 backdrop-blur-xl"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.92)' }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="text-surface-500 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/"
+                className="flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
               </Link>
-              <div className="w-px h-5 bg-surface-800" />
-              <Link href="/legal" className="text-sm font-semibold text-white hover:text-red-400 transition-colors">
-                Screenplay Studio Legal
-              </Link>
+              <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 flex items-center justify-center" style={{ background: ORANGE }}>
+                  <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+                </div>
+                <Link
+                  href="/legal"
+                  className="text-[11px] font-mono uppercase tracking-widest text-white/50 hover:text-white transition-colors"
+                >
+                  Legal Center
+                </Link>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link href="/support" className="text-xs text-surface-400 hover:text-white transition-colors">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/support"
+                className="text-[11px] font-mono uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
+              >
                 Support
               </Link>
-              <Link href="/dashboard" className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/15">
+              <Link
+                href="/dashboard"
+                className="ss-btn-orange"
+                style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}
+              >
                 Back to App
               </Link>
             </div>
@@ -50,46 +74,60 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex gap-10">
+        <div className="flex gap-12">
           {/* Sidebar */}
-          <nav className="hidden lg:block w-56 flex-shrink-0">
-            <div className="sticky top-20 space-y-0.5">
+          <nav className="hidden lg:block w-52 flex-shrink-0">
+            <div className="sticky top-24 space-y-px">
+              {/* Eyebrow */}
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-3 h-px" style={{ background: ORANGE }} />
+                <span className="ss-label">Navigation</span>
+              </div>
+
               {LEGAL_NAV.map(item => {
                 const isActive = pathname === item.href || (item.href !== '/legal' && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={cn(
-                      'block px-3 py-2 rounded-md text-[13px] transition-all duration-150',
-                      isActive
-                        ? 'text-red-400 bg-red-500/8 font-medium'
-                        : 'text-surface-400 hover:text-white hover:bg-surface-800/40'
-                    )}
+                    className="ss-nav-link block py-2 text-[12px]"
+                    style={isActive ? { color: ORANGE } : undefined}
+                    data-active={isActive ? 'true' : undefined}
                   >
+                    {isActive && (
+                      <span className="inline-block w-1.5 h-1.5 mr-2 mb-px shrink-0" style={{ background: ORANGE }} />
+                    )}
                     {item.label}
                   </Link>
                 );
               })}
 
-              <div className="pt-6 mt-6 border-t border-surface-800/60">
-                <div className="px-3 py-3 rounded-lg bg-surface-900/50 border border-surface-800/40">
-                  <p className="text-[11px] text-surface-500 leading-relaxed">
-                    Last updated February 2026
-                  </p>
-                  <p className="text-[11px] text-surface-500 mt-1.5">
-                    Questions?{' '}
-                    <a href="mailto:legal@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">
-                      legal@screenplaystudio.fun
-                    </a>
-                  </p>
-                </div>
+              {/* Contact block */}
+              <div
+                className="mt-8 pt-6 space-y-1.5"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <p className="text-[10px] font-mono text-white/20 uppercase tracking-wider">Last updated</p>
+                <p className="text-[11px] text-white/30">February 2026</p>
+                <p className="text-[10px] font-mono text-white/20 uppercase tracking-wider mt-3">Questions?</p>
+                <a
+                  href="mailto:legal@screenplaystudio.fun"
+                  className="text-[11px] transition-colors"
+                  style={{ color: ORANGE }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  legal@screenplaystudio.fun
+                </a>
               </div>
             </div>
           </nav>
 
-          {/* Mobile Nav */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-950/95 backdrop-blur-xl border-t border-surface-800/60 overflow-x-auto">
+          {/* Mobile bottom nav */}
+          <div
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-xl overflow-x-auto"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.95)' }}
+          >
             <div className="flex gap-0.5 p-2 min-w-max">
               {LEGAL_NAV.map(item => {
                 const isActive = pathname === item.href || (item.href !== '/legal' && pathname.startsWith(item.href));
@@ -97,10 +135,12 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={cn(
-                      'px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap transition-colors',
-                      isActive ? 'bg-red-500/10 text-red-400 font-medium' : 'text-surface-500'
-                    )}
+                    className="px-3 py-1.5 text-[10px] font-mono uppercase whitespace-nowrap transition-colors"
+                    style={{
+                      color: isActive ? ORANGE : 'rgba(255,255,255,0.3)',
+                      background: isActive ? 'rgba(255,95,31,0.08)' : 'transparent',
+                      border: isActive ? '1px solid rgba(255,95,31,0.2)' : '1px solid transparent',
+                    }}
                   >
                     {item.label.split(' ')[0]}
                   </Link>
@@ -110,7 +150,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0 pb-20 lg:pb-0">
+          <main className="ss-prose flex-1 min-w-0 pb-24 lg:pb-0">
             {children}
           </main>
         </div>

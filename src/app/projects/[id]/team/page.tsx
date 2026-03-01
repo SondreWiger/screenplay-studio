@@ -157,7 +157,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Team</h1>
+          <h1 className="text-2xl font-black text-white">Team</h1>
           <p className="text-sm text-surface-400 mt-1">
             {members.length} member{members.length !== 1 ? 's' : ''}
             {onlineUsers.length > 0 && (
@@ -185,7 +185,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           const count = members.filter((m) => m.role === r.value).length;
           return (
             <Card key={r.value} className={cn('p-3 text-center', ROLE_BG[r.value])}>
-              <p className={cn('text-2xl font-bold', ROLE_COLORS[r.value])}>{count}</p>
+              <p className={cn('text-2xl font-black', ROLE_COLORS[r.value])}>{count}</p>
               <p className="text-[11px] text-surface-400 mt-0.5">{r.label}{count !== 1 ? 's' : ''}</p>
             </Card>
           );
@@ -258,7 +258,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   <p className="text-xs text-surface-400">{email}</p>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
                     {member.production_role && (
-                      <span className="text-[11px] text-brand-400 font-medium">
+                      <span className="text-[11px] text-[#FF5F1F] font-medium">
                         {PRODUCTION_ROLES.find(r => r.value === member.production_role)?.label || member.production_role}
                       </span>
                     )}
@@ -281,7 +281,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   {canManage && !isCurrentUser && member.role !== 'owner' ? (
                     <button
                       onClick={() => setEditingMember(member)}
-                      className={cn('px-3 py-1.5 rounded-lg text-xs font-medium border border-surface-700 hover:bg-white/5 transition-colors', ROLE_COLORS[member.role])}
+                      className={cn('px-3 py-1.5 rounded-lg text-xs font-medium border border-surface-700 hover:bg-surface-900/5 transition-colors', ROLE_COLORS[member.role])}
                     >
                       {role?.label}
                     </button>
@@ -290,7 +290,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   )}
                   {canManage && !isCurrentUser && member.role !== 'owner' && (
                     <button onClick={() => handleRemove(member.id)}
-                      className="p-1.5 text-surface-500 hover:text-red-400 rounded-lg hover:bg-white/5">
+                      className="p-1.5 text-surface-500 hover:text-red-400 rounded-lg hover:bg-surface-900/5">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -315,14 +315,14 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                     className={cn(
                       'w-full flex items-center justify-between p-3 rounded-lg border transition-colors',
                       editingMember.role === role.value
-                        ? 'border-brand-500/50 bg-brand-600/10'
-                        : 'border-surface-700 hover:border-surface-600 hover:bg-white/[0.02]'
+                        ? 'border-[#FF5F1F]/50 bg-[#E54E15]/10'
+                        : 'border-surface-700 hover:border-surface-600 hover:bg-surface-900/[0.02]'
                     )}>
                     <div>
                       <p className={cn('text-sm font-medium', ROLE_COLORS[role.value])}>{role.label}</p>
                       <p className="text-xs text-surface-500">{role.description}</p>
                     </div>
-                    {editingMember.role === role.value && <span className="text-brand-400">{'\u2713'}</span>}
+                    {editingMember.role === role.value && <span className="text-[#FF5F1F]">{'\u2713'}</span>}
                   </button>
                 ))}
               </div>
@@ -433,13 +433,13 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-medium text-white">{credit.name}</h3>
                       {credit.external_url && (
-                        <a href={credit.external_url} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300">
+                        <a href={credit.external_url} target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:text-[#FF8F5F]">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                         </a>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px] text-brand-400 font-medium">
+                      <span className="text-[11px] text-[#FF5F1F] font-medium">
                         {PRODUCTION_ROLES.find(r => r.value === credit.production_role)?.label || credit.production_role}
                       </span>
                       {credit.character_name && (
@@ -449,10 +449,10 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   </div>
                   {canManage && (
                     <div className="flex items-center gap-1">
-                      <button onClick={() => setEditingCredit(credit)} className="p-1.5 text-surface-500 hover:text-brand-400 rounded-lg hover:bg-white/5">
+                      <button onClick={() => setEditingCredit(credit)} className="p-1.5 text-surface-500 hover:text-[#FF5F1F] rounded-lg hover:bg-surface-900/5">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                       </button>
-                      <button onClick={() => handleDeleteCredit(credit.id)} className="p-1.5 text-surface-500 hover:text-red-400 rounded-lg hover:bg-white/5">
+                      <button onClick={() => handleDeleteCredit(credit.id)} className="p-1.5 text-surface-500 hover:text-red-400 rounded-lg hover:bg-surface-900/5">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
                     </div>
@@ -555,13 +555,13 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
               <button key={r.value} onClick={() => setRole(r.value)}
                 className={cn(
                   'w-full flex items-center justify-between p-3 rounded-lg border transition-colors text-left',
-                  role === r.value ? 'border-brand-500/50 bg-brand-600/10' : 'border-surface-700 hover:border-surface-600'
+                  role === r.value ? 'border-[#FF5F1F]/50 bg-[#E54E15]/10' : 'border-surface-700 hover:border-surface-600'
                 )}>
                 <div>
                   <p className={cn('text-sm font-medium', ROLE_COLORS[r.value])}>{r.label}</p>
                   <p className="text-xs text-surface-500">{r.description}</p>
                 </div>
-                {role === r.value && <span className="text-brand-400">{'\u2713'}</span>}
+                {role === r.value && <span className="text-[#FF5F1F]">{'\u2713'}</span>}
               </button>
             ))}
           </div>
@@ -620,7 +620,7 @@ function AddCreditModal({ isOpen, onClose, projectId, characters, onAdded }: {
         <div>
           <label className="block text-sm font-medium text-surface-300 mb-1.5">Production Role</label>
           <select value={role} onChange={(e) => setRole(e.target.value as ProductionRole)}
-            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
+            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
             {PRODUCTION_ROLES.map((r) => (
               <option key={r.value} value={r.value}>{r.label}</option>
             ))}
@@ -631,7 +631,7 @@ function AddCreditModal({ isOpen, onClose, projectId, characters, onAdded }: {
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Character</label>
             {characters.length > 0 ? (
               <select value={characterName} onChange={(e) => setCharacterName(e.target.value)}
-                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
+                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
                 <option value="">Select character...</option>
                 {characters.map((c) => (
                   <option key={c.id} value={c.name}>{c.name}{c.description ? ` \u2014 ${c.description}` : ''}</option>
@@ -716,7 +716,7 @@ function EditCreditModal({ isOpen, onClose, credit, characters, onSaved }: {
         <div>
           <label className="block text-sm font-medium text-surface-300 mb-1.5">Production Role</label>
           <select value={role} onChange={(e) => setRole(e.target.value as ProductionRole)}
-            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
+            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
             {PRODUCTION_ROLES.map((r) => (
               <option key={r.value} value={r.value}>{r.label}</option>
             ))}
@@ -727,7 +727,7 @@ function EditCreditModal({ isOpen, onClose, credit, characters, onSaved }: {
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Character</label>
             {characters.length > 0 ? (
               <select value={characterName} onChange={(e) => setCharacterName(e.target.value)}
-                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
+                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
                 <option value="">Select character...</option>
                 {characters.map((c) => (
                   <option key={c.id} value={c.name}>{c.name}{c.description ? ` \u2014 ${c.description}` : ''}</option>

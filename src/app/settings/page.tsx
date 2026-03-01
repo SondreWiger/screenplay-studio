@@ -294,21 +294,31 @@ export default function UserSettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface-950">
+    <div className="min-h-screen" style={{ background: '#070710' }}>
       <AppHeader />
 
       <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        {/* Page header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
+            <span className="ss-label">Account</span>
+          </div>
+          <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>SETTINGS</h1>
+        </div>
+
         {/* Tab bar */}
-        <div className="flex gap-1 mb-4 md:mb-8 p-1 rounded-xl bg-surface-900 w-fit overflow-x-auto max-w-full">
+        <div className="flex gap-px mb-6 md:mb-10 overflow-x-auto max-w-full" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
-                tab === t.key
-                  ? 'bg-surface-800 text-white shadow-sm'
-                  : 'text-surface-400 hover:text-white'
-              }`}
+              className="flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 text-xs font-mono uppercase tracking-wider transition-all whitespace-nowrap relative"
+              style={{
+                color: tab === t.key ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
+                borderBottom: tab === t.key ? '2px solid #FF5F1F' : '2px solid transparent',
+                marginBottom: '-1px',
+              }}
             >
               {t.icon}
               {t.label}
@@ -318,7 +328,8 @@ export default function UserSettingsPage() {
           {canUseFeature('pro_subscription') && (
             <Link
               href="/settings/billing"
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap text-surface-400 hover:text-white"
+              className="flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 text-xs font-mono uppercase tracking-wider transition-all whitespace-nowrap relative"
+              style={{ color: 'rgba(255,255,255,0.3)', borderBottom: '2px solid transparent', marginBottom: '-1px' }}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
               Billing
@@ -342,7 +353,7 @@ export default function UserSettingsPage() {
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F]"
                       placeholder="your-username"
                     />
                   </div>
@@ -382,13 +393,13 @@ export default function UserSettingsPage() {
                       key={t.key}
                       onClick={() => setProfileTheme(t.key)}
                       className={`relative rounded-lg overflow-hidden border-2 transition-all ${
-                        profileTheme === t.key ? 'border-brand-500 ring-2 ring-brand-500/30' : 'border-surface-700 hover:border-surface-600'
+                        profileTheme === t.key ? 'border-[#FF5F1F] ring-2 ring-[#FF5F1F]/30' : 'border-surface-700 hover:border-surface-600'
                       }`}
                     >
                       <div className={`h-12 bg-gradient-to-br ${t.gradient}`} />
                       <p className="text-[10px] font-medium text-surface-300 py-1 text-center">{t.label}</p>
                       {profileTheme === t.key && (
-                        <div className="absolute top-1 right-1 w-4 h-4 bg-brand-500 rounded-full flex items-center justify-center">
+                        <div className="absolute top-1 right-1 w-4 h-4 bg-[#FF5F1F] rounded-full flex items-center justify-center">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                         </div>
                       )}
@@ -420,7 +431,7 @@ export default function UserSettingsPage() {
                       value={socialLinks[social.key] || ''}
                       onChange={(e) => setSocialLinks((prev) => ({ ...prev, [social.key]: e.target.value }))}
                       placeholder={social.placeholder}
-                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 transition-colors"
+                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F] transition-colors"
                     />
                   </div>
                 ))}
@@ -447,7 +458,7 @@ export default function UserSettingsPage() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-500">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
                       <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -469,7 +480,7 @@ export default function UserSettingsPage() {
                 {username && (
                   <div className="col-span-2">
                     <p className="text-surface-500">Public Profile</p>
-                    <Link href={`/u/${username}`} className="text-brand-400 hover:text-brand-300 transition-colors mt-1 inline-block text-sm">/u/{username}</Link>
+                    <Link href={`/u/${username}`} className="text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors mt-1 inline-block text-sm">/u/{username}</Link>
                   </div>
                 )}
               </div>
@@ -502,12 +513,12 @@ export default function UserSettingsPage() {
                     onClick={() => setUsageIntent(opt.value)}
                     className={`flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-all ${
                       usageIntent === opt.value
-                        ? 'border-brand-500 bg-brand-500/10'
+                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                         : 'border-surface-700 hover:border-surface-600'
                     }`}
                   >
-                    <Icon name={opt.icon} size="md" className={usageIntent === opt.value ? 'text-brand-400' : 'text-surface-400'} />
-                    <span className={`text-sm font-medium ${usageIntent === opt.value ? 'text-brand-400' : 'text-white'}`}>{opt.label}</span>
+                    <Icon name={opt.icon} size="md" className={usageIntent === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
+                    <span className={`text-sm font-medium ${usageIntent === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>{opt.label}</span>
                   </button>
                 ))}
               </div>
@@ -528,7 +539,7 @@ export default function UserSettingsPage() {
                     key={feat.key}
                     onClick={() => feat.set(!feat.value)}
                     className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
-                      feat.value ? 'border-brand-500/40 bg-brand-500/5' : 'border-surface-700 opacity-50'
+                      feat.value ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5' : 'border-surface-700 opacity-50'
                     }`}
                   >
                     <Icon name={feat.icon} size="md" className="text-surface-300" />
@@ -536,7 +547,7 @@ export default function UserSettingsPage() {
                       <h3 className="text-sm font-semibold text-white">{feat.label}</h3>
                       <p className="text-[11px] text-surface-400">{feat.desc}</p>
                     </div>
-                    <div className={`w-11 h-6 rounded-full shrink-0 transition-colors relative ${feat.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
+                    <div className={`w-11 h-6 rounded-full shrink-0 transition-colors relative ${feat.value ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
                       <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${feat.value ? 'left-[22px]' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -554,12 +565,12 @@ export default function UserSettingsPage() {
                     onClick={() => setPreferredScriptType(opt.value)}
                     className={`p-3 rounded-lg border-2 text-left transition-all ${
                       preferredScriptType === opt.value
-                        ? 'border-brand-500 bg-brand-500/10'
+                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                         : 'border-surface-700 hover:border-surface-600'
                     }`}
                   >
-                    <Icon name={opt.icon} size="md" className={preferredScriptType === opt.value ? 'text-brand-400' : 'text-surface-400'} />
-                    <p className={`text-xs font-medium mt-1 ${preferredScriptType === opt.value ? 'text-brand-400' : 'text-white'}`}>{opt.label}</p>
+                    <Icon name={opt.icon} size="md" className={preferredScriptType === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
+                    <p className={`text-xs font-medium mt-1 ${preferredScriptType === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>{opt.label}</p>
                   </button>
                 ))}
               </div>
@@ -639,12 +650,12 @@ export default function UserSettingsPage() {
                     onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
                     className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
                       sidebarTabs[tab.key]
-                        ? 'border-brand-500/40 bg-brand-500/10'
+                        ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
                         : 'border-surface-700 bg-surface-900/50'
                     }`}
                   >
                     <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
-                    <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-brand-600' : 'bg-surface-700'}`}>
+                    <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-[#E54E15]' : 'bg-surface-700'}`}>
                       <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${sidebarTabs[tab.key] ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
                     </span>
                   </button>
@@ -702,7 +713,7 @@ export default function UserSettingsPage() {
                         </div>
                         <Link
                           href={`/company/${company.slug}`}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 transition-colors"
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#FF5F1F] bg-[#FF5F1F]/10 hover:bg-[#FF5F1F]/20 transition-colors"
                         >
                           Manage
                         </Link>
@@ -735,7 +746,7 @@ export default function UserSettingsPage() {
                 <h3 className="text-lg font-semibold text-white mb-1">No Company Yet</h3>
                 <p className="text-sm text-surface-400 mb-6 max-w-sm mx-auto">
                   Create a company to organize projects under a shared workspace with teams and permissions.
-                  <span className="block mt-1 text-brand-400 text-xs">Pro Feature</span>
+                  <span className="block mt-1 text-[#FF5F1F] text-xs">Pro Feature</span>
                 </p>
               </Card>
             )}
@@ -761,7 +772,7 @@ export default function UserSettingsPage() {
                       type="text"
                       value={companySlug}
                       onChange={(e) => setCompanySlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F]"
                       placeholder="acme-pictures"
                     />
                   </div>
@@ -870,7 +881,7 @@ export default function UserSettingsPage() {
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">Privacy Settings</h2>
               <p className="text-sm text-surface-400">
-                Profile visibility toggles (email, projects, activity, DMs) are on the <button onClick={() => setTab('profile')} className="text-brand-400 hover:text-brand-300 underline">Profile tab</button>.
+                Profile visibility toggles (email, projects, activity, DMs) are on the <button onClick={() => setTab('profile')} className="text-[#FF5F1F] hover:text-[#FF8F5F] underline">Profile tab</button>.
               </p>
             </Card>
 
@@ -938,7 +949,7 @@ export default function UserSettingsPage() {
               <p className="text-[10px] text-surface-600 mt-3">
                 By proceeding, you acknowledge that this action is permanent and irreversible.
                 <br />
-                <a href="/legal/privacy" className="text-brand-400 hover:text-brand-300">Read our Privacy Policy</a>
+                <a href="/legal/privacy" className="text-[#FF5F1F] hover:text-[#FF8F5F]">Read our Privacy Policy</a>
               </p>
             </Card>
           </div>

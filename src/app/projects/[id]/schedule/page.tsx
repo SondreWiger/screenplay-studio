@@ -111,14 +111,14 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white">Production Schedule</h1>
+          <h1 className="text-xl md:text-2xl font-black text-white">Production Schedule</h1>
           <p className="text-sm text-surface-400 mt-1">{events.length} events scheduled</p>
         </div>
         <div className="flex gap-3">
           <div className="flex rounded-lg border border-surface-700 overflow-hidden">
-            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>Month</button>
-            <button onClick={() => setView('day')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'day' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>Day</button>
-            <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'list' ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white')}>List</button>
+            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white')}>Month</button>
+            <button onClick={() => setView('day')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'day' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white')}>Day</button>
+            <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'list' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white')}>List</button>
           </div>
           {canEdit && (
             <Button onClick={() => { setSelectedEvent(null); setSelectedDate(null); setShowEditor(true); }}>
@@ -143,11 +143,11 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
         <div className="bg-surface-900 rounded-xl border border-surface-800">
           {/* Calendar header */}
           <div className="flex items-center justify-between p-4 border-b border-surface-800">
-            <button onClick={prevMonth} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+            <button onClick={prevMonth} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
             <h2 className="text-lg font-semibold text-white">{MONTHS[currentMonth]} {currentYear}</h2>
-            <button onClick={nextMonth} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+            <button onClick={nextMonth} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
@@ -162,8 +162,8 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
               return (
                 <div key={i} className={cn(
                   'min-h-[90px] p-1.5 border-r border-b border-surface-800/50 transition-colors',
-                  day ? 'hover:bg-white/[0.02] cursor-pointer' : '',
-                  isToday(day!) ? 'bg-brand-600/5' : '',
+                  day ? 'hover:bg-surface-900/[0.02] cursor-pointer' : '',
+                  isToday(day!) ? 'bg-[#E54E15]/5' : '',
                 )} onClick={() => {
                   if (!day) return;
                   const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -172,7 +172,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                 }}>
                   {day && (
                     <>
-                      <span className={cn('text-xs font-medium', isToday(day) ? 'text-brand-400' : 'text-surface-400')}>{day}</span>
+                      <span className={cn('text-xs font-medium', isToday(day) ? 'text-[#FF5F1F]' : 'text-surface-400')}>{day}</span>
                       <div className="mt-1 space-y-0.5">
                         {dayEvents.slice(0, 3).map((ev) => {
                           const evType = EVENT_TYPES.find((t) => t.value === ev.event_type);
@@ -286,7 +286,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
       {/* Day header */}
       <div className="flex items-center justify-between p-4 border-b border-surface-800">
         <div className="flex items-center gap-3">
-          <button onClick={prevDay} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+          <button onClick={prevDay} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <div className="text-center min-w-[200px]">
@@ -295,13 +295,13 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
             </h2>
             <p className="text-xs text-surface-500">{date.getFullYear()}</p>
           </div>
-          <button onClick={nextDay} className="p-2 text-surface-400 hover:text-white hover:bg-white/5 rounded-lg">
+          <button onClick={nextDay} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
         <div className="flex items-center gap-2">
           {!isToday && (
-            <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-brand-400 hover:text-brand-300 border border-surface-700 rounded-lg hover:border-surface-600 transition-colors">
+            <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-[#FF5F1F] hover:text-[#FF8F5F] border border-surface-700 rounded-lg hover:border-surface-600 transition-colors">
               Today
             </button>
           )}
@@ -334,8 +334,8 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
           <div className="absolute left-0 right-0 z-20 pointer-events-none"
             style={{ top: ((currentTimeMinutes - 5 * 60) / 60) * 64 }}>
             <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full bg-brand-500 -ml-1" />
-              <div className="flex-1 h-[2px] bg-brand-500/60" />
+              <div className="w-2 h-2 rounded-full bg-[#FF5F1F] -ml-1" />
+              <div className="flex-1 h-[2px] bg-[#FF5F1F]/60" />
             </div>
           </div>
         )}
@@ -358,7 +358,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
               {/* Half-hour line */}
               <div className="absolute top-1/2 left-0 right-0 border-t border-surface-800/20" />
               {canEdit && (
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-white/[0.02] transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-surface-900/[0.02] transition-opacity flex items-center justify-center">
                   <span className="text-[10px] text-surface-500">+ Add event</span>
                 </div>
               )}

@@ -8,7 +8,7 @@ import { Button, Input } from '@/components/ui';
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-surface-950" />}>
+    <Suspense fallback={<div className="min-h-screen" style={{ background: '#070710' }} />}>
       <LoginForm />
     </Suspense>
   );
@@ -115,69 +115,118 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-950 px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
-              </svg>
+    <div
+      className="min-h-screen flex items-center justify-center px-4 relative"
+      style={{ background: '#070710' }}
+    >
+      {/* Dot-grid texture */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.18]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+
+      <div className="relative w-full max-w-md z-10">
+        {/* Logo mark */}
+        <div className="flex items-center gap-3 mb-10">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div
+              className="w-9 h-9 flex items-center justify-center shrink-0"
+              style={{ background: '#FF5F1F' }}
+            >
+              <span className="font-black text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-xl font-bold text-white">Screenplay Studio</span>
+            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/50 transition-colors">
+              Screenplay Studio
+            </span>
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-surface-800 bg-surface-900 p-8">
-          <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
-          <p className="text-sm text-surface-400 mb-8">Sign in to your account to continue</p>
+        {/* Card */}
+        <div className="ss-auth-card">
+          {/* Header */}
+          <div className="mb-8 pb-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
+              <span className="ss-label">Authentication</span>
+            </div>
+            <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+              WELCOME BACK
+            </h1>
+            <p className="mt-1 text-sm text-white/30">Sign in to your account to continue</p>
+          </div>
 
-          <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-4">
+          <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">
             {error && (
-              <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+              <div
+                className="px-4 py-3 text-sm"
+                style={{
+                  background: 'rgba(239,68,68,0.08)',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  color: '#fca5a5',
+                }}
+              >
                 {error}
               </div>
             )}
 
-            <Input
-              ref={emailRef}
-              label="Email"
-              type="email"
-              name="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-            />
+            <div>
+              <label className="ss-input-label">Email</label>
+              <input
+                ref={emailRef}
+                className="ss-input w-full"
+                type="email"
+                name="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+              />
+            </div>
 
-            <Input
-              ref={passwordRef}
-              label="Password"
-              type="password"
-              name="password"
-              autoComplete="current-password"
-              placeholder="••••••••"
-            />
+            <div>
+              <label className="ss-input-label">Password</label>
+              <input
+                ref={passwordRef}
+                className="ss-input w-full"
+                type="password"
+                name="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+              />
+            </div>
 
             <div className="flex justify-end">
-              <Link href="/auth/forgot-password" className="text-xs text-brand-400 hover:text-brand-300">
+              <Link
+                href="/auth/forgot-password"
+                className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors"
+              >
                 Forgot password?
               </Link>
             </div>
 
-            <Button type="submit" className="w-full" loading={loading} onClick={handleButtonClick}>
+            <button
+              type="submit"
+              className="ss-btn-orange w-full"
+              onClick={handleButtonClick}
+              disabled={loading}
+            >
               {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
+            </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-surface-400">
-            Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="text-brand-400 hover:text-brand-300 font-medium">
-              Create one
-            </Link>
-          </p>
+          <div
+            className="mt-8 pt-6 text-center"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <p className="text-[11px] font-mono text-white/25 uppercase tracking-widest">
+              No account?{' '}
+              <Link href="/auth/register" className="hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
+                Create one
+              </Link>
+            </p>
+          </div>
         </div>
-
-
       </div>
     </div>
   );

@@ -416,7 +416,7 @@ export default function AdminLegalPage() {
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               Back to Admin
             </Link>
-            <h1 className="text-2xl font-bold tracking-tight">Legal Blog Management</h1>
+            <h1 className="text-2xl font-black tracking-tight">Legal Blog Management</h1>
             <p className="text-sm text-surface-400 mt-1">
               Manage policy updates, TOS changes, security advisories and more.
             </p>
@@ -557,7 +557,7 @@ export default function AdminLegalPage() {
                 <Badge variant={SEVERITY_BADGE[draft.severity]}>{draft.severity}</Badge>
                 <Badge variant="default">{CATEGORY_LABELS[draft.category as LegalCategory] ?? draft.category}</Badge>
               </div>
-              <h2 className="text-2xl font-bold text-white">{draft.title || 'Untitled'}</h2>
+              <h2 className="text-2xl font-black text-white">{draft.title || 'Untitled'}</h2>
               {draft.summary && (
                 <p className="text-surface-300 text-sm leading-relaxed border-l-2 border-red-500/50 pl-4 italic">{draft.summary}</p>
               )}

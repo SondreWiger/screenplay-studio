@@ -7,10 +7,10 @@ import { Button, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, toas
 import { cn } from '@/lib/utils';
 import type {
   BroadcastRundown, BroadcastRundownItem, BroadcastRundownItemType,
-  BroadcastRundownStatus, BroadcastRundownItemStatus,
+  BroadcastRundownStatus, BroadcastRundownItemStatus, BroadcastStory,
 } from '@/lib/types';
 import {
-  BROADCAST_ITEM_TYPES, BROADCAST_RUNDOWN_STATUS_OPTIONS,
+  BROADCAST_ITEM_TYPES, BROADCAST_RUNDOWN_STATUS_OPTIONS, BROADCAST_STORY_STATUS_OPTIONS,
   formatBroadcastDuration, formatBroadcastTime, calculateBackTimes,
 } from '@/lib/types';
 
@@ -41,6 +41,13 @@ export default function RundownPage({ params }: { params: { id: string } }) {
   const [showAddItem, setShowAddItem] = useState(false);
   const [editingItem, setEditingItem] = useState<BroadcastRundownItem | null>(null);
 
+  // Stories
+  const [stories, setStories] = useState<BroadcastStory[]>([]);
+
+  // Drag-and-drop reorder
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
   // Refs for timing
   const clockRef = useRef<ReturnType<typeof setInterval>>();
   const pollingRef = useRef<ReturnType<typeof setInterval>>();
@@ -57,6 +64,17 @@ export default function RundownPage({ params }: { params: { id: string } }) {
       .order('show_date', { ascending: false });
     setRundowns(data || []);
     return data || [];
+  }, [projectId]);
+
+  const fetchStories = useCallback(async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('broadcast_stories')
+      .select('*')
+      .eq('project_id', projectId)
+      .not('status', 'eq', 'killed')
+      .order('updated_at', { ascending: false });
+    setStories((data as BroadcastStory[]) || []);
   }, [projectId]);
 
   const fetchItems = useCallback(async (rundownId: string) => {
@@ -91,6 +109,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
 
   // Initial load
   useEffect(() => {
+    fetchStories();
     (async () => {
       const rdList = await fetchRundowns();
       // Auto-select the most recent non-archived or live rundown
@@ -221,17 +240,39 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     if (idx === -1) return;
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= items.length) return;
+    const next = [...items];
+    [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+    await handleDragReorder(next);
+  };
 
+  const handleDragReorder = async (reordered: BroadcastRundownItem[]) => {
+    // Optimistic
+    setItems(reordered);
     const supabase = createClient();
-    const currentOrder = items[idx].sort_order;
-    const swapOrder = items[swapIdx].sort_order;
+    await Promise.all(
+      reordered.map((item, i) =>
+        supabase.from('broadcast_rundown_items').update({ sort_order: i * 10 }).eq('id', item.id)
+      )
+    );
+  };
 
-    await Promise.all([
-      supabase.from('broadcast_rundown_items').update({ sort_order: swapOrder }).eq('id', items[idx].id),
-      supabase.from('broadcast_rundown_items').update({ sort_order: currentOrder }).eq('id', items[swapIdx].id),
-    ]);
-
-    if (activeRundown) fetchItems(activeRundown.id);
+  const handleDragStart = (id: string) => setDraggedId(id);
+  const handleDragEnd = () => { setDraggedId(null); setDragOverId(null); };
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    if (id !== draggedId) setDragOverId(id);
+  };
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedId || draggedId === targetId) { handleDragEnd(); return; }
+    const from = items.findIndex(i => i.id === draggedId);
+    const to = items.findIndex(i => i.id === targetId);
+    if (from === -1 || to === -1) { handleDragEnd(); return; }
+    const next = [...items];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    handleDragReorder(next);
+    handleDragEnd();
   };
 
   // ─── Create Rundown ────────────────────────────────────
@@ -280,6 +321,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     presenter: '', reporter: '',
     prompter_text: '', director_notes: '', production_notes: '',
     is_float: false, is_break: false,
+    story_id: null as string | null,
   });
 
   const resetItemForm = () => {
@@ -287,7 +329,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
       title: '', item_type: 'anchor_read', planned_duration: 30,
       page_number: '', segment_slug: '', camera: '', audio_source: '', video_source: '',
       presenter: '', reporter: '', prompter_text: '', director_notes: '', production_notes: '',
-      is_float: false, is_break: false,
+      is_float: false, is_break: false, story_id: null,
     });
     setEditingItem(null);
   };
@@ -300,7 +342,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
       presenter: item.presenter || '', reporter: item.reporter || '',
       prompter_text: item.prompter_text || '', director_notes: item.director_notes || '',
       production_notes: item.production_notes || '',
-      is_float: item.is_float, is_break: item.is_break,
+      is_float: item.is_float, is_break: item.is_break, story_id: item.story_id,
     });
     setEditingItem(item);
     setShowAddItem(true);
@@ -330,6 +372,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           production_notes: itemForm.production_notes || null,
           is_float: itemForm.is_float,
           is_break: itemForm.is_break,
+          story_id: itemForm.story_id || null,
         })
         .eq('id', editingItem.id);
 
@@ -358,6 +401,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           production_notes: itemForm.production_notes || null,
           is_float: itemForm.is_float,
           is_break: itemForm.is_break,
+          story_id: itemForm.story_id || null,
         });
 
       if (error) { toast.error(error.message); return; }
@@ -412,7 +456,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
               const rd = rundowns.find(r => r.id === e.target.value);
               if (rd) setActiveRundown(rd);
             }}
-            className="bg-surface-800 text-white border border-surface-700 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-brand-500"
+            className="bg-surface-800 text-white border border-surface-700 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-[#FF5F1F]"
           >
             {rundowns.map(r => (
               <option key={r.id} value={r.id}>
@@ -463,7 +507,8 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           ) : (
             <>
               {/* Column headers */}
-              <div className="sticky top-0 z-10 grid grid-cols-[60px_60px_1fr_80px_80px_80px_100px_100px_60px] gap-px bg-surface-800 text-[10px] font-bold text-surface-400 uppercase tracking-wider border-b border-surface-700">
+              <div className="sticky top-0 z-10 grid grid-cols-[28px_60px_60px_1fr_80px_80px_80px_100px_100px_80px] gap-px bg-surface-800 text-[10px] font-bold text-surface-400 uppercase tracking-wider border-b border-surface-700">
+                <div className="bg-surface-900 px-1 py-1.5" />
                 <div className="bg-surface-900 px-2 py-1.5">Page</div>
                 <div className="bg-surface-900 px-2 py-1.5">Type</div>
                 <div className="bg-surface-900 px-2 py-1.5">Title / Slug</div>
@@ -490,17 +535,38 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                 return (
                   <div
                     key={item.id}
+                    draggable={!isLive}
+                    onDragStart={() => handleDragStart(item.id)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => handleDragOver(e, item.id)}
+                    onDrop={(e) => handleDrop(e, item.id)}
                     className={cn(
-                      'grid grid-cols-[60px_60px_1fr_80px_80px_80px_100px_100px_60px] gap-px text-sm border-b border-surface-800/50 transition-colors',
+                      'grid grid-cols-[28px_60px_60px_1fr_80px_80px_80px_100px_100px_80px] gap-px text-sm border-b border-surface-800/50 transition-colors',
                       isOnAir && 'bg-red-950/40 border-l-2 border-l-red-500',
                       isDone && 'opacity-50',
                       isKilled && 'opacity-30 line-through',
                       item.is_float && !isOnAir && 'bg-amber-950/20',
                       item.is_break && !isOnAir && 'bg-surface-800/30',
                       !isOnAir && !isDone && !isKilled && 'hover:bg-surface-800/30',
+                      draggedId === item.id && 'opacity-40',
+                      dragOverId === item.id && 'border-t-2 border-t-[#FF5F1F]',
                     )}
                     onDoubleClick={() => openEditItem(item)}
                   >
+                    {/* Drag handle */}
+                    <div
+                      className={cn(
+                        'flex items-center justify-center cursor-grab active:cursor-grabbing',
+                        isLive && 'cursor-default opacity-0 pointer-events-none',
+                      )}
+                    >
+                      <svg className="w-3 h-3 text-surface-600 hover:text-surface-400 transition-colors" viewBox="0 0 10 16" fill="currentColor">
+                        <circle cx="2" cy="2" r="1.5" /><circle cx="8" cy="2" r="1.5" />
+                        <circle cx="2" cy="8" r="1.5" /><circle cx="8" cy="8" r="1.5" />
+                        <circle cx="2" cy="14" r="1.5" /><circle cx="8" cy="14" r="1.5" />
+                      </svg>
+                    </div>
+
                     {/* Page */}
                     <div className="px-2 py-2 font-mono text-xs text-surface-400 flex items-center">
                       {item.page_number || `${idx + 1}`}
@@ -526,6 +592,18 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                           [{item.segment_slug}]
                         </span>
                       )}
+                      {item.story_id && (() => {
+                        const linked = stories.find(s => s.id === item.story_id);
+                        const statusInfo = linked ? BROADCAST_STORY_STATUS_OPTIONS.find(o => o.value === linked.status) : null;
+                        return linked ? (
+                          <span
+                            className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0 text-white', statusInfo?.color || 'bg-surface-700')}
+                            title={`Story: ${linked.title}`}
+                          >
+                            {linked.slug || 'STORY'}
+                          </span>
+                        ) : null;
+                      })()}
                       {item.is_float && (
                         <span className="text-[9px] px-1 py-0.5 bg-amber-900/50 text-amber-400 rounded font-bold shrink-0">
                           FLOAT
@@ -598,13 +676,31 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                         </>
                       )}
                       {!isLive && !isDone && (
-                        <button
-                          onClick={() => openEditItem(item)}
-                          className="p-0.5 text-surface-500 hover:text-white transition-colors"
-                          title="Edit"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
+                        <>
+                          <button
+                            onClick={() => openEditItem(item)}
+                            className="p-0.5 text-surface-500 hover:text-white transition-colors"
+                            title="Edit"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          </button>
+                          <button
+                            onClick={() => handleMoveItem(item.id, 'up')}
+                            disabled={idx === 0}
+                            className="p-0.5 text-surface-600 hover:text-white transition-colors disabled:opacity-20"
+                            title="Move up"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
+                          </button>
+                          <button
+                            onClick={() => handleMoveItem(item.id, 'down')}
+                            disabled={idx === items.length - 1}
+                            className="p-0.5 text-surface-600 hover:text-white transition-colors disabled:opacity-20"
+                            title="Move down"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -624,7 +720,8 @@ export default function RundownPage({ params }: { params: { id: string } }) {
               )}
 
               {/* Total row */}
-              <div className="grid grid-cols-[60px_60px_1fr_80px_80px_80px_100px_100px_60px] gap-px bg-surface-900 border-t border-surface-700 text-sm font-bold">
+              <div className="grid grid-cols-[28px_60px_60px_1fr_80px_80px_80px_100px_100px_80px] gap-px bg-surface-900 border-t border-surface-700 text-sm font-bold">
+                <div className="px-2 py-2" />
                 <div className="px-2 py-2" />
                 <div className="px-2 py-2" />
                 <div className="px-2 py-2 text-surface-300">
@@ -830,6 +927,49 @@ export default function RundownPage({ params }: { params: { id: string } }) {
         title={editingItem ? 'Edit Rundown Item' : 'Add Rundown Item'}
       >
         <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+
+          {/* Story link */}
+          <div>
+            <label className="text-xs font-medium text-surface-400 block mb-1">Link to Story <span className="text-surface-600">(optional)</span></label>
+            <select
+              value={itemForm.story_id || ''}
+              onChange={(e) => {
+                const sid = e.target.value || null;
+                const story = stories.find(s => s.id === sid);
+                setItemForm(prev => ({
+                  ...prev,
+                  story_id: sid,
+                  // Auto-fill from story when linking
+                  ...(story ? {
+                    title: prev.title || story.title,
+                    prompter_text: prev.prompter_text || story.script_text || '',
+                    planned_duration: story.estimated_duration || prev.planned_duration,
+                    segment_slug: prev.segment_slug || story.slug || '',
+                  } : {}),
+                }));
+              }}
+              className="w-full bg-surface-800 text-white border border-surface-700 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="">— No linked story —</option>
+              {stories.map(s => {
+                const statusInfo = BROADCAST_STORY_STATUS_OPTIONS.find(o => o.value === s.status);
+                return (
+                  <option key={s.id} value={s.id}>
+                    [{s.slug}] {s.title} · {statusInfo?.label}
+                  </option>
+                );
+              })}
+            </select>
+            {itemForm.story_id && (() => {
+              const s = stories.find(st => st.id === itemForm.story_id);
+              return s ? (
+                <p className="text-[10px] text-surface-500 mt-1">
+                  Status: {s.status} · Type: {s.story_type}{s.estimated_duration ? ` · ${s.estimated_duration}s` : ''}
+                </p>
+              ) : null;
+            })()}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <Input
               label="Title"

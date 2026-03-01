@@ -114,7 +114,7 @@ export default function FeatureFlagsPage() {
   }, {});
 
   if (authLoading || loading) {
-    return <div className="min-h-screen bg-surface-950 flex items-center justify-center"><div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" /></div>;
+    return <div className="min-h-screen bg-surface-950 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" /></div>;
   }
 
   if (!isAdmin) return null;
@@ -154,7 +154,7 @@ export default function FeatureFlagsPage() {
                 <div className={`w-2 h-2 rounded-full ${TIER_CONFIG[t].dot}`} />
                 <span className={`text-xs font-medium ${TIER_CONFIG[t].color}`}>{TIER_CONFIG[t].label}</span>
               </div>
-              <p className="text-2xl font-bold text-white">{tierCounts[t]}</p>
+              <p className="text-2xl font-black text-white">{tierCounts[t]}</p>
               <p className="text-[11px] text-surface-500">features</p>
             </div>
           ))}
@@ -168,15 +168,15 @@ export default function FeatureFlagsPage() {
           </h3>
           <div className="flex gap-6">
             <div>
-              <span className="text-xl font-bold text-purple-400">{insiderStats.alpha}</span>
+              <span className="text-xl font-black text-purple-400">{insiderStats.alpha}</span>
               <span className="text-xs text-surface-500 ml-1.5">Alpha testers</span>
             </div>
             <div>
-              <span className="text-xl font-bold text-amber-400">{insiderStats.beta}</span>
+              <span className="text-xl font-black text-amber-400">{insiderStats.beta}</span>
               <span className="text-xs text-surface-500 ml-1.5">Beta testers</span>
             </div>
             <div>
-              <span className="text-xl font-bold text-white">{insiderStats.total}</span>
+              <span className="text-xl font-black text-white">{insiderStats.total}</span>
               <span className="text-xs text-surface-500 ml-1.5">Total insiders</span>
             </div>
           </div>

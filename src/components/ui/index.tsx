@@ -17,16 +17,16 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'bg-brand-600 text-white hover:bg-brand-700 shadow-sm',
-      secondary: 'bg-surface-800 text-white hover:bg-surface-700 shadow-sm',
-      ghost: 'text-surface-300 hover:text-white hover:bg-white/10',
-      danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
-      outline: 'border border-surface-600 text-surface-300 hover:bg-white/5 hover:text-white',
+      primary: 'text-white shadow-lg hover:-translate-y-px hover:shadow-[#FF5F1F]/20 active:translate-y-0',
+      secondary: 'border border-surface-600 bg-surface-800/80 text-white hover:bg-surface-700 hover:border-surface-500 shadow-sm',
+      ghost: 'text-surface-400 hover:text-white hover:bg-white/8',
+      danger: 'bg-red-600 text-white hover:bg-red-500 shadow-md shadow-red-900/30 hover:-translate-y-px',
+      outline: 'border border-surface-600 text-surface-300 hover:border-[#FF5F1F]/60 hover:text-white hover:bg-white/4',
     };
     const sizes = {
-      sm: 'px-3 py-1.5 text-xs',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base',
+      sm: 'px-3 py-1.5 text-xs font-semibold',
+      md: 'px-4 py-2.5 text-sm font-semibold',
+      lg: 'px-6 py-3 text-base font-bold',
       icon: 'p-2',
     };
 
@@ -35,8 +35,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(
           'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5F1F] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
           'disabled:opacity-50 disabled:cursor-not-allowed',
+          variant === 'primary' && 'bg-gradient-to-r from-[#E54E15] to-[#FF5F1F]',
           variants[variant],
           sizes[size],
           className
@@ -85,12 +86,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              'w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white',
-              'placeholder:text-surface-500',
-              'focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500',
-              'transition-colors duration-200',
+              'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
+              'border-surface-700/80 placeholder:text-surface-600',
+              'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+              'transition-all duration-200',
               icon && 'pl-10',
-              error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
+              error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
               className
             )}
             {...props}
@@ -124,11 +125,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           className={cn(
-            'w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white',
-            'placeholder:text-surface-500 resize-none',
-            'focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500',
-            'transition-colors duration-200',
-            error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
+            'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
+            'border-surface-700/80 placeholder:text-surface-600 resize-none',
+            'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+            'transition-all duration-200',
+            error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
             className
           )}
           {...props}
@@ -162,10 +163,11 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={cn(
-            'w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white',
-            'focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500',
-            'transition-colors duration-200',
-            error && 'border-red-500',
+            'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
+            'border-surface-700/80',
+            'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+            'transition-all duration-200',
+            error && 'border-red-500/70',
             className
           )}
           {...props}
@@ -196,21 +198,21 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', size = 'sm', className }: BadgeProps) {
   const variants = {
-    default: 'bg-surface-700 text-surface-300',
-    success: 'bg-green-500/20 text-green-400',
-    warning: 'bg-yellow-500/20 text-yellow-400',
-    error: 'bg-red-500/20 text-red-400',
-    info: 'bg-blue-500/20 text-blue-400',
+    default: 'bg-surface-700/80 border border-surface-600/50 text-surface-300',
+    success: 'bg-green-500/15 border border-green-500/30 text-green-400',
+    warning: 'bg-yellow-500/15 border border-yellow-500/30 text-yellow-300',
+    error: 'bg-red-500/15 border border-red-500/30 text-red-400',
+    info: 'bg-blue-500/15 border border-blue-500/30 text-blue-400',
   };
   const sizes = {
-    sm: 'px-2 py-0.5 text-[10px]',
-    md: 'px-2.5 py-1 text-xs',
+    sm: 'px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+    md: 'px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide',
   };
 
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full font-medium',
+        'inline-flex items-center rounded-full',
         variants[variant],
         sizes[size],
         className
@@ -236,8 +238,9 @@ export function Card({ children, className, hover = false, onClick }: CardProps)
   return (
     <div
       className={cn(
-        'rounded-xl border border-surface-800 bg-surface-900/50 backdrop-blur-sm transition-all duration-200',
-        hover && 'hover:border-surface-600 hover:bg-surface-800/50 hover:-translate-y-[1px] hover:shadow-lg hover:shadow-black/10 cursor-pointer',
+        'rounded-xl border transition-all duration-200',
+        'border-surface-800/80 bg-surface-900/60 backdrop-blur-sm',
+        hover && 'hover:border-surface-600/80 hover:bg-surface-800/60 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/20 cursor-pointer',
         onClick && 'cursor-pointer',
         className
       )}
@@ -302,8 +305,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           )}
         >
           {title && (
-            <div className="flex items-center justify-between border-b border-surface-800 px-6 py-4">
-              <h2 className="text-lg font-semibold text-white">{title}</h2>
+            <div className="flex items-center justify-between border-b border-surface-800/80 px-6 py-4">
+              <h2 className="text-lg font-black text-white tracking-tight">{title}</h2>
               <button
                 onClick={onClose}
                 className="rounded-lg p-1.5 text-surface-400 hover:bg-white/10 hover:text-white transition-colors"
@@ -398,7 +401,7 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
   return (
-    <div role="tablist" className={cn('flex gap-1 rounded-lg bg-surface-900 p-1', className)}>
+    <div role="tablist" className={cn('flex gap-0.5 rounded-xl p-1', 'bg-surface-900/80 border border-surface-800/60', className)}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -406,16 +409,17 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
           aria-selected={activeTab === tab.id}
           onClick={() => onChange(tab.id)}
           className={cn(
-            'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200',
+            'flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-wide transition-all duration-200',
             activeTab === tab.id
-              ? 'bg-surface-700 text-white shadow-sm'
-              : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800'
+              ? 'bg-surface-700 text-white shadow-md'
+              : 'text-surface-500 hover:text-surface-200 hover:bg-surface-800/60'
           )}
+          style={activeTab === tab.id ? { boxShadow: '0 0 0 1px rgba(255,95,31,0.25) inset' } : {}}
         >
           {tab.icon}
           {tab.label}
           {tab.count !== undefined && (
-            <span className="ml-1 rounded-full bg-surface-600 px-1.5 py-0.5 text-[10px]">
+            <span className="ml-1 rounded-full bg-surface-600 px-1.5 py-0.5 text-[9px] font-bold">
               {tab.count}
             </span>
           )}
@@ -438,13 +442,18 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      {icon && <div className="mb-4 text-surface-600">{icon}</div>}
-      <h3 className="text-lg font-semibold text-white">{title}</h3>
-      {description && (
-        <p className="mt-1 max-w-sm text-sm text-surface-400">{description}</p>
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      {icon && (
+        <div className="mb-6 w-16 h-16 rounded-2xl flex items-center justify-center"
+          style={{ background: 'rgba(255,95,31,0.08)', border: '1px solid rgba(255,95,31,0.2)', color: '#FF5F1F' }}>
+          {icon}
+        </div>
       )}
-      {action && <div className="mt-6">{action}</div>}
+      <h3 className="text-xl font-black text-white tracking-tight">{title}</h3>
+      {description && (
+        <p className="mt-2 max-w-sm text-sm text-surface-500 leading-relaxed">{description}</p>
+      )}
+      {action && <div className="mt-8">{action}</div>}
     </div>
   );
 }
@@ -456,7 +465,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 export function LoadingSpinner({ className }: { className?: string }) {
   return (
     <div className={cn('flex items-center justify-center', className)}>
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-surface-700 border-t-brand-500" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-surface-700 border-t-[#FF5F1F]" />
     </div>
   );
 }
@@ -465,7 +474,7 @@ export function LoadingPage() {
   return (
     <div className="flex h-screen items-center justify-center bg-surface-950">
       <div className="text-center">
-        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-surface-700 border-t-brand-500" />
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-surface-700 border-t-[#FF5F1F]" />
         <p className="mt-4 text-sm text-surface-400">Loading...</p>
       </div>
     </div>
@@ -564,19 +573,20 @@ export function Progress({ value, max = 100, label, showPercent = true, color, c
   const percent = Math.round((value / max) * 100);
 
   return (
-    <div className={cn('space-y-1', className)}>
+    <div className={cn('space-y-1.5', className)}>
       {(label || showPercent) && (
-        <div className="flex items-center justify-between text-xs">
-          {label && <span className="text-surface-400">{label}</span>}
-          {showPercent && <span className="text-surface-500">{percent}%</span>}
+        <div className="flex items-center justify-between">
+          {label && <span className="text-[11px] font-bold uppercase tracking-wider text-surface-500">{label}</span>}
+          {showPercent && <span className="text-[11px] font-bold text-surface-400">{percent}%</span>}
         </div>
       )}
-      <div className="h-2 overflow-hidden rounded-full bg-surface-800">
+      <div className="h-2.5 overflow-hidden rounded-full bg-surface-800" style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)' }}>
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full transition-all duration-700"
           style={{
             width: `${percent}%`,
-            backgroundColor: color || '#dd574e',
+            backgroundColor: color || '#FF5F1F',
+            boxShadow: `0 0 8px ${color || '#FF5F1F'}80`,
           }}
         />
       </div>
@@ -777,9 +787,9 @@ export function Toggle({ checked, onChange, label, description, disabled, size =
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
         className={cn(
-          'relative inline-flex shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
+          'relative inline-flex shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5F1F] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
           trackSize,
-          checked ? 'bg-brand-600' : 'bg-surface-700',
+          checked ? 'bg-[#E54E15]' : 'bg-surface-700',
         )}
       >
         <span

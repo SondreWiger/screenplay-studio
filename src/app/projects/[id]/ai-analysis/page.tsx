@@ -345,7 +345,7 @@ function StatCard({ label, value, sub, icon }: { label: string; value: string | 
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs text-surface-400 uppercase tracking-wider">{label}</p>
-          <p className="text-2xl font-bold text-white mt-1">{value}</p>
+          <p className="text-2xl font-black text-white mt-1">{value}</p>
           {sub && <p className="text-xs text-surface-500 mt-0.5">{sub}</p>}
         </div>
         {icon && <span className="text-2xl">{icon}</span>}
@@ -460,7 +460,7 @@ export default function AIAnalysisPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">📊</div>
-          <h2 className="text-xl font-bold text-white mb-2">Script Analysis</h2>
+          <h2 className="text-xl font-black text-white mb-2">Script Analysis</h2>
           <p className="text-sm text-surface-400 mb-6">Get in-depth computational analysis of your screenplay — dialogue breakdown, pacing, scene metrics, and production readiness.</p>
           <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
         </Card>
@@ -500,7 +500,7 @@ export default function AIAnalysisPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Script Analysis</h1>
+          <h1 className="text-2xl font-black text-white">Script Analysis</h1>
           <p className="text-sm text-surface-400 mt-1">Computed from {overview.totalElements.toLocaleString()} script elements</p>
         </div>
         <Button onClick={loadAnalysis}>
@@ -566,7 +566,7 @@ export default function AIAnalysisPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Avg Scene Length</h4>
-              <p className="text-xl font-bold text-white">
+              <p className="text-xl font-black text-white">
                 {sceneAnalyses.length > 0 ? (overview.totalWords / sceneAnalyses.length).toFixed(0) : 0} words
               </p>
               <p className="text-xs text-surface-500 mt-1">
@@ -577,7 +577,7 @@ export default function AIAnalysisPage() {
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Top Character</h4>
               {characterDialogues.length > 0 ? (
                 <>
-                  <p className="text-xl font-bold text-white">{characterDialogues[0].name}</p>
+                  <p className="text-xl font-black text-white">{characterDialogues[0].name}</p>
                   <p className="text-xs text-surface-500 mt-1">{characterDialogues[0].wordCount.toLocaleString()} dialogue words</p>
                 </>
               ) : (
@@ -586,7 +586,7 @@ export default function AIAnalysisPage() {
             </Card>
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Speakers per Scene</h4>
-              <p className="text-xl font-bold text-white">{avgSpeakersPerScene}</p>
+              <p className="text-xl font-black text-white">{avgSpeakersPerScene}</p>
               <p className="text-xs text-surface-500 mt-1">average speaking characters</p>
             </Card>
           </div>
@@ -715,7 +715,7 @@ export default function AIAnalysisPage() {
 
         return (
           <div className="space-y-6">
-            <Card className="p-5 border border-brand-500/20">
+            <Card className="p-5 border border-[#FF5F1F]/20">
               <h3 className="text-base font-semibold text-white mb-2">Script Feedback</h3>
               <p className="text-sm text-surface-400">Actionable suggestions based on analysis of your {overview.totalElements.toLocaleString()} script elements, {overview.totalScenes} scenes, and {characterDialogues.length} speaking characters.</p>
             </Card>
@@ -816,7 +816,7 @@ export default function AIAnalysisPage() {
                     {characterDialogues.slice(0, 5).map((cd, i) => (
                       <div key={cd.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] flex items-center justify-center font-bold">{i + 1}</span>
+                          <span className="w-5 h-5 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-[10px] flex items-center justify-center font-bold">{i + 1}</span>
                           <span className="text-sm text-surface-200">{cd.name}</span>
                         </div>
                         <span className="text-xs text-surface-400">{cd.wordCount.toLocaleString()} words</span>
@@ -1010,17 +1010,17 @@ export default function AIAnalysisPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Dialogue-Heavy Scenes</h4>
-              <p className="text-2xl font-bold text-amber-400">{dialogueHeavyScenes.length}</p>
+              <p className="text-2xl font-black text-amber-400">{dialogueHeavyScenes.length}</p>
               <p className="text-xs text-surface-500">&gt;50% dialogue by word count</p>
             </Card>
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Action-Heavy Scenes</h4>
-              <p className="text-2xl font-bold text-blue-400">{actionHeavyScenes.length}</p>
+              <p className="text-2xl font-black text-blue-400">{actionHeavyScenes.length}</p>
               <p className="text-xs text-surface-500">≤50% dialogue by word count</p>
             </Card>
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Avg Scene Words</h4>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-black text-white">
                 {sceneAnalyses.length > 0 ? Math.round(overview.totalWords / sceneAnalyses.length) : 0}
               </p>
               <p className="text-xs text-surface-500">

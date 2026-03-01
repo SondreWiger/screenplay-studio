@@ -13,7 +13,7 @@ export default function NotFound() {
       <div className="mt-8 flex gap-3">
         <Link
           href="/"
-          className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-500"
+          className="rounded-lg bg-[#E54E15] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#FF5F1F]"
         >
           Go Home
         </Link>

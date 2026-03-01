@@ -286,7 +286,7 @@ export default function SecuritySettingsPage() {
           <span className="text-white">Security</span>
         </div>
 
-        <h1 className="text-2xl font-bold text-white mb-8">Security &amp; Privacy</h1>
+        <h1 className="text-2xl font-black text-white mb-8" style={{ letterSpacing: '-0.03em' }}>SECURITY &amp; PRIVACY</h1>
 
         {/* Status message */}
         {message && (
@@ -439,7 +439,7 @@ export default function SecuritySettingsPage() {
                     type="checkbox"
                     checked={consent.marketing_emails}
                     onChange={(e) => setConsent((prev) => ({ ...prev, marketing_emails: e.target.checked }))}
-                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-brand-500 focus:ring-brand-500"
+                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   <div>
                     <p className="text-surface-200 text-sm font-medium">Marketing Emails</p>
@@ -452,7 +452,7 @@ export default function SecuritySettingsPage() {
                     type="checkbox"
                     checked={consent.analytics_tracking}
                     onChange={(e) => setConsent((prev) => ({ ...prev, analytics_tracking: e.target.checked }))}
-                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-brand-500 focus:ring-brand-500"
+                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-[#FF5F1F] focus:ring-[#FF5F1F]"
                   />
                   <div>
                     <p className="text-surface-200 text-sm font-medium">Analytics Tracking</p>

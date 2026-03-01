@@ -138,7 +138,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Characters</h1>
+          <h1 className="text-2xl font-black text-white">Characters</h1>
           <p className="text-sm text-surface-400 mt-1">
             {characters.length} characters in this project
             {characters.filter(needsSetup).length > 0 && (
@@ -177,8 +177,8 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
             className={cn(
               'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
               filter === f
-                ? 'bg-brand-600/20 text-brand-400'
-                : 'text-surface-400 hover:text-white hover:bg-white/5'
+                ? 'bg-[#E54E15]/20 text-[#FF5F1F]'
+                : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
             )}
           >
             {f === 'all' ? 'All' : f === 'main' ? 'Main Cast' : f === 'needs_setup' ? `Needs Setup (${characters.filter(needsSetup).length})` : 'Supporting'}

@@ -71,7 +71,7 @@ export default function BillingPage() {
     <div className="min-h-screen bg-surface-950">
       <AppHeader />
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-16">
-        <h1 className="text-2xl font-bold text-white mb-8">Billing & Subscription</h1>
+        <h1 className="text-2xl font-black text-white mb-8" style={{ letterSpacing: '-0.03em' }}>BILLING &amp; SUBSCRIPTION</h1>
 
         {/* Current Plan */}
         <Card className="p-6 mb-6">

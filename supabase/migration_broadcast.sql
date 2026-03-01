@@ -31,7 +31,7 @@ BEGIN
   ) OR EXISTS (
     SELECT 1 FROM projects
     WHERE id = p_project_id
-      AND user_id = auth.uid()
+      AND created_by = auth.uid()
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -517,77 +517,77 @@ ALTER TABLE broadcast_as_run_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE broadcast_timing_marks ENABLE ROW LEVEL SECURITY;
 
 -- Stories
-CREATE POLICY "bcast_stories_sel" ON broadcast_stories FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_stories_ins" ON broadcast_stories FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_stories_upd" ON broadcast_stories FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_stories_del" ON broadcast_stories FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_stories_sel" ON broadcast_stories FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_stories_ins" ON broadcast_stories FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_stories_upd" ON broadcast_stories FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_stories_del" ON broadcast_stories FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Story versions
-CREATE POLICY "bcast_sv_sel" ON broadcast_story_versions FOR SELECT
+CREATE POLICY IF NOT EXISTS "bcast_sv_sel" ON broadcast_story_versions FOR SELECT
   USING (EXISTS (SELECT 1 FROM broadcast_stories s WHERE s.id = story_id AND is_broadcast_member(s.project_id)));
-CREATE POLICY "bcast_sv_ins" ON broadcast_story_versions FOR INSERT
+CREATE POLICY IF NOT EXISTS "bcast_sv_ins" ON broadcast_story_versions FOR INSERT
   WITH CHECK (EXISTS (SELECT 1 FROM broadcast_stories s WHERE s.id = story_id AND is_broadcast_member(s.project_id)));
 
 -- Rundowns
-CREATE POLICY "bcast_rundowns_sel" ON broadcast_rundowns FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_rundowns_ins" ON broadcast_rundowns FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_rundowns_upd" ON broadcast_rundowns FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_rundowns_del" ON broadcast_rundowns FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_rundowns_sel" ON broadcast_rundowns FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_rundowns_ins" ON broadcast_rundowns FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_rundowns_upd" ON broadcast_rundowns FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_rundowns_del" ON broadcast_rundowns FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Rundown items
-CREATE POLICY "bcast_ri_sel" ON broadcast_rundown_items FOR SELECT
+CREATE POLICY IF NOT EXISTS "bcast_ri_sel" ON broadcast_rundown_items FOR SELECT
   USING (EXISTS (SELECT 1 FROM broadcast_rundowns r WHERE r.id = rundown_id AND is_broadcast_member(r.project_id)));
-CREATE POLICY "bcast_ri_ins" ON broadcast_rundown_items FOR INSERT
+CREATE POLICY IF NOT EXISTS "bcast_ri_ins" ON broadcast_rundown_items FOR INSERT
   WITH CHECK (EXISTS (SELECT 1 FROM broadcast_rundowns r WHERE r.id = rundown_id AND is_broadcast_member(r.project_id)));
-CREATE POLICY "bcast_ri_upd" ON broadcast_rundown_items FOR UPDATE
+CREATE POLICY IF NOT EXISTS "bcast_ri_upd" ON broadcast_rundown_items FOR UPDATE
   USING (EXISTS (SELECT 1 FROM broadcast_rundowns r WHERE r.id = rundown_id AND is_broadcast_member(r.project_id)));
-CREATE POLICY "bcast_ri_del" ON broadcast_rundown_items FOR DELETE
+CREATE POLICY IF NOT EXISTS "bcast_ri_del" ON broadcast_rundown_items FOR DELETE
   USING (EXISTS (SELECT 1 FROM broadcast_rundowns r WHERE r.id = rundown_id AND is_broadcast_member(r.project_id)));
 
 -- Wire feeds
-CREATE POLICY "bcast_wf_sel" ON broadcast_wire_feeds FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_wf_ins" ON broadcast_wire_feeds FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_wf_upd" ON broadcast_wire_feeds FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_wf_del" ON broadcast_wire_feeds FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_wf_sel" ON broadcast_wire_feeds FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_wf_ins" ON broadcast_wire_feeds FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_wf_upd" ON broadcast_wire_feeds FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_wf_del" ON broadcast_wire_feeds FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Wire stories
-CREATE POLICY "bcast_ws_sel" ON broadcast_wire_stories FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_ws_ins" ON broadcast_wire_stories FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_ws_upd" ON broadcast_wire_stories FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_ws_del" ON broadcast_wire_stories FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_ws_sel" ON broadcast_wire_stories FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_ws_ins" ON broadcast_wire_stories FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_ws_upd" ON broadcast_wire_stories FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_ws_del" ON broadcast_wire_stories FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Sources
-CREATE POLICY "bcast_src_sel" ON broadcast_sources FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_src_ins" ON broadcast_sources FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_src_upd" ON broadcast_sources FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_src_del" ON broadcast_sources FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_src_sel" ON broadcast_sources FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_src_ins" ON broadcast_sources FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_src_upd" ON broadcast_sources FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_src_del" ON broadcast_sources FOR DELETE USING (is_broadcast_member(project_id));
 
 -- MOS devices
-CREATE POLICY "bcast_mos_sel" ON broadcast_mos_devices FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_mos_ins" ON broadcast_mos_devices FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_mos_upd" ON broadcast_mos_devices FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_mos_del" ON broadcast_mos_devices FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_mos_sel" ON broadcast_mos_devices FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_mos_ins" ON broadcast_mos_devices FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_mos_upd" ON broadcast_mos_devices FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_mos_del" ON broadcast_mos_devices FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Graphics templates
-CREATE POLICY "bcast_gt_sel" ON broadcast_graphics_templates FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_gt_ins" ON broadcast_graphics_templates FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_gt_upd" ON broadcast_graphics_templates FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_gt_del" ON broadcast_graphics_templates FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gt_sel" ON broadcast_graphics_templates FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gt_ins" ON broadcast_graphics_templates FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gt_upd" ON broadcast_graphics_templates FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gt_del" ON broadcast_graphics_templates FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Graphics cues
-CREATE POLICY "bcast_gc_sel" ON broadcast_graphics_cues FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_gc_ins" ON broadcast_graphics_cues FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_gc_upd" ON broadcast_graphics_cues FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_gc_del" ON broadcast_graphics_cues FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gc_sel" ON broadcast_graphics_cues FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gc_ins" ON broadcast_graphics_cues FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gc_upd" ON broadcast_graphics_cues FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_gc_del" ON broadcast_graphics_cues FOR DELETE USING (is_broadcast_member(project_id));
 
 -- As-run
-CREATE POLICY "bcast_ar_sel" ON broadcast_as_run_log FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_ar_ins" ON broadcast_as_run_log FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_ar_del" ON broadcast_as_run_log FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_ar_sel" ON broadcast_as_run_log FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_ar_ins" ON broadcast_as_run_log FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_ar_del" ON broadcast_as_run_log FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Timing marks
-CREATE POLICY "bcast_tm_sel" ON broadcast_timing_marks FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_tm_ins" ON broadcast_timing_marks FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_tm_sel" ON broadcast_timing_marks FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_tm_ins" ON broadcast_timing_marks FOR INSERT WITH CHECK (is_broadcast_member(project_id));
 
 -- ════════════════════════════════════════════════════════════
 -- TRIGGERS
@@ -947,34 +947,34 @@ ALTER TABLE broadcast_comms_channels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE broadcast_playout_items ENABLE ROW LEVEL SECURITY;
 
 -- Stream ingests
-CREATE POLICY "bcast_si_sel" ON broadcast_stream_ingests FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_si_ins" ON broadcast_stream_ingests FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_si_upd" ON broadcast_stream_ingests FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_si_del" ON broadcast_stream_ingests FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_si_sel" ON broadcast_stream_ingests FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_si_ins" ON broadcast_stream_ingests FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_si_upd" ON broadcast_stream_ingests FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_si_del" ON broadcast_stream_ingests FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Stream outputs
-CREATE POLICY "bcast_so_sel" ON broadcast_stream_outputs FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_so_ins" ON broadcast_stream_outputs FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_so_upd" ON broadcast_stream_outputs FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_so_del" ON broadcast_stream_outputs FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_so_sel" ON broadcast_stream_outputs FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_so_ins" ON broadcast_stream_outputs FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_so_upd" ON broadcast_stream_outputs FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_so_del" ON broadcast_stream_outputs FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Switcher state
-CREATE POLICY "bcast_sw_sel" ON broadcast_switcher_state FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_sw_ins" ON broadcast_switcher_state FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_sw_upd" ON broadcast_switcher_state FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_sw_del" ON broadcast_switcher_state FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_sw_sel" ON broadcast_switcher_state FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_sw_ins" ON broadcast_switcher_state FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_sw_upd" ON broadcast_switcher_state FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_sw_del" ON broadcast_switcher_state FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Comms channels
-CREATE POLICY "bcast_cc_sel" ON broadcast_comms_channels FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_cc_ins" ON broadcast_comms_channels FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_cc_upd" ON broadcast_comms_channels FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_cc_del" ON broadcast_comms_channels FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_cc_sel" ON broadcast_comms_channels FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_cc_ins" ON broadcast_comms_channels FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_cc_upd" ON broadcast_comms_channels FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_cc_del" ON broadcast_comms_channels FOR DELETE USING (is_broadcast_member(project_id));
 
 -- Playout items
-CREATE POLICY "bcast_pl_sel" ON broadcast_playout_items FOR SELECT USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_pl_ins" ON broadcast_playout_items FOR INSERT WITH CHECK (is_broadcast_member(project_id));
-CREATE POLICY "bcast_pl_upd" ON broadcast_playout_items FOR UPDATE USING (is_broadcast_member(project_id));
-CREATE POLICY "bcast_pl_del" ON broadcast_playout_items FOR DELETE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_pl_sel" ON broadcast_playout_items FOR SELECT USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_pl_ins" ON broadcast_playout_items FOR INSERT WITH CHECK (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_pl_upd" ON broadcast_playout_items FOR UPDATE USING (is_broadcast_member(project_id));
+CREATE POLICY IF NOT EXISTS "bcast_pl_del" ON broadcast_playout_items FOR DELETE USING (is_broadcast_member(project_id));
 
 -- New triggers
 CREATE TRIGGER trg_broadcast_stream_ingests_updated BEFORE UPDATE ON broadcast_stream_ingests FOR EACH ROW EXECUTE FUNCTION broadcast_set_updated_at();

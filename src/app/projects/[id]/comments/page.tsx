@@ -83,7 +83,7 @@ function CommentThread({ comment, allComments, depth, canEdit, userId, projectId
 
         {/* Actions */}
         <div className="flex items-center gap-3 mt-1.5">
-          <button onClick={() => setShowReply(!showReply)} className="text-[11px] text-surface-500 hover:text-brand-400 transition-colors">
+          <button onClick={() => setShowReply(!showReply)} className="text-[11px] text-surface-500 hover:text-[#FF5F1F] transition-colors">
             Reply
           </button>
           {canEdit && comment.comment_type === 'issue' && !comment.is_resolved && (
@@ -289,10 +289,10 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Comments</h1>
+          <h1 className="text-2xl font-black text-white">Comments</h1>
           <p className="text-sm text-surface-400 mt-1">
             {comments.length} comment{comments.length !== 1 ? 's' : ''}
-            {scriptCommentCount > 0 && <span className="text-brand-400"> &bull; {scriptCommentCount} on script</span>}
+            {scriptCommentCount > 0 && <span className="text-[#FF5F1F]"> &bull; {scriptCommentCount} on script</span>}
             {issueCount > 0 && <span className="text-red-400"> &bull; {issueCount} open issue{issueCount !== 1 ? 's' : ''}</span>}
           </p>
         </div>
@@ -336,7 +336,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
         ].map(f => (
           <button key={f.key} onClick={() => setFilter(f.key as any)} className={cn(
             'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-            filter === f.key ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+            filter === f.key ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
           )}>{f.label}</button>
         ))}
       </div>
@@ -355,7 +355,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
               <div key={comment.id}>
                 {el && (
                   <div className="flex items-center gap-2 px-3 pt-2 pb-0.5">
-                    <span className="text-[9px] uppercase font-semibold tracking-wider text-brand-400">
+                    <span className="text-[9px] uppercase font-semibold tracking-wider text-[#FF5F1F]">
                       {ELEMENT_LABELS[el.element_type] || 'Element'}
                     </span>
                     <span className="text-xs text-surface-400 truncate max-w-md">{el.content || 'Empty'}</span>

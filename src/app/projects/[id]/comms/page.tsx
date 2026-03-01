@@ -300,7 +300,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                   className={cn(
                     'p-2 rounded border text-xs text-left transition-colors',
                     newType === t.value
-                      ? 'border-brand-500 bg-brand-500/10 text-white'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-white'
                       : 'border-surface-700 text-surface-400 hover:border-surface-500'
                   )}
                 >

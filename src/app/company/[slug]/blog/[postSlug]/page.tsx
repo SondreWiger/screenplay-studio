@@ -103,7 +103,7 @@ export default function CompanyBlogPostPage() {
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="text-center">
           <p className="text-surface-400 mb-4">Post not found.</p>
-          <Link href={`/company/${slug}/blog`} className="text-brand-400 hover:underline text-sm">
+          <Link href={`/company/${slug}/blog`} className="text-[#FF5F1F] hover:underline text-sm">
             ← Back to blog
           </Link>
         </div>
@@ -123,10 +123,10 @@ export default function CompanyBlogPostPage() {
         return <h3 key={i} className="text-lg font-semibold text-white mt-6 mb-2">{trimmed.slice(4)}</h3>;
       }
       if (trimmed.startsWith('## ')) {
-        return <h2 key={i} className="text-xl font-bold text-white mt-8 mb-3">{trimmed.slice(3)}</h2>;
+        return <h2 key={i} className="text-xl font-black text-white mt-8 mb-3">{trimmed.slice(3)}</h2>;
       }
       if (trimmed.startsWith('# ')) {
-        return <h1 key={i} className="text-2xl font-bold text-white mt-8 mb-3">{trimmed.slice(2)}</h1>;
+        return <h1 key={i} className="text-2xl font-black text-white mt-8 mb-3">{trimmed.slice(2)}</h1>;
       }
 
       // Process inline bold/italic
@@ -171,7 +171,7 @@ export default function CompanyBlogPostPage() {
           ))}
         </div>
 
-        <h1 className="text-3xl font-bold text-white leading-tight">{post.title}</h1>
+        <h1 className="text-3xl font-black text-white leading-tight">{post.title}</h1>
 
         {/* Author row */}
         <div className="flex items-center gap-3 mt-6 mb-8 pb-6 border-b border-surface-800">
@@ -212,7 +212,7 @@ export default function CompanyBlogPostPage() {
             ) : (
               <Card className="p-6 text-center mb-8">
                 <p className="text-sm text-surface-400">
-                  <Link href={`/auth/login?redirect=/company/${slug}/blog/${postSlug}`} className="text-brand-400 hover:underline">Sign in</Link>
+                  <Link href={`/auth/login?redirect=/company/${slug}/blog/${postSlug}`} className="text-[#FF5F1F] hover:underline">Sign in</Link>
                   {' '}to leave a comment.
                 </p>
               </Card>

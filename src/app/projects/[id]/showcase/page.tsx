@@ -103,7 +103,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
           </svg>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">Showcase Settings</h1>
+          <h1 className="text-2xl font-black text-white">Showcase Settings</h1>
           <p className="text-sm text-surface-400">Configure how your project appears in the community showcase.</p>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
             placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
           />
           <p className="text-[11px] text-surface-500 -mt-2">YouTube, Vimeo, or any link to the finished product.</p>
-          <label className="flex items-center gap-3 p-3 rounded-lg border border-surface-700 bg-surface-900/50 hover:border-brand-500/30 transition-colors cursor-pointer">
+          <label className="flex items-center gap-3 p-3 rounded-lg border border-surface-700 bg-surface-900/50 hover:border-[#FF5F1F]/30 transition-colors cursor-pointer">
             <input
               type="checkbox"
               checked={isShowcased}
@@ -244,7 +244,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
               ))}
               <button
                 onClick={() => setSetPhotos([...setPhotos, { url: '', caption: '', scene: '', context: '' }])}
-                className="text-sm text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+                className="text-sm text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 Add photo
@@ -308,7 +308,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
               ))}
               <button
                 onClick={() => setProductionTrivia([...productionTrivia, { title: '', content: '' }])}
-                className="text-sm text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+                className="text-sm text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 Add trivia item

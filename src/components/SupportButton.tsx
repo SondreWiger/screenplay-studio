@@ -49,16 +49,33 @@ export function SupportButton() {
             <p className="text-xs text-surface-400 mt-0.5">We&apos;re here to help</p>
           </div>
           <div className="p-2">
+            {/* Report a Bug — top priority quick action */}
+            <Link
+              href="/support?bug=1"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors group/bug"
+            >
+              <span className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center group-hover/bug:bg-red-500/20 transition-colors">
+                <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </span>
+              <div>
+                <span className="font-medium text-red-300">Report a Bug</span>
+                <p className="text-[11px] text-surface-500 mt-0.5">Found something broken? Tell us</p>
+              </div>
+            </Link>
+            <div className="my-1 mx-3 border-t border-surface-800" />
             <Link
               href="/support"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center"><Icon name="ticket" size="sm" className="text-brand-400" /></span>
+              <span className="w-8 h-8 rounded-lg bg-[#FF5F1F]/10 border border-[#FF5F1F]/20 flex items-center justify-center"><Icon name="ticket" size="sm" className="text-[#FF5F1F]" /></span>
               <div className="flex-1 min-w-0">
                 <span className="font-medium">Support Tickets</span>
                 {openTicketCount > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-brand-500/20 text-brand-400 rounded-full">
+                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-[#FF5F1F]/20 text-[#FF5F1F] rounded-full">
                     {openTicketCount} open
                   </span>
                 )}
@@ -110,7 +127,7 @@ export function SupportButton() {
         className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
           open
             ? 'bg-surface-700 text-white rotate-45 shadow-surface-900/50'
-            : 'bg-brand-600 hover:bg-brand-500 text-white shadow-brand-600/30 hover:shadow-brand-500/40 hover:scale-105'
+            : 'bg-[#E54E15] hover:bg-[#FF5F1F] text-white shadow-[#E54E15]/30 hover:shadow-[#FF5F1F]/40 hover:scale-105'
         }`}
         title="Help & Support"
       >

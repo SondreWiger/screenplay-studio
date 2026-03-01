@@ -56,41 +56,52 @@ export default function BlogPage() {
   const rest = filtered.slice(1);
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+      {/* Dot-grid texture */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#faf9f7]/90 backdrop-blur-md border-b border-stone-200">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+      <nav
+        className="sticky top-0 z-30 backdrop-blur-xl"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}
+      >
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
-              </svg>
+            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-lg font-bold text-stone-900 group-hover:text-brand-600 transition-colors">
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
 
           <div className="flex items-center gap-6">
-            <span className="text-sm font-semibold text-stone-900 border-b-2 border-brand-500 pb-0.5">
-              Blog
-            </span>
-            <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+            <span className="ss-label" style={{ color: '#FF5F1F' }}>Blog</span>
+            <Link href="/community" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
               Community
             </Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/dashboard" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
                   Dashboard
                 </Link>
-                <button onClick={handleSignOut} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+                <button onClick={handleSignOut} className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
                   Sign Out
                 </button>
                 <div className="flex items-center gap-2">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
+                    <div
+                      className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white"
+                      style={{ background: '#FF5F1F' }}
+                    >
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
                     </div>
                   )}
@@ -98,13 +109,10 @@ export default function BlogPage() {
               </>
             ) : (
               <>
-                <Link href="/auth/login?redirect=/blog" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+                <Link href="/auth/login?redirect=/blog" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
                   Sign In
                 </Link>
-                <Link
-                  href="/auth/register?redirect=/blog"
-                  className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors"
-                >
+                <Link href="/auth/register?redirect=/blog" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>
                   Get Started
                 </Link>
               </>
@@ -114,26 +122,27 @@ export default function BlogPage() {
       </nav>
 
       {/* Header */}
-      <header className="max-w-6xl mx-auto px-6 pt-16 pb-12">
-        <h1 className="text-5xl md:text-6xl font-bold text-stone-900 tracking-tight">
-          The Studio Blog
+      <header className="max-w-6xl mx-auto px-6 pt-16 pb-12 relative z-10">
+        <div className="flex items-center gap-2.5 mb-5">
+          <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
+          <span className="ss-label">Publishing</span>
+        </div>
+        <h1 className="font-black text-white" style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)', letterSpacing: '-0.04em', lineHeight: 0.88 }}>
+          THE STUDIO BLOG
         </h1>
-        <p className="mt-4 text-xl text-stone-500 max-w-2xl">
+        <p className="mt-6 text-base text-white/30 max-w-2xl leading-relaxed">
           Updates, insights, and behind-the-scenes from the development of Screenplay Studio.
         </p>
       </header>
 
       {/* Tags filter */}
       {allTags.length > 0 && (
-        <div className="max-w-6xl mx-auto px-6 pb-8">
+        <div className="max-w-6xl mx-auto px-6 pb-10 relative z-10">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedTag(null)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                !selectedTag
-                  ? 'bg-stone-900 text-white'
-                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-              }`}
+              className="ss-tag"
+              style={!selectedTag ? { background: '#FF5F1F', borderColor: '#FF5F1F', color: '#fff' } : undefined}
             >
               All Posts
             </button>
@@ -141,11 +150,8 @@ export default function BlogPage() {
               <button
                 key={tag}
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedTag === tag
-                    ? 'bg-stone-900 text-white'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                }`}
+                className="ss-tag"
+                style={selectedTag === tag ? { background: '#FF5F1F', borderColor: '#FF5F1F', color: '#fff' } : undefined}
               >
                 {tag}
               </button>
@@ -157,28 +163,37 @@ export default function BlogPage() {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-32">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+          <div className="h-6 w-6 animate-spin" style={{ border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#FF5F1F', borderRadius: 0 }} />
         </div>
       )}
 
       {/* Empty state */}
       {!loading && filtered.length === 0 && (
-        <div className="max-w-6xl mx-auto px-6 py-24 text-center">
-          <div className="text-5xl mb-4">📝</div>
-          <h2 className="text-2xl font-bold text-stone-900 mb-2">No posts yet</h2>
-          <p className="text-stone-500">Check back soon for updates!</p>
+        <div className="max-w-6xl mx-auto px-6 py-24 text-center relative z-10">
+          <div className="flex items-center gap-2.5 mb-4 justify-center">
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+            <span className="ss-label">Empty</span>
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>NO POSTS YET</h2>
+          <p className="text-sm text-white/30">Check back soon for updates.</p>
         </div>
       )}
 
       {/* Posts grid */}
       {!loading && filtered.length > 0 && (
-        <div className="max-w-6xl mx-auto px-6 pb-24">
+        <div className="max-w-6xl mx-auto px-6 pb-24 relative z-10">
           {/* Featured post */}
           {featured && (
             <Link href={`/blog/${featured.slug}`} className="group block mb-16">
-              <article className="grid md:grid-cols-2 gap-8 items-center">
+              <article
+                className="grid md:grid-cols-2 gap-8 items-center p-8 transition-all duration-200"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
+              >
                 {featured.cover_image_url ? (
-                  <div className="aspect-[16/10] rounded-2xl overflow-hidden bg-stone-200">
+                  <div className="aspect-[16/10] overflow-hidden">
                     <img
                       src={featured.cover_image_url}
                       alt={featured.title}
@@ -186,42 +201,38 @@ export default function BlogPage() {
                     />
                   </div>
                 ) : (
-                  <div className="aspect-[16/10] rounded-2xl bg-gradient-to-br from-brand-100 to-orange-100 flex items-center justify-center">
-                    <span className="text-6xl opacity-50">✍️</span>
+                  <div className="aspect-[16/10] flex items-center justify-center" style={{ background: 'rgba(255,95,31,0.05)', border: '1px solid rgba(255,95,31,0.15)' }}>
+                    <span className="font-black text-white/10 text-5xl" style={{ letterSpacing: '-0.04em' }}>BLOG</span>
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-3 mb-4">
+                    <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+                    <span className="ss-label">Featured</span>
                     {featured.tags?.slice(0, 2).map((tag) => (
-                      <span key={tag} className="px-2.5 py-1 text-xs font-semibold text-brand-700 bg-brand-50 rounded-full">
-                        {tag}
-                      </span>
+                      <span key={tag} className="ss-tag" style={{ fontSize: '9px' }}>{tag}</span>
                     ))}
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-stone-900 group-hover:text-brand-600 transition-colors leading-tight">
+                  <h2 className="text-2xl md:text-3xl font-black text-white group-hover:text-white/70 transition-colors leading-tight" style={{ letterSpacing: '-0.03em' }}>
                     {featured.title}
                   </h2>
                   {featured.excerpt && (
-                    <p className="mt-4 text-lg text-stone-500 leading-relaxed line-clamp-3">
+                    <p className="mt-4 text-sm text-white/30 leading-relaxed line-clamp-3">
                       {featured.excerpt}
                     </p>
                   )}
                   <div className="mt-6 flex items-center gap-3">
                     {featured.author?.avatar_url ? (
-                      <img src={featured.author.avatar_url} alt={featured.author.full_name || 'Author avatar'} className="w-8 h-8 rounded-full" />
+                      <img src={featured.author.avatar_url} alt={featured.author.full_name || 'Author avatar'} className="w-6 h-6" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
+                      <div className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
                         {(featured.author?.full_name || 'A')[0]}
                       </div>
                     )}
-                    <div className="text-sm">
-                      <span className="text-stone-700 font-medium">
-                        {featured.author?.full_name || 'Screenplay Studio'}
-                      </span>
-                      <span className="text-stone-400 mx-2">·</span>
-                      <time className="text-stone-400">
-                        {featured.published_at ? formatDate(featured.published_at) : ''}
-                      </time>
+                    <div className="text-[11px] font-mono text-white/30">
+                      <span>{featured.author?.full_name || 'Screenplay Studio'}</span>
+                      <span className="mx-2 opacity-40">·</span>
+                      <time>{featured.published_at ? formatDate(featured.published_at) : ''}</time>
                     </div>
                   </div>
                 </div>
@@ -232,17 +243,21 @@ export default function BlogPage() {
           {/* Rest of posts */}
           {rest.length > 0 && (
             <>
-              <div className="border-t border-stone-200 pt-12 mb-8">
-                <h3 className="text-sm font-semibold text-stone-400 uppercase tracking-widest">
-                  All Posts
-                </h3>
+              <div className="flex items-center gap-4 mb-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '2.5rem' }}>
+                <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+                <h3 className="ss-label">All Posts</h3>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rest.map((post) => (
                   <Link key={post.id} href={`/blog/${post.slug}`} className="group">
-                    <article>
+                    <article
+                      className="p-5 transition-all duration-200 h-full flex flex-col"
+                      style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+                      onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
+                      onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
+                    >
                       {post.cover_image_url ? (
-                        <div className="aspect-[16/10] rounded-xl overflow-hidden bg-stone-200 mb-4">
+                        <div className="aspect-[16/10] overflow-hidden mb-5">
                           <img
                             src={post.cover_image_url}
                             alt={post.title}
@@ -250,26 +265,24 @@ export default function BlogPage() {
                           />
                         </div>
                       ) : (
-                        <div className="aspect-[16/10] rounded-xl bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center mb-4">
-                          <span className="text-4xl opacity-30">📄</span>
+                        <div className="aspect-[16/10] flex items-center justify-center mb-5" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                          <span className="font-black text-white/5 text-3xl" style={{ letterSpacing: '-0.04em' }}>SS</span>
                         </div>
                       )}
-                      <div className="flex flex-wrap gap-1.5 mb-2">
+                      <div className="flex flex-wrap gap-1.5 mb-3">
                         {post.tags?.slice(0, 2).map((tag) => (
-                          <span key={tag} className="px-2 py-0.5 text-[10px] font-semibold text-stone-500 bg-stone-100 rounded-full">
-                            {tag}
-                          </span>
+                          <span key={tag} className="ss-tag" style={{ fontSize: '9px', padding: '0.15rem 0.5rem' }}>{tag}</span>
                         ))}
                       </div>
-                      <h3 className="text-xl font-bold text-stone-900 group-hover:text-brand-600 transition-colors leading-snug">
+                      <h3 className="text-base font-black text-white group-hover:text-white/60 transition-colors leading-snug mb-2" style={{ letterSpacing: '-0.02em' }}>
                         {post.title}
                       </h3>
                       {post.excerpt && (
-                        <p className="mt-2 text-sm text-stone-500 leading-relaxed line-clamp-2">
+                        <p className="text-xs text-white/25 leading-relaxed line-clamp-2 flex-1">
                           {post.excerpt}
                         </p>
                       )}
-                      <time className="block mt-3 text-xs text-stone-400">
+                      <time className="block mt-4 text-[10px] font-mono text-white/20 uppercase tracking-wider">
                         {post.published_at ? formatDate(post.published_at) : ''}
                       </time>
                     </article>
@@ -283,29 +296,35 @@ export default function BlogPage() {
 
       {/* Timeline section */}
       {!loading && posts.length > 0 && (
-        <section className="bg-stone-100 border-t border-stone-200 py-20">
+        <section
+          className="py-20 relative z-10"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.015)' }}
+        >
           <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-2xl font-bold text-stone-900 mb-12 text-center">Timeline</h2>
+            <div className="flex items-center gap-3 mb-12">
+              <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+              <span className="ss-label">Archive</span>
+              <h2 className="text-lg font-black text-white" style={{ letterSpacing: '-0.02em' }}>TIMELINE</h2>
+            </div>
             <div className="relative">
               {/* Vertical line */}
-              <div className="absolute left-4 top-0 bottom-0 w-px bg-stone-300" />
+              <div className="absolute left-2 top-0 bottom-0 w-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
               <div className="space-y-8">
                 {posts.map((post, idx) => (
-                  <Link key={post.id} href={`/blog/${post.slug}`} className="group block relative pl-12">
+                  <Link key={post.id} href={`/blog/${post.slug}`} className="group block relative pl-10">
                     {/* Dot */}
-                    <div className={`absolute left-2.5 top-1.5 w-3 h-3 rounded-full border-2 ${
-                      idx === 0
-                        ? 'bg-brand-500 border-brand-500'
-                        : 'bg-white border-stone-400 group-hover:border-brand-500'
-                    } transition-colors`} />
-                    <time className="block text-xs font-medium text-stone-400 mb-1">
+                    <div
+                      className="absolute left-0.5 top-1.5 w-3 h-3 transition-all duration-200"
+                      style={{ background: idx === 0 ? '#FF5F1F' : 'rgba(255,255,255,0.12)' }}
+                    />
+                    <time className="block text-[10px] font-mono text-white/20 uppercase tracking-wider mb-1">
                       {post.published_at ? formatDate(post.published_at) : ''}
                     </time>
-                    <h3 className="text-base font-semibold text-stone-800 group-hover:text-brand-600 transition-colors">
+                    <h3 className="text-sm font-black text-white/60 group-hover:text-white transition-colors" style={{ letterSpacing: '-0.01em' }}>
                       {post.title}
                     </h3>
                     {post.excerpt && (
-                      <p className="mt-1 text-sm text-stone-500 line-clamp-1">
+                      <p className="mt-0.5 text-xs text-white/20 line-clamp-1">
                         {post.excerpt}
                       </p>
                     )}
@@ -318,22 +337,30 @@ export default function BlogPage() {
       )}
 
       {/* Footer */}
-      <footer className="bg-[#faf9f7] border-t border-stone-200 py-10 px-6">
+      <footer className="py-10 px-6 relative z-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-brand-600 rounded-md flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
-              </svg>
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-sm font-semibold text-stone-700">Screenplay Studio</span>
+            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest">Screenplay Studio</span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-stone-500">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <Link href="/blog" className="hover:text-stone-900 transition-colors">Blog</Link>
-            <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="hover:text-stone-900 transition-colors">
-              Support ❤️
-            </a>
+          <div className="flex items-center gap-6">
+            {[
+              { href: '/', label: 'Home' },
+              { href: '/blog', label: 'Blog' },
+              { href: 'https://ko-fi.com/northemdevelopment', label: 'Support', external: true },
+            ].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                target={l.external ? '_blank' : undefined}
+                rel={l.external ? 'noopener noreferrer' : undefined}
+                className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors"
+              >
+                {l.label}
+              </Link>
+            ))}
             <SiteVersion light />
           </div>
         </div>

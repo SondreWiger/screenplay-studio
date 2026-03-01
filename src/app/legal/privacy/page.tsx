@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
       <div className="max-w-4xl">
         <div className="mb-10">
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Privacy</p>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Privacy Policy</h1>
+          <h1 className="text-3xl font-black text-white tracking-tight">Privacy Policy</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: February 22, 2026</p>
         </div>
 

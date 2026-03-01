@@ -65,7 +65,7 @@ export default function LegalCenterPage() {
     <div>
       {/* Hero */}
       <section className="pb-10">
-        <h1 className="text-3xl font-bold text-white tracking-tight sm:text-4xl">Legal Center</h1>
+        <h1 className="text-3xl font-black text-white tracking-tight sm:text-4xl">Legal Center</h1>
         <p className="mt-4 text-base text-surface-400 leading-relaxed max-w-2xl">
           Transparency matters to us. Browse our policies and legal documents to understand
           how Screenplay Studio operates and safeguards your rights.

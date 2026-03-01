@@ -694,7 +694,7 @@ export default function ReportsPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">📊</div>
-          <h2 className="text-xl font-bold text-white mb-2">Production Reports</h2>
+          <h2 className="text-xl font-black text-white mb-2">Production Reports</h2>
           <p className="text-sm text-surface-400 mb-6">Generate call sheets, DOOD reports, daily production reports, and more.</p>
           <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
         </Card>
@@ -712,7 +712,7 @@ export default function ReportsPage() {
       <ToastContainer />
 
       <div>
-        <h1 className="text-2xl font-bold text-white">Production Reports</h1>
+        <h1 className="text-2xl font-black text-white">Production Reports</h1>
         <p className="text-sm text-surface-400 mt-1">
           Generate industry-standard production documents from live project data
         </p>
@@ -728,7 +728,7 @@ export default function ReportsPage() {
         ].map(stat => (
           <div key={stat.label} className="bg-surface-900 border border-surface-800 rounded-xl p-4">
             <p className="text-xs text-surface-500 uppercase tracking-wider">{stat.label}</p>
-            <p className="text-xl font-bold text-white mt-1">{stat.value}</p>
+            <p className="text-xl font-black text-white mt-1">{stat.value}</p>
             <p className="text-xs text-surface-500">{stat.sub}</p>
           </div>
         ))}
@@ -742,7 +742,7 @@ export default function ReportsPage() {
             onClick={() => { setSelectedType(rt.type); setViewingReport(null); }}
             className={`p-5 rounded-xl border text-left transition-all hover:shadow-lg ${
               selectedType === rt.type
-                ? 'border-brand-500 bg-brand-500/5 shadow-brand-500/10'
+                ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 shadow-brand-500/10'
                 : 'border-surface-800 bg-surface-900 hover:border-surface-700'
             }`}
           >
@@ -755,7 +755,7 @@ export default function ReportsPage() {
 
       {/* ── Generation Panel ───────────────────────────────────── */}
       {selectedType && (
-        <Card className="p-5 border-brand-500/30 space-y-4">
+        <Card className="p-5 border-[#FF5F1F]/30 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h3 className="text-base font-semibold text-white">
@@ -798,7 +798,7 @@ export default function ReportsPage() {
                         onClick={() => setSelectedEventId(ev.id)}
                         className={`p-3 rounded-lg border text-left text-xs transition-all ${
                           selectedEventId === ev.id
-                            ? 'border-brand-500 bg-brand-500/10'
+                            ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                             : 'border-surface-800 bg-surface-950 hover:border-surface-700'
                         }`}
                       >

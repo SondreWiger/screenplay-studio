@@ -103,80 +103,78 @@ export default function ShowcasePage() {
     });
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] text-white">
+    <div className="min-h-screen text-white" style={{ background: '#070710' }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
+      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/community" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-              </svg>
+            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
-              Finished Projects
-            </span>
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">Community</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/community" className="text-sm text-white/50 hover:text-white transition-colors">Community</Link>
-            <Link href="/community/showcase" className="text-sm font-semibold text-white border-b-2 border-amber-500 pb-0.5">Showcase</Link>
-            <Link href="/community/challenges" className="text-sm text-white/50 hover:text-white transition-colors">Challenges</Link>
-            <Link href="/community/free-scripts" className="text-sm text-white/50 hover:text-white transition-colors">Free Scripts</Link>
+          <div className="hidden md:flex items-center gap-5">
+            <Link href="/community" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Feed</Link>
+            <Link href="/community/showcase" className="text-[11px] font-mono uppercase tracking-widest text-white" style={{ borderBottom: '1px solid #FF5F1F', paddingBottom: '2px' }}>Showcase</Link>
+            <Link href="/community/challenges" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Challenges</Link>
+            <Link href="/community/free-scripts" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Scripts</Link>
+            <Link href="/blog" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Blog</Link>
           </div>
 
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link href="/dashboard" className="text-xs text-white/50 hover:text-white transition-colors">Dashboard</Link>
+                <Link href="/dashboard" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Dashboard</Link>
                 <Link href={`/u/${user.username || user.id}`}>
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full hover:ring-2 ring-amber-400 transition-all" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6 rounded-full" style={{ boxShadow: '0 0 0 1.5px rgba(255,255,255,0.1)' }} />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-amber-900/50 flex items-center justify-center text-xs font-bold text-amber-400 hover:ring-2 ring-amber-400 transition-all">
+                    <div className="w-6 h-6 flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
                     </div>
                   )}
                 </Link>
               </>
             ) : (
-              <Link href="/auth/login?redirect=/community/showcase" className="px-4 py-2 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">Sign In</Link>
+              <Link href="/auth/login?redirect=/community/showcase" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Sign In</Link>
             )}
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-900/20 via-transparent to-transparent" />
-        <div className="max-w-7xl mx-auto px-6 py-16 relative">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">Finished Projects</span>
+      <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color: '#FF5F1F' }}>
+            <span className="inline-block w-3 h-px bg-[#FF5F1F] mr-2 align-middle" />Community Showcase
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+            FINISHED PROJECTS
           </h1>
-          <p className="text-lg text-white/50 mt-3 max-w-xl">
+          <p className="text-lg text-white/40 mt-3 max-w-xl font-mono text-sm">
             Watch completed productions from the Screenplay Studio community. From short films to features — see what others have created.
           </p>
-          <div className="flex items-center gap-3 mt-6 text-sm text-white/40">
+          <div className="flex items-center gap-3 mt-6 text-xs font-mono text-white/50">
             <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2" /></svg>
+              <span className="w-1.5 h-1.5" style={{ background: '#FF5F1F' }} />
               {projects.length} projects
             </span>
           </div>
-        </div>
       </div>
 
       {/* Filters */}
       <div className="max-w-7xl mx-auto px-6 pb-6">
         <div className="flex flex-wrap items-center gap-3">
           {/* Sort */}
-          <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+          <div className="flex items-center gap-1 p-1" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
             {(['newest', 'title'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md capitalize transition-colors ${
-                  sortBy === s ? 'bg-amber-500 text-black' : 'text-white/50 hover:text-white'
+                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-widest capitalize transition-colors ${
+                  sortBy === s ? 'text-white' : 'text-white/40 hover:text-white'
                 }`}
+                style={sortBy === s ? { background: '#FF5F1F' } : {}}
               >
                 {s === 'newest' ? 'Latest' : 'A–Z'}
               </button>
@@ -228,7 +226,7 @@ export default function ShowcasePage() {
           {(filterGenre || filterFormat || filterLanguage) && (
             <button
               onClick={() => { setFilterGenre(null); setFilterFormat(null); setFilterLanguage(null); }}
-              className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
+              className="text-xs font-mono text-[#FF5F1F] hover:opacity-80 transition-opacity"
             >
               Clear filters
             </button>
@@ -254,10 +252,10 @@ export default function ShowcasePage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
             <div className="text-6xl mb-4">🎬</div>
-            <p className="text-xl font-semibold text-white/80 mb-2">No finished projects yet</p>
-            <p className="text-sm text-white/40 mb-6">Be the first to showcase your completed production!</p>
+          <p className="text-xl font-black text-white mb-2" style={{ letterSpacing: '-0.02em' }}>NO FINISHED PROJECTS YET</p>
+            <p className="text-sm font-mono text-white/40 mb-6">Be the first to showcase your completed production!</p>
             {user && (
-              <Link href="/dashboard" className="px-5 py-2.5 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">
+              <Link href="/dashboard" className="ss-btn-orange text-sm">
                 Go to Dashboard
               </Link>
             )}
@@ -270,7 +268,8 @@ export default function ShowcasePage() {
                 <Link
                   key={project.id}
                   href={`/community/showcase/${project.id}`}
-                  className="group rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden hover:border-amber-500/30 hover:bg-white/[0.05] transition-all duration-300"
+                  className="group overflow-hidden hover:opacity-90 transition-all duration-300"
+                  style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                 >
                   {/* Thumbnail */}
                   <div className="aspect-video relative bg-black overflow-hidden">
@@ -299,7 +298,7 @@ export default function ShowcasePage() {
                     )}
                     {/* Play overlay */}
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-14 h-14 rounded-full bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: '#FF5F1F' }}>
                         <svg className="w-6 h-6 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                       </div>
                     </div>
@@ -313,7 +312,7 @@ export default function ShowcasePage() {
 
                   {/* Info */}
                   <div className="p-4">
-                    <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-1">
+                    <h3 className="font-black text-white group-hover:text-[#FF5F1F] transition-colors line-clamp-1" style={{ letterSpacing: '-0.02em' }}>
                       {project.title}
                     </h3>
                     {(project.showcase_description || project.logline) && (
@@ -333,15 +332,15 @@ export default function ShowcasePage() {
                         )}
                         <span className="text-xs text-white/50">{project.author?.full_name || 'Unknown'}</span>
                       </div>
-                      <span className="text-[10px] text-white/30">{timeAgo(project.updated_at)}</span>
+                      <span className="text-[10px] text-white/50">{timeAgo(project.updated_at)}</span>
                     </div>
 
                     {/* Rating */}
                     {reviewStats[project.id] && (
                       <div className="flex items-center gap-1.5 mt-2">
-                        <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                        <span className="text-xs font-semibold text-amber-400">{reviewStats[project.id].avg.toFixed(1)}</span>
-                        <span className="text-[10px] text-white/30">({reviewStats[project.id].count})</span>
+                        <svg className="w-3.5 h-3.5 text-[#FF5F1F]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                        <span className="text-xs font-semibold text-[#FF5F1F]">{reviewStats[project.id].avg.toFixed(1)}</span>
+                        <span className="text-[10px] text-white/50">({reviewStats[project.id].count})</span>
                       </div>
                     )}
 
@@ -349,7 +348,7 @@ export default function ShowcasePage() {
                     {project.genre && project.genre.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-3">
                         {project.genre.slice(0, 3).map((g) => (
-                          <span key={g} className="px-2 py-0.5 text-[10px] font-medium text-amber-400/70 bg-amber-500/10 rounded-full">
+                          <span key={g} className="px-2 py-0.5 text-[10px] font-mono uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
                             {g}
                           </span>
                         ))}
@@ -364,14 +363,14 @@ export default function ShowcasePage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-10 px-6">
+      <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-semibold text-white/50">Screenplay Studio</span>
-          <div className="flex items-center gap-6 text-sm text-white/30">
+          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">Screenplay Studio</span>
+          <div className="flex items-center gap-6 text-[11px] font-mono uppercase tracking-widest text-white/50">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/community" className="hover:text-white transition-colors">Community</Link>
             <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-            <SiteVersion light />
+            <SiteVersion />
           </div>
         </div>
       </footer>

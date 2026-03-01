@@ -138,7 +138,7 @@ export default function ThumbnailsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -148,7 +148,7 @@ export default function ThumbnailsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Thumbnails</h1>
+          <h1 className="text-2xl font-black text-white">Thumbnails</h1>
           <p className="text-surface-400 text-sm mt-1">
             Design and A/B test thumbnail variants for your video
           </p>
@@ -164,7 +164,7 @@ export default function ThumbnailsPage() {
       </div>
 
       {/* Tips Card */}
-      <div className="bg-gradient-to-r from-brand-500/10 to-orange-500/10 border border-brand-500/20 rounded-xl p-4">
+      <div className="bg-gradient-to-r from-brand-500/10 to-orange-500/10 border border-[#FF5F1F]/20 rounded-xl p-4">
         <h3 className="font-semibold text-white text-sm mb-2">💡 Thumbnail Tips</h3>
         <ul className="text-xs text-surface-400 space-y-1">
           <li>• Use large, readable text (3-4 words max)</li>
@@ -331,7 +331,7 @@ export default function ThumbnailsPage() {
                   className={cn(
                     'px-4 py-2 rounded-lg border text-sm font-medium transition-all',
                     form.a_b_test_group === group
-                      ? 'border-brand-500 bg-brand-500/10 text-brand-400'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
                       : 'border-surface-700 text-surface-400 hover:border-surface-600'
                   )}
                 >

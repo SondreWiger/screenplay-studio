@@ -29,7 +29,7 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
   production_rejected: { label: 'REJ', color: 'bg-red-500/20' },
   chat_mention: { label: '@', color: 'bg-cyan-500/20' },
   direct_message: { label: 'DM', color: 'blue' },
-  ticket_reply: { label: 'TKT', color: 'bg-brand-500/20' },
+  ticket_reply: { label: 'TKT', color: 'bg-[#FF5F1F]/20' },
   general: { label: 'NEW', color: 'bg-surface-700' },
 };
 
@@ -64,7 +64,7 @@ export function NotificationBell() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-500 text-white text-[10px] font-bold px-1 shadow-lg shadow-brand-500/30">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[#FF5F1F] text-white text-[10px] font-bold px-1 shadow-lg shadow-[#FF5F1F]/30">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -99,7 +99,7 @@ function NotificationsDropdown({ onClose }: { onClose: () => void }) {
           <Link
             href="/notifications"
             onClick={onClose}
-            className="text-[11px] text-brand-400 hover:text-brand-300 transition-colors"
+            className="text-[11px] text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors"
           >
             View all
           </Link>
@@ -125,7 +125,7 @@ function NotificationsDropdown({ onClose }: { onClose: () => void }) {
           <Link
             href="/notifications"
             onClick={onClose}
-            className="block text-center text-xs text-brand-400 hover:text-brand-300"
+            className="block text-center text-xs text-[#FF5F1F] hover:text-[#FF8F5F]"
           >
             See all {notifications.length} notifications
           </Link>
@@ -148,7 +148,7 @@ function NotificationsDropdown({ onClose }: { onClose: () => void }) {
               onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
               disabled={push.loading}
               className={`relative w-9 h-5 rounded-full transition-colors ${
-                push.isSubscribed ? 'bg-brand-500' : 'bg-surface-700'
+                push.isSubscribed ? 'bg-[#FF5F1F]' : 'bg-surface-700'
               } ${push.loading ? 'opacity-50' : ''}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
@@ -192,12 +192,12 @@ export function NotificationRow({
   return (
     <div
       className={`relative flex gap-3 px-4 py-3 transition-colors group ${
-        !n.read ? 'bg-brand-500/5' : ''
+        !n.read ? 'bg-[#FF5F1F]/5' : ''
       } hover:bg-white/[0.03]`}
     >
       {/* Unread dot */}
       {!n.read && (
-        <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-brand-500" />
+        <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#FF5F1F]" />
       )}
 
       {/* Icon */}
@@ -333,7 +333,7 @@ function CompanyInviteActions({ notification }: { notification: Notification }) 
       <button
         onClick={accept}
         disabled={loading}
-        className="px-3 py-1 rounded-md text-[11px] font-medium bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
+        className="px-3 py-1 rounded-md text-[11px] font-medium bg-[#E54E15] text-white hover:bg-[#CC4312] disabled:opacity-50 transition-colors"
       >
         {loading ? '...' : 'Accept'}
       </button>

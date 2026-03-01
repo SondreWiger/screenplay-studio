@@ -631,7 +631,7 @@ export default function MessagesClient() {
                       )}
                     </div>
                     {hasUnread && (
-                      <span className="w-5 h-5 bg-brand-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 bg-[#FF5F1F] text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
                         {conv.unread_count}
                       </span>
                     )}
@@ -750,7 +750,7 @@ export default function MessagesClient() {
                           <div className={cn(
                             'px-3 py-2 rounded-2xl text-sm break-words',
                             isOwn
-                              ? 'bg-brand-500/20 text-white rounded-tr-md'
+                              ? 'bg-[#FF5F1F]/20 text-white rounded-tr-md'
                               : 'bg-surface-800 text-surface-200 rounded-tl-md'
                           )}>
                             {msg.content}
@@ -776,7 +776,7 @@ export default function MessagesClient() {
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2.5 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/50 placeholder-surface-500"
+                    className="flex-1 px-4 py-2.5 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/50 placeholder-surface-500"
                     rows={1}
                     style={{ maxHeight: '120px' }}
                     onInput={(e) => {
@@ -832,7 +832,7 @@ export default function MessagesClient() {
               <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Adding ({addMemberSelected.length})</p>
               <div className="flex flex-wrap gap-2">
                 {addMemberSelected.map((u) => (
-                  <span key={u.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-500/20 text-brand-400 text-xs rounded-full">
+                  <span key={u.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FF5F1F]/20 text-[#FF5F1F] text-xs rounded-full">
                     {u.full_name || u.email}
                     <button onClick={() => setAddMemberSelected((prev) => prev.filter((p) => p.id !== u.id))} className="hover:text-white">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -896,7 +896,7 @@ export default function MessagesClient() {
           {selectedUsers.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {selectedUsers.map((u) => (
-                <span key={u.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-500/20 text-brand-400 text-xs rounded-full">
+                <span key={u.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FF5F1F]/20 text-[#FF5F1F] text-xs rounded-full">
                   {u.full_name || u.email}
                   <button onClick={() => setSelectedUsers((prev) => prev.filter((p) => p.id !== u.id))} className="hover:text-white">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>

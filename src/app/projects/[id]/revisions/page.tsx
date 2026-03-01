@@ -337,7 +337,7 @@ export default function RevisionsPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">🔄</div>
-          <h2 className="text-xl font-bold text-white mb-2">Revisions & Comparisons</h2>
+          <h2 className="text-xl font-black text-white mb-2">Revisions & Comparisons</h2>
           <p className="text-sm text-surface-400 mb-6">Track every revision with industry-standard color coding. Compare any two drafts side by side.</p>
           <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
         </Card>
@@ -355,7 +355,7 @@ export default function RevisionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">Revisions</h1>
+            <h1 className="text-2xl font-black text-white">Revisions</h1>
             <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">
@@ -388,7 +388,7 @@ export default function RevisionsPage() {
 
       {/* Compare Mode Panel */}
       {compareMode && activeScript && (
-        <Card className="p-4 border-brand-500/30">
+        <Card className="p-4 border-[#FF5F1F]/30">
           <p className="text-sm text-surface-300 mb-3">Select two revisions to compare:</p>
           <div className="flex items-center gap-4">
             <div className="flex-1">
@@ -396,7 +396,7 @@ export default function RevisionsPage() {
               <select
                 value={compareA || ''}
                 onChange={(e) => setCompareA(e.target.value || null)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]"
               >
                 <option value="">Select revision...</option>
                 {revisions.map((r) => (
@@ -414,7 +414,7 @@ export default function RevisionsPage() {
               <select
                 value={compareB || ''}
                 onChange={(e) => setCompareB(e.target.value || null)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]"
               >
                 <option value="">Select revision...</option>
                 {revisions.map((r) => (
@@ -456,7 +456,7 @@ export default function RevisionsPage() {
                     <span className={`font-medium ${b.word_count >= a.word_count ? 'text-green-400' : 'text-red-400'}`}>
                       {b.word_count >= a.word_count ? '+' : ''}{b.word_count - a.word_count}
                     </span> net words ·{' '}
-                    <span className="text-brand-400 font-medium">{Math.abs(b.page_count - a.page_count)}</span> page difference
+                    <span className="text-[#FF5F1F] font-medium">{Math.abs(b.page_count - a.page_count)}</span> page difference
                   </p>
                 </div>
               </div>
@@ -512,7 +512,7 @@ export default function RevisionsPage() {
                       <div className="mt-2 flex items-center gap-2">
                         <input
                           autoFocus
-                          className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-xs text-white outline-none focus:border-brand-500"
+                          className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-xs text-white outline-none focus:border-[#FF5F1F]"
                           placeholder="Add revision notes..."
                           value={notesValue}
                           onChange={(e) => setNotesValue(e.target.value)}

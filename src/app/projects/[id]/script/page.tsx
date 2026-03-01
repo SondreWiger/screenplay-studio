@@ -7,6 +7,7 @@ import { useProjectStore } from '@/lib/stores';
 import { Button, Badge, Modal, Input, Select, LoadingSpinner, Avatar, Textarea, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
+import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
 
 // ============================================================
 // Display Settings — persisted in localStorage
@@ -268,6 +269,9 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+
+  // ⏱ Work-time tracking — fires heartbeats every 30s while the user is active
+  useWorkTimeTracker({ projectId: params.id, context: 'script', disabled: !canEdit });
 
   // Detect YouTube/Content Creator project
   const isContentCreator = useMemo(() => {
@@ -987,7 +991,7 @@ ${pageHTML}
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-surface-900 border border-surface-700 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6 border-b border-surface-800 bg-gradient-to-r from-brand-600/20 to-purple-600/20">
-              <h2 className="text-2xl font-bold text-white">Welcome to Creator Format</h2>
+              <h2 className="text-2xl font-black text-white">Welcome to Creator Format</h2>
               <p className="text-surface-300 mt-1">A structured script format designed for YouTubers & content creators</p>
             </div>
             
@@ -1002,7 +1006,7 @@ ${pageHTML}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {YOUTUBE_FORMAT_GUIDE.elements.map(el => (
                     <div key={el.type} className="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-700/50">
-                      <code className="px-2 py-1 bg-surface-700 text-brand-400 rounded font-mono text-sm">{el.symbol}</code>
+                      <code className="px-2 py-1 bg-surface-700 text-[#FF5F1F] rounded font-mono text-sm">{el.symbol}</code>
                       <div>
                         <p className="text-white font-medium text-sm">{el.name}</p>
                         <p className="text-surface-400 text-xs">{el.desc}</p>
@@ -1049,7 +1053,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       <div className="flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden" onKeyDown={handleEditorKeyDown}>
       {/* Scripts sidebar toggle on mobile */}
       <button onClick={() => setShowScriptsSidebar(!showScriptsSidebar)}
-        className="fixed bottom-4 left-4 z-30 md:hidden p-3 bg-brand-600 text-white rounded-full shadow-lg">
+        className="fixed bottom-4 left-4 z-30 md:hidden p-3 bg-[#E54E15] text-white rounded-full shadow-lg">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" /></svg>
       </button>
 
@@ -1067,14 +1071,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         <div className="p-3 border-b border-surface-800">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-surface-500 uppercase tracking-wider">Scripts</span>
-            <button onClick={() => setShowNewScript(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-white/10">
+            <button onClick={() => setShowNewScript(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-surface-900/10">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </button>
           </div>
           {scripts.map((script) => (
             <button key={script.id} onClick={() => setCurrentScript(script)}
               className={cn('w-full text-left px-2 py-1.5 rounded text-xs transition-colors mb-0.5',
-                currentScript?.id === script.id ? 'bg-brand-600/10 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+                currentScript?.id === script.id ? 'bg-[#E54E15]/10 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
               )}>
               <div className="flex items-center justify-between">
                 <span className="truncate">{script.title}</span>
@@ -1092,8 +1096,8 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 {chapterMarkers.map((chapter, i) => (
                   <button key={chapter.id} onClick={() => {
                     document.getElementById(`el-${chapter.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
-                    <span className="text-brand-400 mr-1">#</span>
+                  }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 transition-colors">
+                    <span className="text-[#FF5F1F] mr-1">#</span>
                     <span className="truncate">{(chapter.content || '# Untitled Chapter').replace(/^#\s*/, '')}</span>
                   </button>
                 ))}
@@ -1109,7 +1113,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 {sceneHeadings.map((scene, i) => (
                   <button key={scene.id} onClick={() => {
                     document.getElementById(`el-${scene.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 transition-colors">
+                  }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 transition-colors">
                     <span className="text-surface-600 mr-1">{i + 1}.</span>
                     <span className="truncate">{scene.content || 'Untitled Scene'}</span>
                   </button>
@@ -1151,7 +1155,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
             <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
               <div
-                className="h-1.5 rounded-full bg-brand-500 transition-all duration-500"
+                className="h-1.5 rounded-full bg-[#FF5F1F] transition-all duration-500"
                 style={{ width: `${Math.min(100, (totalPages / 120) * 100)}%` }}
               />
             </div>
@@ -1169,7 +1173,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               {elementCycle.map((type) => (
                 <button key={type} onClick={() => handleToolbarAdd(type)}
                   className={cn('px-2 md:px-2.5 py-1 rounded text-[10px] md:text-[11px] font-medium transition-colors whitespace-nowrap',
-                    activeElementType === type ? 'bg-brand-600/20 text-brand-400' : 'text-surface-500 hover:text-white hover:bg-white/5'
+                    activeElementType === type ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-900/5'
                   )} title={`Add ${ELEMENT_LABELS[type]}`}>
                   {ELEMENT_LABELS[type]}
                 </button>
@@ -1191,30 +1195,30 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               </span>
             )}
             <span className="text-[10px] text-surface-600 px-1 hidden md:inline">Tab: change type &middot; Enter: new line</span>
-            <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Search (Cmd+F)">
+            <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Search (Cmd+F)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
             <button
               onClick={() => setShowCommentPanel(!showCommentPanel)}
-              className={cn('p-1.5 rounded transition-colors relative', showCommentPanel ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')}
+              className={cn('p-1.5 rounded transition-colors relative', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')}
               title="Comments"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
               {scriptComments.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-brand-500 text-[7px] font-bold text-white flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#FF5F1F] text-[7px] font-bold text-white flex items-center justify-center">
                   {scriptComments.filter(c => !c.parent_id).length}
                 </span>
               )}
             </button>
-            <button onClick={() => setShowTitlePage(true)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Title Page">
+            <button onClick={() => setShowTitlePage(true)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Title Page">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
             </button>
-            <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10" title="Export PDF (Cmd+P)">
+            <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Export PDF (Cmd+P)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
             </button>
             {/* Import / Export dropdown */}
             <div className="relative">
-              <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded transition-colors', showImportExport ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')} title="Import / Export">
+              <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded transition-colors', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')} title="Import / Export">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
               </button>
             </div>
@@ -1228,10 +1232,10 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   }}>
                   <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Import</p>
                   <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-brand-400">.fdx</span> Final Draft
+                    <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.fdx</span> Final Draft
                   </button>
                   <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-brand-400">.ftn</span> Fountain
+                    <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.ftn</span> Fountain
                   </button>
                   <div className="border-t border-surface-700 my-1" />
                   <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Export</p>
@@ -1253,16 +1257,16 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 </div>
               </>
             )}
-            <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10 disabled:opacity-50" title="Save Draft Snapshot">
+            <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10 disabled:opacity-50" title="Save Draft Snapshot">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
             </button>
-            <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')} title="Draft Timeline">
+            <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')} title="Draft Timeline">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
             {/* Format Guide Button (for content creators) */}
             {isContentCreator && (
               <button onClick={() => setShowFormatIntro(true)}
-                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-white/10"
+                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10"
                 title="Format Guide">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               </button>
@@ -1270,7 +1274,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             {/* Display Settings */}
             <div className="relative">
               <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
-                className={cn('p-1.5 rounded transition-colors', showDisplaySettings ? 'text-brand-400 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-white/10')}
+                className={cn('p-1.5 rounded transition-colors', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')}
                 title="Display Settings">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
               </button>
@@ -1289,25 +1293,25 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       <span className="text-xs text-surface-300">Scene Numbers</span>
                       <input type="checkbox" checked={displaySettings.showSceneNumbers}
                         onChange={(e) => updateDisplaySettings({ showSceneNumbers: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
                     </label>
                     <label className="flex items-center justify-between">
                       <span className="text-xs text-surface-300">Character Highlights</span>
                       <input type="checkbox" checked={displaySettings.showCharacterHighlights}
                         onChange={(e) => updateDisplaySettings({ showCharacterHighlights: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
                     </label>
                     <label className="flex items-center justify-between">
                       <span className="text-xs text-surface-300">Show Notes</span>
                       <input type="checkbox" checked={displaySettings.showNotes}
                         onChange={(e) => updateDisplaySettings({ showNotes: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
                     </label>
                     <label className="flex items-center justify-between">
                       <span className="text-xs text-surface-300">Revision Colors</span>
                       <input type="checkbox" checked={displaySettings.showRevisionColors}
                         onChange={(e) => updateDisplaySettings({ showRevisionColors: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
+                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
                     </label>
                     <div>
                       <span className="text-xs text-surface-300 mb-1 block">Font Size: {displaySettings.fontSize}pt</span>
@@ -1321,7 +1325,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                         {(['narrow', 'standard', 'wide'] as const).map((w) => (
                           <button key={w} onClick={() => updateDisplaySettings({ pageWidth: w })}
                             className={cn('flex-1 px-2 py-1 rounded text-[10px] font-medium transition-colors capitalize',
-                              displaySettings.pageWidth === w ? 'bg-brand-600/20 text-brand-400' : 'text-surface-500 hover:text-white hover:bg-white/5'
+                              displaySettings.pageWidth === w ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-900/5'
                             )}>{w}</button>
                         ))}
                       </div>
@@ -1331,7 +1335,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               </>
             )}
             <button onClick={() => setDarkMode(!darkMode)}
-              className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-white/10' : 'text-surface-500 hover:text-white hover:bg-white/10')}
+              className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-surface-900/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')}
               title={darkMode ? 'Light Mode' : 'Dark Mode'}>
               {darkMode ? (
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -1379,16 +1383,16 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                         className={cn(
                           'relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-left transition-all min-w-[100px]',
                           draft.is_current
-                            ? 'bg-brand-500/15 border border-brand-500/30'
+                            ? 'bg-[#FF5F1F]/15 border border-[#FF5F1F]/30'
                             : 'hover:bg-surface-800 border border-transparent'
                         )}
                         title={draft.notes || undefined}
                       >
                         <div className={cn(
                           'w-3 h-3 rounded-full border-2',
-                          draft.is_current ? 'border-brand-500 bg-brand-500' : 'border-surface-600 bg-surface-800'
+                          draft.is_current ? 'border-[#FF5F1F] bg-[#FF5F1F]' : 'border-surface-600 bg-surface-800'
                         )} />
-                        <span className={cn('text-[11px] font-medium truncate max-w-[90px]', draft.is_current ? 'text-brand-400' : 'text-surface-300')}>
+                        <span className={cn('text-[11px] font-medium truncate max-w-[90px]', draft.is_current ? 'text-[#FF5F1F]' : 'text-surface-300')}>
                           {draft.draft_name || `Draft ${draft.draft_number}`}
                         </span>
                         <span className="text-[9px] text-surface-500">
@@ -1398,7 +1402,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                           <span className="text-[9px] text-surface-600">{draft.word_count} words · {draft.page_count}p</span>
                         )}
                         {draft.is_current && (
-                          <span className="text-[8px] font-bold text-brand-400 uppercase">Current</span>
+                          <span className="text-[8px] font-bold text-[#FF5F1F] uppercase">Current</span>
                         )}
                       </button>
                     </div>
@@ -1420,46 +1424,46 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <div className="flex flex-col justify-center items-center min-h-[300px] md:min-h-[600px] relative">
                 <div className="text-center" style={{ marginTop: '-80px' }}>
                   {currentScript.title_page_data.title && (
-                    <div className={cn('text-2xl font-bold uppercase tracking-wide mb-2', darkMode ? 'text-white' : 'text-black')}>
+                    <div className={cn('text-2xl font-black uppercase tracking-wide mb-2', darkMode ? 'text-white' : 'text-black')}>
                       {currentScript.title_page_data.title}
                     </div>
                   )}
                   {currentScript.title_page_data.credit && (
-                    <div className={cn('text-sm mt-6 mb-2', darkMode ? 'text-surface-300' : 'text-gray-600')}>
+                    <div className={cn('text-sm mt-6 mb-2', darkMode ? 'text-surface-300' : 'text-white/60')}>
                       {currentScript.title_page_data.credit}
                     </div>
                   )}
                   {currentScript.title_page_data.author && (
-                    <div className={cn('text-sm', darkMode ? 'text-surface-300' : 'text-gray-600')}>
+                    <div className={cn('text-sm', darkMode ? 'text-surface-300' : 'text-white/60')}>
                       {currentScript.title_page_data.author}
                     </div>
                   )}
                   {currentScript.title_page_data.source && (
-                    <div className={cn('text-xs mt-4', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                    <div className={cn('text-xs mt-4', darkMode ? 'text-surface-400' : 'text-white/40')}>
                       {currentScript.title_page_data.source}
                     </div>
                   )}
                 </div>
                 <div className="absolute bottom-12 left-12 text-left">
                   {currentScript.title_page_data.draft_date && (
-                    <div className={cn('text-xs', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                    <div className={cn('text-xs', darkMode ? 'text-surface-400' : 'text-white/40')}>
                       {currentScript.title_page_data.draft_date}
                     </div>
                   )}
                   {currentScript.title_page_data.contact && (
-                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-white/40')}>
                       {currentScript.title_page_data.contact}
                     </div>
                   )}
                   {currentScript.title_page_data.copyright && (
-                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-gray-500')}>
+                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-white/40')}>
                       {currentScript.title_page_data.copyright}
                     </div>
                   )}
                 </div>
                 {/* Edit hint */}
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className={cn('text-[10px] px-2 py-1 rounded', darkMode ? 'bg-surface-700 text-surface-400' : 'bg-gray-100 text-gray-500')}>
+                  <span className={cn('text-[10px] px-2 py-1 rounded', darkMode ? 'bg-surface-700 text-surface-400' : 'bg-surface-800 text-white/40')}>
                     Click to edit
                   </span>
                 </div>
@@ -1481,7 +1485,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <p className="text-sm mb-2">Start writing your screenplay</p>
                 <p className="text-xs opacity-60 mb-6">Press Enter to add lines. Tab to change element type.</p>
                 <button onClick={() => handleToolbarAdd('scene_heading')}
-                  className={cn('px-4 py-2 rounded text-sm', darkMode ? 'bg-surface-700 hover:bg-surface-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
+                  className={cn('px-4 py-2 rounded text-sm', darkMode ? 'bg-surface-700 hover:bg-surface-600 text-white' : 'bg-surface-800 hover:bg-gray-200 text-white/60')}>
                   + Add Scene Heading
                 </button>
               </div>
@@ -1514,7 +1518,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   const lastType = elements[elements.length - 1]?.element_type || 'action';
                   handleToolbarAdd(getNextElementType(lastType));
                 }} className={cn('inline-flex items-center gap-1 px-3 py-1.5 rounded text-xs transition-colors',
-                  darkMode ? 'text-surface-400 hover:text-white hover:bg-surface-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                  darkMode ? 'text-surface-400 hover:text-white hover:bg-surface-700' : 'text-gray-400 hover:text-white/60 hover:bg-surface-800'
                 )}>
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                   Add Element
@@ -1572,19 +1576,19 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <div className="w-8 h-8 rounded-lg bg-[#FF5F1F]/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <div className="flex-1 min-w-0 pr-4">
                 <p className="text-sm font-medium text-white">Creator Format</p>
                 <p className="text-xs text-surface-400 mt-0.5">
-                  Use <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-400">#</code> for chapters,
-                  <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-400 ml-1">!</code> for hooks,
-                  <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-400 ml-1">&gt;</code> for script
+                  Use <code className="px-1 py-0.5 bg-surface-700 rounded text-[#FF5F1F]">#</code> for chapters,
+                  <code className="px-1 py-0.5 bg-surface-700 rounded text-[#FF5F1F] ml-1">!</code> for hooks,
+                  <code className="px-1 py-0.5 bg-surface-700 rounded text-[#FF5F1F] ml-1">&gt;</code> for script
                 </p>
                 <button
                   onClick={() => setShowFormatIntro(true)}
-                  className="text-xs text-brand-400 hover:text-brand-300 mt-2 inline-flex items-center gap-1"
+                  className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] mt-2 inline-flex items-center gap-1"
                 >
                   View full guide
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -1676,7 +1680,7 @@ function ScriptCommentPanel({
           </div>
           <p className="text-sm text-surface-300 whitespace-pre-wrap">{comment.content}</p>
           <div className="flex items-center gap-3 mt-1">
-            <button onClick={() => setShowReply(!showReply)} className="text-[11px] text-surface-500 hover:text-brand-400">Reply</button>
+            <button onClick={() => setShowReply(!showReply)} className="text-[11px] text-surface-500 hover:text-[#FF5F1F]">Reply</button>
             {comment.comment_type === 'issue' && !comment.is_resolved && (
               <button onClick={() => onResolve(comment.id)} className="text-[11px] text-surface-500 hover:text-green-400">Resolve</button>
             )}
@@ -1691,7 +1695,7 @@ function ScriptCommentPanel({
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Reply..."
                 rows={2}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none resize-none"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none resize-none"
               />
               <div className="flex items-center gap-2">
                 <select value={replyType} onChange={(e) => setReplyType(e.target.value as CommentType)}
@@ -1715,7 +1719,7 @@ function ScriptCommentPanel({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-surface-800 px-4 py-3">
         <h3 className="text-sm font-semibold text-white">Script Comments</h3>
-        <button onClick={onClose} className="p-1 rounded text-surface-400 hover:text-white hover:bg-white/5">
+        <button onClick={onClose} className="p-1 rounded text-surface-400 hover:text-white hover:bg-surface-900/5">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
@@ -1729,10 +1733,10 @@ function ScriptCommentPanel({
             const count = comments.filter(c => c.entity_id === id && !c.parent_id).length;
             return (
               <button key={id} onClick={() => onSelectElement(id)}
-                className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-white/5 flex items-center gap-2 mb-0.5">
+                className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 flex items-center gap-2 mb-0.5">
                 <span className="text-[9px] text-surface-600 font-medium uppercase shrink-0">{ELEMENT_LABELS[el?.element_type || 'action']}</span>
                 <span className="truncate flex-1">{el?.content || 'Empty'}</span>
-                <span className="text-[9px] bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full shrink-0">{count}</span>
+                <span className="text-[9px] bg-[#FF5F1F]/20 text-[#FF5F1F] px-1.5 py-0.5 rounded-full shrink-0">{count}</span>
               </button>
             );
           })}
@@ -1748,7 +1752,7 @@ function ScriptCommentPanel({
               ← All comments
             </button>
           </div>
-          <p className={cn('text-sm line-clamp-3', darkMode ? 'text-surface-300' : 'text-gray-600')}>
+          <p className={cn('text-sm line-clamp-3', darkMode ? 'text-surface-300' : 'text-white/60')}>
             {selectedElement.content || <span className="italic text-surface-600">Empty element</span>}
           </p>
         </div>
@@ -1783,7 +1787,7 @@ function ScriptCommentPanel({
             onChange={(e) => setNewCommentText(e.target.value)}
             placeholder="Add a comment..."
             rows={2}
-            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none resize-none"
+            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none resize-none"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
@@ -2171,7 +2175,7 @@ const LineEditor = memo(function LineEditor({
     <>
       {showPageBreak && (
         <div className="relative py-2">
-          <div className={cn('border-t border-dashed', darkMode ? 'border-surface-600' : 'border-gray-300')} />
+          <div className={cn('border-t border-dashed', darkMode ? 'border-surface-600' : 'border-white/15')} />
           <span className={cn('absolute right-0 -top-2 text-[9px] px-1', darkMode ? 'text-surface-500' : 'text-gray-400')}>Page {pageNumber}</span>
         </div>
       )}
@@ -2221,7 +2225,7 @@ const LineEditor = memo(function LineEditor({
           className={cn(
             'absolute -right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full transition-all',
             commentCount > 0
-              ? 'text-brand-400 bg-brand-500/15 opacity-100'
+              ? 'text-[#FF5F1F] bg-[#FF5F1F]/15 opacity-100'
               : 'text-surface-500 opacity-0 group-hover:opacity-100 hover:bg-surface-700 hover:text-white'
           )}
           title={commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : 'Add comment'}
@@ -2229,7 +2233,7 @@ const LineEditor = memo(function LineEditor({
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
           {commentCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center">
               {commentCount > 9 ? '9+' : commentCount}
             </span>
           )}
@@ -2242,7 +2246,7 @@ const LineEditor = memo(function LineEditor({
                 useScriptStore.getState().updateElement(elementId, { element_type: type });
                 setShowTypeMenu(false);
               }} className={cn('w-full text-left px-3 py-1 text-xs hover:bg-surface-700',
-                element.element_type === type ? 'text-brand-400 font-medium' : 'text-surface-300'
+                element.element_type === type ? 'text-[#FF5F1F] font-medium' : 'text-surface-300'
               )}>{ELEMENT_LABELS[type]}</button>
             ))}
           </div>
@@ -2268,7 +2272,7 @@ const LineEditor = memo(function LineEditor({
             {suggestions.map((name, i) => (
               <button key={name} onMouseDown={(ev) => { ev.preventDefault(); applySuggestion(name); }}
                 className={cn('w-full text-left px-3 py-1.5 text-xs font-mono',
-                  i === selectedSuggestion ? 'bg-brand-600/30 text-brand-300' : 'text-surface-300 hover:bg-surface-700'
+                  i === selectedSuggestion ? 'bg-[#E54E15]/30 text-[#FF8F5F]' : 'text-surface-300 hover:bg-surface-700'
                 )}>{name}</button>
             ))}
           </div>

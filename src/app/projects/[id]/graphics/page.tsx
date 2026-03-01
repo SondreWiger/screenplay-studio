@@ -199,7 +199,7 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
                   onClick={() => setSelectedTemplate(tpl)}
                   className={cn(
                     'p-4 rounded-lg border cursor-pointer transition-all',
-                    selectedTemplate?.id === tpl.id ? 'border-brand-500 bg-surface-800' : 'border-surface-800 bg-surface-900 hover:border-surface-700',
+                    selectedTemplate?.id === tpl.id ? 'border-[#FF5F1F] bg-surface-800' : 'border-surface-800 bg-surface-900 hover:border-surface-700',
                   )}
                 >
                   <div className={cn('w-full aspect-video rounded mb-3 flex items-center justify-center', TEMPLATE_COLORS[tpl.template_type] || 'bg-surface-700')}>

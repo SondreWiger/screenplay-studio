@@ -87,14 +87,14 @@ export function GuidedTour({ onComplete }: GuidedTourProps) {
         {/* Progress */}
         <div className="h-1 bg-surface-800">
           <div
-            className="h-full bg-brand-500 transition-all duration-500"
+            className="h-full bg-[#FF5F1F] transition-all duration-500"
             style={{ width: `${((step + 1) / TOUR_STEPS.length) * 100}%` }}
           />
         </div>
 
         {/* Content */}
         <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-brand-600/20 rounded-2xl flex items-center justify-center mx-auto mb-5 text-brand-400">
+          <div className="w-16 h-16 bg-[#E54E15]/20 rounded-2xl flex items-center justify-center mx-auto mb-5 text-[#FF5F1F]">
             {current.icon}
           </div>
 
@@ -102,7 +102,7 @@ export function GuidedTour({ onComplete }: GuidedTourProps) {
             {step + 1} of {TOUR_STEPS.length}
           </div>
 
-          <h2 className="text-xl font-bold text-white mb-3">{current.title}</h2>
+          <h2 className="text-xl font-black text-white mb-3">{current.title}</h2>
           <p className="text-sm text-surface-400 leading-relaxed max-w-sm mx-auto">{current.description}</p>
         </div>
 
@@ -115,7 +115,7 @@ export function GuidedTour({ onComplete }: GuidedTourProps) {
                 onClick={() => setStep(i)}
                 className={cn(
                   'w-2 h-2 rounded-full transition-all',
-                  i === step ? 'bg-brand-500 w-5' : i < step ? 'bg-brand-500/40' : 'bg-surface-700'
+                  i === step ? 'bg-[#FF5F1F] w-5' : i < step ? 'bg-[#FF5F1F]/40' : 'bg-surface-700'
                 )}
               />
             ))}

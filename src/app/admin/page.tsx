@@ -16,6 +16,7 @@ const isStaff = (role?: string) => role === 'moderator' || role === 'admin';
 const isFullAdmin = (id?: string, role?: string) => id === ADMIN_UID || role === 'admin';
 
 interface PlatformStats {
+  // Totals
   totalUsers: number;
   totalProjects: number;
   totalScripts: number;
@@ -31,6 +32,20 @@ interface PlatformStats {
   totalComments: number;
   proUsers: number;
   pushSubscriptions: number;
+  // Tickets
+  totalTickets: number;
+  openTickets: number;
+  bugReports: number;
+  ticketsByCategory: { category: string; count: number }[];
+  ticketsByStatus: { status: string; count: number }[];
+  // Trends (last 30 days, daily buckets)
+  signupsByDay: { date: string; count: number }[];
+  projectsByDay: { date: string; count: number }[];
+  // Breakdowns
+  scriptTypeBreakdown: { type: string; count: number }[];
+  projectTypeBreakdown: { type: string; count: number }[];
+  episodicProjects: number;
+  // Recent
   recentUsers: any[];
   recentProjects: any[];
   projectDetails: any[];
@@ -130,6 +145,7 @@ export default function AdminPage() {
   const loadStats = async () => {
     try {
       const supabase = createClient();
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
       const [
         profilesRes, projectsRes, scriptsRes, elementsRes,
@@ -137,6 +153,13 @@ export default function AdminPage() {
         budgetRes, schedRes, commentsRes,
         recentUsersRes, recentProjectsRes,
         proUsersRes, pushSubsRes,
+        // Trends
+        recentSignupsRes, recentProjectsCreatedRes,
+        // Breakdowns
+        scriptTypesRes, projectTypesRes, episodicRes,
+        // Tickets
+        ticketsTotalRes, ticketsOpenRes, ticketsBugRes,
+        allTicketsRes,
       ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('projects').select('id', { count: 'exact', head: true }),
@@ -150,18 +173,66 @@ export default function AdminPage() {
         supabase.from('budget_items').select('id', { count: 'exact', head: true }),
         supabase.from('production_schedule').select('id', { count: 'exact', head: true }),
         supabase.from('comments').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5),
-        supabase.from('projects').select('*').order('created_at', { ascending: false }).limit(5),
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(8),
+        supabase.from('projects').select('*').order('created_at', { ascending: false }).limit(8),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_pro', true),
         supabase.from('push_subscriptions').select('id', { count: 'exact', head: true }),
+        // 30-day signup trend
+        supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
+        // 30-day project creation trend
+        supabase.from('projects').select('created_at').gte('created_at', thirtyDaysAgo),
+        // Script type breakdown
+        supabase.from('scripts').select('script_type'),
+        // Project type breakdown
+        supabase.from('projects').select('project_type'),
+        // Episodic projects
+        supabase.from('projects').select('id', { count: 'exact', head: true }).eq('script_type', 'episodic'),
+        // Ticket counts
+        supabase.from('support_tickets').select('id', { count: 'exact', head: true }),
+        supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']),
+        supabase.from('support_tickets').select('id', { count: 'exact', head: true }).eq('category', 'bug'),
+        // All tickets for breakdown
+        supabase.from('support_tickets').select('status, category'),
       ]);
 
-      // Count total words from elements
+      // ── Words ─────────────────────────────────────────────────────────
       const allElements = elementsRes.data || [];
       const totalWords = allElements.reduce((sum, el) => {
         const words = (el.content || '').trim().split(/\s+/).filter(Boolean).length;
         return sum + words;
       }, 0);
+
+      // ── 30-day trend buckets ──────────────────────────────────────────
+      const bucketByDay = (rows: { created_at: string }[]) => {
+        const map: Record<string, number> = {};
+        const now = new Date();
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          map[d.toISOString().slice(0, 10)] = 0;
+        }
+        for (const r of rows) {
+          const day = r.created_at.slice(0, 10);
+          if (day in map) map[day] = (map[day] || 0) + 1;
+        }
+        return Object.entries(map).map(([date, count]) => ({ date, count }));
+      };
+      const signupsByDay   = bucketByDay(recentSignupsRes.data || []);
+      const projectsByDay  = bucketByDay(recentProjectsCreatedRes.data || []);
+
+      // ── Breakdowns ────────────────────────────────────────────────────
+      const groupBy = (rows: any[], key: string) => {
+        const map: Record<string, number> = {};
+        for (const r of rows) {
+          const v = r[key] || 'unknown';
+          map[v] = (map[v] || 0) + 1;
+        }
+        return Object.entries(map).map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count);
+      };
+      const scriptTypeBreakdown  = groupBy(scriptTypesRes.data || [], 'script_type');
+      const projectTypeBreakdown = groupBy(projectTypesRes.data || [], 'project_type');
+      const ticketsByCat  = groupBy(allTicketsRes.data || [], 'category').map(({ type: category, count }) => ({ category, count }));
+      const ticketsByStat = groupBy(allTicketsRes.data || [], 'status').map(({ type: status, count }) => ({ status, count }));
 
       setStats({
         totalUsers: profilesRes.count || 0,
@@ -179,6 +250,16 @@ export default function AdminPage() {
         totalComments: commentsRes.count || 0,
         proUsers: proUsersRes.count || 0,
         pushSubscriptions: pushSubsRes.count || 0,
+        totalTickets: ticketsTotalRes.count || 0,
+        openTickets: ticketsOpenRes.count || 0,
+        bugReports: ticketsBugRes.count || 0,
+        ticketsByCategory: ticketsByCat,
+        ticketsByStatus: ticketsByStat,
+        signupsByDay,
+        projectsByDay,
+        scriptTypeBreakdown,
+        projectTypeBreakdown,
+        episodicProjects: episodicRes.count || 0,
         recentUsers: recentUsersRes.data || [],
         recentProjects: recentProjectsRes.data || [],
         projectDetails: [],
@@ -517,7 +598,7 @@ export default function AdminPage() {
     <div className="flex h-screen overflow-hidden bg-surface-950 relative">
       {/* Mobile header bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-12 bg-surface-950 border-b border-surface-800 flex items-center px-3 gap-3">
-        <button onClick={() => setShowMobileSidebar(!showMobileSidebar)} className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-white/10">
+        <button onClick={() => setShowMobileSidebar(!showMobileSidebar)} className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/10">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
         <span className="text-sm font-semibold text-white">{isFull ? 'Admin' : 'Mod'} Panel</span>
@@ -554,8 +635,8 @@ export default function AdminPage() {
               className={cn(
                 'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                 activeTab === tab.key
-                  ? 'bg-brand-600/10 text-brand-400'
-                  : 'text-surface-400 hover:bg-white/5 hover:text-white'
+                  ? 'bg-[#E54E15]/10 text-[#FF5F1F]'
+                  : 'text-surface-400 hover:bg-surface-900/5 hover:text-white'
               )}
             >
               {tab.icon}
@@ -566,19 +647,19 @@ export default function AdminPage() {
           {isFull && (
             <div className="mt-4 pt-4 border-t border-surface-800">
               <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider font-medium">Tools</p>
-              <Link href="/admin/legal" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+              <Link href="/admin/legal" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
                 Legal Blog
               </Link>
-              <Link href="/admin/security" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+              <Link href="/admin/security" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 Security
               </Link>
-              <Link href="/admin/reports" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+              <Link href="/admin/reports" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>
                 Reports
               </Link>
-              <Link href="/admin/features" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+              <Link href="/admin/features" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
                 Feature Flags
               </Link>
@@ -691,104 +772,334 @@ export default function AdminPage() {
 // Overview Tab
 // ============================================================
 
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+/** Pure-SVG sparkline (no deps). values = array of numbers. */
+function Sparkline({
+  values,
+  color = '#7c3aed',
+  height = 48,
+  strokeWidth = 2,
+}: {
+  values: number[];
+  color?: string;
+  height?: number;
+  strokeWidth?: number;
+}) {
+  if (values.length < 2) return null;
+  const w   = 300;
+  const h   = height;
+  const max = Math.max(...values, 1);
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * w;
+    const y = h - (v / max) * (h - 4) - 2;
+    return `${x},${y}`;
+  });
+  const polyline = pts.join(' ');
+  // Fill polygon
+  const fill = `${pts[0]} ${pts.join(' ')} ${w},${h} 0,${h}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none" className="overflow-visible">
+      <polygon points={fill} fill={color} fillOpacity={0.12} />
+      <polyline points={polyline} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Horizontal bar chart row */
+function BarRow({ label, count, max, color }: { label: string; count: number; max: number; color: string }) {
+  const pct = max > 0 ? (count / max) * 100 : 0;
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-surface-400 w-28 shrink-0 truncate capitalize">{label.replace(/_/g, ' ')}</span>
+      <div className="flex-1 h-2 bg-surface-800 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+      </div>
+      <span className="text-xs font-semibold text-white w-8 text-right shrink-0">{count}</span>
+    </div>
+  );
+}
+
+/** A big KPI card */
+function KpiCard({ label, value, sub, color, icon }: { label: string; value: string | number; sub?: string; color: string; icon: React.ReactNode }) {
+  return (
+    <div className={`rounded-xl border border-surface-800 bg-gradient-to-br p-4 flex flex-col gap-2 ${color}`}>
+      <div className="flex items-center justify-between">
+        <span className="text-surface-400">{icon}</span>
+      </div>
+      <div>
+        <p className="text-2xl font-black text-white tracking-tight">{typeof value === 'number' ? value.toLocaleString() : value}</p>
+        <p className="text-xs text-surface-400 mt-0.5">{label}</p>
+        {sub && <p className="text-[10px] text-surface-600 mt-0.5">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function OverviewTab({ stats }: { stats: PlatformStats }) {
-  const statCards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: '👤', color: 'from-blue-500/20 to-blue-600/5' },
-    { label: 'Pro Users', value: stats.proUsers, icon: '⭐', color: 'from-yellow-500/20 to-yellow-600/5' },
-    { label: 'Projects', value: stats.totalProjects, icon: '🎬', color: 'from-purple-500/20 to-purple-600/5' },
-    { label: 'Scripts', value: stats.totalScripts, icon: '📝', color: 'from-green-500/20 to-green-600/5' },
-    { label: 'Total Words', value: stats.totalWords.toLocaleString(), icon: '✍️', color: 'from-amber-500/20 to-amber-600/5' },
-    { label: 'Elements', value: stats.totalElements.toLocaleString(), icon: '📄', color: 'from-cyan-500/20 to-cyan-600/5' },
-    { label: 'Characters', value: stats.totalCharacters, icon: '🎭', color: 'from-rose-500/20 to-rose-600/5' },
-    { label: 'Locations', value: stats.totalLocations, icon: '📍', color: 'from-emerald-500/20 to-emerald-600/5' },
-    { label: 'Scenes', value: stats.totalScenes, icon: '🎬', color: 'from-indigo-500/20 to-indigo-600/5' },
-    { label: 'Shots', value: stats.totalShots, icon: '📷', color: 'from-orange-500/20 to-orange-600/5' },
-    { label: 'Ideas', value: stats.totalIdeas, icon: '💡', color: 'from-yellow-500/20 to-yellow-600/5' },
-    { label: 'Budget Items', value: stats.totalBudgetItems, icon: '💰', color: 'from-teal-500/20 to-teal-600/5' },
-    { label: 'Schedule Events', value: stats.totalScheduleEvents, icon: '📅', color: 'from-pink-500/20 to-pink-600/5' },
-    { label: 'Comments', value: stats.totalComments, icon: '💬', color: 'from-violet-500/20 to-violet-600/5' },
-    { label: 'Push Subscriptions', value: stats.pushSubscriptions, icon: '🔔', color: 'from-sky-500/20 to-sky-600/5' },
-  ];
+  const proRate      = stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : '0';
+  const projPerUser  = stats.totalUsers > 0 ? (stats.totalProjects / stats.totalUsers).toFixed(1) : '0';
+  const avgWords     = stats.totalScripts > 0 ? Math.round(stats.totalWords / stats.totalScripts).toLocaleString() : '0';
+  const newSignups30 = stats.signupsByDay.reduce((s, d) => s + d.count, 0);
+  const newProj30    = stats.projectsByDay.reduce((s, d) => s + d.count, 0);
+
+  const signupValues   = stats.signupsByDay.map((d) => d.count);
+  const projectValues  = stats.projectsByDay.map((d) => d.count);
+
+  const scriptColors: Record<string, string> = {
+    screenplay:'#7c3aed', episodic:'#0369a1', stageplay:'#047857',
+    youtube:'#b45309', tiktok:'#be185d', podcast:'#6d28d9', other:'#374151',
+  };
+  const projColors: Record<string, string> = {
+    film:'#7c3aed', youtube:'#0369a1', documentary:'#047857',
+    tv_production:'#b45309', podcast:'#be185d', tiktok:'#6d28d9', other:'#374151',
+  };
+  const ticketColors: Record<string, string> = {
+    bug:'#dc2626', general:'#0369a1', feature_request:'#047857',
+    abuse:'#b45309', content_report:'#be185d',
+  };
+  const statusColors: Record<string, string> = {
+    open:'#dc2626', in_progress:'#b45309', resolved:'#047857', closed:'#374151',
+  };
+
+  const maxScript  = Math.max(...stats.scriptTypeBreakdown.map((d) => d.count), 1);
+  const maxProj    = Math.max(...stats.projectTypeBreakdown.map((d) => d.count), 1);
+  const maxTickCat = Math.max(...stats.ticketsByCategory.map((d) => d.count), 1);
+  const maxTickSt  = Math.max(...stats.ticketsByStatus.map((d) => d.count), 1);
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-white mb-1">Platform Overview</h1>
-      <p className="text-sm text-surface-400 mb-8">Stats across the entire Screenplay Studio platform</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-black text-white mb-1">Platform Overview</h1>
+        <p className="text-sm text-surface-400">Live stats across all of Screenplay Studio</p>
+      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
-        {statCards.map((stat) => (
-          <div key={stat.label} className={cn('rounded-xl border border-surface-800 bg-gradient-to-br p-4', stat.color)}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">{stat.icon}</span>
+      {/* ── Primary KPI row ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <KpiCard
+          label="Total Users"
+          value={stats.totalUsers}
+          sub={`+${newSignups30} in last 30 days`}
+          color="from-blue-500/20 to-blue-900/5"
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
+        />
+        <KpiCard
+          label="Pro Users"
+          value={stats.proUsers}
+          sub={`${proRate}% conversion`}
+          color="from-yellow-500/20 to-yellow-900/5"
+          icon={<svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
+        />
+        <KpiCard
+          label="Projects"
+          value={stats.totalProjects}
+          sub={`+${newProj30} in last 30 days`}
+          color="from-violet-500/20 to-violet-900/5"
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>}
+        />
+        <KpiCard
+          label="Total Words Written"
+          value={stats.totalWords}
+          sub={`~${avgWords} per script`}
+          color="from-emerald-500/20 to-emerald-900/5"
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>}
+        />
+      </div>
+
+      {/* ── Growth charts ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Signups sparkline */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-semibold text-white">New Signups — Last 30 Days</h3>
+              <p className="text-xs text-surface-500 mt-0.5">{newSignups30} total new users</p>
             </div>
-            <p className="text-2xl font-bold text-white">{stat.value}</p>
-            <p className="text-xs text-surface-400 mt-1">{stat.label}</p>
+            <span className="text-2xl font-black text-blue-400">{newSignups30}</span>
+          </div>
+          <Sparkline values={signupValues} color="#3b82f6" height={56} />
+          {/* Day labels: first and last */}
+          <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+            <span>{stats.signupsByDay[0]?.date.slice(5)}</span>
+            <span>{stats.signupsByDay[stats.signupsByDay.length - 1]?.date.slice(5)}</span>
+          </div>
+        </div>
+
+        {/* Projects sparkline */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-semibold text-white">New Projects — Last 30 Days</h3>
+              <p className="text-xs text-surface-500 mt-0.5">{newProj30} projects created</p>
+            </div>
+            <span className="text-2xl font-black text-violet-400">{newProj30}</span>
+          </div>
+          <Sparkline values={projectValues} color="#7c3aed" height={56} />
+          <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+            <span>{stats.projectsByDay[0]?.date.slice(5)}</span>
+            <span>{stats.projectsByDay[stats.projectsByDay.length - 1]?.date.slice(5)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Engagement metrics row ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        {[
+          { label: 'Scripts', value: stats.totalScripts, c: 'text-green-400' },
+          { label: 'Elements', value: stats.totalElements.toLocaleString(), c: 'text-cyan-400' },
+          { label: 'Characters', value: stats.totalCharacters, c: 'text-rose-400' },
+          { label: 'Locations', value: stats.totalLocations, c: 'text-emerald-400' },
+          { label: 'Scenes', value: stats.totalScenes, c: 'text-indigo-400' },
+          { label: 'Shots', value: stats.totalShots, c: 'text-orange-400' },
+          { label: 'Ideas', value: stats.totalIdeas, c: 'text-yellow-400' },
+          { label: 'Budget Items', value: stats.totalBudgetItems, c: 'text-teal-400' },
+          { label: 'Schedule Events', value: stats.totalScheduleEvents, c: 'text-pink-400' },
+          { label: 'Comments', value: stats.totalComments, c: 'text-violet-400' },
+          { label: 'Push Subs', value: stats.pushSubscriptions, c: 'text-sky-400' },
+          { label: 'Episodic Projects', value: stats.episodicProjects, c: 'text-blue-400' },
+        ].map((s) => (
+          <div key={s.label} className="rounded-xl border border-surface-800 bg-surface-900/50 p-3 text-center">
+            <p className={`text-xl font-black ${s.c}`}>{typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</p>
+            <p className="text-[10px] text-surface-500 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Recent Activity */}
+      {/* ── Content breakdown charts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-6">
-          <h3 className="text-sm font-semibold text-white mb-4">Recent Users</h3>
+        {/* Script types */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">Script Types</h3>
+          <div className="space-y-2.5">
+            {stats.scriptTypeBreakdown.map((d) => (
+              <BarRow key={d.type} label={d.type} count={d.count} max={maxScript} color={scriptColors[d.type] || '#374151'} />
+            ))}
+          </div>
+        </div>
+        {/* Project types */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">Project Types</h3>
+          <div className="space-y-2.5">
+            {stats.projectTypeBreakdown.map((d) => (
+              <BarRow key={d.type} label={d.type} count={d.count} max={maxProj} color={projColors[d.type] || '#374151'} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Support / tickets ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Quick ticket KPIs */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5 flex flex-col gap-4">
+          <h3 className="text-sm font-semibold text-white">Support Overview</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Total Tickets', value: stats.totalTickets, c: 'text-white' },
+              { label: 'Open / Active', value: stats.openTickets, c: 'text-amber-400' },
+              { label: 'Bug Reports', value: stats.bugReports, c: 'text-red-400' },
+            ].map((t) => (
+              <div key={t.label} className="text-center">
+                <p className={`text-2xl font-black ${t.c}`}>{t.value}</p>
+                <p className="text-[10px] text-surface-500 mt-0.5">{t.label}</p>
+              </div>
+            ))}
+          </div>
+          {/* Open rate bar */}
+          <div>
+            <div className="flex justify-between text-[10px] text-surface-500 mb-1">
+              <span>Open rate</span>
+              <span>{stats.totalTickets > 0 ? ((stats.openTickets / stats.totalTickets) * 100).toFixed(0) : 0}%</span>
+            </div>
+            <div className="h-1.5 bg-surface-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                style={{ width: `${stats.totalTickets > 0 ? (stats.openTickets / stats.totalTickets) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Tickets by category */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">By Category</h3>
+          <div className="space-y-2.5">
+            {stats.ticketsByCategory.length > 0 ? stats.ticketsByCategory.map((d) => (
+              <BarRow key={d.category} label={d.category} count={d.count} max={maxTickCat} color={ticketColors[d.category] || '#374151'} />
+            )) : <p className="text-xs text-surface-600">No tickets yet</p>}
+          </div>
+        </div>
+
+        {/* Tickets by status */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">By Status</h3>
+          <div className="space-y-2.5">
+            {stats.ticketsByStatus.length > 0 ? stats.ticketsByStatus.map((d) => (
+              <BarRow key={d.status} label={d.status} count={d.count} max={maxTickSt} color={statusColors[d.status] || '#374151'} />
+            )) : <p className="text-xs text-surface-600">No tickets yet</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Platform health + recent activity ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Health metrics */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">Platform Health</h3>
+          <div className="space-y-3">
+            {[
+              { label: 'Projects / User', value: projPerUser },
+              { label: 'Pro Conversion', value: `${proRate}%` },
+              { label: 'Avg Words / Script', value: avgWords },
+              { label: 'Scripts / Project', value: stats.totalProjects > 0 ? (stats.totalScripts / stats.totalProjects).toFixed(1) : '0' },
+              { label: 'Elements / Script', value: stats.totalScripts > 0 ? Math.round(stats.totalElements / stats.totalScripts) : 0 },
+              { label: 'Database', value: '🟢 Active' },
+            ].map((m) => (
+              <div key={m.label} className="flex items-center justify-between border-b border-surface-800/50 pb-2 last:border-0 last:pb-0">
+                <span className="text-xs text-surface-400">{m.label}</span>
+                <span className="text-xs font-semibold text-white">{m.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent users */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">Recent Signups</h3>
           <div className="space-y-3">
             {stats.recentUsers.map((u: any) => (
               <div key={u.id} className="flex items-center gap-3">
                 <Avatar src={u.avatar_url} name={u.full_name || u.email} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-white truncate">{u.full_name || 'Unnamed'}</p>
-                  <p className="text-xs text-surface-500 truncate">{u.email}</p>
+                  <p className="text-xs text-white truncate">{u.full_name || 'Unnamed'}</p>
+                  <p className="text-[10px] text-surface-500 truncate">{u.email}</p>
                 </div>
-                <span className="text-[10px] text-surface-500">{timeAgo(u.created_at)}</span>
+                <div className="flex flex-col items-end gap-0.5 shrink-0">
+                  <span className="text-[10px] text-surface-600">{timeAgo(u.created_at)}</span>
+                  {u.is_pro && <span className="text-[9px] font-bold text-yellow-400 bg-yellow-500/10 px-1 rounded">PRO</span>}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-6">
+        {/* Recent projects */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Recent Projects</h3>
           <div className="space-y-3">
             {stats.recentProjects.map((p: any) => (
               <div key={p.id} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                  {p.title?.[0] || '?'}
+                <div className="w-7 h-7 rounded-lg bg-[#E54E15] flex items-center justify-center text-xs font-bold text-white shrink-0">
+                  {(p.title || '?')[0].toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-white truncate">{p.title}</p>
-                  <p className="text-xs text-surface-500 capitalize">{(p.status || '').replace('_', ' ')}</p>
+                  <p className="text-xs text-white truncate">{p.title}</p>
+                  <p className="text-[10px] text-surface-500 capitalize">{(p.script_type || '').replace('_', ' ')}</p>
                 </div>
-                <span className="text-[10px] text-surface-500">{timeAgo(p.created_at)}</span>
+                <span className="text-[10px] text-surface-600 shrink-0">{timeAgo(p.created_at)}</span>
               </div>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Platform Health */}
-      <div className="mt-6 rounded-xl border border-surface-800 bg-surface-900/50 p-6">
-        <h3 className="text-sm font-semibold text-white mb-4">Platform Health</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <p className="text-lg font-bold text-green-400">Active</p>
-            <p className="text-xs text-surface-400 mt-1">Database</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-bold text-white">
-              {stats.totalUsers > 0 ? (stats.totalProjects / stats.totalUsers).toFixed(1) : '0'}
-            </p>
-            <p className="text-xs text-surface-400 mt-1">Projects/User</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-bold text-white">
-              {stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : '0'}%
-            </p>
-            <p className="text-xs text-surface-400 mt-1">Pro Conversion</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-bold text-white">
-              {stats.totalScripts > 0 ? Math.round(stats.totalWords / stats.totalScripts).toLocaleString() : '0'}
-            </p>
-            <p className="text-xs text-surface-400 mt-1">Avg Words/Script</p>
           </div>
         </div>
       </div>
@@ -811,7 +1122,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">User Management</h1>
+          <h1 className="text-2xl font-black text-white mb-1">User Management</h1>
           <p className="text-sm text-surface-400">{users.length} users total</p>
         </div>
         <div className="relative">
@@ -821,7 +1132,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
             placeholder="Search users..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 w-64"
+            className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F] w-64"
           />
         </div>
       </div>
@@ -861,7 +1172,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
                 <td className="px-4 py-3 text-xs text-surface-400">{formatDate(u.created_at)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center gap-1 justify-end">
-                    <button onClick={() => onEdit(u)} className="p-1.5 rounded text-surface-400 hover:text-white hover:bg-white/10 transition-colors" title="Edit">
+                    <button onClick={() => onEdit(u)} className="p-1.5 rounded text-surface-400 hover:text-white hover:bg-surface-900/10 transition-colors" title="Edit">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </button>
                     {u.id !== ADMIN_UID && (
@@ -953,7 +1264,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">All Projects</h1>
+          <h1 className="text-2xl font-black text-white mb-1">All Projects</h1>
           <p className="text-sm text-surface-400">{projects.length} projects total</p>
         </div>
         <div className="relative">
@@ -963,7 +1274,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
             placeholder="Search projects..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 w-64"
+            className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F] w-64"
           />
         </div>
       </div>
@@ -975,7 +1286,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
               onClick={() => loadProjectStats(p.id)}
               className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-surface-800/30 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-[#E54E15] flex items-center justify-center text-sm font-bold text-white shrink-0">
                 {p.title?.[0] || '?'}
               </div>
               <div className="min-w-0 flex-1">
@@ -1045,14 +1356,14 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-1">System Management</h1>
+      <h1 className="text-2xl font-black text-white mb-1">System Management</h1>
       <p className="text-sm text-surface-400 mb-8">Maintenance tools for the platform</p>
 
       {/* Version control */}
       <div className="mb-6 rounded-xl border border-surface-800 bg-surface-900/50 p-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-brand-500/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
+          <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/20 flex items-center justify-center">
+            <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">Site Version</h3>
@@ -1064,7 +1375,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
             <input
               value={versionDraft}
               onChange={(e) => setVersionDraft(e.target.value)}
-              className="w-32 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="w-32 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white font-mono focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F]"
               placeholder="e.g. 1.2.0"
               autoFocus
               onKeyDown={(e) => {
@@ -1080,7 +1391,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
             onClick={() => { setVersionDraft(siteVersion); setEditingVersion(true); }}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 transition-colors group"
           >
-            <span className="text-sm font-mono text-brand-400">v{siteVersion || '—'}</span>
+            <span className="text-sm font-mono text-[#FF5F1F]">v{siteVersion || '—'}</span>
             <svg className="w-3.5 h-3.5 text-surface-500 group-hover:text-surface-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
           </button>
         )}
@@ -1254,7 +1565,7 @@ function EditUserModal({ user, onClose, onSave }: {
             )}
           >
             <span className={cn(
-              'inline-block h-5 w-5 rounded-full bg-white shadow-lg transition-transform duration-200',
+              'inline-block h-5 w-5 rounded-full bg-surface-900 shadow-lg transition-transform duration-200',
               isPro ? 'translate-x-5' : 'translate-x-0'
             )} />
           </button>
@@ -1302,7 +1613,7 @@ function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggl
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Blog Management</h1>
+          <h1 className="text-2xl font-black text-white mb-1">Blog Management</h1>
           <p className="text-sm text-surface-400">Create and manage blog posts, moderate comments</p>
         </div>
         <Button onClick={onNewPost}>
@@ -1529,13 +1840,13 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
     await loadProductions();
   };
 
-  const inputCls = 'w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors';
+  const inputCls = 'w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors';
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Community</h1>
+          <h1 className="text-2xl font-black text-white">Community</h1>
           <p className="text-sm text-surface-400">Manage posts, categories, themes & challenges</p>
         </div>
         <Link href="/community" className="text-sm text-surface-400 hover:text-white transition-colors">
@@ -1615,9 +1926,9 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
                       {prod.description && <p className="text-xs text-surface-400 line-clamp-2">{prod.description}</p>}
                       <p className="text-xs text-surface-500 mt-1">
                         by {prod.submitter?.full_name || prod.submitter?.email || 'Unknown'} · {timeAgo(prod.created_at)}
-                        {prod.post && <> · script: <a href={`/community/post/${prod.post.slug}`} target="_blank" className="text-brand-400 hover:underline">{prod.post.title}</a></>}
+                        {prod.post && <> · script: <a href={`/community/post/${prod.post.slug}`} target="_blank" className="text-[#FF5F1F] hover:underline">{prod.post.title}</a></>}
                       </p>
-                      {prod.url && <a href={prod.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-400 hover:underline mt-1 inline-block">🔗 Watch →</a>}
+                      {prod.url && <a href={prod.url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline mt-1 inline-block">🔗 Watch →</a>}
                     </div>
                   </div>
                   {prod.status === 'pending' && (
@@ -1911,7 +2222,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
               type="checkbox"
               checked={allowComments}
               onChange={(e) => setAllowComments(e.target.checked)}
-              className="rounded border-surface-600 bg-surface-900 text-brand-500 focus:ring-brand-500"
+              className="rounded border-surface-600 bg-surface-900 text-[#FF5F1F] focus:ring-[#FF5F1F]"
             />
             Allow comments
           </label>
@@ -1957,7 +2268,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
                     onChange={(e) => updateSection(idx, 'body', e.target.value)}
                     placeholder="Section content... (use blank lines for paragraph breaks)"
                     rows={6}
-                    className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none transition-colors font-mono"
+                    className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] resize-none transition-colors font-mono"
                   />
                 </div>
               </div>
@@ -2028,7 +2339,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">Support Tickets</h2>
+          <h2 className="text-xl font-black text-white">Support Tickets</h2>
           <p className="text-sm text-surface-400 mt-1">
             {openCount} open · {inProgressCount} in progress · {tickets.length} total
           </p>
@@ -2040,7 +2351,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
               onClick={() => setStatusFilter(s)}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium rounded-lg transition-colors capitalize',
-                statusFilter === s ? 'bg-brand-600/20 text-brand-400' : 'text-surface-400 hover:text-white hover:bg-white/5'
+                statusFilter === s ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
               )}
             >
               {s.replace('_', ' ')}
@@ -2065,7 +2376,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                 className={cn(
                   'w-full text-left p-4 rounded-xl border transition-all',
                   selectedTicketId === ticket.id
-                    ? 'border-brand-500/30 bg-brand-500/5'
+                    ? 'border-[#FF5F1F]/30 bg-[#FF5F1F]/5'
                     : 'border-surface-800 bg-surface-900 hover:border-surface-700'
                 )}
               >
@@ -2156,13 +2467,13 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                       <div className={`flex items-center gap-2 mb-1 ${msg.is_staff ? 'justify-end' : ''}`}>
                         <span className="text-xs font-semibold text-surface-300">{msg.profile?.full_name || 'User'}</span>
                         {msg.is_staff && (
-                          <span className="px-1.5 py-0.5 text-[9px] font-bold text-brand-400 bg-brand-500/10 rounded border border-brand-500/20">STAFF</span>
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold text-[#FF5F1F] bg-[#FF5F1F]/10 rounded border border-[#FF5F1F]/20">STAFF</span>
                         )}
                         <span className="text-[10px] text-surface-500">{timeAgo(msg.created_at)}</span>
                       </div>
                       <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                         msg.is_staff
-                          ? 'bg-brand-600/10 text-brand-200 border border-brand-500/20'
+                          ? 'bg-[#E54E15]/10 text-[#FF8F5F] border border-[#FF5F1F]/20'
                           : 'bg-surface-800 text-surface-200 border border-surface-700'
                       }`}>
                         {msg.content}
@@ -2180,13 +2491,13 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                       value={replyText}
                       onChange={(e) => onReplyChange(e.target.value)}
                       placeholder="Type a staff reply..."
-                      className="flex-1 px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none"
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none"
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onReply(); } }}
                     />
                     <button
                       onClick={onReply}
                       disabled={!replyText.trim()}
-                      className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-500 rounded-lg transition-colors disabled:opacity-50"
+                      className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#FF5F1F] rounded-lg transition-colors disabled:opacity-50"
                     >
                       Reply
                     </button>

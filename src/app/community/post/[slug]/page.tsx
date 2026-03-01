@@ -294,7 +294,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   if (loading) {
     return (
       <div className="min-h-screen bg-[#faf9f7] flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand-500" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
   }
@@ -303,9 +303,9 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   if (!post) {
     return (
       <div className="min-h-screen bg-[#faf9f7]">
-        <nav className="border-b border-stone-200 bg-[#faf9f7]/90 backdrop-blur-md">
+        <nav className="border-b border-white/10 bg-[#faf9f7]/90 backdrop-blur-md">
           <div className="max-w-4xl mx-auto px-6 h-16 flex items-center">
-            <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors flex items-center gap-2">
+            <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               Community
             </Link>
@@ -313,9 +313,9 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         </nav>
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="text-6xl mb-4">🔍</div>
-          <h1 className="text-3xl font-bold text-stone-900 mb-2">Post not found</h1>
-          <p className="text-stone-500">This post may have been removed or doesn't exist.</p>
-          <Link href="/community" className="mt-8 px-6 py-3 bg-brand-600 text-white font-medium rounded-lg">Browse Community</Link>
+          <h1 className="text-3xl font-black text-white mb-2">Post not found</h1>
+          <p className="text-white/40">This post may have been removed or doesn't exist.</p>
+          <Link href="/community" className="mt-8 px-6 py-3 bg-[#E54E15] text-white font-medium rounded-lg">Browse Community</Link>
         </div>
       </div>
     );
@@ -326,31 +326,41 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   );
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="min-h-screen" style={{ background: '#070710' }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#faf9f7]/90 backdrop-blur-md border-b border-stone-200">
-        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Community
+      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
+          <Link href="/community" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
+              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+            </div>
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">Community</span>
           </Link>
+
+          <div className="hidden md:flex items-center gap-5">
+            <Link href="/community" className="text-[11px] font-mono uppercase tracking-widest text-white" style={{ borderBottom: '1px solid #FF5F1F', paddingBottom: '2px' }}>Feed</Link>
+            <Link href="/community/showcase" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Showcase</Link>
+            <Link href="/community/challenges" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Challenges</Link>
+            <Link href="/community/free-scripts" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Scripts</Link>
+            <Link href="/blog" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Blog</Link>
+          </div>
+
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link href="/messages" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Messages</Link>
-                <Link href="/dashboard" className="text-xs text-stone-500 hover:text-stone-900 transition-colors">Dashboard</Link>
+                <Link href="/dashboard" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Dashboard</Link>
                 <Link href={`/u/${user.username || user.id}`}>
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full hover:ring-2 ring-brand-300 transition-all" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6 rounded-full" style={{ boxShadow: '0 0 0 1.5px rgba(255,255,255,0.1)' }} />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600 hover:ring-2 ring-brand-300 transition-all">
+                    <div className="w-6 h-6 flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
                     </div>
                   )}
                 </Link>
               </>
             ) : (
-              <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Sign In</Link>
+              <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Sign In</Link>
             )}
           </div>
         </div>
@@ -374,25 +384,25 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             </div>
           )}
 
-          <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">{post.title}</h1>
-          {post.description && <p className="mt-3 text-lg text-stone-500">{post.description}</p>}
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">{post.title}</h1>
+          {post.description && <p className="mt-3 text-lg text-white/40">{post.description}</p>}
 
           {/* Author & meta */}
-          <div className="mt-6 flex items-center justify-between pb-6 border-b border-stone-200">
+          <div className="mt-6 flex items-center justify-between pb-6 border-b border-white/10">
             <Link
               href={`/u/${post.author?.username || post.author?.id || ''}`}
               className="flex items-center gap-3 group"
             >
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-brand-300 transition-all" />
+                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-[#FF5F1F] transition-all" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-sm font-bold text-brand-600 group-hover:ring-2 ring-brand-300 transition-all">
+                <div className="w-10 h-10 rounded-full bg-[#FF5F1F]/15 flex items-center justify-center text-sm font-bold text-[#FF5F1F] group-hover:ring-2 ring-[#FF5F1F] transition-all">
                   {(post.author?.full_name || 'A')[0]}
                 </div>
               )}
               <div>
-                <p className="text-sm font-semibold text-stone-800 group-hover:text-brand-600 transition-colors">{post.author?.full_name || 'Anonymous'}</p>
-                <p className="text-xs text-stone-400">{formatDate(post.created_at)} · {post.view_count} views</p>
+                <p className="text-sm font-semibold text-white/90 group-hover:text-[#FF5F1F] transition-colors">{post.author?.full_name || 'Anonymous'}</p>
+                <p className="text-xs text-white/50">{formatDate(post.created_at)} · {post.view_count} views</p>
               </div>
             </Link>
 
@@ -401,7 +411,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               {user && post.author_id !== user.id && (
                 <Link
                   href={`/u/${post.author?.username || post.author?.id || ''}`}
-                  className="px-3 py-2 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-3 py-2 text-xs font-medium text-white/60 bg-surface-800 hover:bg-surface-700 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                   Profile
@@ -414,8 +424,8 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                 disabled={!user}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                   hasUpvoted
-                    ? 'border-brand-300 bg-brand-50 text-brand-700'
-                    : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
+                    ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10 text-[#E54E15]'
+                    : 'border-white/10 bg-surface-900 text-white/60 hover:border-white/15'
                 } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <svg className="w-4 h-4" fill={hasUpvoted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
@@ -437,7 +447,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               {user && user.id !== post.author_id && (
                 <Link
                   href={`/support?type=community_post&id=${post.id}&subject=${encodeURIComponent(`Report post: ${post.title}`)}`}
-                  className="px-3 py-2 text-xs font-medium text-stone-400 hover:text-stone-600 bg-stone-50 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1.5 border border-stone-200"
+                  className="px-3 py-2 text-xs font-medium text-white/50 hover:text-white/60 bg-surface-900 hover:bg-surface-800 rounded-lg transition-colors flex items-center gap-1.5 border border-white/10"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
                   Report
@@ -451,7 +461,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             {post.allow_free_use && <span className="px-2.5 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded-full border border-green-200">📖 Free to Use</span>}
             {post.allow_distros && <span className="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-200">🔀 Distros Allowed</span>}
             {post.allow_edits && <span className="px-2.5 py-1 text-xs font-semibold text-purple-700 bg-purple-50 rounded-full border border-purple-200">✏️ Open to Edits</span>}
-            {post.allow_comments && <span className="px-2.5 py-1 text-xs font-semibold text-stone-600 bg-stone-100 rounded-full border border-stone-200">💬 Comments On</span>}
+            {post.allow_comments && <span className="px-2.5 py-1 text-xs font-semibold text-white/60 bg-surface-800 rounded-full border border-white/10">💬 Comments On</span>}
             {post.allow_suggestions && <span className="px-2.5 py-1 text-xs font-semibold text-amber-700 bg-amber-50 rounded-full border border-amber-200">💡 Suggestions On</span>}
           </div>
         </header>
@@ -466,30 +476,30 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         {/* Script content */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-stone-900">Script</h2>
+            <h2 className="text-lg font-semibold text-white">Script</h2>
             <button
               onClick={() => setShowScript(!showScript)}
-              className="text-xs text-brand-600 hover:text-brand-700 font-medium transition-colors"
+              className="text-xs text-[#FF5F1F] hover:text-[#E54E15] font-medium transition-colors"
             >
               {showScript ? 'Collapse' : 'Expand Full Script'}
             </button>
           </div>
           <div
-            className={`rounded-xl border border-stone-200 bg-white p-6 overflow-hidden transition-all ${
+            className={`rounded-xl border border-white/10 bg-surface-900 p-6 overflow-hidden transition-all ${
               showScript ? 'max-h-none' : 'max-h-96'
             }`}
           >
             {post.script_content ? (
               <ScriptContentViewer content={post.script_content} />
             ) : (
-              <p className="text-sm text-stone-400 italic">No script content.</p>
+              <p className="text-sm text-white/50 italic">No script content.</p>
             )}
           </div>
           {!showScript && post.script_content && post.script_content.length > 1500 && (
             <div className="relative -mt-16 pt-16 bg-gradient-to-t from-[#faf9f7] to-transparent">
               <button
                 onClick={() => setShowScript(true)}
-                className="w-full py-3 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
+                className="w-full py-3 text-sm font-medium text-[#FF5F1F] hover:text-[#E54E15] transition-colors"
               >
                 Read full script ↓
               </button>
@@ -498,7 +508,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         </div>
 
         {/* Actions row */}
-        <div className="flex flex-wrap gap-3 mb-10 pb-8 border-b border-stone-200">
+        <div className="flex flex-wrap gap-3 mb-10 pb-8 border-b border-white/10">
           {post.allow_distros && user && (
             <button
               onClick={handleCreateDistro}
@@ -535,12 +545,12 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           <div className="relative">
             <button
               onClick={handleShareLink}
-              className="px-4 py-2 text-sm font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white/60 bg-surface-800 hover:bg-surface-700 rounded-lg transition-colors"
             >
               🔗 Share
             </button>
             {shareTooltip && (
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs text-white bg-stone-800 rounded shadow whitespace-nowrap">
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs text-white bg-surface-700 rounded shadow whitespace-nowrap">
                 Link copied!
               </div>
             )}
@@ -548,7 +558,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-stone-100 rounded-lg p-1 w-fit">
+        <div className="flex gap-1 mb-6 bg-surface-800 rounded-lg p-1 w-fit">
           {[
             ...(post.allow_comments ? [{ key: 'comments' as const, label: `Comments (${comments.filter(c => c.comment_type === 'comment').length})` }] : []),
             ...(post.allow_suggestions ? [{ key: 'suggestions' as const, label: `Suggestions (${comments.filter(c => c.comment_type === 'suggestion').length})` }] : []),
@@ -559,7 +569,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                activeTab === tab.key ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+                activeTab === tab.key ? 'bg-surface-900 text-white shadow-sm' : 'text-white/40 hover:text-white/70'
               }`}
             >
               {tab.label}
@@ -571,33 +581,33 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         {(activeTab === 'comments' || activeTab === 'suggestions') && (
           <div>
             {user ? (
-              <div className="mb-8 rounded-xl border border-stone-200 bg-white p-5">
+              <div className="mb-8 rounded-xl border border-white/10 bg-surface-900 p-5">
                 <textarea
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder={activeTab === 'suggestions' ? 'Share a suggestion for improvement...' : 'Write a comment...'}
                   rows={3}
-                  className="w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-400 focus:outline-none resize-none transition-colors"
+                  className="w-full rounded-lg border border-white/10 bg-surface-900 px-4 py-3 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none resize-none transition-colors"
                 />
                 <div className="flex justify-end mt-2">
                   <button
                     onClick={() => handleComment()}
                     disabled={!commentText.trim() || submitting}
-                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 rounded-lg transition-colors"
+                    className="px-5 py-2 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
                   >
                     {submitting ? 'Posting...' : activeTab === 'suggestions' ? 'Submit Suggestion' : 'Post Comment'}
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="mb-8 rounded-xl bg-stone-100 p-6 text-center">
-                <p className="text-sm text-stone-600 mb-3">Sign in to join the conversation</p>
-                <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="inline-block px-5 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg">Sign In</Link>
+              <div className="mb-8 rounded-xl bg-surface-800 p-6 text-center">
+                <p className="text-sm text-white/60 mb-3">Sign in to join the conversation</p>
+                <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="inline-block px-5 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg">Sign In</Link>
               </div>
             )}
 
             {filteredComments.length === 0 && (
-              <p className="text-sm text-stone-400 text-center py-8">No {activeTab} yet. Be the first!</p>
+              <p className="text-sm text-white/50 text-center py-8">No {activeTab} yet. Be the first!</p>
             )}
 
             <div className="space-y-4">
@@ -627,7 +637,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           <div>
             {distros.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-stone-400 text-sm mb-3">No distros yet.</p>
+                <p className="text-white/50 text-sm mb-3">No distros yet.</p>
                 {user && post.allow_distros && (
                   <button onClick={handleCreateDistro} className="px-5 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg border border-blue-200">
                     Create First Distro
@@ -637,13 +647,13 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             ) : (
               <div className="space-y-4">
                 {distros.map((distro) => (
-                  <div key={distro.id} className="rounded-xl border border-stone-200 bg-white p-5">
+                  <div key={distro.id} className="rounded-xl border border-white/10 bg-surface-900 p-5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-sm font-semibold text-stone-900">{distro.title}</h4>
-                        {distro.description && <p className="text-xs text-stone-500 mt-1">{distro.description}</p>}
-                        <div className="flex items-center gap-2 mt-2 text-xs text-stone-400">
-                          <span>by <Link href={`/u/${distro.author?.username || distro.author?.id || ''}`} className="hover:text-stone-700 transition-colors">{distro.author?.full_name || 'Anonymous'}</Link></span>
+                        <h4 className="text-sm font-semibold text-white">{distro.title}</h4>
+                        {distro.description && <p className="text-xs text-white/40 mt-1">{distro.description}</p>}
+                        <div className="flex items-center gap-2 mt-2 text-xs text-white/50">
+                          <span>by <Link href={`/u/${distro.author?.username || distro.author?.id || ''}`} className="hover:text-white/70 transition-colors">{distro.author?.full_name || 'Anonymous'}</Link></span>
                           <span>·</span>
                           <span>{timeAgo(distro.created_at)}</span>
                         </div>
@@ -662,23 +672,23 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           <div>
             {productions.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-stone-400 text-sm mb-1">No productions yet.</p>
-                <p className="text-xs text-stone-400">Filmmakers can submit movies they've made based on this script.</p>
+                <p className="text-white/50 text-sm mb-1">No productions yet.</p>
+                <p className="text-xs text-white/50">Filmmakers can submit movies they've made based on this script.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {productions.map((prod) => (
                   <a key={prod.id} href={prod.url || '#'} target="_blank" rel="noopener noreferrer"
-                    className="rounded-xl border border-stone-200 bg-white p-5 hover:border-stone-300 hover:shadow-sm transition-all block"
+                    className="rounded-xl border border-white/10 bg-surface-900 p-5 hover:border-white/15 hover:shadow-sm transition-all block"
                   >
                     {prod.thumbnail_url && (
                       <div className="rounded-lg overflow-hidden mb-3 h-32">
                         <img src={prod.thumbnail_url} alt={prod.title || 'Production thumbnail'} className="w-full h-full object-cover" />
                       </div>
                     )}
-                    <h4 className="text-sm font-semibold text-stone-900">{prod.title}</h4>
-                    {prod.description && <p className="text-xs text-stone-500 mt-1 line-clamp-2">{prod.description}</p>}
-                    <div className="text-xs text-stone-400 mt-2">
+                    <h4 className="text-sm font-semibold text-white">{prod.title}</h4>
+                    {prod.description && <p className="text-xs text-white/40 mt-1 line-clamp-2">{prod.description}</p>}
+                    <div className="text-xs text-white/50 mt-2">
                       by {prod.submitter?.full_name || 'Anonymous'} · {formatDate(prod.created_at)}
                     </div>
                   </a>
@@ -692,67 +702,67 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
       {/* Film Submission Modal */}
       {showFilmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface-900 rounded-2xl shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
             {filmSubmitted ? (
               <div className="text-center py-8">
                 <div className="text-5xl mb-4">🎬</div>
-                <h3 className="text-xl font-bold text-stone-900 mb-2">Film Submitted!</h3>
-                <p className="text-sm text-stone-500 mb-6">Your film has been sent for review. You'll be notified once it's approved.</p>
+                <h3 className="text-xl font-black text-white mb-2">Film Submitted!</h3>
+                <p className="text-sm text-white/40 mb-6">Your film has been sent for review. You'll be notified once it's approved.</p>
                 <button onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}
-                  className="px-6 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors">
+                  className="px-6 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg hover:bg-[#CC4312] transition-colors">
                   Done
                 </button>
               </div>
             ) : (
               <>
-                <h3 className="text-lg font-bold text-stone-900 mb-1">Submit Your Film</h3>
-                <p className="text-sm text-stone-500 mb-5">
+                <h3 className="text-lg font-bold text-white mb-1">Submit Your Film</h3>
+                <p className="text-sm text-white/40 mb-5">
                   Made a film based on this script? Submit it for review — once approved, it'll appear on this page and the original creator will be notified.
                 </p>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Film Title *</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Film Title *</label>
                     <input
                       value={filmTitle} onChange={(e) => setFilmTitle(e.target.value)}
                       placeholder="My Short Film"
-                      className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 focus:border-brand-400 focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Description</label>
                     <textarea
                       value={filmDesc} onChange={(e) => setFilmDesc(e.target.value)}
                       placeholder="Tell us about your production..."
                       rows={3}
-                      className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 focus:border-brand-400 focus:outline-none resize-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none resize-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Video URL (YouTube, Vimeo, etc.)</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Video URL (YouTube, Vimeo, etc.)</label>
                     <input
                       value={filmUrl} onChange={(e) => setFilmUrl(e.target.value)}
                       placeholder="https://youtube.com/watch?v=..."
-                      className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 focus:border-brand-400 focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Thumbnail URL (optional)</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Thumbnail URL (optional)</label>
                     <input
                       value={filmThumb} onChange={(e) => setFilmThumb(e.target.value)}
                       placeholder="https://example.com/thumbnail.jpg"
-                      className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 focus:border-brand-400 focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none"
                     />
                   </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
                   <button onClick={() => setShowFilmModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800 transition-colors">
+                    className="px-4 py-2 text-sm font-medium text-white/60 hover:text-white/90 transition-colors">
                     Cancel
                   </button>
                   <button
                     onClick={handleSubmitFilm}
                     disabled={!filmTitle.trim() || submittingFilm}
-                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 rounded-lg transition-colors"
+                    className="px-5 py-2 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
                   >
                     {submittingFilm ? 'Submitting...' : 'Submit for Review'}
                   </button>
@@ -764,12 +774,12 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
       )}
 
       {/* Footer */}
-      <footer className="bg-[#faf9f7] border-t border-stone-200 py-10 px-6 mt-10">
+      <footer className="bg-[#faf9f7] border-t border-white/10 py-10 px-6 mt-10">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/community" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">← Back to Community</Link>
-          <div className="flex items-center gap-6 text-sm text-stone-500">
-            <Link href="/" className="hover:text-stone-900 transition-colors">Home</Link>
-            <Link href="/blog" className="hover:text-stone-900 transition-colors">Blog</Link>
+          <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">← Back to Community</Link>
+          <div className="flex items-center gap-6 text-sm text-white/40">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
             <SiteVersion light />
           </div>
         </div>
@@ -801,34 +811,34 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
   return (
     <div className={cn(!isRoot && 'ml-4 sm:ml-6')}>
       <div className={cn(
-        isRoot ? 'rounded-xl border border-stone-200 bg-white p-5' : 'pt-3',
+        isRoot ? 'rounded-xl border border-white/10 bg-surface-900 p-5' : 'pt-3',
       )}>
         <div className="flex items-start gap-3">
           <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
             {comment.author?.avatar_url ? (
-              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-brand-300 transition-all')} />
+              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-[#FF5F1F] transition-all')} />
             ) : (
-              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-stone-200 flex items-center justify-center font-bold text-stone-500 hover:ring-2 ring-brand-300 transition-all')}>
+              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-[#FF5F1F] transition-all')}>
                 {(comment.author?.full_name || '?')[0]}
               </div>
             )}
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className={cn(isRoot ? 'text-sm' : 'text-xs', 'font-semibold text-stone-800 hover:text-brand-600 transition-colors')}>{comment.author?.full_name || 'Anonymous'}</Link>
+              <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className={cn(isRoot ? 'text-sm' : 'text-xs', 'font-semibold text-white/90 hover:text-[#FF5F1F] transition-colors')}>{comment.author?.full_name || 'Anonymous'}</Link>
               {comment.author?.role === 'moderator' && <span className="px-1 py-0.5 text-[8px] font-bold text-green-700 bg-green-50 rounded border border-green-200">MOD</span>}
               {comment.author?.role === 'admin' && <span className="px-1 py-0.5 text-[8px] font-bold text-red-700 bg-red-50 rounded border border-red-200">ADMIN</span>}
-              <span className="text-[10px] text-stone-400">{timeAgo(comment.created_at)}</span>
+              <span className="text-[10px] text-white/50">{timeAgo(comment.created_at)}</span>
               {comment.comment_type === 'suggestion' && (
                 <span className="px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 rounded">Suggestion</span>
               )}
             </div>
-            <p className={cn(isRoot ? 'text-sm' : 'text-xs', 'text-stone-700 mt-1 whitespace-pre-wrap')}>{comment.content}</p>
+            <p className={cn(isRoot ? 'text-sm' : 'text-xs', 'text-white/70 mt-1 whitespace-pre-wrap')}>{comment.content}</p>
             <div className="flex items-center gap-3 mt-1">
               {user && (
                 <button
                   onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                  className="text-xs text-brand-600 hover:text-brand-700 transition-colors"
+                  className="text-xs text-[#FF5F1F] hover:text-[#E54E15] transition-colors"
                 >
                   Reply
                 </button>
@@ -843,7 +853,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
                 </button>
               )}
               {replies.length > 0 && (
-                <button onClick={() => setCollapsed(!collapsed)} className="text-[10px] text-stone-400 hover:text-stone-700 transition-colors">
+                <button onClick={() => setCollapsed(!collapsed)} className="text-[10px] text-white/50 hover:text-white/70 transition-colors">
                   {collapsed ? `Show ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}` : replies.length > 2 ? `Hide replies` : ''}
                 </button>
               )}
@@ -856,13 +866,13 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Write a reply..."
-                  className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
+                  className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm focus:border-[#FF5F1F] focus:outline-none"
                   onKeyDown={(e) => { if (e.key === 'Enter') handleComment(comment.id); }}
                 />
                 <button
                   onClick={() => handleComment(comment.id)}
                   disabled={!replyText.trim() || submitting}
-                  className="px-3 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg disabled:opacity-50"
+                  className="px-3 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg disabled:opacity-50"
                 >Reply</button>
               </div>
             )}
@@ -872,7 +882,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
 
       {/* Nested replies */}
       {!collapsed && replies.length > 0 && (
-        <div className={cn(depth < maxIndent ? 'border-l-2 border-stone-100 ml-4 pl-0' : '')}>
+        <div className={cn(depth < maxIndent ? 'border-l-2 border-white/07 ml-4 pl-0' : '')}>
           {replies.map(reply => (
             <CommunityCommentThread
               key={reply.id}

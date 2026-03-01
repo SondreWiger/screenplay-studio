@@ -113,10 +113,10 @@ export default function ProUpgradePage() {
   // Gate: if pro_subscription flag is not accessible, redirect
   if (!flagsLoading && !canUseFeature('pro_subscription')) {
     return (
-      <div className="min-h-screen bg-surface-950">
+      <div className="min-h-screen" style={{ background: '#070710' }}>
         <AppHeader />
         <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <p className="text-surface-400">Pro subscriptions are not available yet.</p>
+          <p className="text-white/30 text-sm">Pro subscriptions are not available yet.</p>
         </div>
       </div>
     );
@@ -169,16 +169,21 @@ export default function ProUpgradePage() {
   // Already Pro
   if (isPro) {
     return (
-      <div className="min-h-screen bg-surface-950 px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#070710' }}>
+        <div className="max-w-md text-center">
+          <div className="w-16 h-16 mx-auto mb-8 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
             <Icon name="star" size="xl" className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-3">You're already on Pro!</h1>
-          <p className="text-surface-400 mb-8">
+          <div className="flex items-center gap-2.5 mb-4 justify-center">
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+            <span className="ss-label">Already Pro</span>
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+          </div>
+          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>YOU'RE ALREADY ON PRO!</h1>
+          <p className="text-white/30 text-sm mb-8 leading-relaxed">
             You have access to all Pro features. Thank you for supporting Screenplay Studio.
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
             <Link href="/settings/billing">
               <Button variant="secondary">Manage Subscription</Button>
             </Link>
@@ -192,22 +197,22 @@ export default function ProUpgradePage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-950">
+    <div className="min-h-screen" style={{ background: '#070710' }}>
       <AppHeader />
       {/* Hero */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-500/10 via-transparent to-transparent" />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% -20%, rgba(255,95,31,0.08) 0%, transparent 60%)' }} />
         <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-12 text-center">
-          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-4 py-1.5 mb-6">
-            <span className="text-amber-400 text-sm font-medium">Screenplay Studio Pro</span>
+          <div className="inline-flex items-center gap-2.5 mb-8">
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+            <span className="ss-label">Screenplay Studio Pro</span>
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
+          <h1 className="font-black text-white mb-6" style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)', letterSpacing: '-0.04em', lineHeight: 0.9 }}>
             Production-grade tools<br />
-            <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-brand-400 bg-clip-text text-transparent">
-              for serious creators.
-            </span>
+            <span style={{ color: '#FF5F1F' }}>for serious creators.</span>
           </h1>
-          <p className="text-lg text-surface-400 max-w-2xl mx-auto mb-10">
+          <p className="text-base text-white/30 max-w-2xl mx-auto mb-12 leading-relaxed">
             Everything in the free plan stays free — forever. Pro adds the collaboration,
             client-facing, and production management tools that professional teams need.
           </p>
@@ -221,7 +226,7 @@ export default function ProUpgradePage() {
               </div>
               <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Per Production</p>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-4xl font-bold text-white">${PRO_PRICING.project_lifetime.amount}</span>
+                <span className="text-4xl font-black text-white">${PRO_PRICING.project_lifetime.amount}</span>
               </div>
               <p className="text-xs text-surface-500 mb-5">One-time. Pro on one production forever.</p>
               <Button size="sm" className="w-full mb-3 bg-emerald-600 hover:bg-emerald-500" onClick={() => { setCheckoutPlan('project_lifetime'); setShowCheckout(true); }}>
@@ -239,7 +244,7 @@ export default function ProUpgradePage() {
             <Card className="p-6 text-left border-2 border-amber-500/40 hover:border-amber-400/60 transition-colors relative">
               <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">Pro — Yearly</p>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-4xl font-bold text-white">${PRO_PRICING.yearly.amount}</span>
+                <span className="text-4xl font-black text-white">${PRO_PRICING.yearly.amount}</span>
                 <span className="text-surface-400 text-sm">/yr</span>
               </div>
               <p className="text-xs text-surface-500 mb-5">${PRO_PRICING.yearly.per_month.toFixed(2)}/mo — all projects, all features.</p>
@@ -260,7 +265,7 @@ export default function ProUpgradePage() {
               </div>
               <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">Team License</p>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-4xl font-bold text-white">${PRO_PRICING.team_yearly.amount}</span>
+                <span className="text-4xl font-black text-white">${PRO_PRICING.team_yearly.amount}</span>
                 <span className="text-surface-400 text-sm">/seat/yr</span>
               </div>
               <p className="text-xs text-surface-500 mb-5">${PRO_PRICING.team_yearly.per_month.toFixed(2)}/mo per seat.</p>
@@ -286,7 +291,7 @@ export default function ProUpgradePage() {
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
                 <Icon name={checkoutPlan === 'project_lifetime' ? 'film' : 'star'} size="xl" className="text-white" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Checkout</h2>
+              <h2 className="text-xl font-black text-white mb-2">Checkout</h2>
               <p className="text-sm text-surface-400">
                 {checkoutPlan === 'project_lifetime'
                   ? 'Unlock Pro tools on a single production — forever. All team members get access.'
@@ -359,10 +364,15 @@ export default function ProUpgradePage() {
       )}
 
       {/* Features Grid */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
+      <div className="max-w-6xl mx-auto px-4 py-16" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Everything in Pro</h2>
-          <p className="text-surface-400">New capabilities that never existed in the free tier — nothing was taken away.</p>
+          <div className="flex items-center gap-2.5 mb-4 justify-center">
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+            <span className="ss-label">Pro Features</span>
+            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>EVERYTHING IN PRO</h2>
+          <p className="text-white/30 text-sm">New capabilities that never existed in the free tier — nothing was taken away.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRO_FEATURES.map((f) => (
@@ -392,7 +402,7 @@ export default function ProUpgradePage() {
 
       {/* Comparison Table */}
       <div className="max-w-4xl mx-auto px-4 pb-20">
-        <h2 className="text-2xl font-bold text-white text-center mb-8">Free vs Pro</h2>
+        <h2 className="text-2xl font-black text-white text-center mb-8" style={{ letterSpacing: '-0.03em' }}>FREE vs PRO</h2>
         <Card className="overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -436,9 +446,14 @@ export default function ProUpgradePage() {
       </div>
 
       {/* Final CTA */}
-      <div className="bg-gradient-to-b from-transparent via-amber-500/5 to-transparent py-16 text-center px-4">
-        <h2 className="text-2xl font-bold text-white mb-3">Ready to level up your production?</h2>
-        <p className="text-surface-400 mb-6 max-w-xl mx-auto">
+      <div className="py-16 text-center px-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,95,31,0.04)' }}>
+        <div className="flex items-center gap-2.5 mb-5 justify-center">
+          <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+          <span className="ss-label">Get Started</span>
+          <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+        </div>
+        <h2 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>READY TO LEVEL UP?</h2>
+        <p className="text-white/30 text-sm mb-8 max-w-xl mx-auto leading-relaxed">
           Everything you already have stays free. Pro just adds the tools your team deserves.
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">

@@ -260,7 +260,7 @@ export async function POST(request: NextRequest) {
 
       const { data: inserted, error: insertError } = await supabase
         .from('broadcast_wire_stories')
-        .insert(rows)
+        .upsert(rows, { onConflict: 'feed_id,external_id', ignoreDuplicates: true })
         .select('id');
 
       if (insertError) {
