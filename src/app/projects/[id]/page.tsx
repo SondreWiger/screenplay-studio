@@ -178,6 +178,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     members: 0,
     documents: 0,
     scriptLines: 0,
+    comments: 0,
   });
   const [recentScripts, setRecentScripts] = useState<Script[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<ScheduleEvent[]>([]);
@@ -241,6 +242,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         members: members.data?.length || 0,
         documents: documents.count ?? 0,
         scriptLines,
+        comments: 0,
       });
       setRecentScripts((scripts.data || []).slice(0, 3));
       setUpcomingEvents((events.data || []).slice(0, 5));
@@ -267,8 +269,88 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         activityItems.push({ id: 'idea-' + i.id, type: 'idea', label: i.title, detail: 'Idea updated', timestamp: i.updated_at, icon: 'idea', color: '#a855f7' });
       });
 
+      // ── Second batch: docs with editor, comments, stage data ───────────
+      const [docsData, commentsData, ensembleData, cuesData] = await Promise.all([
+        supabase
+          .from('project_documents')
+          .select('id, title, updated_at, profiles!last_edited_by(display_name)')
+          .eq('project_id', params.id)
+          .order('updated_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('document_comments')
+          .select('id, content, created_at, profiles!author_id(display_name)')
+          .eq('project_id', params.id)
+          .eq('is_resolved', false)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('stage_ensemble_members')
+          .select('id, actor_name, character_name, updated_at')
+          .eq('project_id', params.id)
+          .order('updated_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('stage_cues')
+          .select('id, cue_number, cue_type, description, updated_at')
+          .eq('project_id', params.id)
+          .order('updated_at', { ascending: false })
+          .limit(5),
+      ]);
+
+      const commentCount = commentsData.data?.length ?? 0;
+      setStats((prev) => ({ ...prev, comments: commentCount }));
+
+      (docsData.data || []).forEach((d: { id: string; title?: string; updated_at: string; profiles?: { display_name?: string }[] | null }) => {
+        const editorName = Array.isArray(d.profiles) ? d.profiles[0]?.display_name : (d.profiles as { display_name?: string } | null | undefined)?.display_name;
+        activityItems.push({
+          id: 'doc-' + d.id,
+          type: 'document',
+          label: d.title || 'Untitled Document',
+          detail: editorName ? `Edited by ${editorName}` : 'Document updated',
+          timestamp: d.updated_at,
+          icon: 'document',
+          color: '#22d3ee',
+        });
+      });
+      (commentsData.data || []).forEach((c: { id: string; content?: string; created_at: string; profiles?: { display_name?: string }[] | null }) => {
+        const authorName = (Array.isArray(c.profiles) ? c.profiles[0]?.display_name : (c.profiles as { display_name?: string } | null | undefined)?.display_name) || 'Someone';
+        const preview = c.content ? c.content.slice(0, 45) + (c.content.length > 45 ? '…' : '') : 'Comment';
+        activityItems.push({
+          id: 'comment-' + c.id,
+          type: 'comment',
+          label: preview,
+          detail: `${authorName} commented`,
+          timestamp: c.created_at,
+          icon: 'comment',
+          color: '#fb923c',
+        });
+      });
+      (ensembleData.data || []).forEach((m: { id: string; actor_name: string; character_name?: string; updated_at: string }) => {
+        activityItems.push({
+          id: 'ensemble-' + m.id,
+          type: 'cast',
+          label: m.actor_name + (m.character_name ? ` as ${m.character_name}` : ''),
+          detail: 'Cast member updated',
+          timestamp: m.updated_at,
+          icon: 'cast',
+          color: '#a78bfa',
+        });
+      });
+      (cuesData.data || []).forEach((q: { id: string; cue_number: string; cue_type: string; description?: string; updated_at: string }) => {
+        activityItems.push({
+          id: 'cue-' + q.id,
+          type: 'cue',
+          label: `${q.cue_type?.toUpperCase()} ${q.cue_number}`,
+          detail: q.description || 'Cue updated',
+          timestamp: q.updated_at,
+          icon: 'cue',
+          color: '#fbbf24',
+        });
+      });
+
       activityItems.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      setActivity(activityItems.slice(0, 15));
+      setActivity(activityItems.slice(0, 20));
     } catch (err) {
       console.error('Error fetching stats:', err);
     }
@@ -283,6 +365,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
   const durationMins = estimatedMinutes % 60;
   const durationStr = durationHours > 0 ? durationHours + 'h ' + durationMins + 'm' : durationMins + ' min';
   const targetStr = targetMinutes > 0 ? (Math.floor(targetMinutes / 60) > 0 ? Math.floor(targetMinutes / 60) + 'h ' + (targetMinutes % 60) + 'm' : targetMinutes + ' min') : '';
+
+  const isAudioDrama = currentProject.project_type === 'audio_drama' || currentProject.script_type === 'audio_drama';
 
   const statusColor =
     currentProject.status === 'production' ? '#22c55e' :
@@ -331,13 +415,19 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         <p className="section-title">Project Numbers</p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-10 stagger-children">
-        {[
-          { label: 'Scripts',     value: stats.scripts,    href: 'script',     color: '#818cf8' },
-          { label: 'Characters',  value: stats.characters, href: 'characters', color: '#f472b6' },
-          { label: 'Locations',   value: stats.locations,  href: 'locations',  color: '#2dd4bf' },
-          { label: 'Scenes',      value: stats.scenes,     href: 'scenes',     color: '#fbbf24' },
-          { label: 'Shots',       value: stats.shots,      href: 'shots',      color: '#60a5fa' },
-        ].map((stat) => (
+        {(isAudioDrama ? [
+          { label: 'Scripts',    value: stats.scripts,    href: 'script',     color: '#818cf8' },
+          { label: 'Characters', value: stats.characters, href: 'characters', color: '#f472b6' },
+          { label: 'Locations',  value: stats.locations,  href: 'locations',  color: '#2dd4bf' },
+          { label: 'Episodes',   value: stats.scenes,     href: 'scenes',     color: '#a78bfa' },
+          { label: 'Ideas',      value: stats.ideas,      href: 'ideas',      color: '#fb923c' },
+        ] : [
+          { label: 'Scripts',    value: stats.scripts,    href: 'script',     color: '#818cf8' },
+          { label: 'Characters', value: stats.characters, href: 'characters', color: '#f472b6' },
+          { label: 'Locations',  value: stats.locations,  href: 'locations',  color: '#2dd4bf' },
+          { label: 'Scenes',     value: stats.scenes,     href: 'scenes',     color: '#fbbf24' },
+          { label: 'Shots',      value: stats.shots,      href: 'shots',      color: '#60a5fa' },
+        ]).map((stat) => (
           <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
             <div
               className="stat-card group"
@@ -355,7 +445,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         {[
           { label: 'Documents',    value: stats.documents,                  href: 'documents', color: '#22d3ee' },
           { label: 'Script Lines', value: stats.scriptLines.toLocaleString(), href: 'script',  color: '#a78bfa' },
-          { label: 'Ideas',        value: stats.ideas,                      href: 'ideas',     color: '#fb923c' },
+          { label: 'Comments',     value: stats.comments,                   href: 'documents', color: '#fb923c' },
           { label: 'Team Members', value: stats.members,                    href: 'team',      color: '#34d399' },
         ].map((stat) => (
           <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
@@ -500,26 +590,52 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           )}
         </Card>
 
-        {/* Creative Tools */}
-        <Card className="p-6">
-          <p className="section-title">Creative Tools</p>
-          <div className="grid grid-cols-2 gap-2.5">
-            {[
-              { href: 'mindmap',   label: 'Mind Map',    sub: 'Character web',       color: '#f97316', from: 'from-orange-500/10', to: 'to-red-500/10',    border: 'border-orange-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
-              { href: 'moodboard', label: 'Mood Board',  sub: 'Visual references',   color: '#a855f7', from: 'from-purple-500/10', to: 'to-pink-500/10',   border: 'border-purple-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg> },
-              { href: 'corkboard', label: 'Corkboard',   sub: `${stats.scenes} scenes`,  color: '#fbbf24', from: 'from-yellow-500/10', to: 'to-amber-500/10',  border: 'border-yellow-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
-              { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure',    color: '#60a5fa', from: 'from-blue-500/10',   to: 'to-indigo-500/10', border: 'border-blue-500/20',   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
-            ].map((tool) => (
-              <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
-                <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border, `hover:${tool.border.replace('20', '40')}`)}>
-                  <div className="mb-2.5 transition-transform group-hover:scale-110" style={{ color: tool.color }}>{tool.icon}</div>
-                  <p className="text-sm font-bold text-white">{tool.label}</p>
-                  <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </Card>
+        {/* Creative Tools — conditional per project type */}
+        {isAudioDrama ? (
+          <Card className="p-6">
+            <p className="section-title">Audio Drama Tools</p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { href: 'sound-design', label: 'Sound Design', sub: 'SFX · Music · Ambience', color: '#7c3aed', from: 'from-violet-500/10', to: 'to-purple-500/10', border: 'border-violet-500/20',
+                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg> },
+                { href: 'voice-cast',   label: 'Voice Cast',   sub: `${stats.characters} characters`, color: '#ec4899', from: 'from-pink-500/10', to: 'to-rose-500/10', border: 'border-pink-500/20',
+                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg> },
+                { href: 'arc-planner', label: 'Arc Planner',   sub: 'Story structure',      color: '#60a5fa', from: 'from-blue-500/10', to: 'to-indigo-500/10', border: 'border-blue-500/20',
+                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
+                { href: 'mindmap',     label: 'Mind Map',      sub: 'Character web',        color: '#f97316', from: 'from-orange-500/10', to: 'to-red-500/10', border: 'border-orange-500/20',
+                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
+              ].map((tool) => (
+                <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
+                  <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border)}>
+                    <div className="mb-2.5 transition-transform group-hover:scale-110" style={{ color: tool.color }}>{tool.icon}</div>
+                    <p className="text-sm font-bold text-white">{tool.label}</p>
+                    <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Card>
+        ) : (
+          <Card className="p-6">
+            <p className="section-title">Creative Tools</p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { href: 'mindmap',   label: 'Mind Map',    sub: 'Character web',       color: '#f97316', from: 'from-orange-500/10', to: 'to-red-500/10',    border: 'border-orange-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
+                { href: 'moodboard', label: 'Mood Board',  sub: 'Visual references',   color: '#a855f7', from: 'from-purple-500/10', to: 'to-pink-500/10',   border: 'border-purple-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg> },
+                { href: 'corkboard', label: 'Corkboard',   sub: `${stats.scenes} scenes`,  color: '#fbbf24', from: 'from-yellow-500/10', to: 'to-amber-500/10',  border: 'border-yellow-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
+                { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure',    color: '#60a5fa', from: 'from-blue-500/10',   to: 'to-indigo-500/10', border: 'border-blue-500/20',   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
+              ].map((tool) => (
+                <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
+                  <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border, `hover:${tool.border.replace('20', '40')}`)}>
+                    <div className="mb-2.5 transition-transform group-hover:scale-110" style={{ color: tool.color }}>{tool.icon}</div>
+                    <p className="text-sm font-bold text-white">{tool.label}</p>
+                    <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* Synopsis */}
         {currentProject.synopsis && (

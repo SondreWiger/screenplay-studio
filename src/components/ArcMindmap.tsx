@@ -56,6 +56,7 @@ export interface MapEdge {
   to: string;
   label?: string;
   type: EdgeType;
+  waypoints?: Array<{ x: number; y: number }>;
 }
 
 export interface MindmapData {
@@ -136,6 +137,53 @@ function bezierPath(x1: number, y1: number, x2: number, y2: number): string {
   const dx = Math.abs(x2 - x1);
   const cx = dx * 0.6 + 40;
   return `M${x1},${y1} C${x1 + cx},${y1} ${x2 - cx},${y2} ${x2},${y2}`;
+}
+
+/** Catmull-Rom → cubic bezier through an ordered array of points. */
+function pathWithWaypoints(
+  x1: number, y1: number, x2: number, y2: number,
+  waypoints: Array<{ x: number; y: number }> = [],
+): string {
+  if (waypoints.length === 0) return bezierPath(x1, y1, x2, y2);
+  const pts = [{ x: x1, y: y1 }, ...waypoints, { x: x2, y: y2 }];
+  let d = `M${pts[0].x},${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) {
+    const p0 = pts[i - 2] ?? pts[i - 1];
+    const p1 = pts[i - 1];
+    const p2 = pts[i];
+    const p3 = pts[i + 1] ?? p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+  }
+  return d;
+}
+
+/** Shortest distance from point (px,py) to segment (x1,y1)–(x2,y2). */
+function distToSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+  const dx = x2 - x1; const dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+/**
+ * Given the current point sequence (start, ...waypoints, end), find the
+ * index i such that the new waypoint should be inserted at position i+1.
+ */
+function findInsertIdx(
+  pts: Array<{ x: number; y: number }>,
+  cx: number, cy: number,
+): number {
+  let best = 0; let bestDist = Infinity;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const d = distToSegment(cx, cy, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y);
+    if (d < bestDist) { best = i; bestDist = d; }
+  }
+  return best;
 }
 
 /**
@@ -309,6 +357,15 @@ export function ArcMindmap({
   const [hoverNodeId, setHoverNodeId] = useState<string | null>(null);
   const pendingEdgeType = useRef<EdgeType>('story-arc');
 
+  // ── Waypoint drag state ───────────────────────────────────────────────────
+  const draggingWaypoint = useRef<{
+    edgeId: string; idx: number;
+    startX: number; startY: number;
+    origX: number; origY: number;
+  } | null>(null);
+  // Track which edge is hovered so we can show its waypoints
+  const [hoverEdgeId, setHoverEdgeId] = useState<string | null>(null);
+
   // ── Sidebar ──────────────────────────────────────────────────────────────
   const [newEdgeType, setNewEdgeType] = useState<EdgeType>('story-arc');
   const [saving, setSaving] = useState(false);
@@ -395,11 +452,28 @@ export function ArcMindmap({
 
   const markDirty = useCallback(() => setDirty(true), []);
 
+  // ── Undo / Redo ───────────────────────────────────────────────────────────
+  const [arcUndoStack, setArcUndoStack] = useState<Array<{ nodes: MapNode[]; edges: MapEdge[] }>>([]);
+  const [arcRedoStack, setArcRedoStack] = useState<Array<{ nodes: MapNode[]; edges: MapEdge[] }>>([]);
+  const nodesRef = useRef<MapNode[]>([]);
+  const edgesRef = useRef<MapEdge[]>([]);
+  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
+  useEffect(() => { edgesRef.current = edges; }, [edges]);
+  const pushArcHistory = useCallback(() => {
+    const snap = {
+      nodes: nodesRef.current.map((n) => ({ ...n })),
+      edges: edgesRef.current.map((e) => ({ ...e, waypoints: e.waypoints ? [...e.waypoints] : undefined })),
+    };
+    setArcUndoStack((s) => [...s.slice(-49), snap]);
+    setArcRedoStack([]);
+  }, []);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Nodes CRUD
   // ─────────────────────────────────────────────────────────────────────────
 
   const addNode = useCallback((type: NodeType, x?: number, y?: number) => {
+    pushArcHistory();
     const cx = canvasRef.current;
     const ox = cx ? (cx.clientWidth  / 2 - panX) / zoom - NODE_W / 2 : 200;
     const oy = cx ? (cx.clientHeight / 2 - panY) / zoom - NODE_H / 2 : 200;
@@ -418,16 +492,18 @@ export function ArcMindmap({
   }, [panX, panY, zoom, markDirty]);
 
   const updateNode = useCallback(<K extends keyof MapNode>(id: string, key: K, val: MapNode[K]) => {
+    pushArcHistory();
     setNodes((prev) => prev.map((n) => n.id === id ? { ...n, [key]: val } : n));
     markDirty();
-  }, [markDirty]);
+  }, [markDirty, pushArcHistory]);
 
   const deleteNode = useCallback((id: string) => {
+    pushArcHistory();
     setNodes((prev) => prev.filter((n) => n.id !== id));
     setEdges((prev) => prev.filter((e) => e.from !== id && e.to !== id));
     if (selectedNodeId === id) setSelectedNodeId(null);
     markDirty();
-  }, [selectedNodeId, markDirty]);
+  }, [selectedNodeId, markDirty, pushArcHistory]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Edges CRUD
@@ -436,6 +512,7 @@ export function ArcMindmap({
   const addEdge = useCallback((fromId: string, toId: string) => {
     if (fromId === toId) return;
     if (edges.some((e) => e.from === fromId && e.to === toId)) return;
+    pushArcHistory();
     const newEdge: MapEdge = {
       id:   uid(),
       from: fromId,
@@ -449,15 +526,50 @@ export function ArcMindmap({
   }, [edges, markDirty]);
 
   const updateEdge = useCallback(<K extends keyof MapEdge>(id: string, key: K, val: MapEdge[K]) => {
+    pushArcHistory();
     setEdges((prev) => prev.map((e) => e.id === id ? { ...e, [key]: val } : e));
     markDirty();
-  }, [markDirty]);
+  }, [markDirty, pushArcHistory]);
 
   const deleteEdge = useCallback((id: string) => {
+    pushArcHistory();
     setEdges((prev) => prev.filter((e) => e.id !== id));
     if (selectedEdgeId === id) setSelectedEdgeId(null);
     markDirty();
-  }, [selectedEdgeId, markDirty]);
+  }, [selectedEdgeId, markDirty, pushArcHistory]);
+
+  /** Insert a waypoint into an edge at the best-fit segment position. */
+  const addWaypoint = useCallback((edgeId: string, canvasX: number, canvasY: number) => {
+    pushArcHistory();
+    setEdges((prev) => prev.map((e) => {
+      if (e.id !== edgeId) return e;
+      const fromNode = nodes.find((n) => n.id === e.from);
+      const toNode   = nodes.find((n) => n.id === e.to);
+      if (!fromNode || !toNode) return e;
+      const { x1, y1, x2, y2 } = bestPorts(fromNode, toNode);
+      const existing = e.waypoints ?? [];
+      const pts = [{ x: x1, y: y1 }, ...existing, { x: x2, y: y2 }];
+      const insertAfter = findInsertIdx(pts, canvasX, canvasY);
+      const newWps = [
+        ...existing.slice(0, insertAfter),
+        { x: canvasX, y: canvasY },
+        ...existing.slice(insertAfter),
+      ];
+      return { ...e, waypoints: newWps };
+    }));
+    markDirty();
+  }, [nodes, markDirty]);
+
+  /** Remove a specific waypoint from an edge. */
+  const removeWaypoint = useCallback((edgeId: string, idx: number) => {
+    pushArcHistory();
+    setEdges((prev) => prev.map((e) => {
+      if (e.id !== edgeId) return e;
+      const wps = (e.waypoints ?? []).filter((_, i) => i !== idx);
+      return { ...e, waypoints: wps.length ? wps : undefined };
+    }));
+    markDirty();
+  }, [markDirty]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Zoom to fit
@@ -502,6 +614,7 @@ export function ArcMindmap({
     setSelectedEdgeId(null);
     const node = nodes.find((n) => n.id === nodeId);
     if (!node || node.locked) return;
+    pushArcHistory();
     dragging.current = {
       nodeId,
       startX: e.clientX,
@@ -509,7 +622,7 @@ export function ArcMindmap({
       origX:  node.x,
       origY:  node.y,
     };
-  }, [canEdit, nodes]);
+  }, [canEdit, nodes, pushArcHistory]);
 
   const onPortMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
     if (!canEdit) return;
@@ -544,6 +657,18 @@ export function ArcMindmap({
       setNodes((prev) =>
         prev.map((n) => n.id === nodeId ? { ...n, x: origX + dx, y: origY + dy } : n),
       );
+    } else if (draggingWaypoint.current) {
+      const canvas = canvasRef.current!;
+      const rect   = canvas.getBoundingClientRect();
+      const wx = (e.clientX - rect.left - panX) / zoom;
+      const wy = (e.clientY - rect.top  - panY) / zoom;
+      const { edgeId, idx } = draggingWaypoint.current;
+      setEdges((prev) => prev.map((ed) => {
+        if (ed.id !== edgeId) return ed;
+        const wps = [...(ed.waypoints ?? [])];
+        wps[idx] = { x: wx, y: wy };
+        return { ...ed, waypoints: wps };
+      }));
     } else if (panning.current) {
       const dx = e.clientX - panning.current.startX;
       const dy = e.clientY - panning.current.startY;
@@ -564,6 +689,10 @@ export function ArcMindmap({
     if (dragging.current) {
       markDirty();
       dragging.current = null;
+    }
+    if (draggingWaypoint.current) {
+      markDirty();
+      draggingWaypoint.current = null;
     }
     if (panning.current) {
       panning.current = null;
@@ -607,6 +736,32 @@ export function ArcMindmap({
         setSelectedEdgeId(null);
         setDrawingEdge(null);
       }
+      // Undo: Cmd+Z
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        setArcUndoStack((stack) => {
+          if (stack.length === 0) return stack;
+          const prev = stack[stack.length - 1];
+          setArcRedoStack((rs) => [...rs.slice(-49), { nodes: nodesRef.current.map((n) => ({ ...n })), edges: edgesRef.current.map((ed) => ({ ...ed })) }]);
+          setNodes(prev.nodes);
+          setEdges(prev.edges);
+          markDirty();
+          return stack.slice(0, -1);
+        });
+      }
+      // Redo: Cmd+Shift+Z or Cmd+Y
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        setArcRedoStack((rs) => {
+          if (rs.length === 0) return rs;
+          const next = rs[rs.length - 1];
+          setArcUndoStack((us) => [...us.slice(-49), { nodes: nodesRef.current.map((n) => ({ ...n })), edges: edgesRef.current.map((ed) => ({ ...ed })) }]);
+          setNodes(next.nodes);
+          setEdges(next.edges);
+          markDirty();
+          return rs.slice(0, -1);
+        });
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
         if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -615,7 +770,7 @@ export function ArcMindmap({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectedNodeId, selectedEdgeId, deleteNode, deleteEdge, nodes, edges, saveMap]);
+  }, [selectedNodeId, selectedEdgeId, deleteNode, deleteEdge, nodes, edges, saveMap, markDirty]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Derived: selected items
@@ -633,6 +788,12 @@ export function ArcMindmap({
     const toNode   = nodes.find((n) => n.id === edge.to);
     if (!fromNode || !toNode) return null;
     const { x1, y1, x2, y2 } = bestPorts(fromNode, toNode);
+    const wps = edge.waypoints ?? [];
+    if (wps.length > 0) {
+      // Use the middle waypoint as the label anchor
+      const mid = wps[Math.floor(wps.length / 2)];
+      return { x: mid.x, y: mid.y };
+    }
     return { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
   }, [nodes]);
 
@@ -736,27 +897,45 @@ export function ArcMindmap({
               const toNode   = nodes.find((n) => n.id === edge.to);
               if (!fromNode || !toNode) return null;
               const { x1, y1, x2, y2 } = bestPorts(fromNode, toNode);
-              const def     = EDGE_DEFS[edge.type];
-              const isSelE  = edge.id === selectedEdgeId;
-              const mid     = edgeMidpoint(edge);
+              const def      = EDGE_DEFS[edge.type];
+              const isSelE   = edge.id === selectedEdgeId;
+              const isHoverE = edge.id === hoverEdgeId;
+              const mid      = edgeMidpoint(edge);
+              const wps      = edge.waypoints ?? [];
+              const edgePath = pathWithWaypoints(x1, y1, x2, y2, wps);
               return (
-                <g key={edge.id}>
-                  {/* Wider invisible hit area */}
+                <g
+                  key={edge.id}
+                  onMouseEnter={() => setHoverEdgeId(edge.id)}
+                  onMouseLeave={() => setHoverEdgeId((id) => id === edge.id ? null : id)}
+                >
+                  {/* Wider invisible hit area — click to select, double-click to add waypoint */}
                   <path
-                    d={bezierPath(x1, y1, x2, y2)}
+                    d={edgePath}
                     fill="none"
                     stroke="transparent"
                     strokeWidth={16}
-                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                    style={{ pointerEvents: 'stroke', cursor: canEdit ? 'pointer' : 'default' }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      setSelectedEdgeId(edge.id);
+                      setSelectedNodeId(null);
+                    }}
+                    onDoubleClick={(e) => {
+                      if (!canEdit) return;
+                      e.stopPropagation();
+                      const canvas = canvasRef.current!;
+                      const rect   = canvas.getBoundingClientRect();
+                      const cx = (e.clientX - rect.left - panX) / zoom;
+                      const cy = (e.clientY - rect.top  - panY) / zoom;
+                      addWaypoint(edge.id, cx, cy);
                       setSelectedEdgeId(edge.id);
                       setSelectedNodeId(null);
                     }}
                   />
                   {/* Visible edge */}
                   <path
-                    d={bezierPath(x1, y1, x2, y2)}
+                    d={edgePath}
                     fill="none"
                     stroke={isSelE ? '#ffffff' : def.color}
                     strokeWidth={isSelE ? 2.5 : 1.8}
@@ -784,6 +963,38 @@ export function ArcMindmap({
                       </div>
                     </foreignObject>
                   )}
+                  {/* Waypoint dots — shown when edge is selected or hovered */}
+                  {canEdit && (isSelE || isHoverE) && wps.map((wp, idx) => (
+                    <g key={idx}>
+                      {/* Outer ring – hit area */}
+                      <circle
+                        cx={wp.x} cy={wp.y} r={8}
+                        fill="transparent"
+                        style={{ pointerEvents: 'all', cursor: 'grab' }}
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          pushArcHistory();
+                          draggingWaypoint.current = {
+                            edgeId: edge.id, idx,
+                            startX: e.clientX, startY: e.clientY,
+                            origX: wp.x, origY: wp.y,
+                          };
+                        }}
+                        onDoubleClick={(e) => {
+                          e.stopPropagation();
+                          removeWaypoint(edge.id, idx);
+                        }}
+                      />
+                      {/* Visible dot */}
+                      <circle
+                        cx={wp.x} cy={wp.y} r={isSelE ? 4 : 3}
+                        fill={isSelE ? '#ffffff' : def.color + 'aa'}
+                        stroke={isSelE ? def.color : 'rgba(255,255,255,0.15)'}
+                        strokeWidth={isSelE ? 1.5 : 1}
+                        style={{ pointerEvents: 'none', transition: 'r 0.1s, fill 0.1s' }}
+                      />
+                    </g>
+                  ))}
                 </g>
               );
             })}
@@ -836,18 +1047,58 @@ export function ArcMindmap({
         {/* Toolbar / header */}
         <div className="p-3 border-b border-white/5 flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">Arc Planner</span>
-          <button
-            onClick={() => saveMap(nodes, edges)}
-            disabled={!dirty || saving}
-            className={cn(
-              'px-3 py-1 text-[11px] font-medium rounded-lg transition-all',
-              dirty && !saving
-                ? 'bg-[#E54E15] text-white hover:bg-[#FF5F1F]'
-                : 'bg-white/5 text-white/30 cursor-default',
-            )}
-          >
-            {saving ? 'Saving…' : dirty ? 'Save' : 'Saved'}
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Undo / Redo */}
+            <button
+              onClick={() => {
+                setArcUndoStack((stack) => {
+                  if (stack.length === 0) return stack;
+                  const prev = stack[stack.length - 1];
+                  setArcRedoStack((rs) => [...rs.slice(-49), { nodes: nodesRef.current.map((n) => ({ ...n })), edges: edgesRef.current.map((ed) => ({ ...ed })) }]);
+                  setNodes(prev.nodes);
+                  setEdges(prev.edges);
+                  markDirty();
+                  return stack.slice(0, -1);
+                });
+              }}
+              disabled={arcUndoStack.length === 0}
+              className="p-1 rounded text-white/30 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              title={`Undo (Cmd+Z)${arcUndoStack.length > 0 ? ` · ${arcUndoStack.length}` : ''}`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+            </button>
+            <button
+              onClick={() => {
+                setArcRedoStack((rs) => {
+                  if (rs.length === 0) return rs;
+                  const next = rs[rs.length - 1];
+                  setArcUndoStack((us) => [...us.slice(-49), { nodes: nodesRef.current.map((n) => ({ ...n })), edges: edgesRef.current.map((ed) => ({ ...ed })) }]);
+                  setNodes(next.nodes);
+                  setEdges(next.edges);
+                  markDirty();
+                  return rs.slice(0, -1);
+                });
+              }}
+              disabled={arcRedoStack.length === 0}
+              className="p-1 rounded text-white/30 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              title={`Redo (Cmd+Shift+Z)${arcRedoStack.length > 0 ? ` · ${arcRedoStack.length}` : ''}`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+            </button>
+            <div className="w-px h-3 bg-white/10 mx-0.5" />
+            <button
+              onClick={() => saveMap(nodes, edges)}
+              disabled={!dirty || saving}
+              className={cn(
+                'px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all',
+                dirty && !saving
+                  ? 'bg-[#E54E15] text-white hover:bg-[#FF5F1F]'
+                  : 'bg-white/5 text-white/30 cursor-default',
+              )}
+            >
+              {saving ? 'Saving…' : dirty ? 'Save' : 'Saved'}
+            </button>
+          </div>
         </div>
 
         {/* Edge type selector */}
@@ -907,6 +1158,9 @@ export function ArcMindmap({
                   ['Double-click canvas', 'Add note'],
                   ['Drag node', 'Move'],
                   ['Hover node → port', 'Draw edge'],
+                  ['Double-click edge', 'Add waypoint'],
+                  ['Double-click waypoint', 'Remove it'],
+                  ['Drag waypoint', 'Reroute line'],
                   ['Delete / ⌫', 'Remove selected'],
                   ['⌘ S', 'Save'],
                 ].map(([k, v]) => (

@@ -20,13 +20,20 @@ const nextConfig = {
         source: '/:path*',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
           { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+        ],
+      },
+      {
+        // Colorbar — allow embedding as iframe source (OBS, vMix, multiviewer)
+        source: '/colorbar',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
         ],
       },
       {

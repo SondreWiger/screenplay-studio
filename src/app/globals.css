@@ -345,6 +345,121 @@
     border-left-color: #facc15;
   }
 
+  /* =============================================
+     Audio Drama elements — BBC Scene / US Radio / STARC Standard
+     All cue lines: centered, uppercase, underlined per industry standard
+     ============================================= */
+
+  /* Scene heading in audio drama context: centered, bold, underlined */
+  .sp-audio-scene-heading {
+    @apply font-bold uppercase;
+    text-align: center;
+    text-decoration: underline;
+    margin-top: 24pt;
+    padding-bottom: 12pt;
+  }
+  .sp-line:first-child .sp-audio-scene-heading {
+    margin-top: 0;
+  }
+
+  /* SFX / Sound cue — centered, underlined, uppercase */
+  .sp-sfx-cue {
+    @apply uppercase;
+    text-align: center;
+    text-decoration: underline;
+    padding-top: 12pt;
+    padding-bottom: 6pt;
+    color: #0ea5e9; /* sky-500 */
+  }
+
+  /* Music cue — centered, underlined, uppercase */
+  .sp-music-cue {
+    @apply uppercase;
+    text-align: center;
+    text-decoration: underline;
+    padding-top: 12pt;
+    padding-bottom: 6pt;
+    color: #8b5cf6; /* violet-500 */
+  }
+
+  /* Ambience cue — centered, underlined, uppercase */
+  .sp-ambience-cue {
+    @apply uppercase;
+    text-align: center;
+    text-decoration: underline;
+    padding-top: 12pt;
+    padding-bottom: 6pt;
+    color: #10b981; /* emerald-500 */
+  }
+
+  /* Sound cue (US Radio) — same visual weight as sfx */
+  .sp-sound-cue {
+    @apply uppercase;
+    text-align: center;
+    text-decoration: underline;
+    padding-top: 12pt;
+    padding-bottom: 6pt;
+    color: #0ea5e9;
+  }
+
+  /* Act break (US Radio) — centered, bold, uppercase */
+  .sp-act-break {
+    @apply font-bold uppercase;
+    text-align: center;
+    margin-top: 24pt;
+    padding-bottom: 12pt;
+    letter-spacing: 0.08em;
+  }
+
+  /* Act heading (Screenplay / Stage Play) — centred, bold, all-caps, separated from scenes */
+  .sp-act {
+    @apply font-bold uppercase;
+    text-align: center;
+    margin-top: 36pt;
+    margin-bottom: 24pt;
+    padding: 6pt 12pt;
+    border-top: 1.5px solid;
+    border-bottom: 1.5px solid;
+    border-color: currentColor;
+    letter-spacing: 0.12em;
+    font-size: 13pt;
+    color: #1a1a1a;
+  }
+  .sp-dark .sp-act {
+    color: #e0e0e0;
+    border-color: rgba(255,255,255,0.25);
+  }
+
+  /* Announcer (US Radio) — left-aligned uppercase, distinct from character */
+  .sp-announcer {
+    @apply uppercase;
+    padding-top: 12pt;
+    letter-spacing: 0.05em;
+  }
+
+  /* Dark mode overrides for audio drama cues */
+  .sp-dark .sp-audio-scene-heading {
+    color: #e0e0e0;
+  }
+  .sp-dark .sp-sfx-cue {
+    color: #38bdf8; /* sky-400 */
+  }
+  .sp-dark .sp-music-cue {
+    color: #a78bfa; /* violet-400 */
+  }
+  .sp-dark .sp-ambience-cue {
+    color: #34d399; /* emerald-400 */
+  }
+  .sp-dark .sp-sound-cue {
+    color: #38bdf8;
+  }
+  .sp-dark .sp-act-break {
+    color: #fbbf24; /* amber-400 */
+  }
+  .sp-dark .sp-announcer {
+    color: #e0e0e0;
+  }
+
   /* Legacy class compat (keep for other pages) */
   .screenplay-page { @apply font-screenplay; font-size: 12pt; line-height: 1; max-width: 8.5in; padding: 1in; background: white; color: black; }
   .screenplay-element { @apply font-screenplay; font-size: 12pt; line-height: 1; min-height: 1em; cursor: text; }

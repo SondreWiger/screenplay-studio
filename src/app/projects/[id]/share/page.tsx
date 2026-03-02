@@ -28,6 +28,14 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
 
+  // Press Kit state
+  const [pkEnabled, setPkEnabled] = useState(false);
+  const [pkPassword, setPkPassword] = useState('');
+  const [pkTagline, setPkTagline] = useState('');
+  const [pkContact, setPkContact] = useState('');
+  const [pkSaving, setPkSaving] = useState(false);
+  const [pkLoaded, setPkLoaded] = useState(false);
+
   // Create form
   const [shareType, setShareType] = useState<string>('script');
   const [title, setTitle] = useState('');
@@ -35,11 +43,48 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
   const [allowComments, setAllowComments] = useState(true);
   const [allowDownload, setAllowDownload] = useState(false);
   const [watermark, setWatermark] = useState('');
+  const [license, setLicense] = useState('all-rights-reserved');
   const [expiresInDays, setExpiresInDays] = useState<number | null>(null);
   const [maxViews, setMaxViews] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => { fetchShares(); }, [params.id]);
+  useEffect(() => { fetchShares(); fetchPressKitSettings(); }, [params.id]);
+
+  const fetchPressKitSettings = async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('projects')
+      .select('press_kit_enabled, press_kit_password, press_kit_tagline, press_kit_contact')
+      .eq('id', params.id)
+      .maybeSingle();
+    if (data) {
+      setPkEnabled(!!data.press_kit_enabled);
+      setPkPassword(data.press_kit_password || '');
+      setPkTagline(data.press_kit_tagline || '');
+      setPkContact(data.press_kit_contact || '');
+    }
+    setPkLoaded(true);
+  };
+
+  const handleSavePressKit = async () => {
+    setPkSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        press_kit_enabled: pkEnabled,
+        press_kit_password: pkPassword.trim() || null,
+        press_kit_tagline: pkTagline.trim() || null,
+        press_kit_contact: pkContact.trim() || null,
+      })
+      .eq('id', params.id);
+    if (error) {
+      toast('Failed to save press kit settings', 'error');
+    } else {
+      toast('Press kit settings saved', 'success');
+    }
+    setPkSaving(false);
+  };
 
   const fetchShares = async () => {
     const supabase = createClient();
@@ -155,7 +200,7 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
       watermark_text: watermark.trim() || null,
       expires_at: expiresInDays ? new Date(Date.now() + expiresInDays * 86400000).toISOString() : null,
       max_views: maxViews || null,
-      branding: currentProject?.custom_branding || {},
+      branding: { ...(currentProject?.custom_branding || {}), license } as ExternalShare['branding'],
       content_snapshot: contentSnapshot,
     }).select().single();
 
@@ -212,6 +257,7 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
     setAllowComments(true);
     setAllowDownload(false);
     setWatermark('');
+    setLicense('all-rights-reserved');
     setExpiresInDays(null);
     setMaxViews(null);
   };
@@ -317,6 +363,79 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
         </Card>
       )}
 
+      {/* ── Press Kit ─────────────────────────────── */}
+      <Card className="p-6 mt-6">
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <h2 className="text-base font-bold text-white">Public Press Kit</h2>
+            <p className="text-xs text-surface-400 mt-0.5">A public, shareable page with your project's key info — no login required.</p>
+          </div>
+          <Toggle checked={pkEnabled} onChange={setPkEnabled} size="sm" />
+        </div>
+
+        {pkLoaded && (
+          <div className="space-y-4">
+            {/* Public URL */}
+            {pkEnabled && (
+              <div className="p-3 rounded-lg bg-surface-800/50 border border-surface-700">
+                <p className="text-[11px] text-surface-500 mb-1">Press kit URL</p>
+                <div className="flex items-center gap-2">
+                  <code className="text-xs text-[#FF8F5F] font-mono flex-1 truncate">
+                    {typeof window !== 'undefined' ? window.location.origin : ''}/press/{params.id}
+                  </code>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/press/${params.id}`);
+                      toast('Link copied!', 'success');
+                    }}
+                    className="text-xs text-surface-400 hover:text-white transition-colors px-2 py-1 rounded bg-surface-700 hover:bg-surface-600"
+                  >
+                    Copy
+                  </button>
+                  <a
+                    href={`/press/${params.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-surface-400 hover:text-white transition-colors px-2 py-1 rounded bg-surface-700 hover:bg-surface-600"
+                  >
+                    Open ↗
+                  </a>
+                </div>
+              </div>
+            )}
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Input
+                label="Tagline (optional)"
+                value={pkTagline}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPkTagline(e.target.value)}
+                placeholder="A short, punchy tagline for the press kit"
+              />
+              <Input
+                label="Press contact email"
+                value={pkContact}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPkContact(e.target.value)}
+                placeholder="press@yourproject.com"
+              />
+            </div>
+
+            <Input
+              label="Password protection (optional)"
+              type="password"
+              value={pkPassword}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPkPassword(e.target.value)}
+              placeholder="Leave blank for open access"
+            />
+
+            <div className="flex justify-end">
+              <Button onClick={handleSavePressKit} loading={pkSaving} size="sm">
+                Save Press Kit Settings
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+
       {/* Create Modal */}
       {showCreate && (
         <Modal isOpen onClose={() => setShowCreate(false)} title="Create Share Link" size="lg">
@@ -385,6 +504,38 @@ export default function SharePortalPage({ params }: { params: { id: string } }) 
             <div className="flex gap-6">
               <Toggle checked={allowComments} onChange={setAllowComments} label="Allow comments" size="sm" />
               <Toggle checked={allowDownload} onChange={setAllowDownload} label="Allow download" size="sm" />
+            </div>
+
+            {/* License */}
+            <div>
+              <label className="block text-sm font-medium text-surface-300 mb-1.5">License</label>
+              <select
+                value={license}
+                onChange={(e) => setLicense(e.target.value)}
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white"
+              >
+                <optgroup label="Traditional">
+                  <option value="all-rights-reserved">All Rights Reserved</option>
+                  <option value="confidential">Confidential — Do Not Distribute</option>
+                  <option value="nda">Under NDA</option>
+                  <option value="wga-registered">WGA Registered</option>
+                </optgroup>
+                <optgroup label="Creative Commons (Free to Use)">
+                  <option value="cc-by">CC BY — Attribution (free with credit)</option>
+                  <option value="cc-by-sa">CC BY-SA — Attribution + ShareAlike</option>
+                  <option value="cc0">CC0 — Public Domain (no restrictions)</option>
+                </optgroup>
+                <optgroup label="Creative Commons (Restricted)">
+                  <option value="cc-by-nc">CC BY-NC — NonCommercial only</option>
+                  <option value="cc-by-nc-sa">CC BY-NC-SA — NonCommercial + ShareAlike</option>
+                  <option value="cc-by-nd">CC BY-ND — NoDerivatives</option>
+                  <option value="cc-by-nc-nd">CC BY-NC-ND — NonCommercial + NoDerivatives</option>
+                </optgroup>
+              </select>
+              <p className="text-[11px] text-surface-500 mt-1.5">
+                {license === 'cc-by' || license === 'cc-by-sa' || license === 'cc0' ? '✓ Recipients may reuse this work' : '✗ Recipients may not reuse this work without permission'} —{' '}
+                <a href="/licenses" target="_blank" className="text-[#FF5F1F] hover:underline">Learn about licenses</a>
+              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">

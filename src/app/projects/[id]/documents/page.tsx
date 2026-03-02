@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Input, Modal, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { ProjectDocument, ProjectFolder, DocumentType } from '@/lib/types';
+import type { ProjectDocument, ProjectFolder, DocumentType, DocumentComment } from '@/lib/types';
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_TYPE_ICONS } from '@/lib/types';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
@@ -137,9 +137,31 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
       )
       .subscribe();
 
+    // Subscribe to document_comments for active doc
+    const commentsChannel = supabase
+      .channel(`doc-comments-${params.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'document_comments', filter: `project_id=eq.${params.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const c = payload.new as DocumentComment;
+            setComments(prev => prev.some(x => x.id === c.id) ? prev : [c, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            const c = payload.new as DocumentComment;
+            setComments(prev => prev.map(x => x.id === c.id ? c : x));
+          } else if (payload.eventType === 'DELETE') {
+            const d = payload.old as { id: string };
+            setComments(prev => prev.filter(x => x.id !== d.id));
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(docsChannel);
       supabase.removeChannel(foldersChannel);
+      supabase.removeChannel(commentsChannel);
     };
   }, [params.id, user?.id]);
 
@@ -259,6 +281,105 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     setDocuments(documents.filter((d) => d.folder_id !== folderId));
   };
 
+  // ─── Fetch comments for current doc ──────────────────────────────
+  const fetchComments = useCallback(async (docId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('document_comments')
+      .select('*, author:profiles!author_id(display_name, avatar_url, email)')
+      .eq('document_id', docId)
+      .order('created_at', { ascending: false });
+    setComments((data || []) as DocumentComment[]);
+  }, []);
+
+  // Re-fetch comments whenever active doc changes
+  useEffect(() => {
+    if (currentDoc?.id) fetchComments(currentDoc.id);
+    else setComments([]);
+  }, [currentDoc?.id, fetchComments]);
+
+  // ─── Add a comment ────────────────────────────────────────────────
+  const handleAddComment = async () => {
+    if (!commentText.trim() || !currentDoc || !user) return;
+    setAddingComment(true);
+    const supabase = createClient();
+    // Extract mentioned user IDs from text (format: @display_name → we store ids)
+    const mentionIds = mentionMembers
+      .filter(m => commentText.includes(`@${m.name}`))
+      .map(m => m.id);
+    const { data } = await supabase.from('document_comments').insert({
+      document_id: currentDoc.id,
+      project_id: params.id,
+      author_id: user.id,
+      content: commentText.trim(),
+      char_offset: selectionOffset,
+      selected_text: selectedText || null,
+      mentions: mentionIds,
+    }).select('*, author:profiles!author_id(display_name, avatar_url, email)').single();
+    if (data) setComments(prev => [data as DocumentComment, ...prev]);
+    setCommentText('');
+    setSelectedText('');
+    setSelectionOffset(null);
+    setAddingComment(false);
+  };
+
+  // ─── Resolve / delete comment ─────────────────────────────────────
+  const handleResolveComment = async (commentId: string) => {
+    const supabase = createClient();
+    await supabase.from('document_comments').update({ is_resolved: true }).eq('id', commentId);
+    setComments(prev => prev.map(c => c.id === commentId ? { ...c, is_resolved: true } : c));
+  };
+  const handleDeleteComment = async (commentId: string) => {
+    const supabase = createClient();
+    await supabase.from('document_comments').delete().eq('id', commentId);
+    setComments(prev => prev.filter(c => c.id !== commentId));
+  };
+
+  // ─── Track text selection in editor ──────────────────────────────
+  const handleEditorSelect = () => {
+    const ta = editorRef.current;
+    if (!ta) return;
+    const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+    setSelectedText(sel.length > 0 && sel.length < 300 ? sel : '');
+    setSelectionOffset(sel.length > 0 ? ta.selectionStart : null);
+  };
+
+  // ─── @mention detection in comment textarea ───────────────────────
+  const handleCommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setCommentText(val);
+    // Detect @mention
+    const cursor = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursor);
+    const atIdx = textBeforeCursor.lastIndexOf('@');
+    if (atIdx !== -1 && !textBeforeCursor.slice(atIdx + 1).includes(' ')) {
+      const query = textBeforeCursor.slice(atIdx + 1).toLowerCase();
+      setMentionQuery(query);
+      setMentionStart(atIdx);
+      // Build member list from project store
+      const filtered = (members || []).filter(m => {
+        const name = (m as any).profile?.display_name ||
+          (m as any).profile?.email?.split('@')[0] || '';
+        return name.toLowerCase().includes(query);
+      }).map(m => ({
+        id: (m as any).user_id,
+        name: (m as any).profile?.display_name || (m as any).profile?.email?.split('@')[0] || 'Member',
+      }));
+      setMentionMembers(filtered);
+    } else {
+      setMentionQuery(null);
+    }
+  };
+
+  const insertMention = (name: string) => {
+    const before = commentText.slice(0, mentionStart);
+    const after = commentText.slice(mentionStart + 1 + (mentionQuery?.length || 0));
+    const newText = `${before}@${name} ${after}`;
+    setCommentText(newText);
+    setMentionQuery(null);
+    commentInputRef.current?.focus();
+  };
+
   // Export document as PDF
   const handleExportPDF = useCallback((doc: ProjectDocument) => {
     const html = `<!DOCTYPE html>
@@ -315,6 +436,21 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
 
   const [showSidebar, setShowSidebar] = useState(false);
 
+  // ─── Comments state ──────────────────────────────────────────────
+  const [comments, setComments] = useState<DocumentComment[]>([]);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionOffset, setSelectionOffset] = useState<number | null>(null);
+  const [addingComment, setAddingComment] = useState(false);
+  // @mention state
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionMembers, setMentionMembers] = useState<{ id: string; name: string }[]>([]);
+  const [mentionStart, setMentionStart] = useState<number>(0);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const docCommentCount = useMemo(() =>
+    comments.filter(c => !c.is_resolved).length
+  , [comments]);
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -514,22 +650,177 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <button onClick={() => handleExportText(currentDoc)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Export as TXT">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 </button>
+                {/* Comments toggle */}
+                <button
+                  onClick={() => setShowComments(v => !v)}
+                  className={cn('relative p-1.5 rounded transition-colors',
+                    showComments ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
+                  )}
+                  title="Comments"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+                  {docCommentCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                      {docCommentCount}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 
-            {/* Editor area */}
-            <div className="flex-1 overflow-y-auto bg-surface-900/30">
-              <div className="max-w-3xl mx-auto my-8 bg-surface-950 rounded-sm shadow-2xl min-h-[600px]">
-                <textarea
-                  ref={editorRef}
-                  value={currentDoc.content}
-                  onChange={(e) => handleContentChange(e.target.value)}
-                  className="w-full h-full min-h-[600px] p-8 bg-transparent text-surface-200 text-sm font-mono leading-relaxed outline-none resize-none placeholder:text-surface-600"
-                  placeholder="Start writing..."
-                  disabled={!canEdit}
-                  spellCheck
-                />
+            {/* Editor area + Comment panel */}
+            <div className="flex flex-1 overflow-hidden">
+              {/* Main editor */}
+              <div className="flex-1 overflow-y-auto bg-surface-900/30">
+                <div className="max-w-3xl mx-auto my-8 bg-surface-950 rounded-sm shadow-2xl min-h-[600px] relative">
+                  {selectedText && canEdit && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <button
+                        onClick={() => { setShowComments(true); commentInputRef.current?.focus(); }}
+                        className="flex items-center gap-1.5 px-2.5 py-1 bg-[#FF5F1F] text-white text-[11px] font-semibold rounded-lg shadow-lg hover:bg-[#e54e15] transition-colors"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+                        Comment on selection
+                      </button>
+                    </div>
+                  )}
+                  <textarea
+                    ref={editorRef}
+                    value={currentDoc.content}
+                    onChange={(e) => handleContentChange(e.target.value)}
+                    onMouseUp={handleEditorSelect}
+                    onKeyUp={handleEditorSelect}
+                    className="w-full h-full min-h-[600px] p-8 bg-transparent text-surface-200 text-sm font-mono leading-relaxed outline-none resize-none placeholder:text-surface-600"
+                    placeholder="Start writing..."
+                    disabled={!canEdit}
+                    spellCheck
+                  />
+                </div>
               </div>
+
+              {/* Comment panel */}
+              {showComments && (
+                <div className="w-80 shrink-0 border-l border-surface-800 flex flex-col overflow-hidden bg-surface-950">
+                  <div className="p-3 border-b border-surface-800 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-white">Comments</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-surface-500">{comments.filter(c => !c.is_resolved).length} open</span>
+                      <button onClick={() => setShowComments(false)} className="text-surface-500 hover:text-white transition-colors">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Add comment box */}
+                  {canEdit && (
+                    <div className="p-3 border-b border-surface-800/60 space-y-2">
+                      {selectedText && (
+                        <div className="px-2 py-1.5 bg-surface-800/60 rounded-lg border-l-2 border-[#FF5F1F]/60">
+                          <p className="text-[10px] text-surface-500 mb-0.5">Commenting on:</p>
+                          <p className="text-[11px] text-surface-300 italic line-clamp-2">&ldquo;{selectedText}&rdquo;</p>
+                        </div>
+                      )}
+                      <div className="relative">
+                        <textarea
+                          ref={commentInputRef}
+                          value={commentText}
+                          onChange={handleCommentInput}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleAddComment(); }
+                            if (e.key === 'Escape') setMentionQuery(null);
+                          }}
+                          placeholder="Add a comment… Use @name to mention"
+                          rows={3}
+                          className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-xs text-white placeholder:text-surface-500 outline-none focus:border-violet-500/50 resize-none"
+                        />
+                        {/* @mention dropdown */}
+                        {mentionQuery !== null && mentionMembers.length > 0 && (
+                          <div className="absolute bottom-full mb-1 left-0 right-0 bg-surface-800 border border-surface-700 rounded-lg shadow-xl py-1 z-20">
+                            {mentionMembers.slice(0, 5).map(m => (
+                              <button key={m.id} onClick={() => insertMention(m.name)}
+                                className="w-full text-left px-3 py-1.5 text-xs text-surface-200 hover:bg-surface-700 transition-colors">
+                                @{m.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-surface-600">⌘↵ to post</span>
+                        <button
+                          onClick={handleAddComment}
+                          disabled={!commentText.trim() || addingComment}
+                          className="px-3 py-1 bg-[#FF5F1F] text-white text-[11px] font-semibold rounded-lg hover:bg-[#e54e15] disabled:opacity-40 transition-colors"
+                        >
+                          {addingComment ? 'Posting…' : 'Post'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Comment list */}
+                  <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                    {comments.length === 0 ? (
+                      <p className="text-xs text-surface-500 text-center pt-8">
+                        No comments yet.
+                        {canEdit && ' Select text and click Comment, or type above.'}
+                      </p>
+                    ) : (
+                      comments.map(comment => (
+                        <div key={comment.id} className={cn(
+                          'rounded-xl p-3 border',
+                          comment.is_resolved
+                            ? 'opacity-40 border-surface-800/40 bg-surface-900/20'
+                            : 'border-surface-800/80 bg-surface-900/60'
+                        )}>
+                          {comment.selected_text && (
+                            <div className="mb-2 px-2 py-1 bg-surface-800/40 rounded border-l-2 border-[#FF5F1F]/40">
+                              <p className="text-[10px] text-surface-400 italic line-clamp-2">&ldquo;{comment.selected_text}&rdquo;</p>
+                            </div>
+                          )}
+                          <p className="text-xs text-surface-200 leading-relaxed whitespace-pre-wrap">
+                            {comment.content.split(/(@\w+)/g).map((part, i) =>
+                              part.startsWith('@')
+                                ? <span key={i} className="text-violet-400 font-medium">{part}</span>
+                                : part
+                            )}
+                          </p>
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-surface-500">
+                                {(comment as any).author?.display_name || (comment as any).author?.email?.split('@')[0] || 'User'}
+                              </span>
+                              <span className="text-[10px] text-surface-600">·</span>
+                              <span className="text-[10px] text-surface-600">
+                                {new Date(comment.created_at).toLocaleDateString()}
+                              </span>
+                              {comment.is_resolved && (
+                                <span className="text-[10px] text-emerald-500">✓ Resolved</span>
+                              )}
+                            </div>
+                            {!comment.is_resolved && canEdit && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleResolveComment(comment.id)}
+                                  className="text-[10px] text-surface-500 hover:text-emerald-400 transition-colors"
+                                  title="Mark resolved"
+                                >✓</button>
+                                {comment.author_id === user?.id && (
+                                  <button
+                                    onClick={() => handleDeleteComment(comment.id)}
+                                    className="text-[10px] text-surface-500 hover:text-red-400 transition-colors"
+                                    title="Delete"
+                                  >✕</button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (

@@ -50,6 +50,22 @@ const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   cta: 'Action',
   sponsor_read: 'Action',
   chapter_marker: 'Action',
+  // Audio Drama elements → nearest FDX equivalent
+  sfx_cue: 'Action',
+  music_cue: 'Action',
+  ambience_cue: 'Action',
+  sound_cue: 'Action',
+  act_break: 'Scene Heading',
+  announcer: 'Character',
+  // Stage play elements → nearest FDX equivalent
+  song_title: 'Scene Heading',
+  lyric: 'Lyrics',
+  dance_direction: 'Action',
+  musical_cue: 'Action',
+  lighting_cue: 'Action',
+  set_direction: 'Action',
+  // Screenplay act heading
+  act: 'New Act',
 };
 
 // ============================================================

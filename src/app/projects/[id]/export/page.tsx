@@ -177,6 +177,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
           content,
           format: fmt,
           config: appliedConfig,
+          projectType: currentProject?.project_type || 'film',
           fontFamily: branding?.font_family || 'Courier New',
           coverTitle: branding?.cover_title || '',
           watermarkOpacity: branding?.watermark_opacity ?? 6,
@@ -586,11 +587,13 @@ export default function ExportPage({ params }: { params: { id: string } }) {
 // ── Screenplay HTML builder (shared between PDF & HTML export) ──
 
 function generateScreenplayHTML(data: any): string {
-  const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, secondaryColor } = data;
+  const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, projectType } = data;
   const elements = Array.isArray(content) ? content : [];
   let sceneNum = 0;
   const font = fontFamily || 'Courier New';
   const wmOpacity = (watermarkOpacity ?? 6) / 100;
+  const isAudioDrama = projectType === 'audio_drama';
+  const isStagePlay = projectType === 'stage_play';
 
   const bodyParts: string[] = [];
 
@@ -624,20 +627,77 @@ function generateScreenplayHTML(data: any): string {
   for (const el of elements) {
     const type = (el.type || '').toLowerCase();
     const text = el.text || '';
-    if (type === 'scene_heading' || type === 'heading') {
-      sceneNum++;
-      const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
-      bodyParts.push(`<p class="scene-heading">${num}${esc(text)}</p>`);
-    } else if (type === 'character') {
-      bodyParts.push(`<p class="character">${esc(text)}</p>`);
-    } else if (type === 'dialogue') {
-      bodyParts.push(`<p class="dialogue">${esc(text)}</p>`);
-    } else if (type === 'parenthetical') {
-      bodyParts.push(`<p class="parenthetical">(${esc(text)})</p>`);
-    } else if (type === 'transition') {
-      bodyParts.push(`<p class="transition">${esc(text)}</p>`);
+
+    if (isAudioDrama) {
+      // ── Audio Drama rendering ──────────────────────────────
+      if (type === 'scene_heading' || type === 'heading' || type === 'setting') {
+        sceneNum++;
+        const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
+        bodyParts.push(`<p class="scene-heading">${num}${esc(text)}</p>`);
+      } else if (type === 'character' || type === 'narrator' || type === 'announcer') {
+        const cls = type === 'narrator' ? 'narrator' : type === 'announcer' ? 'announcer' : 'ad-character';
+        bodyParts.push(`<p class="${cls}">${esc(text)}</p>`);
+      } else if (type === 'dialogue') {
+        bodyParts.push(`<p class="ad-dialogue">${esc(text)}</p>`);
+      } else if (type === 'parenthetical') {
+        bodyParts.push(`<p class="parenthetical">(${esc(text)})</p>`);
+      } else if (type === 'sfx_cue' || type === 'sound_cue' || type === 'sound_effect') {
+        bodyParts.push(`<p class="audio-cue sfx">[SFX: ${esc(text)}]</p>`);
+      } else if (type === 'music_cue') {
+        bodyParts.push(`<p class="audio-cue music">[MUSIC: ${esc(text)}]</p>`);
+      } else if (type === 'ambience_cue' || type === 'ambience') {
+        bodyParts.push(`<p class="audio-cue ambience">[AMBIENCE: ${esc(text)}]</p>`);
+      } else if (type === 'act_break') {
+        bodyParts.push(`<p class="act-break">${esc(text)}</p>`);
+      } else {
+        bodyParts.push(`<p class="action">${esc(text)}</p>`);
+      }
+    } else if (isStagePlay) {
+      // ── Stage Play rendering ───────────────────────────────
+      if (type === 'scene_heading' || type === 'heading') {
+        sceneNum++;
+        const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
+        bodyParts.push(`<p class="scene-heading">${num}${esc(text)}</p>`);
+      } else if (type === 'character') {
+        bodyParts.push(`<p class="character">${esc(text)}</p>`);
+      } else if (type === 'dialogue') {
+        bodyParts.push(`<p class="dialogue">${esc(text)}</p>`);
+      } else if (type === 'parenthetical') {
+        bodyParts.push(`<p class="parenthetical">(${esc(text)})</p>`);
+      } else if (type === 'song_title') {
+        bodyParts.push(`<p class="song-title">♪ ${esc(text)}</p>`);
+      } else if (type === 'lyric') {
+        bodyParts.push(`<p class="lyric">${esc(text)}</p>`);
+      } else if (type === 'dance_direction') {
+        bodyParts.push(`<p class="stage-cue dance">[DANCE: ${esc(text)}]</p>`);
+      } else if (type === 'musical_cue') {
+        bodyParts.push(`<p class="stage-cue musical">[MUSIC: ${esc(text)}]</p>`);
+      } else if (type === 'lighting_cue') {
+        bodyParts.push(`<p class="stage-cue lighting">[LX: ${esc(text)}]</p>`);
+      } else if (type === 'set_direction') {
+        bodyParts.push(`<p class="stage-cue set">[SET: ${esc(text)}]</p>`);
+      } else if (type === 'transition') {
+        bodyParts.push(`<p class="transition">${esc(text)}</p>`);
+      } else {
+        bodyParts.push(`<p class="action">${esc(text)}</p>`);
+      }
     } else {
-      bodyParts.push(`<p class="action">${esc(text)}</p>`);
+      // ── Standard Screenplay rendering ─────────────────────
+      if (type === 'scene_heading' || type === 'heading') {
+        sceneNum++;
+        const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
+        bodyParts.push(`<p class="scene-heading">${num}${esc(text)}</p>`);
+      } else if (type === 'character') {
+        bodyParts.push(`<p class="character">${esc(text)}</p>`);
+      } else if (type === 'dialogue') {
+        bodyParts.push(`<p class="dialogue">${esc(text)}</p>`);
+      } else if (type === 'parenthetical') {
+        bodyParts.push(`<p class="parenthetical">(${esc(text)})</p>`);
+      } else if (type === 'transition') {
+        bodyParts.push(`<p class="transition">${esc(text)}</p>`);
+      } else {
+        bodyParts.push(`<p class="action">${esc(text)}</p>`);
+      }
     }
   }
 
@@ -647,10 +707,38 @@ function generateScreenplayHTML(data: any): string {
 
   const accentColor = primaryColor || '#3B82F6';
 
+  // ─── Format-specific CSS ─────────────────────────────────────────────────
+  const audioDramaCSS = isAudioDrama ? `
+    .ad-character{text-transform:uppercase;font-weight:bold;margin-top:14px;margin-bottom:0;}
+    .narrator{text-transform:uppercase;font-weight:bold;margin-top:14px;font-style:italic;color:#444;}
+    .announcer{text-transform:uppercase;font-weight:bold;margin-top:14px;color:#22557a;}
+    .ad-dialogue{margin:2px 0 10px 0;padding-left:0.5in;padding-right:0.5in;}
+    .audio-cue{font-style:italic;margin:8px 0;padding:4px 8px;border-left:3px solid #ccc;color:#444;}
+    .audio-cue.sfx{border-color:#0ea5e9;color:#0c4a6e;}
+    .audio-cue.music{border-color:#8b5cf6;color:#3b0764;}
+    .audio-cue.ambience{border-color:#10b981;color:#064e3b;}
+    .act-break{text-align:center;font-weight:bold;text-transform:uppercase;font-size:14pt;margin:32px 0;border-top:2px solid #333;border-bottom:2px solid #333;padding:8px 0;}
+  ` : '';
+
+  const stageCSSExtra = isStagePlay ? `
+    .song-title{text-align:center;font-weight:bold;text-transform:uppercase;letter-spacing:0.05em;margin:24px 0 8px 0;font-size:${cfg.fontSize + 1}pt;}
+    .lyric{text-align:center;font-style:italic;margin:2px 0;padding-left:1.5in;padding-right:1.5in;}
+    .stage-cue{font-style:italic;margin:6px 0;color:#555;}
+    .stage-cue.lighting{text-align:right;}
+    .stage-cue.musical{text-align:right;}
+    .stage-cue.dance{text-align:center;}
+    .stage-cue.set{margin:8px 0;padding-left:0.5in;}
+  ` : '';
+
+  // Margins: audio drama uses narrower margins; stage play uses standard play margins
+  const pageMargin = isAudioDrama ? '0.75in' : isStagePlay ? '1in 1in 1in 1.25in' : '1in';
+  const charIndent = isAudioDrama ? '0' : isStagePlay ? '2.5in' : '2in';
+  const dialoguePadding = isAudioDrama ? '0 0.5in' : isStagePlay ? '0 1.5in 0 1.75in' : '0 1.5in';
+
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${esc(data.script_title || data.project_name)}</title>
 <style>
-@page{size:letter;margin:1in;}
+@page{size:letter;margin:${pageMargin};}
 body{font-family:'${font}',Courier,monospace;font-size:${cfg.fontSize}pt;line-height:1.5;color:#111;max-width:7.5in;margin:0 auto;padding:40px 20px;}
 ${watermarkCSS}
 .cover-page{text-align:center;padding-top:3in;}
@@ -666,10 +754,12 @@ ${watermarkCSS}
 .scene-heading{font-weight:bold;text-transform:uppercase;margin-top:24px;margin-bottom:12px;border-bottom:1px solid ${accentColor}20;padding-bottom:4px;}
 .scene-num{margin-right:12px;color:${accentColor};}
 .action{margin:6px 0;}
-.character{text-align:center;text-transform:uppercase;font-weight:bold;margin-top:18px;margin-bottom:0;padding-left:2in;}
-.dialogue{text-align:left;margin:0;padding-left:1.5in;padding-right:1.5in;}
-.parenthetical{text-align:left;padding-left:1.8in;padding-right:1.8in;font-style:italic;color:#555;margin:0;}
+.character{text-align:left;padding-left:${charIndent};text-transform:uppercase;font-weight:bold;margin-top:18px;margin-bottom:0;}
+.dialogue{margin:0;padding:${dialoguePadding};}
+.parenthetical{padding-left:${isAudioDrama ? '0.25in' : '1.8in'};padding-right:${isAudioDrama ? '0.25in' : '1.8in'};font-style:italic;color:#555;margin:0;}
 .transition{text-align:right;text-transform:uppercase;margin:18px 0;}
+${audioDramaCSS}
+${stageCSSExtra}
 @media print{body{max-width:none;padding:0;margin:0;}.page-header{position:running(header);}}
 </style></head>
 <body>${bodyParts.join('\n')}</body></html>`;

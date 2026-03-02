@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, memo, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
@@ -93,13 +94,62 @@ import { ELEMENT_LABELS, REVISION_COLOR_HEX } from '@/lib/types';
 // ============================================================
 
 const ELEMENT_CYCLE: ScriptElementType[] = [
-  'scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
+  'scene_heading', 'act', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
 ];
 
 // YouTube/Content Creator element cycle
 const YOUTUBE_ELEMENT_CYCLE: ScriptElementType[] = [
   'chapter_marker', 'hook', 'talking_point', 'broll_note', 'cta', 'sponsor_read',
 ];
+
+// Audio Drama element cycles — different per format
+const AUDIO_DRAMA_ELEMENT_CYCLES: Record<string, ScriptElementType[]> = {
+  bbc_radio:      ['scene_heading', 'action', 'character', 'parenthetical', 'dialogue', 'sfx_cue', 'transition'],
+  us_radio:       ['act_break', 'announcer', 'action', 'character', 'parenthetical', 'dialogue', 'sound_cue', 'music_cue'],
+  starc_standard: ['scene_heading', 'action', 'character', 'parenthetical', 'dialogue', 'sfx_cue', 'music_cue', 'ambience_cue', 'transition'],
+  podcast_simple: ['chapter_marker', 'talking_point', 'note'],
+};
+
+// Stage Play / Musical Theatre element cycle
+const STAGEPLAY_ELEMENT_CYCLE: ScriptElementType[] = [
+  'scene_heading', 'act', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
+  'song_title', 'lyric', 'dance_direction', 'musical_cue', 'lighting_cue', 'set_direction',
+];
+
+// Audio-drama-aware next element type (Enter key behaviour)
+function getAudioNextElementType(type: ScriptElementType, format: string): ScriptElementType {
+  if (format === 'bbc_radio' || format === 'starc_standard') {
+    switch (type) {
+      case 'scene_heading': return 'action';
+      case 'action':        return 'character';
+      case 'character':     return 'dialogue';
+      case 'dialogue':      return 'action';
+      case 'parenthetical': return 'dialogue';
+      case 'sfx_cue':       return 'action';
+      case 'music_cue':     return 'action';
+      case 'ambience_cue':  return 'action';
+      case 'transition':    return 'scene_heading';
+      default:              return 'action';
+    }
+  }
+  if (format === 'us_radio') {
+    switch (type) {
+      case 'act_break':     return 'action';
+      case 'announcer':     return 'action';
+      case 'action':        return 'character';
+      case 'character':     return 'dialogue';
+      case 'dialogue':      return 'action';
+      case 'parenthetical': return 'dialogue';
+      case 'sound_cue':     return 'action';
+      case 'music_cue':     return 'action';
+      default:              return 'action';
+    }
+  }
+  if (format === 'podcast_simple') {
+    return 'talking_point';
+  }
+  return 'action';
+}
 
 function getNextElementType(current: ScriptElementType): ScriptElementType {
   switch (current) {
@@ -109,6 +159,7 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
     case 'dialogue': return 'action';
     case 'parenthetical': return 'dialogue';
     case 'transition': return 'scene_heading';
+    case 'act': return 'scene_heading';
     // YouTube elements
     case 'chapter_marker': return 'talking_point';
     case 'hook': return 'talking_point';
@@ -116,13 +167,41 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
     case 'broll_note': return 'talking_point';
     case 'cta': return 'talking_point';
     case 'sponsor_read': return 'talking_point';
+    // Audio Drama elements
+    case 'act_break':     return 'action';
+    case 'announcer':     return 'dialogue';
+    case 'sfx_cue':       return 'action';
+    case 'music_cue':     return 'action';
+    case 'ambience_cue':  return 'action';
+    case 'sound_cue':     return 'action';
+    // Musical Theatre / Stage Play elements
+    case 'song_title':      return 'lyric';
+    case 'lyric':           return 'lyric';
+    case 'dance_direction': return 'action';
+    case 'musical_cue':     return 'action';
+    case 'lighting_cue':    return 'action';
+    case 'set_direction':   return 'action';
     default: return 'action';
   }
 }
 
-function getElementClass(type: ScriptElementType): string {
+function getElementClass(type: ScriptElementType, isAudioDrama = false): string {
+  // Audio drama gets dedicated classes for proper radio-script formatting
+  if (isAudioDrama) {
+    switch (type) {
+      case 'scene_heading':  return 'sp-audio-scene-heading';
+      case 'sfx_cue':        return 'sp-sfx-cue';
+      case 'music_cue':      return 'sp-music-cue';
+      case 'ambience_cue':   return 'sp-ambience-cue';
+      case 'sound_cue':      return 'sp-sound-cue';
+      case 'act_break':      return 'sp-act-break';
+      case 'announcer':      return 'sp-character'; // same indent/uppercase style
+      // Shared types fall through to standard below
+    }
+  }
   switch (type) {
     case 'scene_heading': return 'sp-scene-heading';
+    case 'act': return 'sp-act';
     case 'action': return 'sp-action';
     case 'character': return 'sp-character';
     case 'dialogue': return 'sp-dialogue';
@@ -137,6 +216,20 @@ function getElementClass(type: ScriptElementType): string {
     case 'broll_note': return 'sp-broll-note';
     case 'cta': return 'sp-cta';
     case 'sponsor_read': return 'sp-sponsor';
+    // Audio drama elements (fallback if isAudioDrama not set)
+    case 'sfx_cue':      return 'sp-sfx-cue';
+    case 'music_cue':    return 'sp-music-cue';
+    case 'ambience_cue': return 'sp-ambience-cue';
+    case 'sound_cue':    return 'sp-sound-cue';
+    case 'act_break':    return 'sp-act-break';
+    case 'announcer':    return 'sp-character';
+    // Musical Theatre / Stage Play elements
+    case 'song_title':      return 'sp-scene-heading';  // bold centred header
+    case 'lyric':           return 'sp-lyrics';         // lyric / verse block
+    case 'dance_direction': return 'sp-action';         // italicised action
+    case 'musical_cue':     return 'sp-music-cue';
+    case 'lighting_cue':    return 'sp-sfx-cue';
+    case 'set_direction':   return 'sp-action';
     default: return '';
   }
 }
@@ -183,6 +276,20 @@ function getElementPlaceholder(type: ScriptElementType, isYouTube = false): stri
     case 'broll_note': return '[ B-roll or visual description ]';
     case 'cta': return '* Call to action...';
     case 'sponsor_read': return '$ SPONSOR: Talking points...';
+    // Audio Drama elements
+    case 'sfx_cue':      return 'SFX: [Sound effect description]';
+    case 'music_cue':    return 'MUSIC: [Music or theme description]';
+    case 'ambience_cue': return 'AMBIENCE: [Ambient sound or atmosphere]';
+    case 'sound_cue':    return 'SOUND: [Sound effect or FX description]';
+    case 'act_break':    return 'ACT ONE:';
+    case 'announcer':    return 'ANNOUNCER:';
+    // Musical Theatre / Stage Play elements
+    case 'song_title':      return 'SONG TITLE';
+    case 'lyric':           return 'Lyric line…';
+    case 'dance_direction': return '(Dance direction / choreography note)';
+    case 'musical_cue':     return 'MUSIC: [Musical cue or theme]';
+    case 'lighting_cue':    return 'LIGHTS: [Lighting state or transition]';
+    case 'set_direction':   return '(Set or scenic direction)';
     default: return '';
   }
 }
@@ -239,6 +346,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const {
     scripts, currentScript, elements,
     setCurrentScript, fetchScripts, fetchElements, saving,
+    undo: undoScript, redo: redoScript, _undoStack, _redoStack,
   } = useScriptStore();
   const onlineUsers = usePresenceStore((s) => s.onlineUsers);
 
@@ -257,18 +365,24 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [drafts, setDrafts] = useState<ScriptDraft[]>([]);
   const [savingDraft, setSavingDraft] = useState(false);
   const [restoringDraft, setRestoringDraft] = useState(false);
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
+  const [draftNameInput, setDraftNameInput] = useState('');
+  const [draftNotesInput, setDraftNotesInput] = useState('');
   const [showScriptsSidebar, setShowScriptsSidebar] = useState(false);
   const [showFormatIntro, setShowFormatIntro] = useState(false);
   const [useCreatorFormat, setUseCreatorFormat] = useState(true); // vs plaintext
   const [showFormatReminder, setShowFormatReminder] = useState(() => {
     try { return localStorage.getItem('ss_hide_format_reminder') !== 'true'; } catch { return true; }
   });
+  const [showRevisionColorPicker, setShowRevisionColorPicker] = useState(false);
+  const revisionColorPickerRef = useRef<HTMLButtonElement>(null);
 
   // Role awareness: determine if user can edit
   const { members, currentProject } = useProjectStore();
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
-  const canEdit = currentUserRole !== 'viewer';
+  const canEdit = currentUserRole !== 'viewer' && !currentScript?.locked;
+  const canLock = currentUserRole === 'owner' || currentUserRole === 'admin';
 
   // ⏱ Work-time tracking — fires heartbeats every 30s while the user is active
   useWorkTimeTracker({ projectId: params.id, context: 'script', disabled: !canEdit });
@@ -281,8 +395,35 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
            ['youtube', 'tiktok'].includes(scriptType || '');
   }, [currentProject]);
 
+  // Detect Audio Drama project and determine format
+  const audioFormat = currentProject?.format ?? '';
+  const isAudioDrama = useMemo(() => {
+    return ['bbc_radio', 'us_radio', 'starc_standard'].includes(audioFormat) ||
+           currentProject?.project_type === 'audio_drama';
+  }, [audioFormat, currentProject?.project_type]);
+
+  // Detect Stage Play / Musical Theatre project
+  const isStagePlay = useMemo(() => {
+    return currentProject?.project_type === 'stage_play' ||
+           currentProject?.script_type === 'stageplay';
+  }, [currentProject?.project_type, currentProject?.script_type]);
+
+  const resolvedAudioFormat = useMemo(() => {
+    if (!isAudioDrama) return '';
+    return ['bbc_radio', 'us_radio', 'starc_standard'].includes(audioFormat)
+      ? audioFormat : 'starc_standard';
+  }, [isAudioDrama, audioFormat]);
+
+  const audioElementCycle = useMemo((): ScriptElementType[] => {
+    if (!isAudioDrama) return [];
+    return AUDIO_DRAMA_ELEMENT_CYCLES[resolvedAudioFormat] ?? AUDIO_DRAMA_ELEMENT_CYCLES.starc_standard;
+  }, [isAudioDrama, resolvedAudioFormat]);
+
   // Element cycle based on project type
-  const elementCycle = isContentCreator ? YOUTUBE_ELEMENT_CYCLE : ELEMENT_CYCLE;
+  const elementCycle = isContentCreator ? YOUTUBE_ELEMENT_CYCLE
+    : isAudioDrama ? audioElementCycle
+    : isStagePlay ? STAGEPLAY_ELEMENT_CYCLE
+    : ELEMENT_CYCLE;
 
   // ── Inline comments ──────────────────────────────────────────
   const [scriptComments, setScriptComments] = useState<(Comment & { profile?: Profile })[]>([]);
@@ -377,7 +518,36 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }, []);
 
   useEffect(() => { fetchScripts(params.id); }, [params.id]);
-  useEffect(() => { if (currentScript) { fetchElements(currentScript.id); loadDrafts(); } }, [currentScript?.id]);
+  // Guard against stale currentScript from a previously-viewed project
+  useEffect(() => {
+    if (currentScript && currentScript.project_id === params.id) {
+      fetchElements(currentScript.id);
+      loadDrafts();
+    }
+  }, [currentScript?.id]);
+
+  // ── Jump to element from command palette (?element=<id>) ─────────────
+  const searchParams = useSearchParams();
+  const elementParam = searchParams.get('element');
+  useEffect(() => {
+    if (!elementParam || elements.length === 0) return;
+    // Small delay to let the DOM render
+    const tid = setTimeout(() => {
+      const el = document.getElementById(`el-${elementParam}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Briefly highlight the element
+        el.style.outline = '2px solid #FF5F1F';
+        el.style.borderRadius = '4px';
+        setTimeout(() => { el.style.outline = ''; el.style.borderRadius = ''; }, 1800);
+        // Clean the URL param without a navigation
+        const url = new URL(window.location.href);
+        url.searchParams.delete('element');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }, 300);
+    return () => clearTimeout(tid);
+  }, [elementParam, elements.length]);
   
   // Show format intro for content creator projects (once per project)
   useEffect(() => {
@@ -412,16 +582,42 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     setDrafts(data || []);
   };
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = () => {
+    if (!currentScript) return;
+    setDraftNameInput(`Draft ${drafts.length + 1}`);
+    setDraftNotesInput('');
+    setShowSaveDraftModal(true);
+  };
+
+  const handleToggleLock = async () => {
+    if (!currentScript || !canLock) return;
+    const supabase = createClient();
+    const newLocked = !currentScript.locked;
+    const { error } = await supabase.from('scripts').update({
+      locked: newLocked,
+      locked_by: newLocked ? user?.id : null,
+      locked_at: newLocked ? new Date().toISOString() : null,
+    }).eq('id', currentScript.id);
+    if (!error) setCurrentScript({ ...currentScript, locked: newLocked });
+  };
+
+  const handleSetRevisionColor = async (color: import('@/lib/types').RevisionColor) => {
+    if (!currentScript) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('scripts').update({ revision_color: color }).eq('id', currentScript.id);
+    if (!error) setCurrentScript({ ...currentScript, revision_color: color });
+    setShowRevisionColorPicker(false);
+  };
+
+  const confirmSaveDraft = async () => {
     if (!currentScript) return;
     setSavingDraft(true);
-    const name = prompt('Draft name (optional):', `Draft ${drafts.length + 1}`);
-    if (name === null) { setSavingDraft(false); return; }
+    setShowSaveDraftModal(false);
     const supabase = createClient();
     await supabase.rpc('save_script_draft', {
       p_script_id: currentScript.id,
-      p_draft_name: name || `Draft ${drafts.length + 1}`,
-      p_notes: null,
+      p_draft_name: draftNameInput.trim() || `Draft ${drafts.length + 1}`,
+      p_notes: draftNotesInput.trim() || null,
     });
     await loadDrafts();
     setSavingDraft(false);
@@ -488,6 +684,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
   const sceneHeadings = elements.filter((e) => e.element_type === 'scene_heading');
   const chapterMarkers = elements.filter((e) => e.element_type === 'chapter_marker');
+  const actBreaks = elements.filter((e) => e.element_type === 'act_break');
 
   // Map scene_heading element IDs → sequential scene number (use existing scene_number if set, otherwise auto-index)
   const sceneNumberMap = useMemo(() => {
@@ -982,6 +1179,14 @@ ${pageHTML}
       e.preventDefault();
       handleExportPDF();
     }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      undoScript();
+    }
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      e.preventDefault();
+      redoScript();
+    }
   };
 
   return (
@@ -1106,6 +1311,23 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 )}
               </div>
             </>
+          ) : isAudioDrama && resolvedAudioFormat === 'us_radio' ? (
+            <>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Acts ({actBreaks.length})</p>
+              <div className="space-y-0.5">
+                {actBreaks.map((act, i) => (
+                  <button key={act.id} onClick={() => {
+                    document.getElementById(`el-${act.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 transition-colors">
+                    <span className="text-amber-400 mr-1">{i + 1}.</span>
+                    <span className="truncate">{act.content || 'Act Break'}</span>
+                  </button>
+                ))}
+                {actBreaks.length === 0 && (
+                  <p className="text-xs text-surface-600 px-2 py-1">No acts yet. Add an Act Break element.</p>
+                )}
+              </div>
+            </>
           ) : (
             <>
               <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Scenes ({sceneHeadings.length})</p>
@@ -1166,14 +1388,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
       {/* Editor */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Toolbar */}
-        <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-2 md:px-4 py-2 flex items-center gap-1.5 md:gap-2 no-print overflow-x-auto" style={{ overflow: 'visible' }}>
+        {/* Toolbar — Row 1: Element Types */}
+        <div className="border-b border-surface-800/60 bg-surface-950/80 backdrop-blur-sm px-2 md:px-4 py-1.5 flex items-center gap-1.5 no-print">
           {canEdit && (
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1 flex-wrap min-w-0">
               {elementCycle.map((type) => (
                 <button key={type} onClick={() => handleToolbarAdd(type)}
-                  className={cn('px-2 md:px-2.5 py-1 rounded text-[10px] md:text-[11px] font-medium transition-colors whitespace-nowrap',
-                    activeElementType === type ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-900/5'
+                  className={cn('px-2 py-0.5 rounded text-[10px] md:text-[11px] font-medium transition-colors whitespace-nowrap',
+                    activeElementType === type ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-800'
                   )} title={`Add ${ELEMENT_LABELS[type]}`}>
                   {ELEMENT_LABELS[type]}
                 </button>
@@ -1181,169 +1403,268 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
           )}
           {!canEdit && (
-            <span className="text-[11px] text-surface-500 px-2 py-1 bg-surface-800 rounded font-medium shrink-0">Read Only</span>
+            <span className="text-[11px] text-surface-500 px-2 py-0.5 bg-surface-800 rounded font-medium shrink-0">Read Only</span>
+          )}
+          {isAudioDrama && (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 shrink-0 ml-1">
+              <svg className="w-3 h-3 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-7a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+              <span className="text-[10px] font-medium text-violet-300">
+                {resolvedAudioFormat === 'bbc_radio' ? 'BBC Scene' : resolvedAudioFormat === 'us_radio' ? 'US Radio' : 'STARC'}
+              </span>
+            </div>
+          )}
+          {isStagePlay && (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 shrink-0 ml-1">
+              <span className="text-[11px]">🎭</span>
+              <span className="text-[10px] font-medium text-rose-300">Stage Play</span>
+            </div>
           )}
           <div className="flex-1" />
-          <div className="flex items-center gap-1.5">
-            {saving ? (
-              <span className="flex items-center gap-1.5 text-[11px] text-surface-500">
-                <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />Saving
-              </span>
-            ) : lastSaved && (
-              <span className="flex items-center gap-1.5 text-[11px] text-surface-600">
-                <div className="w-2 h-2 rounded-full bg-green-500" />Saved
+          {saving ? (
+            <span className="flex items-center gap-1.5 text-[11px] text-surface-500 shrink-0">
+              <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />Saving
+            </span>
+          ) : lastSaved && (
+            <span className="flex items-center gap-1.5 text-[11px] text-surface-600 shrink-0">
+              <div className="w-2 h-2 rounded-full bg-green-500" />Saved
+            </span>
+          )}
+        </div>
+
+        {/* Toolbar — Row 2: Tools */}
+        <div className="border-b border-surface-800 bg-surface-950/60 backdrop-blur-sm px-2 md:px-4 py-1 flex items-center gap-0.5 no-print">
+          <span className="text-[10px] text-surface-700 hidden md:inline mr-2 select-none">Tab: cycle &middot; Hold: pick &middot; Enter: new line</span>
+          {/* Undo / Redo */}
+          {canEdit && (
+            <>
+              <button
+                onClick={() => undoScript()}
+                disabled={_undoStack.length === 0}
+                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-25 disabled:cursor-not-allowed"
+                title={`Undo (Cmd+Z)${_undoStack.length > 0 ? ` · ${_undoStack.length} step${_undoStack.length > 1 ? 's' : ''}` : ''}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+              </button>
+              <button
+                onClick={() => redoScript()}
+                disabled={_redoStack.length === 0}
+                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-25 disabled:cursor-not-allowed"
+                title={`Redo (Cmd+Shift+Z)${_redoStack.length > 0 ? ` · ${_redoStack.length} step${_redoStack.length > 1 ? 's' : ''}` : ''}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+              </button>
+              <div className="w-px h-4 bg-surface-800 mx-0.5" />
+            </>
+          )}
+          <div className="flex-1" />
+          <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Search (Cmd+F)">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </button>
+          <button
+            onClick={() => setShowCommentPanel(!showCommentPanel)}
+            className={cn('p-1.5 rounded transition-colors relative', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')}
+            title="Comments"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+            {scriptComments.length > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#FF5F1F] text-[7px] font-bold text-white flex items-center justify-center">
+                {scriptComments.filter(c => !c.parent_id).length}
               </span>
             )}
-            <span className="text-[10px] text-surface-600 px-1 hidden md:inline">Tab: change type &middot; Enter: new line</span>
-            <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Search (Cmd+F)">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </button>
+          <button onClick={() => setShowTitlePage(true)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Title Page">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
+          </button>
+          <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Export PDF (Cmd+P)">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+          </button>
+          {/* Import / Export dropdown */}
+          <div className="relative">
+            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded transition-colors', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')} title="Import / Export">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             </button>
+          </div>
+          {showImportExport && (
+            <>
+              <div className="fixed inset-0 z-[9998]" onClick={() => setShowImportExport(false)} />
+              <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl py-1.5 min-w-[220px] animate-fade-in-up"
+                style={{
+                  top: importExportRef.current ? importExportRef.current.getBoundingClientRect().bottom + 6 : 60,
+                  right: importExportRef.current ? window.innerWidth - importExportRef.current.getBoundingClientRect().right : 16,
+                }}>
+                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Import</p>
+                <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                  <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.fdx</span> Final Draft
+                </button>
+                <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                  <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.ftn</span> Fountain
+                </button>
+                <div className="border-t border-surface-700 my-1" />
+                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Export</p>
+                <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                  <span className="w-8 text-[10px] font-mono text-emerald-400">.pdf</span> PDF (Print)
+                </button>
+                <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                  <span className="w-8 text-[10px] font-mono text-emerald-400">.fdx</span> Final Draft
+                </button>
+                <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                  <span className="w-8 text-[10px] font-mono text-emerald-400">.ftn</span> Fountain
+                </button>
+                <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                  <span className="w-8 text-[10px] font-mono text-emerald-400">.txt</span> Plain Text
+                </button>
+                <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                  <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
+                </button>
+              </div>
+            </>
+          )}
+          {/* Script Lock Button */}
+          {canLock && currentScript && (
             <button
-              onClick={() => setShowCommentPanel(!showCommentPanel)}
-              className={cn('p-1.5 rounded transition-colors relative', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')}
-              title="Comments"
+              onClick={handleToggleLock}
+              className={cn('p-1.5 rounded transition-colors',
+                currentScript.locked
+                  ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/20'
+                  : 'text-surface-500 hover:text-white hover:bg-surface-800'
+              )}
+              title={currentScript.locked ? 'Script locked — click to unlock' : 'Lock script (prevent edits)'}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
-              {scriptComments.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#FF5F1F] text-[7px] font-bold text-white flex items-center justify-center">
-                  {scriptComments.filter(c => !c.parent_id).length}
-                </span>
+              {currentScript.locked ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
               )}
             </button>
-            <button onClick={() => setShowTitlePage(true)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Title Page">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
-            </button>
-            <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Export PDF (Cmd+P)">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-            </button>
-            {/* Import / Export dropdown */}
+          )}
+          {/* Revision Colour Picker */}
+          {currentScript && (
             <div className="relative">
-              <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded transition-colors', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')} title="Import / Export">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+              <button
+                ref={revisionColorPickerRef}
+                onClick={() => setShowRevisionColorPicker(!showRevisionColorPicker)}
+                className={cn('p-1.5 rounded transition-colors flex items-center gap-1', showRevisionColorPicker ? 'bg-surface-800' : 'hover:bg-surface-800')}
+                title={`Revision colour: ${currentScript.revision_color || 'white'}`}
+              >
+                <span
+                  className="w-3 h-3 rounded-sm border border-surface-600 inline-block"
+                  style={{ background: REVISION_COLOR_HEX[currentScript.revision_color] || '#ffffff' }}
+                />
+                <svg className="w-3 h-3 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </button>
-            </div>
-            {showImportExport && (
-              <>
-                <div className="fixed inset-0 z-[9998]" onClick={() => setShowImportExport(false)} />
-                <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl py-1.5 min-w-[220px] animate-fade-in-up"
-                  style={{
-                    top: importExportRef.current ? importExportRef.current.getBoundingClientRect().bottom + 6 : 60,
-                    right: importExportRef.current ? window.innerWidth - importExportRef.current.getBoundingClientRect().right : 16,
-                  }}>
-                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Import</p>
-                  <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.fdx</span> Final Draft
-                  </button>
-                  <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.ftn</span> Fountain
-                  </button>
-                  <div className="border-t border-surface-700 my-1" />
-                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Export</p>
-                  <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.pdf</span> PDF (Print)
-                  </button>
-                  <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.fdx</span> Final Draft
-                  </button>
-                  <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.ftn</span> Fountain
-                  </button>
-                  <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.txt</span> Plain Text
-                  </button>
-                  <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
-                  </button>
-                </div>
-              </>
-            )}
-            <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10 disabled:opacity-50" title="Save Draft Snapshot">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-            </button>
-            <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')} title="Draft Timeline">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </button>
-            {/* Format Guide Button (for content creators) */}
-            {isContentCreator && (
-              <button onClick={() => setShowFormatIntro(true)}
-                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10"
-                title="Format Guide">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-              </button>
-            )}
-            {/* Display Settings */}
-            <div className="relative">
-              <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
-                className={cn('p-1.5 rounded transition-colors', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')}
-                title="Display Settings">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-              </button>
-            </div>
-            {showDisplaySettings && (
-              <>
-                <div className="fixed inset-0 z-[9998]" onClick={() => setShowDisplaySettings(false)} />
-                <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl p-4 min-w-[260px] animate-fade-in-up"
-                  style={{
-                    top: displaySettingsRef.current ? displaySettingsRef.current.getBoundingClientRect().bottom + 6 : 60,
-                    right: displaySettingsRef.current ? window.innerWidth - displaySettingsRef.current.getBoundingClientRect().right : 16,
-                  }}>
-                  <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Display Settings</h4>
-                  <div className="space-y-3">
-                    <label className="flex items-center justify-between">
-                      <span className="text-xs text-surface-300">Scene Numbers</span>
-                      <input type="checkbox" checked={displaySettings.showSceneNumbers}
-                        onChange={(e) => updateDisplaySettings({ showSceneNumbers: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                    </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-xs text-surface-300">Character Highlights</span>
-                      <input type="checkbox" checked={displaySettings.showCharacterHighlights}
-                        onChange={(e) => updateDisplaySettings({ showCharacterHighlights: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                    </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-xs text-surface-300">Show Notes</span>
-                      <input type="checkbox" checked={displaySettings.showNotes}
-                        onChange={(e) => updateDisplaySettings({ showNotes: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                    </label>
-                    <label className="flex items-center justify-between">
-                      <span className="text-xs text-surface-300">Revision Colors</span>
-                      <input type="checkbox" checked={displaySettings.showRevisionColors}
-                        onChange={(e) => updateDisplaySettings({ showRevisionColors: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                    </label>
-                    <div>
-                      <span className="text-xs text-surface-300 mb-1 block">Font Size: {displaySettings.fontSize}pt</span>
-                      <input type="range" min={10} max={16} value={displaySettings.fontSize}
-                        onChange={(e) => updateDisplaySettings({ fontSize: Number(e.target.value) })}
-                        className="w-full accent-brand-500" />
+              {showRevisionColorPicker && (
+                <>
+                  <div className="fixed inset-0 z-[9998]" onClick={() => setShowRevisionColorPicker(false)} />
+                  <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl p-3 min-w-[180px] animate-fade-in-up"
+                    style={{
+                      top: revisionColorPickerRef.current ? revisionColorPickerRef.current.getBoundingClientRect().bottom + 6 : 60,
+                      right: revisionColorPickerRef.current ? window.innerWidth - revisionColorPickerRef.current.getBoundingClientRect().right : 16,
+                    }}>
+                    <p className="text-[10px] text-surface-500 font-medium uppercase tracking-wider mb-2">Revision Colour</p>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {(Object.entries(REVISION_COLOR_HEX) as [import('@/lib/types').RevisionColor, string][]).map(([color, hex]) => (
+                        <button
+                          key={color}
+                          onClick={() => handleSetRevisionColor(color)}
+                          className={cn('w-7 h-7 rounded border-2 transition-all hover:scale-110',
+                            currentScript.revision_color === color ? 'border-[#FF5F1F]' : 'border-transparent hover:border-surface-500'
+                          )}
+                          style={{ background: hex }}
+                          title={color.charAt(0).toUpperCase() + color.slice(1)}
+                        />
+                      ))}
                     </div>
-                    <div>
-                      <span className="text-xs text-surface-300 mb-1 block">Page Width</span>
-                      <div className="flex gap-1">
-                        {(['narrow', 'standard', 'wide'] as const).map((w) => (
-                          <button key={w} onClick={() => updateDisplaySettings({ pageWidth: w })}
-                            className={cn('flex-1 px-2 py-1 rounded text-[10px] font-medium transition-colors capitalize',
-                              displaySettings.pageWidth === w ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-900/5'
-                            )}>{w}</button>
-                        ))}
-                      </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-50" title="Save Draft Snapshot">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+          </button>
+          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')} title="Draft Timeline">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </button>
+          {/* Format Guide Button (for content creators) */}
+          {isContentCreator && (
+            <button onClick={() => setShowFormatIntro(true)}
+              className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800"
+              title="Format Guide">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </button>
+          )}
+          {/* Display Settings */}
+          <div className="relative">
+            <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
+              className={cn('p-1.5 rounded transition-colors', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')}
+              title="Display Settings">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+            </button>
+          </div>
+          {showDisplaySettings && (
+            <>
+              <div className="fixed inset-0 z-[9998]" onClick={() => setShowDisplaySettings(false)} />
+              <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl p-4 min-w-[260px] animate-fade-in-up"
+                style={{
+                  top: displaySettingsRef.current ? displaySettingsRef.current.getBoundingClientRect().bottom + 6 : 60,
+                  right: displaySettingsRef.current ? window.innerWidth - displaySettingsRef.current.getBoundingClientRect().right : 16,
+                }}>
+                <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Display Settings</h4>
+                <div className="space-y-3">
+                  <label className="flex items-center justify-between">
+                    <span className="text-xs text-surface-300">Scene Numbers</span>
+                    <input type="checkbox" checked={displaySettings.showSceneNumbers}
+                      onChange={(e) => updateDisplaySettings({ showSceneNumbers: e.target.checked })}
+                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
+                  </label>
+                  <label className="flex items-center justify-between">
+                    <span className="text-xs text-surface-300">Character Highlights</span>
+                    <input type="checkbox" checked={displaySettings.showCharacterHighlights}
+                      onChange={(e) => updateDisplaySettings({ showCharacterHighlights: e.target.checked })}
+                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
+                  </label>
+                  <label className="flex items-center justify-between">
+                    <span className="text-xs text-surface-300">Show Notes</span>
+                    <input type="checkbox" checked={displaySettings.showNotes}
+                      onChange={(e) => updateDisplaySettings({ showNotes: e.target.checked })}
+                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
+                  </label>
+                  <label className="flex items-center justify-between">
+                    <span className="text-xs text-surface-300">Revision Colors</span>
+                    <input type="checkbox" checked={displaySettings.showRevisionColors}
+                      onChange={(e) => updateDisplaySettings({ showRevisionColors: e.target.checked })}
+                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
+                  </label>
+                  <div>
+                    <span className="text-xs text-surface-300 mb-1 block">Font Size: {displaySettings.fontSize}pt</span>
+                    <input type="range" min={10} max={16} value={displaySettings.fontSize}
+                      onChange={(e) => updateDisplaySettings({ fontSize: Number(e.target.value) })}
+                      className="w-full accent-brand-500" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-surface-300 mb-1 block">Page Width</span>
+                    <div className="flex gap-1">
+                      {(['narrow', 'standard', 'wide'] as const).map((w) => (
+                        <button key={w} onClick={() => updateDisplaySettings({ pageWidth: w })}
+                          className={cn('flex-1 px-2 py-1 rounded text-[10px] font-medium transition-colors capitalize',
+                            displaySettings.pageWidth === w ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-900/5'
+                          )}>{w}</button>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
+            </>
+          )}
+          <button onClick={() => setDarkMode(!darkMode)}
+            className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-surface-800' : 'text-surface-500 hover:text-white hover:bg-surface-800')}
+            title={darkMode ? 'Light Mode' : 'Dark Mode'}>
+            {darkMode ? (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
             )}
-            <button onClick={() => setDarkMode(!darkMode)}
-              className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-surface-900/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10')}
-              title={darkMode ? 'Light Mode' : 'Dark Mode'}>
-              {darkMode ? (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-              )}
-            </button>
-          </div>
+          </button>
         </div>
 
         {/* Search bar */}
@@ -1410,6 +1731,17 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Locked script banner */}
+        {currentScript?.locked && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border-b border-amber-500/30 no-print">
+            <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <span className="text-xs text-amber-300 flex-1">
+              Script is <strong>locked</strong> — editing is disabled.
+              {canLock && <span className="ml-1 opacity-70">Use the lock button in the toolbar to unlock.</span>}
+            </span>
           </div>
         )}
 
@@ -1482,11 +1814,17 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <svg className="w-12 h-12 mb-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <p className="text-sm mb-2">Start writing your screenplay</p>
+                <p className="text-sm mb-2">
+                  {isAudioDrama ? 'Start writing your audio drama' : isContentCreator ? 'Start writing your script' : 'Start writing your screenplay'}
+                </p>
                 <p className="text-xs opacity-60 mb-6">Press Enter to add lines. Tab to change element type.</p>
-                <button onClick={() => handleToolbarAdd('scene_heading')}
+                <button onClick={() => handleToolbarAdd(
+                  isAudioDrama && audioElementCycle.length > 0 ? audioElementCycle[0]
+                  : isContentCreator ? 'chapter_marker'
+                  : 'scene_heading'
+                )}
                   className={cn('px-4 py-2 rounded text-sm', darkMode ? 'bg-surface-700 hover:bg-surface-600 text-white' : 'bg-surface-800 hover:bg-gray-200 text-white/60')}>
-                  + Add Scene Heading
+                  + Add {isAudioDrama && audioElementCycle.length > 0 ? ELEMENT_LABELS[audioElementCycle[0]] : isContentCreator ? 'Chapter' : 'Scene Heading'}
                 </button>
               </div>
             ) : (
@@ -1509,6 +1847,11 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   commentCount={commentCountMap[element.id] || 0}
                   onComment={openCommentPanel}
                   isContentCreator={isContentCreator}
+                  isAudioDrama={isAudioDrama}
+                  isStagePlay={isStagePlay}
+                  audioFormat={resolvedAudioFormat}
+                  audioElementCycle={audioElementCycle}
+                  stagePlayElementCycle={STAGEPLAY_ELEMENT_CYCLE}
                 />
               ))
             )}
@@ -1516,7 +1859,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <div className="py-12 text-center">
                 <button onClick={() => {
                   const lastType = elements[elements.length - 1]?.element_type || 'action';
-                  handleToolbarAdd(getNextElementType(lastType));
+                  handleToolbarAdd(isAudioDrama ? getAudioNextElementType(lastType, resolvedAudioFormat) : getNextElementType(lastType));
                 }} className={cn('inline-flex items-center gap-1 px-3 py-1.5 rounded text-xs transition-colors',
                   darkMode ? 'text-surface-400 hover:text-white hover:bg-surface-700' : 'text-gray-400 hover:text-white/60 hover:bg-surface-800'
                 )}>
@@ -1560,6 +1903,30 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         projectId={params.id} userId={user?.id || ''}
         onCreated={() => { fetchScripts(params.id); setShowNewScript(false); }}
       />
+
+      {/* Save Draft Modal */}
+      <Modal isOpen={showSaveDraftModal} onClose={() => setShowSaveDraftModal(false)} title="Save Draft Snapshot" size="sm">
+        <div className="space-y-4">
+          <Input
+            label="Draft Name"
+            value={draftNameInput}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDraftNameInput(e.target.value)}
+            placeholder={`Draft ${drafts.length + 1}`}
+            autoFocus
+          />
+          <Textarea
+            label="Notes (optional)"
+            value={draftNotesInput}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDraftNotesInput(e.target.value)}
+            placeholder="What changed in this draft?"
+            rows={3}
+          />
+          <div className="flex justify-end gap-3 pt-1">
+            <Button variant="ghost" onClick={() => setShowSaveDraftModal(false)}>Cancel</Button>
+            <Button onClick={confirmSaveDraft} loading={savingDraft}>Save Snapshot</Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Format Guide Reminder Card (floating, for content creators) */}
       {isContentCreator && !showFormatIntro && showFormatReminder && (
@@ -1837,6 +2204,11 @@ interface LineEditorProps {
   commentCount: number;
   onComment: (elementId: string) => void;
   isContentCreator: boolean;
+  isAudioDrama: boolean;
+  isStagePlay: boolean;
+  audioFormat: string;
+  audioElementCycle: ScriptElementType[];
+  stagePlayElementCycle: ScriptElementType[];
 }
 
 const LineEditor = memo(function LineEditor({
@@ -1856,6 +2228,11 @@ const LineEditor = memo(function LineEditor({
   commentCount,
   onComment,
   isContentCreator,
+  isAudioDrama,
+  isStagePlay,
+  audioFormat,
+  audioElementCycle,
+  stagePlayElementCycle,
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector
   const element = useScriptStore((s) => s.elements.find((e) => e.id === elementId));
@@ -1865,8 +2242,14 @@ const LineEditor = memo(function LineEditor({
   const localContentRef = useRef('');
   const skipAutoDetectRef = useRef(false);
   const isFocusedRef = useRef(false);
+  // Tab-hold picker refs — use refs for keyup handler so it's never stale
+  const tabPressedRef = useRef(false);
+  const tabPickerOpenRef = useRef(false);
+  const tabPickerIdxRef = useRef(0);
 
   const [showTypeMenu, setShowTypeMenu] = useState(false);
+  const [showTabPicker, setShowTabPicker] = useState(false);
+  const [tabPickerIdx, setTabPickerIdx] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
 
@@ -1970,6 +2353,24 @@ const LineEditor = memo(function LineEditor({
   };
 
   // --- Keyboard handler (all store access via getState) ---
+  const getActiveCycle = (): ScriptElementType[] =>
+    isAudioDrama ? audioElementCycle
+    : isContentCreator ? YOUTUBE_ELEMENT_CYCLE
+    : isStagePlay ? stagePlayElementCycle
+    : ELEMENT_CYCLE;
+
+  const commitPickerType = (idx: number) => {
+    const cycle = getActiveCycle();
+    const newType = cycle[idx];
+    skipAutoDetectRef.current = true;
+    setTimeout(() => { skipAutoDetectRef.current = false; }, 300);
+    useScriptStore.getState().updateElement(elementId, { element_type: newType });
+    onFocused(newType);
+    tabPickerOpenRef.current = false;
+    tabPressedRef.current = false;
+    setShowTabPicker(false);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     // Viewers cannot edit
     if (!canEdit) return;
@@ -2000,7 +2401,9 @@ const LineEditor = memo(function LineEditor({
       const currentOrder = idx >= 0 ? els[idx].sort_order : 0;
       const nextOrder = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder + 2;
       const newOrder = (currentOrder + nextOrder) / 2;
-      const nextType = getNextElementType(element.element_type);
+      const nextType = isAudioDrama
+        ? getAudioNextElementType(element.element_type, audioFormat)
+        : getNextElementType(element.element_type);
 
       console.log('[Enter] Creating element:', { nextType, newOrder, scriptId: store.currentScript.id });
 
@@ -2024,18 +2427,62 @@ const LineEditor = memo(function LineEditor({
       return;
     }
 
-    // ========== TAB — cycle element type ==========
+    // ========== TAB — tap to cycle, hold to open picker ==========
     if (e.key === 'Tab') {
       e.preventDefault();
-      skipAutoDetectRef.current = true;
-      setTimeout(() => { skipAutoDetectRef.current = false; }, 300);
-      const ci = ELEMENT_CYCLE.indexOf(element.element_type);
-      const ni = e.shiftKey
-        ? (ci - 1 + ELEMENT_CYCLE.length) % ELEMENT_CYCLE.length
-        : (ci + 1) % ELEMENT_CYCLE.length;
-      useScriptStore.getState().updateElement(elementId, { element_type: ELEMENT_CYCLE[ni] });
-      onFocused(ELEMENT_CYCLE[ni]);
+      // Autocomplete overrides: apply suggestion (no picker)
+      if (suggestions.length > 0) {
+        applySuggestion(suggestions[selectedSuggestion]);
+        return;
+      }
+      const cycle = getActiveCycle();
+      if (e.repeat) {
+        // Held down — open the picker if not already open (no auto-advance)
+        if (!tabPickerOpenRef.current) {
+          const ci = Math.max(0, cycle.indexOf(element.element_type));
+          tabPickerIdxRef.current = ci;
+          setTabPickerIdx(ci);
+          tabPickerOpenRef.current = true;
+          setShowTabPicker(true);
+        }
+        // Do nothing on repeated holds — user uses arrows/mouse to navigate
+      } else {
+        // First press — mark it; cycle will happen on keyup if no hold
+        tabPressedRef.current = true;
+        skipAutoDetectRef.current = true;
+        setTimeout(() => { skipAutoDetectRef.current = false; }, 300);
+      }
       return;
+    }
+
+    // ========== ARROW KEYS while Tab-picker is open ==========
+    if (tabPickerOpenRef.current) {
+      const cycle = getActiveCycle();
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const ni = (tabPickerIdxRef.current + 1) % cycle.length;
+        tabPickerIdxRef.current = ni;
+        setTabPickerIdx(ni);
+        return;
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const ni = (tabPickerIdxRef.current - 1 + cycle.length) % cycle.length;
+        tabPickerIdxRef.current = ni;
+        setTabPickerIdx(ni);
+        return;
+      }
+      if (e.key === 'Escape') {
+        tabPickerOpenRef.current = false;
+        tabPressedRef.current = false;
+        setShowTabPicker(false);
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        commitPickerType(tabPickerIdxRef.current);
+        return;
+      }
     }
 
     // ========== BACKSPACE on empty — delete element ==========
@@ -2111,6 +2558,29 @@ const LineEditor = memo(function LineEditor({
     }
   };
 
+  // --- keyup — commits single-tap Tab cycle or picker selection ---
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab') return;
+    if (tabPickerOpenRef.current) {
+      // Releasing Tab while picker is open → commit highlighted type
+      commitPickerType(tabPickerIdxRef.current);
+    } else if (tabPressedRef.current) {
+      // Short tap without hold → cycle to next (or prev with Shift)
+      const cycle = getActiveCycle();
+      const ci = cycle.indexOf(element.element_type);
+      if (ci >= 0) {
+        const ni = e.shiftKey
+          ? (ci - 1 + cycle.length) % cycle.length
+          : (ci + 1) % cycle.length;
+        skipAutoDetectRef.current = true;
+        setTimeout(() => { skipAutoDetectRef.current = false; }, 300);
+        useScriptStore.getState().updateElement(elementId, { element_type: cycle[ni] });
+        onFocused(cycle[ni]);
+      }
+      tabPressedRef.current = false;
+    }
+  };
+
   // Broadcast focus to presence channel
   const broadcastFocus = (elId: string | null) => {
     const auth = useAuthStore.getState();
@@ -2171,6 +2641,24 @@ const LineEditor = memo(function LineEditor({
   // Hide notes if display settings say so
   if (!displaySettings.showNotes && element.element_type === 'note') return null;
 
+  // For audio cue elements, we rely entirely on the CSS class for color/centering/underline.
+  // Only act_break gets a subtle amber background on the line wrapper (not a cue, it's a break).
+  const CUE_TYPES: ScriptElementType[] = ['sfx_cue', 'music_cue', 'ambience_cue', 'sound_cue'];
+  const isCueElement = isAudioDrama && CUE_TYPES.includes(element.element_type);
+  const isActBreak   = isAudioDrama && element.element_type === 'act_break';
+
+  const audioCueBg = (() => {
+    if (!isAudioDrama || isCueElement) return '';
+    if (isActBreak) return 'bg-amber-500/10';
+    return '';
+  })();
+
+  const audioCueBorderStyle: React.CSSProperties = (() => {
+    if (!isAudioDrama || isCueElement || collaborators.length > 0 || charColorIdx >= 0) return {};
+    if (isActBreak) return { borderLeft: '3px solid #fbbf24', paddingLeft: '8px' };
+    return {};
+  })();
+
   return (
     <>
       {showPageBreak && (
@@ -2185,11 +2673,13 @@ const LineEditor = memo(function LineEditor({
           element.is_omitted && 'opacity-40 line-through',
           collaborators.length > 0 && COLLAB_COLORS[collaborators[0].colorIdx].bg,
           charColorIdx >= 0 && CHARACTER_COLORS[charColorIdx].bg,
+          audioCueBg,
         )}
         style={{
           ...(revisionBg ? { backgroundColor: revisionBg + '40' } : {}),
           ...(collaborators.length > 0 ? { borderLeft: `3px solid ${COLLAB_COLORS[collaborators[0].colorIdx].hex}`, paddingLeft: '8px' } : {}),
           ...(charColorIdx >= 0 && collaborators.length === 0 ? { borderLeft: `3px solid ${CHARACTER_COLORS[charColorIdx].hex}`, paddingLeft: '8px' } : {}),
+          ...audioCueBorderStyle,
           fontSize: `${displaySettings.fontSize}pt`,
         }}
       >
@@ -2239,9 +2729,36 @@ const LineEditor = memo(function LineEditor({
           )}
         </button>
 
+        {/* Tab-hold type picker — floats above the element */}
+        {showTabPicker && (
+          <div
+            className="absolute left-0 z-40 flex items-center gap-1 flex-wrap bg-surface-800/95 border border-surface-600 rounded-xl shadow-2xl px-2 py-1.5 no-print"
+            style={{ bottom: 'calc(100% + 6px)' }}
+            onMouseDown={(ev) => ev.preventDefault()} // don't steal focus
+          >
+            <span className="text-[9px] text-surface-500 mr-0.5 whitespace-nowrap select-none">Type:</span>
+            {getActiveCycle().map((type, i) => (
+              <button
+                key={type}
+                onMouseEnter={() => { tabPickerIdxRef.current = i; setTabPickerIdx(i); }}
+                onMouseDown={(ev) => { ev.preventDefault(); commitPickerType(i); }}
+                className={cn(
+                  'px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-all select-none',
+                  i === tabPickerIdx
+                    ? 'bg-[#E54E15] text-white ring-1 ring-[#FF5F1F]/50'
+                    : 'text-surface-400 hover:text-white hover:bg-surface-700',
+                )}
+              >
+                {ELEMENT_LABELS[type]}
+              </button>
+            ))}
+            <span className="text-[9px] text-surface-600 ml-1 whitespace-nowrap select-none">↵ / release Tab</span>
+          </div>
+        )}
+
         {showTypeMenu && (
           <div className="absolute -left-24 top-6 z-20 bg-surface-800 border border-surface-700 rounded-lg shadow-lg py-1 min-w-[140px]">
-            {ELEMENT_CYCLE.map((type) => (
+            {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : ELEMENT_CYCLE).map((type) => (
               <button key={type} onClick={() => {
                 useScriptStore.getState().updateElement(elementId, { element_type: type });
                 setShowTypeMenu(false);
@@ -2258,9 +2775,10 @@ const LineEditor = memo(function LineEditor({
           id={`el-${elementId}`}
           contentEditable={canEdit}
           suppressContentEditableWarning
-          className={cn('sp-element', getElementClass(element.element_type))}
+          className={cn('sp-element', getElementClass(element.element_type, isAudioDrama))}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
+          onKeyUp={handleKeyUp}
           onFocus={handleFocus}
           onBlur={handleBlur}
           data-placeholder={getElementPlaceholder(element.element_type, isContentCreator)}
@@ -2294,7 +2812,10 @@ const LineEditor = memo(function LineEditor({
     && prev.displaySettings === next.displaySettings
     && prev.characterColorMap === next.characterColorMap
     && prev.commentCount === next.commentCount
-    && prev.isContentCreator === next.isContentCreator;
+    && prev.isContentCreator === next.isContentCreator
+    && prev.isAudioDrama === next.isAudioDrama
+    && prev.audioFormat === next.audioFormat
+    && prev.audioElementCycle === next.audioElementCycle;
   // Note: element content changes are handled by the Zustand selector
   // inside the component, not through props. onFocused and onComment
   // are intentionally excluded — they're stable parent callbacks.

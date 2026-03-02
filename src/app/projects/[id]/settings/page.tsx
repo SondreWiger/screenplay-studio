@@ -342,19 +342,38 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {[
-              { key: 'script', label: 'Script' }, { key: 'scenes', label: 'Scenes' },
-              { key: 'characters', label: 'Characters' }, { key: 'locations', label: 'Locations' },
-              { key: 'shots', label: 'Shots' }, { key: 'storyboard', label: 'Storyboard' },
-              { key: 'schedule', label: 'Schedule' }, { key: 'budget', label: 'Budget' },
-              { key: 'documents', label: 'Documents' }, { key: 'moodboard', label: 'Moodboard' },
-              { key: 'ideas', label: 'Ideas' }, { key: 'mindmap', label: 'Mind Map' },
-              { key: 'team', label: 'Team' }, { key: 'thumbnails', label: 'Thumbnails' },
-              { key: 'seo', label: 'SEO' }, { key: 'sponsors', label: 'Sponsors' },
-              { key: 'broll', label: 'B-Roll' }, { key: 'checklist', label: 'Checklist' },
-            ].map((tab) => {
-              const isOn = projectSidebarTabs ? (projectSidebarTabs[tab.key] !== false) : true;
-              return (
+            {(() => {
+              const pt = project?.project_type || '';
+              const isContentCreator = ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(pt);
+              const isTvProduction = pt === 'tv_production';
+              const isAudioDrama = pt === 'audio_drama';
+              const isStagePlay = pt === 'stage_play';
+              const allTabs = [
+                // Core — always shown
+                { key: 'script', label: 'Script', show: true },
+                { key: 'scenes', label: 'Scenes', show: !isTvProduction },
+                { key: 'characters', label: 'Characters', show: !isTvProduction },
+                { key: 'locations', label: 'Locations', show: !isTvProduction && !isAudioDrama },
+                { key: 'documents', label: 'Documents', show: true },
+                { key: 'ideas', label: 'Ideas', show: true },
+                { key: 'team', label: 'Team', show: true },
+                { key: 'mindmap', label: 'Mind Map', show: !isTvProduction },
+                // Film / narrative production
+                { key: 'shots', label: 'Shot List', show: !isTvProduction && !isAudioDrama && !isContentCreator },
+                { key: 'storyboard', label: 'Storyboard', show: !isTvProduction && !isAudioDrama },
+                { key: 'schedule', label: 'Schedule', show: !isContentCreator },
+                { key: 'budget', label: 'Budget', show: !isContentCreator },
+                { key: 'moodboard', label: 'Moodboard', show: !isTvProduction && !isAudioDrama },
+                // Content creator only
+                { key: 'thumbnails', label: 'Thumbnails', show: isContentCreator },
+                { key: 'seo', label: 'SEO', show: isContentCreator },
+                { key: 'sponsors', label: 'Sponsors', show: isContentCreator },
+                { key: 'broll', label: 'B-Roll', show: isContentCreator },
+                { key: 'checklist', label: 'Upload Checklist', show: isContentCreator },
+              ].filter(t => t.show);
+              return allTabs.map((tab) => {
+                const isOn = projectSidebarTabs ? (projectSidebarTabs[tab.key] !== false) : true;
+                return (
                 <button
                   key={tab.key}
                   onClick={() => {
@@ -373,7 +392,8 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                   </span>
                 </button>
               );
-            })}
+              });
+            })()}
           </div>
         </div>
 

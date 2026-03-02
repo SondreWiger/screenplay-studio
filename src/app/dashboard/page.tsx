@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select, KeyboardShortcuts } from '@/components/ui';
+import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
 import { GuidedTour } from '@/components/GuidedTour';
@@ -14,8 +15,9 @@ import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
-import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole } from '@/lib/types';
-import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, PROJECT_TYPE_OPTIONS } from '@/lib/types';
+import { useRecentProjects } from '@/hooks/useRecentProjects';
+import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder } from '@/lib/types';
+import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, PROJECT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
@@ -44,6 +46,26 @@ function DashboardContent() {
   const [companyProjects, setCompanyProjects] = useState<Record<string, Project[]>>({});
   const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
 
+  // Folder state
+  const [folders, setFolders] = useState<DashboardFolder[]>([]);
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
+  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
+  const [renamingName, setRenamingName] = useState('');
+  const [moveMenuProjectId, setMoveMenuProjectId] = useState<string | null>(null);
+  // Drag-and-drop state
+  const [draggingProjectId, setDraggingProjectId] = useState<string | null>(null);
+  const [dragOverTarget, setDragOverTarget] = useState<string | null>(null); // folder id or 'unfiled'
+  const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
+  // View mode (grid / list) — persisted to localStorage
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() =>
+    typeof window !== 'undefined' ? ((localStorage.getItem('dashboard-view-mode') as 'grid' | 'list') || 'grid') : 'grid'
+  );
+  const [newSubFolderParentId, setNewSubFolderParentId] = useState<string | null>(null);
+  const [newSubFolderName, setNewSubFolderName] = useState('');
+
   // Initialise realtime notifications
   useNotifications(user?.id);
 
@@ -59,14 +81,20 @@ function DashboardContent() {
     }
   }, [searchParams]);
 
+  const palette = useCommandPalette();
+
+  const { recentProjects, clearRecent } = useRecentProjects();
+
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); setShowShortcuts(true); }
       if ((e.metaKey || e.ctrlKey) && e.key === 'n') { e.preventDefault(); setShowNewProject(true); }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); palette.open(); }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter projects
@@ -97,6 +125,7 @@ function DashboardContent() {
     fetchProjects();
     fetchCompanyData();
     fetchPendingInvitations();
+    fetchFolders();
   }, [user, authLoading]);
 
   const fetchProjects = async () => {
@@ -119,7 +148,19 @@ function DashboardContent() {
         .or(`created_by.eq.${user.id}${memberProjectIds.length ? `,id.in.(${memberProjectIds.join(',')})` : ''}`)
         .order('updated_at', { ascending: false });
       if (error) console.error('Error fetching projects:', error.message);
-      setProjects(data || []);
+
+      const projectList = data || [];
+
+      // Fetch this user's personal folder assignments (private per-user, not on the project row)
+      const { data: assignments } = await supabase
+        .from('user_project_folder_assignments')
+        .select('project_id, folder_id')
+        .eq('user_id', user.id);
+      const folderMap = new Map(
+        (assignments || []).map((a: { project_id: string; folder_id: string | null }) => [a.project_id, a.folder_id])
+      );
+      // Override folder_id on each project with the user's personal assignment
+      setProjects(projectList.map((p) => ({ ...p, folder_id: folderMap.has(p.id) ? folderMap.get(p.id) ?? null : null })));
     } catch (err) {
       console.error('Unexpected error fetching projects:', err);
       setProjects([]);
@@ -188,6 +229,117 @@ function DashboardContent() {
     }
   };
 
+  const fetchFolders = async () => {
+    if (!user?.id) return;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('dashboard_folders')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('sort_order')
+      .order('name');
+    const folderData = data || [];
+    setFolders(folderData);
+    // Init collapsed state from DB-persisted is_collapsed flag
+    setCollapsedFolders(new Set(folderData.filter(f => f.is_collapsed).map(f => f.id)));
+  };
+
+  const createFolder = async () => {
+    const name = newFolderName.trim();
+    if (!name || !user?.id) return;
+    const supabase = createClient();
+    const COLORS = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6','#06b6d4'];
+    const color = COLORS[folders.length % COLORS.length];
+    await supabase.from('dashboard_folders').insert({ user_id: user.id, name, color, sort_order: folders.length });
+    setNewFolderName('');
+    setShowNewFolderInput(false);
+    fetchFolders();
+  };
+
+  const renameFolder = async (id: string, name: string) => {
+    if (!name.trim()) return;
+    const supabase = createClient();
+    await supabase.from('dashboard_folders').update({ name: name.trim() }).eq('id', id);
+    setRenamingFolderId(null);
+    fetchFolders();
+  };
+
+  const deleteFolder = async (id: string) => {
+    if (!confirm('Delete this folder? Projects inside will be unfiled.')) return;
+    const supabase = createClient();
+    // Deleting the folder row triggers ON DELETE SET NULL in user_project_folder_assignments,
+    // so assignments are automatically cleared — no need to touch projects directly.
+    await supabase.from('dashboard_folders').delete().eq('id', id);
+    fetchFolders();
+    fetchProjects(); // re-syncs folder_id from junction table
+  };
+
+  const moveToFolder = async (projectId: string, folderId: string | null) => {
+    if (!user?.id) return;
+    const supabase = createClient();
+    if (folderId === null) {
+      // Unfile: remove junction row
+      await supabase
+        .from('user_project_folder_assignments')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('project_id', projectId);
+    } else {
+      // Assign to folder: upsert junction row
+      await supabase
+        .from('user_project_folder_assignments')
+        .upsert(
+          { user_id: user.id, project_id: projectId, folder_id: folderId },
+          { onConflict: 'user_id,project_id' }
+        );
+    }
+    setMoveMenuProjectId(null);
+    // Optimistic local update
+    setProjects((prev) => prev.map((p) => p.id === projectId ? { ...p, folder_id: folderId } : p));
+  };
+
+  const toggleFolder = async (id: string) => {
+    const newIsCollapsed = !collapsedFolders.has(id);
+    setCollapsedFolders(prev => {
+      const next = new Set(prev);
+      newIsCollapsed ? next.add(id) : next.delete(id);
+      return next;
+    });
+    const supabase = createClient();
+    await supabase.from('dashboard_folders').update({ is_collapsed: newIsCollapsed }).eq('id', id);
+  };
+
+  const reorderFolders = async (draggedId: string, targetId: string) => {
+    if (draggedId === targetId) return;
+    const rest = folders.filter(f => f.id !== draggedId);
+    const dragged = folders.find(f => f.id === draggedId);
+    if (!dragged) return;
+    const targetIdx = rest.findIndex(f => f.id === targetId);
+    const reordered = [...rest.slice(0, targetIdx), dragged, ...rest.slice(targetIdx)];
+    setFolders(reordered.map((f, i) => ({ ...f, sort_order: i })));
+    const supabase = createClient();
+    await Promise.all(reordered.map((f, i) =>
+      supabase.from('dashboard_folders').update({ sort_order: i }).eq('id', f.id)
+    ));
+  };
+
+  const createSubFolder = async (parentId: string) => {
+    const name = newSubFolderName.trim();
+    if (!name || !user?.id) return;
+    const supabase = createClient();
+    const COLORS = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6','#06b6d4'];
+    const color = COLORS[folders.length % COLORS.length];
+    await supabase.from('dashboard_folders').insert({ user_id: user.id, name, color, sort_order: folders.length, parent_id: parentId });
+    setNewSubFolderName('');
+    setNewSubFolderParentId(null);
+    fetchFolders();
+  };
+
+  const toggleViewMode = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    localStorage.setItem('dashboard-view-mode', mode);
+  };
+
   const acceptInvitation = async (invitationId: string) => {
     const supabase = createClient();
     const { error } = await supabase.rpc('accept_company_invitation', { p_invitation_id: invitationId });
@@ -231,6 +383,9 @@ function DashboardContent() {
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
               Blog
+            </Link>
+            <Link href="/about" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
+              About
             </Link>
             {user?.show_community !== false && canUseFeature('community') && (
               <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
@@ -446,12 +601,82 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* Personal Projects */}
+        {/* Recently Viewed Strip */}
+        {recentProjects.length >= 2 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider">Recently Viewed</h3>
+              <button onClick={clearRecent} className="text-[10px] text-surface-600 hover:text-surface-400 transition-colors">Clear</button>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+              {recentProjects.map(rp => (
+                <Link
+                  key={rp.id}
+                  href={`/projects/${rp.id}`}
+                  className="flex-shrink-0 group flex items-center gap-2.5 bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 hover:border-surface-600 rounded-xl px-3 py-2.5 transition-all"
+                >
+                  {rp.cover_url ? (
+                    <img src={rp.cover_url} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center shrink-0">
+                      <span className="text-sm font-bold text-surface-400">{(rp.title || '?')[0].toUpperCase()}</span>
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-surface-200 group-hover:text-white truncate max-w-[120px] transition-colors">{rp.title}</p>
+                    <p className="text-[10px] text-surface-500">{timeAgo(rp.viewed_at)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* My Projects — Folder-organised */}
         <div className="mb-4 flex items-center gap-2">
           <svg className="w-5 h-5 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
           <h3 className="text-lg font-semibold text-white">My Projects</h3>
           <span className="text-xs text-surface-500">({filteredProjects.length}{searchQuery || filterStatus !== 'all' ? ` of ${projects.length}` : ''})</span>
+          <div className="ml-auto flex items-center gap-3">
+            {/* Grid / List toggle */}
+            <div className="flex items-center gap-0.5 bg-surface-800 rounded-lg p-0.5 border border-surface-700">
+              <button
+                onClick={() => toggleViewMode('grid')}
+                title="Grid view"
+                className={cn('p-1.5 rounded transition-colors', viewMode === 'grid' ? 'bg-[#FF5F1F] text-white' : 'text-surface-500 hover:text-surface-300')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+              </button>
+              <button
+                onClick={() => toggleViewMode('list')}
+                title="List view"
+                className={cn('p-1.5 rounded transition-colors', viewMode === 'list' ? 'bg-[#FF5F1F] text-white' : 'text-surface-500 hover:text-surface-300')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+              </button>
+            </div>
+            {showNewFolderInput ? (
+              <div className="flex items-center gap-1">
+                <input
+                  autoFocus
+                  value={newFolderName}
+                  onChange={e => setNewFolderName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setShowNewFolderInput(false); setNewFolderName(''); } }}
+                  placeholder="Folder name…"
+                  className="w-36 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
+                />
+                <button onClick={createFolder} className="px-2 py-1 text-xs bg-[#FF5F1F] text-white rounded hover:bg-[#E54E15]">Add</button>
+                <button onClick={() => { setShowNewFolderInput(false); setNewFolderName(''); }} className="px-2 py-1 text-xs text-surface-500 hover:text-white">✕</button>
+              </div>
+            ) : (
+              <button onClick={() => setShowNewFolderInput(true)} className="flex items-center gap-1.5 text-xs text-surface-500 hover:text-surface-300 transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                New Folder
+              </button>
+            )}
+          </div>
         </div>
+
         {filteredProjects.length === 0 && (searchQuery || filterStatus !== 'all') ? (
           <div className="text-center py-12 text-surface-500 text-sm mb-8">
             No projects match your filters.{' '}
@@ -476,52 +701,251 @@ function DashboardContent() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <Link key={project.id} href={`/projects/${project.id}`}>
-                <Card hover className="overflow-hidden group">
-                  {/* Cover */}
-                  <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
-                    {project.cover_url ? (
-                      <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <>
+            {/* ── Folders ── */}
+            {folders.filter(f => !f.parent_id).map(folder => {
+              const folderProjects = filteredProjects.filter(p => p.folder_id === folder.id);
+              const isCollapsed = collapsedFolders.has(folder.id);
+              const isRenaming = renamingFolderId === folder.id;
+              const isDragOver = dragOverTarget === folder.id;
+              const isFolderDragOver = dragOverFolderId === folder.id;
+              const childFolders = folders.filter(f => f.parent_id === folder.id);
+              return (
+                <div
+                  key={folder.id}
+                  className={cn('mb-6 rounded-xl transition-all duration-150', isDragOver && 'ring-2 ring-offset-2 ring-offset-[#070710]')}
+                  style={isDragOver && folder.color ? { '--tw-ring-color': folder.color } as React.CSSProperties : undefined}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer.types.includes('folderid')) setDragOverFolderId(folder.id);
+                    else setDragOverTarget(folder.id);
+                  }}
+                  onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setDragOverTarget(null); setDragOverFolderId(null); } }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const pid = e.dataTransfer.getData('projectId');
+                    const fid = e.dataTransfer.getData('folderId');
+                    if (pid) moveToFolder(pid, folder.id);
+                    if (fid) reorderFolders(fid, folder.id);
+                    setDragOverTarget(null);
+                    setDragOverFolderId(null);
+                    setDraggingProjectId(null);
+                    setDraggingFolderId(null);
+                  }}
+                >
+                  {/* Folder-reorder drop indicator */}
+                  {isFolderDragOver && (
+                    <div className="mb-2 h-0.5 rounded-full bg-[#FF5F1F]/70 transition-all" />
+                  )}
+                  {/* Drop zone highlight bar (for projects) */}
+                  {isDragOver && !isFolderDragOver && (
+                    <div className="mb-2 rounded-lg border-2 border-dashed py-2 px-4 text-xs font-semibold text-center transition-all" style={{ borderColor: folder.color, color: folder.color, backgroundColor: folder.color + '15' }}>
+                      Drop into {folder.name}
+                    </div>
+                  )}
+                  <div className={cn('flex items-center gap-2 mb-3 group/folder rounded-lg px-1 transition-colors', draggingFolderId === folder.id && 'opacity-40')}>
+                    {/* Drag handle for folder reordering */}
+                    <div
+                      draggable
+                      onDragStart={e => { e.dataTransfer.setData('folderId', folder.id); e.dataTransfer.effectAllowed = 'move'; setDraggingFolderId(folder.id); }}
+                      onDragEnd={() => setDraggingFolderId(null)}
+                      className="cursor-grab active:cursor-grabbing text-surface-700 hover:text-surface-400 opacity-0 group-hover/folder:opacity-100 transition-opacity"
+                      title="Drag to reorder folder"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a1 1 0 000 2h6a1 1 0 100-2H7zM7 8a1 1 0 000 2h6a1 1 0 100-2H7zM7 14a1 1 0 000 2h6a1 1 0 100-2H7z"/></svg>
+                    </div>
+                    {/* Colour swatch */}
+                    <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: folder.color }} />
+                    {/* Emoji */}
+                    {folder.emoji && <span className="text-sm">{folder.emoji}</span>}
+                    {/* Name / rename */}
+                    {isRenaming ? (
+                      <input
+                        autoFocus
+                        value={renamingName}
+                        onChange={e => setRenamingName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') renameFolder(folder.id, renamingName); if (e.key === 'Escape') setRenamingFolderId(null); }}
+                        onBlur={() => renameFolder(folder.id, renamingName)}
+                        className="text-sm font-semibold bg-surface-800 border border-surface-600 rounded px-2 py-0.5 text-white focus:outline-none w-44"
+                      />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
-                          {project.title[0]}
-                        </span>
-                      </div>
+                      <button
+                        onClick={() => toggleFolder(folder.id)}
+                        className="text-sm font-semibold text-white/80 hover:text-white flex items-center gap-1.5"
+                      >
+                        <svg className={cn('w-3.5 h-3.5 text-surface-500 transition-transform', isCollapsed && '-rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                        {folder.name}
+                      </button>
                     )}
-                    <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
-                    <div className="absolute top-2.5 right-2.5">
-                      <Badge variant={statusColors[project.status]}>
-                        {project.status.replace('_', ' ')}
-                      </Badge>
+                    <span className="text-[10px] text-surface-600">({folderProjects.length + childFolders.reduce((acc, c) => acc + filteredProjects.filter(p => p.folder_id === c.id).length, 0)})</span>
+                    {/* Folder actions */}
+                    <div className="ml-1 flex items-center gap-1 opacity-0 group-hover/folder:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => { setRenamingFolderId(folder.id); setRenamingName(folder.name); }}
+                        className="text-[10px] text-surface-500 hover:text-white px-1.5 py-0.5 rounded hover:bg-surface-800"
+                      >Rename</button>
+                      <button
+                        onClick={() => { setNewSubFolderParentId(newSubFolderParentId === folder.id ? null : folder.id); setNewSubFolderName(''); }}
+                        className="text-[10px] text-surface-500 hover:text-white px-1.5 py-0.5 rounded hover:bg-surface-800"
+                        title="Add subfolder"
+                      >+ Sub</button>
+                      <button
+                        onClick={() => deleteFolder(folder.id)}
+                        className="text-[10px] text-surface-600 hover:text-red-400 px-1.5 py-0.5 rounded hover:bg-surface-800"
+                      >Delete</button>
                     </div>
                   </div>
+                  {/* Subfolder creation input */}
+                  {newSubFolderParentId === folder.id && (
+                    <div className="flex items-center gap-1 mb-3 ml-7">
+                      <input
+                        autoFocus
+                        value={newSubFolderName}
+                        onChange={e => setNewSubFolderName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') createSubFolder(folder.id); if (e.key === 'Escape') { setNewSubFolderParentId(null); setNewSubFolderName(''); } }}
+                        placeholder="Subfolder name…"
+                        className="w-36 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
+                      />
+                      <button onClick={() => createSubFolder(folder.id)} className="px-2 py-1 text-xs bg-[#FF5F1F] text-white rounded hover:bg-[#E54E15]">Add</button>
+                      <button onClick={() => { setNewSubFolderParentId(null); setNewSubFolderName(''); }} className="px-2 py-1 text-xs text-surface-500 hover:text-white">✕</button>
+                    </div>
+                  )}
+                  {!isCollapsed && (
+                    <>
+                      {folderProjects.length === 0 && childFolders.length === 0 ? (
+                        <div className={cn('border border-dashed rounded-xl p-6 text-center text-xs transition-colors', isDragOver ? 'border-current bg-current/10' : 'border-surface-800 text-surface-600')} style={isDragOver ? { borderColor: folder.color, color: folder.color } : {}}>
+                          {isDragOver ? `Drop here →` : 'No projects in this folder yet.'}
+                        </div>
+                      ) : (
+                        folderProjects.length > 0 && (
+                          viewMode === 'list' ? (
+                            <div className="flex flex-col gap-2">
+                              {folderProjects.map(project => (
+                                <ProjectCard key={project.id} project={project} folders={folders} moveMenuProjectId={moveMenuProjectId} setMoveMenuProjectId={setMoveMenuProjectId} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} />
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                              {folderProjects.map(project => (
+                                <ProjectCard key={project.id} project={project} folders={folders} moveMenuProjectId={moveMenuProjectId} setMoveMenuProjectId={setMoveMenuProjectId} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} />
+                              ))}
+                            </div>
+                          )
+                        )
+                      )}
+                      {/* ── Subfolders ── */}
+                      {childFolders.map(child => {
+                        const childProjects = filteredProjects.filter(p => p.folder_id === child.id);
+                        const childCollapsed = collapsedFolders.has(child.id);
+                        const isDragOverChild = dragOverTarget === child.id;
+                        const isRenamingChild = renamingFolderId === child.id;
+                        return (
+                          <div key={child.id}
+                            className="mt-4 ml-5 pl-4 border-l-2"
+                            style={{ borderColor: child.color + '50' }}
+                            onDragOver={e => { e.preventDefault(); setDragOverTarget(child.id); }}
+                            onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverTarget(null); }}
+                            onDrop={e => { e.preventDefault(); const pid = e.dataTransfer.getData('projectId'); if (pid) moveToFolder(pid, child.id); setDragOverTarget(null); setDraggingProjectId(null); }}
+                          >
+                            <div className="flex items-center gap-2 mb-2 group/child">
+                              <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: child.color }} />
+                              {child.emoji && <span className="text-xs">{child.emoji}</span>}
+                              {isRenamingChild ? (
+                                <input
+                                  autoFocus
+                                  value={renamingName}
+                                  onChange={e => setRenamingName(e.target.value)}
+                                  onKeyDown={e => { if (e.key === 'Enter') renameFolder(child.id, renamingName); if (e.key === 'Escape') setRenamingFolderId(null); }}
+                                  onBlur={() => renameFolder(child.id, renamingName)}
+                                  className="text-xs font-semibold bg-surface-800 border border-surface-600 rounded px-2 py-0.5 text-white focus:outline-none w-36"
+                                />
+                              ) : (
+                                <button onClick={() => toggleFolder(child.id)} className="text-xs font-semibold text-white/70 hover:text-white flex items-center gap-1">
+                                  <svg className={cn('w-3 h-3 text-surface-500 transition-transform', childCollapsed && '-rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                  {child.name}
+                                </button>
+                              )}
+                              <span className="text-[10px] text-surface-700">({childProjects.length})</span>
+                              <div className="ml-1 flex items-center gap-1 opacity-0 group-hover/child:opacity-100 transition-opacity">
+                                <button onClick={() => { setRenamingFolderId(child.id); setRenamingName(child.name); }} className="text-[10px] text-surface-500 hover:text-white px-1 py-0.5 rounded hover:bg-surface-800">Rename</button>
+                                <button onClick={() => deleteFolder(child.id)} className="text-[10px] text-surface-600 hover:text-red-400 px-1 py-0.5 rounded hover:bg-surface-800">Delete</button>
+                              </div>
+                            </div>
+                            {!childCollapsed && (
+                              childProjects.length === 0 ? (
+                                <div className={cn('border border-dashed rounded-lg p-4 text-center text-xs', isDragOverChild ? 'border-current' : 'border-surface-800 text-surface-700')} style={isDragOverChild ? { borderColor: child.color, color: child.color } : {}}>
+                                  {isDragOverChild ? 'Drop here →' : 'Empty subfolder'}
+                                </div>
+                              ) : viewMode === 'list' ? (
+                                <div className="flex flex-col gap-2">
+                                  {childProjects.map(project => (
+                                    <ProjectCard key={project.id} project={project} folders={folders} moveMenuProjectId={moveMenuProjectId} setMoveMenuProjectId={setMoveMenuProjectId} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} />
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  {childProjects.map(project => (
+                                    <ProjectCard key={project.id} project={project} folders={folders} moveMenuProjectId={moveMenuProjectId} setMoveMenuProjectId={setMoveMenuProjectId} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} />
+                                  ))}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                </div>
+              );
+            })}
 
-                  <div className="p-4">
-                    <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
-                      {project.title}
-                    </h3>
-                    {project.logline && (
-                      <p className="mt-1 text-xs text-surface-400 line-clamp-2 leading-relaxed">{project.logline}</p>
-                    )}
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="flex gap-1">
-                        {project.genre?.slice(0, 2).map((g) => (
-                          <Badge key={g} size="sm">{g}</Badge>
-                        ))}
-                        {(project.genre?.length || 0) > 2 && (
-                          <span className="text-[10px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-surface-600">{timeAgo(project.updated_at)}</span>
+            {/* ── Unfiled projects ── */}
+            {(() => {
+              const unfiled = filteredProjects.filter(p => !p.folder_id);
+              const isDragOver = dragOverTarget === 'unfiled';
+              if (unfiled.length === 0 && folders.length > 0 && !isDragOver) return null;
+              return (
+                <div
+                  className={cn('mt-2 rounded-xl transition-all duration-150', isDragOver && 'ring-2 ring-surface-600 ring-offset-2 ring-offset-[#070710]')}
+                  onDragOver={e => { e.preventDefault(); setDragOverTarget('unfiled'); }}
+                  onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverTarget(null); }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const pid = e.dataTransfer.getData('projectId');
+                    if (pid) moveToFolder(pid, null);
+                    setDragOverTarget(null);
+                    setDraggingProjectId(null);
+                  }}
+                >
+                  {folders.length > 0 && (
+                    <div className={cn('flex items-center gap-2 mb-3 text-sm font-semibold transition-colors', isDragOver ? 'text-white' : 'text-surface-500')}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                      Unfiled
+                      <span className="text-[10px] text-surface-700">({unfiled.length})</span>
+                      {isDragOver && <span className="text-xs text-surface-400 ml-1">← drop to unfile</span>}
                     </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                  )}
+                  {isDragOver && unfiled.length === 0 ? (
+                    <div className="border border-dashed border-surface-600 rounded-xl p-6 text-center text-xs text-surface-400">
+                      Drop here to remove from folder
+                    </div>
+                  ) : viewMode === 'list' ? (
+                    <div className="flex flex-col gap-2">
+                      {unfiled.map(project => (
+                        <ProjectCard key={project.id} project={project} folders={folders} moveMenuProjectId={moveMenuProjectId} setMoveMenuProjectId={setMoveMenuProjectId} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {unfiled.map(project => (
+                        <ProjectCard key={project.id} project={project} folders={folders} moveMenuProjectId={moveMenuProjectId} setMoveMenuProjectId={setMoveMenuProjectId} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </>
         )}
 
         {/* Company Project Sections */}
@@ -667,6 +1091,200 @@ function DashboardContent() {
   );
 }
 
+// ─── Project Card ──────────────────────────────────────────
+function ProjectCard({
+  project, folders, moveMenuProjectId, setMoveMenuProjectId, moveToFolder, statusColors,
+  draggingProjectId, setDraggingProjectId, viewMode,
+}: {
+  project: Project;
+  folders: DashboardFolder[];
+  moveMenuProjectId: string | null;
+  setMoveMenuProjectId: (id: string | null) => void;
+  moveToFolder: (projectId: string, folderId: string | null) => void;
+  statusColors: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'>;
+  draggingProjectId: string | null;
+  setDraggingProjectId: (id: string | null) => void;
+  viewMode?: 'grid' | 'list';
+}) {
+  const isMenuOpen = moveMenuProjectId === project.id;
+  const isDragging = draggingProjectId === project.id;
+  const currentFolder = folders.find(f => f.id === project.folder_id);
+
+  // List row view
+  if (viewMode === 'list') {
+    return (
+      <div
+        className={cn('relative group transition-all duration-150', isDragging && 'opacity-40 cursor-grabbing')}
+        draggable
+        onDragStart={e => { e.dataTransfer.setData('projectId', project.id); e.dataTransfer.effectAllowed = 'move'; setDraggingProjectId(project.id); }}
+        onDragEnd={() => setDraggingProjectId(null)}
+      >
+        <Link href={`/projects/${project.id}`}>
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-surface-800 bg-surface-900/50 hover:border-surface-700 hover:bg-surface-800/50 transition-all group">
+            {/* Thumbnail */}
+            <div className="w-10 h-10 rounded-lg bg-surface-800 overflow-hidden flex-shrink-0">
+              {project.cover_url ? (
+                <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-lg font-bold text-surface-600">{project.title[0]}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">{project.title}</p>
+              {project.logline && <p className="text-xs text-surface-500 truncate">{project.logline}</p>}
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {project.genre?.slice(0, 1).map((g) => <Badge key={g} size="sm">{g}</Badge>)}
+              <Badge variant={statusColors[project.status]} size="sm">{project.status.replace('_', ' ')}</Badge>
+              <span className="text-[10px] text-surface-600 hidden sm:inline">{timeAgo(project.updated_at)}</span>
+            </div>
+          </div>
+        </Link>
+        {/* Move folder button */}
+        {folders.length > 0 && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10" onClick={e => e.preventDefault()}>
+            <button
+              onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveMenuProjectId(isMenuOpen ? null : project.id); }}
+              className="opacity-0 group-hover:opacity-100 p-1 rounded bg-black/60 text-white hover:bg-black/80 transition-all"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+            </button>
+            {isMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMoveMenuProjectId(null)} />
+                <div className="absolute right-0 top-6 z-50 w-44 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 text-xs">
+                  <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">Move to folder</div>
+                  {project.folder_id && (
+                    <button onClick={() => moveToFolder(project.id, null)} className="flex items-center gap-2 w-full px-3 py-1.5 text-surface-400 hover:bg-surface-800 hover:text-white">
+                      <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      Remove from folder
+                    </button>
+                  )}
+                  {folders.map(f => (
+                    <button key={f.id} onClick={() => moveToFolder(project.id, f.id)} className={cn('flex items-center gap-2 w-full px-3 py-1.5 hover:bg-surface-800 transition-colors', project.folder_id === f.id ? 'text-white' : 'text-surface-300 hover:text-white')}>
+                      <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: f.color }} />
+                      {f.emoji && <span>{f.emoji}</span>}
+                      <span className="truncate">{f.name}</span>
+                      {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-[#FF5F1F] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn('relative group transition-all duration-150', isDragging && 'opacity-40 scale-95 cursor-grabbing')}
+      draggable
+      onDragStart={e => {
+        e.dataTransfer.setData('projectId', project.id);
+        e.dataTransfer.effectAllowed = 'move';
+        setDraggingProjectId(project.id);
+      }}
+      onDragEnd={() => setDraggingProjectId(null)}
+    >
+      <Link href={`/projects/${project.id}`}>
+        <Card hover className="overflow-hidden group">
+          <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
+            {project.cover_url ? (
+              <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
+                  {project.title[0]}
+                </span>
+              </div>
+            )}
+            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
+            <div className="absolute top-2.5 right-2.5">
+              <Badge variant={statusColors[project.status]}>
+                {project.status.replace('_', ' ')}
+              </Badge>
+            </div>
+            {currentFolder && (
+              <div className="absolute top-2.5 left-2.5">
+                <span className="text-[9px] font-bold text-white/80 px-1.5 py-0.5 rounded" style={{ backgroundColor: currentFolder.color + 'cc' }}>
+                  {currentFolder.emoji ? `${currentFolder.emoji} ` : ''}{currentFolder.name}
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="p-4">
+            <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
+              {project.title}
+            </h3>
+            {project.logline && (
+              <p className="mt-1 text-xs text-surface-400 line-clamp-2 leading-relaxed">{project.logline}</p>
+            )}
+            <div className="mt-3 flex items-center justify-between">
+              <div className="flex gap-1">
+                {project.genre?.slice(0, 2).map((g) => (
+                  <Badge key={g} size="sm">{g}</Badge>
+                ))}
+                {(project.genre?.length || 0) > 2 && (
+                  <span className="text-[10px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
+                )}
+              </div>
+              <span className="text-[10px] text-surface-600">{timeAgo(project.updated_at)}</span>
+            </div>
+          </div>
+        </Card>
+      </Link>
+
+      {/* Move to folder button — shows on hover */}
+      {folders.length > 0 && (
+        <div className="absolute top-2.5 left-2.5 z-10" onClick={e => e.preventDefault()}>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveMenuProjectId(isMenuOpen ? null : project.id); }}
+            className={cn(
+              'p-1 rounded text-[10px] transition-all',
+              currentFolder ? 'opacity-0 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-100',
+              'bg-black/60 text-white hover:bg-black/80',
+            )}
+            title="Move to folder"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+          </button>
+
+          {isMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMoveMenuProjectId(null)} />
+              <div className="absolute top-6 left-0 z-50 w-44 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 text-xs">
+                <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">Move to folder</div>
+                {project.folder_id && (
+                  <button onClick={() => moveToFolder(project.id, null)} className="flex items-center gap-2 w-full px-3 py-1.5 text-surface-400 hover:bg-surface-800 hover:text-white">
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    Remove from folder
+                  </button>
+                )}
+                {folders.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => moveToFolder(project.id, f.id)}
+                    className={cn('flex items-center gap-2 w-full px-3 py-1.5 hover:bg-surface-800 transition-colors', project.folder_id === f.id ? 'text-white' : 'text-surface-300 hover:text-white')}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: f.color }} />
+                    {f.emoji && <span>{f.emoji}</span>}
+                    <span className="truncate">{f.name}</span>
+                    {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-[#FF5F1F] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function NewProjectModal({
   isOpen,
   onClose,
@@ -693,10 +1311,33 @@ function NewProjectModal({
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [seasonNumber, setSeasonNumber] = useState('1');
   const [episodeCount, setEpisodeCount] = useState('');
+  const [templates, setTemplates] = useState<Array<{ id: string; name: string; description?: string; project_type: string; script_type?: string; genre?: string; format?: string; structure_snapshot?: any }>>([]);
+
+  useEffect(() => {
+    if (!isOpen || !userId) return;
+    const supabase = createClient();
+    supabase
+      .from('project_templates')
+      .select('id, name, description, project_type, script_type, genre, format, structure_snapshot')
+      .or(`user_id.eq.${userId},is_public.eq.true`)
+      .order('use_count', { ascending: false })
+      .limit(6)
+      .then(({ data }) => setTemplates(data || []));
+  }, [isOpen, userId]);
+
+  const applyTemplate = (t: typeof templates[0]) => {
+    if (t.project_type) setProjectType(t.project_type as ProjectType);
+    if (t.script_type) setScriptType(t.script_type as ScriptType);
+    if (t.genre) setGenre([t.genre]);
+    if (t.format) setFormat(t.format);
+    setStep(1);
+  };
 
   // Determine if this is a content creator project
   const isContentCreator = ['youtube', 'tiktok'].includes(scriptType);
   const isTvProduction = projectType === 'tv_production';
+  const isAudioOrPodcast = scriptType === 'podcast' || scriptType === 'audio_drama';
+  const isAudioDrama = (isAudioOrPodcast && ['bbc_radio', 'us_radio', 'starc_standard'].includes(format)) || projectType === 'audio_drama';
   const isEpisodic = scriptType === 'episodic';
 
   // Only companies where user has create permissions
@@ -718,9 +1359,10 @@ function NewProjectModal({
       // Set project type based on script type
       let finalProjectType: ProjectType = projectType;
       if (projectType === 'tv_production') finalProjectType = 'tv_production';
+      else if (isAudioOrPodcast && ['bbc_radio', 'us_radio', 'starc_standard'].includes(format)) finalProjectType = 'audio_drama';
+      else if (isAudioOrPodcast) finalProjectType = 'podcast';
       else if (scriptType === 'youtube') finalProjectType = 'youtube';
       else if (scriptType === 'tiktok') finalProjectType = 'tiktok';
-      else if (scriptType === 'podcast') finalProjectType = 'podcast';
       else finalProjectType = 'film';
       
       const { data, error: insertError } = await supabase
@@ -771,61 +1413,91 @@ function NewProjectModal({
     <Modal isOpen={isOpen} onClose={onClose} title={step === 0 ? 'What are you creating?' : 'Project Details'} size="lg">
       {step === 0 ? (
         <div className="space-y-6">
-          <p className="text-sm text-surface-400">Choose the type of project you want to create.</p>
-          
-          {/* TV Production — Featured Card */}
-          <button
-            type="button"
-            onClick={() => {
-              setProjectType('tv_production');
-              setScriptType('screenplay');
-              setStep(1);
-            }}
-            className={`w-full text-left p-5 rounded-xl border-2 transition-all group ${
-              projectType === 'tv_production'
-                ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
-                : 'border-surface-700 bg-gradient-to-br from-surface-800/80 to-surface-900/80 hover:border-amber-500/50 hover:bg-surface-800'
-            }`}
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /><circle cx="19" cy="5" r="3" strokeWidth={1.5} fill="none" stroke="currentColor" className="text-red-400" /><circle cx="19" cy="5" r="1" fill="currentColor" className="text-red-400 animate-pulse" /></svg>
+          {/* Templates — shown if user has any */}
+          {templates.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">Start from template</p>
+              <div className="flex flex-wrap gap-2">
+                {templates.map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => applyTemplate(t)}
+                    className="flex items-center gap-2 px-3 py-2 bg-surface-800 hover:bg-surface-700 border border-surface-700 hover:border-[#FF5F1F]/40 rounded-lg text-left transition-all"
+                  >
+                    <span className="text-sm">📋</span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-surface-200 truncate max-w-[120px]">{t.name}</p>
+                      {t.description && <p className="text-[10px] text-surface-500 truncate max-w-[120px]">{t.description}</p>}
+                    </div>
+                  </button>
+                ))}
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-amber-400">TV Production</h3>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold uppercase tracking-wider">Pro</span>
-                </div>
-                <p className="mt-0.5 text-xs text-surface-400">Professional broadcast & studio production — Rundown, Dagsplan, Autocue, Call Sheets, Crew Management</p>
-              </div>
+              <div className="mt-3 border-t border-surface-800" />
             </div>
-          </button>
-          
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-surface-800" />
-            <span className="text-[10px] text-surface-600 uppercase tracking-wider font-medium">or choose a script type</span>
-            <div className="flex-1 h-px bg-surface-800" />
-          </div>
+          )}
+
+          <p className="text-sm text-surface-400">Choose the type of project you want to create.</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+
+            {/* TV Production — amber accent grid item */}
+            <button
+              type="button"
+              onClick={() => {
+                setProjectType('tv_production');
+                setScriptType('screenplay');
+              }}
+              className={`text-left p-4 rounded-xl border-2 transition-all ${
+                projectType === 'tv_production'
+                  ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
+                  : 'border-surface-700 bg-surface-800/50 hover:border-amber-500/30 hover:bg-surface-800'
+              }`}
+            >
+              <div className={`transition-colors ${projectType === 'tv_production' ? 'text-amber-400' : 'text-surface-400'}`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <h3 className={`text-sm font-semibold ${projectType === 'tv_production' ? 'text-amber-400' : 'text-white'}`}>TV Production</h3>
+                <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold uppercase tracking-wider">Pro</span>
+              </div>
+              <p className="mt-0.5 text-[10px] text-surface-500">Broadcast & studio — rundown, autocue, crew</p>
+            </button>
+
+            {/* Standard script-type options */}
             {SCRIPT_TYPE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => {
                   setScriptType(opt.value);
-                  // Auto-set format for episodic
-                  if (opt.value === 'episodic') setFormat('series');
+                  setProjectType('film');
+                  if (opt.value === 'podcast') setFormat('starc_standard');
+                  else if (opt.value === 'episodic') setFormat('series');
+                  else setFormat('feature');
                 }}
                 className={`text-left p-4 rounded-xl border-2 transition-all ${
-                  scriptType === opt.value
-                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
+                  scriptType === opt.value && projectType !== 'tv_production'
+                    ? opt.value === 'podcast'
+                      ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/30'
+                      : 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
                     : 'border-surface-700 bg-surface-800/50 hover:border-surface-600'
                 }`}
               >
-                <Icon name={opt.icon} size="md" className={scriptType === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
-                <h3 className={`mt-1.5 text-sm font-semibold ${scriptType === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>{opt.label}</h3>
+                <Icon
+                  name={opt.icon}
+                  size="md"
+                  className={
+                    scriptType === opt.value && projectType !== 'tv_production'
+                      ? opt.value === 'podcast' ? 'text-violet-400' : 'text-[#FF5F1F]'
+                      : 'text-surface-400'
+                  }
+                />
+                <h3 className={`mt-1.5 text-sm font-semibold ${
+                  scriptType === opt.value && projectType !== 'tv_production'
+                    ? opt.value === 'podcast' ? 'text-violet-400' : 'text-[#FF5F1F]'
+                    : 'text-white'
+                }`}>{opt.label}</h3>
                 <p className="mt-0.5 text-[10px] text-surface-500">{opt.description}</p>
               </button>
             ))}
@@ -843,6 +1515,11 @@ function NewProjectModal({
                 <>
                   <svg className="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
                   <span className="text-amber-400">TV Production</span>
+                </>
+              ) : isAudioOrPodcast ? (
+                <>
+                  <svg className="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                  <span className="text-violet-400">Podcast & Audio Drama</span>
                 </>
               ) : (
                 <>
@@ -899,8 +1576,8 @@ function NewProjectModal({
           )}
 
           <Input
-            label={isTvProduction ? 'Production Name' : isContentCreator ? 'Video Title' : 'Project Title'}
-            placeholder={isTvProduction ? 'Dagsrevyen 24. desember' : isContentCreator ? 'How I Make $10k/Month as a Creator' : 'The Midnight Hour'}
+            label={isTvProduction ? 'Production Name' : isContentCreator ? 'Video Title' : isAudioOrPodcast ? 'Audio Drama Title' : 'Project Title'}
+            placeholder={isTvProduction ? 'Dagsrevyen 24. desember' : isContentCreator ? 'How I Make $10k/Month as a Creator' : isAudioOrPodcast ? 'Dark Waters: Episode 1' : 'The Midnight Hour'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -908,18 +1585,20 @@ function NewProjectModal({
           />
 
           <Textarea
-            label={isTvProduction ? 'Production Description' : isContentCreator ? 'Video Concept' : 'Logline'}
+            label={isTvProduction ? 'Production Description' : isContentCreator ? 'Video Concept' : isAudioOrPodcast ? 'Episode Premise' : 'Logline'}
             placeholder={isTvProduction 
               ? 'Live broadcast from Studio 1, 45 minutes, 3-camera setup...'
               : isContentCreator 
               ? 'In this video, I break down my exact strategies for...'
+              : isAudioOrPodcast
+              ? 'A detective investigates a string of disappearances in a fog-bound coastal town...'
               : 'A hard-boiled detective uncovers a conspiracy that reaches the highest levels of power...'}
             value={logline}
             onChange={(e) => setLogline(e.target.value)}
             rows={3}
           />
 
-          {!isContentCreator && !isTvProduction && (
+          {!isContentCreator && !isTvProduction && !isAudioOrPodcast && (
             <>
               <Select
                 label="Format"
@@ -955,6 +1634,51 @@ function NewProjectModal({
                 </div>
               </div>
             </>
+          )}
+
+          {/* Audio Drama / Podcast — format picker + genre */}
+          {isAudioOrPodcast && (
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-surface-300 mb-3">Script Format</label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {AUDIO_DRAMA_FORMAT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setFormat(opt.value)}
+                      className={`text-left p-3.5 rounded-xl border-2 transition-all ${
+                        format === opt.value
+                          ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/30'
+                          : 'border-surface-700 bg-surface-800/50 hover:border-surface-600'
+                      }`}
+                    >
+                      <h3 className={`text-sm font-semibold ${format === opt.value ? 'text-violet-300' : 'text-white'}`}>{opt.label}</h3>
+                      <p className="mt-0.5 text-[10px] text-surface-500">{opt.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-surface-300">Genre</label>
+                <div className="flex flex-wrap gap-2">
+                  {GENRE_OPTIONS.map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => toggleGenre(g)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        genre.includes(g)
+                          ? 'bg-violet-600 text-white'
+                          : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
 
           {isEpisodic && (
@@ -1015,6 +1739,20 @@ function NewProjectModal({
                 <li className="flex items-center gap-2">
                   <span className="text-amber-400">✓</span> Real-time team chat
                 </li>
+              </ul>
+            </div>
+          )}
+
+          {isAudioDrama && (
+            <div className="bg-gradient-to-br from-violet-500/5 to-surface-800/50 rounded-xl p-4 border border-violet-500/20">
+              <p className="text-sm text-violet-300 mb-3 font-semibold">🎧 Your audio drama workspace includes:</p>
+              <ul className="text-xs text-surface-400 space-y-1.5">
+                <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> Script editor in STARC audio drama format</li>
+                <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> SFX, MUSIC &amp; AMBIENCE cue lines baked-in</li>
+                <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> Sound Design library — manage all cues in one place</li>
+                <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> Voice cast tracker (characters + casting notes)</li>
+                <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> Episode manager for audio drama series</li>
+                <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> Arc planner, ideas &amp; story documents</li>
               </ul>
             </div>
           )}

@@ -255,25 +255,25 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                   {scriptElements.map((element, elIdx: number) => (
                     <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
                       {element.type === 'scene_heading' && (
-                        <p className="font-bold text-white uppercase tracking-wide mt-6">{element.text}</p>
+                        <p className="font-bold text-[#FF5F1F] uppercase tracking-wide mt-6">{element.text}</p>
                       )}
                       {element.type === 'action' && (
-                        <p className="text-surface-300">{element.text}</p>
+                        <p className="text-surface-200">{element.text}</p>
                       )}
                       {element.type === 'character' && (
                         <p className="text-center font-semibold text-white uppercase mt-4">{element.text}</p>
                       )}
                       {element.type === 'dialogue' && (
-                        <p className="text-surface-300 mx-auto max-w-md text-center">{element.text}</p>
+                        <p className="text-surface-100 mx-auto max-w-md text-center">{element.text}</p>
                       )}
                       {element.type === 'parenthetical' && (
-                        <p className="text-surface-500 italic mx-auto max-w-sm text-center">({element.text})</p>
+                        <p className="text-surface-400 italic mx-auto max-w-sm text-center">({element.text})</p>
                       )}
                       {element.type === 'transition' && (
-                        <p className="text-right text-surface-400 uppercase">{element.text}</p>
+                        <p className="text-right text-surface-300 uppercase">{element.text}</p>
                       )}
                       {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && element.text && (
-                        <p className="text-surface-400">{element.text}</p>
+                        <p className="text-surface-300">{element.text}</p>
                       )}
                     </div>
                   ))}
@@ -287,13 +287,13 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                     {Array.isArray(script.content) ? (
                       (script.content as { type?: string; text: string }[]).map((element, elIdx: number) => (
                         <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
-                          {element.type === 'scene_heading' && <p className="font-bold text-white uppercase tracking-wide">{element.text}</p>}
-                          {element.type === 'action' && <p className="text-surface-300">{element.text}</p>}
+                          {element.type === 'scene_heading' && <p className="font-bold text-[#FF5F1F] uppercase tracking-wide mt-6">{element.text}</p>}
+                          {element.type === 'action' && <p className="text-surface-200">{element.text}</p>}
                           {element.type === 'character' && <p className="text-center font-semibold text-white uppercase mt-4">{element.text}</p>}
-                          {element.type === 'dialogue' && <p className="text-surface-300 mx-auto max-w-md text-center">{element.text}</p>}
-                          {element.type === 'parenthetical' && <p className="text-surface-500 italic mx-auto max-w-sm text-center">({element.text})</p>}
-                          {element.type === 'transition' && <p className="text-right text-surface-400 uppercase">{element.text}</p>}
-                          {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && <p className="text-surface-400">{element.text}</p>}
+                          {element.type === 'dialogue' && <p className="text-surface-100 mx-auto max-w-md text-center">{element.text}</p>}
+                          {element.type === 'parenthetical' && <p className="text-surface-400 italic mx-auto max-w-sm text-center">({element.text})</p>}
+                          {element.type === 'transition' && <p className="text-right text-surface-300 uppercase">{element.text}</p>}
+                          {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && <p className="text-surface-300">{element.text}</p>}
                         </div>
                       ))
                     ) : (
@@ -418,6 +418,43 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
             <h3 className="text-lg font-semibold text-white mb-2">No content available</h3>
             <p className="text-surface-400 text-sm">This share link doesn't contain any viewable content yet. The project owner may need to re-create the share link.</p>
           </Card>
+        )}
+
+        {/* License notice */}
+        {share && (
+          <div className="mt-8 pt-6 border-t border-surface-800/60">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                <span className="text-xs text-surface-500">License:</span>
+              </div>
+              {(() => {
+                const lic = (share.branding as any)?.license || 'all-rights-reserved';
+                const labels: Record<string, { label: string; free: boolean }> = {
+                  'all-rights-reserved': { label: 'All Rights Reserved', free: false },
+                  'confidential': { label: 'Confidential — Do Not Distribute', free: false },
+                  'nda': { label: 'Under NDA', free: false },
+                  'wga-registered': { label: 'WGA Registered', free: false },
+                  'cc-by': { label: 'CC BY (Attribution)', free: true },
+                  'cc-by-sa': { label: 'CC BY-SA', free: true },
+                  'cc-by-nc': { label: 'CC BY-NC (NonCommercial)', free: false },
+                  'cc-by-nc-sa': { label: 'CC BY-NC-SA', free: false },
+                  'cc-by-nd': { label: 'CC BY-ND (NoDerivatives)', free: false },
+                  'cc-by-nc-nd': { label: 'CC BY-NC-ND', free: false },
+                  'cc0': { label: 'CC0 / Public Domain', free: true },
+                };
+                const entry = labels[lic] || labels['all-rights-reserved'];
+                return (
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${entry.free ? 'bg-green-900/40 text-green-400 border border-green-800/60' : 'bg-surface-800 text-surface-300 border border-surface-700'}`}>
+                    {entry.label}
+                  </span>
+                );
+              })()}
+              <a href="/licenses" target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline ml-1">
+                What does this mean? →
+              </a>
+            </div>
+          </div>
         )}
 
         {/* Review rating */}

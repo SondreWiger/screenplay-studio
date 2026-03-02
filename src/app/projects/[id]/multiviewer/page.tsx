@@ -203,7 +203,6 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
                     src={src.connection_url}
                     className="w-full h-full border-0 pointer-events-none"
                     title={src.name}
-                    sandbox="allow-scripts allow-same-origin"
                   />
                 ) : (
                   <div className="text-center">

@@ -8,8 +8,14 @@ export type ScriptElementType =
   | 'scene_heading' | 'action' | 'character' | 'dialogue' | 'parenthetical'
   | 'transition' | 'shot' | 'note' | 'page_break' | 'title_page'
   | 'centered' | 'lyrics' | 'synopsis' | 'section'
+  // Act heading — used in Screenplays and Stage Plays
+  | 'act'
   // YouTube/Content Creator elements
-  | 'hook' | 'talking_point' | 'broll_note' | 'cta' | 'sponsor_read' | 'chapter_marker';
+  | 'hook' | 'talking_point' | 'broll_note' | 'cta' | 'sponsor_read' | 'chapter_marker'
+  // Audio Drama elements (BBC Scene, US Radio, STARC Standard)
+  | 'sfx_cue' | 'music_cue' | 'ambience_cue' | 'act_break' | 'announcer' | 'sound_cue'
+  // Musical Theatre / Stage Play elements
+  | 'song_title' | 'lyric' | 'dance_direction' | 'musical_cue' | 'lighting_cue' | 'set_direction';
 export type SceneTime = string; // Accepts any time-of-day value from scripts (DAY, NIGHT, MAGIC HOUR, etc.)
 export type SceneLocationType = 'INT' | 'EXT' | 'INT_EXT' | 'EXT_INT';
 export type RevisionColor = 'white' | 'blue' | 'pink' | 'yellow' | 'green' | 'goldenrod' | 'buff' | 'salmon' | 'cherry' | 'tan';
@@ -38,8 +44,8 @@ export type ChallengePhase = 'upcoming' | 'submissions' | 'voting' | 'reveal_pen
 export type ChallengeDifficulty = 'beginner' | 'intermediate' | 'advanced';
 export type ProductionStatus = 'pending' | 'approved' | 'rejected';
 export type UsageIntent = 'writer' | 'producer' | 'both' | 'student' | 'content_creator';
-export type ScriptType = 'screenplay' | 'stageplay' | 'episodic' | 'sketch' | 'comic' | 'podcast' | 'youtube' | 'tiktok';
-export type ProjectType = 'film' | 'youtube' | 'tiktok' | 'podcast' | 'documentary' | 'educational' | 'livestream' | 'tv_production';
+export type ScriptType = 'screenplay' | 'stageplay' | 'episodic' | 'sketch' | 'comic' | 'podcast' | 'audio_drama' | 'youtube' | 'tiktok';
+export type ProjectType = 'film' | 'youtube' | 'tiktok' | 'podcast' | 'audio_drama' | 'documentary' | 'educational' | 'livestream' | 'tv_production' | 'stage_play';
 export type SponsorSegmentType = 'pre_roll' | 'mid_roll' | 'post_roll' | 'integration';
 export type ContentHookType = 'opening_hook' | 'intro' | 'cta' | 'outro' | 'transition';
 export type BrollStatus = 'needed' | 'found' | 'filmed' | 'edited';
@@ -196,7 +202,7 @@ export interface ExternalShare {
   max_views: number | null;
   view_count: number;
   is_active: boolean;
-  branding: { logo_url?: string; company_name?: string; color?: string };
+  branding: { logo_url?: string; company_name?: string; color?: string; license?: string };
   content_snapshot: {
     project?: { title?: string; logline?: string; genre?: string[]; format?: string; cover_url?: string };
     scripts?: { title?: string; content?: ScriptElement[] | null; updated_at?: string }[];
@@ -333,6 +339,11 @@ export interface Project {
   } | null;
   pro_enabled?: boolean;
   max_team_size?: number;
+  folder_id?: string | null;
+  press_kit_enabled?: boolean;
+  press_kit_password?: string | null;
+  press_kit_tagline?: string | null;
+  press_kit_contact?: string | null;
 }
 
 export type ProductionRole = 'director' | 'producer' | 'dp' | 'ad' | 'pa' | 'gaffer' | 'grip' | 'sound_mixer' | 'boom_op' | 'art_director' | 'wardrobe' | 'makeup' | 'editor' | 'vfx' | 'colorist' | 'composer' | 'actor' | 'extra' | 'script_supervisor' | 'stunt_coordinator' | 'location_manager' | 'craft_services' | 'other' | '';
@@ -363,8 +374,25 @@ export const PRODUCTION_ROLES: { value: ProductionRole; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
-export interface ProjectMember {
+export interface DocumentComment {
   id: string;
+  document_id: string;
+  project_id: string;
+  author_id: string;
+  content: string;
+  char_offset: number | null;
+  line_index: number | null;
+  selected_text: string | null;
+  is_resolved: boolean;
+  mentions: string[];
+  parent_id: string | null;
+  created_at: string;
+  updated_at: string;
+  // joined
+  author?: { display_name?: string | null; avatar_url?: string | null; email?: string | null };
+}
+
+export interface ProjectMember {  id: string;
   project_id: string;
   user_id: string;
   role: UserRole;
@@ -446,9 +474,49 @@ export interface ScriptElement {
   revision_color: RevisionColor;
   is_revised: boolean;
   is_omitted: boolean;
+  scene_status: 'first_draft' | 'revised' | 'locked' | 'cut' | null;
   metadata: Record<string, unknown>;
   created_by: string | null;
   last_edited_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// Development Tools Types
+// ============================================================
+
+export type SceneStatus = 'first_draft' | 'revised' | 'locked' | 'cut';
+export type NotesRoundStatus = 'open' | 'in_progress' | 'closed';
+export type NoteCategory = 'story' | 'character' | 'dialogue' | 'structure' | 'format' | 'general';
+export type NoteStatus = 'open' | 'addressed' | 'deferred' | 'rejected';
+
+export interface ScriptNotesRound {
+  id: string;
+  project_id: string;
+  script_id: string | null;
+  title: string;
+  status: NotesRoundStatus;
+  round_number: number;
+  notes_from: string | null;
+  due_date: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  notes?: ScriptNote[];
+}
+
+export interface ScriptNote {
+  id: string;
+  round_id: string;
+  project_id: string;
+  category: NoteCategory;
+  content: string;
+  scene_ref: string | null;
+  page_ref: string | null;
+  status: NoteStatus;
+  assigned_to: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -1284,6 +1352,19 @@ export interface ProjectWithMembers extends Project {
 
 export type DocumentType = 'plain_text' | 'notes' | 'outline' | 'treatment' | 'research';
 
+export interface DashboardFolder {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  emoji: string | null;
+  sort_order: number;
+  is_collapsed: boolean;
+  parent_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ProjectFolder {
   id: string;
   project_id: string;
@@ -1346,6 +1427,7 @@ export const ELEMENT_LABELS: Record<ScriptElementType, string> = {
   lyrics: 'Lyrics',
   synopsis: 'Synopsis',
   section: 'Section',
+  act: 'Act',
   // YouTube/Content Creator elements
   hook: 'Hook',
   talking_point: 'Talking Point',
@@ -1353,6 +1435,20 @@ export const ELEMENT_LABELS: Record<ScriptElementType, string> = {
   cta: 'CTA',
   sponsor_read: 'Sponsor Read',
   chapter_marker: 'Chapter',
+  // Audio Drama elements
+  sfx_cue: 'SFX Cue',
+  music_cue: 'Music Cue',
+  ambience_cue: 'Ambience Cue',
+  act_break: 'Act Break',
+  announcer: 'Announcer',
+  sound_cue: 'Sound Cue',
+  // Musical Theatre / Stage Play elements
+  song_title: 'Song',
+  lyric: 'Lyric',
+  dance_direction: 'Dance Direction',
+  musical_cue: 'Musical Cue',
+  lighting_cue: 'Lighting Cue',
+  set_direction: 'Set Direction',
 };
 
 export const ELEMENT_SHORTCUTS: Record<string, ScriptElementType> = {
@@ -1483,9 +1579,17 @@ export const SCRIPT_TYPE_OPTIONS: { value: ScriptType; label: string; descriptio
   { value: 'episodic', label: 'Episodic Series', description: 'Multi-episode TV/web series', icon: 'tv' },
   { value: 'sketch', label: 'Sketch / Short', description: 'Comedy sketches and short-form content', icon: 'scissors' },
   { value: 'comic', label: 'Comic / Graphic Novel', description: 'Panel-based visual storytelling', icon: 'book' },
-  { value: 'podcast', label: 'Podcast / Audio Drama', description: 'Audio-first scripted content', icon: 'mic' },
+  { value: 'podcast', label: 'Podcast & Audio Drama', description: 'Scripted radio plays, audio dramas & podcasts — BBC, US Radio, STARC formats', icon: 'headphones' },
   { value: 'youtube', label: 'YouTube Video', description: 'Long-form video content with hooks & CTAs', icon: 'play' },
   { value: 'tiktok', label: 'TikTok / Reels / Shorts', description: 'Short-form vertical video content', icon: 'phone' },
+];
+
+// Audio-drama-specific format options shown in step 1 when podcast/audio drama type is selected
+export const AUDIO_DRAMA_FORMAT_OPTIONS: { value: string; label: string; description: string }[] = [
+  { value: 'bbc_radio',      label: 'BBC Scene Format',  description: 'British radio drama — scene headings, stage directions, character cues' },
+  { value: 'us_radio',       label: 'US Radio Format',   description: 'American radio drama — acts, announcer lines, sound cue sheets' },
+  { value: 'starc_standard', label: 'STARC Standard',    description: 'Full STARC format — inline SFX: / MUSIC: / AMBIENCE: cue lines' },
+  { value: 'podcast_simple', label: 'Simple Podcast',    description: 'Basic script or outline for talk-show / interview / solo podcast' },
 ];
 
 export const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string; description: string; icon: string }[] = [
@@ -1497,6 +1601,7 @@ export const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string; descript
   { value: 'educational', label: 'Course / Tutorial', description: 'Educational content and online courses', icon: 'book' },
   { value: 'livestream', label: 'Livestream', description: 'Live streaming content planning', icon: 'radio' },
   { value: 'tv_production', label: 'TV Production', description: 'Professional broadcast & studio production', icon: 'broadcast' },
+  { value: 'stage_play',    label: 'Stage Play',    description: 'Theatre productions, musicals and stage shows', icon: 'theater' },
 ];
 
 // ============================================================
@@ -2311,4 +2416,195 @@ export const BROADCAST_PLAYOUT_ITEM_TYPES: { value: BroadcastPlayoutItemType; la
   { value: 'countdown',  label: 'Countdown',  color: '#06b6d4' },
   { value: 'still',      label: 'Still Image', color: '#10b981' },
 ];
+
+// ============================================================
+// Stage Play / Theatre Production Types
+// ============================================================
+
+export type StageCueType = 'lighting' | 'sound' | 'music' | 'follow_spot' | 'special_effect' | 'automation' | 'video';
+export type StageEnsembleGroup = 'Principal' | 'Ensemble' | 'Understudy' | 'Dance Captain' | 'Swing' | 'Alternate' | 'Other';
+export type StageProductionDepartment = 'Direction' | 'Stage Management' | 'Lighting' | 'Sound' | 'Musical Direction' | 'Choreography' | 'Design' | 'Technical' | 'Marketing' | 'Other';
+
+export interface StageCue {
+  id: string;
+  project_id: string;
+  cue_type: StageCueType;
+  cue_number: string;
+  description: string | null;
+  act_number: number | null;
+  scene_ref: string | null;
+  script_element_id: string | null;
+  timing_note: string | null;
+  duration_note: string | null;
+  operator: string | null;
+  notes: string | null;
+  sort_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StageEnsembleMember {
+  id: string;
+  project_id: string;
+  actor_name: string;
+  actor_user_id: string | null;
+  character_name: string | null;
+  ensemble_group: StageEnsembleGroup;
+  vocal_range: string | null;
+  dance_skills: string[] | null;
+  availability: string | null;
+  contact_email: string | null;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StageProductionTeamMember {
+  id: string;
+  project_id: string;
+  user_id: string | null;
+  name: string;
+  role: string;
+  department: StageProductionDepartment;
+  contact_email: string | null;
+  phone: string | null;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export const STAGE_CUE_TYPE_CONFIG: Record<StageCueType, { label: string; color: string; abbrev: string }> = {
+  lighting:       { label: 'Lighting',       color: '#f59e0b', abbrev: 'LX' },
+  sound:          { label: 'Sound',          color: '#3b82f6', abbrev: 'SQ' },
+  music:          { label: 'Music',          color: '#8b5cf6', abbrev: 'MQ' },
+  follow_spot:    { label: 'Follow Spot',    color: '#ec4899', abbrev: 'FS' },
+  special_effect: { label: 'Special FX',     color: '#ef4444', abbrev: 'FX' },
+  automation:     { label: 'Automation',     color: '#14b8a6', abbrev: 'AQ' },
+  video:          { label: 'Video',          color: '#6366f1', abbrev: 'VQ' },
+};
+
+export const STAGE_ENSEMBLE_GROUPS: StageEnsembleGroup[] = [
+  'Principal', 'Ensemble', 'Understudy', 'Dance Captain', 'Swing', 'Alternate', 'Other',
+];
+
+export const STAGE_DEPARTMENTS: StageProductionDepartment[] = [
+  'Direction', 'Stage Management', 'Lighting', 'Sound',
+  'Musical Direction', 'Choreography', 'Design', 'Technical', 'Marketing', 'Other',
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shoot Days
+// ─────────────────────────────────────────────────────────────────────────────
+export type ShootDayStatus = 'planned' | 'confirmed' | 'completed' | 'cancelled';
+
+export interface ShootDay {
+  id: string;
+  project_id: string;
+  day_number: number;
+  shoot_date: string | null;
+  title: string | null;
+  call_time: string | null;
+  wrap_time: string | null;
+  location: string | null;
+  notes: string | null;
+  status: ShootDayStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShootDayScene {
+  id: string;
+  shoot_day_id: string;
+  project_id: string;
+  scene_element_id: string | null;
+  scene_heading: string;
+  scene_number: string | null;
+  script_id: string | null;
+  estimated_pages: number | null;
+  sort_order: number;
+  notes: string | null;
+}
+
+export interface ShootDayCast {
+  id: string;
+  shoot_day_id: string;
+  project_id: string;
+  character_name: string;
+  actor_name: string | null;
+  call_time: string | null;
+  on_set_time: string | null;
+  makeup_call: string | null;
+  notes: string | null;
+  sort_order: number;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shoot Gear
+// ─────────────────────────────────────────────────────────────────────────────
+export type GearOwnership = 'owned' | 'rented' | 'provided' | 'tbc';
+export type GearStatus = 'confirmed' | 'pending' | 'cancelled';
+export type GearCategory =
+  | 'Camera' | 'Lenses' | 'Lighting' | 'Grip' | 'Sound'
+  | 'Art Dept' | 'Costume' | 'Hair & Makeup' | 'Locations'
+  | 'Transport' | 'Post / DIT' | 'Other';
+
+export const GEAR_CATEGORIES: GearCategory[] = [
+  'Camera', 'Lenses', 'Lighting', 'Grip', 'Sound',
+  'Art Dept', 'Costume', 'Hair & Makeup', 'Locations',
+  'Transport', 'Post / DIT', 'Other',
+];
+
+export interface ShootGear {
+  id: string;
+  project_id: string;
+  name: string;
+  category: GearCategory;
+  quantity: number;
+  unit: string;
+  ownership: GearOwnership;
+  vendor: string | null;
+  daily_rate: number | null;
+  total_cost: number | null;
+  shoot_day_id: string | null;
+  notes: string | null;
+  status: GearStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sidebar Layout Customisation
+// ─────────────────────────────────────────────────────────────────────────────
+export interface SidebarNavItem {
+  icon: string;
+  label: string;        // overrideable display name
+  hidden?: boolean;
+}
+
+export interface SidebarSection {
+  id: string;           // stable key, e.g. "writing"
+  label: string;        // overrideable section header
+  collapsed?: boolean;
+  items: SidebarNavItem[];
+}
+
+export interface SidebarLayout {
+  sections: SidebarSection[];
+  /** Timestamp of last save, used for conflict detection */
+  savedAt?: string;
+}
+
+export interface SidebarLayoutRow {
+  id: string;
+  user_id: string | null;
+  project_id: string | null;
+  layout: SidebarLayout;
+  created_at: string;
+  updated_at: string;
+}
 

@@ -9,12 +9,17 @@ import { useProFeatures } from '@/hooks/useProFeatures';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { useProjectStore, usePresenceStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
-import { Avatar, Badge, LoadingPage } from '@/components/ui';
+import { Avatar, Badge, LoadingPage, KeyboardShortcuts, Modal, Input, Textarea, Button, toast } from '@/components/ui';
+import { useCommandPalette } from '@/components/ui/CommandPalette';
+import { useRecentProjects } from '@/hooks/useRecentProjects';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { cn, getInitials } from '@/lib/utils';
-import type { Project, ProjectMember, Profile, UserRole, UserPresence } from '@/lib/types';
+import type { Project, ProjectMember, Profile, UserRole, UserPresence, SidebarSection } from '@/lib/types';
+import { useSidebarLayout } from '@/hooks/useSidebarLayout';
+import dynamic from 'next/dynamic';
+const SidebarCustomiser = dynamic(() => import('@/components/SidebarCustomiser'), { ssr: false });
 
 const PAGE_LABELS: Record<string, string> = {
   overview: 'Overview', script: 'Script Editor', documents: 'Documents',
@@ -30,14 +35,25 @@ const PAGE_LABELS: Record<string, string> = {
   // New pages
   corkboard: 'Corkboard', 'beat-sheet': 'Beat Sheet', invoice: 'Invoice Generator',
   submissions: 'Submission Tracker', breakdown: 'Production Breakdown',
+  // Broadcast Pre-Production
+  editorial: 'Editorial Board', contacts: 'Contacts', checklist: 'Pre-Show Checklist',
+  // Gear & scheduling
+  gear: 'Gear', 'schedule-pack': 'Day Pack', 'one-liner': 'One-liner',
   // Broadcast Production
   rundown: 'Rundown', stories: 'Stories', 'wire-desk': 'Wire Desk',
   sources: 'Sources', graphics: 'Graphics / CG', prompter: 'Prompter',
   'as-run': 'As-Run Log', 'broadcast-settings': 'Broadcast Settings',
+  // Audio Drama
+  'sound-design': 'Sound Design', 'voice-cast': 'Voice Cast',
   'vision-mixer': 'Vision Mixer', 'master-control': 'Master Control',
   'stream-ingest': 'Stream Ingest', output: 'Output / Restream',
   multiviewer: 'Multiviewer', comms: 'Comms / Intercom',
   'mos-devices': 'MOS Devices',
+  // Stage Play / Theatre
+  ensemble: 'Ensemble',
+  cues: 'Cue Sheet',
+  'production-team': 'Production Team',
+  rehearsal: 'Rehearsal',
 };
 
 export default function ProjectLayout({
@@ -58,8 +74,15 @@ export default function ProjectLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMoreTools, setShowMoreTools] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateDesc, setTemplateDesc] = useState('');
+  const [templatePublic, setTemplatePublic] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
   // Pre-collapse heavy categories so the sidebar doesn't feel overwhelming
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['Pro', 'Collaboration']));
+  const [showCustomiser, setShowCustomiser] = useState(false);
   const { canUse: canUseFeature } = useFeatureAccess();
 
   const toggleSection = (cat: string) => {
@@ -68,6 +91,37 @@ export default function ProjectLayout({
       if (next.has(cat)) next.delete(cat); else next.add(cat);
       return next;
     });
+  };
+
+  const palette = useCommandPalette();
+  const { recordView } = useRecentProjects();
+
+  const handleSaveTemplate = async () => {
+    if (!currentProject || !user) return;
+    setSavingTemplate(true);
+    try {
+      const supabase = createClient();
+      await supabase.from('project_templates').insert({
+        user_id: user.id,
+        name: templateName.trim() || currentProject.title || 'Template',
+        description: templateDesc.trim() || null,
+        project_type: currentProject.project_type || 'film',
+        script_type: currentProject.script_type || null,
+        genre: currentProject.genre?.[0] || null,
+        format: currentProject.format || null,
+        structure_snapshot: { genre: currentProject.genre, format: currentProject.format },
+        is_public: templatePublic,
+      });
+      toast.success('Template saved!');
+      setShowSaveTemplate(false);
+      setTemplateName('');
+      setTemplateDesc('');
+      setTemplatePublic(false);
+    } catch {
+      toast.error('Failed to save template');
+    } finally {
+      setSavingTemplate(false);
+    }
   };
 
   useNotifications(user?.id);
@@ -97,6 +151,11 @@ export default function ProjectLayout({
         e.preventDefault();
         setSidebarCollapsed((v) => !v);
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        setShowShortcuts(v => !v);
+      }
+      // ⌘K handled globally by CommandPaletteProvider — no need to duplicate
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -143,6 +202,13 @@ export default function ProjectLayout({
 
       setCurrentProject(projectRes.data);
       setMembers(membersRes.data || []);
+      // Record this project as recently viewed
+      recordView({
+        id: projectRes.data.id,
+        title: projectRes.data.title || 'Untitled',
+        cover_url: projectRes.data.cover_url ?? null,
+        project_type: projectRes.data.project_type,
+      });
     } catch (err) {
       console.error('Unexpected error fetching project data:', err);
       router.push('/dashboard');
@@ -151,14 +217,18 @@ export default function ProjectLayout({
     }
   };
 
-  if (authLoading || (!user && loading)) return <LoadingPage />;
-  if (!currentProject) return null;
-
-  // Current user's role in this project
+  // Derive role + admin flag from state (safe before conditional returns; defaults to false when data not yet loaded)
   const currentUserRole: UserRole | undefined =
     members.find((m) => m.user_id === user?.id)?.role
-    || (currentProject.created_by === user?.id ? 'owner' : undefined);
+    || (currentProject?.created_by === user?.id ? 'owner' : undefined);
   const isViewer = currentUserRole === 'viewer';
+  const isAdmin = currentUserRole === 'owner' || currentUserRole === 'admin';
+
+  // Must be called unconditionally before any early returns
+  const { applyLayout, saveLayout, resetLayout, activeScope } = useSidebarLayout(params.id, user?.id, isAdmin);
+
+  if (authLoading || (!user && loading)) return <LoadingPage />;
+  if (!currentProject) return null;
 
   const showProduction = user?.show_production_tools !== false;
   const showCollab = user?.show_collaboration !== false;
@@ -169,15 +239,18 @@ export default function ProjectLayout({
   
   // Check if this is a TV production project
   const isTvProduction = currentProject.project_type === 'tv_production';
+  // Check if this is an audio drama project
+  const isAudioDrama = currentProject.project_type === 'audio_drama' || currentProject.script_type === 'audio_drama';
+  // Check if this is a stage play / theatre project
+  const isStagePlay = currentProject.project_type === 'stage_play' || currentProject.script_type === 'stageplay';
   // Check if this is an episodic series project
   const isEpisodic = currentProject.script_type === 'episodic';
 
   type NavItem = { label: string; href: string; icon: string; always?: boolean; production?: boolean; collab?: boolean; contentCreator?: boolean; filmOnly?: boolean; pro?: boolean };
-  type NavCategory = { category: string; items: NavItem[] };
+  type NavCategory = { id?: string; category: string; items: NavItem[] };
 
-  // Build navigation based on project type
   const navCategories: NavCategory[] = isTvProduction ? [
-    // Broadcast Production Navigation — real NRCS + broadcast tools
+    // Broadcast TV Navigation — Pre-production first
     {
       category: '',
       items: [
@@ -185,26 +258,36 @@ export default function ProjectLayout({
       ],
     },
     {
-      category: 'Content',
+      category: 'Pre-Production',
       items: [
-        { label: 'Stories', href: `/projects/${params.id}/stories`, icon: 'stories', always: true },
-        { label: 'Rundown', href: `/projects/${params.id}/rundown`, icon: 'rundown', always: true },
         { label: 'Wire Desk', href: `/projects/${params.id}/wire-desk`, icon: 'wiredesk', always: true },
-        { label: 'Scripts', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Editorial Board', href: `/projects/${params.id}/editorial`, icon: 'editorial', always: true },
+        { label: 'Stories', href: `/projects/${params.id}/stories`, icon: 'stories', always: true },
+        { label: 'Contacts', href: `/projects/${params.id}/contacts`, icon: 'contacts', always: true },
+        { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', always: true },
+        { label: 'Checklist', href: `/projects/${params.id}/checklist`, icon: 'checklist', always: true },
+        { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
       ],
     },
     {
-      category: 'Production',
+      category: 'Scripting',
       items: [
+        { label: 'Script Editor', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Prompter', href: `/projects/${params.id}/prompter`, icon: 'prompter', always: true },
+        { label: 'Graphics / CG', href: `/projects/${params.id}/graphics`, icon: 'graphics', always: true },
+      ],
+    },
+    {
+      category: 'On Air',
+      items: [
+        { label: 'Rundown', href: `/projects/${params.id}/rundown`, icon: 'rundown', always: true },
         { label: 'Vision Mixer', href: `/projects/${params.id}/vision-mixer`, icon: 'visionmixer', always: true },
         { label: 'Master Control', href: `/projects/${params.id}/master-control`, icon: 'mastercontrol', always: true },
         { label: 'Sources', href: `/projects/${params.id}/sources`, icon: 'sources', always: true },
-        { label: 'Graphics', href: `/projects/${params.id}/graphics`, icon: 'graphics', always: true },
-        { label: 'Prompter', href: `/projects/${params.id}/prompter`, icon: 'prompter', always: true },
       ],
     },
     {
-      category: 'Streaming',
+      category: 'Distribution',
       items: [
         { label: 'Stream Ingest', href: `/projects/${params.id}/stream-ingest`, icon: 'streamingest', always: true },
         { label: 'Output', href: `/projects/${params.id}/output`, icon: 'output', always: true },
@@ -229,7 +312,131 @@ export default function ProjectLayout({
       items: [
         { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
         { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+      ],
+    },
+    ...(!isViewer ? [{
+      category: '',
+      items: [
+        { label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings', always: true },
+      ],
+    }] : []),
+  ] : isAudioDrama ? [
+    // Audio Drama Navigation
+    {
+      category: '',
+      items: [
+        { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
+      ],
+    },
+    {
+      category: 'Writing',
+      items: [
+        { label: 'Episodes', href: `/projects/${params.id}/episodes`, icon: 'episodes', always: true },
+        { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Arc Planner', href: `/projects/${params.id}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
+        { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
+      ],
+    },
+    {
+      category: 'Cast & World',
+      items: [
+        { label: 'Voice Cast', href: `/projects/${params.id}/voice-cast`, icon: 'voice-cast', always: true },
+        { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters', always: true },
+        { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', always: true },
+        { label: 'Mind Map', href: `/projects/${params.id}/mindmap`, icon: 'mindmap', always: true },
+        { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
+      ],
+    },
+    {
+      category: 'Sound',
+      items: [
+        { label: 'Sound Design', href: `/projects/${params.id}/sound-design`, icon: 'sound-design', always: true },
+        { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', production: true },
+        { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
+      ],
+    },
+    {
+      category: 'Collaboration',
+      items: [
+        { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
+        { label: 'Comments', href: `/projects/${params.id}/comments`, icon: 'comments', collab: true },
+        { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+        { label: 'Crew View', href: `/projects/${params.id}/crew`, icon: 'crew', always: true },
+      ],
+    },
+    {
+      category: 'Pro',
+      items: [
+        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
+        { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
+        { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
+        { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
+      ],
+    },
+    ...(!isViewer ? [{
+      category: '',
+      items: [
+        { label: 'Settings', href: `/projects/${params.id}/settings`, icon: 'settings', always: true },
+      ],
+    }] : []),
+  ] : isStagePlay ? [
+    // Stage Play / Theatre Navigation
+    {
+      category: '',
+      items: [
+        { label: 'Overview', href: `/projects/${params.id}`, icon: 'overview', always: true },
+      ],
+    },
+    {
+      category: 'Writing',
+      items: [
+        { label: 'Arc Planner', href: `/projects/${params.id}/arc-planner`, icon: 'arc-planner', always: true },
+        { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Notes Rounds', href: `/projects/${params.id}/notes-rounds`, icon: 'notes-rounds', always: true },
+        { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
+        { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
+      ],
+    },
+    {
+      category: 'Company',
+      items: [
+        { label: 'Ensemble', href: `/projects/${params.id}/ensemble`, icon: 'cast', always: true },
+        { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters', always: true },
+        { label: 'Production Team', href: `/projects/${params.id}/production-team`, icon: 'team', always: true },
+        { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
+      ],
+    },
+    {
+      category: 'Production',
+      items: [
+        { label: 'One-liner', href: `/projects/${params.id}/one-liner`, icon: 'one-liner', always: true },
+        { label: 'Cue Sheet', href: `/projects/${params.id}/cues`, icon: 'checklist', always: true },
+        { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', production: true },
+        { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
+        { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', production: true },
+      ],
+    },
+    {
+      category: 'Collaboration',
+      items: [
+        { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
+        { label: 'Comments', href: `/projects/${params.id}/comments`, icon: 'comments', collab: true },
+        { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+        { label: 'Crew View', href: `/projects/${params.id}/crew`, icon: 'crew', always: true },
+      ],
+    },
+    {
+      category: 'Pro',
+      items: [
+        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
+        { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
+        { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
+        { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -316,6 +523,7 @@ export default function ProjectLayout({
         { label: 'Arc Planner', href: `/projects/${params.id}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
         { label: 'Beat Sheet', href: `/projects/${params.id}/beat-sheet`, icon: 'beat-sheet', always: true },
+        { label: 'Notes Rounds', href: `/projects/${params.id}/notes-rounds`, icon: 'notes-rounds', always: true },
         { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
         { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
       ],
@@ -330,15 +538,25 @@ export default function ProjectLayout({
       ],
     },
     {
-      category: 'Production',
+      id: 'pre-production',
+      category: 'Pre-Production',
       items: [
+        { label: 'One-liner', href: `/projects/${params.id}/one-liner`, icon: 'one-liner', always: true },
         { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', production: true },
         { label: 'Corkboard', href: `/projects/${params.id}/corkboard`, icon: 'corkboard', production: true },
         { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', always: true },
         { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', production: true },
         { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
+        { label: 'Gear', href: `/projects/${params.id}/gear`, icon: 'gear', production: true },
+        { label: 'Day Pack', href: `/projects/${params.id}/schedule-pack`, icon: 'schedule-pack', production: true },
         { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', production: true },
         { label: 'Breakdown', href: `/projects/${params.id}/breakdown`, icon: 'breakdown', production: true },
+      ],
+    },
+    {
+      id: 'on-set',
+      category: 'On Set',
+      items: [
         { label: 'On Set', href: `/projects/${params.id}/onset`, icon: 'onset', production: true },
       ],
     },
@@ -348,6 +566,7 @@ export default function ProjectLayout({
         { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
         { label: 'Comments', href: `/projects/${params.id}/comments`, icon: 'comments', collab: true },
         { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
+        { label: 'Crew View', href: `/projects/${params.id}/crew`, icon: 'crew', always: true },
       ],
     },
     {
@@ -364,6 +583,7 @@ export default function ProjectLayout({
         { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
         { label: 'Submissions', href: `/projects/${params.id}/submissions`, icon: 'submissions', pro: true },
         { label: 'Invoice', href: `/projects/${params.id}/invoice`, icon: 'invoice', pro: true },
+        { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -374,6 +594,34 @@ export default function ProjectLayout({
       ],
     }] : []),
   ];
+
+  // ── Sidebar Layout Customisation helpers ────────────────────────
+  const navToSections = (cats: NavCategory[]): SidebarSection[] =>
+    cats.map(cat => ({
+      id: cat.id || (cat.category ? cat.category.toLowerCase().replace(/[\s/]+/g, '-') : 'root'),
+      label: cat.category,
+      items: cat.items.map(i => ({ icon: i.icon, label: i.label })),
+    }));
+
+  const applyNavLayout = (cats: NavCategory[]): NavCategory[] => {
+    const sections = applyLayout(navToSections(cats));
+    const byIcon = new Map<string, NavItem>();
+    for (const cat of cats) for (const item of cat.items) byIcon.set(item.icon, item);
+    return sections.map(section => ({
+      id: section.id,
+      category: section.label,
+      items: section.items
+        .filter(si => !si.hidden)
+        .map(si => {
+          const orig = byIcon.get(si.icon);
+          return orig ? { ...orig, label: si.label } : null;
+        })
+        .filter(Boolean) as NavItem[],
+    })).filter(cat => cat.category === '' || cat.items.length > 0);
+  };
+
+  const effectiveNavCategories = applyNavLayout(navCategories);
+  const effectiveNavSections = navToSections(effectiveNavCategories);
 
   const isItemVisible = (item: NavItem) => {
     // Check sidebar tab preferences (overview and settings always visible)
@@ -393,7 +641,7 @@ export default function ProjectLayout({
   };
 
   // Flat lists for backward compat
-  const allItems = navCategories.flatMap(c => c.items);
+  const allItems = effectiveNavCategories.flatMap(c => c.items);
   const visibleItems = allItems.filter(isItemVisible);
   // Never show Pro items in "More Tools" for free users — DaVinci model: Pro is invisible, not locked
   const hiddenItems = allItems.filter(i => !i.always && !i.pro && !isItemVisible(i));
@@ -458,6 +706,16 @@ export default function ProjectLayout({
     submissions: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
     invoice: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l2 2 4-4M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6M9 10h3" /></svg>,
     breakdown: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M3 14h18M10 4v16M6 4v4M18 4v4" /><rect x="3" y="4" width="18" height="16" rx="1" strokeWidth={1.5} /></svg>,
+    // Audio Drama icons
+    'sound-design': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" /></svg>,
+    'voice-cast': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>,
+    crew: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+    presskit: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>,
+    gear: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
+    'schedule-pack': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l2 2 4-4" /></svg>,
+    // Development tools
+    'notes-rounds': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>,
+    'one-liner': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M3 6h18M3 14h11M3 18h7" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 14l2 2 4-4" /></svg>,
   };
 
   // Active page label for mobile header
@@ -471,7 +729,7 @@ export default function ProjectLayout({
       <div className="relative overflow-hidden border-b border-surface-800/60 px-4 py-4">
         {/* Ambient glow behind the logo */}
         <div className="absolute -top-6 -left-4 w-24 h-24 rounded-full blur-2xl opacity-30 pointer-events-none"
-          style={{ background: isTvProduction ? '#d97706' : 'rgb(var(--brand-600))' }} />
+          style={{ background: isTvProduction ? '#d97706' : isAudioDrama ? '#7c3aed' : 'rgb(var(--brand-600))' }} />
 
         <div className="relative flex items-center gap-3">
           <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="shrink-0 group">
@@ -480,9 +738,13 @@ export default function ProjectLayout({
               style={{
                 background: isTvProduction
                   ? 'linear-gradient(135deg, #d97706, #92400e)'
+                  : isAudioDrama
+                  ? 'linear-gradient(135deg, #7c3aed, #4c1d95)'
                   : 'linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)))',
                 boxShadow: isTvProduction
                   ? '0 2px 12px rgba(217, 119, 6, 0.5)'
+                  : isAudioDrama
+                  ? '0 2px 12px rgba(124, 58, 237, 0.5)'
                   : '0 2px 12px rgb(var(--brand-600) / 0.5)',
               }}
             >
@@ -522,7 +784,7 @@ export default function ProjectLayout({
 
       {/* ── Navigation ───────────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-        {navCategories.map((cat, catIdx) => {
+        {effectiveNavCategories.map((cat, catIdx) => {
           const catVisibleItems = cat.items.filter(isItemVisible);
           if (catVisibleItems.length === 0) return null;
           const isSectionCollapsed = cat.category ? collapsedSections.has(cat.category) : false;
@@ -646,7 +908,21 @@ export default function ProjectLayout({
               <Link href="/messages" className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all" title="Messages">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
               </Link>
+              <button
+                onClick={() => { setTemplateName(currentProject?.title || ''); setShowSaveTemplate(true); }}
+                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all"
+                title="Save as template"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
+              </button>
               <NotificationBell />
+              <button
+                onClick={() => setShowCustomiser(true)}
+                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all"
+                title="Customise sidebar"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </button>
             </div>
           )}
           <button
@@ -732,10 +1008,56 @@ export default function ProjectLayout({
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pt-12 md:pt-0" style={{ background: '#070710' }}>
-        <div className="animate-fade-in-up">
-          {children}
-        </div>
+        {children}
       </main>
+
+      {/* Keyboard shortcuts modal */}
+      <KeyboardShortcuts isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
+
+      {/* Sidebar customiser */}
+      {showCustomiser && (
+        <SidebarCustomiser
+          sections={effectiveNavSections}
+          onClose={() => setShowCustomiser(false)}
+          onSave={saveLayout}
+          onReset={resetLayout}
+          isAdmin={isAdmin}
+          activeScope={activeScope}
+        />
+      )}
+
+      {/* Save as Template modal */}
+      <Modal isOpen={showSaveTemplate} onClose={() => setShowSaveTemplate(false)} title="Save as Template" size="sm">
+        <div className="space-y-4">
+          <Input
+            label="Template Name"
+            value={templateName}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTemplateName(e.target.value)}
+            placeholder={currentProject?.title || 'My Template'}
+            autoFocus
+          />
+          <Textarea
+            label="Description (optional)"
+            value={templateDesc}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTemplateDesc(e.target.value)}
+            placeholder="What's this template for?"
+            rows={2}
+          />
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={templatePublic}
+              onChange={e => setTemplatePublic(e.target.checked)}
+              className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+            />
+            <span className="text-sm text-surface-300">Make public (visible to all users)</span>
+          </label>
+          <div className="flex justify-end gap-3 pt-1">
+            <Button variant="ghost" onClick={() => setShowSaveTemplate(false)}>Cancel</Button>
+            <Button onClick={handleSaveTemplate} loading={savingTemplate}>Save Template</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -622,44 +622,71 @@ export default function UserSettingsPage() {
             {/* Sidebar Tabs */}
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">Project Sidebar Tabs</h2>
-              <p className="text-sm text-surface-400 mb-4">Choose which tabs appear in project sidebars. Hidden tabs are still accessible from the menu.</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {[
-                  { key: 'script', label: 'Script', desc: 'Write your screenplay' },
-                  { key: 'scenes', label: 'Scenes', desc: 'Scene breakdown' },
-                  { key: 'characters', label: 'Characters', desc: 'Character profiles' },
-                  { key: 'locations', label: 'Locations', desc: 'Filming locations' },
-                  { key: 'shots', label: 'Shots', desc: 'Shot list' },
-                  { key: 'storyboard', label: 'Storyboard', desc: 'Visual planning' },
-                  { key: 'schedule', label: 'Schedule', desc: 'Production calendar' },
-                  { key: 'budget', label: 'Budget', desc: 'Cost tracking' },
-                  { key: 'documents', label: 'Documents', desc: 'Attachments' },
-                  { key: 'moodboard', label: 'Moodboard', desc: 'Visual inspiration' },
-                  { key: 'ideas', label: 'Ideas', desc: 'Idea capture' },
-                  { key: 'mindmap', label: 'Mind Map', desc: 'Story mapping' },
-                  { key: 'team', label: 'Team', desc: 'Collaborators' },
-                  // Content creator specific
-                  { key: 'thumbnails', label: 'Thumbnails', desc: 'Thumbnail planner' },
-                  { key: 'seo', label: 'SEO', desc: 'Video optimization' },
-                  { key: 'sponsors', label: 'Sponsors', desc: 'Sponsorship tracking' },
-                  { key: 'broll', label: 'B-Roll', desc: 'Footage planning' },
-                  { key: 'checklist', label: 'Checklist', desc: 'Upload checklist' },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
-                    className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
-                      sidebarTabs[tab.key]
-                        ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
-                        : 'border-surface-700 bg-surface-900/50'
-                    }`}
-                  >
-                    <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
-                    <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-[#E54E15]' : 'bg-surface-700'}`}>
-                      <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${sidebarTabs[tab.key] ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
-                    </span>
-                  </button>
-                ))}
+              <p className="text-sm text-surface-400 mb-4">Choose which tabs appear by default across your projects. You can also override per-project in project settings.</p>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-semibold text-surface-500 uppercase tracking-widest mb-2">Film / TV / Theatre</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { key: 'script', label: 'Script', desc: 'Script editor' },
+                      { key: 'scenes', label: 'Scenes', desc: 'Scene breakdown' },
+                      { key: 'characters', label: 'Characters', desc: 'Character profiles' },
+                      { key: 'locations', label: 'Locations', desc: 'Filming locations' },
+                      { key: 'shots', label: 'Shot List', desc: 'Shot planning' },
+                      { key: 'storyboard', label: 'Storyboard', desc: 'Visual boards' },
+                      { key: 'schedule', label: 'Schedule', desc: 'Production calendar' },
+                      { key: 'budget', label: 'Budget', desc: 'Cost tracking' },
+                      { key: 'documents', label: 'Documents', desc: 'Attachments' },
+                      { key: 'moodboard', label: 'Moodboard', desc: 'Visual inspiration' },
+                      { key: 'ideas', label: 'Ideas', desc: 'Idea capture' },
+                      { key: 'mindmap', label: 'Mind Map', desc: 'Story mapping' },
+                      { key: 'team', label: 'Team', desc: 'Collaborators' },
+                    ].map((tab) => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
+                        className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
+                          sidebarTabs[tab.key]
+                            ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
+                            : 'border-surface-700 bg-surface-900/50'
+                        }`}
+                      >
+                        <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
+                        <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-[#E54E15]' : 'bg-surface-700'}`}>
+                          <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${sidebarTabs[tab.key] ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-surface-500 uppercase tracking-widest mb-2">Content Creator (YouTube, Podcast, etc.)</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { key: 'thumbnails', label: 'Thumbnails', desc: 'Thumbnail planner' },
+                      { key: 'seo', label: 'SEO', desc: 'Video optimization' },
+                      { key: 'sponsors', label: 'Sponsors', desc: 'Sponsorship tracking' },
+                      { key: 'broll', label: 'B-Roll', desc: 'Footage planning' },
+                      { key: 'checklist', label: 'Upload Checklist', desc: 'Upload checklist' },
+                    ].map((tab) => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
+                        className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
+                          sidebarTabs[tab.key]
+                            ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
+                            : 'border-surface-700 bg-surface-900/50'
+                        }`}
+                      >
+                        <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
+                        <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-[#E54E15]' : 'bg-surface-700'}`}>
+                          <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${sidebarTabs[tab.key] ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <p className="text-xs text-surface-500 mt-3">You can also customize per-project in project settings.</p>
             </Card>

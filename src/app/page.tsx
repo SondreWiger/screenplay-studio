@@ -97,7 +97,7 @@ export default async function LandingPage() {
 
         {/* Links */}
         <div className="flex items-center">
-          {[['Blog', '/blog'], ['Community', '/community']].map(([label, href]) => (
+          {[['About', '/about'], ['Blog', '/blog'], ['Community', '/community']].map(([label, href]) => (
             <Link
               key={href}
               href={href}

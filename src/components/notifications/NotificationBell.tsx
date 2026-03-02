@@ -28,7 +28,7 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
   production_approved: { label: 'OK', color: 'bg-green-500/20' },
   production_rejected: { label: 'REJ', color: 'bg-red-500/20' },
   chat_mention: { label: '@', color: 'bg-cyan-500/20' },
-  direct_message: { label: 'DM', color: 'blue' },
+  direct_message: { label: 'DM', color: 'bg-blue-500/20' },
   ticket_reply: { label: 'TKT', color: 'bg-[#FF5F1F]/20' },
   general: { label: 'NEW', color: 'bg-surface-700' },
 };
@@ -238,16 +238,29 @@ export function NotificationRow({
         </p>
       </div>
 
-      {/* Delete */}
-      <button
-        onClick={() => deleteNotification(n.id)}
-        className="opacity-0 group-hover:opacity-100 shrink-0 self-start mt-1 p-1 rounded text-surface-500 hover:text-red-400 transition-all"
-        title="Dismiss"
-      >
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+      {/* Actions */}
+      <div className="opacity-0 group-hover:opacity-100 flex flex-col gap-0.5 shrink-0 self-start mt-1 transition-all">
+        {!n.read && (
+          <button
+            onClick={(e) => { e.stopPropagation(); markAsRead(n.id); }}
+            className="p-1 rounded text-surface-500 hover:text-green-400 transition-colors"
+            title="Mark as read"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        )}
+        <button
+          onClick={() => deleteNotification(n.id)}
+          className="p-1 rounded text-surface-500 hover:text-red-400 transition-colors"
+          title="Dismiss"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

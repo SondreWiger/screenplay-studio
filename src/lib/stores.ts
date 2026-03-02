@@ -119,6 +119,13 @@ interface ScriptState {
   selectedElementId: string | null;
   loading: boolean;
   saving: boolean;
+  // Undo / Redo
+  _undoStack: ScriptElement[][];
+  _redoStack: ScriptElement[][];
+  _lastHistoryPush: number;
+  pushHistory: () => void;
+  undo: () => Promise<void>;
+  redo: () => Promise<void>;
   setScripts: (scripts: Script[]) => void;
   setCurrentScript: (script: Script | null) => void;
   setElements: (elements: ScriptElement[]) => void;
@@ -133,6 +140,22 @@ interface ScriptState {
   reorderElements: (elements: ScriptElement[]) => Promise<void>;
 }
 
+// ── Sync a full snapshot of elements to Supabase ────────────────────────────
+async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
+  const supabase = createClient();
+  const { data: rows } = await supabase
+    .from('script_elements').select('id').eq('script_id', scriptId);
+  const currentIds = new Set((rows ?? []).map((r: { id: string }) => r.id));
+  const snapshotIds = new Set(snapshot.map((e) => e.id));
+  const toDelete = Array.from(currentIds).filter((id) => !snapshotIds.has(id));
+  if (toDelete.length > 0) {
+    await supabase.from('script_elements').delete().in('id', toDelete);
+  }
+  for (let i = 0; i < snapshot.length; i += 100) {
+    await supabase.from('script_elements').upsert(snapshot.slice(i, i + 100));
+  }
+}
+
 export const useScriptStore = create<ScriptState>((set, get) => ({
   scripts: [],
   currentScript: null,
@@ -140,6 +163,42 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   selectedElementId: null,
   loading: true,
   saving: false,
+  _undoStack: [],
+  _redoStack: [],
+  _lastHistoryPush: 0,
+
+  pushHistory: () => {
+    const { elements, _undoStack } = get();
+    const snapshot = elements.map((e) => ({ ...e }));
+    set({ _undoStack: [..._undoStack.slice(-49), snapshot], _redoStack: [], _lastHistoryPush: Date.now() });
+  },
+
+  undo: async () => {
+    const { elements, _undoStack, _redoStack, currentScript } = get();
+    if (_undoStack.length === 0) return;
+    const previous = _undoStack[_undoStack.length - 1];
+    const current = elements.map((e) => ({ ...e }));
+    set({
+      elements: previous,
+      _undoStack: _undoStack.slice(0, -1),
+      _redoStack: [..._redoStack.slice(-49), current],
+    });
+    if (currentScript) syncSnapshotToDB(previous, currentScript.id);
+  },
+
+  redo: async () => {
+    const { elements, _undoStack, _redoStack, currentScript } = get();
+    if (_redoStack.length === 0) return;
+    const next = _redoStack[_redoStack.length - 1];
+    const current = elements.map((e) => ({ ...e }));
+    set({
+      elements: next,
+      _undoStack: [..._undoStack.slice(-49), current],
+      _redoStack: _redoStack.slice(0, -1),
+    });
+    if (currentScript) syncSnapshotToDB(next, currentScript.id);
+  },
+
   setScripts: (scripts) => set({ scripts }),
   setCurrentScript: (script) => set({ currentScript: script }),
   setElements: (elements) => set({ elements }),
@@ -149,6 +208,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
   fetchScripts: async (projectId: string) => {
     const supabase = createClient();
+    // Clear immediately so stale data from a previous project is never shown.
+    set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [] });
     try {
       const { data } = await supabase
         .from('scripts')
@@ -186,6 +247,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 
   addElement: async (element) => {
+    get().pushHistory();
     const supabase = createClient();
     set({ saving: true });
     const elements = get().elements;
@@ -210,6 +272,11 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 
   updateElement: async (id, updates) => {
+    const { _lastHistoryPush } = get();
+    // Always snapshot before type changes; snapshot content changes every ≥2 s
+    if ('element_type' in updates || Date.now() - _lastHistoryPush > 2000) {
+      get().pushHistory();
+    }
     // Optimistic update — apply immediately, then persist
     set({
       elements: get().elements.map((e) => (e.id === id ? { ...e, ...updates } : e)),
@@ -221,6 +288,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 
   deleteElement: async (id) => {
+    get().pushHistory();
     const supabase = createClient();
     await supabase.from('script_elements').delete().eq('id', id);
     set({ elements: get().elements.filter((e) => e.id !== id) });

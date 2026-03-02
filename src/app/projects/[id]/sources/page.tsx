@@ -349,7 +349,6 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                   src={selectedSource.connection_url}
                   className="w-full h-full border-0 pointer-events-none"
                   title={selectedSource.name}
-                  sandbox="allow-scripts allow-same-origin"
                 />
               ) : (
                 <div className="text-center px-3">
