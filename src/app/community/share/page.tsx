@@ -9,6 +9,15 @@ import { slugify, formatDate } from '@/lib/utils';
 import { ScreenplayRenderer, type ScreenplayElement } from '@/components/ScreenplayRenderer';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { CommunityCategory, Project, Script, ScriptElement } from '@/lib/types';
+import {
+  parseFountain,
+  parseFdx,
+  fileExtension,
+  formatFileSize,
+  ACCEPTED_EXTENSIONS,
+  FORMAT_LABELS,
+  type UploadableFormat,
+} from '@/lib/screenplay-parsers';
 
 // ============================================================
 // Share Script — submit a script to the community
@@ -32,7 +41,7 @@ export default function ShareScriptPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // Screenplay mode
-  const [inputMode, setInputMode] = useState<'project' | 'text'>('project');
+  const [inputMode, setInputMode] = useState<'project' | 'text' | 'file'>('project');
   const [scriptElements, setScriptElements] = useState<ScreenplayElement[] | null>(null);
   const [projectScripts, setProjectScripts] = useState<Script[]>([]);
   const [selectedScriptId, setSelectedScriptId] = useState<string>('');
@@ -46,6 +55,14 @@ export default function ShareScriptPage() {
   const [allowFreeUse, setAllowFreeUse] = useState(false);
   const [scriptLanguage, setScriptLanguage] = useState('');
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+
+  // File upload state
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFileType, setAttachedFileType] = useState<UploadableFormat | ''>('');
+  const [attachedFileUrl, setAttachedFileUrl] = useState('');  // public URL (PDFs)
+  const [fileParseError, setFileParseError] = useState('');
+  const [fileUploading, setFileUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -138,6 +155,83 @@ export default function ShareScriptPage() {
     setLoadingScript(false);
   };
 
+  const handleFileSelect = async (file: File) => {
+    setAttachedFile(file);
+    setFileParseError('');
+    setScriptContent('');
+    setScriptElements(null);
+    setAttachedFileUrl('');
+
+    const ext = fileExtension(file.name) as UploadableFormat | '';
+    setAttachedFileType(ext);
+
+    // Auto-fill title from filename if blank
+    if (!title) {
+      const bare = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+      setTitle(bare);
+    }
+
+    if (ext === 'pdf') {
+      setFileUploading(true);
+      try {
+        const supabase = createClient();
+        const path = `${user!.id}/${Date.now()}-${file.name}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('community-files')
+          .upload(path, file, { contentType: 'application/pdf', upsert: false });
+        if (uploadErr) throw uploadErr;
+        const { data: urlData } = supabase.storage.from('community-files').getPublicUrl(path);
+        setAttachedFileUrl(urlData.publicUrl);
+      } catch (e: unknown) {
+        setFileParseError('PDF upload failed: ' + (e instanceof Error ? e.message : String(e)));
+      } finally {
+        setFileUploading(false);
+      }
+    } else if (ext === 'fountain' || ext === 'txt') {
+      const text = await file.text();
+      if (ext === 'fountain') {
+        try {
+          const parsed = parseFountain(text);
+          if (parsed.length > 0) {
+            setScriptElements(parsed as ScreenplayElement[]);
+            setScriptContent(JSON.stringify(parsed));
+          } else {
+            // Fallback: store as plain text
+            setScriptContent(text);
+          }
+        } catch {
+          setScriptContent(text); // graceful degradation
+        }
+      } else {
+        setScriptContent(text);
+      }
+    } else if (ext === 'fdx') {
+      try {
+        const text = await file.text();
+        const parsed = parseFdx(text);
+        if (parsed.length > 0) {
+          setScriptElements(parsed as ScreenplayElement[]);
+          setScriptContent(JSON.stringify(parsed));
+        } else {
+          setFileParseError('FDX parsed but no elements found. The file may be empty.');
+        }
+      } catch (e: unknown) {
+        setFileParseError('Failed to parse FDX: ' + (e instanceof Error ? e.message : String(e)));
+      }
+    } else {
+      setFileParseError(`Unsupported file type ".${ext}". Accepted: .fdx, .fountain, .txt, .pdf`);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setAttachedFile(null);
+    setAttachedFileType('');
+    setAttachedFileUrl('');
+    setFileParseError('');
+    setScriptContent('');
+    setScriptElements(null);
+  };
+
   const toggleCategory = (id: string) => {
     setSelectedCategories((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
@@ -149,7 +243,15 @@ export default function ShareScriptPage() {
       setError('Title is required');
       return;
     }
-    if (!scriptContent.trim()) {
+    if (inputMode === 'file') {
+      if (!attachedFile) { setError('Please select a file to upload'); return; }
+      if (attachedFileType === 'pdf' && !attachedFileUrl) {
+        setError('PDF is still uploading — please wait a moment then try again'); return;
+      }
+      if (attachedFileType !== 'pdf' && !scriptContent.trim()) {
+        setError('File could not be parsed. Try a different format or use plain text mode.'); return;
+      }
+    } else if (!scriptContent.trim()) {
       setError('Script content is required');
       return;
     }
@@ -182,6 +284,8 @@ export default function ShareScriptPage() {
           allow_free_use: allowFreeUse,
           copyright_disclaimer_accepted: needsDisclaimer && disclaimerAccepted,
           language: scriptLanguage || null,
+          attached_file_url: attachedFileUrl || null,
+          attached_file_type: attachedFileType || null,
           status: 'published',
         })
         .select('id')
@@ -295,7 +399,7 @@ export default function ShareScriptPage() {
             </select>
           </div>
 
-          {/* Script Source — project picker or plain text */}
+          {/* Script Source — project picker, plain text, or file upload */}
           <div>
             <label className="block text-sm font-medium text-white/70 mb-3">Script Source *</label>
             <div className="flex gap-1 mb-4 bg-surface-800 rounded-lg p-1 w-fit">
@@ -314,6 +418,14 @@ export default function ShareScriptPage() {
                 }`}
               >
                 ✏️ Plain Text
+              </button>
+              <button
+                onClick={() => setInputMode('file')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  inputMode === 'file' ? 'bg-surface-900 text-white shadow-sm' : 'text-white/40 hover:text-white'
+                }`}
+              >
+                📎 Upload File
               </button>
             </div>
 
@@ -441,7 +553,7 @@ export default function ShareScriptPage() {
                   </>
                 )}
               </div>
-            ) : (
+            ) : inputMode === 'text' ? (
               /* Plain text mode */
               <div>
                 <textarea
@@ -452,6 +564,121 @@ export default function ShareScriptPage() {
                   className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] resize-none transition-colors font-mono leading-relaxed"
                 />
                 <p className="text-xs text-white/50 mt-1">Tip: Use &quot;From My Projects&quot; to share with proper screenplay formatting.</p>
+              </div>
+            ) : (
+              /* File upload mode */
+              <div>
+                {!attachedFile ? (
+                  /* Drop zone */
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault(); setIsDragging(false);
+                      const file = e.dataTransfer.files[0];
+                      if (file) handleFileSelect(file);
+                    }}
+                    className={`rounded-xl border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${
+                      isDragging
+                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/5'
+                        : 'border-white/15 hover:border-white/25 hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <input
+                      type="file"
+                      id="screenplay-file-input"
+                      accept={ACCEPTED_EXTENSIONS}
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); }}
+                    />
+                    <label htmlFor="screenplay-file-input" className="cursor-pointer block">
+                      <div className="text-5xl mb-4">📎</div>
+                      <p className="text-sm font-medium text-white/70 mb-1">
+                        Drop your screenplay here, or{' '}
+                        <span className="text-[#FF5F1F] hover:underline">browse</span>
+                      </p>
+                      <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
+                        {(['fdx', 'fountain', 'txt', 'pdf'] as const).map((fmt) => (
+                          <span key={fmt} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-surface-800 text-white/40 border border-white/10">
+                            .{fmt}
+                            <span className="text-white/25 font-normal normal-case tracking-normal">·</span>
+                            <span className="font-normal normal-case tracking-normal">{FORMAT_LABELS[fmt]}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </label>
+                  </div>
+                ) : (
+                  /* File selected — show status + preview */
+                  <div className="space-y-4">
+                    {/* File pill */}
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 bg-surface-900">
+                      <div className="text-2xl">
+                        {attachedFileType === 'pdf' ? '📄' : attachedFileType === 'fdx' ? '🎬' : '📝'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{attachedFile.name}</p>
+                        <p className="text-xs text-white/40">
+                          {formatFileSize(attachedFile.size)}
+                          {attachedFileType && (
+                            <> · <span className="text-[#FF5F1F]">
+                              {FORMAT_LABELS[attachedFileType as UploadableFormat] ?? attachedFileType.toUpperCase()}
+                            </span></>
+                          )}
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleRemoveFile}
+                        className="text-white/30 hover:text-white/70 transition-colors text-lg leading-none px-1"
+                        title="Remove file"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Status messages */}
+                    {fileUploading && (
+                      <div className="flex items-center gap-2 text-sm text-white/50">
+                        <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-[#FF5F1F] animate-spin shrink-0" />
+                        Uploading PDF…
+                      </div>
+                    )}
+                    {!fileUploading && attachedFileType === 'pdf' && attachedFileUrl && (
+                      <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-4 py-2.5 text-sm text-green-700">
+                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        PDF uploaded — it will be embedded in your post for readers to view and download.
+                      </div>
+                    )}
+                    {fileParseError && (
+                      <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{fileParseError}</div>
+                    )}
+
+                    {/* Script preview (for parsed formats) */}
+                    {!fileUploading && scriptElements && scriptElements.length > 0 && (
+                      <div className="rounded-xl border border-white/10 bg-surface-900 overflow-hidden">
+                        <div className="flex items-center justify-between px-5 py-3 border-b border-white/07 bg-surface-900">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            <span className="text-xs font-semibold text-white/70">Parsed successfully</span>
+                            <span className="text-xs text-white/50">({scriptElements.length} elements)</span>
+                          </div>
+                          <span className="text-[10px] text-white/50 bg-surface-800 px-2 py-0.5 rounded font-medium">
+                            Formatted screenplay
+                          </span>
+                        </div>
+                        <div className="max-h-[400px] overflow-y-auto px-8 py-6">
+                          <ScreenplayRenderer elements={scriptElements} />
+                        </div>
+                      </div>
+                    )}
+                    {!fileUploading && scriptContent && !scriptElements && attachedFileType !== 'pdf' && (
+                      /* Plain text fallback preview */
+                      <div className="rounded-xl border border-white/10 bg-surface-900 max-h-60 overflow-y-auto p-5">
+                        <pre className="text-xs text-white/60 whitespace-pre-wrap font-mono leading-relaxed">{scriptContent.slice(0, 2000)}{scriptContent.length > 2000 ? '\n…' : ''}</pre>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

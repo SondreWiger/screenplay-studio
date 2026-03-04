@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
-import { ScriptContentViewer } from '@/components/ScreenplayRenderer';
+import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
 import { toast } from '@/components/ui';
@@ -31,7 +31,6 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [showScript, setShowScript] = useState(false);
   const [forking, setForking] = useState(false);
   const [showFilmModal, setShowFilmModal] = useState(false);
   const [filmTitle, setFilmTitle] = useState('');
@@ -327,44 +326,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
 
   return (
     <div className="min-h-screen" style={{ background: '#070710' }}>
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
-          <Link href="/community" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">Community</span>
-          </Link>
 
-          <div className="hidden md:flex items-center gap-5">
-            <Link href="/community" className="text-[11px] font-mono uppercase tracking-widest text-white" style={{ borderBottom: '1px solid #FF5F1F', paddingBottom: '2px' }}>Feed</Link>
-            <Link href="/community/showcase" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Showcase</Link>
-            <Link href="/community/challenges" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Challenges</Link>
-            <Link href="/community/free-scripts" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Scripts</Link>
-            <Link href="/blog" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Blog</Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {user ? (
-              <>
-                <Link href="/dashboard" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Dashboard</Link>
-                <Link href={`/u/${user.username || user.id}`}>
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6 rounded-full" style={{ boxShadow: '0 0 0 1.5px rgba(255,255,255,0.1)' }} />
-                  ) : (
-                    <div className="w-6 h-6 flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
-                      {(user.full_name || user.email || '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </Link>
-              </>
-            ) : (
-              <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Sign In</Link>
-            )}
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-10">
         {/* Header */}
@@ -473,38 +435,17 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           </div>
         )}
 
-        {/* Script content */}
+        {/* Script info panel */}
         <div className="mb-10">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-white">Script</h2>
-            <button
-              onClick={() => setShowScript(!showScript)}
-              className="text-xs text-[#FF5F1F] hover:text-[#E54E15] font-medium transition-colors"
-            >
-              {showScript ? 'Collapse' : 'Expand Full Script'}
-            </button>
-          </div>
-          <div
-            className={`rounded-xl border border-white/10 bg-surface-900 p-6 overflow-hidden transition-all ${
-              showScript ? 'max-h-none' : 'max-h-96'
-            }`}
-          >
-            {post.script_content ? (
-              <ScriptContentViewer content={post.script_content} />
-            ) : (
-              <p className="text-sm text-white/50 italic">No script content.</p>
-            )}
-          </div>
-          {!showScript && post.script_content && post.script_content.length > 1500 && (
-            <div className="relative -mt-16 pt-16 bg-gradient-to-t from-[#faf9f7] to-transparent">
-              <button
-                onClick={() => setShowScript(true)}
-                className="w-full py-3 text-sm font-medium text-[#FF5F1F] hover:text-[#E54E15] transition-colors"
-              >
-                Read full script ↓
-              </button>
-            </div>
-          )}
+          <h2 className="text-lg font-semibold text-white mb-4">Script</h2>
+          <CommunityScriptInfoPanel
+            content={post.script_content}
+            fileType={post.attached_file_type}
+            fileUrl={post.attached_file_url}
+            title={post.title}
+            postId={post.id}
+            user={user as Profile | null}
+          />
         </div>
 
         {/* Actions row */}
@@ -781,6 +722,15 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
             <SiteVersion light />
+            <span className="text-white/10">·</span>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+            >
+              Northem ♥
+            </a>
           </div>
         </div>
       </footer>
@@ -826,8 +776,8 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className={cn(isRoot ? 'text-sm' : 'text-xs', 'font-semibold text-white/90 hover:text-[#FF5F1F] transition-colors')}>{comment.author?.full_name || 'Anonymous'}</Link>
-              {comment.author?.role === 'moderator' && <span className="px-1 py-0.5 text-[8px] font-bold text-green-700 bg-green-50 rounded border border-green-200">MOD</span>}
-              {comment.author?.role === 'admin' && <span className="px-1 py-0.5 text-[8px] font-bold text-red-700 bg-red-50 rounded border border-red-200">ADMIN</span>}
+              {comment.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>🔰 Moderator</span>}
+              {comment.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>🛡️ Admin</span>}
               <span className="text-[10px] text-white/50">{timeAgo(comment.created_at)}</span>
               {comment.comment_type === 'suggestion' && (
                 <span className="px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 rounded">Suggestion</span>

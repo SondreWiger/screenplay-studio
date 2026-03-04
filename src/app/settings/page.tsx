@@ -13,6 +13,10 @@ import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import type { UsageIntent, ScriptType, Company, Profile } from '@/lib/types';
 import type { InsiderTier } from '@/hooks/useFeatureFlags';
 import { useFeatureAccess } from '@/components/FeatureGate';
+import { useGamification } from '@/hooks/useGamification';
+import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
+import { XPBar } from '@/components/XPBar';
+
 
 // ============================================================
 // User Settings — profile, preferences, company
@@ -88,7 +92,196 @@ function InsiderProgramCard() {
   );
 }
 
-type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security';
+type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security' | 'gamification';
+
+// ── Gamification Settings Tab ─────────────────────────────────
+function GamificationSettingsTab() {
+  const { user } = useAuth();
+  const { gamif, badges, enabled, levelInfo, multiplier, setGamificationEnabled, reload } = useGamification();
+  const [savingBadge, setSavingBadge] = useState(false);
+
+  const displayBadges = getDisplayBadges(badges as Parameters<typeof getDisplayBadges>[0]);
+  const ownedBadges   = badges;
+
+  const setDisplaySlot = async (badgeId: string, slot: 1 | 2 | null) => {
+    if (!user) return;
+    setSavingBadge(true);
+    const supabase = createClient();
+    if (slot === null) {
+      await supabase.from('user_badges').update({ display_slot: null }).eq('user_id', user.id).eq('badge_id', badgeId);
+    } else {
+      // Clear existing badge in that slot first
+      await supabase.from('user_badges').update({ display_slot: null }).eq('user_id', user.id).eq('display_slot', slot);
+      await supabase.from('user_badges').update({ display_slot: slot }).eq('user_id', user.id).eq('badge_id', badgeId);
+    }
+    await reload();
+    setSavingBadge(false);
+    toast.success('Badge updated!');
+  };
+
+  const canUseSlot2 = user?.role === 'admin' || user?.role === 'moderator';
+
+  if (!gamif) return (
+    <div className="text-center py-16 text-surface-500">Loading gamification data…</div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Toggle */}
+      <Card className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+              <span>🎮</span> Gamification
+            </h2>
+            <p className="text-sm text-surface-400 mt-0.5">
+              Show your XP, level, and badges across the platform.
+              {!enabled && ' XP is still collected silently when off.'}
+            </p>
+          </div>
+          <button
+            onClick={() => setGamificationEnabled(!enabled)}
+            className={`shrink-0 w-12 h-6 rounded-full relative transition-colors ${enabled ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}
+          >
+            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${enabled ? 'left-[26px]' : 'left-0.5'}`} />
+          </button>
+        </div>
+
+        {enabled === false && (
+          <div className="mt-4 p-3 rounded-lg bg-surface-800/50 border border-surface-700">
+            <p className="text-xs text-surface-400">
+              <span className="text-amber-400 font-semibold">XP is still being collected</span> — you&apos;re not missing out.
+              Enable this any time to see your progress.
+            </p>
+          </div>
+        )}
+      </Card>
+
+      {/* XP & Level overview */}
+      {enabled && levelInfo && (
+        <Card className="p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-white">Your Progress</h3>
+          <XPBar
+            xpTotal={gamif.xp_total}
+            level={gamif.level}
+            multiplier={multiplier}
+            showTitle
+            showMultiplier
+            animated
+          />
+          <div className="grid grid-cols-3 gap-3 mt-2">
+            {[
+              { label: 'Total XP', value: gamif.xp_total.toLocaleString() },
+              { label: 'Level', value: String(gamif.level) },
+              { label: 'Login Streak', value: `${gamif.login_streak} days` },
+            ].map(({ label, value }) => (
+              <div key={label} className="p-3 rounded-xl bg-surface-800/50 border border-surface-700 text-center">
+                <p className="text-xs text-surface-400 mb-1">{label}</p>
+                <p className="text-lg font-black text-[#FF5F1F]">{value}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Badges */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-white">Your Badges</h3>
+          {displayBadges.length > 0 && (
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-surface-400 mr-1">Displayed:</span>
+              <BadgeDisplay badges={displayBadges} max={2} size="xs" />
+            </div>
+          )}
+        </div>
+
+        {ownedBadges.length === 0 ? (
+          <p className="text-sm text-surface-500 text-center py-4">No badges yet — keep writing!</p>
+        ) : (
+          <div className="space-y-2">
+            {ownedBadges.map((ub: typeof badges[number]) => {
+              const badge = (ub as { badge?: { id: string; name: string; emoji: string; color: string; description?: string | null } }).badge;
+              if (!badge) return null;
+              const currentSlot = (ub as { display_slot?: 1 | 2 | null }).display_slot ?? null;
+              return (
+                <div key={ub.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-800/50 border border-surface-700">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded border"
+                      style={{ color: badge.color, borderColor: `${badge.color}40`, background: `${badge.color}15` }}
+                    >
+                      {badge.emoji} {badge.name}
+                    </span>
+                    {badge.description && <span className="text-[11px] text-surface-400">{badge.description}</span>}
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => setDisplaySlot(badge.id, currentSlot === 1 ? null : 1)}
+                      disabled={savingBadge}
+                      title="Show as primary badge"
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+                        currentSlot === 1
+                          ? 'bg-[#FF5F1F]/20 border-[#FF5F1F]/40 text-[#FF5F1F]'
+                          : 'bg-surface-800 border-surface-600 text-surface-400 hover:text-white'
+                      }`}
+                    >
+                      Slot 1
+                    </button>
+                    {canUseSlot2 && (
+                      <button
+                        onClick={() => setDisplaySlot(badge.id, currentSlot === 2 ? null : 2)}
+                        disabled={savingBadge}
+                        title="Show as secondary badge (admin/mod only)"
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+                          currentSlot === 2
+                            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                            : 'bg-surface-800 border-surface-600 text-surface-400 hover:text-white'
+                        }`}
+                      >
+                        Slot 2
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <p className="text-[11px] text-surface-500 mt-3">
+          Slot 1 badge appears next to your name everywhere.
+          {canUseSlot2 ? ' Slot 2 also shows up on posts and comments.' : ''}
+        </p>
+      </Card>
+
+      {/* XP earning info */}
+      <Card className="p-6">
+        <h3 className="text-sm font-semibold text-white mb-3">How to earn XP</h3>
+        <div className="space-y-2">
+          {[
+            { icon: '✍️', label: 'Every 10 words written', xp: '+1 XP' },
+            { icon: '📝', label: 'Create a community post', xp: '+25 XP' },
+            { icon: '💬', label: 'Leave a comment', xp: '+5 XP' },
+            { icon: '❤️', label: 'Receive a like', xp: '+2 XP' },
+            { icon: '🏆', label: 'Challenge submission', xp: '+50 XP' },
+            { icon: '🚀', label: 'Create a project', xp: '+10 XP' },
+            { icon: '☀️', label: 'Daily login', xp: '+5 XP' },
+            { icon: '🔥', label: 'Time multiplier (1h = 2×, 2h = 4×, 3h = 8×)', xp: 'up to 16×' },
+          ].map(({ icon, label, xp }) => (
+            <div key={label} className="flex items-center justify-between py-1.5 border-b border-surface-800 last:border-0">
+              <div className="flex items-center gap-2 text-sm text-surface-300">
+                <span>{icon}</span>
+                <span>{label}</span>
+              </div>
+              <span className="text-xs font-mono font-bold text-[#FF5F1F]">{xp}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
 
 export default function UserSettingsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -291,6 +484,7 @@ export default function UserSettingsPage() {
     { key: 'company', label: 'Company', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
     { key: 'privacy', label: 'Privacy & Data', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
     { key: 'security', label: 'Security', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> },
+    { key: 'gamification' as SettingsTab, label: 'Gamification', icon: <span className="text-sm">🎮</span> },
   ];
 
   return (
@@ -1040,6 +1234,11 @@ export default function UserSettingsPage() {
               </Card>
             </div>
           </div>
+        )}
+
+        {/* Gamification Tab */}
+        {tab === 'gamification' && (
+          <GamificationSettingsTab />
         )}
       </div>
     </div>

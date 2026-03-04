@@ -5,30 +5,65 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Input } from '@/components/ui';
 
+function friendlyResetError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes('rate limit') || m.includes('too many') || m.includes('over_email_send_rate_limit')) {
+    return 'Too many reset requests. Please wait a few minutes before trying again.';
+  }
+  if (m.includes('invalid email') || m.includes('unable to validate')) {
+    return 'Please enter a valid email address.';
+  }
+  if (m.includes('network') || m.includes('fetch') || m.includes('failed to fetch')) {
+    return 'Network error — please check your connection and try again.';
+  }
+  return msg;
+}
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+  // Track the email that was actually submitted (handles autofill)
+  const [sentEmail, setSentEmail] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
-    const supabase = createClient();
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?redirect=/settings`,
-    });
+    // Read from DOM to capture autofilled values React state may have missed
+    const form = e.currentTarget;
+    const formEmail = (form.elements.namedItem('email') as HTMLInputElement)?.value?.trim() || email.trim();
 
-    if (resetError) {
-      setError(resetError.message);
-      setLoading(false);
+    if (!formEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
-    setSent(true);
-    setLoading(false);
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(formEmail, {
+        redirectTo: `${window.location.origin}/auth/callback?redirect=/settings`,
+      });
+
+      if (resetError) {
+        setError(friendlyResetError(resetError.message));
+        setLoading(false);
+        return;
+      }
+
+      setSentEmail(formEmail);
+      setSent(true);
+    } catch (err: unknown) {
+      setError(friendlyResetError(err instanceof Error ? err.message : 'Something went wrong. Please try again.'));
+      setLoading(false);
+    }
   };
 
   if (sent) {
@@ -58,7 +93,7 @@ export default function ForgotPasswordPage() {
           <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>CHECK YOUR EMAIL</h1>
           <p className="text-sm text-white/35 mb-8 leading-relaxed">
             If an account exists for{' '}
-            <span className="text-white font-mono">{email}</span>,
+            <span className="text-white font-mono">{sentEmail}</span>,
             we sent a password reset link. Check your inbox and spam folder.
           </p>
           <Link href="/auth/login" className="text-[11px] font-mono uppercase tracking-widest hover:opacity-60 transition-opacity" style={{ color: '#FF5F1F' }}>
@@ -125,6 +160,7 @@ export default function ForgotPasswordPage() {
               <input
                 className="ss-input w-full"
                 type="email"
+                name="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

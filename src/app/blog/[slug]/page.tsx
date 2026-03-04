@@ -463,6 +463,15 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               Support
             </a>
             <SiteVersion />
+            <span className="text-white/10">·</span>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+            >
+              Northem ♥
+            </a>
           </div>
         </div>
       </footer>

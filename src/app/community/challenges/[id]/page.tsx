@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { ScriptContentViewer, ScreenplayRenderer } from '@/components/ScreenplayRenderer';
+import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import { formatDate, formatDateTime, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil, timeAgo, cn } from '@/lib/utils';
 import { toast } from '@/components/ui';
 import type { CommunityChallenge, ChallengeSubmission, Profile, Project } from '@/lib/types';
@@ -41,8 +42,7 @@ export default function ChallengeDetailPage() {
   const [scriptElements, setScriptElements] = useState<any[] | null>(null);
   const [loadingScript, setLoadingScript] = useState(false);
 
-  // Expanded script viewers
-  const [expandedSub, setExpandedSub] = useState<string | null>(null);
+  // Script reader (managed per-submission by CommunityScriptInfoPanel)
 
   const fetchData = useCallback(async () => {
     const supabase = createClient();
@@ -255,44 +255,7 @@ export default function ChallengeDetailPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#070710' }}>
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
-          <Link href="/community" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">Community</span>
-          </Link>
 
-          <div className="hidden md:flex items-center gap-5">
-            <Link href="/community" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Feed</Link>
-            <Link href="/community/showcase" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Showcase</Link>
-            <Link href="/community/challenges" className="text-[11px] font-mono uppercase tracking-widest text-white" style={{ borderBottom: '1px solid #FF5F1F', paddingBottom: '2px' }}>Challenges</Link>
-            <Link href="/community/free-scripts" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Scripts</Link>
-            <Link href="/blog" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Blog</Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {user ? (
-              <>
-                <Link href="/dashboard" className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Dashboard</Link>
-                <Link href={`/u/${user.username || user.id}`}>
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6 rounded-full" style={{ boxShadow: '0 0 0 1.5px rgba(255,255,255,0.1)' }} />
-                  ) : (
-                    <div className="w-6 h-6 flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
-                      {(user.full_name || user.email || '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </Link>
-              </>
-            ) : (
-              <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="text-[11px] font-mono uppercase tracking-widest text-white/45 hover:text-white transition-colors">Sign In</Link>
-            )}
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-10">
         {/* Breadcrumb */}
@@ -630,20 +593,13 @@ export default function ChallengeDetailPage() {
                       </div>
                     </div>
 
-                    {/* Expandable script content */}
+                    {/* Script info panel */}
                     {sub.script_content && (
-                      <div className="mt-3">
-                        <button
-                          onClick={() => setExpandedSub(expandedSub === sub.id ? null : sub.id)}
-                          className="text-xs font-medium text-[#FF5F1F] hover:text-[#E54E15] transition-colors"
-                        >
-                          {expandedSub === sub.id ? 'Hide Script ▲' : 'Read Script ▼'}
-                        </button>
-                        {expandedSub === sub.id && (
-                          <div className="mt-3 max-h-[400px] overflow-y-auto rounded-lg border border-white/07 bg-surface-900 p-4">
-                            <ScriptContentViewer content={sub.script_content || ''} />
-                          </div>
-                        )}
+                      <div className="mt-4">
+                        <CommunityScriptInfoPanel
+                          content={sub.script_content}
+                          title={sub.title}
+                        />
                       </div>
                     )}
                   </div>
@@ -720,20 +676,13 @@ export default function ChallengeDetailPage() {
                           </div>
                           {sub.description && <p className="text-sm text-white/55 mt-2">{sub.description}</p>}
 
-                          {/* Expandable script */}
+                          {/* Script info panel */}
                           {sub.script_content && (
-                            <div className="mt-3">
-                              <button
-                                onClick={() => setExpandedSub(expandedSub === sub.id ? null : sub.id)}
-                                className="text-xs font-medium text-[#FF5F1F] hover:text-[#E54E15] transition-colors"
-                              >
-                                {expandedSub === sub.id ? 'Hide Script ▲' : 'Read Script ▼'}
-                              </button>
-                              {expandedSub === sub.id && (
-                                <div className="mt-3 max-h-[400px] overflow-y-auto rounded-lg border border-white/07 bg-surface-900 p-4">
-                                  <ScriptContentViewer content={sub.script_content || ''} />
-                                </div>
-                              )}
+                            <div className="mt-4">
+                              <CommunityScriptInfoPanel
+                                content={sub.script_content}
+                                title={sub.title}
+                              />
                             </div>
                           )}
                         </div>
@@ -778,6 +727,15 @@ export default function ChallengeDetailPage() {
             <Link href="/community" className="hover:text-white transition-colors">Feed</Link>
             <Link href="/community/challenges" className="hover:text-white transition-colors">Challenges</Link>
             <SiteVersion light />
+            <span className="text-white/10">·</span>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+            >
+              Northem ♥
+            </a>
           </div>
         </div>
       </footer>

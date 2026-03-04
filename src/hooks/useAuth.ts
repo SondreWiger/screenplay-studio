@@ -42,30 +42,32 @@ export function useAuth() {
 
     const initAuth = async () => {
       try {
-        // Session-only auth: if there's no sessionStorage flag, sign out any persisted session.
         let hasSessionFlag = false;
         try { hasSessionFlag = !!sessionStorage.getItem('ss_session_active'); } catch {}
 
-        if (!hasSessionFlag) {
-          // Don't await signOut — if it hangs we still want to finish init
-          supabase.auth.signOut().catch(() => {});
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        // Use getUser() with timeout to validate session
+        // Always ask Supabase for the current user — auth cookies set by email
+        // verification, OAuth callbacks, and magic links are valid even when
+        // ss_session_active isn't yet in sessionStorage (the flag is only written
+        // after the form-login or after onAuthStateChange fires, which hasn't
+        // happened yet on the landing page after a callback redirect).
         const { data: { user: authUser }, error: authError } = await withTimeout(
           supabase.auth.getUser(),
           6_000,
           'getUser'
-        );
+        ).catch(() => ({ data: { user: null as null }, error: new Error('timeout') }));
 
         if (authError || !authUser) {
+          // Truly no valid session — clean up any stale flag
+          if (hasSessionFlag) {
+            try { sessionStorage.removeItem('ss_session_active'); } catch {}
+          }
           setUser(null);
           setLoading(false);
           return;
         }
+
+        // Valid Supabase session — keep the flag in sync for future page loads
+        try { sessionStorage.setItem('ss_session_active', '1'); } catch {}
 
         // Auth user exists — fetch profile (with timeout)
         const { data: profile } = await withTimeout(

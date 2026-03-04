@@ -16,9 +16,11 @@ import type { CommunityPost, CommunityCategory, CommunityChallenge } from '@/lib
 export default function CommunityPage() {
   const { user } = useAuth();
   const router = useRouter();
+  type FeaturedCourse = { id: string; title: string; difficulty: string; xp_reward: number; enrollment_count: number };
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [activeChallenge, setActiveChallenge] = useState<CommunityChallenge | null>(null);
+  const [featuredCourses, setFeaturedCourses] = useState<FeaturedCourse[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'discussed'>('newest');
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,7 @@ export default function CommunityPage() {
   const fetchData = async () => {
     const supabase = createClient();
 
-    const [postsRes, catsRes, challengeRes] = await Promise.all([
+    const [postsRes, catsRes, challengeRes, coursesRes] = await Promise.all([
       supabase
         .from('community_posts')
         .select('*, author:profiles!author_id(*)')
@@ -42,6 +44,12 @@ export default function CommunityPage() {
         .select('*')
         .order('display_order'),
       supabase.rpc('ensure_weekly_challenge'),
+      supabase
+        .from('courses')
+        .select('id,title,difficulty,xp_reward,enrollment_count')
+        .eq('status', 'published')
+        .order('enrollment_count', { ascending: false })
+        .limit(3),
     ]);
 
     const rawPosts = postsRes.data || [];
@@ -68,6 +76,7 @@ export default function CommunityPage() {
 
     setPosts(rawPosts);
     setCategories(catsRes.data || []);
+    setFeaturedCourses((coursesRes.data as FeaturedCourse[]) || []);
     if (challengeRes.data && Array.isArray(challengeRes.data) && challengeRes.data.length > 0) {
       setActiveChallenge(challengeRes.data[0]);
     } else if (challengeRes.data && !Array.isArray(challengeRes.data)) {
@@ -114,69 +123,7 @@ export default function CommunityPage() {
         }}
       />
 
-      {/* Nav */}
-      <nav
-        className="sticky top-0 z-30 backdrop-blur-xl"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}
-      >
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
-              Community
-            </span>
-          </Link>
 
-          <div className="hidden md:flex items-center gap-5">
-            {[
-              { href: '/community', label: 'Feed', active: true },
-              { href: '/community/showcase', label: 'Showcase' },
-              { href: '/community/challenges', label: 'Challenges' },
-              { href: '/community/free-scripts', label: 'Free Scripts' },
-              { href: '/community/chat', label: 'Chat' },
-              { href: '/messages', label: 'Messages' },
-              { href: '/blog', label: 'Blog' },
-            ].map(l => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="text-[11px] font-mono uppercase tracking-widest transition-colors"
-                style={{ color: l.active ? '#FF5F1F' : 'rgba(255,255,255,0.45)', paddingBottom: l.active ? '2px' : undefined, borderBottom: l.active ? '1px solid #FF5F1F' : undefined }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {user ? (
-              <>
-                <Link href="/community/share" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>
-                  Share Script
-                </Link>
-                <Link href="/dashboard" className="text-[11px] font-mono text-white/50 uppercase tracking-widest hover:text-white/60 transition-colors">Dashboard</Link>
-                <button onClick={handleSignOut} className="text-[11px] font-mono text-white/50 uppercase tracking-widest hover:text-white/60 transition-colors">Sign Out</button>
-                <Link href={`/u/${user.username || user.id}`}>
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" />
-                  ) : (
-                    <div className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
-                      {(user.full_name || user.email || '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/login?redirect=/community" className="text-[11px] font-mono text-white/50 uppercase tracking-widest hover:text-white/60 transition-colors">Sign In</Link>
-                <Link href="/auth/register?redirect=/community" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>Get Started</Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
 
       {/* Hero / Active Challenge Banner */}
       {activeChallenge && (() => {
@@ -279,6 +226,33 @@ export default function CommunityPage() {
                 📖 Free-to-Use Scripts
               </Link>
             </div>
+
+            {/* Featured Courses */}
+            {featuredCourses.length > 0 && (
+              <div className="mt-6 pt-5 border-t border-white/10">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">📚 Courses</p>
+                  <Link href="/community/courses" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">All →</Link>
+                </div>
+                <div className="space-y-2">
+                  {featuredCourses.map(c => {
+                    const diffColor = c.difficulty === 'beginner' ? 'text-emerald-400' : c.difficulty === 'intermediate' ? 'text-yellow-400' : 'text-red-400';
+                    return (
+                      <Link key={c.id} href={`/community/courses/${c.id}`}
+                        className="block p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-all group">
+                        <p className="text-xs font-medium text-white/80 group-hover:text-white transition-colors line-clamp-1">{c.title}</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className={`text-[9px] font-semibold uppercase tracking-wide ${diffColor}`}>{c.difficulty}</span>
+                          <span className="text-[9px] text-white/25">·</span>
+                          <span className="text-[9px] text-[#FF5F1F]">{c.xp_reward} XP</span>
+                          {c.enrollment_count > 0 && <span className="text-[9px] text-white/25 ml-auto">{c.enrollment_count} enrolled</span>}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </aside>
 
           {/* Main content — post feed */}
@@ -353,8 +327,8 @@ export default function CommunityPage() {
                             )}
                             <span className="text-white/60 font-medium">{post.author?.full_name || 'Anonymous'}</span>
                           </Link>
-                          {post.author?.role === 'moderator' && <span className="px-1 py-0.5 text-[8px] font-bold text-green-400 bg-green-400/10 rounded">MOD</span>}
-                          {post.author?.role === 'admin' && <span className="px-1 py-0.5 text-[8px] font-bold text-[#FF5F1F] bg-[#FF5F1F]/10 rounded">ADMIN</span>}
+                          {post.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>🔰 Moderator</span>}
+                          {post.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>🛡️ Admin</span>}
                           <span>{timeAgo(post.created_at)}</span>
                           <span className="flex items-center gap-1">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>

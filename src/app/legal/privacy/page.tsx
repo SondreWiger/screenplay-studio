@@ -46,7 +46,7 @@ export default function PrivacyPolicyPage() {
           {/* 1. Introduction & Data Controller */}
           <h2 id="introduction" className="scroll-mt-24">1. Introduction &amp; Data Controller</h2>
           <p>
-            Screenplay Studio (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;, &quot;the Company&quot;) is committed to protecting and respecting your privacy. This Privacy Policy explains how we collect, use, store, share, and protect your personal data when you access or use our website at screenplaystudio.fun, our web application, APIs, and any related services (collectively, &quot;the Service&quot;).
+            Screenplay Studio (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;, &quot;the Company&quot;) is developed and operated by <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer">Northem Development</a>, a Norwegian software development company. We are committed to protecting and respecting your privacy. This Privacy Policy explains how we collect, use, store, share, and protect your personal data when you access or use our website at screenplaystudio.fun, our web application, APIs, and any related services (collectively, &quot;the Service&quot;).
           </p>
           <p>
             The data controller responsible for your personal data within the meaning of the EU General Data Protection Regulation (GDPR) and the Norwegian Personal Data Act (Personopplysningsloven) is:
@@ -630,15 +630,22 @@ export default function PrivacyPolicyPage() {
             For general inquiries about this Privacy Policy or our data practices that are not specifically related to data protection rights (which should be directed to the DPO), you may contact us:
           </p>
           <div className="rounded-lg bg-surface-900 border border-surface-800 p-4 not-prose text-surface-300">
-            <p><strong className="text-white">Screenplay Studio</strong></p>
-            <p>Privacy Inquiries</p>
+            <p><strong className="text-white">Northem Development</strong></p>
+            <p className="mt-1 text-surface-400 text-sm">Operator of Screenplay Studio</p>
+            <p className="mt-2">Privacy Inquiries</p>
             <p>Email: <a href="mailto:legal@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">legal@screenplaystudio.fun</a></p>
             <p>DPO: <a href="mailto:dpo@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">dpo@screenplaystudio.fun</a></p>
+            <p className="mt-2"><a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 transition-colors">development.northem.no</a></p>
           </div>
 
           <div className="mt-12 pt-8 border-t border-surface-800 text-surface-400 text-sm not-prose">
             <p>
               By using Screenplay Studio, you acknowledge that you have read and understood this Privacy Policy and agree to the collection and use of your data as described herein.
+            </p>
+            <p className="mt-3 text-surface-500">
+              Screenplay Studio is a product of{' '}
+              <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 transition-colors">Northem Development</a>
+              {' '}&mdash; made with ♥ in Norway.
             </p>
             <div className="mt-4 flex gap-4">
               <Link href="/legal/terms" className="text-red-400 hover:text-red-300 transition-colors">Terms of Service</Link>

@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select, toast } from '@/components/ui';
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
-import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage } from '@/lib/types';
+import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
+import { BadgeDisplay } from '@/components/BadgeDisplay';
 import { triggerPush } from '@/lib/notifications';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
@@ -65,7 +66,20 @@ interface UserRow {
   projectCount?: number;
 }
 
-type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'tickets' | 'system';
+interface ContributorRow {
+  id: string;
+  user_id: string;
+  github_handle: string | null;
+  bio: string | null;
+  cached_name: string | null;
+  cached_avatar_url: string | null;
+  contribution_areas: string[];
+  is_featured: boolean;
+  added_at: string;
+  added_by: string | null;
+}
+
+type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'tickets' | 'system' | 'contributors' | 'badges' | 'courses';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -83,6 +97,7 @@ export default function AdminPage() {
   const [editingPost, setEditingPost] = useState<BlogPost | null | 'new'>(null);
   const [blogComments, setBlogComments] = useState<any[]>([]);
   const [siteVersion, setSiteVersion] = useState<string>('');
+  const [opensourceEnabled, setOpensourceEnabled] = useState(true);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Community
@@ -97,6 +112,9 @@ export default function AdminPage() {
   const [ticketMessages, setTicketMessages] = useState<TicketMessage[]>([]);
   const [ticketReply, setTicketReply] = useState('');
 
+  // Contributors
+  const [contributors, setContributors] = useState<ContributorRow[]>([]);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || !isStaff(user.role)) {
@@ -110,6 +128,8 @@ export default function AdminPage() {
       loadProjects();
       loadBlogPosts();
       loadSiteVersion();
+      loadOpensourceSetting();
+      loadContributors();
     } else {
       // Mods don't call loadStats, so clear loading immediately
       setLoading(false);
@@ -139,6 +159,24 @@ export default function AdminPage() {
       setSiteVersion(newVersion);
     } catch (err) {
       console.error('Error updating version:', err);
+    }
+  };
+
+  const loadOpensourceSetting = async () => {
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.from('site_settings').select('value').eq('key', 'opensource_enabled').single();
+      if (data) setOpensourceEnabled(data.value !== 'false');
+    } catch { /* row may not exist yet — default true */ }
+  };
+
+  const handleToggleOpensource = async (enabled: boolean) => {
+    try {
+      const supabase = createClient();
+      await supabase.from('site_settings').upsert({ key: 'opensource_enabled', value: enabled ? 'true' : 'false', updated_at: new Date().toISOString() });
+      setOpensourceEnabled(enabled);
+    } catch (err) {
+      console.error('Error updating opensource setting:', err);
     }
   };
 
@@ -346,6 +384,67 @@ export default function AdminPage() {
     } catch (err) {
       console.error('Error loading tickets:', err);
     }
+  };
+
+  const loadContributors = async () => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('contributors')
+        .select('*')
+        .order('added_at', { ascending: false });
+      if (error) { console.error('Contributors load error:', error); toast.error('Contributors: ' + error.message); return; }
+      setContributors((data || []) as ContributorRow[]);
+    } catch (err) {
+      console.error('Error loading contributors:', err);
+    }
+  };
+
+  const handleAddContributor = async (userId: string, github: string, bio: string, areas: string[]) => {
+    const supabase = createClient();
+    // Fetch profile details to cache for join-free public display
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, display_name, avatar_url')
+      .eq('id', userId)
+      .single();
+    const cachedName = profile?.full_name || profile?.display_name || null;
+    const cachedAvatar = profile?.avatar_url || null;
+    const { data, error } = await supabase
+      .from('contributors')
+      .insert({
+        user_id: userId,
+        github_handle: github || null,
+        bio: bio || null,
+        contribution_areas: areas,
+        cached_name: cachedName,
+        cached_avatar_url: cachedAvatar,
+        added_by: user!.id,
+      })
+      .select('*')
+      .single();
+    if (error) {
+      console.error('Contributors insert error:', error);
+      toast.error(`Failed to add contributor: ${error.message}`);
+      return;
+    }
+    if (data) setContributors(prev => [data as ContributorRow, ...prev]);
+    toast.success('Contributor added!');
+  };
+
+  const handleRemoveContributor = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from('contributors').delete().eq('id', id);
+    if (error) { toast.error('Failed to remove: ' + error.message); return; }
+    setContributors(prev => prev.filter(c => c.id !== id));
+    toast.success('Contributor removed');
+  };
+
+  const handleToggleFeatured = async (id: string, featured: boolean) => {
+    const supabase = createClient();
+    const { error } = await supabase.from('contributors').update({ is_featured: featured }).eq('id', id);
+    if (error) { toast.error('Failed to update: ' + error.message); return; }
+    setContributors(prev => prev.map(c => c.id === id ? { ...c, is_featured: featured } : c));
   };
 
   const loadTicketMessages = async (ticketId: string) => {
@@ -590,6 +689,18 @@ export default function AdminPage() {
       key: 'tickets' as Tab, label: 'Tickets',
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>,
     },
+    {
+      key: 'contributors' as Tab, label: 'Contributors',
+      icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
+    },
+    {
+      key: 'badges' as Tab, label: 'Badges',
+      icon: <span className="text-base leading-5">🎖️</span>,
+    },
+    {
+      key: 'courses' as Tab, label: 'Courses',
+      icon: <span className="text-base leading-5">📚</span>,
+    },
   ];
   // Mods only see tickets + community; full admins see everything
   const tabs = isFull ? allTabs : allTabs.filter((t) => MOD_TABS.includes(t.key));
@@ -703,6 +814,8 @@ export default function AdminPage() {
               onRefreshStats={() => { setLoading(true); loadStats(); loadUsers(); loadProjects(); }}
               siteVersion={siteVersion}
               onUpdateVersion={handleUpdateVersion}
+              opensourceEnabled={opensourceEnabled}
+              onToggleOpensource={handleToggleOpensource}
             />
           )}
           {activeTab === 'blog' && (
@@ -742,6 +855,20 @@ export default function AdminPage() {
               onStatusChange={handleUpdateTicketStatus}
               onPriorityChange={handleUpdateTicketPriority}
             />
+          )}
+          {activeTab === 'contributors' && (
+            <ContributorsTab
+              contributors={contributors}
+              onRemove={handleRemoveContributor}
+              onAdd={handleAddContributor}
+              onToggleFeatured={handleToggleFeatured}
+            />
+          )}
+          {activeTab === 'badges' && (
+            <BadgesAdminTab />
+          )}
+          {activeTab === 'courses' && (
+            <CoursesAdminTab />
           )}
         </div>
       </main>
@@ -1343,13 +1470,15 @@ function ProjectsTab({ projects, search, onSearchChange }: {
 // System Tab
 // ============================================================
 
-function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats, siteVersion, onUpdateVersion }: {
+function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats, siteVersion, onUpdateVersion, opensourceEnabled, onToggleOpensource }: {
   rebootStatus: string | null;
   onSoftReboot: () => void;
   onClearPresence: () => void;
   onRefreshStats: () => void;
   siteVersion: string;
   onUpdateVersion: (v: string) => void;
+  opensourceEnabled: boolean;
+  onToggleOpensource: (enabled: boolean) => void;
 }) {
   const [editingVersion, setEditingVersion] = useState(false);
   const [versionDraft, setVersionDraft] = useState(siteVersion);
@@ -1358,6 +1487,44 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
     <div>
       <h1 className="text-2xl font-black text-white mb-1">System Management</h1>
       <p className="text-sm text-surface-400 mb-8">Maintenance tools for the platform</p>
+
+      {/* Open Source toggle */}
+      <div className="mb-6 rounded-xl border bg-surface-900/50 p-5 flex items-center justify-between"
+        style={{ borderColor: opensourceEnabled ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{ background: opensourceEnabled ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)' }}>
+            <span className="text-xl">{opensourceEnabled ? '🔓' : '🔒'}</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              Open Source Mode
+              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                opensourceEnabled
+                  ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
+                  : 'text-white/30 border-white/10 bg-white/5'
+              }`}>
+                {opensourceEnabled ? 'ON' : 'OFF'}
+              </span>
+            </h3>
+            <p className="text-xs text-surface-500 mt-0.5">
+              {opensourceEnabled
+                ? 'Shows /contribute page, open-source mentions in metadata, and contributor sections'
+                : 'Hides /contribute, strips open-source from titles/embeds, hides contributor section in /about'}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => onToggleOpensource(!opensourceEnabled)}
+          className={`relative w-12 h-6 rounded-full transition-all ${
+            opensourceEnabled ? 'bg-emerald-500' : 'bg-surface-700'
+          }`}
+        >
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+            opensourceEnabled ? 'translate-x-6' : 'translate-x-0'
+          }`} />
+        </button>
+      </div>
 
       {/* Version control */}
       <div className="mb-6 rounded-xl border border-surface-800 bg-surface-900/50 p-5 flex items-center justify-between">
@@ -2513,6 +2680,588 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Contributors Tab ──────────────────────────────────────────────────────────
+const CONTRIBUTOR_AREA_OPTIONS = ['Code', 'Design', 'Docs', 'Testing', 'Community', 'Translation'];
+
+function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
+  contributors: ContributorRow[];
+  onRemove: (id: string) => void;
+  onAdd: (userId: string, github: string, bio: string, areas: string[]) => Promise<void>;
+  onToggleFeatured: (id: string, featured: boolean) => void;
+}) {
+  const [filter, setFilter] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [userQuery, setUserQuery] = useState('');
+  const [userResults, setUserResults] = useState<UserRow[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [github, setGithub] = useState('');
+  const [bio, setBio] = useState('');
+  const [areas, setAreas] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  const searchUsers = async (q: string) => {
+    if (!q.trim()) { setUserResults([]); return; }
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, display_name, avatar_url, role, is_pro, pro_since, created_at, updated_at')
+      .or(`email.ilike.%${q}%,full_name.ilike.%${q}%`)
+      .limit(10);
+    setUserResults((data || []) as UserRow[]);
+  };
+
+  const handleAdd = async () => {
+    if (!selectedUser) return;
+    setSaving(true);
+    await onAdd(selectedUser.id, github, bio, areas);
+    setSaving(false);
+    setShowAddForm(false);
+    setSelectedUser(null);
+    setUserQuery('');
+    setGithub('');
+    setBio('');
+    setAreas([]);
+    setUserResults([]);
+  };
+
+  const filtered = contributors.filter(c =>
+    !filter ||
+    (c.cached_name || '').toLowerCase().includes(filter.toLowerCase()) ||
+    (c.github_handle || '').toLowerCase().includes(filter.toLowerCase())
+  );
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-white">Contributors</h1>
+          <p className="text-sm text-surface-400 mt-1">
+            Manage contributors listed on the{' '}
+            <a href="/contribute" target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">/contribute</a>{' '}
+            and{' '}
+            <a href="/about" target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">/about</a>{' '}
+            pages. Featured contributors appear highlighted.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="https://github.com/SondreWiger/screenplay-studio/graphs/contributors"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-surface-400 hover:text-white transition-colors flex items-center gap-1.5"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+            </svg>
+            GitHub Contributors
+          </a>
+          <Button onClick={() => setShowAddForm(v => !v)} size="sm">
+            {showAddForm ? 'Cancel' : '+ Add Contributor'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Add Form */}
+      {showAddForm && (
+        <div className="mb-6 rounded-xl border border-[#FF5F1F]/20 p-5" style={{ background: 'rgba(255,95,31,0.04)' }}>
+          <h3 className="text-sm font-semibold text-white mb-4">Add Contributor</h3>
+          <div className="space-y-4">
+
+            {/* User search */}
+            <div>
+              <label className="text-xs text-surface-400 block mb-1.5">Search user by name or email</label>
+              <Input
+                value={userQuery}
+                onChange={e => { setUserQuery(e.target.value); searchUsers(e.target.value); }}
+                placeholder="john@example.com"
+              />
+              {userResults.length > 0 && !selectedUser && (
+                <div className="mt-1 rounded-lg border border-surface-700 bg-surface-900 divide-y divide-surface-800 max-h-44 overflow-y-auto">
+                  {userResults.map(u => (
+                    <button
+                      key={u.id}
+                      onClick={() => { setSelectedUser(u); setUserResults([]); setUserQuery(u.email); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-surface-800 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                        {(u.full_name || u.email || '?')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm text-white">{u.full_name || '—'}</p>
+                        <p className="text-xs text-surface-500">{u.email}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {selectedUser && (
+                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border border-[#FF5F1F]/25" style={{ background: 'rgba(255,95,31,0.08)' }}>
+                  <div className="w-6 h-6 rounded-full bg-[#FF5F1F] flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                    {(selectedUser.full_name || selectedUser.email || '?')[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-white truncate">{selectedUser.full_name || selectedUser.email}</p>
+                    <p className="text-[10px] text-surface-500 truncate">{selectedUser.email}</p>
+                  </div>
+                  <button onClick={() => { setSelectedUser(null); setUserQuery(''); }} className="text-xs text-surface-500 hover:text-white ml-1">✕</button>
+                </div>
+              )}
+            </div>
+
+            {/* GitHub + Bio */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-surface-400 block mb-1.5">GitHub handle <span className="text-surface-600">(optional)</span></label>
+                <Input value={github} onChange={e => setGithub(e.target.value)} placeholder="e.g. johndoe" />
+              </div>
+              <div>
+                <label className="text-xs text-surface-400 block mb-1.5">Short bio <span className="text-surface-600">(optional)</span></label>
+                <Input value={bio} onChange={e => setBio(e.target.value)} placeholder="e.g. Frontend dev" />
+              </div>
+            </div>
+
+            {/* Contribution areas */}
+            <div>
+              <label className="text-xs text-surface-400 block mb-2">Contribution areas</label>
+              <div className="flex flex-wrap gap-2">
+                {CONTRIBUTOR_AREA_OPTIONS.map(a => (
+                  <button
+                    key={a}
+                    onClick={() => setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a])}
+                    className={cn(
+                      'px-3 py-1 text-[11px] font-medium rounded-full border transition-all',
+                      areas.includes(a)
+                        ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-[#FF5F1F]/30'
+                        : 'bg-surface-900 text-surface-400 border-surface-700 hover:border-surface-500'
+                    )}
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button onClick={() => setShowAddForm(false)} className="text-sm text-surface-400 hover:text-white transition-colors">Cancel</button>
+              <Button onClick={handleAdd} disabled={!selectedUser || saving} size="sm">
+                {saving ? 'Adding...' : 'Add Contributor'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter */}
+      <div className="mb-5">
+        <Input
+          value={filter}
+          onChange={e => setFilter(e.target.value)}
+          placeholder="Filter by name, email or GitHub handle…"
+          className="max-w-sm"
+        />
+      </div>
+
+      {/* Stats row */}
+      <div className="flex items-center gap-4 mb-5">
+        <span className="text-sm text-surface-400">{contributors.length} total</span>
+        <span className="text-surface-700">·</span>
+        <span className="text-sm text-surface-400">{contributors.filter(c => c.is_featured).length} featured</span>
+      </div>
+
+      {/* List */}
+      {filtered.length === 0 ? (
+        <Card className="p-12 text-center">
+          <div className="text-4xl mb-3">🔶</div>
+          <p className="text-sm text-surface-400">
+            {contributors.length === 0
+              ? 'No contributors yet. Add someone above to get started.'
+              : 'No contributors match your filter.'}
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(c => (
+            <Card key={c.id} className="p-4">
+              <div className="flex items-center gap-4">
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center text-sm font-bold text-white shrink-0 overflow-hidden">
+                  {c.cached_avatar_url
+                    ? <img src={c.cached_avatar_url} className="w-full h-full object-cover" alt="" />
+                    : (c.cached_name || '?')[0].toUpperCase()
+                  }
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">
+                    {c.cached_name || '—'}
+                  </p>
+                  {c.github_handle && (
+                    <a
+                      href={`https://github.com/${c.github_handle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-[#FF5F1F] hover:underline"
+                    >
+                      @{c.github_handle}
+                    </a>
+                  )}
+                  {c.bio && <p className="text-[11px] text-surface-400 mt-0.5 truncate max-w-md">{c.bio}</p>}
+                  {c.contribution_areas?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {c.contribution_areas.map(a => (
+                        <span key={a} className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-800 text-surface-400 border border-surface-700">
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => onToggleFeatured(c.id, !c.is_featured)}
+                    title={c.is_featured ? 'Remove featured' : 'Mark as featured'}
+                    className={cn(
+                      'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all',
+                      c.is_featured
+                        ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/25 hover:bg-yellow-500/8'
+                        : 'bg-surface-900 text-surface-500 border-surface-700 hover:border-surface-500 hover:text-white'
+                    )}
+                  >
+                    {c.is_featured ? '⭐ Featured' : '☆ Feature'}
+                  </button>
+                  <span className="text-[10px] text-surface-600 hidden sm:inline">{formatDate(c.added_at)}</span>
+                  <button
+                    onClick={() => onRemove(c.id)}
+                    title="Remove contributor"
+                    className="p-1.5 rounded-lg text-surface-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Badges Admin Tab ──────────────────────────────────────────────────────────
+function BadgesAdminTab() {
+  const supabase = createClient();
+  const [badges, setBadges] = useState<BadgeType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ name: '', emoji: '🏅', description: '', color: '#6366F1' });
+  const [saving, setSaving] = useState(false);
+  const [awardForm, setAwardForm] = useState<{ badgeId: string; username: string }>({ badgeId: '', username: '' });
+  const [awardMsg, setAwardMsg] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase.from('badges').select('*').order('is_system', { ascending: false }).order('created_at');
+    setBadges((data as BadgeType[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleCreate = async () => {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    await supabase.from('badges').insert({ name: form.name.trim(), emoji: form.emoji, description: form.description, color: form.color, is_system: false });
+    setForm({ name: '', emoji: '🏅', description: '', color: '#6366F1' });
+    setSaving(false);
+    load();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this badge? It will be removed from all users.')) return;
+    await supabase.from('user_badges').delete().eq('badge_id', id);
+    await supabase.from('badges').delete().eq('id', id);
+    load();
+  };
+
+  const handleAward = async () => {
+    if (!awardForm.badgeId || !awardForm.username.trim()) return;
+    setAwardMsg(null);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .or(`username.eq.${awardForm.username.trim()},email.eq.${awardForm.username.trim()}`)
+      .maybeSingle();
+    if (!profile) { setAwardMsg('User not found.'); return; }
+    const { error } = await supabase.from('user_badges').upsert({ user_id: profile.id, badge_id: awardForm.badgeId }, { onConflict: 'user_id,badge_id' });
+    setAwardMsg(error ? `Error: ${error.message}` : 'Badge awarded!');
+    setAwardForm(p => ({ ...p, username: '' }));
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-semibold text-white mb-1">Badge Management</h2>
+        <p className="text-sm text-white/40">Create custom badges and award them to users. System badges (Admin, Moderator, Contributor) are managed automatically by user roles.</p>
+      </div>
+
+      {/* Existing Badges */}
+      <Card className="bg-white/5 border border-white/10 p-6">
+        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4">All Badges</h3>
+        {loading ? (
+          <p className="text-white/40 text-sm">Loading…</p>
+        ) : (
+          <div className="space-y-3">
+            {badges.map(badge => (
+              <div key={badge.id} className="flex items-center justify-between gap-4 bg-white/5 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold"
+                    style={{ backgroundColor: badge.color + '33', color: badge.color }}
+                  >
+                    <span>{badge.emoji}</span>
+                    <span>{badge.name}</span>
+                  </span>
+                  {badge.is_system && (
+                    <span className="text-xs text-white/30 italic">system</span>
+                  )}
+                  {badge.description && (
+                    <span className="text-xs text-white/40">{badge.description}</span>
+                  )}
+                </div>
+                {!badge.is_system && (
+                  <button
+                    onClick={() => handleDelete(badge.id)}
+                    className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Create Badge */}
+      <Card className="bg-white/5 border border-white/10 p-6">
+        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4">Create New Badge</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-white/50 mb-1">Badge Name *</label>
+            <input
+              value={form.name}
+              onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+              placeholder="e.g. Early Adopter"
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-white/50 mb-1">Emoji</label>
+            <input
+              value={form.emoji}
+              onChange={e => setForm(p => ({ ...p, emoji: e.target.value }))}
+              maxLength={4}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-white/50 mb-1">Description</label>
+            <input
+              value={form.description}
+              onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+              placeholder="Optional description"
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-white/50 mb-1">Color</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={form.color}
+                onChange={e => setForm(p => ({ ...p, color: e.target.value }))}
+                className="w-10 h-10 rounded cursor-pointer bg-transparent border-0"
+              />
+              <span className="text-sm text-white/50">{form.color}</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          {form.name && (
+            <span
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold"
+              style={{ backgroundColor: form.color + '33', color: form.color }}
+            >
+              <span>{form.emoji}</span>
+              <span>{form.name}</span>
+            </span>
+          )}
+          <button
+            onClick={handleCreate}
+            disabled={saving || !form.name.trim()}
+            className="ml-auto px-4 py-2 rounded-lg bg-[#FF5F1F] text-white text-sm font-semibold disabled:opacity-40 hover:bg-[#FF5F1F]/80 transition-colors"
+          >
+            {saving ? 'Creating…' : 'Create Badge'}
+          </button>
+        </div>
+      </Card>
+
+      {/* Award Badge */}
+      <Card className="bg-white/5 border border-white/10 p-6">
+        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4">Award Badge to User</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-white/50 mb-1">Badge</label>
+            <select
+              value={awardForm.badgeId}
+              onChange={e => setAwardForm(p => ({ ...p, badgeId: e.target.value }))}
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/40"
+            >
+              <option value="">Select a badge…</option>
+              {badges.filter(b => !b.is_system).map(b => (
+                <option key={b.id} value={b.id}>{b.emoji} {b.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-white/50 mb-1">Username or Email</label>
+            <input
+              value={awardForm.username}
+              onChange={e => setAwardForm(p => ({ ...p, username: e.target.value }))}
+              placeholder="username or email"
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40"
+            />
+          </div>
+        </div>
+        {awardMsg && (
+          <p className={`mt-2 text-sm ${awardMsg.startsWith('Error') ? 'text-red-400' : 'text-green-400'}`}>{awardMsg}</p>
+        )}
+        <button
+          onClick={handleAward}
+          disabled={!awardForm.badgeId || !awardForm.username.trim()}
+          className="mt-4 px-4 py-2 rounded-lg bg-[#FF5F1F] text-white text-sm font-semibold disabled:opacity-40 hover:bg-[#FF5F1F]/80 transition-colors"
+        >
+          Award Badge
+        </button>
+      </Card>
+    </div>
+  );
+}
+
+function CoursesAdminTab() {
+  const supabase = createClient();
+  type CourseRow = {
+    id: string; title: string; difficulty: string; status: string;
+    enrollment_count: number; created_at: string;
+    creator: { full_name: string | null; email: string } | null;
+  };
+  const [courses, setCourses] = useState<CourseRow[]>([]);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'published' | 'rejected'>('pending');
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    let q = supabase
+      .from('courses')
+      .select('id,title,difficulty,status,enrollment_count,created_at,creator:profiles!courses_creator_id_fkey(full_name,email)')
+      .order('created_at', { ascending: false });
+    if (filter !== 'all') q = q.eq('status', filter);
+    const { data } = await q;
+    setCourses((data as unknown as CourseRow[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [filter]);
+
+  const setStatus = async (id: string, status: 'published' | 'rejected') => {
+    await supabase.from('courses').update({ status }).eq('id', id);
+    setCourses(cs => cs.map(c => c.id === id ? { ...c, status } : c));
+  };
+
+  const deleteCourse = async (id: string) => {
+    if (!confirm('Delete this course permanently?')) return;
+    await supabase.from('course_lessons').delete().eq('course_id', id);
+    await supabase.from('course_sections').delete().eq('course_id', id);
+    await supabase.from('courses').delete().eq('id', id);
+    setCourses(cs => cs.filter(c => c.id !== id));
+  };
+
+  const DIFF_COLOR: Record<string, string> = {
+    beginner: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    intermediate: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
+    advanced: 'text-red-400 bg-red-500/10 border-red-500/20',
+  };
+  const STATUS_COLOR: Record<string, string> = {
+    pending: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
+    published: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    rejected: 'text-red-400 bg-red-500/10 border-red-500/20',
+    draft: 'text-white/40 bg-white/5 border-white/10',
+  };
+
+  return (
+    <div className="space-y-5 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-white">Course Moderation</h2>
+          <p className="text-sm text-surface-400 mt-0.5">Review and manage community-submitted courses</p>
+        </div>
+        <div className="flex items-center gap-1.5 bg-surface-900 border border-surface-800 rounded-xl p-1">
+          {(['pending','published','rejected','all'] as const).map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${
+                filter === f ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white'
+              }`}>{f}</button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-16"><div className="w-6 h-6 border-2 border-[#FF5F1F]/30 border-t-[#FF5F1F] rounded-full animate-spin" /></div>
+      ) : courses.length === 0 ? (
+        <div className="text-center py-16 text-surface-400 text-sm">No {filter === 'all' ? '' : filter} courses.</div>
+      ) : (
+        <div className="space-y-2">
+          {courses.map(c => (
+            <div key={c.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl bg-surface-900 border border-surface-800 hover:border-surface-700 transition-colors">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-white truncate">{c.title}</span>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase tracking-wider ${DIFF_COLOR[c.difficulty] ?? ''}`}>{c.difficulty}</span>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase tracking-wider ${STATUS_COLOR[c.status] ?? ''}`}>{c.status}</span>
+                </div>
+                <div className="text-xs text-surface-500 mt-0.5">
+                  by {c.creator?.full_name || c.creator?.email || 'Unknown'} &middot; {c.enrollment_count} enrolled &middot; {new Date(c.created_at).toLocaleDateString()}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <a href={`/community/courses/${c.id}`} target="_blank" rel="noreferrer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-800 text-surface-300 hover:bg-surface-700 transition-colors">View</a>
+                <a href={`/community/courses/${c.id}/edit`} target="_blank" rel="noreferrer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-800 text-surface-300 hover:bg-surface-700 transition-colors">Edit</a>
+                {c.status !== 'published' && (
+                  <button onClick={() => setStatus(c.id, 'published')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors">Approve</button>
+                )}
+                {c.status !== 'rejected' && (
+                  <button onClick={() => setStatus(c.id, 'rejected')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 border border-yellow-500/20 transition-colors">Reject</button>
+                )}
+                <button onClick={() => deleteCourse(c.id)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors">Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

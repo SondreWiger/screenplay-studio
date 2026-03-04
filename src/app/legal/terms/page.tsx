@@ -54,7 +54,7 @@ export default function TermsOfServicePage() {
           {/* 1. Acceptance of Terms */}
           <h2 id="acceptance" className="scroll-mt-24">1. Acceptance of Terms</h2>
           <p>
-            Welcome to Screenplay Studio (&quot;the Service&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;), a screenwriting and production planning platform operated by Screenplay Studio (&quot;the Company&quot;). By accessing or using our website at screenplaystudio.fun, our web application, APIs, or any associated services, you (&quot;you&quot;, &quot;the User&quot;, &quot;your&quot;) acknowledge that you have read, understood, and agree to be bound by these Terms of Service (&quot;Terms&quot;, &quot;Agreement&quot;).
+            Welcome to Screenplay Studio (&quot;the Service&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;), a screenwriting and production planning platform developed and operated by <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer">Northem Development</a>, a Norwegian software development company (&quot;the Company&quot;, &quot;Northem&quot;). By accessing or using our website at screenplaystudio.fun, our web application, APIs, or any associated services, you (&quot;you&quot;, &quot;the User&quot;, &quot;your&quot;) acknowledge that you have read, understood, and agree to be bound by these Terms of Service (&quot;Terms&quot;, &quot;Agreement&quot;).
           </p>
           <p>
             If you do not agree to these Terms in their entirety, you must immediately cease all use of the Service. Your continued access to or use of the Service following the posting of any changes to these Terms constitutes acceptance of those changes, subject to the notice requirements set forth in Section 25.
@@ -495,14 +495,23 @@ export default function TermsOfServicePage() {
             If you have any questions, concerns, or feedback regarding these Terms of Service, please contact us:
           </p>
           <div className="rounded-lg bg-surface-900 border border-surface-800 p-4 not-prose text-surface-300">
-            <p><strong className="text-white">Screenplay Studio</strong></p>
+            <p><strong className="text-white">Northem Development</strong></p>
+            <p className="mt-1 text-surface-400 text-sm">Operator of Screenplay Studio</p>
             <p className="mt-2">Legal Department</p>
             <p>Email: <a href="mailto:legal@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">legal@screenplaystudio.fun</a></p>
+            <p className="mt-2">
+              <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 transition-colors">development.northem.no</a>
+            </p>
           </div>
 
           <div className="mt-12 pt-8 border-t border-surface-800 text-surface-400 text-sm not-prose">
             <p>
               By using Screenplay Studio, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+            </p>
+            <p className="mt-3 text-surface-500">
+              Screenplay Studio is a product of{' '}
+              <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 transition-colors">Northem Development</a>
+              {' '}&mdash; made with ♥ in Norway.
             </p>
             <div className="mt-4 flex gap-4">
               <Link href="/legal/privacy" className="text-red-400 hover:text-red-300 transition-colors">Privacy Policy</Link>

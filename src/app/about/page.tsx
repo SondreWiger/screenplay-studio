@@ -1,10 +1,17 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import ContributorsList from '@/components/ContributorsList';
+import { isOpenSourceEnabled } from '@/lib/site-settings';
 
-export const metadata: Metadata = {
-  title: 'About — Screenplay Studio',
-  description: 'Why we built an open-source screenwriting suite — and where we want to take it.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const oss = await isOpenSourceEnabled();
+  return {
+    title: 'About — Screenplay Studio',
+    description: oss
+      ? 'Why we built an open-source screenwriting suite — and where we want to take it.'
+      : 'Why we built Screenplay Studio — and where we want to take it.',
+  };
+}
 
 const ORANGE = '#FF5F1F';
 
@@ -73,7 +80,15 @@ const TIMELINE = [
   { year: '2026', label: 'Now', detail: 'Tens of thousands of projects. Open-source code base. Continual feature work driven by user feedback.' },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const oss = await isOpenSourceEnabled();
+  const displayTimeline = oss
+    ? TIMELINE
+    : TIMELINE.map((t, i) =>
+        i === TIMELINE.length - 1
+          ? { ...t, detail: 'Tens of thousands of projects. Continual feature work driven by user feedback.' }
+          : t,
+      );
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: '#070710', color: '#fff' }}>
 
@@ -120,7 +135,9 @@ export default function AboutPage() {
             <span style={{ color: ORANGE }}>WHO TELL STORIES.</span>
           </h1>
           <p className="text-base sm:text-lg text-white/45 max-w-2xl leading-relaxed">
-            Screenplay Studio is an open-source production suite for writers, directors, and crews across every storytelling format — built because the existing tools are either too expensive, too limited, or too locked down.
+            {oss
+              ? 'Screenplay Studio is an open-source production suite for writers, directors, and crews across every storytelling format — built because the existing tools are either too expensive, too limited, or too locked down.'
+              : 'Screenplay Studio is a production suite for writers, directors, and crews across every storytelling format — built because the existing tools are either too expensive, too limited, or too locked down.'}
           </p>
         </section>
 
@@ -141,9 +158,11 @@ export default function AboutPage() {
                 <p>
                   We built Screenplay Studio because that should not be the default. A student in Oslo writing their first short film deserves the same toolset as a production company in Los Angeles. Format should not determine access.
                 </p>
+                {oss && (
                 <p>
                   The platform is open-source. The code is on GitHub. Anyone can inspect it, contribute to it, or run their own instance. We believe transparency and community ownership produce better software than any closed product roadmap ever will.
                 </p>
+                )}
               </div>
             </div>
             <div className="space-y-4">
@@ -170,7 +189,7 @@ export default function AboutPage() {
             What we believe
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {PRINCIPLES.map(p => (
+            {PRINCIPLES.filter(p => oss || p.title !== 'Open & Free').map(p => (
               <div
                 key={p.title}
                 className="rounded-xl p-5"
@@ -196,7 +215,7 @@ export default function AboutPage() {
             {/* Vertical line */}
             <div className="absolute left-[5.5rem] top-0 bottom-0 w-px hidden sm:block" style={{ background: 'rgba(255,255,255,0.07)' }} />
             <div className="space-y-8">
-              {TIMELINE.map((t, i) => (
+              {displayTimeline.map((t, i) => (
                 <div key={t.year} className="flex gap-6 sm:gap-10 items-start">
                   <div className="shrink-0 w-20 text-right">
                     <span
@@ -250,6 +269,27 @@ export default function AboutPage() {
 
         <Rule />
 
+        {/* ── Contributors ───────────────────────────────────── */}
+        {oss && (
+        <section className="max-w-screen-lg mx-auto px-6 py-16">
+          <Eyebrow>Contributors · Open Source</Eyebrow>
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
+            Built by the community
+          </h2>
+          <p className="text-sm text-white/40 max-w-xl leading-relaxed mb-8">
+            Screenplay Studio is open source. These are the people who have contributed to the codebase, design, documentation, and community.
+          </p>
+          <ContributorsList />
+          <div className="mt-8">
+            <Link href="/contribute" className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider transition-colors hover:opacity-80" style={{ color: ORANGE }}>
+              Want to contribute? →
+            </Link>
+          </div>
+        </section>
+        )}
+
+        {oss && <Rule />}
+
         {/* ── CTA ────────────────────────────────────────────── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16 text-center">
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
@@ -282,7 +322,9 @@ export default function AboutPage() {
             <div className="w-6 h-6 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
               <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-xs text-white/20">Screenplay Studio — open-source &amp; free</span>
+            <span className="text-xs text-white/20">
+              {oss ? 'Screenplay Studio — open-source & free' : 'Screenplay Studio'}
+            </span>
           </div>
           <div className="flex flex-col gap-2">
             <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Shoutout to</p>
@@ -293,10 +335,19 @@ export default function AboutPage() {
               </a>
             </div>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 flex-wrap">
             <Link href="/blog" className="text-xs text-white/25 hover:text-white/50 transition-colors">Blog</Link>
             <Link href="/legal/privacy" className="text-xs text-white/25 hover:text-white/50 transition-colors">Privacy</Link>
             <Link href="/legal/terms" className="text-xs text-white/25 hover:text-white/50 transition-colors">Terms</Link>
+            <span className="text-white/10">·</span>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+            >
+              Northem ♥
+            </a>
           </div>
         </div>
       </footer>

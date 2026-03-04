@@ -504,22 +504,32 @@ export default async function LandingPage() {
             </div>
           </div>
           <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.05)' }} />
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
-            {[
-              ['Legal', '/legal'],
-              ['Terms', '/legal/terms'],
-              ['Privacy', '/legal/privacy'],
-              ['Community Guidelines', '/legal/community-guidelines'],
-              ['Security', '/legal/security'],
-            ].map(([label, href]) => (
-              <a
-                key={href}
-                href={href}
-                className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/15 hover:text-white/50 transition-colors duration-150"
-              >
-                {label}
-              </a>
-            ))}
+          <div className="flex flex-wrap items-center justify-between gap-y-2">
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {[
+                ['Legal', '/legal'],
+                ['Terms', '/legal/terms'],
+                ['Privacy', '/legal/privacy'],
+                ['Community Guidelines', '/legal/community-guidelines'],
+                ['Security', '/legal/security'],
+              ].map(([label, href]) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/15 hover:text-white/50 transition-colors duration-150"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors duration-150 text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+            >
+              A Northem Development Production ♥ Made in Norway
+            </a>
           </div>
         </div>
       </footer>

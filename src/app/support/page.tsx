@@ -445,9 +445,22 @@ function SupportPage() {
       </div>
 
       {/* Footer */}
-      <footer className="max-w-6xl mx-auto px-4 py-6 mt-8 border-t border-white/10 flex items-center justify-between">
-        <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">← Community</Link>
-        <SiteVersion light />
+      <footer className="max-w-6xl mx-auto px-4 py-6 mt-8 border-t border-white/10">
+        <div className="flex items-center justify-between">
+          <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">← Community</Link>
+          <div className="flex items-center gap-3">
+            <SiteVersion light />
+            <span className="text-white/10">·</span>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+            >
+              Northem ♥
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   );

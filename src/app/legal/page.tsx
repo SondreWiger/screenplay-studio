@@ -124,6 +124,48 @@ export default function LegalCenterPage() {
 
       <div className="h-px bg-surface-800/60" />
 
+      {/* Northem / Company attribution */}
+      <section className="py-10">
+        <div
+          className="rounded-xl p-6 flex flex-col sm:flex-row sm:items-center gap-4"
+          style={{ background: 'rgba(255,95,31,0.04)', border: '1px solid rgba(255,95,31,0.12)' }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-mono uppercase tracking-widest text-white/30 mb-1">Platform Operator</p>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-base font-semibold text-white hover:text-[#FF5F1F] transition-colors"
+            >
+              Northem Development
+            </a>
+            <p className="mt-1 text-sm text-white/40 leading-relaxed">
+              Screenplay Studio is developed and operated by Northem Development, a Norwegian software
+              development company. All legal obligations, data processing, and service responsibilities
+              described in these documents are held by Northem Development.
+            </p>
+          </div>
+          <div className="shrink-0 flex flex-col items-start sm:items-end gap-2">
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium transition-colors"
+              style={{ color: '#FF5F1F' }}
+            >
+              development.northem.no
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+            <span className="text-[11px] text-white/25">Made with ♥ in Norway</span>
+          </div>
+        </div>
+      </section>
+
+      <div className="h-px bg-surface-800/60" />
+
       {/* Contact */}
       <section className="py-10">
         <h2 className="text-lg font-semibold text-white">Questions?</h2>

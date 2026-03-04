@@ -6,6 +6,26 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Input } from '@/components/ui';
 
+function friendlyAuthError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes('invalid login') || m.includes('invalid credentials') || m.includes('wrong password') || m.includes('email not found')) {
+    return 'Incorrect email or password. Please try again.';
+  }
+  if (m.includes('email not confirmed') || m.includes('not confirmed')) {
+    return 'Please verify your email address before signing in. Check your inbox for the verification link.';
+  }
+  if (m.includes('rate limit') || m.includes('too many') || m.includes('over_email_send_rate_limit')) {
+    return 'Too many attempts. Please wait a few minutes before trying again.';
+  }
+  if (m.includes('network') || m.includes('fetch') || m.includes('failed to fetch')) {
+    return 'Network error — please check your connection and try again.';
+  }
+  if (m.includes('user not found') || m.includes('no user')) {
+    return 'No account found with that email address.';
+  }
+  return msg;
+}
+
 export default function LoginPage() {
   return (
     <Suspense fallback={<div className="min-h-screen" style={{ background: '#070710' }} />}>
@@ -19,7 +39,9 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  // Show errors from URL params (e.g. expired magic-link → callback redirects here with ?error=...)
+  const urlError = searchParams.get('error');
+  const [error, setError] = useState(urlError ? friendlyAuthError(decodeURIComponent(urlError)) : '');
 
   const formRef = useRef<HTMLFormElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -77,7 +99,7 @@ function LoginForm() {
 
       if (authError) {
         log(`Auth error: ${authError.message} (status: ${authError.status})`);
-        setError(authError.message);
+        setError(friendlyAuthError(authError.message));
         setLoading(false);
         return;
       }
@@ -97,7 +119,7 @@ function LoginForm() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown';
       log(`Exception: ${message}`);
-      setError(`Unexpected error: ${message}`);
+      setError(`${friendlyAuthError(message)}`);
       setLoading(false);
     }
   }, [redirect, router, log]);
@@ -110,8 +132,9 @@ function LoginForm() {
 
   const handleButtonClick = () => {
     log('Button onClick fired');
-    // The form onSubmit should handle it, but as a safety net:
-    // if for some reason onSubmit doesn't fire, we still run login
+    // Safety net: if form onSubmit doesn't fire (can happen in some mobile browsers),
+    // call doLogin directly.
+    if (!loading) doLogin();
   };
 
   return (

@@ -7,8 +7,9 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Badge, Avatar, LoadingSpinner } from '@/components/ui';
 import { formatDate, timeAgo } from '@/lib/utils';
-import type { Profile, Project, CommunityPost, ProductionRole } from '@/lib/types';
+import type { Profile, Project, CommunityPost, ProductionRole, UserBadge } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
+import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
 
 // ============================================================
 // Public User Profile Page — /u/<username>
@@ -49,8 +50,11 @@ export default function UserProfilePage({ params }: { params: { username: string
   const [filmography, setFilmography] = useState<(Project & { member_role?: ProductionRole; character_name?: string | null })[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'projects' | 'about'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'projects' | 'about' | 'courses'>('posts');
   const [startingDm, setStartingDm] = useState(false);
+  const [profileBadges, setProfileBadges] = useState<UserBadge[]>([]);
+  type ProfileCourse = { id: string; progress_percent: number; completed_at: string | null; course: { id: string; title: string; short_desc: string | null; difficulty: string; xp_reward: number; thumbnail_url: string | null } };
+  const [profileCourses, setProfileCourses] = useState<ProfileCourse[]>([]);
 
   const isOwnProfile = currentUser?.id === profile?.id;
   const theme = PROFILE_THEMES[profile?.profile_theme || 'default'] || PROFILE_THEMES.default;
@@ -84,7 +88,23 @@ export default function UserProfilePage({ params }: { params: { username: string
 
     setProfile(prof);
 
-    // Increment profile views (don't await, fire-and-forget)
+    // Fetch display badges
+    const { data: badgeData } = await supabase
+      .from('user_badges')
+      .select('*, badge:badges(*)')
+      .eq('user_id', prof.id)
+      .not('display_slot', 'is', null)
+      .order('display_slot');
+    if (badgeData) setProfileBadges(badgeData as UserBadge[]);
+
+    // Fetch course enrollments
+    const { data: enrollData } = await supabase
+      .from('course_enrollments')
+      .select('id,progress_percent,completed_at,course:courses(id,title,short_desc,difficulty,xp_reward,thumbnail_url)')
+      .eq('user_id', prof.id)
+      .order('last_accessed_at', { ascending: false })
+      .limit(12);
+    if (enrollData) setProfileCourses(enrollData as unknown as ProfileCourse[]);
     if (!isUuid || prof.id !== (currentUser?.id ?? '')) {
       supabase.rpc('increment_profile_views', { p_user_id: prof.id }).then(() => {});
     }
@@ -325,9 +345,12 @@ export default function UserProfilePage({ params }: { params: { username: string
                 <div className="min-w-0">
                   <h1 className="text-3xl md:text-4xl font-black" style={{ letterSpacing: '-0.03em' }}>
                     {displayName}
-                    {profile.role === 'moderator' && <span className="ml-3 px-2 py-0.5 text-xs font-bold text-green-400 bg-green-500/10 rounded-lg border border-green-500/20 align-middle">MOD</span>}
-                    {profile.role === 'admin' && <span className="ml-3 px-2 py-0.5 text-xs font-bold text-red-400 bg-red-500/10 rounded-lg border border-red-500/20 align-middle">ADMIN</span>}
                   </h1>
+                  {profileBadges.length > 0 && (
+                    <div className="mt-2">
+                      <BadgeDisplay badges={profileBadges} max={2} size="sm" />
+                    </div>
+                  )}
                   {profile.username && (
                     <p className="text-sm text-white/30 mt-1 font-mono">@{profile.username}</p>
                   )}
@@ -373,7 +396,7 @@ export default function UserProfilePage({ params }: { params: { username: string
 
               {/* Meta info chips */}
               <div className="flex flex-wrap items-center gap-3 mt-4">
-                {profile.role && (
+                {profile.role && profile.role !== 'writer' && profileBadges.length === 0 && (
                   <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border capitalize ${
                     profile.role === 'admin'
                       ? 'text-red-400 bg-red-500/10 border-red-500/20'
@@ -537,6 +560,7 @@ export default function UserProfilePage({ params }: { params: { username: string
           {[
             { key: 'posts' as const, label: `Scripts`, count: posts.length },
             ...(profile.show_projects !== false ? [{ key: 'projects' as const, label: `Projects`, count: publicProjects.length }] : []),
+            ...(profileCourses.length > 0 ? [{ key: 'courses' as const, label: 'Courses', count: profileCourses.length }] : []),
             { key: 'about' as const, label: 'About', count: 0 },
           ].map((tab) => (
             <button
@@ -739,6 +763,66 @@ export default function UserProfilePage({ params }: { params: { username: string
             </div>
           </div>
         )}
+
+        {/* Courses tab */}
+        {activeTab === 'courses' && (
+          <div>
+            {profileCourses.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-5xl mb-3">📚</div>
+                <p className="text-white/40">No courses enrolled yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {profileCourses.map(({ id, course, progress_percent, completed_at }) => {
+                  const diffColor = course.difficulty === 'beginner' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
+                    : course.difficulty === 'intermediate' ? 'text-yellow-400 border-yellow-500/20 bg-yellow-500/10'
+                    : 'text-red-400 border-red-500/20 bg-red-500/10';
+                  return (
+                    <Link key={id} href={`/community/courses/${course.id}`}
+                      className={`block rounded-2xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.18] transition-all overflow-hidden group`}>
+                      {course.thumbnail_url ? (
+                        <div className="aspect-video overflow-hidden">
+                          <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                      ) : (
+                        <div className="aspect-video bg-gradient-to-br from-[#FF5F1F]/10 to-[#0E0E1C] flex items-center justify-center">
+                          <span className="text-4xl opacity-30">📚</span>
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${diffColor}`}>{course.difficulty}</span>
+                          {completed_at ? (
+                            <span className="text-[9px] font-semibold text-emerald-400 flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                              Done
+                            </span>
+                          ) : (
+                            <span className="text-[9px] text-[#FF5F1F]">{course.xp_reward} XP</span>
+                          )}
+                        </div>
+                        <h3 className="text-sm font-semibold text-white group-hover:text-[#FF7A3F] transition-colors line-clamp-2 leading-snug">{course.title}</h3>
+                        {course.short_desc && <p className="text-xs text-white/40 mt-1 line-clamp-1">{course.short_desc}</p>}
+                        {/* Progress bar */}
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px] text-white/30">Progress</span>
+                            <span className="text-[9px] text-white/50 font-medium">{progress_percent}%</span>
+                          </div>
+                          <div className="w-full h-1 bg-white/[0.08] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${progress_percent}%`, background: completed_at ? '#10B981' : '#FF5F1F' }} />
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
       {/* Footer */}
@@ -752,6 +836,15 @@ export default function UserProfilePage({ params }: { params: { username: string
             <Link href="/community" className="hover:text-white transition-colors">Community</Link>
             <Link href="/community/showcase" className="hover:text-white transition-colors">Showcase</Link>
             <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+            <span className="text-white/10">·</span>
+            <a
+              href="https://development.northem.no/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+            >
+              Northem ♥
+            </a>
           </div>
         </div>
       </footer>

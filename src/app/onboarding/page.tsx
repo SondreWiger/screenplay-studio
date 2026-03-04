@@ -46,6 +46,9 @@ export default function OnboardingPage() {
   const [wantsCompany, setWantsCompany] = useState(false);
   const [companyName, setCompanyName] = useState('');
 
+  // Gamification opt-in (null = skip / decide later)
+  const [gamificationChoice, setGamificationChoice] = useState<boolean | null>(null);
+
   // Auto-set defaults based on intent
   const applyIntentDefaults = (intent: UsageIntent) => {
     setUsageIntent(intent);
@@ -125,6 +128,13 @@ export default function OnboardingPage() {
           company_id: co.id,
         });
       }
+    }
+
+    // Save gamification preference if the user made a choice
+    if (gamificationChoice !== null) {
+      await supabase.from('user_gamification')
+        .upsert({ user_id: user.id, gamification_enabled: gamificationChoice, popup_shown: true })
+        .eq('user_id', user.id);
     }
 
     setSaving(false);
@@ -264,7 +274,69 @@ export default function OnboardingPage() {
       </div>
     </div>,
 
-    // Step 4: Optional Company Creation
+    // Step 4: Gamification Opt-In
+    <div key="gamification" className="space-y-8">
+      <div className="text-center">
+        <div className="w-16 h-16 rounded-2xl bg-[#FF5F1F]/10 border border-[#FF5F1F]/20 flex items-center justify-center mx-auto mb-5 text-3xl">
+          🎮
+        </div>
+        <h2 className="text-2xl font-black text-white mb-2">Want to gamify your writing?</h2>
+        <p className="text-surface-400 max-w-sm mx-auto">
+          Earn XP for every word, level up, collect badges, and unlock profile effects. You can change this anytime.
+        </p>
+      </div>
+
+      <div className="max-w-md mx-auto space-y-3">
+        {[
+          { icon: '✍️', text: 'Every 10 words = 1 XP' },
+          { icon: '🔥', text: 'Time multiplier: 1h = 2×, 2h = 4×, 3h = 8× XP' },
+          { icon: '🏅', text: 'Badges for admins, moderators, contributors & more' },
+          { icon: '✨', text: 'Level up to unlock profile glows and display options' },
+        ].map(({ icon, text }) => (
+          <div key={text} className="flex items-center gap-3 p-3 rounded-xl bg-surface-800/50 border border-surface-700">
+            <span className="text-xl shrink-0">{icon}</span>
+            <p className="text-sm text-surface-300">{text}</p>
+          </div>
+        ))}
+
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={() => setGamificationChoice(true)}
+            className={`flex-1 p-4 rounded-xl border-2 text-center transition-all ${
+              gamificationChoice === true
+                ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
+                : 'border-surface-700 bg-surface-900 hover:border-surface-600'
+            }`}
+          >
+            <div className="text-2xl mb-1">🚀</div>
+            <h3 className={`text-sm font-bold ${gamificationChoice === true ? 'text-[#FF5F1F]' : 'text-white'}`}>
+              Yes, let&apos;s go!
+            </h3>
+            <p className="text-[11px] text-surface-400 mt-0.5">Show XP, levels & badges</p>
+          </button>
+          <button
+            onClick={() => setGamificationChoice(false)}
+            className={`flex-1 p-4 rounded-xl border-2 text-center transition-all ${
+              gamificationChoice === false
+                ? 'border-surface-500 bg-surface-800 ring-1 ring-surface-500/30'
+                : 'border-surface-700 bg-surface-900 hover:border-surface-600'
+            }`}
+          >
+            <div className="text-2xl mb-1">🤫</div>
+            <h3 className={`text-sm font-bold ${gamificationChoice === false ? 'text-white' : 'text-surface-300'}`}>
+              Not for me
+            </h3>
+            <p className="text-[11px] text-surface-400 mt-0.5">XP still collected silently</p>
+          </button>
+        </div>
+
+        <p className="text-[11px] text-surface-500 text-center">
+          You can enable or disable this anytime in Settings → Gamification
+        </p>
+      </div>
+    </div>,
+
+    // Step 5: Optional Company Creation
     <div key="company" className="space-y-8">
       <div className="text-center">
         <h2 className="text-2xl font-black text-white mb-2">Work with a team?</h2>

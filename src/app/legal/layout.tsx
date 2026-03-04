@@ -118,8 +118,25 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                   onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                 >
                   legal@screenplaystudio.fun
-                </a>
-              </div>
+                </a>              </div>
+                {/* Northem attribution */}
+                <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[10px] font-mono text-white/20 uppercase tracking-wider mb-2">Developed by</p>
+                  <a
+                    href="https://development.northem.no/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors"
+                  >
+                    <span className="text-[11px] font-semibold tracking-tight leading-snug">
+                      Northem Development
+                    </span>
+                    <svg className="w-3 h-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  <p className="text-[10px] text-white/20 mt-0.5">Made with ♥ in Norway</p>
+                </div>
             </div>
           </nav>
 

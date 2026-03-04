@@ -7,6 +7,27 @@ import { createClient } from '@/lib/supabase/client';
 import { Button, Input } from '@/components/ui';
 import { validatePassword } from '@/lib/security';
 
+// Map raw Supabase/auth error messages to user-friendly ones
+function friendlyAuthError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes('already registered') || m.includes('user already exists') || m.includes('email already in use')) {
+    return 'An account with this email already exists. Try signing in instead.';
+  }
+  if (m.includes('rate limit') || m.includes('too many') || m.includes('over_email_send_rate_limit')) {
+    return 'Too many sign-up attempts. Please wait a few minutes and try again.';
+  }
+  if (m.includes('invalid email') || m.includes('unable to validate email')) {
+    return 'Please enter a valid email address.';
+  }
+  if (m.includes('password') && m.includes('short')) {
+    return 'Password is too short. Use at least 8 characters.';
+  }
+  if (m.includes('network') || m.includes('fetch') || m.includes('failed to fetch')) {
+    return 'Network error — please check your connection and try again.';
+  }
+  return msg;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState('');
@@ -16,72 +37,91 @@ export default function RegisterPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [successEmail, setSuccessEmail] = useState<string | null>(null);
 
-  const passwordValidation = validatePassword(password);
+  // Derived from React state for the strength indicator only.
+  // Validation on submit uses the DOM value to handle autofill.
+  const passwordStrength = validatePassword(password);
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Honeypot check
+    // Honeypot — bots fill this, real users never see it
     if (honeypot) return;
 
-    // Read from DOM to handle autofill edge cases
+    // Read from the DOM so password-manager autofill is captured even
+    // if React's onChange never fired (autofill doesn't always trigger it)
     const form = e.currentTarget;
-    const formEmail = (form.elements.namedItem('email') as HTMLInputElement)?.value || email;
+    const formEmail = (form.elements.namedItem('email') as HTMLInputElement)?.value?.trim() || email.trim();
     const formPassword = (form.elements.namedItem('password') as HTMLInputElement)?.value || password;
-    const formName = (form.elements.namedItem('name') as HTMLInputElement)?.value || fullName;
+    const formName = (form.elements.namedItem('name') as HTMLInputElement)?.value?.trim() || fullName.trim();
 
-    if (!formName.trim()) {
-      setError('Please enter your name');
+    setError('');
+
+    // Client-side validation (in submission order so user sees the first issue)
+    if (!formName) {
+      setError('Please enter your full name.');
       return;
     }
     if (!formEmail) {
-      setError('Please enter your email');
+      setError('Please enter your email address.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
     if (!formPassword) {
-      setError('Please enter a password');
+      setError('Please enter a password.');
+      return;
+    }
+    // Validate against the actual DOM value, not the potentially-stale React state
+    const pwValidation = validatePassword(formPassword);
+    if (!pwValidation.valid) {
+      setError(pwValidation.issues[0]);
+      return;
+    }
+    if (!agreedToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy to continue.');
       return;
     }
 
     setLoading(true);
-    setError('');
 
-    if (!agreedToTerms) {
-      setError('You must agree to the Terms of Service and Privacy Policy');
-      setLoading(false);
-      return;
-    }
-
-    if (!passwordValidation.valid) {
-      setError(passwordValidation.issues[0]);
-      setLoading(false);
-      return;
-    }
-
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signUp({
-      email: formEmail,
-      password: formPassword,
-      options: {
-        data: {
-          full_name: formName,
+    try {
+      const supabase = createClient();
+      const { data, error: authError } = await supabase.auth.signUp({
+        email: formEmail,
+        password: formPassword,
+        options: {
+          data: { full_name: formName },
         },
-      },
-    });
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (authError) {
+        setError(friendlyAuthError(authError.message));
+        setLoading(false);
+        return;
+      }
+
+      // If Supabase returned a live session (email confirmation disabled),
+      // go straight to the dashboard.
+      if (data?.session) {
+        router.push('/dashboard');
+        return;
+      }
+
+      // Email confirmation required — show success screen.
+      // Sync state to match what was actually submitted (handles autofill).
+      setEmail(formEmail);
+      setSuccessEmail(formEmail);
+    } catch (err: unknown) {
+      setError(friendlyAuthError(err instanceof Error ? err.message : 'Something went wrong. Please try again.'));
       setLoading(false);
-      return;
     }
-
-    setSuccess(true);
-    setLoading(false);
   };
 
-  if (success) {
+  if (successEmail) {
     return (
       <div
         className="min-h-screen flex items-center justify-center px-4 relative"
@@ -111,7 +151,7 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>CHECK YOUR EMAIL</h1>
           <p className="text-sm text-white/35 mb-8 leading-relaxed">
             We sent a verification link to{' '}
-            <span className="text-white font-mono">{email}</span>.
+            <span className="text-white font-mono">{successEmail}</span>.
             Click it to activate your account.
           </p>
           <Link
@@ -243,7 +283,7 @@ export default function RegisterPage() {
                     { label: 'Uppercase letter', met: /[A-Z]/.test(password) },
                     { label: 'Lowercase letter', met: /[a-z]/.test(password) },
                     { label: 'Number', met: /\d/.test(password) },
-                    { label: 'Special character', met: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
+                    { label: 'Special character', met: /[^A-Za-z0-9]/.test(password) },
                   ].map((rule) => (
                     <div key={rule.label} className="flex items-center gap-2">
                       <div
@@ -281,7 +321,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               className="ss-btn-orange w-full"
-              disabled={loading || !agreedToTerms}
+              disabled={loading}
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>

@@ -11,6 +11,9 @@ import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
 import { GuidedTour } from '@/components/GuidedTour';
+import { GamificationOptIn } from '@/components/GamificationOptIn';
+import { LevelUpCelebration } from '@/components/LevelUpCelebration';
+import { useGamification } from '@/hooks/useGamification';
 import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -68,6 +71,9 @@ function DashboardContent() {
 
   // Initialise realtime notifications
   useNotifications(user?.id);
+
+  // Gamification — opt-in popup + level-up celebration
+  const { levelUpEvent, dismissLevelUp } = useGamification();
 
   // Guided tour (triggered after onboarding via ?tour=1 query param)
   const searchParams = useSearchParams();
@@ -1086,6 +1092,12 @@ function DashboardContent() {
       {/* Guided Tour */}
       {showTour && (
         <GuidedTour onComplete={() => setShowTour(false)} />
+      )}
+
+      {/* Gamification popups */}
+      <GamificationOptIn />
+      {levelUpEvent && (
+        <LevelUpCelebration level={levelUpEvent.newLevel} unlocks={levelUpEvent.unlocks} onDismiss={dismissLevelUp} />
       )}
     </div>
   );

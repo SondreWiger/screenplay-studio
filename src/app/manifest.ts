@@ -1,10 +1,14 @@
 import type { MetadataRoute } from 'next';
+import { isOpenSourceEnabled } from '@/lib/site-settings';
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const oss = await isOpenSourceEnabled();
   return {
     name: 'Screenplay Studio',
     short_name: 'Screenplay',
-    description: 'Open-source screenwriting suite — write, plan, produce, and collaborate.',
+    description: oss
+      ? 'Open-source screenwriting suite — write, plan, produce, and collaborate.'
+      : 'Professional screenwriting suite — write, plan, produce, and collaborate.',
     start_url: '/dashboard',
     display: 'standalone',
     background_color: '#0a0a0f',

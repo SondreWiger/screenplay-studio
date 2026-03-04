@@ -126,6 +126,72 @@ export interface Profile {
   storage_limit_bytes?: number;
   // Insider program
   insider_tier?: 'alpha' | 'beta' | null;
+  // Badge display slots
+  selected_badge_id?: string | null;
+  selected_badge2_id?: string | null;
+}
+
+// ── Gamification ─────────────────────────────────────────────
+
+export type XPEventType =
+  | 'words_written'
+  | 'community_post'
+  | 'community_comment'
+  | 'community_like_received'
+  | 'community_challenge_submit'
+  | 'project_created'
+  | 'daily_login'
+  | 'login_streak_bonus'
+  | 'profile_complete'
+  | 'lesson_complete'
+  | 'course_complete'
+  | 'quiz_perfect_score';
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string | null;
+  emoji: string;
+  color: string;
+  is_system: boolean;
+  system_role: 'admin' | 'moderator' | 'contributor' | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  awarded_by: string | null;
+  awarded_at: string;
+  display_slot: 1 | 2 | null;
+  // Joined
+  badge?: Badge;
+}
+
+export interface UserGamification {
+  user_id: string;
+  xp_total: number;
+  level: number;
+  gamification_enabled: boolean | null;
+  popup_shown: boolean;
+  last_login_date: string | null;
+  login_streak: number;
+  session_started_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface XPEvent {
+  id: string;
+  user_id: string;
+  event_type: XPEventType;
+  xp_base: number;
+  multiplier: number;
+  xp_awarded: number;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
 }
 
 // ── Pro Subscription Types ──────────────────────────────────
@@ -832,6 +898,10 @@ export interface CommunityPost {
   comment_count: number;
   distro_count: number;
   language: string | null;
+  /** Public URL of an uploaded source file (PDF, FDX, Fountain, TXT). */
+  attached_file_url: string | null;
+  /** Extension / format of the attached file: 'pdf' | 'fdx' | 'fountain' | 'txt' */
+  attached_file_type: string | null;
   created_at: string;
   updated_at: string;
   author?: Profile;
@@ -844,7 +914,9 @@ export interface CommunityComment {
   parent_id: string | null;
   author_id: string;
   content: string;
-  comment_type: 'comment' | 'suggestion';
+  comment_type: 'comment' | 'suggestion' | 'annotation';
+  /** For annotations: element/paragraph index (as string). Null for regular comments. */
+  line_ref: string | null;
   is_pinned: boolean;
   is_hidden: boolean;
   created_at: string;
@@ -2606,5 +2678,108 @@ export interface SidebarLayoutRow {
   layout: SidebarLayout;
   created_at: string;
   updated_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Community Courses
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type CourseDifficulty = 'beginner' | 'intermediate' | 'advanced';
+export type CourseType = 'system' | 'user';
+export type CourseStatus = 'draft' | 'published' | 'archived';
+export type LessonType = 'text' | 'video' | 'quiz' | 'script_editor' | 'arc_editor' | 'example';
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string | null;
+  short_desc: string | null;
+  type: CourseType;
+  creator_id: string | null;
+  thumbnail_url: string | null;
+  difficulty: CourseDifficulty;
+  tags: string[];
+  status: CourseStatus;
+  xp_reward: number;
+  estimated_minutes: number;
+  enrollment_count: number;
+  completion_count: number;
+  rating_sum: number;
+  rating_count: number;
+  created_at: string;
+  updated_at: string;
+  // joined
+  creator?: Profile;
+}
+
+export interface CourseSection {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  order_index: number;
+  created_at: string;
+  // joined
+  lessons?: CourseLesson[];
+}
+
+// Lesson content types
+export interface LessonContentText       { markdown: string }
+export interface LessonContentVideo      { embed_url: string; provider: 'youtube' | 'vimeo' | 'direct'; duration_seconds?: number; caption?: string }
+export interface QuizOption              { id: string; text: string; is_correct: boolean }
+export interface QuizQuestion            { id: string; text: string; explanation?: string; options: QuizOption[] }
+export interface LessonContentQuiz       { questions: QuizQuestion[] }
+export interface LessonContentScriptEditor {
+  instructions: string;
+  initial_content: string;
+  locked: boolean;
+  expected_keywords?: string[];
+  hint?: string;
+}
+export interface LessonContentArcEditor  { instructions: string; arc_data: Record<string, unknown> | null; locked: boolean }
+export interface LessonContentExample    { content: string; language: string; annotations?: { line: number; note: string }[]; description?: string }
+
+export type LessonContent =
+  | LessonContentText
+  | LessonContentVideo
+  | LessonContentQuiz
+  | LessonContentScriptEditor
+  | LessonContentArcEditor
+  | LessonContentExample;
+
+export interface CourseLesson {
+  id: string;
+  course_id: string;
+  section_id: string | null;
+  title: string;
+  order_index: number;
+  lesson_type: LessonType;
+  content: LessonContent;
+  xp_reward: number;
+  is_required: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CourseEnrollment {
+  id: string;
+  user_id: string;
+  course_id: string;
+  enrolled_at: string;
+  completed_at: string | null;
+  last_accessed_at: string;
+  progress_percent: number;
+  rating: number | null;
+}
+
+export interface CourseLessonProgress {
+  id: string;
+  user_id: string;
+  lesson_id: string;
+  course_id: string;
+  completed_at: string;
+  score: number | null;
+  attempts: number;
+  answer_data: Record<string, string> | null;
 }
 
