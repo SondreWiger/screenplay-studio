@@ -9,6 +9,19 @@ import { Button, Badge, Modal, Input, Select, LoadingSpinner, Avatar, Textarea, 
 import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
+import { VersionPanel } from '@/components/versioning/VersionPanel';
+import {
+  DEFAULT_VERSION_CONFIG,
+  type VersionConfig,
+  getAllVersionNames,
+  isElementVisible,
+  getElementVersions,
+  addVersionToMetadata,
+  removeVersionFromMetadata,
+  removeVersionFromConfig,
+  serializeVersionConfig,
+  deserializeVersionConfig,
+} from '@/lib/versioning';
 
 // ============================================================
 // Display Settings — persisted in localStorage
@@ -433,6 +446,16 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [newCommentType, setNewCommentType] = useState<CommentType>('note');
   const [postingComment, setPostingComment] = useState(false);
 
+  // ── Versioned Story Editing ──────────────────────────────────
+  const [showVersionPanel, setShowVersionPanel] = useState(false);
+  const [versionConfig, setVersionConfig] = useState<VersionConfig>(DEFAULT_VERSION_CONFIG);
+  const [selectedElementIds, setSelectedElementIds] = useState<Set<string>>(new Set());
+  const selectedElementId = useScriptStore((s) => s.selectedElementId);
+  const versionSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const versionConfigRef = useRef<VersionConfig>(DEFAULT_VERSION_CONFIG);
+  // Keep ref in sync so export callbacks (with empty deps) can read current config
+  useEffect(() => { versionConfigRef.current = versionConfig; }, [versionConfig]);
+
   // Map: element_id → comment count (for badge display)
   const commentCountMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -667,6 +690,86 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     });
   }, []);
 
+  // Load version config from script metadata when script changes
+  useEffect(() => {
+    const config = (currentScript?.metadata ?? {}).version_config;
+    setVersionConfig(deserializeVersionConfig(config));
+  }, [currentScript?.id]);
+
+  // Save version config to scripts.metadata (debounced 800ms)
+  const saveVersionConfig = useCallback((config: VersionConfig) => {
+    if (!currentScript?.id) return;
+    if (versionSaveRef.current) clearTimeout(versionSaveRef.current);
+    versionSaveRef.current = setTimeout(async () => {
+      const supabase = createClient();
+      await supabase.from('scripts').update({
+        metadata: { ...(currentScript.metadata ?? {}), version_config: serializeVersionConfig(config) },
+      }).eq('id', currentScript.id);
+    }, 800);
+  }, [currentScript?.id, currentScript?.metadata]);
+
+  const handleVersionConfigChange = useCallback((config: VersionConfig) => {
+    setVersionConfig(config);
+    saveVersionConfig(config);
+  }, [saveVersionConfig]);
+
+  /** Tag all selected elements with a version name */
+  const handleTagSelectedElements = useCallback((version: string) => {
+    const ids = Array.from(selectedElementIds);
+    if (ids.length === 0) { toast.warning('Select elements first (⌘+click).'); return; }
+    ids.forEach((id) => {
+      const el = elements.find((e) => e.id === id);
+      if (el) useScriptStore.getState().updateElement(id, { metadata: addVersionToMetadata(el.metadata ?? {}, version) });
+    });
+  }, [selectedElementIds, elements]);
+
+  /** Remove version tag from all selected elements */
+  const handleUntagSelectedElements = useCallback((version: string) => {
+    const ids = Array.from(selectedElementIds);
+    if (ids.length === 0) return;
+    ids.forEach((id) => {
+      const el = elements.find((e) => e.id === id);
+      if (el) useScriptStore.getState().updateElement(id, { metadata: removeVersionFromMetadata(el.metadata ?? {}, version) });
+    });
+  }, [selectedElementIds, elements]);
+
+  /** Create a new named version (adds to config.known, persists) */
+  const handleCreateVersion = useCallback((name: string) => {
+    const known = [...(versionConfig.known ?? [])];
+    if (!known.includes(name)) {
+      handleVersionConfigChange({ ...versionConfig, known: [...known, name] });
+    }
+  }, [versionConfig, handleVersionConfigChange]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleDeleteVersion = useCallback((name: string) => {
+    // 1. Remove from config (known + disabled)
+    handleVersionConfigChange(removeVersionFromConfig(versionConfig, name));
+    // 2. Untag all elements that carry this version
+    const tagged = elements.filter((el) => getElementVersions(el).includes(name));
+    for (const el of tagged) {
+      const nextMeta = removeVersionFromMetadata(el.metadata ?? {}, name);
+      useScriptStore.getState().updateElement(el.id, { metadata: nextMeta });
+    }
+  }, [versionConfig, elements, handleVersionConfigChange]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // CMD+A: select all elements when focus is not inside a contentEditable
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        const active = document.activeElement as HTMLElement;
+        if (active?.isContentEditable) return; // let browser handle text selection in editor
+        e.preventDefault();
+        setSelectedElementIds(new Set(elements.map((el) => el.id)));
+      }
+      // ESC clears selection
+      if (e.key === 'Escape' && selectedElementIds.size > 0) {
+        setSelectedElementIds(new Set());
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [elements, selectedElementIds.size]);
+
   // Page numbers (rough estimate: 56 lines per page)
   const elementPages = useMemo(() => {
     const pages: Record<string, number> = {};
@@ -719,9 +822,23 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     // When saving just finished
     setLastSaved(new Date());
   }, [saving]);
-  const filteredElements = searchQuery
-    ? elements.filter((e) => (e.content || '').toLowerCase().includes(searchQuery.toLowerCase()))
-    : elements;
+  // All version names present in this script (known + detected from elements)
+  const allVersions = useMemo(() => getAllVersionNames(elements, versionConfig), [elements, versionConfig]);
+
+  // Versions that ALL currently selected elements share (for panel tag/untag state)
+  const selectedVersions = useMemo(() => {
+    const ids = Array.from(selectedElementIds);
+    if (ids.length === 0) return [];
+    const selectedEls = elements.filter((e) => ids.includes(e.id));
+    if (selectedEls.length === 0) return [];
+    const first = getElementVersions(selectedEls[0]);
+    return first.filter((v) => selectedEls.every((el) => getElementVersions(el).includes(v)));
+  }, [selectedElementIds, elements]);
+
+  const filteredElements = useMemo(() => {
+    if (!searchQuery) return elements;
+    return elements.filter((e) => (e.content || '').toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [elements, searchQuery]);
 
   // Other users viewing the script
   const scriptUsers = onlineUsers.filter(
@@ -769,7 +886,8 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const handleExportPDF = useCallback(() => {
     const store = useScriptStore.getState();
     const script = store.currentScript;
-    const els = store.elements;
+    // Filter by active version config (disabled versions excluded)
+    const els = store.elements.filter((e) => isElementVisible(e, versionConfigRef.current.disabled));
     if (!script) return;
 
     const titlePage = script.title_page_data || ({} as TitlePageData);
@@ -1075,24 +1193,26 @@ ${pageHTML}
 
   const handleExportFDX = useCallback(() => {
     if (!currentScript || elements.length === 0) return;
+    const exportElements = elements.filter((e) => isElementVisible(e, versionConfig.disabled));
     const xml = generateFDX({
       titlePage: currentScript.title_page_data || undefined,
-      elements,
+      elements: exportElements,
       scriptTitle: currentScript.title,
     });
     downloadFile(xml, `${currentScript.title || 'script'}.fdx`, 'application/xml');
     setShowImportExport(false);
-  }, [currentScript, elements]);
+  }, [currentScript, elements, versionConfig]);
 
   const handleExportFountain = useCallback(() => {
     if (!currentScript || elements.length === 0) return;
+    const exportElements = elements.filter((e) => isElementVisible(e, versionConfig.disabled));
     const text = generateFountain({
       titlePage: currentScript.title_page_data || undefined,
-      elements,
+      elements: exportElements,
     });
     downloadFile(text, `${currentScript.title || 'script'}.fountain`, 'text/plain');
     setShowImportExport(false);
-  }, [currentScript, elements]);
+  }, [currentScript, elements, versionConfig]);
 
   const handleExportPlainText = useCallback(() => {
     if (!currentScript || elements.length === 0) return;
@@ -1110,7 +1230,8 @@ ${pageHTML}
       if (tp.copyright) lines.push(tp.copyright);
       lines.push('', '---', '');
     }
-    for (const el of elements) {
+    const exportElements = elements.filter((e) => isElementVisible(e, versionConfig.disabled));
+    for (const el of exportElements) {
       const c = (el.content || '').trim();
       if (!c) { lines.push(''); continue; }
       switch (el.element_type) {
@@ -1124,7 +1245,7 @@ ${pageHTML}
     }
     downloadFile(lines.join('\n'), `${currentScript.title || 'script'}.txt`, 'text/plain');
     setShowImportExport(false);
-  }, [currentScript, elements]);
+  }, [currentScript, elements, versionConfig]);
 
   const handleExportHTML = useCallback(() => {
     if (!currentScript || elements.length === 0) return;
@@ -1159,7 +1280,8 @@ ${pageHTML}
       }
       html += '</div>\n';
     }
-    for (const el of elements) {
+    const exportHtmlEls = elements.filter((e) => isElementVisible(e, versionConfig.disabled));
+    for (const el of exportHtmlEls) {
       const c = (el.content || '').trim();
       if (!c) continue;
       const cls = el.element_type.replace('_', '-');
@@ -1168,7 +1290,7 @@ ${pageHTML}
     html += '</body></html>';
     downloadFile(html, `${currentScript.title || 'script'}.html`, 'text/html');
     setShowImportExport(false);
-  }, [currentScript, elements]);
+  }, [currentScript, elements, versionConfig]);
 
   const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
@@ -1593,6 +1715,25 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>
           )}
+          {/* Story Versions */}
+          <div className="relative">
+            <button
+              onClick={() => setShowVersionPanel(!showVersionPanel)}
+              className={cn('relative p-1.5 rounded transition-colors',
+                showVersionPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800'
+              )}
+              title="Story Versions"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              {allVersions.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                  {allVersions.length}
+                </span>
+              )}
+            </button>
+          </div>
           {/* Display Settings */}
           <div className="relative">
             <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
@@ -1828,32 +1969,67 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 </button>
               </div>
             ) : (
-              filteredElements.map((element, index) => (
-                <LineEditor
-                  key={element.id}
-                  elementId={element.id}
-                  darkMode={darkMode}
-                  characterNames={characterNames}
-                  isHighlighted={searchQuery !== '' && (element.content || '').toLowerCase().includes(searchQuery.toLowerCase())}
-                  showPageBreak={index > 0 && elementPages[element.id] !== elementPages[filteredElements[index - 1]?.id]}
-                  pageNumber={elementPages[element.id]}
-                  onFocused={(type) => setActiveElementType(type)}
-                  collaborators={collabMap[element.id] || []}
-                  projectId={params.id}
-                  canEdit={canEdit}
-                  displaySettings={displaySettings}
-                  characterColorMap={characterColorMap}
-                  sceneNumberMap={sceneNumberMap}
-                  commentCount={commentCountMap[element.id] || 0}
-                  onComment={openCommentPanel}
-                  isContentCreator={isContentCreator}
-                  isAudioDrama={isAudioDrama}
-                  isStagePlay={isStagePlay}
-                  audioFormat={resolvedAudioFormat}
-                  audioElementCycle={audioElementCycle}
-                  stagePlayElementCycle={STAGEPLAY_ELEMENT_CYCLE}
-                />
-              ))
+              filteredElements.map((element, index) => {
+                const isVersionHidden = versionConfig.disabled.length > 0
+                  && !isElementVisible(element, versionConfig.disabled);
+                const isFaded = isVersionHidden && versionConfig.showFaded;
+                const isSelected = selectedElementIds.has(element.id);
+
+                // Hidden (and not showing faded) → show a subtle ··· indicator
+                if (isVersionHidden && !versionConfig.showFaded) {
+                  const versionNames = getElementVersions(element).join(', ');
+                  return (
+                    <div key={element.id} className="relative flex items-center h-3 my-0.5 group/hidden" title={`Hidden version content${versionNames ? ': ' + versionNames : ''}`}>
+                      <span className="absolute -left-5 text-[10px] text-surface-700 select-none font-mono leading-none group-hover/hidden:text-surface-500 transition-colors">···</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={element.id}
+                    className={cn(
+                      isFaded ? 'opacity-20 pointer-events-none select-none' : undefined,
+                      isSelected ? 'outline outline-2 outline-[#FF5F1F]/40 outline-offset-1 rounded-sm' : undefined,
+                    )}
+                    onClick={(e) => {
+                      if ((e.metaKey || e.ctrlKey) && canEdit && !isFaded) {
+                        e.preventDefault();
+                        setSelectedElementIds((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(element.id)) next.delete(element.id);
+                          else next.add(element.id);
+                          return next;
+                        });
+                      }
+                    }}
+                  >
+                    <LineEditor
+                      elementId={element.id}
+                      darkMode={darkMode}
+                      characterNames={characterNames}
+                      isHighlighted={searchQuery !== '' && (element.content || '').toLowerCase().includes(searchQuery.toLowerCase())}
+                      showPageBreak={index > 0 && elementPages[element.id] !== elementPages[filteredElements[index - 1]?.id]}
+                      pageNumber={elementPages[element.id]}
+                      onFocused={(type) => setActiveElementType(type)}
+                      collaborators={collabMap[element.id] || []}
+                      projectId={params.id}
+                      canEdit={canEdit}
+                      displaySettings={displaySettings}
+                      characterColorMap={characterColorMap}
+                      sceneNumberMap={sceneNumberMap}
+                      commentCount={commentCountMap[element.id] || 0}
+                      onComment={openCommentPanel}
+                      isContentCreator={isContentCreator}
+                      isAudioDrama={isAudioDrama}
+                      isStagePlay={isStagePlay}
+                      audioFormat={resolvedAudioFormat}
+                      audioElementCycle={audioElementCycle}
+                      stagePlayElementCycle={STAGEPLAY_ELEMENT_CYCLE}
+                    />
+                  </div>
+                );
+              })
             )}
             {elements.length > 0 && canEdit && (
               <div className="py-12 text-center">
@@ -1871,6 +2047,54 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </div>
         </div>
       </div>
+
+      {/* ── Version Panel (right sidebar) ────────────────────── */}
+      {showVersionPanel && (
+        <div className="w-72 shrink-0">
+          <VersionPanel
+            versions={allVersions}
+            config={versionConfig}
+            onChange={handleVersionConfigChange}
+            onClose={() => setShowVersionPanel(false)}
+            selectedCount={selectedElementIds.size}
+            selectedVersions={selectedVersions}
+            onTagSelected={canEdit ? handleTagSelectedElements : undefined}
+            onUntagSelected={canEdit ? handleUntagSelectedElements : undefined}
+            onCreateVersion={canEdit ? handleCreateVersion : undefined}
+            onDeleteVersion={canEdit ? handleDeleteVersion : undefined}
+            mode="script"
+          />
+        </div>
+      )}
+
+      {/* ── Selection action bar ───────────────────────────────── */}
+      {selectedElementIds.size > 0 && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 bg-surface-900 border border-surface-700 rounded-2xl shadow-2xl text-sm select-none">
+          <span className="text-white font-medium">{selectedElementIds.size} element{selectedElementIds.size !== 1 ? 's' : ''} selected</span>
+          <span className="text-surface-700">·</span>
+          <button
+            onClick={() => setSelectedElementIds(new Set())}
+            className="text-surface-400 hover:text-white transition-colors"
+          >
+            Clear
+          </button>
+          {canEdit && (
+            <>
+              <span className="text-surface-700">·</span>
+              <button
+                onClick={() => {
+                  if (selectedElementIds.size > 3 && !confirm(`Delete ${selectedElementIds.size} elements? This cannot be undone.`)) return;
+                  Array.from(selectedElementIds).forEach(id => useScriptStore.getState().deleteElement(id));
+                  setSelectedElementIds(new Set());
+                }}
+                className="text-red-400 hover:text-red-300 transition-colors"
+              >
+                Delete selected
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ── Comment Panel (right sidebar) ────────────────────── */}
       {showCommentPanel && (

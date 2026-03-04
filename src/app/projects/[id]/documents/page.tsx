@@ -9,6 +9,15 @@ import type { ProjectDocument, ProjectFolder, DocumentType, DocumentComment } fr
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_TYPE_ICONS } from '@/lib/types';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
+import { VersionPanel } from '@/components/versioning/VersionPanel';
+import {
+  DEFAULT_VERSION_CONFIG,
+  type VersionConfig,
+  extractVersionsFromDocContent,
+  renderDocWithVersions,
+  serializeVersionConfig,
+  deserializeVersionConfig,
+} from '@/lib/versioning';
 
 export default function DocumentsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -28,6 +37,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   const currentDocRef = useRef<string | null>(null);
   const localEditPendingRef = useRef(false);
   const [remoteEditors, setRemoteEditors] = useState<{ userId: string; docId: string; name: string }[]>([]);
+
+  // ── Versioned Story Editing ────────────────────────────────────
+  const [showVersionPanel, setShowVersionPanel] = useState(false);
+  const [showVersionPreview, setShowVersionPreview] = useState(false);
+  const [versionConfig, setVersionConfig] = useState<VersionConfig>(DEFAULT_VERSION_CONFIG);
+  const versionSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
   // Keep ref in sync with currentDoc
@@ -298,7 +314,54 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     else setComments([]);
   }, [currentDoc?.id, fetchComments]);
 
-  // ─── Add a comment ────────────────────────────────────────────────
+  // Load version config from document metadata when doc changes
+  useEffect(() => {
+    const config = (currentDoc?.metadata ?? {}).version_config;
+    setVersionConfig(deserializeVersionConfig(config));
+    setShowVersionPreview(false); // reset preview on doc switch
+  }, [currentDoc?.id]);
+
+  // Save version config to document metadata (debounced)
+  const saveVersionConfig = useCallback((config: VersionConfig) => {
+    if (!currentDoc?.id) return;
+    if (versionSaveRef.current) clearTimeout(versionSaveRef.current);
+    versionSaveRef.current = setTimeout(async () => {
+      const supabase = createClient();
+      await supabase.from('project_documents').update({
+        metadata: { ...(currentDoc.metadata ?? {}), version_config: serializeVersionConfig(config) },
+      }).eq('id', currentDoc.id);
+    }, 800);
+  }, [currentDoc?.id, currentDoc?.metadata]);
+
+  const handleVersionConfigChange = useCallback((config: VersionConfig) => {
+    setVersionConfig(config);
+    saveVersionConfig(config);
+  }, [saveVersionConfig]);
+
+  /**
+   * Insert [v:name]...selection...[/v] at the current cursor position in the textarea.
+   * Falls back to wrapping a placeholder when nothing is selected.
+   */
+  const handleInsertVersionSyntax = useCallback((version: string) => {
+    const ta = editorRef.current;
+    if (!ta || !currentDoc) return;
+    const { selectionStart, selectionEnd, value } = ta;
+    const selected = value.slice(selectionStart, selectionEnd);
+    const placeholder = selected || 'content here';
+    const wrapped = `[v:${version}]${placeholder}[/v]`;
+    const newContent = value.slice(0, selectionStart) + wrapped + value.slice(selectionEnd);
+    handleContentChange(newContent);
+    requestAnimationFrame(() => {
+      ta.focus();
+      const innerOffset = `[v:${version}]`.length;
+      ta.setSelectionRange(
+        selectionStart + innerOffset,
+        selectionStart + innerOffset + placeholder.length,
+      );
+    });
+  }, [currentDoc, handleContentChange]);
+
+  // ─── Add a comment ───────────────────────────────────────────────
   const handleAddComment = async () => {
     if (!commentText.trim() || !currentDoc || !user) return;
     setAddingComment(true);
@@ -435,6 +498,12 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   }, []);
 
   const [showSidebar, setShowSidebar] = useState(false);
+
+  // Versions detected in the current document's content
+  const docVersions = useMemo(
+    () => extractVersionsFromDocContent(currentDoc?.content || ''),
+    [currentDoc?.content],
+  );
 
   // ─── Comments state ──────────────────────────────────────────────
   const [comments, setComments] = useState<DocumentComment[]>([]);
@@ -650,6 +719,34 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <button onClick={() => handleExportText(currentDoc)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-900/10" title="Export as TXT">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 </button>
+                {/* Version buttons */}
+                {docVersions.length > 0 && (
+                  <button
+                    onClick={() => setShowVersionPreview((v) => !v)}
+                    className={cn('p-1.5 rounded transition-colors',
+                      showVersionPreview ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
+                    )}
+                    title={showVersionPreview ? 'Back to editing' : 'Preview with version filter'}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowVersionPanel((v) => !v)}
+                  className={cn('relative p-1.5 rounded transition-colors',
+                    showVersionPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
+                  )}
+                  title="Story Versions"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  {docVersions.length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                      {docVersions.length}
+                    </span>
+                  )}
+                </button>
                 {/* Comments toggle */}
                 <button
                   onClick={() => setShowComments(v => !v)}
@@ -684,19 +781,42 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                       </button>
                     </div>
                   )}
-                  <textarea
-                    ref={editorRef}
-                    value={currentDoc.content}
-                    onChange={(e) => handleContentChange(e.target.value)}
-                    onMouseUp={handleEditorSelect}
-                    onKeyUp={handleEditorSelect}
-                    className="w-full h-full min-h-[600px] p-8 bg-transparent text-surface-200 text-sm font-mono leading-relaxed outline-none resize-none placeholder:text-surface-600"
-                    placeholder="Start writing..."
-                    disabled={!canEdit}
-                    spellCheck
-                  />
+                  {showVersionPreview ? (
+                    <div
+                      className="w-full min-h-[600px] p-8 text-surface-200 text-sm font-mono leading-relaxed version-preview"
+                      dangerouslySetInnerHTML={{
+                        __html: renderDocWithVersions(currentDoc.content, versionConfig.disabled, versionConfig.showFaded),
+                      }}
+                    />
+                  ) : (
+                    <textarea
+                      ref={editorRef}
+                      value={currentDoc.content}
+                      onChange={(e) => handleContentChange(e.target.value)}
+                      onMouseUp={handleEditorSelect}
+                      onKeyUp={handleEditorSelect}
+                      className="w-full h-full min-h-[600px] p-8 bg-transparent text-surface-200 text-sm font-mono leading-relaxed outline-none resize-none placeholder:text-surface-600"
+                      placeholder="Start writing..."
+                      disabled={!canEdit}
+                      spellCheck
+                    />
+                  )}
                 </div>
               </div>
+
+              {/* Version panel */}
+              {showVersionPanel && (
+                <div className="w-72 shrink-0">
+                  <VersionPanel
+                    versions={docVersions}
+                    config={versionConfig}
+                    onChange={handleVersionConfigChange}
+                    onClose={() => setShowVersionPanel(false)}
+                    onInsertVersionSyntax={canEdit ? handleInsertVersionSyntax : undefined}
+                    mode="document"
+                  />
+                </div>
+              )}
 
               {/* Comment panel */}
               {showComments && (

@@ -514,6 +514,14 @@ export interface Script {
   locked: boolean;
   locked_by: string | null;
   title_page_data: TitlePageData;
+  /**
+   * Flexible per-script JSONB config. Known keys:
+   *   version_config   – versioning snapshot data
+   *   sort_order       – integer position in the episodes list
+   *   episode_season   – season number this episode belongs to (number)
+   *   episode_color    – hex accent colour for this episode, e.g. '#7c3aed'
+   */
+  metadata?: Record<string, unknown>;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -606,6 +614,12 @@ export interface Character {
   avatar_url: string | null;
   color: string;
   is_main: boolean;
+  /**
+   * Narrative role/importance. One of:
+   * 'protagonist' | 'antagonist' | 'main' | 'supporting' | 'minor' | 'ensemble'
+   * null = not set (falls back to is_main for legacy records)
+   */
+  role: string | null;
   first_appearance: string | null;
   cast_actor: string | null;
   cast_notes: string | null;

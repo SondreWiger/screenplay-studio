@@ -20,7 +20,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'main' | 'supporting' | 'needs_setup'>('all');
+  const [filter, setFilter] = useState<'all' | 'protagonist' | 'antagonist' | 'main' | 'supporting' | 'minor' | 'all_leads' | 'needs_setup'>('all');
   const [syncing, setSyncing] = useState(false);
 
   const hasSynced = useRef(false);
@@ -102,15 +102,20 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
         if (name) appearance[name] = (appearance[name] || 0) + 1;
       });
 
-      const charsToCreate = newNames.map((name, i) => ({
-        project_id: params.id,
-        name: name.charAt(0) + name.slice(1).toLowerCase(), // Title case
-        is_main: (appearance[name] || 0) >= 10, // 10+ appearances = main
-        color: randomColor(),
-        sort_order: characters.length + i,
-        created_by: user?.id,
-        personality_traits: [],
-      }));
+      const charsToCreate = newNames.map((name, i) => {
+        const count = appearance[name] || 0;
+        const isMain = count >= 10;
+        return {
+          project_id: params.id,
+          name: name.charAt(0) + name.slice(1).toLowerCase(),
+          is_main: isMain,
+          role: count >= 20 ? 'main' : count >= 10 ? 'supporting' : 'minor',
+          color: randomColor(),
+          sort_order: characters.length + i,
+          created_by: user?.id,
+          personality_traits: [],
+        };
+      });
 
       await supabase.from('characters').insert(charsToCreate);
       await fetchCharacters();
@@ -126,11 +131,11 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
 
   const filtered = filter === 'all'
     ? characters
-    : filter === 'main'
-      ? characters.filter((c) => c.is_main)
-      : filter === 'needs_setup'
-        ? characters.filter(needsSetup)
-        : characters.filter((c) => !c.is_main);
+    : filter === 'needs_setup'
+      ? characters.filter(needsSetup)
+      : filter === 'all_leads'
+        ? characters.filter((c) => ['protagonist', 'antagonist', 'main'].includes(c.role ?? '') || (!c.role && c.is_main))
+        : characters.filter((c) => (c.role ?? (c.is_main ? 'main' : 'supporting')) === filter);
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
@@ -169,19 +174,28 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 mb-6">
-        {(['all', 'main', 'supporting', 'needs_setup'] as const).map((f) => (
+      <div className="flex flex-wrap gap-2 mb-6">
+        {([
+          { key: 'all', label: 'All' },
+          { key: 'all_leads', label: 'Leads' },
+          { key: 'protagonist', label: 'Protagonist' },
+          { key: 'antagonist', label: 'Antagonist' },
+          { key: 'main', label: 'Main Cast' },
+          { key: 'supporting', label: 'Supporting' },
+          { key: 'minor', label: 'Minor' },
+          { key: 'needs_setup', label: `Setup (${characters.filter(needsSetup).length})` },
+        ] as { key: string; label: string }[]).map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
+            key={f.key}
+            onClick={() => setFilter(f.key as typeof filter)}
             className={cn(
               'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-              filter === f
+              filter === f.key
                 ? 'bg-[#E54E15]/20 text-[#FF5F1F]'
                 : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
             )}
           >
-            {f === 'all' ? 'All' : f === 'main' ? 'Main Cast' : f === 'needs_setup' ? `Needs Setup (${characters.filter(needsSetup).length})` : 'Supporting'}
+            {f.label}
           </button>
         ))}
       </div>
@@ -214,9 +228,9 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
                     color={character.color}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-white">{character.name}</h3>
-                      {character.is_main && <Badge variant="success" size="sm">Main</Badge>}
+                      <RoleBadge role={character.role} isMain={character.is_main} />
                       {needsSetup(character) && (
                         <Badge variant="warning" size="sm">
                           <svg className="w-3 h-3 mr-0.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
@@ -281,6 +295,40 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
 }
 
 // ============================================================
+// Role helpers
+// ============================================================
+
+const ROLE_OPTIONS = [
+  { value: 'protagonist',  label: 'Protagonist',  activeText: 'text-amber-300',   activeBg: 'bg-amber-400/10',    activeBorder: 'border-amber-400/40' },
+  { value: 'antagonist',   label: 'Antagonist',   activeText: 'text-red-400',      activeBg: 'bg-red-400/10',      activeBorder: 'border-red-400/40' },
+  { value: 'main',         label: 'Main Cast',    activeText: 'text-sky-400',      activeBg: 'bg-sky-400/10',      activeBorder: 'border-sky-400/40' },
+  { value: 'supporting',   label: 'Supporting',   activeText: 'text-emerald-400',  activeBg: 'bg-emerald-400/10',  activeBorder: 'border-emerald-400/40' },
+  { value: 'minor',        label: 'Minor',        activeText: 'text-surface-300',  activeBg: 'bg-surface-700/60',  activeBorder: 'border-surface-600' },
+  { value: 'ensemble',     label: 'Ensemble',     activeText: 'text-violet-400',   activeBg: 'bg-violet-400/10',   activeBorder: 'border-violet-400/40' },
+] as const;
+
+type RoleValue = typeof ROLE_OPTIONS[number]['value'] | '';
+
+function roleMeta(role: string | null | undefined, isMain: boolean) {
+  if (role) return ROLE_OPTIONS.find((r) => r.value === role) ?? null;
+  if (isMain) return ROLE_OPTIONS.find((r) => r.value === 'main') ?? null;
+  return null;
+}
+
+function RoleBadge({ role, isMain }: { role: string | null | undefined; isMain: boolean }) {
+  const meta = roleMeta(role, isMain);
+  if (!meta) return null;
+  return (
+    <span className={cn(
+      'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
+      meta.activeText, meta.activeBg, meta.activeBorder,
+    )}>
+      {meta.label}
+    </span>
+  );
+}
+
+// ============================================================
 // Character Editor Modal
 // ============================================================
 
@@ -317,6 +365,7 @@ function CharacterEditor({
     quirks: '',
     voice_notes: '',
     is_main: false,
+    role: '' as string,
     first_appearance: '',
     cast_actor: '',
     cast_notes: '',
@@ -342,6 +391,7 @@ function CharacterEditor({
         quirks: character.quirks || '',
         voice_notes: character.voice_notes || '',
         is_main: character.is_main,
+        role: character.role || '',
         first_appearance: character.first_appearance || '',
         cast_actor: character.cast_actor || '',
         cast_notes: character.cast_notes || '',
@@ -351,7 +401,7 @@ function CharacterEditor({
       setForm({
         name: '', full_name: '', age: '', gender: '', description: '', backstory: '',
         motivation: '', arc: '', appearance: '', personality_traits: [], quirks: '',
-        voice_notes: '', is_main: false, first_appearance: '', cast_actor: '',
+        voice_notes: '', is_main: false, role: '', first_appearance: '', cast_actor: '',
         cast_notes: '', color: randomColor(),
       });
     }
@@ -365,6 +415,7 @@ function CharacterEditor({
 
     const payload = {
       ...form,
+      is_main: ['protagonist', 'antagonist', 'main'].includes(form.role as string) || (!form.role && form.is_main),
       project_id: projectId,
       created_by: userId,
     };
@@ -415,19 +466,28 @@ function CharacterEditor({
               <Input label="Character Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               <Input label="Full Name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="If different from character name" />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <Input label="Age" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} placeholder="30s" />
               <Input label="Gender" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} />
-              <div className="flex items-end gap-2 pb-0.5">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.is_main}
-                    onChange={(e) => setForm({ ...form, is_main: e.target.checked })}
-                    className="rounded border-surface-600"
-                  />
-                  <span className="text-sm text-surface-300">Main Character</span>
-                </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-surface-300 mb-2">Character Role</label>
+              <div className="flex flex-wrap gap-1.5">
+                {ROLE_OPTIONS.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, role: form.role === r.value ? '' : r.value, is_main: ['protagonist', 'antagonist', 'main'].includes(r.value) })}
+                    className={cn(
+                      'px-3 py-1.5 rounded-full border text-xs font-semibold transition-all',
+                      form.role === r.value
+                        ? `${r.activeText} ${r.activeBg} ${r.activeBorder}`
+                        : 'text-surface-400 bg-surface-800/50 border-surface-700 hover:border-surface-500 hover:text-white'
+                    )}
+                  >
+                    {r.label}
+                  </button>
+                ))}
               </div>
             </div>
             <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Brief character description..." />
