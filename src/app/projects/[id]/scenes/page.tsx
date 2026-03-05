@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, SkeletonList, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Scene, Location, Character, SceneLocationType, SceneTime, ScriptElement } from '@/lib/types';
@@ -129,6 +129,14 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     return s.script_element_id && !s.is_completed && !s.synopsis && s.cast_ids.length === 0 && s.props.length === 0 && !s.location_id;
   };
 
+  const toggleCompleted = async (e: React.MouseEvent, scene: Scene) => {
+    e.stopPropagation();
+    if (!canEdit) return;
+    const supabase = createClient();
+    await supabase.from('scenes').update({ is_completed: !scene.is_completed }).eq('id', scene.id);
+    setScenes(prev => prev.map(s => s.id === scene.id ? { ...s, is_completed: !s.is_completed } : s));
+  };
+
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
     const ok = await confirm({ message: 'Delete this scene?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
@@ -141,7 +149,13 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   const setupNeeded = scenes.filter(needsSetup).length;
   const totalPages = scenes.reduce((sum, s) => sum + (s.page_count || 0), 0);
 
-  if (loading) return <LoadingSpinner className="py-32" />;
+  if (loading) return (
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="h-8 skeleton w-48 mb-2 rounded-lg" />
+      <div className="h-4 skeleton w-64 mb-6 rounded" />
+      <SkeletonList count={6} />
+    </div>
+  );
 
   return (
     <div className="p-4 md:p-8 max-w-6xl">
@@ -193,12 +207,16 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
           {scenes.map((scene, i) => (
             <Card key={scene.id} hover className="overflow-hidden" onClick={() => { setSelectedScene(scene); setShowEditor(true); }}>
               <div className="flex items-start gap-4 p-4">
-                <div className={cn(
-                  'w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0',
-                  scene.is_completed ? 'bg-green-500/20 text-green-400' : 'bg-surface-800 text-surface-400'
-                )}>
-                  {scene.scene_number || i + 1}
-                </div>
+                <button
+                  onClick={(e) => toggleCompleted(e, scene)}
+                  title={scene.is_completed ? 'Mark incomplete' : 'Mark done'}
+                  className={cn(
+                    'w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 transition-all hover:scale-110 focus:outline-none',
+                    scene.is_completed ? 'bg-green-500/30 text-green-400 ring-1 ring-green-500/50' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
+                  )}
+                >
+                  {scene.is_completed ? '✓' : (scene.scene_number || i + 1)}
+                </button>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge size="sm" variant="info">{scene.location_type}</Badge>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Card, Button, Badge, toast } from '@/components/ui';
@@ -9,7 +9,9 @@ import { cn } from '@/lib/utils';
 // ============================================================
 // Beat Sheet — Story structure planning tool
 // Supports Save the Cat (15 beats), Three-Act, Hero's Journey
-// Stored in projects.content_metadata.beat_sheet
+// Stored in projects.content_metadata.beat_sheets.{scope}
+// Scope: 'project' | 'ep_{scriptId}' | 'season_{n}'
+// Also handles legacy: content_metadata.beat_sheet (migrated)
 // ============================================================
 
 type Framework = 'save_the_cat' | 'three_act' | 'hero_journey';
@@ -35,7 +37,6 @@ interface SceneRef {
   id: string;
   scene_number: string | null;
   scene_heading: string | null;
-  title: string | null;
 }
 
 // ── Framework definitions ─────────────────────────────────────
@@ -90,6 +91,52 @@ const FRAMEWORKS: Record<Framework, { label: string; beats: Beat[] }> = {
   hero_journey:  { label: "Hero's Journey",   beats: HERO_JOURNEY },
 };
 
+// ── Episodic scope types ──────────────────────────────────────
+
+interface EpisodeItem { id: string; title: string; season: number | null; }
+
+interface ScopeData {
+  framework: Framework;
+  totalPages: number;
+  beatNotes: Record<string, string>;
+  beatLinkedScenes: Record<string, string[]>;
+}
+
+const DEFAULT_SCOPE: ScopeData = {
+  framework: 'save_the_cat',
+  totalPages: 110,
+  beatNotes: {},
+  beatLinkedScenes: {},
+};
+
+/** Try to extract a season number from an episode title like "S01E02", "Season 3 Ep1", etc. */
+function extractSeason(title: string): number | null {
+  const m =
+    title.match(/\bS(\d{1,2})E\d+/i) ||          // S01E02, S2E1
+    title.match(/\bSeason\s*(\d{1,2})\b/i) ||      // Season 2, Season2
+    title.match(/\bSeries\s*(\d{1,2})\b/i) ||      // Series 2
+    title.match(/^(\d{1,2})x\d+/i) ||              // 2x01
+    title.match(/\bS(\d{1,2})\b(?=\s|$)/i);        // bare S2, S01
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function parseScopeData(saved: BeatSheetData): ScopeData {
+  const beatNotes: Record<string, string> = {};
+  const beatLinkedScenes: Record<string, string[]> = {};
+  if (saved.beats) {
+    for (const [id, d] of Object.entries(saved.beats)) {
+      beatNotes[id] = d.notes;
+      if (d.linkedSceneIds?.length) beatLinkedScenes[id] = d.linkedSceneIds;
+    }
+  }
+  return {
+    framework: saved.framework ?? 'save_the_cat',
+    totalPages: saved.totalPages ?? 110,
+    beatNotes,
+    beatLinkedScenes,
+  };
+}
+
 export default function BeatSheetPage({ params }: { params: { id: string } }) {
   const { user }               = useAuthStore();
   const { members, currentProject } = useProjectStore();
@@ -107,32 +154,56 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
   const [beatLinkedScenes, setBeatLinkedScenes] = useState<Record<string, string[]>>({});
   const [scenePicker, setScenePicker] = useState<string | null>(null); // beatId being edited for scene linking
 
+  // Episodic scope
+  const [scope, setScope]           = useState<string>('project');
+  const [otherScopes, setOtherScopes] = useState<Record<string, ScopeData>>({});
+  const [episodes, setEpisodes]     = useState<EpisodeItem[]>([]);
+  const scopeRef = useRef<string>('project');
+
+  const isEpisodic = currentProject?.script_type === 'episodic';
+
   // Load saved data
   useEffect(() => {
     const load = async () => {
       if (!params.id) return;
       const supabase = createClient();
-      const [projectRes, scenesRes] = await Promise.all([
+      const [projectRes, scenesRes, scriptsRes] = await Promise.all([
         supabase.from('projects').select('content_metadata').eq('id', params.id).single(),
-        supabase.from('scenes').select('id,scene_number,scene_heading,title')
+        supabase.from('scenes').select('id,scene_number,scene_heading')
           .eq('project_id', params.id).order('sort_order', { ascending: true }),
+        supabase.from('scripts').select('id,title').eq('project_id', params.id).order('created_at', { ascending: true }),
       ]);
       setProjectScenes((scenesRes.data as SceneRef[]) ?? []);
-      if (projectRes.data?.content_metadata?.beat_sheet) {
-        const saved = projectRes.data.content_metadata.beat_sheet as BeatSheetData;
-        if (saved.framework) setFramework(saved.framework);
-        if (saved.totalPages) setTotalPages(saved.totalPages);
-        if (saved.beats) {
-          const notes: Record<string, string> = {};
-          const linked: Record<string, string[]> = {};
-          Object.entries(saved.beats).forEach(([id, d]) => {
-            notes[id] = d.notes;
-            if (d.linkedSceneIds?.length) linked[id] = d.linkedSceneIds;
-          });
-          setBeatNotes(notes);
-          setBeatLinkedScenes(linked);
+      const eps: EpisodeItem[] = ((scriptsRes.data as { id: string; title: string }[]) ?? []).map((s) => ({
+        id: s.id, title: s.title, season: extractSeason(s.title),
+      }));
+      setEpisodes(eps);
+
+      const meta = projectRes.data?.content_metadata as Record<string, unknown> | null ?? {};
+      // Try new beat_sheets format first, fall back to legacy beat_sheet
+      const allSheets = meta.beat_sheets as Record<string, BeatSheetData> | undefined;
+      const legacySheet = meta.beat_sheet as BeatSheetData | undefined;
+
+      const scopeMap: Record<string, ScopeData> = {};
+      if (allSheets) {
+        for (const [key, data] of Object.entries(allSheets)) {
+          scopeMap[key] = parseScopeData(data);
         }
+      } else if (legacySheet) {
+        scopeMap['project'] = parseScopeData(legacySheet);
       }
+
+      // Load 'project' scope into working state
+      const projectData = scopeMap['project'] ?? DEFAULT_SCOPE;
+      setFramework(projectData.framework);
+      setTotalPages(projectData.totalPages);
+      setBeatNotes(projectData.beatNotes);
+      setBeatLinkedScenes(projectData.beatLinkedScenes);
+
+      // Store all other scopes
+      const rest = { ...scopeMap };
+      delete rest['project'];
+      setOtherScopes(rest);
       setLoading(false);
     };
     load();
@@ -143,26 +214,36 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     setSaving(true);
     try {
       const supabase = createClient();
-      // Read existing content_metadata first to avoid overwriting other keys
       const { data: cur } = await supabase
         .from('projects')
         .select('content_metadata')
         .eq('id', params.id)
         .single();
       const existing = cur?.content_metadata ?? {};
-      const beatSheetData: BeatSheetData = {
-        framework,
-        totalPages,
-        beats: Object.fromEntries(
-          Object.entries(beatNotes).map(([id, notes]) => [
-            id,
-            { notes, scenes: [], linkedSceneIds: beatLinkedScenes[id] ?? [] },
-          ]),
-        ),
+
+      // Build all scope data — include current working scope
+      const allScopes: Record<string, ScopeData> = {
+        ...otherScopes,
+        [scopeRef.current]: { framework, totalPages, beatNotes, beatLinkedScenes },
       };
+
+      // Serialize to BeatSheetData format
+      const beat_sheets: Record<string, BeatSheetData> = {};
+      for (const [key, data] of Object.entries(allScopes)) {
+        beat_sheets[key] = {
+          framework: data.framework,
+          totalPages: data.totalPages,
+          beats: Object.fromEntries(
+            Object.entries(data.beatNotes).map(([id, notes]) => [
+              id, { notes, scenes: [], linkedSceneIds: data.beatLinkedScenes[id] ?? [] },
+            ]),
+          ),
+        };
+      }
+
       await supabase
         .from('projects')
-        .update({ content_metadata: { ...existing, beat_sheet: beatSheetData } })
+        .update({ content_metadata: { ...(existing as object), beat_sheets, beat_sheet: beat_sheets['project'] } })
         .eq('id', params.id);
       toast.success('Beat sheet saved');
     } catch {
@@ -170,13 +251,115 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     } finally {
       setSaving(false);
     }
-  }, [canEdit, framework, totalPages, beatNotes, beatLinkedScenes, params.id]);
+  }, [canEdit, framework, totalPages, beatNotes, beatLinkedScenes, otherScopes, params.id]);
+
+  /** Switch to a different scope — caches current working state first. */
+  const switchScope = useCallback((newScope: string) => {
+    const currentData: ScopeData = { framework, totalPages, beatNotes, beatLinkedScenes };
+    // Merge current scope into otherScopes cache
+    setOtherScopes((prev) => ({ ...prev, [scope]: currentData }));
+    // Load new scope data
+    const allData = { ...otherScopes, [scope]: currentData };
+    const data = allData[newScope] ?? DEFAULT_SCOPE;
+    setFramework(data.framework);
+    setTotalPages(data.totalPages);
+    setBeatNotes(data.beatNotes);
+    setBeatLinkedScenes(data.beatLinkedScenes);
+    setScope(newScope);
+    scopeRef.current = newScope;
+    setActiveNote(null);
+  }, [scope, otherScopes, framework, totalPages, beatNotes, beatLinkedScenes]);
+
+  // Keep scopeRef in sync
+  useEffect(() => { scopeRef.current = scope; }, [scope]);
 
   const beats     = FRAMEWORKS[framework].beats;
   const filledCount = beats.filter((b) => beatNotes[b.id]?.trim()).length;
 
+  // Build season groups for episodic projects
+  // When no season info is detectable from titles, lump all episodes into Season 1
+  const hasSeasonsInfo = episodes.some((e) => e.season !== null);
+  const seasons = Array.from(
+    new Set(episodes.map((e) => (hasSeasonsInfo ? (e.season ?? 1) : 1)))
+  ).sort((a, b) => a - b);
+
+  // Build scope display label
+  const scopeLabel = (() => {
+    if (scope === 'project') return 'Full Project';
+    if (scope.startsWith('season_')) {
+      const n = scope.replace('season_', '');
+      return `Season ${n}`;
+    }
+    if (scope.startsWith('ep_')) {
+      const id = scope.replace('ep_', '');
+      return episodes.find((e) => e.id === id)?.title ?? 'Episode';
+    }
+    return scope;
+  })();
+
   return (
     <div className="p-4 md:p-8 max-w-5xl">
+      {/* Scope tabs — only for episodic projects with scripts */}
+      {isEpisodic && episodes.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-0.5 flex-wrap bg-surface-900/60 rounded-xl border border-surface-800 p-1">
+            {/* Project-level tab */}
+            <button
+              onClick={() => switchScope('project')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-lg transition-colors',
+                scope === 'project' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white hover:bg-surface-800',
+              )}
+            >
+              📁 Full Project
+            </button>
+
+            {/* Season group dividers + episode tabs — always grouped by season */}
+            {seasons.map((seasonNum) => {
+              const seasonKey = `season_${seasonNum}`;
+              const seasonEps = episodes.filter((e) =>
+                hasSeasonsInfo ? (e.season ?? 1) === seasonNum : true
+              );
+              return (
+                <div key={seasonNum} className="flex items-center gap-0.5">
+                  {/* Only show season button when there are multiple seasons or season info exists */}
+                  {(hasSeasonsInfo || seasons.length > 1) && (
+                    <button
+                      onClick={() => switchScope(seasonKey)}
+                      className={cn(
+                        'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors',
+                        scope === seasonKey ? 'bg-violet-600/80 text-white' : 'text-violet-400 hover:text-white hover:bg-surface-800',
+                      )}
+                    >
+                      S{seasonNum}
+                    </button>
+                  )}
+                  {seasonEps.map((ep) => {
+                    const epKey = `ep_${ep.id}`;
+                    return (
+                      <button
+                        key={ep.id}
+                        onClick={() => switchScope(epKey)}
+                        className={cn(
+                          'px-3 py-1.5 text-xs rounded-lg transition-colors truncate max-w-[140px]',
+                          scope === epKey ? 'bg-surface-600 text-white' : 'text-surface-400 hover:text-white hover:bg-surface-800',
+                        )}
+                        title={ep.title}
+                      >
+                        {ep.title.replace(/S\d+E\d+\s*[-–]?\s*/i, '') || ep.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+          {scope !== 'project' && (
+            <p className="text-xs text-surface-500 mt-1.5">Editing beat sheet for: <span className="text-surface-300 font-medium">{scopeLabel}</span></p>
+          )}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
@@ -310,7 +493,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                         {beatLinkedScenes[beat.id].map((sid) => {
                           const sc = projectScenes.find((s) => s.id === sid);
                           if (!sc) return null;
-                          const label = sc.scene_number ? `S${sc.scene_number}` : sc.scene_heading ?? sc.title ?? 'Scene';
+                          const label = sc.scene_number ? `S${sc.scene_number}` : sc.scene_heading ?? 'Scene';
                           return (
                             <span key={sid} className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-300 font-medium">
                               {label}
@@ -352,7 +535,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                           {(beatLinkedScenes[beat.id] ?? []).map((sid) => {
                             const sc = projectScenes.find((s) => s.id === sid);
                             if (!sc) return null;
-                            const label = sc.scene_number ? `S${sc.scene_number}` : sc.scene_heading ?? sc.title ?? 'Scene';
+                            const label = sc.scene_number ? `S${sc.scene_number}` : sc.scene_heading ?? 'Scene';
                             return (
                               <span key={sid} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-300 font-medium border border-teal-500/20">
                                 {label}
@@ -388,7 +571,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                               .filter((s) => !(beatLinkedScenes[beat.id] ?? []).includes(s.id))
                               .map((s) => (
                                 <option key={s.id} value={s.id}>
-                                  {s.scene_number ? `S${s.scene_number} — ` : ''}{s.scene_heading ?? s.title ?? 'Untitled Scene'}
+                                  {s.scene_number ? `S${s.scene_number} — ` : ''}{s.scene_heading ?? 'Untitled Scene'}
                                 </option>
                               ))}
                           </select>

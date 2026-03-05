@@ -19,17 +19,17 @@ const PRO_FEATURES = [
   {
     icon: 'cube',
     title: '50 GB Cloud Storage',
-    desc: 'Store high-res storyboards, mood boards, reference images, and production assets. 50× the free tier.',
+    desc: 'Room for everything you would otherwise store elsewhere — storyboard art, reference images, moodboards, production assets. Free is 5 GB. Pro is 50.',
   },
   {
     icon: 'users',
     title: 'Unlimited Team Size',
-    desc: 'Add your entire production crew — no seat limits. Free accounts support up to 5 members.',
+    desc: 'Add your entire crew with no seat cap. Each person gets their own access level — writer, editor, viewer. No extra charge per seat.',
   },
   {
     icon: 'share',
     title: 'External Share Portals',
-    desc: 'Share scripts, storyboards, and lookbooks with clients and stakeholders via secure, branded links. Password protection and expiry dates included.',
+    desc: 'Send scripts, storyboards, and lookbooks to clients and stakeholders via a branded link — no account required on their end. Add a password and an expiry date.',
   },
   {
     icon: 'edit',
@@ -44,7 +44,7 @@ const PRO_FEATURES = [
   {
     icon: 'refresh',
     title: 'Full Version History',
-    desc: 'Every revision saved automatically. Compare any two versions side-by-side with a visual diff. Restore any previous version instantly.',
+    desc: 'Every save is kept. Diff any two versions side by side, restore any earlier state. Useful for the moment a rewrite goes wrong.',
   },
   {
     icon: 'building',
@@ -74,14 +74,8 @@ const PRO_FEATURES = [
   {
     icon: 'bolt',
     title: 'Priority Support',
-    desc: 'Direct email support with 24-hour response time. Access to the Pro feedback channel for feature requests.',
+    desc: 'Email that actually gets answered — 24-hour response time plus a direct channel for feature requests.',
   },
-];
-
-const TESTIMONIALS = [
-  { name: 'Sarah K.', role: 'Showrunner', text: 'The client review portal alone saves us 10+ hours per episode in feedback rounds.' },
-  { name: 'Marcus D.', role: 'YouTube Creator (2.4M)', text: 'External share links let me send branded lookbooks to sponsors instantly. Game changer.' },
-  { name: 'Lena W.', role: 'Indie Producer', text: 'Version history saved our pilot rewrite. We could compare every draft side by side.' },
 ];
 
 export default function ProUpgradePage() {
@@ -179,7 +173,7 @@ export default function ProUpgradePage() {
             <span className="ss-label">Already Pro</span>
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
-          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>YOU'RE ALREADY ON PRO!</h1>
+          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>YOU’RE ALREADY ON PRO.</h1>
           <p className="text-white/30 text-sm mb-8 leading-relaxed">
             You have access to all Pro features. Thank you for supporting Screenplay Studio.
           </p>
@@ -209,12 +203,13 @@ export default function ProUpgradePage() {
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
           <h1 className="font-black text-white mb-6" style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)', letterSpacing: '-0.04em', lineHeight: 0.9 }}>
-            Production-grade tools<br />
-            <span style={{ color: '#FF5F1F' }}>for serious creators.</span>
+            Tools for productions<br />
+            <span style={{ color: '#FF5F1F' }}>that need more.</span>
           </h1>
           <p className="text-base text-white/30 max-w-2xl mx-auto mb-12 leading-relaxed">
-            Everything in the free plan stays free — forever. Pro adds the collaboration,
-            client-facing, and production management tools that professional teams need.
+            Nothing free was taken away to make Pro. These are tools that didn’t exist in the free tier —
+            storage for large productions, client-facing portals, full version history, advanced scheduling,
+            and custom branding for when it needs to look like yours.
           </p>
 
           {/* Pricing Cards */}
@@ -371,8 +366,8 @@ export default function ProUpgradePage() {
             <span className="ss-label">Pro Features</span>
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>EVERYTHING IN PRO</h2>
-          <p className="text-white/30 text-sm">New capabilities that never existed in the free tier — nothing was taken away.</p>
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>WHAT PRO ADDS</h2>
+          <p className="text-white/30 text-sm">New capabilities that didn’t exist in the free tier — nothing was taken away.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRO_FEATURES.map((f) => (
@@ -385,20 +380,6 @@ export default function ProUpgradePage() {
         </div>
       </div>
 
-      {/* Testimonials */}
-      <div className="max-w-4xl mx-auto px-4 pb-16">
-        <div className="grid md:grid-cols-3 gap-4">
-          {TESTIMONIALS.map((t) => (
-            <Card key={t.name} className="p-5">
-              <p className="text-sm text-surface-300 mb-4 italic">"{t.text}"</p>
-              <div>
-                <p className="text-sm font-medium text-white">{t.name}</p>
-                <p className="text-xs text-surface-500">{t.role}</p>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
 
       {/* Comparison Table */}
       <div className="max-w-4xl mx-auto px-4 pb-20">
@@ -452,9 +433,9 @@ export default function ProUpgradePage() {
           <span className="ss-label">Get Started</span>
           <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
         </div>
-        <h2 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>READY TO LEVEL UP?</h2>
+        <h2 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>UPGRADE YOUR PRODUCTION.</h2>
         <p className="text-white/30 text-sm mb-8 max-w-xl mx-auto leading-relaxed">
-          Everything you already have stays free. Pro just adds the tools your team deserves.
+          The free tools stay free. Pro is for when you need the things a paying production actually needs.
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500" onClick={() => { if (user) { setCheckoutPlan('project_lifetime'); setShowCheckout(true); } else router.push('/auth/login'); }}>

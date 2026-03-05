@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 
 const NAV_LINKS = [
   { href: '/community',             label: 'Feed'       },
+  { href: '/community/c',           label: 'Communities'},
   { href: '/community/showcase',    label: 'Showcase'   },
   { href: '/community/challenges',  label: 'Challenges' },
   { href: '/community/courses',     label: 'Courses'    },
@@ -114,6 +115,25 @@ export function CommunityNav() {
                     Share Script
                   </Link>
                 )}
+                {/* Smart Post button for sub-community pages */}
+                {(() => {
+                  const match = pathname.match(/^\/community\/c\/([^/]+)/);
+                  if (match) {
+                    const slug = match[1];
+                    if (slug && slug !== 'create') {
+                      return (
+                        <Link
+                          href={`/community/c/${slug}?compose=1`}
+                          className="ss-btn-orange hidden sm:inline-flex"
+                          style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}
+                        >
+                          + Post
+                        </Link>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
 
                 {/* Notifications */}
                 <NotificationBell />

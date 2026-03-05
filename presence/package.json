@@ -1,0 +1,13 @@
+{
+  "name": "screenplay-studio-premid-presence",
+  "version": "1.0.0",
+  "description": "PreMiD Discord Rich Presence for Screenplay Studio",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "premid": "^2.5.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -88,6 +88,8 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [resizingNode, setResizingNode] = useState<string | null>(null);
+  const resizeStartRef = useRef<{ svgX: number; svgY: number; origW: number; origH: number } | null>(null);
 
   // Modal state
   const [showNodeEditor, setShowNodeEditor] = useState(false);
@@ -168,6 +170,14 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     }
   }, [tool]);
 
+  const handleResizeMouseDown = useCallback((e: React.MouseEvent, node: MindMapNode) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const svgPt = screenToSVG(e.clientX, e.clientY);
+    resizeStartRef.current = { svgX: svgPt.x, svgY: svgPt.y, origW: node.width, origH: node.height };
+    setResizingNode(node.id);
+  }, [screenToSVG]);
+
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const svgPt = screenToSVG(e.clientX, e.clientY);
     setMousePos(svgPt);
@@ -180,6 +190,14 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
       return;
     }
 
+    if (resizingNode && resizeStartRef.current) {
+      const rs = resizeStartRef.current;
+      const newW = Math.max(80, rs.origW + (svgPt.x - rs.svgX));
+      const newH = Math.max(40, rs.origH + (svgPt.y - rs.svgY));
+      setNodes((prev) => prev.map((n) => n.id === resizingNode ? { ...n, width: newW, height: newH } : n));
+      return;
+    }
+
     if (draggingNode) {
       setNodes((prev) =>
         prev.map((n) =>
@@ -189,11 +207,25 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
         )
       );
     }
-  }, [isPanning, panStart, viewBox, draggingNode, dragOffset, screenToSVG]);
+  }, [isPanning, panStart, viewBox, draggingNode, dragOffset, resizingNode, screenToSVG]);
 
   const handleMouseUp = useCallback(async () => {
     if (isPanning) {
       setIsPanning(false);
+      return;
+    }
+
+    if (resizingNode) {
+      const node = nodes.find((n) => n.id === resizingNode);
+      if (node) {
+        const supabase = createClient();
+        await supabase
+          .from('mindmap_nodes')
+          .update({ width: node.width, height: node.height, updated_at: new Date().toISOString() })
+          .eq('id', node.id);
+      }
+      setResizingNode(null);
+      resizeStartRef.current = null;
       return;
     }
 
@@ -208,7 +240,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
       }
       setDraggingNode(null);
     }
-  }, [isPanning, draggingNode, nodes]);
+  }, [isPanning, resizingNode, draggingNode, nodes]);
 
   // ============================================================
   // NODE INTERACTIONS
@@ -432,25 +464,30 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     const angleStep = (2 * Math.PI) / toImport.length;
 
     const supabase = createClient();
-    const newNodes = toImport.map((char, i) => ({
-      project_id: params.id,
-      character_id: char.id,
-      label: char.name,
-      node_type: 'character' as const,
-      x: centerX + radius * Math.cos(angleStep * i - Math.PI / 2) - 70,
-      y: centerY + radius * Math.sin(angleStep * i - Math.PI / 2) - 30,
-      width: 140,
-      height: 60,
-      color: char.color || NODE_COLORS[i % NODE_COLORS.length],
-      shape: (char.is_main ? 'rounded' : 'rounded') as MindMapNodeShape,
-      font_size: char.is_main ? 16 : 14,
-      image_url: char.avatar_url,
-      notes: char.description,
-      group_id: null,
-      is_locked: false,
-      z_index: nodes.length + i,
-      created_by: user?.id,
-    }));
+    const newNodes = toImport.map((char, i) => {
+      const isMain = char.is_main ?? false;
+      const nodeW = isMain ? 180 : 130;
+      const nodeH = isMain ? 72 : 52;
+      return {
+        project_id: params.id,
+        character_id: char.id,
+        label: char.name,
+        node_type: 'character' as const,
+        x: centerX + radius * Math.cos(angleStep * i - Math.PI / 2) - nodeW / 2,
+        y: centerY + radius * Math.sin(angleStep * i - Math.PI / 2) - nodeH / 2,
+        width: nodeW,
+        height: nodeH,
+        color: char.color || NODE_COLORS[i % NODE_COLORS.length],
+        shape: (isMain ? 'rounded' : 'rounded') as MindMapNodeShape,
+        font_size: isMain ? 16 : 13,
+        image_url: char.avatar_url,
+        notes: char.description,
+        group_id: null,
+        is_locked: false,
+        z_index: nodes.length + i,
+        created_by: user?.id,
+      };
+    });
 
     const { data: created, error } = await supabase
       .from('mindmap_nodes')
@@ -973,6 +1010,19 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
                   <g transform={`translate(${node.x + node.width - 16}, ${node.y + node.height - 16})`}>
                     <rect width="14" height="14" rx="2" fill="rgba(0,0,0,0.6)" />
                     <path d="M3 6V5a4 4 0 018 0v1M2 6h10v7H2V6z" fill="#888" transform="scale(0.7) translate(3,2)" />
+                  </g>
+                )}
+
+                {/* Resize handle — only when selected and can edit */}
+                {isSelected && canEdit && !node.is_locked && (
+                  <g
+                    transform={`translate(${node.x + node.width - 10}, ${node.y + node.height - 10})`}
+                    className="cursor-se-resize"
+                    onMouseDown={(e) => { e.stopPropagation(); handleResizeMouseDown(e, node); }}
+                  >
+                    <rect width="10" height="10" rx="2" fill={node.color} opacity={0.8} />
+                    <line x1="3" y1="8" x2="8" y2="3" stroke="white" strokeWidth="1" opacity="0.7" />
+                    <line x1="6" y1="8" x2="8" y2="6" stroke="white" strokeWidth="1" opacity="0.7" />
                   </g>
                 )}
               </g>

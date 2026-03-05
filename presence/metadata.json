@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schemas.premid.app/metadata/1.10",
+  "author": {
+    "name": "Northem Development",
+    "id": "0"
+  },
+  "contributors": [],
+  "service": "Screenplay Studio",
+  "altnames": [],
+  "description": {
+    "en": "Shows your writing and production activity while working in Screenplay Studio"
+  },
+  "url": "screenplaystudio.fun",
+  "logo": "https://i.imgur.com/REPLACE_WITH_LOGO.png",
+  "thumbnail": "https://i.imgur.com/REPLACE_WITH_THUMBNAIL.png",
+  "color": "#FF5F1F",
+  "tags": ["writing", "screenplay", "film", "production", "creative", "tools"],
+  "category": "socials",
+  "iframe": false,
+  "readLogs": false,
+  "settings": [
+    {
+      "id": "enabled",
+      "title": "Show Discord presence",
+      "icon": "fas fa-toggle-on",
+      "value": true
+    },
+    {
+      "id": "showProject",
+      "title": "Show project name",
+      "icon": "fas fa-film",
+      "value": false
+    },
+    {
+      "id": "showTool",
+      "title": "Show current tool",
+      "icon": "fas fa-tools",
+      "value": true
+    },
+    {
+      "id": "showTimestamp",
+      "title": "Show elapsed time",
+      "icon": "fas fa-clock",
+      "value": true
+    }
+  ]
+}

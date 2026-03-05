@@ -10,7 +10,7 @@ import { CommunityScriptInfoPanel } from '@/components/community/CommunityScript
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
 import { toast } from '@/components/ui';
-import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction, Profile } from '@/lib/types';
+import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction, Profile, SubCommunity } from '@/lib/types';
 
 // ============================================================
 // Post Detail — view a community-shared script
@@ -20,6 +20,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   const { user } = useAuth();
   const router = useRouter();
   const [post, setPost] = useState<CommunityPost | null>(null);
+  const [subCommunity, setSubCommunity] = useState<SubCommunity | null>(null);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [distros, setDistros] = useState<CommunityDistro[]>([]);
@@ -51,7 +52,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
     // Fetch post
     const { data: postData, error } = await supabase
       .from('community_posts')
-      .select('*, author:profiles!author_id(*)')
+      .select('*, author:profiles!author_id(*), sub_community:sub_communities!sub_community_id(id,slug,name,icon,accent_color,description)')
       .eq('slug', params.slug)
       .eq('status', 'published')
       .single();
@@ -63,6 +64,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
     }
 
     setPost(postData);
+    setSubCommunity((postData as any).sub_community ?? null);
 
     // Increment view count
     supabase.from('community_posts').update({ view_count: (postData.view_count || 0) + 1 }).eq('id', postData.id).then(() => {});
@@ -292,8 +294,8 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   // Loading
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#faf9f7] flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-[#FF5F1F]" />
       </div>
     );
   }
@@ -301,9 +303,9 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   // Not found
   if (!post) {
     return (
-      <div className="min-h-screen bg-[#faf9f7]">
-        <nav className="border-b border-white/10 bg-[#faf9f7]/90 backdrop-blur-md">
-          <div className="max-w-4xl mx-auto px-6 h-16 flex items-center">
+      <div className="min-h-screen" style={{ background: '#070710' }}>
+        <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}>
+          <div className="max-w-4xl mx-auto px-6 h-14 flex items-center">
             <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               Community
@@ -326,6 +328,27 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
 
   return (
     <div className="min-h-screen" style={{ background: '#070710' }}>
+
+      {/* Community context bar */}
+      {subCommunity && (
+        <div className="sticky top-0 z-20 backdrop-blur-md" style={{ background: 'rgba(7,7,16,0.88)', borderBottom: `1px solid ${subCommunity.accent_color ?? '#FF5F1F'}28` }}>
+          <div className="max-w-4xl mx-auto px-6 h-11 flex items-center gap-3">
+            <Link
+              href={`/community/c/${subCommunity.slug}`}
+              className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-80"
+              style={{ color: subCommunity.accent_color ?? '#FF5F1F' }}
+            >
+              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span>{subCommunity.icon ?? '🎬'}</span>
+              <span>c/{subCommunity.slug}</span>
+            </Link>
+            <span className="text-white/15 text-xs">{'/'}</span>
+            <span className="text-xs text-white/35 truncate max-w-xs">{post.title}</span>
+          </div>
+        </div>
+      )}
 
 
       <div className="max-w-4xl mx-auto px-6 py-10">

@@ -4,12 +4,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
+import { SkeletonList } from '@/components/ui';
 
 interface Scene {
   id: string;
   scene_number: string | null;
   scene_heading: string | null;
-  title: string | null;
   location_type: string | null;
   location_name: string | null;
   location_id: string | null;
@@ -88,6 +88,11 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
   const [groupBy, setGroupBy]       = useState<'none' | 'time_of_day' | 'location_type'>('none');
   const [showCompleted, setShowCompleted] = useState(true);
   const [expanded, setExpanded]     = useState<Set<string>>(new Set());
+  // Script-derived cast data: charName(upper) → scene IDs they speak in
+  const [scriptCharToScenes, setScriptCharToScenes] = useState<Map<string, string[]>>(new Map());
+  const [sceneIdToScriptChars, setSceneIdToScriptChars] = useState<Map<string, string[]>>(new Map());
+  // Estimated page counts from script element density (heading → elem count)
+  const [headingElemCount, setHeadingElemCount] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     const load = async () => {
@@ -96,7 +101,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
         supabase
           .from('scenes')
           .select([
-            'id','scene_number','scene_heading','title','location_type','location_name',
+            'id','scene_number','scene_heading','location_type','location_name',
             'location_id','time_of_day','page_count','estimated_duration_minutes',
             'is_completed','synopsis','sort_order',
             'cast_ids','extras_count','props','costumes','makeup_notes',
@@ -108,9 +113,63 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
         supabase.from('characters').select('id,name').eq('project_id', params.id),
         supabase.from('locations').select('id,name').eq('project_id', params.id),
       ]);
-      setScenes((sceneRes.data as unknown as Scene[]) ?? []);
+      const rawScenes = (sceneRes.data as unknown as Scene[]) ?? [];
+      setScenes(rawScenes);
       setCharacters((charRes.data as Character[]) ?? []);
       setLocations((locRes.data as Location[]) ?? []);
+
+      // ── Fetch & parse script elements ─────────────────────
+      const scriptsRes = await supabase.from('scripts').select('id').eq('project_id', params.id);
+      const scriptIds = ((scriptsRes.data as { id: string }[] | null) ?? []).map((s) => s.id);
+
+      type RawEl = { element_type: string; content: string; sort_order: number };
+      let rawElements: RawEl[] = [];
+      if (scriptIds.length > 0) {
+        const { data: elData } = await supabase
+          .from('script_elements')
+          .select('element_type, content, sort_order')
+          .in('script_id', scriptIds)
+          .order('sort_order', { ascending: true });
+        rawElements = (elData ?? []) as RawEl[];
+      }
+
+      // Walk elements: track scene heading → characters + element count
+      const hToChars  = new Map<string, Set<string>>();
+      const hToElems  = new Map<string, number>();
+      let curH: string | null = null;
+      for (const el of rawElements) {
+        if (el.element_type === 'scene_heading') {
+          curH = (el.content || '').trim().toUpperCase();
+          if (!hToChars.has(curH)) hToChars.set(curH, new Set());
+          hToElems.set(curH, (hToElems.get(curH) ?? 0) + 1);
+        } else if (curH) {
+          hToElems.set(curH, (hToElems.get(curH) ?? 0) + 1);
+          if (el.element_type === 'character') {
+            const name = (el.content || '').replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
+            if (name) hToChars.get(curH)!.add(name);
+          }
+        }
+      }
+      setHeadingElemCount(hToElems);
+
+      // Map heading → scene IDs using scene.scene_heading text
+      const charToScenes  = new Map<string, string[]>();
+      const sceneToChars  = new Map<string, string[]>();
+      for (const scene of rawScenes) {
+        const heading = (scene.scene_heading || '').trim().toUpperCase();
+        if (!heading) continue;
+        const chars = Array.from(hToChars.get(heading) ?? []);
+        if (chars.length === 0) continue;
+        sceneToChars.set(scene.id, chars);
+        for (const ch of chars) {
+          if (!charToScenes.has(ch)) charToScenes.set(ch, []);
+          charToScenes.get(ch)!.push(scene.id);
+        }
+      }
+      setScriptCharToScenes(charToScenes);
+      setSceneIdToScriptChars(sceneToChars);
+      // ──────────────────────────────────────────────────────
+
       setLoading(false);
     };
     load();
@@ -168,7 +227,13 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
 
   const castNames = (ids: string[]) => (ids ?? []).map((id) => charById[id] ?? id).filter(Boolean);
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="h-8 skeleton w-56 mb-2 rounded-lg" />
+      <div className="h-4 skeleton w-40 mb-6 rounded" />
+      <SkeletonList count={8} />
+    </div>
+  );
 
   return (
     <div className="p-4 md:p-8 max-w-6xl">
@@ -209,7 +274,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
         {[
           { label: 'Total Scenes',  value: displayScenes.length,          color: 'bg-surface-800/60 text-white' },
           { label: 'Total Pages',   value: summary.totalPages.toFixed(1), color: 'bg-surface-800/60 text-white' },
-          { label: 'Cast Members',  value: summary.allCastIds.length,     color: 'bg-[#FF5F1F]/10 text-[#FF8F5F]' },
+          { label: 'Cast Members',  value: Math.max(summary.allCastIds.length, scriptCharToScenes.size), color: 'bg-[#FF5F1F]/10 text-[#FF8F5F]' },
           { label: 'Unique Props',  value: summary.allProps.length,       color: 'bg-amber-500/10 text-amber-300' },
           { label: 'VFX Scenes',    value: summary.vfxScenes,             color: 'bg-purple-500/10 text-purple-300' },
           { label: 'Stunt Scenes',  value: summary.stuntScenes,           color: 'bg-red-500/10 text-red-300' },
@@ -267,7 +332,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                           <span className="font-mono text-xs font-bold">{scene.scene_number ?? (i + 1)}</span>
                           <div className="min-w-0 pr-2">
                             <p className="text-xs font-semibold text-white truncate">
-                              {scene.scene_heading ?? scene.title ?? ('Scene ' + (i + 1))}
+                              {scene.scene_heading ?? ('Scene ' + (scene.scene_number ?? (i + 1)))}
                             </p>
                             {scene.synopsis && !isOpen && (
                               <p className="text-[10px] text-surface-500 truncate">{scene.synopsis}</p>
@@ -288,7 +353,13 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                           </span>
                           <span className="text-[10px] text-surface-400 text-center">{scene.time_of_day ?? '—'}</span>
                           <span className="text-[10px] font-mono text-surface-300 text-right">
-                            {scene.page_count != null ? scene.page_count.toFixed(1) : '—'}
+                            {scene.page_count != null
+                              ? scene.page_count.toFixed(1)
+                              : (() => {
+                                  const h = (scene.scene_heading || '').trim().toUpperCase();
+                                  const n = h ? headingElemCount.get(h) : undefined;
+                                  return n ? ('~' + (n / 56).toFixed(1)) : '—';
+                                })()}
                           </span>
                         </div>
                         {isOpen && (
@@ -341,39 +412,106 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
       )}
 
       {/* CAST */}
-      {tab === 'cast' && (
-        <div className="space-y-3">
-          {Object.entries(summary.castSceneCounts)
-            .sort((a, b) => b[1] - a[1])
-            .map(([charId, count]) => {
-              const name      = charById[charId] ?? charId;
-              const sceneList = displayScenes.filter((s) => (s.cast_ids ?? []).includes(charId));
+      {tab === 'cast' && (() => {
+        // Merge manual cast_ids + script-derived character names into a unified list
+        type CastEntry = {
+          key: string;
+          displayName: string;
+          manualSceneIds: Set<string>;
+          scriptSceneIds: Set<string>;
+        };
+        const entries = new Map<string, CastEntry>();
+
+        // Manual: from cast_ids on scenes
+        for (const [charId] of Object.entries(summary.castSceneCounts)) {
+          const name = charById[charId] ?? charId;
+          const upper = name.toUpperCase();
+          const manualIds = new Set(displayScenes.filter((s) => (s.cast_ids ?? []).includes(charId)).map((s) => s.id));
+          if (!entries.has(upper)) entries.set(upper, { key: charId, displayName: name, manualSceneIds: new Set(), scriptSceneIds: new Set() });
+          const e = entries.get(upper)!;
+          manualIds.forEach((id) => e.manualSceneIds.add(id));
+        }
+
+        // Script-derived: characters detected from script_elements
+        scriptCharToScenes.forEach((sceneIds, charName) => {
+          if (!entries.has(charName)) entries.set(charName, { key: `script_${charName}`, displayName: charName, manualSceneIds: new Set(), scriptSceneIds: new Set() });
+          sceneIds.forEach((id) => entries.get(charName)!.scriptSceneIds.add(id));
+        });
+
+        const sorted = Array.from(entries.values()).sort((a, b) => {
+          const totalA = new Set([...Array.from(a.manualSceneIds), ...Array.from(a.scriptSceneIds)]).size;
+          const totalB = new Set([...Array.from(b.manualSceneIds), ...Array.from(b.scriptSceneIds)]).size;
+          return totalB - totalA;
+        });
+
+        if (sorted.length === 0) {
+          return (
+            <p className="text-surface-500 text-sm text-center py-12">
+              No cast data found. Assign cast to scenes or write character dialogue in your script.
+            </p>
+          );
+        }
+
+        const hasScript = scriptCharToScenes.size > 0;
+
+        return (
+          <div className="space-y-3">
+            {hasScript && (
+              <p className="text-[11px] text-surface-500 px-1 mb-1">
+                <span className="inline-block w-2 h-2 rounded-sm bg-indigo-500/60 mr-1.5 align-middle" />
+                Script-detected &nbsp;·&nbsp;
+                <span className="inline-block w-2 h-2 rounded-sm bg-[#FF5F1F]/60 mr-1.5 align-middle" />
+                Manually assigned
+              </p>
+            )}
+            {sorted.map((entry) => {
+              const allIds    = new Set([...Array.from(entry.manualSceneIds), ...Array.from(entry.scriptSceneIds)]);
+              const allScenes = displayScenes.filter((s) => allIds.has(s.id));
+              const total     = allScenes.length;
+              const isManual  = entry.manualSceneIds.size > 0;
+              const isScript  = entry.scriptSceneIds.size > 0;
               return (
-                <div key={charId} className="rounded-xl border border-surface-700/40 bg-surface-800/30 p-4">
+                <div key={entry.key} className="rounded-xl border border-surface-700/40 bg-surface-800/30 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-[#E54E15]/40 flex items-center justify-center text-xs font-bold text-[#FF8F5F]">
-                        {name[0] ?? '?'}
+                        {entry.displayName[0] ?? '?'}
                       </div>
-                      <span className="font-semibold text-white text-sm">{name}</span>
+                      <span className="font-semibold text-white text-sm">{entry.displayName}</span>
+                      {isScript && !isManual && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 font-semibold tracking-wide">SCRIPT</span>
+                      )}
+                      {isScript && isManual && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-teal-500/15 text-teal-400 font-semibold tracking-wide">MATCHED</span>
+                      )}
                     </div>
-                    <span className="text-xs text-surface-400 font-mono">{count} scene{count !== 1 ? 's' : ''}</span>
+                    <span className="text-xs text-surface-400 font-mono">{total} scene{total !== 1 ? 's' : ''}</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {sceneList.map((s, i) => (
-                      <span key={s.id} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400 font-mono border border-surface-700/40">
-                        {s.scene_number ?? ('S' + (i + 1))}
-                      </span>
-                    ))}
+                    {allScenes.map((s, i) => {
+                      const fromScript = entry.scriptSceneIds.has(s.id);
+                      const fromManual = entry.manualSceneIds.has(s.id);
+                      return (
+                        <span
+                          key={s.id}
+                          title={fromManual && fromScript ? 'Manual + Script' : fromScript ? 'From script' : 'Manually assigned'}
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${
+                            fromManual
+                              ? 'bg-[#FF5F1F]/10 text-[#FF8F5F] border-[#FF5F1F]/20'
+                              : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                          }`}
+                        >
+                          {s.scene_number ?? ('S' + (displayScenes.indexOf(s) + 1))}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               );
             })}
-          {summary.allCastIds.length === 0 && (
-            <p className="text-surface-500 text-sm text-center py-12">No cast assigned to scenes yet.</p>
-          )}
-        </div>
-      )}
+          </div>
+        );
+      })()}
 
       {/* LOCATIONS */}
       {tab === 'locations' && (
@@ -483,7 +621,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
               <div className="space-y-1.5">
                 {displayScenes.filter((s) => (s.extras_count ?? 0) > 0).map((s, i) => (
                   <div key={s.id} className="flex items-center justify-between text-xs">
-                    <span className="text-surface-400 truncate max-w-[200px]">{s.scene_heading ?? s.title ?? ('Scene ' + (i + 1))}</span>
+                    <span className="text-surface-400 truncate max-w-[200px]">{s.scene_heading ?? ('Scene ' + (i + 1))}</span>
                     <span className="font-mono text-surface-300 ml-2">{s.extras_count} extras</span>
                   </div>
                 ))}

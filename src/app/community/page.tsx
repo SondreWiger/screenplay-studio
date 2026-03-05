@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil } from '@/lib/utils';
-import type { CommunityPost, CommunityCategory, CommunityChallenge } from '@/lib/types';
+import type { CommunityPost, CommunityCategory, CommunityChallenge, SubCommunity } from '@/lib/types';
 
 // ============================================================
 // Community Hub — main feed & browse page
@@ -24,6 +24,9 @@ export default function CommunityPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'discussed'>('newest');
   const [loading, setLoading] = useState(true);
+  const [feedMode, setFeedMode] = useState<'all' | 'yours'>('all');
+  const [joinedCommunities, setJoinedCommunities] = useState<SubCommunity[]>([]);
+  const [subFeedPosts, setSubFeedPosts] = useState<CommunityPost[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -35,7 +38,7 @@ export default function CommunityPage() {
     const [postsRes, catsRes, challengeRes, coursesRes] = await Promise.all([
       supabase
         .from('community_posts')
-        .select('*, author:profiles!author_id(*)')
+        .select('*, author:profiles!author_id(*), sub_community:sub_communities!sub_community_id(id,slug,name,icon,accent_color)')
         .eq('status', 'published')
         .order('created_at', { ascending: false })
         .limit(50),
@@ -85,6 +88,32 @@ export default function CommunityPage() {
     setLoading(false);
   };
 
+  // Load joined sub-communities + their posts
+  const fetchSubFeed = async () => {
+    if (!user) return;
+    const supabase = createClient();
+    const { data: memberships } = await supabase
+      .from('sub_community_members')
+      .select('community_id, community:sub_communities(*)')
+      .eq('user_id', user.id)
+      .not('role', 'in', '("banned","pending_approval")');
+    const comms: SubCommunity[] = (memberships ?? []).map((m: any) => m.community).filter(Boolean);
+    setJoinedCommunities(comms);
+    if (comms.length > 0) {
+      const ids = comms.map(c => c.id);
+      const { data: sp } = await supabase
+        .from('community_posts')
+        .select('*, author:profiles!author_id(*), sub_community:sub_communities!sub_community_id(id,slug,name,icon,accent_color)')
+        .in('sub_community_id', ids)
+        .eq('mod_status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(30);
+      setSubFeedPosts(sp ?? []);
+    }
+  };
+
+  useEffect(() => { if (user) fetchSubFeed(); }, [user]);
+
   const handleSignOut = async () => {
     const supabase = createClient();
     try { sessionStorage.removeItem('ss_session_active'); } catch {}
@@ -104,11 +133,19 @@ export default function CommunityPage() {
   };
 
   // Filter & sort
-  const filtered = posts
-    .filter((p) => !selectedCategory || p.categories?.some((c) => c.slug === selectedCategory))
+  const sourcePosts = feedMode === 'yours' ? subFeedPosts : posts;
+  const joinedIds = new Set(joinedCommunities.map(c => c.id));
+  const filtered = sourcePosts
+    .filter((p) => feedMode === 'yours' || !selectedCategory || p.categories?.some((c) => c.slug === selectedCategory))
     .sort((a, b) => {
-      if (sortBy === 'popular') return b.upvote_count - a.upvote_count;
-      if (sortBy === 'discussed') return b.comment_count - a.comment_count;
+      // In "all" mode, float posts from the user's communities to the top
+      if (feedMode === 'all' && user) {
+        const aJoined = a.sub_community_id && joinedIds.has(a.sub_community_id) ? 1 : 0;
+        const bJoined = b.sub_community_id && joinedIds.has(b.sub_community_id) ? 1 : 0;
+        if (aJoined !== bJoined) return bJoined - aJoined;
+      }
+      if (sortBy === 'popular') return (b.upvote_count ?? 0) - (a.upvote_count ?? 0);
+      if (sortBy === 'discussed') return (b.comment_count ?? 0) - (a.comment_count ?? 0);
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
@@ -168,6 +205,17 @@ export default function CommunityPage() {
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>COMMUNITY SCRIPTS</h1>
             <p className="text-white/50 text-sm mt-1">Discover, share, and collaborate on screenplays</p>
+            {user && (
+              <div className="flex items-center gap-1 mt-3 p-0.5 rounded-lg w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                {(['all', 'yours'] as const).map(m => (
+                  <button key={m} onClick={() => setFeedMode(m)}
+                    className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md transition-all"
+                    style={feedMode === m ? { background: '#FF5F1F', color: '#fff' } : { color: 'rgba(255,255,255,0.45)' }}>
+                    {m === 'all' ? 'All Posts' : 'Your Feed'}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {(['newest', 'popular', 'discussed'] as const).map((s) => (
@@ -228,6 +276,25 @@ export default function CommunityPage() {
             </div>
 
             {/* Featured Courses */}
+            {/* Your Communities */}
+            {joinedCommunities.length > 0 && (
+              <div className="mt-6 pt-5 border-t border-white/10">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Your Communities</p>
+                  <Link href="/community/c" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">Browse →</Link>
+                </div>
+                <div className="space-y-1">
+                  {joinedCommunities.slice(0, 8).map(c => (
+                    <Link key={c.id} href={`/community/c/${c.slug}`}
+                      className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors py-1">
+                      <span className="text-base">{c.icon ?? '🎬'}</span>
+                      <span className="truncate">c/{c.slug}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {featuredCourses.length > 0 && (
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
@@ -288,9 +355,24 @@ export default function CommunityPage() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        {/* Categories */}
-                        {post.categories && post.categories.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mb-2">
+                        {/* Community badge + Categories row */}
+                        <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                          {(post as any).sub_community && (
+                            <Link
+                              href={`/community/c/${(post as any).sub_community.slug}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-opacity hover:opacity-75"
+                              style={{
+                                background: ((post as any).sub_community.accent_color ?? '#FF5F1F') + '1a',
+                                color: (post as any).sub_community.accent_color ?? '#FF5F1F',
+                              }}
+                            >
+                              <span>{(post as any).sub_community.icon ?? '🎬'}</span>
+                              <span>c/{(post as any).sub_community.slug}</span>
+                            </Link>
+                          )}
+                          {post.categories && post.categories.length > 0 && (
+                            <>
                             {post.categories.map((cat) => (
                               <span
                                 key={cat.id}
@@ -303,8 +385,9 @@ export default function CommunityPage() {
                                 {cat.icon} {cat.name}
                               </span>
                             ))}
-                          </div>
-                        )}
+                            </>
+                          )}
+                        </div>
 
                         <h3 className="text-base font-semibold text-white line-clamp-1">{post.title}</h3>
                         {post.description && (

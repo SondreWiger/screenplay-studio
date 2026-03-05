@@ -178,7 +178,6 @@ function LoginForm() {
             <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
               WELCOME BACK
             </h1>
-            <p className="mt-1 text-sm text-white/30">Sign in to your account to continue</p>
           </div>
 
           <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">

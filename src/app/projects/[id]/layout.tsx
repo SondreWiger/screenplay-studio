@@ -18,6 +18,7 @@ import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { cn, getInitials } from '@/lib/utils';
 import type { Project, ProjectMember, Profile, UserRole, UserPresence, SidebarSection } from '@/lib/types';
 import { useSidebarLayout } from '@/hooks/useSidebarLayout';
+import { usePreMiD } from '@/hooks/usePreMiD';
 import dynamic from 'next/dynamic';
 const SidebarCustomiser = dynamic(() => import('@/components/SidebarCustomiser'), { ssr: false });
 
@@ -35,6 +36,12 @@ const PAGE_LABELS: Record<string, string> = {
   // New pages
   corkboard: 'Corkboard', 'beat-sheet': 'Beat Sheet', invoice: 'Invoice Generator',
   submissions: 'Submission Tracker', breakdown: 'Production Breakdown',
+  // Production tools
+  continuity: 'Continuity Sheet', 'call-sheet': 'Call Sheet',
+  dood: 'Day Out of Days', coverage: 'Script Coverage',
+  'table-read': 'Table Read', 'camera-reports': 'Camera Reports',
+  'safety-plan': 'Safety Plan', treatment: 'Treatment',
+  'production-overview': 'Production Overview',
   // Broadcast Pre-Production
   editorial: 'Editorial Board', contacts: 'Contacts', checklist: 'Pre-Show Checklist',
   // Gear & scheduling
@@ -176,6 +183,16 @@ export default function ProjectLayout({
       updatePresence(page);
     }
   }, [pathname]);
+
+  // ── Discord Rich Presence via PreMiD ──────────────────────────────
+  const currentPageSlug = pathname.split('/').pop() || 'overview';
+  const currentToolLabel = PAGE_LABELS[currentPageSlug] ?? 'Overview';
+  usePreMiD({
+    projectName: currentProject?.title ?? null,
+    currentTool: currentToolLabel,
+    active: !!currentProject,
+  });
+  // ─────────────────────────────────────────────────────────────────
 
   const fetchProjectData = async () => {
     try {
@@ -551,6 +568,13 @@ export default function ProjectLayout({
         { label: 'Day Pack', href: `/projects/${params.id}/schedule-pack`, icon: 'schedule-pack', production: true },
         { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', production: true },
         { label: 'Breakdown', href: `/projects/${params.id}/breakdown`, icon: 'breakdown', production: true },
+        { label: 'Continuity', href: `/projects/${params.id}/continuity`, icon: 'continuity', production: true },
+        { label: 'Call Sheet', href: `/projects/${params.id}/call-sheet`, icon: 'call-sheet', production: true },
+        { label: 'Day Out of Days', href: `/projects/${params.id}/dood`, icon: 'dood', production: true },
+        { label: 'Table Read', href: `/projects/${params.id}/table-read`, icon: 'table-read', production: true },
+        { label: 'Camera Reports', href: `/projects/${params.id}/camera-reports`, icon: 'camera-reports', production: true },
+        { label: 'Safety Plan', href: `/projects/${params.id}/safety-plan`, icon: 'safety-plan', production: true },
+        { label: 'War Room', href: `/projects/${params.id}/production-overview`, icon: 'production-overview', production: true },
       ],
     },
     {
@@ -584,6 +608,8 @@ export default function ProjectLayout({
         { label: 'Submissions', href: `/projects/${params.id}/submissions`, icon: 'submissions', pro: true },
         { label: 'Invoice', href: `/projects/${params.id}/invoice`, icon: 'invoice', pro: true },
         { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
+        { label: 'Script Coverage', href: `/projects/${params.id}/coverage`, icon: 'coverage', pro: true },
+        { label: 'Treatment', href: `/projects/${params.id}/treatment`, icon: 'treatment', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -706,6 +732,15 @@ export default function ProjectLayout({
     submissions: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
     invoice: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l2 2 4-4M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6M9 10h3" /></svg>,
     breakdown: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M3 14h18M10 4v16M6 4v4M18 4v4" /><rect x="3" y="4" width="18" height="16" rx="1" strokeWidth={1.5} /></svg>,
+    continuity: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 10h16M4 14h10M4 18h7" /><circle cx="19" cy="16" r="3" strokeWidth={1.5} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 15v1l.75.75" /></svg>,
+    'call-sheet': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6M9 16h4" /></svg>,
+    dood: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="1" strokeWidth={1.5} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M3 8h18M3 12h4M3 16h4" /></svg>,
+    coverage: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>,
+    'table-read': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" strokeWidth={1.5} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7v5l3.5 3.5" /></svg>,
+    'camera-reports': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" /></svg>,
+    'safety-plan': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>,
+    treatment: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>,
+    'production-overview': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" /></svg>,
     // Audio Drama icons
     'sound-design': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" /></svg>,
     'voice-cast': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>,

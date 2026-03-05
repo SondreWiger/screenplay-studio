@@ -1245,6 +1245,29 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
   onEdit: (u: UserRow) => void;
   onDelete: (id: string) => void;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmails = async () => {
+    const emails = users.map((u) => u.email).filter(Boolean).join(', ');
+    try {
+      await navigator.clipboard.writeText(emails);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const el = document.createElement('textarea');
+      el.value = emails;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -1252,15 +1275,43 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
           <h1 className="text-2xl font-black text-white mb-1">User Management</h1>
           <p className="text-sm text-surface-400">{users.length} users total</p>
         </div>
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F] w-64"
-          />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopyEmails}
+            title={`Copy ${users.length} email${users.length !== 1 ? 's' : ''} to clipboard`}
+            className={cn(
+              'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all duration-150',
+              copied
+                ? 'bg-green-500/15 border-green-500/40 text-green-400'
+                : 'bg-surface-800 border-surface-700 text-surface-300 hover:text-white hover:border-surface-600',
+            )}
+          >
+            {copied ? (
+              <>
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Copied {users.length} email{users.length !== 1 ? 's' : ''}
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Copy {search ? `${users.length} filtered` : 'all'} emails
+              </>
+            )}
+          </button>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F] w-64"
+            />
+          </div>
         </div>
       </div>
 

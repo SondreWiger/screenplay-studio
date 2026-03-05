@@ -150,7 +150,7 @@ export default async function LandingPage() {
 
         {/* ─── HERO ──────────────────────────────────────────── */}
         <section className="max-w-screen-xl mx-auto px-6 pt-16">
-          <Eyebrow>Professional Film Production Suite — No Limits</Eyebrow>
+          <Eyebrow>Northem Development · Oslo, Norway</Eyebrow>
 
           {/* Giant display type */}
           <h1
@@ -206,10 +206,10 @@ export default async function LandingPage() {
           >
             <div>
               <p className="text-sm text-white/40 max-w-[22rem] leading-loose">
-                All-in-one workspace for writers &amp; filmmakers.
+                Script editor. Scene breakdown. Shot lists. Schedule. Budget. Collaboration.
               </p>
               <p className="text-sm text-white/20 max-w-[22rem] leading-loose">
-                No limits. No paywalls. No subscriptions.
+                Every tool in one place. Nothing behind a paywall.
               </p>
             </div>
             <div className="shrink-0 flex flex-col items-start md:items-end gap-2">
@@ -230,10 +230,10 @@ export default async function LandingPage() {
         <section className="max-w-screen-xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             {[
-              { num: '100%', label: 'Free To Use',    sub: 'No payment, ever',      live: false },
-              { num: 'LIVE', label: 'Collaboration',  sub: 'Real-time multi-user',  live: true  },
-              { num: '40+',  label: 'Tools Included', sub: 'Script to post',        live: false },
-              { num: '∞',    label: 'Projects',       sub: 'Unlimited everything',  live: false },
+              { num: '100%', label: 'Free To Use',    sub: 'No payment, ever',           live: false },
+              { num: '2024', label: 'In Production',  sub: 'Actively maintained',         live: false },
+              { num: '40+',  label: 'Tools Included', sub: 'Script to wrap',              live: false },
+              { num: '7',    label: 'Script Formats',  sub: 'Film · TV · Audio · Stage',   live: false },
             ].map((s) => (
               <div
                 key={s.label}
@@ -304,11 +304,11 @@ export default async function LandingPage() {
                 className="font-black text-white"
                 style={{ fontSize: 'clamp(2.5rem, 7vw, 6rem)', letterSpacing: '-0.03em', lineHeight: 0.92 }}
               >
-                EVERY TOOL<br />YOU NEED.
+                THE FULL<br />PRODUCTION STACK.
               </h2>
             </div>
             <div className="hidden md:flex flex-col items-end gap-1.5">
-              <Label>Step Nº01 of 01</Label>
+              <Label>Nº001–012 · Feature Set</Label>
               <Label>2026 · Production</Label>
             </div>
           </div>
@@ -336,18 +336,18 @@ export default async function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
               style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
               {[
-                { n: '01', title: 'SCREENPLAY EDITOR',       desc: 'Industry-standard Courier Prime. Auto-formats scene headings, action, dialogue, parentheticals, and transitions as you type.' },
-                { n: '02', title: 'REAL-TIME COLLABORATION', desc: 'Multiple writers working simultaneously. Live cursors, presence tracking, and inline comments.' },
-                { n: '03', title: 'CHARACTER BIBLE',         desc: 'Deep profiles — backstory, arcs, relationships, personality traits, voice notes, and casting.' },
-                { n: '04', title: 'SCENE BREAKDOWN',         desc: 'Full breakdown sheets — props, costumes, SFX, stunts, vehicles, music cues, VFX requirements.' },
-                { n: '05', title: 'SHOT LIST + STORYBOARD',  desc: 'Every shot with type, movement, lens, lighting, and sound. Attach storyboard frames and references.' },
-                { n: '06', title: 'CORKBOARD',               desc: 'Visual scene cards with drag-and-drop reordering. Color-code, annotate, rearrange structure.' },
-                { n: '07', title: 'ARC PLANNER',             desc: 'Map story structure across acts. Character arcs, plot threads, thematic beats — fully visual.' },
-                { n: '08', title: 'BEAT SHEET',              desc: 'Link screenplay scenes to beat entries. Blake Snyder, Syd Field, or your own structure.' },
-                { n: '09', title: 'PRODUCTION SCHEDULE',     desc: 'Calendar scheduling with shooting days, call/wrap times, rehearsals, and location scouts.' },
-                { n: '10', title: 'BUDGET TRACKING',         desc: 'Full production budget — categories, estimated vs actual, vendor tracking, payment status.' },
-                { n: '11', title: 'SUBMISSION TRACKER',      desc: 'Track script submissions to agents, managers, producers, festivals. Status and follow-ups.' },
-                { n: '12', title: 'TEAM + ROLES',            desc: 'Invite crew with role-based access. Writers, editors, viewers — everyone sees what they need.' },
+                { n: '01', title: 'SCREENPLAY EDITOR',       desc: 'Write in Courier Prime with formatting that adjusts as you type. Scene headings, dialogue, action lines — the structure handles itself. You just write.' },
+                { n: '02', title: 'REAL-TIME COLLABORATION', desc: 'Everyone in the same draft at once. See who is editing what, comment inline, stop emailing PDFs back and forth.' },
+                { n: '03', title: 'CHARACTER BIBLE',         desc: 'Build characters properly — backstory, arc, voice, relationships, casting notes. The document you would otherwise keep in a separate Google Doc.' },
+                { n: '04', title: 'SCENE BREAKDOWN',         desc: 'Strip the script into production breakdown sheets. Props, costumes, SFX, stunts, VFX — extracted per scene and tracked across the project.' },
+                { n: '05', title: 'SHOT LIST + STORYBOARD',  desc: 'Build the shot list as you plan the scene. Type, lens, movement, lighting notes — then drop storyboard frames or reference images next to it.' },
+                { n: '06', title: 'CORKBOARD',               desc: 'Cards on a board. Drag scenes around, colour by act or storyline, see the whole structure at once without opening the script.' },
+                { n: '07', title: 'ARC PLANNER',             desc: 'Plot your character arcs and story threads across the full length of the script. Useful when something is not working and you cannot see why on the page.' },
+                { n: '08', title: 'BEAT SHEET',              desc: 'Map the script to whatever structure you use — Save the Cat, Syd Field, or none of them. Link scenes to beat points and see where the pacing breaks.' },
+                { n: '09', title: 'PRODUCTION SCHEDULE',     desc: 'Schedule shooting days, call times, locations, and rehearsals on a proper calendar. Export it when you need to hand it off.' },
+                { n: '10', title: 'BUDGET TRACKING',         desc: 'Keep the budget in the same place as everything else. Categories, estimated vs actual spend, vendor tracking — enough for a short or a full production.' },
+                { n: '11', title: 'SUBMISSION TRACKER',      desc: 'A log of every submission — agent, manager, festival, production company. Dates sent, current status, follow-up notes. Because a spreadsheet for this is depressing.' },
+                { n: '12', title: 'TEAM + ROLES',            desc: 'Invite your crew and give them the access level that makes sense. A producer does not need script editing access. A writer does not need the budget.' },
               ].map((f, i) => (
                 <div
                   key={f.n}
@@ -413,7 +413,7 @@ export default async function LandingPage() {
               <div>
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-4 h-px bg-black/25" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.28em] text-black/35">Ready · Start Now</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.28em] text-black/35">Open Studio · Start Now</span>
                 </div>
                 <h2
                   className="font-black text-black"
@@ -421,7 +421,7 @@ export default async function LandingPage() {
                 >
                   {isLoggedIn
                     ? <><span>WELCOME</span><br /><span>BACK.</span></>
-                    : <><span>YOUR</span><br /><span>STORY</span><br /><span>STARTS</span><br /><span>HERE.</span></>
+                    : <><span>GET TO</span><br /><span>WORK.</span></>
                   }
                 </h2>
               </div>
@@ -460,9 +460,7 @@ export default async function LandingPage() {
             </div>
             <div className="flex flex-col justify-end gap-5">
               <p className="text-sm text-white/35 leading-[1.85]">
-                Screenplay Studio is self-funded, built and maintained by one person.
-                Completely free — no subscriptions, no paywalls, no ads.
-                Every contribution goes directly towards server costs and new features.
+                Built and maintained by one developer at Northem Development in Norway — no team, no VC funding, no enterprise roadmap. The tool gets better when people use it and say what is broken. If it is worth using, it is worth supporting.
               </p>
               <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
               <a
@@ -526,9 +524,9 @@ export default async function LandingPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors duration-150 text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors duration-150 text-[#FF5F1F]/60 hover:text-[#FF5F1F]"
             >
-              A Northem Development Production ♥ Made in Norway
+              Northem Development ♥ Oslo, Norway
             </a>
           </div>
         </div>

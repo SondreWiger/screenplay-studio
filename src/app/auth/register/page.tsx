@@ -207,7 +207,7 @@ export default function RegisterPage() {
             <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
               CREATE ACCOUNT
             </h1>
-            <p className="mt-1 text-sm text-white/30">Get your screenwriting workspace set up in seconds</p>
+            <p className="mt-1 text-sm text-white/30">Free. No card. Takes about ten seconds.</p>
           </div>
 
           <form onSubmit={handleRegister} noValidate className="space-y-5">

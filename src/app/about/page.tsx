@@ -40,41 +40,8 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-const PRINCIPLES = [
-  {
-    icon: '🔓',
-    title: 'Open & Free',
-    body: 'Professional-grade tools should not be locked behind expensive subscriptions. The core of Screenplay Studio is open-source and free — forever.',
-  },
-  {
-    icon: '🎬',
-    title: 'Every Format',
-    body: 'Film. TV. Audio drama. Stage play. Podcast. Content creation. We support the full spectrum of storytelling formats in a single unified workspace.',
-  },
-  {
-    icon: '🤝',
-    title: 'Built for Collaboration',
-    body: 'Storytelling is rarely a solo act. Real-time chat, inline comments, shared breakdowns, and team scheduling are first-class citizens — not add-ons.',
-  },
-  {
-    icon: '🧱',
-    title: 'Production-Ready',
-    body: 'A script is just the beginning. Crew management, shot lists, budgets, schedules, cue sheets — we carry the project from first draft through to wrap.',
-  },
-  {
-    icon: '🌍',
-    title: 'Independent & Community-Driven',
-    body: 'We are not backed by a legacy studio or a Silicon Valley fund. Features are shaped by the writers, directors, and producers who actually use the platform daily.',
-  },
-  {
-    icon: '🔒',
-    title: 'Your Work, Your Data',
-    body: 'No lock-in. Export to industry-standard formats (FDX, PDF, CSV) at any time. Your scripts belong to you, not to us.',
-  },
-];
-
 const TIMELINE = [
-  { year: '2023', label: 'Idea & first lines of code', detail: 'Frustration with expensive, fragmented tools led to a question: what would the ideal screenwriting suite look like if it were built today?' },
+  { year: '2023', label: 'Idea & first lines of code', detail: 'Started as a script formatter written out of frustration with expensive, fragmented production tools. Immediately became clear the problem was bigger than formatting.' },
   { year: '2024', label: 'First public release', detail: 'Script editor, scene breakdown, shot list, and basic team tools shipped. Early users were film students and indie filmmakers.' },
   { year: '2025', label: 'Platform expansion', detail: 'Audio drama, stage play, TV production, and content creator formats added. Community, AI analysis, and casting tools launched.' },
   { year: '2026', label: 'Now', detail: 'Tens of thousands of projects. Open-source code base. Continual feature work driven by user feedback.' },
@@ -130,14 +97,14 @@ export default async function AboutPage() {
             className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6"
             style={{ letterSpacing: '-0.04em', lineHeight: 1.05 }}
           >
-            TOOLS FOR PEOPLE
+            MADE FOR WRITERS.
             <br />
-            <span style={{ color: ORANGE }}>WHO TELL STORIES.</span>
+            <span style={{ color: ORANGE }}>BUILT FOR PRODUCTION.</span>
           </h1>
           <p className="text-base sm:text-lg text-white/45 max-w-2xl leading-relaxed">
             {oss
-              ? 'Screenplay Studio is an open-source production suite for writers, directors, and crews across every storytelling format — built because the existing tools are either too expensive, too limited, or too locked down.'
-              : 'Screenplay Studio is a production suite for writers, directors, and crews across every storytelling format — built because the existing tools are either too expensive, too limited, or too locked down.'}
+              ? 'Script to screen, in one workspace. An open-source production tool for writers, directors, and crews of every format — because the standard setup is fragmented, expensive, and slower than it needs to be.'
+              : 'Script to screen, in one workspace. A production tool for writers, directors, and crews of every format — because the standard setup is fragmented, expensive, and slower than it needs to be.'}
           </p>
         </section>
 
@@ -149,11 +116,11 @@ export default async function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div>
               <h2 className="text-2xl sm:text-3xl font-black text-white mb-5" style={{ letterSpacing: '-0.03em' }}>
-                Professional tools should not be a luxury
+                The standard setup is worse than it needs to be
               </h2>
               <div className="space-y-4 text-sm sm:text-base text-white/50 leading-relaxed">
                 <p>
-                  The standard path for a new screenwriter is to pay hundreds of dollars a year for a formatting app, buy separate subscriptions for scheduling, budgeting, and collaboration tools, and still end up emailing PDFs back and forth.
+                  The standard setup in 2024: Final Draft or Celtx at $100+/yr for formatting. A separate Google Sheet for the schedule. Another one for the budget. Notion for character bibles. Your inbox handling feedback rounds. Screenplay Studio puts all of it in one place — not because "all-in-one" is a marketing phrase, but because that fragmented setup genuinely wastes time that should go into the work.
                 </p>
                 <p>
                   We built Screenplay Studio because that should not be the default. A student in Oslo writing their first short film deserves the same toolset as a production company in Los Angeles. Format should not determine access.
@@ -182,24 +149,19 @@ export default async function AboutPage() {
 
         <Rule />
 
-        {/* ── Principles ─────────────────────────────────────── */}
+        {/* ── What this actually is ──────────────────────────── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16">
-          <Eyebrow>Principles</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-10" style={{ letterSpacing: '-0.03em' }}>
-            What we believe
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {PRINCIPLES.filter(p => oss || p.title !== 'Open & Free').map(p => (
-              <div
-                key={p.title}
-                className="rounded-xl p-5"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-              >
-                <span className="text-2xl mb-3 block">{p.icon}</span>
-                <h3 className="text-sm font-black text-white mb-2 uppercase tracking-tight">{p.title}</h3>
-                <p className="text-xs text-white/40 leading-relaxed">{p.body}</p>
-              </div>
-            ))}
+          <Eyebrow>The honest version</Eyebrow>
+          <div className="max-w-2xl space-y-6">
+            <p className="text-base sm:text-lg text-white/60 leading-relaxed">
+              Screenplay Studio started as a script formatter and it quickly became obvious that the problem was bigger than formatting. The script is just the start of a production. Breakdown, schedule, budget, casting, crew — all of it flows from the same document, and all of it was living in a dozen different places.
+            </p>
+            <p className="text-base sm:text-lg text-white/40 leading-relaxed">
+              The platform supports film, TV, audio drama, stage, podcast, and content creation because the core problem is the same across all of them. Screenplay Studio carries the production from first draft to final wrap — in one workspace.
+            </p>
+            <p className="text-base sm:text-lg text-white/25 leading-relaxed">
+              No investor roadmap. No enterprise pivot. Built by one developer in Norway and shaped by the people who actually use it. That is the whole model.
+            </p>
           </div>
         </section>
 
@@ -250,12 +212,12 @@ export default async function AboutPage() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
             {[
-              'Deeper AI assistance — not autocomplete, but a script reader that actually understands story',
-              'Mobile-first crew tools for on-set and on-stage use',
-              'Offline-first writing mode so you never lose work',
-              'Community script library and peer feedback tools',
-              'Full internationalisation — multiple script languages and UI languages',
-              'Richer open API for third-party integrations',
+              'Deeper AI assistance — not autocomplete, but a script reader that actually understands story structure and where the draft is going wrong',
+              'Mobile-first crew tools for on-set and on-stage use — call sheets, shot tracking, cue sheets on a phone',
+              'True offline mode: the app should work on a plane or in a studio basement and sync when it gets a connection back',
+              'A script library and structured peer critique space — not just a forum, but feedback with actual process behind it',
+              'Proper internationalisation — multiple script languages, UI in more than English',
+              'A documented API so you can connect Screenplay Studio to whatever pipeline you already use',
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 text-xs text-white/45 leading-relaxed">
                 <span className="mt-0.5 shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black text-white" style={{ background: ORANGE + '30', color: ORANGE }}>
@@ -293,9 +255,9 @@ export default async function AboutPage() {
         {/* ── CTA ────────────────────────────────────────────── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16 text-center">
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
-            Ready to write?
+            Just try it.
           </h2>
-          <p className="text-sm text-white/40 mb-8">Free to start. No credit card.</p>
+          <p className="text-sm text-white/40 mb-8">Free. No card. No time limit.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/register"
@@ -344,9 +306,9 @@ export default async function AboutPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/60 hover:text-[#FF5F1F]"
             >
-              Northem ♥
+              Northem Development ♥ Oslo
             </a>
           </div>
         </div>

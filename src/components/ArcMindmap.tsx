@@ -48,6 +48,8 @@ export interface MapNode {
   color: string; // tailwind-ish hex colour token stored as hex
   episodeRef?: string; // script id
   locked?: boolean;
+  width?: number;
+  height?: number;
 }
 
 export interface MapEdge {
@@ -116,6 +118,10 @@ const NODE_H = 72;
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 3;
 
+// Per-node size helpers — use explicit size if set, fall back to defaults
+function nodeW(n: MapNode) { return n.width ?? NODE_W; }
+function nodeH(n: MapNode) { return n.height ?? NODE_H; }
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -129,7 +135,7 @@ function emptyMap(): MindmapData {
 }
 
 function nodeCenter(n: MapNode) {
-  return { x: n.x + NODE_W / 2, y: n.y + NODE_H / 2 };
+  return { x: n.x + nodeW(n) / 2, y: n.y + nodeH(n) / 2 };
 }
 
 /** Cubic-bezier SVG path between two points. */
@@ -193,11 +199,11 @@ function findInsertIdx(
 function bestPorts(from: MapNode, to: MapNode) {
   let best = { x1: 0, y1: 0, x2: 0, y2: 0, dist: Infinity };
   for (const pF of PORT_OFFSETS) {
-    const x1 = from.x + pF.px * NODE_W;
-    const y1 = from.y + pF.py * NODE_H;
+    const x1 = from.x + pF.px * nodeW(from);
+    const y1 = from.y + pF.py * nodeH(from);
     for (const pT of PORT_OFFSETS) {
-      const x2 = to.x + pT.px * NODE_W;
-      const y2 = to.y + pT.py * NODE_H;
+      const x2 = to.x + pT.px * nodeW(to);
+      const y2 = to.y + pT.py * nodeH(to);
       const d = Math.hypot(x2 - x1, y2 - y1);
       if (d < best.dist) {
         best = { x1, y1, x2, y2, dist: d };
@@ -217,6 +223,7 @@ function NodeCard({
   onMouseDown,
   onPortMouseDown,
   onPortMouseEnter,
+  onResizeMouseDown,
   canEdit,
 }: {
   node: MapNode;
@@ -224,9 +231,12 @@ function NodeCard({
   onMouseDown: (e: React.MouseEvent) => void;
   onPortMouseDown: (e: React.MouseEvent, side: string) => void;
   onPortMouseEnter: (nodeId: string) => void;
+  onResizeMouseDown: (e: React.MouseEvent) => void;
   canEdit: boolean;
 }) {
   const ic = NODE_TYPE_ICONS[node.type];
+  const nw = nodeW(node);
+  const nh = nodeH(node);
 
   return (
     <div
@@ -239,8 +249,8 @@ function NodeCard({
       style={{
         left: node.x,
         top: node.y,
-        width: NODE_W,
-        minHeight: NODE_H,
+        width: nw,
+        minHeight: nh,
         background: node.color,
         cursor: canEdit ? 'grab' : 'default',
       }}
@@ -280,8 +290,8 @@ function NodeCard({
               key={side}
               className="absolute w-3 h-3 rounded-full bg-white border-2 border-current opacity-0 hover:opacity-100 group-hover:opacity-100 z-10 cursor-crosshair"
               style={{
-                left: px * NODE_W - 6,
-                top: py * NODE_H - 6,
+                left: px * nw - 6,
+                top: py * nh - 6,
                 color: node.color,
                 transform: 'translate(-1px,-1px)',
               }}
@@ -292,6 +302,21 @@ function NodeCard({
             />
           ))}
         </>
+      )}
+
+      {/* Resize handle — shown when selected */}
+      {canEdit && selected && !node.locked && (
+        <div
+          className="absolute w-4 h-4 rounded-br-xl cursor-se-resize z-20 flex items-center justify-center"
+          style={{ right: -1, bottom: -1, background: 'rgba(255,255,255,0.25)' }}
+          onMouseDown={(e) => { e.stopPropagation(); onResizeMouseDown(e); }}
+          title="Drag to resize"
+        >
+          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+            <line x1="2" y1="7" x2="7" y2="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="5" y1="7" x2="7" y2="5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
       )}
     </div>
   );
@@ -347,6 +372,13 @@ export function ArcMindmap({
   const panning = useRef<{
     startX: number; startY: number;
     origPanX: number; origPanY: number;
+  } | null>(null);
+
+  // ── Resize state ─────────────────────────────────────────────────────────
+  const resizing = useRef<{
+    nodeId: string;
+    startX: number; startY: number;
+    origW: number; origH: number;
   } | null>(null);
 
   // ── Edge draw state ──────────────────────────────────────────────────────
@@ -583,8 +615,8 @@ export function ArcMindmap({
     const ys = nodes.map((n) => n.y);
     const x1 = Math.min(...xs) - 60;
     const y1 = Math.min(...ys) - 60;
-    const x2 = Math.max(...xs) + NODE_W + 60;
-    const y2 = Math.max(...ys) + NODE_H + 60;
+    const x2 = Math.max(...nodes.map((n) => n.x + nodeW(n))) + 60;
+    const y2 = Math.max(...nodes.map((n) => n.y + nodeH(n))) + 60;
     const cw = cx.clientWidth;
     const ch = cx.clientHeight;
     const z  = Math.min(cw / (x2 - x1), ch / (y2 - y1), MAX_ZOOM);
@@ -650,7 +682,16 @@ export function ArcMindmap({
   }, [panX, panY]);
 
   const onCanvasMouseMove = useCallback((e: React.MouseEvent) => {
-    if (dragging.current) {
+    if (resizing.current) {
+      const dx = (e.clientX - resizing.current.startX) / zoom;
+      const dy = (e.clientY - resizing.current.startY) / zoom;
+      const { nodeId, origW, origH } = resizing.current;
+      setNodes((prev) =>
+        prev.map((n) => n.id === nodeId
+          ? { ...n, width: Math.max(80, origW + dx), height: Math.max(40, origH + dy) }
+          : n),
+      );
+    } else if (dragging.current) {
       const dx = (e.clientX - dragging.current.startX) / zoom;
       const dy = (e.clientY - dragging.current.startY) / zoom;
       const { nodeId, origX, origY } = dragging.current;
@@ -686,6 +727,10 @@ export function ArcMindmap({
   }, [zoom, drawingEdge, panX, panY]);
 
   const onCanvasMouseUp = useCallback((e: React.MouseEvent) => {
+    if (resizing.current) {
+      markDirty();
+      resizing.current = null;
+    }
     if (dragging.current) {
       markDirty();
       dragging.current = null;
@@ -1029,6 +1074,17 @@ export function ArcMindmap({
                 onMouseDown={(e) => onNodeMouseDown(e, node.id)}
                 onPortMouseDown={(e, _side) => onPortMouseDown(e, node.id)}
                 onPortMouseEnter={(id) => setHoverNodeId(id)}
+                onResizeMouseDown={(e) => {
+                  if (!canEdit || node.locked) return;
+                  e.stopPropagation();
+                  resizing.current = {
+                    nodeId: node.id,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    origW: nodeW(node),
+                    origH: nodeH(node),
+                  };
+                }}
               />
             </div>
           ))}
