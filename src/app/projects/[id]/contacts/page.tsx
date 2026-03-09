@@ -184,7 +184,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
   return (
     <div className="flex h-[calc(100vh-3rem)] md:h-screen bg-surface-950">
       {/* ── Contact List ───────────────────────────────── */}
-      <div className={cn('flex flex-col', selected ? 'w-1/2 lg:w-2/3' : 'flex-1')}>
+      <div className={cn('flex flex-col', selected ? 'hidden md:flex md:w-1/2 lg:w-2/3' : 'flex-1')}>
         {/* Toolbar */}
         <div className="px-4 py-2.5 border-b border-surface-800 bg-surface-900/50 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3">
@@ -267,7 +267,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
                         {formatDate(c.last_contacted_at) || 'Never'}
                       </td>
                       <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                           {/* always show for selected row */}
                         </div>
                       </td>
@@ -282,7 +282,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
 
       {/* ── Detail Panel ───────────────────────────────── */}
       {selected && (
-        <div className="w-1/2 lg:w-1/3 border-l border-surface-800 flex flex-col overflow-hidden">
+        <div className="w-full md:w-1/2 lg:w-1/3 border-l border-surface-800 flex flex-col overflow-hidden">
           <div className="px-4 py-2.5 border-b border-surface-800 bg-surface-900/50 flex items-center justify-between flex-shrink-0">
             <h3 className="text-sm font-bold text-white truncate">{selected.name}</h3>
             <div className="flex items-center gap-1">

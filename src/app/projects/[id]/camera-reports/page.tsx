@@ -372,7 +372,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
                       {r.operator ? ` · Operator: ${r.operator}` : ''}
                     </p>
                   </div>
-                  <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <div className="flex gap-2 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
                     {canEdit && (
                       <>
                         <button onClick={() => openEdit(r)} className="px-3 py-1.5 text-xs bg-surface-700/60 hover:bg-surface-700 border border-surface-600 rounded-lg text-white">Edit</button>

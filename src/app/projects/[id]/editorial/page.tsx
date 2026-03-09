@@ -278,7 +278,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
                       )}
 
                       {/* Move buttons */}
-                      <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                      <div className="flex gap-1 mt-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         {BOARD_COLUMNS.filter(c => c.status !== col.status).map(target => (
                           <button
                             key={target.status}

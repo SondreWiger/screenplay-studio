@@ -318,8 +318,8 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
               <button onClick={() => setForm({ ...form, advanced_schedule: [...form.advanced_schedule, { scene: '', location: '', cast: '', pages: '', est_time: '' }] })}
                 className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">+ Add Row</button>
             </div>
-            <div className="space-y-2">
-              {/* Header */}
+            {/* Desktop: compact grid rows */}
+            <div className="hidden md:block space-y-2">
               <div className="grid grid-cols-[1fr_1.5fr_1.5fr_0.5fr_0.5fr_1.5rem] gap-2 text-[10px] text-surface-500 font-bold uppercase tracking-wider px-1">
                 <span>Scene</span><span>Location</span><span>Cast</span><span>Pages</span><span>Est.</span><span />
               </div>
@@ -335,6 +335,38 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                 </div>
               ))}
             </div>
+            {/* Mobile: stacked card rows */}
+            <div className="block md:hidden space-y-3">
+              {form.advanced_schedule.map((row, i) => (
+                <div key={i} className="bg-surface-800/40 rounded-lg border border-surface-700/40 p-3 space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    {([['scene','Scene'],['location','Location'],['cast','Cast']] as const).map(([field, label]) => (
+                      <div key={field} className={field === 'cast' ? 'col-span-2' : ''}>
+                        <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">{label}</label>
+                        <input value={row[field]} onChange={(e) => updateScheduleRow(i, field, e.target.value)}
+                          className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Pages</label>
+                      <input value={row.pages} onChange={(e) => updateScheduleRow(i, 'pages', e.target.value)}
+                        className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Est. Time</label>
+                      <input value={row.est_time} onChange={(e) => updateScheduleRow(i, 'est_time', e.target.value)}
+                        placeholder="1h30m" className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <button onClick={() => setForm({ ...form, advanced_schedule: form.advanced_schedule.filter((_, j) => j !== i) })}
+                      className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded border border-red-500/20 hover:border-red-400/40 transition-colors">Remove</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </Card>
 
           {/* Crew Calls */}
@@ -344,7 +376,8 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
               <button onClick={() => setForm({ ...form, crew_calls: [...form.crew_calls, { name: '', dept: '', call_time: '', notes: '' }] })}
                 className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">+ Add Row</button>
             </div>
-            <div className="space-y-2">
+            {/* Desktop: compact grid rows */}
+            <div className="hidden md:block space-y-2">
               <div className="grid grid-cols-[1.5fr_1fr_0.6fr_1.5fr_1.5rem] gap-2 text-[10px] text-surface-500 font-bold uppercase tracking-wider px-1">
                 <span>Name</span><span>Department</span><span>Call</span><span>Notes</span><span />
               </div>
@@ -356,6 +389,39 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                   ))}
                   <button onClick={() => setForm({ ...form, crew_calls: form.crew_calls.filter((_, j) => j !== i) })}
                     className="text-surface-600 hover:text-red-400 text-lg leading-none">×</button>
+                </div>
+              ))}
+            </div>
+            {/* Mobile: stacked card rows */}
+            <div className="block md:hidden space-y-3">
+              {form.crew_calls.map((row, i) => (
+                <div key={i} className="bg-surface-800/40 rounded-lg border border-surface-700/40 p-3 space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Name</label>
+                      <input value={row.name} onChange={(e) => updateCrewCall(i, 'name', e.target.value)}
+                        className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Call Time</label>
+                      <input type="time" value={row.call_time} onChange={(e) => updateCrewCall(i, 'call_time', e.target.value)}
+                        className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Department</label>
+                    <input value={row.dept} onChange={(e) => updateCrewCall(i, 'dept', e.target.value)}
+                      className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Notes</label>
+                    <input value={row.notes} onChange={(e) => updateCrewCall(i, 'notes', e.target.value)}
+                      className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <button onClick={() => setForm({ ...form, crew_calls: form.crew_calls.filter((_, j) => j !== i) })}
+                      className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded border border-red-500/20 hover:border-red-400/40 transition-colors">Remove</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -403,7 +469,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                   <p className="text-[11px] text-surface-500">{(sheet.crew_calls ?? []).filter((c) => c.name).length} crew members</p>
                 )}
               </div>
-              <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+              <div className="flex items-center gap-2 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
                 <button onClick={() => { setSelected(sheet); setView('print'); }}
                   className="px-3 py-1.5 text-xs bg-surface-700/60 hover:bg-surface-700 border border-surface-600 rounded-lg text-white">Print</button>
                 {canEdit && (

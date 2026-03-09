@@ -252,7 +252,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
 
       <div className="flex flex-1 overflow-hidden">
         {/* Rounds sidebar */}
-        <div className="w-64 border-r border-surface-800 flex flex-col overflow-hidden shrink-0">
+        <div className={`${selectedRound ? 'hidden md:flex' : 'flex'} md:flex flex-col w-full md:w-64 border-b md:border-b-0 md:border-r border-surface-800 md:overflow-hidden shrink-0`}>
           <div className="px-4 py-3 border-b border-surface-800">
             <p className="text-xs font-medium text-surface-500 uppercase tracking-wider">All Rounds</p>
           </div>
@@ -294,7 +294,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
         </div>
 
         {/* Notes panel */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className={`${selectedRound ? 'flex' : 'hidden md:flex'} flex-1 flex-col overflow-hidden`}>
           {!selectedRound ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
@@ -308,9 +308,14 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
           ) : (
             <>
               {/* Round header */}
-              <div className="border-b border-surface-800 px-6 py-4 flex items-start justify-between gap-4 shrink-0">
+              <div className="border-b border-surface-800 px-4 md:px-6 py-4 flex items-start justify-between gap-4 shrink-0">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
+                    {/* Mobile back button */}
+                    <button onClick={() => setSelectedRound(null)}
+                      className="md:hidden mr-1 p-1 -ml-1 rounded text-surface-400 hover:text-white">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    </button>
                     <h2 className="text-base font-bold text-white">{selectedRound.title}</h2>
                     <button
                       onClick={() => handleCycleRoundStatus(selectedRound)}
@@ -442,14 +447,14 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
                               <>
                                 <button
                                   onClick={() => openEditNote(note)}
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-surface-500 hover:text-white hover:bg-surface-700 transition-all"
+                                  className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 rounded text-surface-500 hover:text-white hover:bg-surface-700 transition-all"
                                   title="Edit"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                 </button>
                                 <button
                                   onClick={() => handleDeleteNote(note)}
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-surface-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                  className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 rounded text-surface-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
                                   title="Delete"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>

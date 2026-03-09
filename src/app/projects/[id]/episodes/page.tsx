@@ -67,6 +67,11 @@ function episodeCode(episodeNum: number, seasonNum: number) {
   return `S${String(seasonNum).padStart(2,'0')}E${String(episodeNum).padStart(2,'0')}`;
 }
 
+/** Strip the leading SxxExx — prefix from a stored title for display. */
+function stripEpCode(title: string): string {
+  return title.replace(/^S\d+E\d+\s*[-\u2013\u2014]\s*/i, '').trim() || title;
+}
+
 function defaultSeasons(count: number): SeasonDef[] {
   return Array.from({ length: count }, (_, i) => ({
     num: i + 1,
@@ -558,7 +563,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
 
                           {/* Title + synopsis */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-semibold text-white truncate">{script.title}</h3>
+                            <h3 className="text-sm font-semibold text-white truncate">{stripEpCode(script.title)}</h3>
                             {script.title_page_data?.notes && (
                               <p className="text-[11px] text-surface-500 truncate">{script.title_page_data.notes}</p>
                             )}

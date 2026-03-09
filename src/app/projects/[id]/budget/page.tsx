@@ -307,7 +307,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
         </div>
         {/* Actions */}
         {canEdit && (
-          <div className="w-8 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-8 flex justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             <button onClick={(e) => { e.stopPropagation(); openEditor(item); }}
               className="p-1 text-surface-500 hover:text-white transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -140,7 +140,8 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
       </div>
 
       {view === 'calendar' ? (
-        <div className="bg-surface-900 rounded-xl border border-surface-800">
+        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+        <div className="bg-surface-900 rounded-xl border border-surface-800 min-w-[420px]">
           {/* Calendar header */}
           <div className="flex items-center justify-between p-4 border-b border-surface-800">
             <button onClick={prevMonth} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
@@ -192,6 +193,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
               );
             })}
           </div>
+        </div>
         </div>
       ) : view === 'day' ? (
         <DayPlannerView
@@ -358,7 +360,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
               {/* Half-hour line */}
               <div className="absolute top-1/2 left-0 right-0 border-t border-surface-800/20" />
               {canEdit && (
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-surface-900/[0.02] transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-surface-900/[0.02] transition-opacity flex items-center justify-center">
                   <span className="text-[10px] text-surface-500">+ Add event</span>
                 </div>
               )}

@@ -187,7 +187,7 @@ function SceneCard({
             <div className="relative">
               <button
                 onClick={() => setShowColorPicker((v) => !v)}
-                className="w-5 h-5 rounded border border-surface-700 bg-surface-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="w-5 h-5 rounded border border-surface-700 bg-surface-800 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                 title="Card colour"
               >
                 <div className="w-full h-full rounded" style={{ background: 'conic-gradient(red,yellow,green,blue,red)' }} />

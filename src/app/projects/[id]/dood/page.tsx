@@ -166,15 +166,16 @@ export default function DOODPage({ params }: { params: { id: string } }) {
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-black text-white">Day Out of Days</h1>
-          <p className="text-sm text-surface-400 mt-0.5">Click a cell to cycle through SW / W / WF / SWF / H / T / F</p>
+          <p className="text-sm text-surface-400 mt-0.5 hidden md:block">Click a cell to cycle through SW / W / WF / SWF / H / T / F</p>
+          <p className="text-sm text-surface-400 mt-0.5 md:hidden">Tap a cell to cycle status</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="ghost" size="sm" onClick={exportCSV}>↓ CSV</Button>
-          <Button variant="ghost" size="sm" onClick={() => window.print()} className="print:hidden">🖨 Print</Button>
+          <Button variant="ghost" size="sm" onClick={exportCSV}>&#8595; CSV</Button>
+          <Button variant="ghost" size="sm" onClick={() => window.print()} className="print:hidden hidden md:inline-flex">🖨 Print</Button>
           {canEdit && (
             <div className="flex items-center gap-2">
               {addingDay ? (
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <input type="date" value={newDay} onChange={(e) => setNewDay(e.target.value)}
                     className="bg-surface-800 border border-surface-700 rounded-lg px-3 py-1.5 text-sm text-white" />
                   <button onClick={addShootDay} className="px-3 py-1.5 text-sm bg-[#FF5F1F] text-white rounded-lg">Add</button>
@@ -204,66 +205,132 @@ export default function DOODPage({ params }: { params: { id: string } }) {
       ) : shootDays.length === 0 ? (
         <Card className="p-8 text-center text-surface-500">Add shoot days using the button above.</Card>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-surface-700/40">
-          <table className="text-xs border-collapse">
-            <thead>
-              <tr className="bg-surface-800/80 border-b border-surface-700/40">
-                <th className="sticky left-0 bg-surface-800/90 z-10 px-4 py-3 text-left text-surface-400 font-bold uppercase tracking-wider min-w-[160px]">
-                  Character
-                </th>
-                {shootDays.map((day, i) => (
-                  <th key={day} className={cn('px-2 py-3 text-center text-surface-400 font-mono font-bold whitespace-nowrap min-w-[80px]', dayComplete[day] && 'bg-green-500/5')}>
-                    <div className="text-[10px] text-surface-500 flex items-center justify-center gap-1">
-                      Day {i + 1}
-                      {dayComplete[day] && <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" title="All scheduled" />}
-                    </div>
-                    <div>{day.slice(5)}</div>
-                    {canEdit && (
-                      <button onClick={() => removeShootDay(day)} className="text-surface-700 hover:text-red-400 text-[10px] mt-0.5 block mx-auto">×</button>
-                    )}
-                  </th>
-                ))}
-                <th className="px-3 py-3 text-center text-surface-400 font-bold text-[10px] uppercase tracking-wider">Days</th>
-              </tr>
-            </thead>
-            <tbody>
-              {characters.map((char, ci) => (
-                <tr
-                  key={char.id}
-                  className={cn('border-b border-surface-700/20 last:border-0', ci % 2 === 0 ? 'bg-surface-900/20' : '')}
-                >
-                  <td className="sticky left-0 bg-surface-900 z-10 px-4 py-2 font-medium text-white border-r border-surface-700/40">
-                    {char.name}
-                  </td>
-                  {shootDays.map((day) => {
-                    const status = getStatus(char.name, day);
-                    const meta = STATUS_META[status];
-                    return (
-                      <td key={day} className="px-2 py-2 text-center">
-                        <button
-                          onClick={() => cycleStatus(char, day)}
-                          disabled={!canEdit || saving}
-                          className={cn(
-                            'w-12 h-8 rounded font-bold text-[11px] transition-all',
-                            meta.bg,
-                            meta.color,
-                            canEdit ? 'hover:ring-2 hover:ring-white/20 cursor-pointer' : 'cursor-default',
-                            !status && canEdit ? 'hover:bg-surface-700/20' : '',
+        <>
+          {/* ─────────────────────────────────────────────────────
+              MOBILE: Character cards with horizontal day strip
+          ───────────────────────────────────────────────────── */}
+          <div className="block md:hidden space-y-3">
+            {characters.map((char, ci) => (
+              <div
+                key={char.id}
+                className={cn(
+                  'rounded-xl border overflow-hidden',
+                  ci % 2 === 0 ? 'border-surface-700/50 bg-surface-800/20' : 'border-surface-800/50 bg-surface-900/20',
+                )}
+              >
+                {/* Character header */}
+                <div className="flex items-center justify-between px-4 py-3 bg-surface-800/40 border-b border-surface-700/40">
+                  <p className="font-bold text-white text-sm">{char.name}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-surface-500">{daysCounts[char.name] ?? 0} days</span>
+                  </div>
+                </div>
+
+                {/* Horizontal scrollable day cells */}
+                <div className="overflow-x-auto px-3 py-3">
+                  <div className="flex gap-2" style={{ minWidth: 'max-content' }}>
+                    {shootDays.map((day, i) => {
+                      const status = getStatus(char.name, day);
+                      const meta = STATUS_META[status];
+                      const isComplete = dayComplete[day];
+                      return (
+                        <div key={day} className="flex flex-col items-center gap-1">
+                          <div className={cn('text-[9px] font-mono text-surface-500 text-center', isComplete && 'text-green-400')}>
+                            D{i + 1}
+                          </div>
+                          <div className="text-[9px] text-surface-600 text-center font-mono">{day.slice(5)}</div>
+                          <button
+                            onClick={() => cycleStatus(char, day)}
+                            disabled={!canEdit || saving}
+                            className={cn(
+                              'w-14 h-10 rounded-lg font-black text-xs transition-all border',
+                              status
+                                ? cn(meta.bg, meta.color, 'border-transparent')
+                                : 'bg-surface-800/40 border-surface-700/60 text-surface-600',
+                              canEdit && !saving ? 'active:scale-95' : 'opacity-60',
+                            )}
+                          >
+                            {status || '—'}
+                          </button>
+                          {canEdit && ci === 0 && (
+                            <button
+                              onClick={() => removeShootDay(day)}
+                              className="text-surface-700 hover:text-red-400 text-[11px] transition-colors"
+                            >×</button>
                           )}
-                        >
-                          {status || '·'}
-                        </button>
-                      </td>
-                    );
-                  })}
-                  <td className="px-3 py-2 text-center font-bold text-white">
-                    {daysCounts[char.name] ?? 0}
-                  </td>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ─────────────────────────────────────────────────────
+              DESKTOP: Full grid table (hidden below md)
+          ───────────────────────────────────────────────────── */}
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-surface-700/40">
+            <table className="text-xs border-collapse">
+              <thead>
+                <tr className="bg-surface-800/80 border-b border-surface-700/40">
+                  <th className="sticky left-0 bg-surface-800/90 z-10 px-4 py-3 text-left text-surface-400 font-bold uppercase tracking-wider min-w-[160px]">
+                    Character
+                  </th>
+                  {shootDays.map((day, i) => (
+                    <th key={day} className={cn('px-2 py-3 text-center text-surface-400 font-mono font-bold whitespace-nowrap min-w-[80px]', dayComplete[day] && 'bg-green-500/5')}>
+                      <div className="text-[10px] text-surface-500 flex items-center justify-center gap-1">
+                        Day {i + 1}
+                        {dayComplete[day] && <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" title="All scheduled" />}
+                      </div>
+                      <div>{day.slice(5)}</div>
+                      {canEdit && (
+                        <button onClick={() => removeShootDay(day)} className="text-surface-700 hover:text-red-400 text-[10px] mt-0.5 block mx-auto">×</button>
+                      )}
+                    </th>
+                  ))}
+                  <th className="px-3 py-3 text-center text-surface-400 font-bold text-[10px] uppercase tracking-wider">Days</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {characters.map((char, ci) => (
+                  <tr
+                    key={char.id}
+                    className={cn('border-b border-surface-700/20 last:border-0', ci % 2 === 0 ? 'bg-surface-900/20' : '')}
+                  >
+                    <td className="sticky left-0 bg-surface-900 z-10 px-4 py-2 font-medium text-white border-r border-surface-700/40">
+                      {char.name}
+                    </td>
+                    {shootDays.map((day) => {
+                      const status = getStatus(char.name, day);
+                      const meta = STATUS_META[status];
+                      return (
+                        <td key={day} className="px-2 py-2 text-center">
+                          <button
+                            onClick={() => cycleStatus(char, day)}
+                            disabled={!canEdit || saving}
+                            className={cn(
+                              'w-12 h-8 rounded font-bold text-[11px] transition-all',
+                              meta.bg,
+                              meta.color,
+                              canEdit ? 'hover:ring-2 hover:ring-white/20 cursor-pointer' : 'cursor-default',
+                              !status && canEdit ? 'hover:bg-surface-700/20' : '',
+                            )}
+                          >
+                            {status || '·'}
+                          </button>
+                        </td>
+                      );
+                    })}
+                    <td className="px-3 py-2 text-center font-bold text-white">
+                      {daysCounts[char.name] ?? 0}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

@@ -319,7 +319,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
                       {s.session_date} · {timedCount} scenes · <span className="font-mono font-bold text-orange-400">{fmt(s.total_seconds)}</span>
                     </p>
                   </div>
-                  <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <div className="flex gap-2 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
                     <button onClick={() => setDetailSession(s)} className="px-3 py-1.5 text-xs bg-surface-700/60 hover:bg-surface-700 border border-surface-600 rounded-lg text-white">Details</button>
                     {canEdit && <button onClick={() => deleteSession(s.id)} className="px-3 py-1.5 text-xs text-red-400 hover:text-red-300 border border-red-500/20 rounded-lg">Delete</button>}
                   </div>

@@ -345,7 +345,7 @@ function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, cha
       <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-2">
         {tab === 'basic' && (
           <>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <Input label="Scene #" value={form.scene_number} onChange={(e) => setForm({ ...form, scene_number: e.target.value })} />
               <div>
                 <label className="block text-sm font-medium text-surface-300 mb-1.5">INT/EXT</label>
@@ -367,7 +367,7 @@ function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, cha
             <Input label="Scene Heading" value={form.scene_heading} onChange={(e) => setForm({ ...form, scene_heading: e.target.value })} placeholder="INT. LOCATION - DAY" />
             <Input label="Location Name" value={form.location_name} onChange={(e) => setForm({ ...form, location_name: e.target.value })} />
             <Textarea label="Synopsis" value={form.synopsis} onChange={(e) => setForm({ ...form, synopsis: e.target.value })} rows={3} />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input label="Page Count" type="number" step="0.125" value={form.page_count} onChange={(e) => setForm({ ...form, page_count: parseFloat(e.target.value) || 0 })} />
               <Input label="Est. Duration (min)" type="number" value={form.estimated_duration_minutes} onChange={(e) => setForm({ ...form, estimated_duration_minutes: e.target.value })} />
             </div>

@@ -171,10 +171,18 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
         supabase.from('projects').select('content_metadata').eq('id', params.id).single(),
         supabase.from('scenes').select('id,scene_number,scene_heading')
           .eq('project_id', params.id).order('sort_order', { ascending: true }),
-        supabase.from('scripts').select('id,title').eq('project_id', params.id).order('created_at', { ascending: true }),
+        supabase.from('scripts').select('id,title,metadata,created_at').eq('project_id', params.id).order('created_at', { ascending: true }),
       ]);
       setProjectScenes((scenesRes.data as SceneRef[]) ?? []);
-      const eps: EpisodeItem[] = ((scriptsRes.data as { id: string; title: string }[]) ?? []).map((s) => ({
+      const rawScripts = (scriptsRes.data as { id: string; title: string; metadata?: { sort_order?: number }; created_at?: string }[]) ?? [];
+      // Sort by metadata.sort_order (user-defined order), falling back to created_at
+      rawScripts.sort((a, b) => {
+        const oa = a.metadata?.sort_order ?? 9999;
+        const ob = b.metadata?.sort_order ?? 9999;
+        if (oa !== ob) return oa - ob;
+        return (a.created_at ?? '') < (b.created_at ?? '') ? -1 : 1;
+      });
+      const eps: EpisodeItem[] = rawScripts.map((s) => ({
         id: s.id, title: s.title, season: extractSeason(s.title),
       }));
       setEpisodes(eps);

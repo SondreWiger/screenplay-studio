@@ -473,7 +473,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
                   {refImages.map((ref, i) => (
                     <div key={i} className="group relative rounded-lg overflow-hidden border border-surface-700 bg-surface-900">
                       <img src={ref.url} alt={ref.label || `Ref ${i+1}`} className="w-full h-20 sm:h-32 object-cover" />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button onClick={() => setRefImages(refImages.filter((_,idx) => idx !== i))} className="p-1.5 bg-red-600 rounded-full text-white">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>

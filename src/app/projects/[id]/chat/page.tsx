@@ -538,14 +538,14 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                               </div>
                               <p className="text-sm text-surface-200 break-words mt-0.5">{msg.content}</p>
                             </div>
-                            <span className="text-[10px] text-surface-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1">
+                            <span className="text-[10px] text-surface-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0 mt-1">
                               {formatTime(msg.created_at)}
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-start gap-3">
                             <div className="w-8 shrink-0 text-center">
-                              <span className="text-[9px] text-surface-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-[9px] text-surface-700 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                 {formatTime(msg.created_at)}
                               </span>
                             </div>

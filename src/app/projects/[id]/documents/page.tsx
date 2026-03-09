@@ -598,7 +598,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <span className="truncate flex-1">{folder.name}</span>
                 {canEdit && (
                   <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-all">
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-all">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 )}
@@ -628,7 +628,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 </div>
                 {canEdit && (
                   <button onClick={(e) => { e.stopPropagation(); handleDeleteDoc(doc.id); }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-all shrink-0">
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-all shrink-0">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 )}
@@ -806,7 +806,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
 
               {/* Version panel */}
               {showVersionPanel && (
-                <div className="w-72 shrink-0">
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-surface-950 md:relative md:inset-auto md:w-72 md:shrink-0 md:overflow-visible">
                   <VersionPanel
                     versions={docVersions}
                     config={versionConfig}
@@ -820,7 +820,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
 
               {/* Comment panel */}
               {showComments && (
-                <div className="w-80 shrink-0 border-l border-surface-800 flex flex-col overflow-hidden bg-surface-950">
+                <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-surface-950 md:relative md:inset-auto md:w-80 md:shrink-0 md:border-l border-surface-800">
                   <div className="p-3 border-b border-surface-800 flex items-center justify-between">
                     <span className="text-xs font-semibold text-white">Comments</span>
                     <div className="flex items-center gap-2">

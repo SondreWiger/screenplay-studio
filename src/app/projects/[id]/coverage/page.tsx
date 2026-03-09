@@ -342,7 +342,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
                     </p>
                     {c.logline && <p className="text-xs text-surface-400 mt-1.5 line-clamp-2 italic">{c.logline}</p>}
                   </div>
-                  <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <div className="flex gap-2 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
                     {canEdit && (
                       <>
                       <button onClick={() => { setSelected(c); setView('print'); }} className="px-3 py-1.5 text-xs bg-surface-700/60 hover:bg-surface-700 border border-surface-600 rounded-lg text-white">Print</button>

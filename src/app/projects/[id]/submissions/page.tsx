@@ -237,7 +237,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
 
                 {/* Actions */}
                 {canEdit && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => openEdit(s)}
                       className="p-1.5 rounded-lg hover:bg-surface-700/60 text-surface-400 hover:text-white"

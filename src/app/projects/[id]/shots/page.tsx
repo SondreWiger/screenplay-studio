@@ -239,7 +239,7 @@ function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved,
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={shot ? `Edit Shot ${shot.shot_number || ''}` : 'New Shot'} size="lg">
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <Input label="Shot #" value={form.shot_number || ''} onChange={(e) => setForm({ ...form, shot_number: e.target.value })} />
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Shot Type</label>
@@ -266,7 +266,7 @@ function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved,
             </select>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Lens" value={form.lens || ''} onChange={(e) => setForm({ ...form, lens: e.target.value })} placeholder="50mm, 24mm..." />
           <Input label="Duration (sec)" type="number" value={form.duration_seconds || ''} onChange={(e) => setForm({ ...form, duration_seconds: e.target.value })} />
         </div>
@@ -274,7 +274,7 @@ function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved,
         <Textarea label="Camera Notes" value={form.camera_notes || ''} onChange={(e) => setForm({ ...form, camera_notes: e.target.value })} rows={2} />
         <Textarea label="Lighting Notes" value={form.lighting_notes || ''} onChange={(e) => setForm({ ...form, lighting_notes: e.target.value })} rows={2} />
         <Textarea label="Sound Notes" value={form.sound_notes || ''} onChange={(e) => setForm({ ...form, sound_notes: e.target.value })} rows={2} />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Takes Needed" type="number" value={form.takes_needed || 1} onChange={(e) => setForm({ ...form, takes_needed: parseInt(e.target.value) || 1 })} />
           <Input label="Takes Completed" type="number" value={form.takes_completed || 0} onChange={(e) => setForm({ ...form, takes_completed: parseInt(e.target.value) || 0 })} />
         </div>

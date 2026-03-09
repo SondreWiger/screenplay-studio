@@ -462,11 +462,11 @@ function CharacterEditor({
       <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
         {activeTab === 'basic' && (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input label="Character Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               <Input label="Full Name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="If different from character name" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input label="Age" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} placeholder="30s" />
               <Input label="Gender" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} />
             </div>

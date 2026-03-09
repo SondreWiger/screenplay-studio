@@ -32,7 +32,7 @@ const PAGE_LABELS: Record<string, string> = {
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
   showcase: 'Showcase', share: 'Share Portal', analytics: 'Analytics',
-  export: 'Advanced Export', casting: 'Casting', 'ai-analysis': 'Script Analysis',
+  export: 'Advanced Export', casting: 'Casting', actors: 'Actors', 'ai-analysis': 'Script Analysis',
   // New pages
   corkboard: 'Corkboard', 'beat-sheet': 'Beat Sheet', invoice: 'Invoice Generator',
   submissions: 'Submission Tracker', breakdown: 'Production Breakdown',
@@ -390,6 +390,7 @@ export default function ProjectLayout({
         { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
         { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
         { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Actors', href: `/projects/${params.id}/actors`, icon: 'actors', pro: true },
         { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
       ],
     },
@@ -453,6 +454,7 @@ export default function ProjectLayout({
         { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
         { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
         { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Actors', href: `/projects/${params.id}/actors`, icon: 'actors', pro: true },
         { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
       ],
     },
@@ -517,6 +519,7 @@ export default function ProjectLayout({
         { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
         { label: 'Brand Kit', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
         { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Actors', href: `/projects/${params.id}/actors`, icon: 'actors', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -605,6 +608,7 @@ export default function ProjectLayout({
         { label: 'Custom Branding', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
         { label: 'Reports', href: `/projects/${params.id}/reports`, icon: 'reports', pro: true },
         { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Actors', href: `/projects/${params.id}/actors`, icon: 'actors', pro: true },
         { label: 'Submissions', href: `/projects/${params.id}/submissions`, icon: 'submissions', pro: true },
         { label: 'Invoice', href: `/projects/${params.id}/invoice`, icon: 'invoice', pro: true },
         { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
@@ -711,6 +715,7 @@ export default function ProjectLayout({
     revisions: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>,
     reports: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" /></svg>,
     casting: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>,
+    actors: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>,
     // TV / Broadcast Production Icons
     rundown: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>,
     visionmixer: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="9" height="8" rx="1" strokeWidth={1.5}/><rect x="13" y="3" width="9" height="8" rx="1" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.5 14v3m0 0l-3 3m3-3l3 3M17.5 14v3m0 0l-3 3m3-3l3 3"/></svg>,

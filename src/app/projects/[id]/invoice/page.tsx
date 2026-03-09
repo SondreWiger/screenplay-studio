@@ -246,7 +246,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
       {/* ── PRINTABLE INVOICE ── */}
       <div
         ref={invoiceRef}
-        className="bg-surface-900 text-white rounded-xl p-8 md:p-12 print:rounded-none print:shadow-none shadow-xl"
+        className="bg-surface-900 text-white rounded-xl p-4 md:p-12 print:rounded-none print:shadow-none shadow-xl print:p-8"
         style={{ fontFamily: 'Georgia, serif' }}
       >
         {/* Invoice header */}
@@ -267,7 +267,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         <div className="h-px bg-gray-200 mb-8" />
 
         {/* Bill to + dates */}
-        <div className="grid grid-cols-2 gap-8 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 mb-10">
           <div>
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Bill To</div>
             <div className="font-semibold">{settings.clientCompany || settings.clientName || '—'}</div>
@@ -294,7 +294,8 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         </div>
 
         {/* Line items table */}
-        <table className="w-full text-sm mb-8 border-collapse">
+        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+        <table className="w-full text-sm mb-8 border-collapse min-w-[400px]">
           <thead>
             <tr className="border-b-2 border-white/15">
               <th className="text-left py-2 text-xs font-bold text-white/40 uppercase tracking-wider">Date</th>
@@ -326,6 +327,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
             )}
           </tbody>
         </table>
+        </div>
 
         {/* Totals */}
         <div className="flex justify-end mb-8">

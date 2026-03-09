@@ -549,8 +549,19 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     }
   }, [currentScript?.id]);
 
-  // ── Jump to element from command palette (?element=<id>) ─────────────
+  // ── Honor ?script_id= param — jump to a specific episode when linked from Episodes page ──
   const searchParams = useSearchParams();
+  const scriptIdParam = searchParams.get('script_id');
+  useEffect(() => {
+    if (!scriptIdParam || scripts.length === 0) return;
+    const target = scripts.find((s) => s.id === scriptIdParam);
+    if (target && target.id !== currentScript?.id) {
+      setCurrentScript(target);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scriptIdParam, scripts.length]);
+
+  // ── Jump to element from command palette (?element=<id>) ─────────────
   const elementParam = searchParams.get('element');
   useEffect(() => {
     if (!elementParam || elements.length === 0) return;
@@ -1935,7 +1946,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   )}
                 </div>
                 {/* Edit hint */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <span className={cn('text-[10px] px-2 py-1 rounded', darkMode ? 'bg-surface-700 text-surface-400' : 'bg-surface-800 text-white/40')}>
                     Click to edit
                   </span>
@@ -2940,7 +2951,7 @@ const LineEditor = memo(function LineEditor({
             'absolute -right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full transition-all',
             commentCount > 0
               ? 'text-[#FF5F1F] bg-[#FF5F1F]/15 opacity-100'
-              : 'text-surface-500 opacity-0 group-hover:opacity-100 hover:bg-surface-700 hover:text-white'
+              : 'text-surface-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-surface-700 hover:text-white'
           )}
           title={commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : 'Add comment'}
           aria-label={commentCount > 0 ? `${commentCount} comments on this element` : 'Add comment'}

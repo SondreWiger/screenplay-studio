@@ -726,7 +726,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       <span className="flex-1 text-surface-200 text-xs">{scene.scene_heading}</span>
                       {scene.estimated_pages && <span className="text-[11px] text-surface-500">{scene.estimated_pages}p</span>}
                       {canEdit && (
-                        <button onClick={() => handleRemoveScene(scene.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => handleRemoveScene(scene.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       )}
@@ -777,7 +777,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                         <span className="text-xs font-mono text-surface-300 bg-surface-800 px-2 py-0.5 rounded">{member.call_time}</span>
                       )}
                       {canEdit && (
-                        <button onClick={() => handleRemoveCast(member.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => handleRemoveCast(member.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       )}
@@ -884,7 +884,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       <span className="text-xs text-surface-400">{item.quantity} {item.unit}</span>
                       {item.vendor && <span className="text-xs text-surface-600">{item.vendor}</span>}
                       {canEdit && (
-                        <button onClick={() => handleUnassignGear(item.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-0 group-hover:opacity-100 transition-all" title="Remove from day">
+                        <button onClick={() => handleUnassignGear(item.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all" title="Remove from day">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       )}

@@ -331,7 +331,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
                     </div>
                     <Link
                       href={`/projects/${params.id}/script?element=${cue.id}`}
-                      className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                       title="Jump to this line in the script"
                     >
                       <span className="text-[10px] text-surface-500 hover:text-violet-400 transition-colors px-2 py-1 rounded-lg hover:bg-violet-500/10">
