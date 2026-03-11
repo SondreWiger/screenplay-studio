@@ -43,23 +43,37 @@ export function useProFeatures(): ProFeatures {
   const { user } = useAuthStore();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [proGatingEnabled, setProGatingEnabled] = useState(false);
 
-  const isPro = user?.is_pro === true;
+  // If pro gating is disabled globally, every user is treated as Pro
+  const isProByAccount = user?.is_pro === true;
+  const isPro = !proGatingEnabled || isProByAccount;
   const limits = isPro ? PRO_LIMITS.pro : PRO_LIMITS.free;
 
   const fetchSubscription = useCallback(async () => {
     if (!user) { setLoading(false); return; }
     try {
       const supabase = createClient();
-      const { data } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      setSubscription(data);
+      const [subRes, gatingRes] = await Promise.all([
+        supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'pro_gating_enabled')
+          .maybeSingle(),
+      ]);
+      setSubscription(subRes.data);
+      // Default: gating ON (true). Admin can set to 'false' to make everything free.
+      if (gatingRes.data) {
+        setProGatingEnabled(gatingRes.data.value !== 'false');
+      }
     } catch (err) {
       console.error('Error fetching subscription:', err);
     } finally {

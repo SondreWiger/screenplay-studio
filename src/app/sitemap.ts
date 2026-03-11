@@ -29,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/support`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
 
     { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${BASE_URL}/changelog`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${BASE_URL}/sitemap-visual`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
     // Legal pages
     { url: `${BASE_URL}/legal`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
@@ -103,7 +104,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     if (posts) {
       blogPages = [
-        { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 },
         ...posts.map(p => ({
           url: `${BASE_URL}/blog/${p.slug}`,
           lastModified: p.updated_at,

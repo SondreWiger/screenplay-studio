@@ -39,8 +39,8 @@ export function BetaBanner() {
             Beta
           </span>
           <p className="text-xs text-surface-300 leading-snug">
-            <span className="font-semibold text-white">Screenplay Studio is in public beta.</span>
-            {' '}Expect rough edges, missing features, and occasional bugs — your feedback helps us ship faster.
+            <span className="font-semibold text-white">Screenplay Studio is in early access.</span>
+            {' '}Some features are still being refined — your feedback directly shapes what ships next.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">

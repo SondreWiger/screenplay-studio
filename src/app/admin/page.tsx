@@ -98,6 +98,7 @@ export default function AdminPage() {
   const [blogComments, setBlogComments] = useState<any[]>([]);
   const [siteVersion, setSiteVersion] = useState<string>('');
   const [opensourceEnabled, setOpensourceEnabled] = useState(true);
+  const [proGatingEnabled, setProGatingEnabled] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Community
@@ -129,6 +130,7 @@ export default function AdminPage() {
       loadBlogPosts();
       loadSiteVersion();
       loadOpensourceSetting();
+      loadProGatingSetting();
       loadContributors();
     } else {
       // Mods don't call loadStats, so clear loading immediately
@@ -177,6 +179,24 @@ export default function AdminPage() {
       setOpensourceEnabled(enabled);
     } catch (err) {
       console.error('Error updating opensource setting:', err);
+    }
+  };
+
+  const loadProGatingSetting = async () => {
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.from('site_settings').select('value').eq('key', 'pro_gating_enabled').maybeSingle();
+      if (data) setProGatingEnabled(data.value !== 'false');
+    } catch { /* default true — gating on */ }
+  };
+
+  const handleToggleProGating = async (enabled: boolean) => {
+    try {
+      const supabase = createClient();
+      await supabase.from('site_settings').upsert({ key: 'pro_gating_enabled', value: enabled ? 'true' : 'false', updated_at: new Date().toISOString() });
+      setProGatingEnabled(enabled);
+    } catch (err) {
+      console.error('Error updating pro gating setting:', err);
     }
   };
 
@@ -774,6 +794,10 @@ export default function AdminPage() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
                 Feature Flags
               </Link>
+              <Link href="/admin/changelog" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                Changelog
+              </Link>
             </div>
           )}
         </nav>
@@ -816,6 +840,8 @@ export default function AdminPage() {
               onUpdateVersion={handleUpdateVersion}
               opensourceEnabled={opensourceEnabled}
               onToggleOpensource={handleToggleOpensource}
+              proGatingEnabled={proGatingEnabled}
+              onToggleProGating={handleToggleProGating}
             />
           )}
           {activeTab === 'blog' && (
@@ -1521,7 +1547,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
 // System Tab
 // ============================================================
 
-function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats, siteVersion, onUpdateVersion, opensourceEnabled, onToggleOpensource }: {
+function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats, siteVersion, onUpdateVersion, opensourceEnabled, onToggleOpensource, proGatingEnabled, onToggleProGating }: {
   rebootStatus: string | null;
   onSoftReboot: () => void;
   onClearPresence: () => void;
@@ -1530,6 +1556,8 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
   onUpdateVersion: (v: string) => void;
   opensourceEnabled: boolean;
   onToggleOpensource: (enabled: boolean) => void;
+  proGatingEnabled: boolean;
+  onToggleProGating: (enabled: boolean) => void;
 }) {
   const [editingVersion, setEditingVersion] = useState(false);
   const [versionDraft, setVersionDraft] = useState(siteVersion);
@@ -1573,6 +1601,44 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
         >
           <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
             opensourceEnabled ? 'translate-x-6' : 'translate-x-0'
+          }`} />
+        </button>
+      </div>
+
+      {/* Pro Gating toggle */}
+      <div className="mb-6 rounded-xl border bg-surface-900/50 p-5 flex items-center justify-between"
+        style={{ borderColor: proGatingEnabled ? 'rgba(255,255,255,0.1)' : 'rgba(255,95,31,0.4)' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{ background: proGatingEnabled ? 'rgba(255,255,255,0.06)' : 'rgba(255,95,31,0.15)' }}>
+            <span className="text-xl">{proGatingEnabled ? '🔐' : '🎁'}</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              Pro Feature Gating
+              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                proGatingEnabled
+                  ? 'text-white/30 border-white/10 bg-white/5'
+                  : 'text-[#FF5F1F] border-[#FF5F1F]/30 bg-[#FF5F1F]/10'
+              }`}>
+                {proGatingEnabled ? 'ON' : 'ALL FREE'}
+              </span>
+            </h3>
+            <p className="text-xs text-surface-500 mt-0.5">
+              {proGatingEnabled
+                ? 'Pro features only visible to paid subscribers. Normal billing applies.'
+                : 'All Pro features are unlocked for every user — no subscription required.'}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => onToggleProGating(!proGatingEnabled)}
+          className={`relative w-12 h-6 rounded-full transition-all ${
+            proGatingEnabled ? 'bg-surface-700' : 'bg-[#FF5F1F]'
+          }`}
+        >
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+            proGatingEnabled ? 'translate-x-0' : 'translate-x-6'
           }`} />
         </button>
       </div>

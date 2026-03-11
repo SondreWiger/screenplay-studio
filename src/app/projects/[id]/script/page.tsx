@@ -374,6 +374,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [showImportExport, setShowImportExport] = useState(false);
   const importExportRef = useRef<HTMLButtonElement>(null);
   const displaySettingsRef = useRef<HTMLButtonElement>(null);
+  const titlePageRef = useRef<HTMLDivElement>(null);
   const [activeElementType, setActiveElementType] = useState<ScriptElementType>('action');
   const [drafts, setDrafts] = useState<ScriptDraft[]>([]);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -464,6 +465,18 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     });
     return map;
   }, [scriptComments]);
+
+  // ── Title page: save a single field on blur ──────────────────
+  const saveTitlePageField = useCallback(async (
+    field: keyof TitlePageData,
+    value: string,
+  ) => {
+    if (!currentScript) return;
+    const updated: TitlePageData = { ...(currentScript.title_page_data || {}), [field]: value || undefined };
+    const supabase = createClient();
+    await supabase.from('scripts').update({ title_page_data: updated }).eq('id', currentScript.id);
+    setCurrentScript({ ...currentScript, title_page_data: updated });
+  }, [currentScript, setCurrentScript]);
 
   const fetchScriptComments = useCallback(async () => {
     const supabase = createClient();
@@ -781,17 +794,28 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [elements, selectedElementIds.size]);
 
-  // Page numbers (rough estimate: 56 lines per page)
+  // Page numbers — accurate per-element line estimation
+  // Assumes US letter, 12pt Courier, margins: 1in top/right/bottom, 1.5in left → 6in × 9in usable
+  // 10 chars/inch → 60 chars for action, 35 for dialogue (1.5in L + 2in R indent), etc.
   const elementPages = useMemo(() => {
     const pages: Record<string, number> = {};
     let lineCount = 0;
-    const linesPerPage = 56;
+    const linesPerPage = 55; // ~55 usable lines per printed page
+    const estimateEl = (el: ScriptElement): number => {
+      const len = (el.content || '').length;
+      switch (el.element_type) {
+        case 'scene_heading':   return Math.max(1, Math.ceil(len / 60)) + 3; // blank before + blank after
+        case 'action':         return Math.max(1, Math.ceil(len / 60)) + 1; // blank after
+        case 'character':      return Math.max(1, Math.ceil(len / 38)) + 1; // blank before
+        case 'parenthetical':  return Math.max(1, Math.ceil(len / 30));
+        case 'dialogue':       return Math.max(1, Math.ceil(len / 35)) + 1; // narrow col + blank after
+        case 'transition':     return Math.max(1, Math.ceil(len / 60)) + 2; // blank before + after
+        default:               return Math.max(1, Math.ceil(len / 60)) + 1;
+      }
+    };
     elements.forEach((el) => {
-      const lines = Math.max(1, Math.ceil((el.content || '').length / 60));
-      if (el.element_type === 'scene_heading') lineCount += 2;
       pages[el.id] = Math.floor(lineCount / linesPerPage) + 1;
-      lineCount += lines;
-      if (el.element_type === 'scene_heading' || el.element_type === 'transition') lineCount += 1;
+      lineCount += estimateEl(el);
     });
     return pages;
   }, [elements]);
@@ -912,21 +936,31 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       return `<div class="el el-${cls}">${content}</div>`;
     };
 
-    // Paginate: ~56 lines per page
-    const linesPerPage = 56;
+    // Paginate — same accurate model as editor page numbers
+    const linesPerPage = 55;
     const pages: string[][] = [[]];
     let lineCount = 0;
+    const estimateEl = (el: ScriptElement): number => {
+      const len = (el.content || '').length;
+      switch (el.element_type) {
+        case 'scene_heading':   return Math.max(1, Math.ceil(len / 60)) + 3;
+        case 'action':         return Math.max(1, Math.ceil(len / 60)) + 1;
+        case 'character':      return Math.max(1, Math.ceil(len / 38)) + 1;
+        case 'parenthetical':  return Math.max(1, Math.ceil(len / 30));
+        case 'dialogue':       return Math.max(1, Math.ceil(len / 35)) + 1;
+        case 'transition':     return Math.max(1, Math.ceil(len / 60)) + 2;
+        default:               return Math.max(1, Math.ceil(len / 60)) + 1;
+      }
+    };
     for (const el of els) {
       if (el.is_omitted) continue;
-      const lines = Math.max(1, Math.ceil((el.content || '').length / 60));
-      if (el.element_type === 'scene_heading') lineCount += 2;
-      if (lineCount + lines > linesPerPage && pages[pages.length - 1].length > 0) {
+      const elLines = estimateEl(el);
+      if (lineCount + elLines > linesPerPage && pages[pages.length - 1].length > 0) {
         pages.push([]);
         lineCount = 0;
       }
       pages[pages.length - 1].push(elementHTML(el));
-      lineCount += lines;
-      if (el.element_type === 'scene_heading' || el.element_type === 'transition') lineCount += 1;
+      lineCount += elLines;
     }
 
     const pageHTML = pages.map((p, i) => `
@@ -940,12 +974,14 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       <div class="page title-page">
         <div class="page-content">
           <div class="title-center">
+            ${titlePage.project_logo_url ? `<img src="${titlePage.project_logo_url}" class="tp-project-logo" alt="" />` : ''}
             ${titlePage.title ? `<div class="tp-title">${titlePage.title}</div>` : ''}
             ${titlePage.credit ? `<div class="tp-credit">${titlePage.credit}</div>` : ''}
             ${titlePage.author ? `<div class="tp-author">${titlePage.author}</div>` : ''}
             ${titlePage.source ? `<div class="tp-source">${titlePage.source}</div>` : ''}
           </div>
           <div class="title-bottom">
+            ${(titlePage.company_logo_url || titlePage.company_name) ? `<div class="tp-company">${titlePage.company_logo_url ? `<img src="${titlePage.company_logo_url}" class="tp-company-logo" alt="" />` : ''}${titlePage.company_name ? `<div class="tp-company-name">${titlePage.company_name}</div>` : ''}</div>` : ''}
             ${titlePage.draft_date ? `<div class="tp-info">${titlePage.draft_date}</div>` : ''}
             ${titlePage.contact ? `<div class="tp-info">${titlePage.contact}</div>` : ''}
             ${titlePage.copyright ? `<div class="tp-info">${titlePage.copyright}</div>` : ''}
@@ -999,11 +1035,15 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   .title-page .page-content { display: flex; flex-direction: column; min-height: calc(11in - 2in); }
   .title-center { text-align: center; padding-top: 3in; }
   .title-bottom { position: absolute; bottom: 1in; left: 0; }
+  .tp-project-logo { max-height: 72pt; max-width: 240pt; object-fit: contain; margin-bottom: 24pt; display: block; margin-left: auto; margin-right: auto; }
   .tp-title { font-size: 24pt; font-weight: bold; text-transform: uppercase; margin-bottom: 24pt; }
   .tp-credit { font-size: 12pt; margin-bottom: 12pt; }
   .tp-author { font-size: 12pt; margin-bottom: 12pt; }
   .tp-source { font-size: 12pt; font-style: italic; margin-bottom: 12pt; }
   .tp-info { font-size: 10pt; margin-bottom: 6pt; }
+  .tp-company { margin-bottom: 6pt; }
+  .tp-company-logo { max-height: 28pt; max-width: 120pt; object-fit: contain; display: block; margin-bottom: 4pt; }
+  .tp-company-name { font-size: 10pt; font-weight: bold; }
 
   /* Element types */
   .el {
@@ -1278,12 +1318,15 @@ ${pageHTML}
 </style></head><body>\n`;
     if (tp && (tp.title || tp.author)) {
       html += '<div class="title-page">';
+      if (tp.project_logo_url) html += `<img src="${tp.project_logo_url}" style="max-height:72pt;max-width:240pt;object-fit:contain;display:block;margin:0 auto 18pt" alt="" />`;
       if (tp.title) html += `<h1>${tp.title}</h1>`;
       if (tp.credit) html += `<p>${tp.credit}</p>`;
       if (tp.author) html += `<p>${tp.author}</p>`;
       if (tp.source) html += `<p><em>${tp.source}</em></p>`;
-      if (tp.draft_date || tp.contact || tp.copyright) {
+      if (tp.draft_date || tp.contact || tp.copyright || tp.company_name || tp.company_logo_url) {
         html += '<div class="contact">';
+        if (tp.company_logo_url) html += `<img src="${tp.company_logo_url}" style="max-height:24pt;max-width:110pt;object-fit:contain;display:block;margin-bottom:4pt" alt="" />`;
+        if (tp.company_name) html += `<p><strong>${tp.company_name}</strong></p>`;
         if (tp.draft_date) html += `<p>${tp.draft_date}</p>`;
         if (tp.contact) html += `<p>${tp.contact}</p>`;
         if (tp.copyright) html += `<p>${tp.copyright}</p>`;
@@ -1605,7 +1648,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               </span>
             )}
           </button>
-          <button onClick={() => setShowTitlePage(true)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Title Page">
+          <button onClick={() => titlePageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Scroll to Title Page">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
           </button>
           <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Export PDF (Cmd+P)">
@@ -1899,58 +1942,133 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
         {/* Document */}
         <div className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30">
-          {/* Title page (rendered in document) */}
-          {currentScript?.title_page_data && (currentScript.title_page_data.title || currentScript.title_page_data.author) && (
-            <div className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0 shadow-2xl rounded-sm cursor-pointer group', darkMode && 'sp-dark')}
-              onClick={() => setShowTitlePage(true)}
-              title="Click to edit title page"
-            >
-              <div className="flex flex-col justify-center items-center min-h-[300px] md:min-h-[600px] relative">
-                <div className="text-center" style={{ marginTop: '-80px' }}>
-                  {currentScript.title_page_data.title && (
-                    <div className={cn('text-2xl font-black uppercase tracking-wide mb-2', darkMode ? 'text-white' : 'text-black')}>
-                      {currentScript.title_page_data.title}
-                    </div>
-                  )}
-                  {currentScript.title_page_data.credit && (
-                    <div className={cn('text-sm mt-6 mb-2', darkMode ? 'text-surface-300' : 'text-white/60')}>
-                      {currentScript.title_page_data.credit}
-                    </div>
-                  )}
-                  {currentScript.title_page_data.author && (
-                    <div className={cn('text-sm', darkMode ? 'text-surface-300' : 'text-white/60')}>
-                      {currentScript.title_page_data.author}
-                    </div>
-                  )}
-                  {currentScript.title_page_data.source && (
-                    <div className={cn('text-xs mt-4', darkMode ? 'text-surface-400' : 'text-white/40')}>
-                      {currentScript.title_page_data.source}
-                    </div>
-                  )}
-                </div>
-                <div className="absolute bottom-12 left-12 text-left">
-                  {currentScript.title_page_data.draft_date && (
-                    <div className={cn('text-xs', darkMode ? 'text-surface-400' : 'text-white/40')}>
-                      {currentScript.title_page_data.draft_date}
-                    </div>
-                  )}
-                  {currentScript.title_page_data.contact && (
-                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-white/40')}>
-                      {currentScript.title_page_data.contact}
-                    </div>
-                  )}
-                  {currentScript.title_page_data.copyright && (
-                    <div className={cn('text-xs mt-1', darkMode ? 'text-surface-400' : 'text-white/40')}>
-                      {currentScript.title_page_data.copyright}
-                    </div>
-                  )}
-                </div>
-                {/* Edit hint */}
-                <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  <span className={cn('text-[10px] px-2 py-1 rounded', darkMode ? 'bg-surface-700 text-surface-400' : 'bg-surface-800 text-white/40')}>
-                    Click to edit
+          {/* Title page — always shown, all fields editable inline */}
+          {currentScript && (
+            <div ref={titlePageRef} className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0 shadow-2xl rounded-sm', darkMode && 'sp-dark')}>
+              {/* Use sp-page's own 1in/1.5in padding — no extra padding inside */}
+              <div className="flex flex-col" style={{ minHeight: 'calc(11in - 2in)' }}>
+
+                {/* Hint */}
+                <div className="text-right mb-4 pointer-events-none select-none">
+                  <span className={cn('text-[9px]', darkMode ? 'text-surface-700' : 'text-gray-300')}>
+                    Click any field to edit
                   </span>
                 </div>
+
+                {/* TOP: project logo */}
+                <div className="flex justify-center mb-8">
+                  <TitlePageLogoZone
+                    url={currentScript.title_page_data?.project_logo_url}
+                    label="Add Project Logo"
+                    field="project_logo_url"
+                    projectId={params.id}
+                    darkMode={darkMode}
+                    onSave={saveTitlePageField}
+                  />
+                </div>
+
+                {/* MIDDLE: title block — centered, flex-1 so it takes remaining space */}
+                <div className="flex-1 flex flex-col items-center justify-center gap-0.5">
+                  <TitlePageField
+                    value={currentScript.title_page_data?.title ?? ''}
+                    placeholder="TITLE"
+                    className={cn(
+                      'text-2xl font-black uppercase tracking-wide text-center w-full',
+                      darkMode ? 'text-white placeholder:text-surface-700' : 'text-black placeholder:text-gray-300',
+                    )}
+                    onSave={(v) => saveTitlePageField('title', v)}
+                  />
+                  <TitlePageField
+                    value={currentScript.title_page_data?.credit ?? ''}
+                    placeholder="Written by"
+                    className={cn(
+                      'text-sm text-center w-full mt-6',
+                      darkMode ? 'text-surface-400 placeholder:text-surface-700' : 'text-gray-600 placeholder:text-gray-300',
+                    )}
+                    onSave={(v) => saveTitlePageField('credit', v)}
+                  />
+                  <TitlePageField
+                    value={currentScript.title_page_data?.author ?? ''}
+                    placeholder="Author Name"
+                    className={cn(
+                      'text-sm text-center w-full',
+                      darkMode ? 'text-surface-400 placeholder:text-surface-700' : 'text-gray-600 placeholder:text-gray-300',
+                    )}
+                    onSave={(v) => saveTitlePageField('author', v)}
+                  />
+                  <TitlePageField
+                    value={currentScript.title_page_data?.source ?? ''}
+                    placeholder="Based on…"
+                    className={cn(
+                      'text-xs italic text-center w-full mt-3',
+                      darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-400 placeholder:text-gray-300',
+                    )}
+                    onSave={(v) => saveTitlePageField('source', v)}
+                  />
+                </div>
+
+                {/* BOTTOM: left = company + metadata, right = notes */}
+                <div className="flex justify-between items-end gap-4 mt-8">
+                  <div className="flex flex-col gap-1 max-w-[240px]">
+                    <TitlePageLogoZone
+                      url={currentScript.title_page_data?.company_logo_url}
+                      label="Production Co. Logo"
+                      field="company_logo_url"
+                      projectId={params.id}
+                      darkMode={darkMode}
+                      onSave={saveTitlePageField}
+                      small
+                    />
+                    <TitlePageField
+                      value={currentScript.title_page_data?.company_name ?? ''}
+                      placeholder="Production Company"
+                      className={cn(
+                        'text-[11px] font-semibold',
+                        darkMode ? 'text-surface-400 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
+                      )}
+                      onSave={(v) => saveTitlePageField('company_name', v)}
+                    />
+                    <TitlePageField
+                      value={currentScript.title_page_data?.draft_date ?? ''}
+                      placeholder="Draft Date"
+                      className={cn(
+                        'text-[11px]',
+                        darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
+                      )}
+                      onSave={(v) => saveTitlePageField('draft_date', v)}
+                    />
+                    <TitlePageField
+                      value={currentScript.title_page_data?.contact ?? ''}
+                      placeholder="Contact Info"
+                      className={cn(
+                        'text-[11px]',
+                        darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
+                      )}
+                      onSave={(v) => saveTitlePageField('contact', v)}
+                    />
+                    <TitlePageField
+                      value={currentScript.title_page_data?.copyright ?? ''}
+                      placeholder="© Copyright"
+                      className={cn(
+                        'text-[11px]',
+                        darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
+                      )}
+                      onSave={(v) => saveTitlePageField('copyright', v)}
+                    />
+                  </div>
+                  <div className="max-w-[160px]">
+                    <TitlePageField
+                      value={currentScript.title_page_data?.notes ?? ''}
+                      placeholder="Notes…"
+                      className={cn(
+                        'text-[10px] text-right',
+                        darkMode ? 'text-surface-600 placeholder:text-surface-700' : 'text-gray-400 placeholder:text-gray-300',
+                      )}
+                      onSave={(v) => saveTitlePageField('notes', v)}
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
           )}
@@ -3057,6 +3175,139 @@ const LineEditor = memo(function LineEditor({
 });
 
 // ============================================================
+// Title Page — Inline-editable field
+// ============================================================
+
+function TitlePageField({
+  value,
+  placeholder,
+  className,
+  onSave,
+}: {
+  value: string;
+  placeholder?: string;
+  className?: string;
+  onSave: (v: string) => void;
+}) {
+  const [local, setLocal] = useState(value);
+  useEffect(() => { setLocal(value); }, [value]);
+  return (
+    <input
+      type="text"
+      value={local}
+      placeholder={placeholder}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => { if (local !== value) onSave(local); }}
+      onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+      className={cn(
+        'bg-transparent border-none outline-none w-full cursor-text',
+        'rounded-sm px-1 -mx-1',
+        'hover:bg-black/5 focus:bg-black/5',
+        'transition-colors duration-100',
+        className,
+      )}
+      style={{ font: 'inherit' }}
+    />
+  );
+}
+
+// ============================================================
+// Title Page — Logo upload zone
+// ============================================================
+
+function TitlePageLogoZone({
+  url,
+  label,
+  field,
+  projectId,
+  darkMode,
+  onSave,
+  small = false,
+}: {
+  url?: string;
+  label: string;
+  field: 'project_logo_url' | 'company_logo_url';
+  projectId: string;
+  darkMode?: boolean;
+  onSave: (field: keyof TitlePageData, value: string) => void;
+  small?: boolean;
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) { toast.warning('Image must be less than 5 MB'); return; }
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const ext = (file.name.split('.').pop() ?? 'png').toLowerCase();
+      const path = `${projectId}/tp-${field}.${ext}`;
+      const { error } = await supabase.storage
+        .from('project-covers')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (error) {
+        console.error('Logo upload error:', error.message);
+        toast.error('Upload failed: ' + error.message);
+      } else {
+        const { data: urlData } = supabase.storage.from('project-covers').getPublicUrl(path);
+        onSave(field, urlData.publicUrl);
+      }
+    } catch (err) {
+      console.error('Logo upload exception:', err);
+      toast.error('Upload failed — check console for details');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (url) {
+    return (
+      <div className="relative group inline-block">
+        <img
+          src={url}
+          alt={label}
+          className={cn('object-contain rounded', small ? 'h-8 max-w-[120px]' : 'h-16 max-w-[220px]')}
+        />
+        <button
+          onClick={() => onSave(field, '')}
+          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] font-bold leading-none"
+          title="Remove"
+        >×</button>
+        <label
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/30 rounded flex items-center justify-center transition-opacity cursor-pointer"
+          title={`Replace ${label}`}
+        >
+          <span className="text-[9px] text-white font-medium">Replace</span>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+          />
+        </label>
+      </div>
+    );
+  }
+
+  return (
+    <label className={cn(
+      'border border-dashed rounded cursor-pointer select-none inline-flex items-center gap-1 transition-colors',
+      small ? 'px-2 py-1 text-[9px]' : 'px-3 py-2 text-[10px]',
+      darkMode
+        ? 'border-surface-700 text-surface-600 hover:border-surface-500 hover:text-surface-400'
+        : 'border-gray-300 text-gray-400 hover:border-gray-500 hover:text-gray-500',
+    )}>
+      {uploading ? 'Uploading…' : `+ ${label}`}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+      />
+    </label>
+  );
+}
+
+// ============================================================
 // Title Page Modal
 // ============================================================
 
@@ -3077,10 +3328,12 @@ function TitlePageModal({ isOpen, onClose, script }: { isOpen: boolean; onClose:
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Title Page" size="md">
       <div className="space-y-4">
+        <p className="text-xs text-surface-500 -mt-1 mb-1">Fields are also editable directly on the title page in the document.</p>
         <Input label="Title" value={data.title || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, title: e.target.value })} />
         <Input label="Written by" value={data.author || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, author: e.target.value })} />
         <Input label="Credit" value={data.credit || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, credit: e.target.value })} placeholder="Written by / Screenplay by" />
         <Input label="Source" value={data.source || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, source: e.target.value })} placeholder="Based on..." />
+        <Input label="Production Company" value={data.company_name || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, company_name: e.target.value })} />
         <Input label="Draft Date" value={data.draft_date || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, draft_date: e.target.value })} />
         <Input label="Contact" value={data.contact || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, contact: e.target.value })} />
         <Input label="Copyright" value={data.copyright || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, copyright: e.target.value })} />

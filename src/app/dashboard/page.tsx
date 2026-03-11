@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select, KeyboardShortcuts } from '@/components/ui';
+import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select, KeyboardShortcuts, toast } from '@/components/ui';
+import { pickToast, NEW_PROJECT } from '@/lib/funToasts';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
@@ -1091,7 +1092,11 @@ function DashboardContent() {
 
       {/* Guided Tour */}
       {showTour && (
-        <GuidedTour onComplete={() => setShowTour(false)} />
+        <GuidedTour
+          onComplete={() => setShowTour(false)}
+          usageIntent={user?.usage_intent ?? 'writer'}
+          projectId={projects[0]?.id ?? null}
+        />
       )}
 
       {/* Gamification popups */}
@@ -1404,6 +1409,7 @@ function NewProjectModal({
       }
 
       if (data) {
+        toast.success(pickToast(NEW_PROJECT));
         router.push(scriptType === 'episodic' ? `/projects/${data.id}/episodes` : `/projects/${data.id}`);
         onCreated();
       }

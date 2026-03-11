@@ -80,10 +80,9 @@ const PRO_FEATURES = [
 
 export default function ProUpgradePage() {
   const { user, loading: authLoading } = useAuth();
-  const { isPro, activateDevBypass, subscription } = useProFeatures();
+  const { isPro, subscription } = useProFeatures();
   const router = useRouter();
   const { canUse: canUseFeature, loading: flagsLoading } = useFeatureAccess();
-  const [activating, setActivating] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState<'pro' | 'team' | 'project_lifetime'>('pro');
   const [paypalLoading, setPaypalLoading] = useState(false);
@@ -149,13 +148,6 @@ export default function ProUpgradePage() {
       setPaypalError(err instanceof Error ? err.message : 'An error occurred');
       setPaypalLoading(false);
     }
-  };
-
-  const handleDevBypass = async () => {
-    setActivating(true);
-    await activateDevBypass();
-    setActivating(false);
-    router.push('/settings/billing');
   };
 
   const teamTotal = teamSeats * PRO_PRICING.team_yearly.amount;
@@ -339,19 +331,6 @@ export default function ProUpgradePage() {
                 </span>
               </Button>
 
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-surface-700" /></div>
-                <div className="relative flex justify-center"><span className="bg-surface-900 px-3 text-xs text-surface-500">or</span></div>
-              </div>
-              <Button
-                variant="secondary"
-                className="w-full border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
-                onClick={handleDevBypass}
-                loading={activating}
-              >
-                Activate Dev Bypass (Free)
-              </Button>
-              <p className="text-[10px] text-surface-600 text-center">Dev bypass activates Pro for 1 year at no cost. For development and testing only.</p>
             </div>
           </Card>
           </div>

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
+import { toast } from '@/components/ui';
+import { pickToast, WORK_1H, WORK_2H, WORK_3H, WORK_4H, WORK_5H, WORK_12H, WORK_24H } from '@/lib/funToasts';
 
 // ============================================================
 // useWorkTimeTracker
@@ -101,6 +103,8 @@ export function useWorkTimeTracker({
   const pendingGraceRef   = useRef<number>(0);  // one-shot grace to add next heartbeat
   const heartbeatTimer    = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef        = useRef(true);
+  const sessionSecondsRef = useRef<number>(0);  // total active seconds this session
+  const firedMilestonesRef = useRef<Set<number>>(new Set()); // hours already toasted
 
   // ── send a heartbeat ────────────────────────────────────────
   const sendHeartbeat = useCallback(
@@ -144,6 +148,8 @@ export function useWorkTimeTracker({
     sessionKeyRef.current = getSessionKey(projectId);
     lastActivityRef.current = Date.now();
     lastHeartbeatRef.current = 0;
+    sessionSecondsRef.current = 0;
+    firedMilestonesRef.current = new Set();
 
     // Register activity listeners (passive — no scroll blocking)
     ACTIVITY_EVENTS.forEach((ev) =>
@@ -159,6 +165,27 @@ export function useWorkTimeTracker({
         const grace = pendingGraceRef.current;
         pendingGraceRef.current = 0; // consume one-shot grace
         sendHeartbeat(grace);
+
+        // Accumulate active seconds and fire milestone toasts
+        sessionSecondsRef.current += HEARTBEAT_INTERVAL_MS / 1000;
+        const hrs = sessionSecondsRef.current / 3600;
+
+        const MILESTONES: Array<{ at: number; fire: () => void }> = [
+          { at: 1,  fire: () => toast.success(pickToast(WORK_1H))  },
+          { at: 2,  fire: () => toast.success(pickToast(WORK_2H))  },
+          { at: 3,  fire: () => toast.success(pickToast(WORK_3H))  },
+          { at: 4,  fire: () => toast.warning(pickToast(WORK_4H))  },
+          { at: 5,  fire: () => toast.success(pickToast(WORK_5H))  },
+          { at: 12, fire: () => toast.warning(pickToast(WORK_12H)) },
+          { at: 24, fire: () => toast.error(pickToast(WORK_24H))   },
+        ];
+
+        for (const milestone of MILESTONES) {
+          if (hrs >= milestone.at && !firedMilestonesRef.current.has(milestone.at)) {
+            firedMilestonesRef.current.add(milestone.at);
+            milestone.fire();
+          }
+        }
       }
       // If idle, timer keeps running so we pick back up automatically
     }, HEARTBEAT_INTERVAL_MS);

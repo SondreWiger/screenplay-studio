@@ -72,7 +72,8 @@ export function useRealtime(projectId: string) {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && user) {
-          const page = window.location.pathname.split('/').pop() || 'overview';
+          const raw = window.location.pathname.split('/').pop() || '';
+          const page = raw === projectId || raw === '' ? 'overview' : raw;
           await presenceChannel.track({
             user_id: user.id,
             project_id: projectId,

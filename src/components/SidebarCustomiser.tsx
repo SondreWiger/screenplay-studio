@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import type { SidebarSection, SidebarNavItem } from '@/lib/types';
 import type { SaveScope } from '@/hooks/useSidebarLayout';
@@ -33,6 +33,21 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
   const [newSectionName, setNewSectionName] = useState('');
   const [showNewSection, setShowNewSection] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(sections.map(s => s.id)));
+  // Click-controlled dropdown state
+  const [moveMenuKey, setMoveMenuKey] = useState<string | null>(null); // `${sectionId}::${icon}`
+  const [showResetMenu, setShowResetMenu] = useState(false);
+  const resetMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside clicks
+  useEffect(() => {
+    if (!moveMenuKey && !showResetMenu) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      setMoveMenuKey(null);
+      setShowResetMenu(false);
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [moveMenuKey, showResetMenu]);
 
   // ── Section operations ──────────────────────────────────
   const moveSection = (idx: number, dir: -1 | 1) => {
@@ -251,18 +266,30 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
 
                             {/* Move to other section */}
                             {sections.filter(s => s.id !== section.id).length > 0 && (
-                              <div className="relative group/move">
-                                <button className="text-surface-600 hover:text-surface-300 p-0.5 rounded transition-colors" title="Move to section">
+                              <div className="relative" onClick={e => e.stopPropagation()}>
+                                <button
+                                  className="text-surface-600 hover:text-surface-300 p-0.5 rounded transition-colors"
+                                  title="Move to section"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    const key = `${section.id}::${item.icon}`;
+                                    setMoveMenuKey(prev => prev === key ? null : key);
+                                    setShowResetMenu(false);
+                                  }}
+                                >
                                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
                                 </button>
-                                <div className="absolute right-0 top-full mt-1 z-20 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 min-w-[130px] hidden group-hover/move:block">
-                                  {sections.filter(s => s.id !== section.id).map(target => (
-                                    <button key={target.id} onClick={() => moveItemToSection(section.id, item.icon, target.id)}
-                                      className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors truncate">
-                                      {target.label || '(no label)'}
-                                    </button>
-                                  ))}
-                                </div>
+                                {moveMenuKey === `${section.id}::${item.icon}` && (
+                                  <div className="absolute right-0 top-full mt-1 z-20 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 min-w-[140px]" onClick={e => e.stopPropagation()}>
+                                    <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider">Move to</p>
+                                    {sections.filter(s => s.id !== section.id).map(target => (
+                                      <button key={target.id} onClick={() => { moveItemToSection(section.id, item.icon, target.id); setMoveMenuKey(null); }}
+                                        className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors truncate">
+                                        {target.label || '(no label)'}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -322,31 +349,37 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-1">
             <button onClick={handleSave} disabled={saving}
               className="flex-1 py-2 rounded-xl bg-[#FF5F1F] text-white font-semibold text-sm hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
               {saving ? 'Saving…' : 'Save Layout'}
             </button>
-            <div className="relative group">
-              <button className="py-2 px-3 rounded-xl border border-surface-700 text-surface-400 hover:text-white hover:border-surface-500 text-sm transition-colors" title="Reset options">
+            <div className="relative" ref={resetMenuRef} onClick={e => e.stopPropagation()}>
+              <button
+                className="py-2 px-3 rounded-xl border border-surface-700 text-surface-400 hover:text-white hover:border-surface-500 text-sm transition-colors"
+                title="Reset options"
+                onClick={e => { e.stopPropagation(); setShowResetMenu(v => !v); setMoveMenuKey(null); }}
+              >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
               </button>
-              <div className="absolute bottom-full right-0 mb-2 bg-surface-900 border border-surface-700 rounded-xl py-1.5 shadow-xl min-w-[180px] hidden group-hover:block z-10">
-                <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider">Reset to default</p>
-                {activeScope === 'user-project' && (
-                  <button onClick={() => handleReset('user-project')} className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
-                    This project override
+              {showResetMenu && (
+                <div className="absolute bottom-full right-0 mb-2 bg-surface-900 border border-surface-700 rounded-xl py-1.5 shadow-xl min-w-[180px] z-10" onClick={e => e.stopPropagation()}>
+                  <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider">Reset to default</p>
+                  {activeScope === 'user-project' && (
+                    <button onClick={() => { handleReset('user-project'); setShowResetMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
+                      This project override
+                    </button>
+                  )}
+                  <button onClick={() => { handleReset('user-global'); setShowResetMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
+                    My global layout
                   </button>
-                )}
-                <button onClick={() => handleReset('user-global')} className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
-                  My global layout
-                </button>
-                {isAdmin && (
-                  <button onClick={() => handleReset('project-default')} className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
-                    Project default (admin)
-                  </button>
-                )}
-              </div>
+                  {isAdmin && (
+                    <button onClick={() => { handleReset('project-default'); setShowResetMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
+                      Project default (admin)
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS script_submissions (
     CONSTRAINT submission_recipient_type CHECK (recipient_type IN ('agent','manager','producer','festival','network','studio','other')),
   date_sent        DATE,
   status           TEXT        NOT NULL DEFAULT 'pending',
-    CONSTRAINT submission_status CHECK (status IN ('pending','passed','request','offer','withdrawn')),
+    CONSTRAINT submission_status CHECK (status IN ('pending','passed','request','offer','accepted','withdrawn')),
   notes            TEXT,
   response_date    DATE,
   next_follow_up   DATE,

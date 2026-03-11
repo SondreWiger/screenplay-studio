@@ -63,13 +63,13 @@ export default async function LandingPage() {
                 className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
                 style={{ background: ORANGE }}
               />
-              <Label>SCREENPLAY STUDIO — STYLESHEET v2.0</Label>
+              <Label>SCREENPLAY STUDIO — NORTHEM DEVELOPMENT</Label>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-5">
-            <Label>EST. 2024</Label>
+            <Label>SINCE 2024</Label>
             <span className="text-white/10">·</span>
-            <Label>ISSUE 001</Label>
+            <Label>OSLO, NORWAY</Label>
             <span className="text-white/10">·</span>
             <SiteVersion />
           </div>
@@ -196,7 +196,7 @@ export default async function LandingPage() {
 
           {/* coordinate annotation */}
           <div className="hidden md:flex justify-end mt-2">
-            <Label>37°46′N · 122°25′W / PRODUCTION</Label>
+            <Label>59°54′N · 10°44′E / OSLO, NORWAY</Label>
           </div>
 
           {/* Hero sub-row */}
@@ -209,7 +209,7 @@ export default async function LandingPage() {
                 Script editor. Scene breakdown. Shot lists. Schedule. Budget. Collaboration.
               </p>
               <p className="text-sm text-white/20 max-w-[22rem] leading-loose">
-                Every tool in one place. Nothing behind a paywall.
+                Every tool in one place. Free to use — Pro for productions that need more.
               </p>
             </div>
             <div className="shrink-0 flex flex-col items-start md:items-end gap-2">
@@ -299,7 +299,7 @@ export default async function LandingPage() {
 
           <div className="flex items-end justify-between mb-16">
             <div>
-              <Eyebrow>Feature Set · Catalogue Nº001</Eyebrow>
+              <Eyebrow>Feature Set</Eyebrow>
               <h2
                 className="font-black text-white"
                 style={{ fontSize: 'clamp(2.5rem, 7vw, 6rem)', letterSpacing: '-0.03em', lineHeight: 0.92 }}
@@ -308,8 +308,8 @@ export default async function LandingPage() {
               </h2>
             </div>
             <div className="hidden md:flex flex-col items-end gap-1.5">
-              <Label>Nº001–012 · Feature Set</Label>
-              <Label>2026 · Production</Label>
+              <Label>12 Core Tools</Label>
+              <Label>Oslo · 2026</Label>
             </div>
           </div>
 
@@ -510,6 +510,8 @@ export default async function LandingPage() {
                 ['Privacy', '/legal/privacy'],
                 ['Community Guidelines', '/legal/community-guidelines'],
                 ['Security', '/legal/security'],
+                ['Blog', '/blog'],
+                ['Changelog', '/changelog'],
               ].map(([label, href]) => (
                 <a
                   key={href}

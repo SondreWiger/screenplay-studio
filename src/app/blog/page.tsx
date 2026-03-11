@@ -336,6 +336,59 @@ export default function BlogPage() {
         </section>
       )}
 
+      {/* Changelog banner */}
+      <section className="relative z-10 py-14" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="max-w-6xl mx-auto px-6">
+          <Link
+            href="/changelog"
+            className="group block"
+          >
+            <div
+              className="relative overflow-hidden p-8 md:p-10 transition-all duration-300"
+              style={{ border: '1px solid rgba(255,95,31,0.18)', background: 'rgba(255,95,31,0.03)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,95,31,0.35)'; e.currentTarget.style.background = 'rgba(255,95,31,0.055)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,95,31,0.18)'; e.currentTarget.style.background = 'rgba(255,95,31,0.03)'; }}
+            >
+              {/* Decorative right-edge glow */}
+              <div
+                className="pointer-events-none absolute right-0 top-0 bottom-0 w-64 opacity-30"
+                style={{ background: 'linear-gradient(to left, rgba(255,95,31,0.12), transparent)' }}
+              />
+
+              <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
+                    <span className="ss-label" style={{ color: '#FF5F1F' }}>What&rsquo;s New</span>
+                  </div>
+                  <h2
+                    className="font-black text-white leading-tight"
+                    style={{ fontSize: 'clamp(1.5rem, 4vw, 2.75rem)', letterSpacing: '-0.035em' }}
+                  >
+                    SEE THE FULL
+                    <br />
+                    <span style={{ color: '#FF5F1F' }}>CHANGELOG</span>
+                  </h2>
+                  <p className="mt-3 text-sm text-white/30 max-w-md leading-relaxed">
+                    Every feature shipped, every bug fixed, every improvement made — tracked by version, area, and type.
+                  </p>
+                </div>
+
+                <div className="shrink-0 flex items-center gap-3">
+                  <span
+                    className="inline-flex items-center gap-2 px-5 py-2.5 font-mono text-xs uppercase tracking-widest font-bold transition-all duration-200"
+                    style={{ background: '#FF5F1F', color: '#fff' }}
+                  >
+                    View Changelog
+                    <span className="group-hover:translate-x-1 transition-transform duration-200 inline-block">→</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-10 px-6 relative z-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -349,6 +402,7 @@ export default function BlogPage() {
             {[
               { href: '/', label: 'Home' },
               { href: '/blog', label: 'Blog' },
+              { href: '/changelog', label: 'Changelog' },
               { href: 'https://ko-fi.com/northemdevelopment', label: 'Support', external: true },
             ].map((l) => (
               <Link

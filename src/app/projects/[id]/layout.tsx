@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,8 +19,11 @@ import { cn, getInitials } from '@/lib/utils';
 import type { Project, ProjectMember, Profile, UserRole, UserPresence, SidebarSection } from '@/lib/types';
 import { useSidebarLayout } from '@/hooks/useSidebarLayout';
 import { usePreMiD } from '@/hooks/usePreMiD';
+import { getDefaultOtherIcons, loadOtherIcons, saveOtherIcons } from '@/lib/sidebarDefaults';
 import dynamic from 'next/dynamic';
 const SidebarCustomiser = dynamic(() => import('@/components/SidebarCustomiser'), { ssr: false });
+const PopoutButton = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutButton })), { ssr: false });
+const PopoutBar = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutBar })), { ssr: false });
 
 const PAGE_LABELS: Record<string, string> = {
   overview: 'Overview', script: 'Script Editor', documents: 'Documents',
@@ -74,6 +77,8 @@ export default function ProjectLayout({
   const { isPro } = useProFeatures();
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPopout = searchParams?.get('popout') === '1';
   const { currentProject, setCurrentProject, members, setMembers } = useProjectStore();
   const { onlineUsers } = usePresenceStore();
   const { updatePresence } = useRealtime(params.id);
@@ -90,6 +95,9 @@ export default function ProjectLayout({
   // Pre-collapse heavy categories so the sidebar doesn't feel overwhelming
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['Pro', 'Collaboration']));
   const [showCustomiser, setShowCustomiser] = useState(false);
+  // "Other Tools" folder — persona-aware demotion of less-relevant sidebar items
+  const [otherIcons, setOtherIcons] = useState<Set<string>>(new Set());
+  const [otherExpanded, setOtherExpanded] = useState(false);
   const { canUse: canUseFeature } = useFeatureAccess();
 
   const toggleSection = (cat: string) => {
@@ -179,10 +187,38 @@ export default function ProjectLayout({
 
   useEffect(() => {
     if (user && params.id) {
-      const page = pathname.split('/').pop() || 'overview';
+      const raw = pathname.split('/').pop() || '';
+      const page = raw === params.id || raw === '' ? 'overview' : raw;
       updatePresence(page);
     }
   }, [pathname]);
+
+  // ── Initialise Other Tools from localStorage (or smart defaults) ──
+  useEffect(() => {
+    if (!user || !currentProject) return;
+    const saved = loadOtherIcons(user.id, params.id);
+    if (saved) {
+      setOtherIcons(saved);
+    } else {
+      const defaults = getDefaultOtherIcons(
+        user.usage_intent,
+        currentProject.project_type,
+        currentProject.script_type,
+      );
+      setOtherIcons(defaults);
+    }
+  }, [user?.id, currentProject?.id, params.id]);
+
+  // ── Browser tab title ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!currentProject) return;
+    const raw = pathname.split('/').pop() || '';
+    const pageKey = raw === params.id || raw === '' ? 'overview' : raw;
+    const pageLabel = PAGE_LABELS[pageKey] || pageKey;
+    document.title = `${pageLabel} — ${currentProject.title} — Screenplay Studio`;
+    return () => { document.title = 'Screenplay Studio'; };
+  }, [pathname, currentProject?.title, params.id]);
+  // ─────────────────────────────────────────────────────────────────
 
   // ── Discord Rich Presence via PreMiD ──────────────────────────────
   const currentPageSlug = pathname.split('/').pop() || 'overview';
@@ -246,6 +282,25 @@ export default function ProjectLayout({
 
   if (authLoading || (!user && loading)) return <LoadingPage />;
   if (!currentProject) return null;
+
+  // ── Popout Mode ─────────────────────────────────────────────────────
+  // When ?popout=1 is present, render a chrome-free shell for second screens
+  if (isPopout) {
+    const currentPageKey = pathname.split('/').pop() || 'overview';
+    const currentPageLabel = PAGE_LABELS[currentPageKey] || currentProject.title;
+    return (
+      <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: '#070710' }}>
+        <main className="flex-1 overflow-y-auto pb-10">
+          {children}
+        </main>
+        <PopoutBar
+          projectId={params.id}
+          projectTitle={currentProject.title}
+          pageLabel={currentPageLabel}
+        />
+      </div>
+    );
+  }
 
   const showProduction = user?.show_production_tools !== false;
   const showCollab = user?.show_collaboration !== false;
@@ -529,7 +584,7 @@ export default function ProjectLayout({
       ],
     }] : []),
   ] : [
-    // Film/TV Navigation (original)
+    // Film/TV Navigation
     {
       category: '',
       items: [
@@ -537,83 +592,88 @@ export default function ProjectLayout({
       ],
     },
     {
-      category: 'Writing',
+      category: 'Write',
       items: [
         ...(isEpisodic ? [{ label: 'Episodes', href: `/projects/${params.id}/episodes`, icon: 'episodes', always: true }] : []),
-        { label: 'Arc Planner', href: `/projects/${params.id}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Script', href: `/projects/${params.id}/script`, icon: 'script', always: true },
+        { label: 'Arc Planner', href: `/projects/${params.id}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Beat Sheet', href: `/projects/${params.id}/beat-sheet`, icon: 'beat-sheet', always: true },
         { label: 'Notes Rounds', href: `/projects/${params.id}/notes-rounds`, icon: 'notes-rounds', always: true },
-        { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
         { label: 'Ideas', href: `/projects/${params.id}/ideas`, icon: 'ideas', always: true },
+        { label: 'Documents', href: `/projects/${params.id}/documents`, icon: 'documents', always: true },
       ],
     },
     {
-      category: 'Creative',
+      category: 'World',
       items: [
         { label: 'Characters', href: `/projects/${params.id}/characters`, icon: 'characters', always: true },
-        { label: 'Mind Map', href: `/projects/${params.id}/mindmap`, icon: 'mindmap', always: true },
+        { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', production: true },
         { label: 'Mood Board', href: `/projects/${params.id}/moodboard`, icon: 'moodboard', always: true },
         { label: 'Storyboard', href: `/projects/${params.id}/storyboard`, icon: 'storyboard', always: true },
+        { label: 'Mind Map', href: `/projects/${params.id}/mindmap`, icon: 'mindmap', always: true },
       ],
     },
     {
-      id: 'pre-production',
-      category: 'Pre-Production',
+      id: 'plan',
+      category: 'Plan',
       items: [
         { label: 'One-liner', href: `/projects/${params.id}/one-liner`, icon: 'one-liner', always: true },
         { label: 'Scenes', href: `/projects/${params.id}/scenes`, icon: 'scenes', production: true },
         { label: 'Corkboard', href: `/projects/${params.id}/corkboard`, icon: 'corkboard', production: true },
         { label: 'Shot List', href: `/projects/${params.id}/shots`, icon: 'shots', always: true },
-        { label: 'Locations', href: `/projects/${params.id}/locations`, icon: 'locations', production: true },
         { label: 'Schedule', href: `/projects/${params.id}/schedule`, icon: 'schedule', production: true },
-        { label: 'Gear', href: `/projects/${params.id}/gear`, icon: 'gear', production: true },
-        { label: 'Day Pack', href: `/projects/${params.id}/schedule-pack`, icon: 'schedule-pack', production: true },
         { label: 'Budget', href: `/projects/${params.id}/budget`, icon: 'budget', production: true },
         { label: 'Breakdown', href: `/projects/${params.id}/breakdown`, icon: 'breakdown', production: true },
-        { label: 'Continuity', href: `/projects/${params.id}/continuity`, icon: 'continuity', production: true },
         { label: 'Call Sheet', href: `/projects/${params.id}/call-sheet`, icon: 'call-sheet', production: true },
-        { label: 'Day Out of Days', href: `/projects/${params.id}/dood`, icon: 'dood', production: true },
-        { label: 'Table Read', href: `/projects/${params.id}/table-read`, icon: 'table-read', production: true },
-        { label: 'Camera Reports', href: `/projects/${params.id}/camera-reports`, icon: 'camera-reports', production: true },
-        { label: 'Safety Plan', href: `/projects/${params.id}/safety-plan`, icon: 'safety-plan', production: true },
-        { label: 'War Room', href: `/projects/${params.id}/production-overview`, icon: 'production-overview', production: true },
       ],
     },
     {
       id: 'on-set',
       category: 'On Set',
       items: [
+        { label: 'War Room', href: `/projects/${params.id}/production-overview`, icon: 'production-overview', production: true },
         { label: 'On Set', href: `/projects/${params.id}/onset`, icon: 'onset', production: true },
+        { label: 'Gear', href: `/projects/${params.id}/gear`, icon: 'gear', production: true },
+        { label: 'Day Pack', href: `/projects/${params.id}/schedule-pack`, icon: 'schedule-pack', production: true },
+        { label: 'Continuity', href: `/projects/${params.id}/continuity`, icon: 'continuity', production: true },
+        { label: 'Day Out of Days', href: `/projects/${params.id}/dood`, icon: 'dood', production: true },
+        { label: 'Table Read', href: `/projects/${params.id}/table-read`, icon: 'table-read', production: true },
+        { label: 'Camera Reports', href: `/projects/${params.id}/camera-reports`, icon: 'camera-reports', production: true },
+        { label: 'Safety Plan', href: `/projects/${params.id}/safety-plan`, icon: 'safety-plan', production: true },
       ],
     },
     {
-      category: 'Collaboration',
+      category: 'Team',
       items: [
+        { label: 'Crew View', href: `/projects/${params.id}/crew`, icon: 'crew', always: true },
         { label: 'Chat', href: `/projects/${params.id}/chat`, icon: 'chat', collab: true },
         { label: 'Comments', href: `/projects/${params.id}/comments`, icon: 'comments', collab: true },
         { label: 'Team', href: `/projects/${params.id}/team`, icon: 'team', collab: true },
-        { label: 'Crew View', href: `/projects/${params.id}/crew`, icon: 'crew', always: true },
+        { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
+        { label: 'Actors', href: `/projects/${params.id}/actors`, icon: 'actors', pro: true },
       ],
     },
     {
-      category: 'Pro',
+      category: 'Deliver',
       items: [
-        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
-        { label: 'Analytics', href: `/projects/${params.id}/analytics`, icon: 'analytics', pro: true },
         { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
-        { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
         { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
-        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
-        { label: 'Custom Branding', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
-        { label: 'Reports', href: `/projects/${params.id}/reports`, icon: 'reports', pro: true },
-        { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
-        { label: 'Actors', href: `/projects/${params.id}/actors`, icon: 'actors', pro: true },
         { label: 'Submissions', href: `/projects/${params.id}/submissions`, icon: 'submissions', pro: true },
-        { label: 'Invoice', href: `/projects/${params.id}/invoice`, icon: 'invoice', pro: true },
         { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
-        { label: 'Script Coverage', href: `/projects/${params.id}/coverage`, icon: 'coverage', pro: true },
+        { label: 'Custom Branding', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
+        { label: 'Invoice', href: `/projects/${params.id}/invoice`, icon: 'invoice', pro: true },
+        { label: 'Analytics', href: `/projects/${params.id}/analytics`, icon: 'analytics', pro: true },
+        { label: 'Reports', href: `/projects/${params.id}/reports`, icon: 'reports', pro: true },
+      ],
+    },
+    {
+      category: 'Review',
+      items: [
         { label: 'Treatment', href: `/projects/${params.id}/treatment`, icon: 'treatment', pro: true },
+        { label: 'Script Coverage', href: `/projects/${params.id}/coverage`, icon: 'coverage', pro: true },
+        { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
+        { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
       ],
     },
     ...(!isViewer ? [{
@@ -651,7 +711,10 @@ export default function ProjectLayout({
   };
 
   const effectiveNavCategories = applyNavLayout(navCategories);
-  const effectiveNavSections = navToSections(effectiveNavCategories);
+
+  // All sections including hidden items — for the customiser panel so
+  // users can re-show items they previously hid
+  const allNavSections = applyLayout(navToSections(navCategories));
 
   const isItemVisible = (item: NavItem) => {
     // Check sidebar tab preferences (overview and settings always visible)
@@ -825,7 +888,7 @@ export default function ProjectLayout({
       {/* ── Navigation ───────────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
         {effectiveNavCategories.map((cat, catIdx) => {
-          const catVisibleItems = cat.items.filter(isItemVisible);
+          const catVisibleItems = cat.items.filter(isItemVisible).filter(i => !otherIcons.has(i.icon));
           if (catVisibleItems.length === 0) return null;
           const isSectionCollapsed = cat.category ? collapsedSections.has(cat.category) : false;
           const hasActivePage = catVisibleItems.some(
@@ -886,6 +949,63 @@ export default function ProjectLayout({
           );
         })}
 
+        {/* Other Tools — visible but demoted items for this user's intent */}
+        {(() => {
+          const otherItems = visibleItems.filter(i => otherIcons.has(i.icon));
+          if (otherItems.length === 0 || !(mobile || !sidebarCollapsed)) return null;
+          return (
+            <div className="mt-1">
+              <button
+                onClick={() => setOtherExpanded(v => !v)}
+                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-all text-[10px] font-semibold uppercase tracking-wider group"
+              >
+                <svg className={cn('w-3 h-3 transition-transform duration-200 shrink-0', otherExpanded && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                Other Tools
+                <span className="ml-auto text-[9px] tabular-nums opacity-60">{otherItems.length}</span>
+              </button>
+              {otherExpanded && (
+                <div className="space-y-0.5 mt-0.5">
+                  {otherItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== `/projects/${params.id}` && pathname.startsWith(item.href));
+                    return (
+                      <div key={item.href} className="flex items-center group/other">
+                        <Link
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn('sidebar-link flex-1 min-w-0', isActive && 'active')}
+                          title={item.label}
+                        >
+                          {icons[item.icon]}
+                          <span>{item.label}</span>
+                        </Link>
+                        <button
+                          onClick={() => {
+                            const next = new Set(otherIcons);
+                            next.delete(item.icon);
+                            setOtherIcons(next);
+                            if (user) saveOtherIcons(user.id, params.id, next);
+                          }}
+                          title="Move to main sidebar"
+                          className="mr-1 p-1 rounded opacity-0 group-hover/other:opacity-100 transition-opacity text-surface-600 hover:text-[#FF5F1F]"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                          </svg>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* More Tools (hidden items) */}
         {hiddenItems.length > 0 && (mobile || !sidebarCollapsed) && (
           <div className="mt-2">
@@ -924,7 +1044,8 @@ export default function ProjectLayout({
           <div className="space-y-1">
             {onlineUsers.slice(0, 4).map((presence) => {
               const p = presence as UserPresence & { full_name?: string; email?: string; avatar_url?: string };
-              const pl = PAGE_LABELS[p.current_page || ''] || p.current_page;
+              const cp = p.current_page || '';
+              const pl = PAGE_LABELS[cp] || (cp === params.id ? 'Overview' : cp || 'Overview');
               return (
                 <div key={p.user_id} className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-surface-900/4 transition-colors">
                   <Avatar src={p.avatar_url} name={p.full_name || p.email} size="sm" online />
@@ -956,6 +1077,10 @@ export default function ProjectLayout({
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
               </button>
               <NotificationBell />
+              <PopoutButton
+                projectId={params.id}
+                pageLabel={PAGE_LABELS[pathname.split('/').pop() || 'overview']}
+              />
               <button
                 onClick={() => setShowCustomiser(true)}
                 className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all"
@@ -1057,7 +1182,7 @@ export default function ProjectLayout({
       {/* Sidebar customiser */}
       {showCustomiser && (
         <SidebarCustomiser
-          sections={effectiveNavSections}
+          sections={allNavSections}
           onClose={() => setShowCustomiser(false)}
           onSave={saveLayout}
           onReset={resetLayout}

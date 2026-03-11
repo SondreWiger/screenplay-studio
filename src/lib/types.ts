@@ -536,6 +536,12 @@ export interface TitlePageData {
   contact?: string;
   copyright?: string;
   notes?: string;
+  /** URL to the project / script logo (shown top-center on the title page) */
+  project_logo_url?: string;
+  /** Name of the production company (shown bottom-left) */
+  company_name?: string;
+  /** URL to the production company logo (shown bottom-left) */
+  company_logo_url?: string;
 }
 
 export interface ScriptElement {

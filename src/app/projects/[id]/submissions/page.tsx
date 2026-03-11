@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, toast } from '@/components/ui';
+import { pickToast, SUBMISSION_ADDED, SUBMISSION_ACCEPTED } from '@/lib/funToasts';
 import { cn } from '@/lib/utils';
 
 // ============================================================
@@ -12,7 +13,7 @@ import { cn } from '@/lib/utils';
 // ============================================================
 
 type RecipientType = 'agent' | 'manager' | 'producer' | 'festival' | 'network' | 'studio' | 'other';
-type SubmissionStatus = 'pending' | 'passed' | 'request' | 'offer' | 'withdrawn';
+type SubmissionStatus = 'pending' | 'passed' | 'request' | 'offer' | 'accepted' | 'withdrawn';
 
 interface Submission {
   id: string;
@@ -33,6 +34,7 @@ const STATUS_CONFIG: Record<SubmissionStatus, { label: string; color: string; do
   passed:    { label: 'Passed',     color: 'bg-red-500/10 text-red-400 border-red-500/20',           dot: 'bg-red-400' },
   request:   { label: 'Request',    color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',        dot: 'bg-blue-400' },
   offer:     { label: 'Offer',      color: 'bg-green-500/10 text-green-400 border-green-500/20',     dot: 'bg-green-400' },
+  accepted:  { label: 'Accepted ✨', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', dot: 'bg-emerald-400' },
   withdrawn: { label: 'Withdrawn',  color: 'bg-surface-500/10 text-surface-400 border-surface-500/20', dot: 'bg-surface-400' },
 };
 
@@ -124,7 +126,18 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
     }
     setSaving(false);
     if (error) { toast.error('Failed to save'); return; }
-    toast.success(editing ? 'Updated' : 'Submission added');
+    if (!editing) {
+      // New submission
+      if (form.status === 'accepted') toast.success(pickToast(SUBMISSION_ACCEPTED));
+      else toast.success(pickToast(SUBMISSION_ADDED));
+    } else {
+      // Update — celebrate if it just became accepted
+      if (form.status === 'accepted' && editing.status !== 'accepted') {
+        toast.success(pickToast(SUBMISSION_ACCEPTED));
+      } else {
+        toast.success('Updated');
+      }
+    }
     setModalOpen(false);
     load();
   };

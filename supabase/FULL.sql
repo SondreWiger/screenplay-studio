@@ -1,3 +1,9 @@
+-- ⚠️  STALE SNAPSHOT — last regenerated before v2.6.0
+-- This file does NOT include changelog_releases, changelog_entries, or
+-- the publish_release() function.  For those, run migration_changelog.sql.
+-- When regenerating this file, be sure to append the full changelog migration.
+-- ─────────────────────────────────────────────────────────────────────────────
+
 DROP TABLE IF EXISTS user_presence CASCADE;
 DROP TABLE IF EXISTS revisions CASCADE;
 DROP TABLE IF EXISTS comments CASCADE;
