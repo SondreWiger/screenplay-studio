@@ -139,10 +139,9 @@ export function useSidebarLayout(projectId: string, userId: string | undefined, 
       .from('sidebar_layouts')
       .upsert(row, { onConflict: 'user_id,project_id' });
 
-    if (!error) {
-      setLayout(newLayout);
-      setActiveScope(scope);
-    }
+    if (error) throw new Error(error.message);
+    setLayout(newLayout);
+    setActiveScope(scope);
   }, [projectId, userId]);
 
   const resetLayout = useCallback(async (scope: SaveScope) => {

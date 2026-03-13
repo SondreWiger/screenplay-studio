@@ -3021,6 +3021,7 @@ const LineEditor = memo(function LineEditor({
         </div>
       )}
       <div
+        data-etype={element.element_type}
         className={cn('sp-line group relative',
           isHighlighted && (darkMode ? 'bg-yellow-500/20' : 'bg-yellow-100'),
           element.is_omitted && 'opacity-40 line-through',
@@ -3034,6 +3035,7 @@ const LineEditor = memo(function LineEditor({
           ...(charColorIdx >= 0 && collaborators.length === 0 ? { borderLeft: `3px solid ${CHARACTER_COLORS[charColorIdx].hex}`, paddingLeft: '8px' } : {}),
           ...audioCueBorderStyle,
           fontSize: `${displaySettings.fontSize}pt`,
+          ...(element.element_type === 'scene_heading' ? { paddingTop: '24pt' } : {}),
         }}
       >
         {/* Scene number badge */}

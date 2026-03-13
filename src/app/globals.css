@@ -192,11 +192,13 @@
   /* Element type styles */
   .sp-scene-heading {
     @apply font-bold uppercase;
-    margin-top: 24pt;
-    padding-bottom: 12pt;
   }
-  .sp-line:first-child .sp-scene-heading {
-    margin-top: 0;
+  /* Space above scene headings lives on the wrapper so it works reliably */
+  .sp-line[data-etype="scene_heading"] {
+    padding-top: 24pt;
+  }
+  .sp-line:first-child[data-etype="scene_heading"] {
+    padding-top: 0;
   }
 
   .sp-action {
@@ -786,9 +788,13 @@ a:active:not(:disabled) {
     text-align: right;
   }
 
+  .sp-line[data-etype="scene_heading"] {
+    padding-top: 16pt !important;
+  }
+  .sp-line:first-child[data-etype="scene_heading"] {
+    padding-top: 0 !important;
+  }
   .sp-scene-heading {
-    margin-top: 16pt !important;
-    padding-bottom: 8pt !important;
     font-size: 11pt !important;
   }
 
@@ -1336,4 +1342,12 @@ a:active:not(:disabled) {
     size: letter;
     margin: 1in 1in 1in 1.5in;
   }
+}
+
+/* ── ContentEditable placeholder ─────────────────────────────── */
+[contenteditable=true]:empty::before {
+  content: attr(data-placeholder);
+  color: #4a4a6a;
+  pointer-events: none;
+  cursor: text;
 }

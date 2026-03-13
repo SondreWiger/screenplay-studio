@@ -739,6 +739,15 @@ export default function ProjectLayout({
   // Never show Pro items in "More Tools" for free users — DaVinci model: Pro is invisible, not locked
   const hiddenItems = allItems.filter(i => !i.always && !i.pro && !isItemVisible(i));
 
+  // Only pass to the customiser items that CAN currently appear (pass feature/permission gates).
+  // This prevents users from configuring items they'd never actually see.
+  // Items they've explicitly hidden still show up (with hidden:true) so they can re-enable them.
+  const customisableSections = applyLayout(
+    navToSections(
+      navCategories.map(cat => ({ ...cat, items: cat.items.filter(isItemVisible) }))
+    )
+  );
+
   const icons: Record<string, React.ReactNode> = {
     episodes: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /><circle cx="12" cy="12" r="2" strokeWidth={1.5} /></svg>,
     'arc-planner': <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
@@ -1182,9 +1191,16 @@ export default function ProjectLayout({
       {/* Sidebar customiser */}
       {showCustomiser && (
         <SidebarCustomiser
-          sections={allNavSections}
+          sections={customisableSections}
           onClose={() => setShowCustomiser(false)}
-          onSave={saveLayout}
+          onSave={async (sections, scope) => {
+            try {
+              await saveLayout(sections, scope);
+            } catch (e) {
+              toast.error('Failed to save layout — please try again.');
+              throw e;
+            }
+          }}
           onReset={resetLayout}
           isAdmin={isAdmin}
           activeScope={activeScope}
