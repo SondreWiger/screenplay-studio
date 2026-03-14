@@ -234,7 +234,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
               <div className="p-5">
                 <div className="flex items-start gap-3">
                   <Avatar
-                    src={character.avatar_url}
+                    src={character.actor_photo_url ?? character.avatar_url}
                     name={character.name}
                     size="lg"
                     color={character.color}
@@ -381,11 +381,15 @@ function CharacterEditor({
     first_appearance: '',
     cast_actor: '',
     cast_notes: '',
+    cast_member_id: null as string | null,
+    actor_photo_url: '',
     color: randomColor(),
   });
   const [traitInput, setTraitInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const [castMembers, setCastMembers] = useState<{ id: string; name: string; photo_url: string | null; character_roles: string[] }[]>([]);
+  const [castSearch, setCastSearch] = useState('');
 
   useEffect(() => {
     if (character) {
@@ -407,6 +411,8 @@ function CharacterEditor({
         first_appearance: character.first_appearance || '',
         cast_actor: character.cast_actor || '',
         cast_notes: character.cast_notes || '',
+        cast_member_id: character.cast_member_id || null,
+        actor_photo_url: character.actor_photo_url || '',
         color: character.color || randomColor(),
       });
     } else {
@@ -414,11 +420,24 @@ function CharacterEditor({
         name: '', full_name: '', age: '', gender: '', description: '', backstory: '',
         motivation: '', arc: '', appearance: '', personality_traits: [], quirks: '',
         voice_notes: '', is_main: false, role: '', first_appearance: '', cast_actor: '',
-        cast_notes: '', color: randomColor(),
+        cast_notes: '', cast_member_id: null, actor_photo_url: '', color: randomColor(),
       });
     }
     setActiveTab('basic');
+    setCastSearch('');
   }, [character, isOpen]);
+
+  // Load cast members when the casting tab is opened
+  useEffect(() => {
+    if (activeTab !== 'casting') return;
+    const supabase = createClient();
+    supabase
+      .from('cast_members')
+      .select('id, name, photo_url, character_roles')
+      .eq('project_id', projectId)
+      .order('name')
+      .then(({ data }) => setCastMembers(data || []));
+  }, [activeTab, projectId]);
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
@@ -427,6 +446,7 @@ function CharacterEditor({
 
     const payload = {
       ...form,
+      actor_photo_url: form.actor_photo_url.trim() || null,
       is_main: ['protagonist', 'antagonist', 'main'].includes(form.role as string) || (!form.role && form.is_main),
       project_id: projectId,
       created_by: userId,
@@ -565,14 +585,88 @@ function CharacterEditor({
 
         {activeTab === 'casting' && (
           <>
-            <Input label="Cast Actor" value={form.cast_actor} onChange={(e) => setForm({ ...form, cast_actor: e.target.value })} placeholder="Actor name" />
-            <Textarea label="Casting Notes" value={form.cast_notes} onChange={(e) => setForm({ ...form, cast_notes: e.target.value })} rows={3} placeholder="Casting requirements, alternatives..." />
-            <div className="p-3 rounded-lg bg-surface-800/60 border border-surface-700">
-              <p className="text-xs text-surface-400">
-                Want to add actor reference photos, inspiration images, or production references (makeup, costume)? Use the{' '}
-                <span className="text-orange-400 font-medium">character detail panel</span> — click any character card to open it.
-              </p>
+            {/* Cast member picker */}
+            <div>
+              <label className="block text-sm font-medium text-surface-300 mb-2">Link Cast Member</label>
+              {form.cast_member_id ? (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-800/60 border border-surface-700">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-700 shrink-0 flex items-center justify-center">
+                    {castMembers.find((m) => m.id === form.cast_member_id)?.photo_url
+                      ? <img src={castMembers.find((m) => m.id === form.cast_member_id)!.photo_url!} alt="" className="w-full h-full object-cover" />
+                      : <span className="text-xs font-bold text-white">{form.cast_actor?.[0]?.toUpperCase() ?? '?'}</span>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{form.cast_actor}</p>
+                    <p className="text-xs text-surface-500">Linked cast member</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, cast_member_id: null })}
+                    className="text-xs text-surface-500 hover:text-red-400 transition-colors"
+                  >
+                    Unlink
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Input
+                    value={castSearch}
+                    onChange={(e) => setCastSearch(e.target.value)}
+                    placeholder="Search cast members by name…"
+                  />
+                  {castMembers.length === 0 && (
+                    <p className="text-xs text-surface-500 px-1">No cast members added to this project yet. Add them on the Actors page.</p>
+                  )}
+                  {castMembers
+                    .filter((m) => !castSearch || m.name.toLowerCase().includes(castSearch.toLowerCase()))
+                    .map((member) => (
+                      <button
+                        key={member.id}
+                        type="button"
+                        onClick={() => {
+                          setForm({
+                            ...form,
+                            cast_member_id: member.id,
+                            cast_actor: member.name,
+                            actor_photo_url: member.photo_url || form.actor_photo_url,
+                          });
+                          setCastSearch('');
+                        }}
+                        className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-surface-800/40 border border-surface-700 hover:border-surface-500 hover:bg-surface-800 transition-colors text-left"
+                      >
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-surface-700 shrink-0 flex items-center justify-center">
+                          {member.photo_url
+                            ? <img src={member.photo_url} alt="" className="w-full h-full object-cover" />
+                            : <span className="text-xs font-bold text-white">{member.name[0].toUpperCase()}</span>
+                          }
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{member.name}</p>
+                          {member.character_roles?.length > 0 && (
+                            <p className="text-[10px] text-surface-500 truncate">{member.character_roles.join(', ')}</p>
+                          )}
+                        </div>
+                      </button>
+                    ))
+                  }
+                </div>
+              )}
             </div>
+
+            <Input
+              label="Cast Actor Name"
+              value={form.cast_actor}
+              onChange={(e) => setForm({ ...form, cast_actor: e.target.value })}
+              placeholder="Actor name"
+            />
+            <Input
+              label="Actor Photo URL"
+              value={form.actor_photo_url}
+              onChange={(e) => setForm({ ...form, actor_photo_url: e.target.value })}
+              placeholder="https://… (auto-filled when linking a cast member)"
+            />
+            <Textarea label="Casting Notes" value={form.cast_notes} onChange={(e) => setForm({ ...form, cast_notes: e.target.value })} rows={3} placeholder="Casting requirements, alternatives..." />
           </>
         )}
       </div>

@@ -256,7 +256,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
 
       {/* Header */}
       <div className="flex items-start gap-5 mb-8">
-        <Avatar src={character.avatar_url} name={character.name} size="lg" color={character.color} />
+        <Avatar src={character.actor_photo_url ?? character.avatar_url} name={character.name} size="lg" color={character.color} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h1 className="text-3xl font-black text-white">{character.name}</h1>

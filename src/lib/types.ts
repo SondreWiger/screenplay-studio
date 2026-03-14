@@ -631,6 +631,8 @@ export interface Character {
   first_appearance: string | null;
   cast_actor: string | null;
   cast_notes: string | null;
+  /** FK to cast_members.id — when set, that record's photo_url is used as the avatar. */
+  cast_member_id: string | null;
   /** Link to a photo showing how the character should look (actor ref / design ref). */
   actor_photo_url: string | null;
   /** Inspiration board: images capturing the character's vibe. [{url, caption}] */

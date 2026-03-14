@@ -72,5 +72,29 @@ SELECT id,
 FROM changelog_releases WHERE version = '2.7.0'
 ON CONFLICT DO NOTHING;
 
+-- Feature: actor avatar linked to cast member
+INSERT INTO changelog_entries (release_id, title, description, entry_type, area, is_public, sort_order)
+SELECT id,
+  'Actor Photo as Character Avatar',
+  'Character avatars now show the actor''s photo. You can link a character to an existing cast member record from the Actors page — their photo auto-populates the character avatar and casting fields. You can also paste a photo URL directly without linking a cast member record.',
+  'feature',
+  'characters',
+  true,
+  55
+FROM changelog_releases WHERE version = '2.7.0'
+ON CONFLICT DO NOTHING;
+
+-- Internal: cast_member_id FK on characters
+INSERT INTO changelog_entries (release_id, title, description, entry_type, area, is_public, sort_order)
+SELECT id,
+  'characters.cast_member_id FK',
+  'Added cast_member_id UUID FK referencing cast_members(id) ON DELETE SET NULL to the characters table.',
+  'internal',
+  'database',
+  false,
+  60
+FROM changelog_releases WHERE version = '2.7.0'
+ON CONFLICT DO NOTHING;
+
 -- Publish the release
 SELECT publish_release('2.7.0');
