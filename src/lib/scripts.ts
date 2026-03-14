@@ -207,6 +207,8 @@ const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   set_direction: 'Action',
   // Screenplay act heading
   act: 'New Act',
+  sequence: 'New Act',
+  sequence_end: 'Action',
 };
 
 export function generateFDX({ titlePage, elements, scriptTitle }: GenerateFDXOptions): string {

@@ -10,6 +10,8 @@ export type ScriptElementType =
   | 'centered' | 'lyrics' | 'synopsis' | 'section'
   // Act heading — used in Screenplays and Stage Plays
   | 'act'
+  // Sequence — structural block with optional colour, shown in minimap
+  | 'sequence' | 'sequence_end'
   // YouTube/Content Creator elements
   | 'hook' | 'talking_point' | 'broll_note' | 'cta' | 'sponsor_read' | 'chapter_marker'
   // Audio Drama elements (BBC Scene, US Radio, STARC Standard)
@@ -629,6 +631,18 @@ export interface Character {
   first_appearance: string | null;
   cast_actor: string | null;
   cast_notes: string | null;
+  /** Link to a photo showing how the character should look (actor ref / design ref). */
+  actor_photo_url: string | null;
+  /** Inspiration board: images capturing the character's vibe. [{url, caption}] */
+  inspo_images: Array<{ url: string; caption: string }>;
+  /** Versioned production reference folders for makeup, costume, etc.
+   *  [{id, name, type:'makeup'|'costume'|'other', images:[{url,caption}]}] */
+  reference_folders: Array<{
+    id: string;
+    name: string;
+    type: 'makeup' | 'costume' | 'other';
+    images: Array<{ url: string; caption: string }>;
+  }>;
   sort_order: number;
   created_by: string | null;
   created_at: string;
@@ -1658,6 +1672,8 @@ export const ELEMENT_LABELS: Record<ScriptElementType, string> = {
   synopsis: 'Synopsis',
   section: 'Section',
   act: 'Act',
+  sequence: 'Sequence',
+  sequence_end: 'End Sequence',
   // YouTube/Content Creator elements
   hook: 'Hook',
   talking_point: 'Talking Point',

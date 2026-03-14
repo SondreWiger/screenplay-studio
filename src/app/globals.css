@@ -144,6 +144,7 @@
     background: white;
     color: black;
     min-height: 11in;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.38), 0 1px 8px rgba(0,0,0,0.22);
   }
 
   /* Each line wrapper: holds gutter + editable element */
@@ -154,15 +155,22 @@
   /* Hover gutter (element type label, delete) */
   .sp-gutter {
     position: absolute;
-    left: -6rem;
+    left: -7rem;
     top: 0;
-    display: none;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
     align-items: center;
     gap: 2px;
+    transition: opacity 0.06s;
+    /* padding-right bridges the micro-gap between gutter and sp-line */
+    padding-right: 8px;
   }
   .sp-line:hover .sp-gutter,
-  .sp-line:focus-within .sp-gutter {
-    display: flex;
+  .sp-line:focus-within .sp-gutter,
+  .sp-gutter:hover {
+    opacity: 1;
+    pointer-events: all;
   }
 
   /* Base element style */
@@ -412,6 +420,30 @@
     padding-bottom: 12pt;
     letter-spacing: 0.08em;
   }
+
+  /* Sequence start — bold label, colour applied via inline style */
+  .sp-sequence {
+    @apply font-bold uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10pt;
+    padding: 3pt 0;
+    color: #888;
+    margin-top: 12pt;
+  }
+  .sp-dark .sp-sequence { color: #666; }
+  .sp-sequence::before { content: '▶ '; font-size: 7pt; vertical-align: middle; }
+
+  /* Sequence end — subtle dashed closer, inherits sequence color when set on parent */
+  .sp-sequence-end {
+    font-size: 9pt;
+    padding: 2pt 0;
+    border-bottom: 1px dashed currentColor;
+    color: inherit;
+    letter-spacing: 0.06em;
+    margin-bottom: 4pt;
+    opacity: 0.65;
+  }
+  .sp-sequence-end::after { content: ' ◀'; font-size: 7pt; vertical-align: middle; }
 
   /* Act heading (Screenplay / Stage Play) — centred, bold, all-caps, separated from scenes */
   .sp-act {
@@ -1328,11 +1360,11 @@ a:active:not(:disabled) {
   }
 
   .sp-gutter {
-    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   .screenplay-page {
-    padding: 0;
     margin: 0;
     box-shadow: none;
     border: none;

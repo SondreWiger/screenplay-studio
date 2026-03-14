@@ -200,7 +200,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         supabase.from('scenes').select('id, scene_number, is_completed, estimated_duration_minutes, page_count, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
         supabase.from('shots').select('id, shot_number, is_completed, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
         supabase.from('ideas').select('id, title, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
-        supabase.from('budget_items').select('estimated_amount, actual_amount').eq('project_id', params.id),
+        supabase.from('budget_items').select('estimated_amount, actual_amount, is_income').eq('project_id', params.id),
         supabase.from('production_schedule').select('*').eq('project_id', params.id).gte('start_time', new Date().toISOString()).order('start_time', { ascending: true }).limit(5),
         supabase.from('project_members').select('id').eq('project_id', params.id),
         supabase.from('project_documents').select('id', { count: 'exact', head: true }).eq('project_id', params.id),
@@ -218,6 +218,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       }
 
       const budgetData = budget.data || [];
+      const expenseItems = budgetData.filter((b: { is_income?: boolean }) => !b.is_income);
       const scenesData = scenes.data || [];
       const shotsData = shots.data || [];
 
@@ -232,8 +233,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         scenes: scenesData.length,
         shots: shotsData.length,
         ideas: ideas.data?.length || 0,
-        budgetTotal: budgetData.reduce((sum: number, b: { estimated_amount?: number }) => sum + (b.estimated_amount || 0), 0),
-        budgetSpent: budgetData.reduce((sum: number, b: { actual_amount?: number }) => sum + (b.actual_amount || 0), 0),
+        budgetTotal: expenseItems.reduce((sum: number, b: { estimated_amount?: number }) => sum + (b.estimated_amount || 0), 0),
+        budgetSpent: expenseItems.reduce((sum: number, b: { actual_amount?: number }) => sum + (b.actual_amount || 0), 0),
         upcomingEvents: events.data?.length || 0,
         completedScenes: scenesData.filter((s: { is_completed?: boolean }) => s.is_completed).length,
         completedShots: shotsData.filter((s: { is_completed?: boolean }) => s.is_completed).length,

@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Avatar, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, randomColor } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Character, ScriptElement } from '@/lib/types';
 
@@ -15,6 +16,8 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { confirm, ConfirmDialog } = useConfirmDialog();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,15 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const [syncing, setSyncing] = useState(false);
 
   const hasSynced = useRef(false);
+
+  // Auto-open editor when ?edit=charId is in the URL
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && characters.length > 0) {
+      const char = characters.find((c) => c.id === editId);
+      if (char) { setSelectedCharacter(char); setShowEditor(true); }
+    }
+  }, [searchParams, characters]);
 
   useEffect(() => {
     fetchCharacters();
@@ -217,7 +229,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
               key={character.id}
               hover
               className="overflow-hidden cursor-pointer"
-              onClick={() => { setSelectedCharacter(character); setShowEditor(true); }}
+              onClick={() => router.push(`/projects/${params.id}/characters/${character.id}`)}
             >
               <div className="p-5">
                 <div className="flex items-start gap-3">
@@ -555,6 +567,12 @@ function CharacterEditor({
           <>
             <Input label="Cast Actor" value={form.cast_actor} onChange={(e) => setForm({ ...form, cast_actor: e.target.value })} placeholder="Actor name" />
             <Textarea label="Casting Notes" value={form.cast_notes} onChange={(e) => setForm({ ...form, cast_notes: e.target.value })} rows={3} placeholder="Casting requirements, alternatives..." />
+            <div className="p-3 rounded-lg bg-surface-800/60 border border-surface-700">
+              <p className="text-xs text-surface-400">
+                Want to add actor reference photos, inspiration images, or production references (makeup, costume)? Use the{' '}
+                <span className="text-orange-400 font-medium">character detail panel</span> — click any character card to open it.
+              </p>
+            </div>
           </>
         )}
       </div>
@@ -577,3 +595,4 @@ function CharacterEditor({
     </Modal>
   );
 }
+

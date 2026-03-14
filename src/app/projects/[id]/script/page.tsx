@@ -33,6 +33,10 @@ interface DisplaySettings {
   pageWidth: 'narrow' | 'standard' | 'wide';
   showNotes: boolean;
   showRevisionColors: boolean;
+  showMinimap: boolean;
+  minimapLabels: boolean;
+  minimapColors: boolean;
+  pageSplitGap: boolean;
 }
 
 const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
@@ -42,6 +46,10 @@ const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   pageWidth: 'standard',
   showNotes: true,
   showRevisionColors: true,
+  showMinimap: true,
+  minimapLabels: true,
+  minimapColors: true,
+  pageSplitGap: false,
 };
 
 function loadDisplaySettings(): DisplaySettings {
@@ -107,7 +115,7 @@ import { ELEMENT_LABELS, REVISION_COLOR_HEX } from '@/lib/types';
 // ============================================================
 
 const ELEMENT_CYCLE: ScriptElementType[] = [
-  'scene_heading', 'act', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
+  'scene_heading', 'act', 'sequence', 'sequence_end', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
 ];
 
 // YouTube/Content Creator element cycle
@@ -128,6 +136,22 @@ const STAGEPLAY_ELEMENT_CYCLE: ScriptElementType[] = [
   'scene_heading', 'act', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
   'song_title', 'lyric', 'dance_direction', 'musical_cue', 'lighting_cue', 'set_direction',
 ];
+
+// Preset palette for sequence blocks shown in the minimap
+const SEQUENCE_COLORS = [
+  '#6366f1', '#ec4899', '#f59e0b', '#10b981',
+  '#3b82f6', '#ef4444', '#8b5cf6', '#14b8a6',
+];
+
+// Character extension modifiers shown when user types '(' in a character element
+const CHARACTER_MODIFIERS = ["(V.O.)", "(O.S.)", "(O.C.)", "(CONT'D)", "(O.S. CONT'D)", "(V.O. CONT'D)", "(PRE-LAP)"];
+
+// Strip HTML tags — used for length-based page/word count (content may now contain <b>/<i>/<u>)
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
+
+// Sanitise rich-text content: keep only safe formatting tags, strip everything else
+const sanitizeContentHtml = (html: string) =>
+  html.replace(/<(?!\/?(?:b|i|u|s|strong|em|br)\b)[^>]+>/gi, '');
 
 // Audio-drama-aware next element type (Enter key behaviour)
 function getAudioNextElementType(type: ScriptElementType, format: string): ScriptElementType {
@@ -173,6 +197,8 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
     case 'parenthetical': return 'dialogue';
     case 'transition': return 'scene_heading';
     case 'act': return 'scene_heading';
+    case 'sequence': return 'action';
+    case 'sequence_end': return 'action';
     // YouTube elements
     case 'chapter_marker': return 'talking_point';
     case 'hook': return 'talking_point';
@@ -215,6 +241,8 @@ function getElementClass(type: ScriptElementType, isAudioDrama = false): string 
   switch (type) {
     case 'scene_heading': return 'sp-scene-heading';
     case 'act': return 'sp-act';
+    case 'sequence': return 'sp-sequence';
+    case 'sequence_end': return 'sp-sequence-end';
     case 'action': return 'sp-action';
     case 'character': return 'sp-character';
     case 'dialogue': return 'sp-dialogue';
@@ -282,6 +310,8 @@ function getElementPlaceholder(type: ScriptElementType, isYouTube = false): stri
     case 'parenthetical': return '(direction)';
     case 'transition': return 'CUT TO:';
     case 'note': return '[[Note]]';
+    case 'sequence': return 'SEQUENCE NAME';
+    case 'sequence_end': return 'END SEQUENCE';
     // YouTube/Creator elements
     case 'chapter_marker': return '# Chapter Title (00:00)';
     case 'hook': return '! Hook or attention grabber...';
@@ -366,6 +396,8 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [showTitlePage, setShowTitlePage] = useState(false);
   const [showNewScript, setShowNewScript] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [sequenceColorModalId, setSequenceColorModalId] = useState<string | null>(null);
+  const [formatToolbar, setFormatToolbar] = useState<{ x: number; y: number } | null>(null);
   const [showDrafts, setShowDrafts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [darkMode, setDarkMode] = useState(true);
@@ -375,6 +407,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const importExportRef = useRef<HTMLButtonElement>(null);
   const displaySettingsRef = useRef<HTMLButtonElement>(null);
   const titlePageRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeElementType, setActiveElementType] = useState<ScriptElementType>('action');
   const [drafts, setDrafts] = useState<ScriptDraft[]>([]);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -802,7 +835,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     let lineCount = 0;
     const linesPerPage = 55; // ~55 usable lines per printed page
     const estimateEl = (el: ScriptElement): number => {
-      const len = (el.content || '').length;
+      const len = stripHtml(el.content || '').length;
       switch (el.element_type) {
         case 'scene_heading':   return Math.max(1, Math.ceil(len / 60)) + 3; // blank before + blank after
         case 'action':         return Math.max(1, Math.ceil(len / 60)) + 1; // blank after
@@ -843,7 +876,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   // Word count
   const wordCount = useMemo(() => {
     return elements.reduce((count, el) => {
-      return count + (el.content || '').split(/\s+/).filter(Boolean).length;
+      return count + stripHtml(el.content || '').split(/\s+/).filter(Boolean).length;
     }, 0);
   }, [elements]);
 
@@ -897,6 +930,75 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return map;
   }, [scriptUsers]);
 
+  // Collapsed sequence state
+  const [collapsedSequences, setCollapsedSequences] = useState<Set<string>>(new Set());
+  const toggleCollapseSequence = useCallback((id: string) => {
+    setCollapsedSequences((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  }, []);
+
+  // --- Floating format toolbar: show when user selects text inside a script element ---
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) { setFormatToolbar(null); return; }
+      const anchor = sel.anchorNode;
+      const inside = (anchor instanceof Element ? anchor : anchor?.parentElement)?.closest('.sp-element');
+      if (!inside) { setFormatToolbar(null); return; }
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      if (rect.width === 0) { setFormatToolbar(null); return; }
+      setFormatToolbar({ x: rect.left + rect.width / 2, y: rect.top });
+    };
+    document.addEventListener('selectionchange', handleSelectionChange, { passive: true });
+    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+  }, []);
+
+  // Map element ID → nearest enclosing sequence colour (for side stripe)
+  const sequenceColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    const stack: { id: string; color: string }[] = [];
+    elements.forEach((el) => {
+      if (el.element_type === 'sequence') {
+        const color = (el.metadata?.color as string) || '';
+        if (color) { map[el.id] = color; stack.push({ id: el.id, color }); }
+      } else if (el.element_type === 'sequence_end') {
+        if (stack.length > 0) { map[el.id] = stack[stack.length - 1].color; stack.pop(); }
+      } else if (stack.length > 0) {
+        map[el.id] = stack[stack.length - 1].color;
+      }
+    });
+    return map;
+  }, [elements]);
+
+  // Set of element IDs hidden inside collapsed sequences
+  const collapsedElementIds = useMemo(() => {
+    const hidden = new Set<string>();
+    let inCollapsed: string | null = null;
+    elements.forEach((el) => {
+      if (el.element_type === 'sequence' && collapsedSequences.has(el.id)) {
+        inCollapsed = el.id;
+      } else if (inCollapsed) {
+        if (el.element_type === 'sequence_end') { hidden.add(el.id); inCollapsed = null; }
+        else hidden.add(el.id);
+      }
+    });
+    return hidden;
+  }, [elements, collapsedSequences]);
+
+  // Count of hidden elements per collapsed sequence (for the stub label)
+  const collapsedCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    let currentId: string | null = null;
+    elements.forEach((el) => {
+      if (el.element_type === 'sequence' && collapsedSequences.has(el.id)) {
+        currentId = el.id; counts[el.id] = 0;
+      } else if (currentId) {
+        if (el.element_type === 'sequence_end') currentId = null;
+        else counts[currentId] = (counts[currentId] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [elements, collapsedSequences]);
+
   // Toolbar add
   const handleToolbarAdd = async (type: ScriptElementType) => {
     const store = useScriptStore.getState();
@@ -930,7 +1032,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
     // Build element HTML
     const elementHTML = (el: ScriptElement) => {
-      const content = (el.content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const content = el.content || ''; // content may contain safe HTML formatting tags (<b>/<i>/<u>)
       const cls = el.element_type.replace('_', '-');
       if (el.is_omitted) return '';
       return `<div class="el el-${cls}">${content}</div>`;
@@ -941,7 +1043,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     const pages: string[][] = [[]];
     let lineCount = 0;
     const estimateEl = (el: ScriptElement): number => {
-      const len = (el.content || '').length;
+      const len = stripHtml(el.content || '').length;
       switch (el.element_type) {
         case 'scene_heading':   return Math.max(1, Math.ceil(len / 60)) + 3;
         case 'action':         return Math.max(1, Math.ceil(len / 60)) + 1;
@@ -1663,33 +1765,51 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           {showImportExport && (
             <>
               <div className="fixed inset-0 z-[9998]" onClick={() => setShowImportExport(false)} />
-              <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl py-1.5 min-w-[220px] animate-fade-in-up"
+              <div className="fixed z-[9999] rounded-xl overflow-hidden py-1.5"
                 style={{
-                  top: importExportRef.current ? importExportRef.current.getBoundingClientRect().bottom + 6 : 60,
+                  top: importExportRef.current ? importExportRef.current.getBoundingClientRect().bottom + 8 : 60,
                   right: importExportRef.current ? window.innerWidth - importExportRef.current.getBoundingClientRect().right : 16,
+                  minWidth: 220,
+                  backgroundColor: '#252542',
+                  border: '1px solid rgba(255,255,255,0.13)',
+                  boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
                 }}>
-                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Import</p>
-                <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                  <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.fdx</span> Final Draft
+                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Import</p>
+                <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                  <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.fdx</span> Final Draft
                 </button>
-                <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
-                  <span className="w-8 text-[10px] font-mono text-[#FF5F1F]">.ftn</span> Fountain
+                <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                  <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.ftn</span> Fountain
                 </button>
-                <div className="border-t border-surface-700 my-1" />
-                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-medium uppercase tracking-wider">Export</p>
-                <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
+                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Export</p>
+                <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
                   <span className="w-8 text-[10px] font-mono text-emerald-400">.pdf</span> PDF (Print)
                 </button>
-                <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
                   <span className="w-8 text-[10px] font-mono text-emerald-400">.fdx</span> Final Draft
                 </button>
-                <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
                   <span className="w-8 text-[10px] font-mono text-emerald-400">.ftn</span> Fountain
                 </button>
-                <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
                   <span className="w-8 text-[10px] font-mono text-emerald-400">.txt</span> Plain Text
                 </button>
-                <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-sm text-surface-300 hover:bg-surface-700 hover:text-white flex items-center gap-2 transition-colors">
+                <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
                   <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
                 </button>
               </div>
@@ -1731,19 +1851,23 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               {showRevisionColorPicker && (
                 <>
                   <div className="fixed inset-0 z-[9998]" onClick={() => setShowRevisionColorPicker(false)} />
-                  <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl p-3 min-w-[180px] animate-fade-in-up"
+                  <div className="fixed z-[9999] rounded-xl p-3"
                     style={{
-                      top: revisionColorPickerRef.current ? revisionColorPickerRef.current.getBoundingClientRect().bottom + 6 : 60,
+                      top: revisionColorPickerRef.current ? revisionColorPickerRef.current.getBoundingClientRect().bottom + 8 : 60,
                       right: revisionColorPickerRef.current ? window.innerWidth - revisionColorPickerRef.current.getBoundingClientRect().right : 16,
+                      minWidth: 180,
+                      backgroundColor: '#252542',
+                      border: '1px solid rgba(255,255,255,0.13)',
+                      boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
                     }}>
-                    <p className="text-[10px] text-surface-500 font-medium uppercase tracking-wider mb-2">Revision Colour</p>
+                    <p className="text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em] mb-2.5">Revision Colour</p>
                     <div className="grid grid-cols-5 gap-1.5">
                       {(Object.entries(REVISION_COLOR_HEX) as [import('@/lib/types').RevisionColor, string][]).map(([color, hex]) => (
                         <button
                           key={color}
                           onClick={() => handleSetRevisionColor(color)}
-                          className={cn('w-7 h-7 rounded border-2 transition-all hover:scale-110',
-                            currentScript.revision_color === color ? 'border-[#FF5F1F]' : 'border-transparent hover:border-surface-500'
+                          className={cn('w-7 h-7 rounded-md border-2 transition-all hover:scale-110',
+                            currentScript.revision_color === color ? 'border-[#FF5F1F]' : 'border-transparent hover:border-white/30'
                           )}
                           style={{ background: hex }}
                           title={color.charAt(0).toUpperCase() + color.slice(1)}
@@ -1795,62 +1919,112 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               title="Display Settings">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
             </button>
-          </div>
-          {showDisplaySettings && (
-            <>
-              <div className="fixed inset-0 z-[9998]" onClick={() => setShowDisplaySettings(false)} />
-              <div className="fixed z-[9999] bg-surface-800 border border-surface-700 rounded-lg shadow-2xl p-4 min-w-[260px] animate-fade-in-up"
-                style={{
-                  top: displaySettingsRef.current ? displaySettingsRef.current.getBoundingClientRect().bottom + 6 : 60,
-                  right: displaySettingsRef.current ? window.innerWidth - displaySettingsRef.current.getBoundingClientRect().right : 16,
-                }}>
-                <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Display Settings</h4>
-                <div className="space-y-3">
-                  <label className="flex items-center justify-between">
-                    <span className="text-xs text-surface-300">Scene Numbers</span>
-                    <input type="checkbox" checked={displaySettings.showSceneNumbers}
-                      onChange={(e) => updateDisplaySettings({ showSceneNumbers: e.target.checked })}
-                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                  </label>
-                  <label className="flex items-center justify-between">
-                    <span className="text-xs text-surface-300">Character Highlights</span>
-                    <input type="checkbox" checked={displaySettings.showCharacterHighlights}
-                      onChange={(e) => updateDisplaySettings({ showCharacterHighlights: e.target.checked })}
-                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                  </label>
-                  <label className="flex items-center justify-between">
-                    <span className="text-xs text-surface-300">Show Notes</span>
-                    <input type="checkbox" checked={displaySettings.showNotes}
-                      onChange={(e) => updateDisplaySettings({ showNotes: e.target.checked })}
-                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                  </label>
-                  <label className="flex items-center justify-between">
-                    <span className="text-xs text-surface-300">Revision Colors</span>
-                    <input type="checkbox" checked={displaySettings.showRevisionColors}
-                      onChange={(e) => updateDisplaySettings({ showRevisionColors: e.target.checked })}
-                      className="rounded border-surface-600 bg-surface-700 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
-                  </label>
-                  <div>
-                    <span className="text-xs text-surface-300 mb-1 block">Font Size: {displaySettings.fontSize}pt</span>
-                    <input type="range" min={10} max={16} value={displaySettings.fontSize}
-                      onChange={(e) => updateDisplaySettings({ fontSize: Number(e.target.value) })}
-                      className="w-full accent-brand-500" />
+            {showDisplaySettings && (
+              <>
+                <div className="fixed inset-0 z-[9998]" onClick={() => setShowDisplaySettings(false)} />
+                <div className="fixed z-[9999] rounded-xl overflow-hidden"
+                  style={{
+                    top: displaySettingsRef.current ? displaySettingsRef.current.getBoundingClientRect().bottom + 8 : 60,
+                    right: displaySettingsRef.current ? window.innerWidth - displaySettingsRef.current.getBoundingClientRect().right : 16,
+                    width: 272,
+                    backgroundColor: '#252542',
+                    border: '1px solid rgba(255,255,255,0.13)',
+                    boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
+                  }}>
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 pt-3.5 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    <span className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.14em]">Display</span>
+                    <button onClick={() => setShowDisplaySettings(false)} className="p-0.5 rounded text-surface-600 hover:text-surface-300 transition-colors">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                   </div>
-                  <div>
-                    <span className="text-xs text-surface-300 mb-1 block">Page Width</span>
-                    <div className="flex gap-1">
-                      {(['narrow', 'standard', 'wide'] as const).map((w) => (
-                        <button key={w} onClick={() => updateDisplaySettings({ pageWidth: w })}
-                          className={cn('flex-1 px-2 py-1 rounded text-[10px] font-medium transition-colors capitalize',
-                            displaySettings.pageWidth === w ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-900/5'
-                          )}>{w}</button>
-                      ))}
+
+                  {/* Script section */}
+                  <div className="px-4 pt-2 pb-1">
+                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-1">Script</p>
+                    {([
+                      { label: 'Scene Numbers', key: 'showSceneNumbers' },
+                      { label: 'Character Highlights', key: 'showCharacterHighlights' },
+                      { label: 'Show Notes', key: 'showNotes' },
+                      { label: 'Revision Colors', key: 'showRevisionColors' },
+                    ] as { label: string; key: keyof DisplaySettings }[]).map(({ label, key }) => (
+                      <div key={key} className="flex items-center justify-between py-[7px]">
+                        <span className="text-[13px] text-surface-300">{label}</span>
+                        <button type="button" onClick={() => updateDisplaySettings({ [key]: !displaySettings[key] })}
+                          className="relative flex-shrink-0 inline-flex h-[18px] w-[32px] rounded-full transition-colors duration-150 focus:outline-none"
+                          style={{ backgroundColor: displaySettings[key] ? '#E54E15' : '#2d2d45' }}>
+                          <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-150', displaySettings[key] ? 'left-[16px]' : 'left-[2px]')} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Typography section */}
+                  <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-2">Typography</p>
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[13px] text-surface-300">Font Size</span>
+                        <span className="text-[11px] font-mono text-[#FF7A43] tabular-nums">{displaySettings.fontSize}pt</span>
+                      </div>
+                      <input type="range" min={10} max={16} step={1} value={displaySettings.fontSize}
+                        onChange={(e) => updateDisplaySettings({ fontSize: Number(e.target.value) })}
+                        className="w-full h-[3px] rounded-full appearance-none cursor-pointer"
+                        style={{ accentColor: '#E54E15', background: `linear-gradient(to right, #E54E15 ${((displaySettings.fontSize - 10) / 6) * 100}%, #2d2d45 ${((displaySettings.fontSize - 10) / 6) * 100}%)` }} />
+                    </div>
+                    <div>
+                      <span className="text-[13px] text-surface-300 block mb-2">Page Width</span>
+                      <div className="flex gap-1 p-1 rounded-lg" style={{ backgroundColor: '#171728' }}>
+                        {(['narrow', 'standard', 'wide'] as const).map((w) => (
+                          <button key={w} onClick={() => updateDisplaySettings({ pageWidth: w })}
+                            className={cn('flex-1 py-1 rounded-md text-[11px] font-medium transition-all capitalize',
+                              displaySettings.pageWidth === w ? 'text-white' : 'text-surface-500 hover:text-surface-300'
+                            )}
+                            style={displaySettings.pageWidth === w ? { backgroundColor: '#E54E15', boxShadow: '0 1px 6px rgba(229,78,21,0.35)' } : undefined}
+                          >{w}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Minimap section */}
+                  <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-1">Minimap</p>
+                    {([
+                      { label: 'Show Minimap', key: 'showMinimap' },
+                      { label: 'Sequence Labels', key: 'minimapLabels' },
+                      { label: 'Element Colours', key: 'minimapColors' },
+                    ] as { label: string; key: keyof DisplaySettings }[]).map(({ label, key }) => (
+                      <div key={key} className="flex items-center justify-between py-[7px]">
+                        <span className="text-[13px] text-surface-300">{label}</span>
+                        <button type="button" onClick={() => updateDisplaySettings({ [key]: !displaySettings[key] })}
+                          className="relative flex-shrink-0 inline-flex h-[18px] w-[32px] rounded-full transition-colors duration-150 focus:outline-none"
+                          style={{ backgroundColor: displaySettings[key] ? '#E54E15' : '#2d2d45' }}>
+                          <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-150', displaySettings[key] ? 'left-[16px]' : 'left-[2px]')} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Page section */}
+                  <div className="px-4 pt-2 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-1">Page</p>
+                    <div className="flex items-center justify-between py-[7px]">
+                      <div>
+                        <span className="text-[13px] text-surface-300">Page Gap</span>
+                        <p className="text-[10px] text-surface-600 mt-0.5">Gap between pages</p>
+                      </div>
+                      <button type="button" onClick={() => updateDisplaySettings({ pageSplitGap: !displaySettings.pageSplitGap })}
+                        className="relative flex-shrink-0 inline-flex h-[18px] w-[32px] rounded-full transition-colors duration-150 focus:outline-none"
+                        style={{ backgroundColor: displaySettings.pageSplitGap ? '#E54E15' : '#2d2d45' }}>
+                        <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-150', displaySettings.pageSplitGap ? 'left-[16px]' : 'left-[2px]')} />
+                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
           <button onClick={() => setDarkMode(!darkMode)}
             className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-surface-800' : 'text-surface-500 hover:text-white hover:bg-surface-800')}
             title={darkMode ? 'Light Mode' : 'Dark Mode'}>
@@ -1941,7 +2115,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         )}
 
         {/* Document */}
-        <div className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30">
           {/* Title page — always shown, all fields editable inline */}
           {currentScript && (
             <div ref={titlePageRef} className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0 shadow-2xl rounded-sm', darkMode && 'sp-dark')}>
@@ -2098,29 +2272,34 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 </button>
               </div>
             ) : (
-              filteredElements.map((element, index) => {
+              filteredElements.flatMap((element, index) => {
+                if (collapsedElementIds.has(element.id)) return [];
                 const isVersionHidden = versionConfig.disabled.length > 0
                   && !isElementVisible(element, versionConfig.disabled);
                 const isFaded = isVersionHidden && versionConfig.showFaded;
                 const isSelected = selectedElementIds.has(element.id);
+                const seqColor = sequenceColorMap[element.id];
+                const isCollapsedSeq = element.element_type === 'sequence' && collapsedSequences.has(element.id);
 
                 // Hidden (and not showing faded) → show a subtle ··· indicator
                 if (isVersionHidden && !versionConfig.showFaded) {
                   const versionNames = getElementVersions(element).join(', ');
-                  return (
+                  return [
                     <div key={element.id} className="relative flex items-center h-3 my-0.5 group/hidden" title={`Hidden version content${versionNames ? ': ' + versionNames : ''}`}>
                       <span className="absolute -left-5 text-[10px] text-surface-700 select-none font-mono leading-none group-hover/hidden:text-surface-500 transition-colors">···</span>
                     </div>
-                  );
+                  ];
                 }
 
-                return (
+                const mainEl = (
                   <div
                     key={element.id}
                     className={cn(
+                      'relative overflow-visible',
                       isFaded ? 'opacity-20 pointer-events-none select-none' : undefined,
                       isSelected ? 'outline outline-2 outline-[#FF5F1F]/40 outline-offset-1 rounded-sm' : undefined,
                     )}
+                    style={element.element_type === 'sequence_end' && seqColor ? { color: seqColor } : undefined}
                     onClick={(e) => {
                       if ((e.metaKey || e.ctrlKey) && canEdit && !isFaded) {
                         e.preventDefault();
@@ -2137,7 +2316,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       elementId={element.id}
                       darkMode={darkMode}
                       characterNames={characterNames}
-                      isHighlighted={searchQuery !== '' && (element.content || '').toLowerCase().includes(searchQuery.toLowerCase())}
+                      isHighlighted={searchQuery !== '' && (element.content || '').replace(/<[^>]*>/g, '').toLowerCase().includes(searchQuery.toLowerCase())}
                       showPageBreak={index > 0 && elementPages[element.id] !== elementPages[filteredElements[index - 1]?.id]}
                       pageNumber={elementPages[element.id]}
                       onFocused={(type) => setActiveElementType(type)}
@@ -2149,6 +2328,9 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       sceneNumberMap={sceneNumberMap}
                       commentCount={commentCountMap[element.id] || 0}
                       onComment={openCommentPanel}
+                      onSequenceSettings={setSequenceColorModalId}
+                      isCollapsed={isCollapsedSeq}
+                      onCollapseToggle={element.element_type === 'sequence' ? () => toggleCollapseSequence(element.id) : undefined}
                       isContentCreator={isContentCreator}
                       isAudioDrama={isAudioDrama}
                       isStagePlay={isStagePlay}
@@ -2158,6 +2340,20 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     />
                   </div>
                 );
+
+                if (isCollapsedSeq) {
+                  const count = collapsedCounts[element.id] || 0;
+                  return [mainEl, (
+                    <div key={`${element.id}-stub`}
+                      className="relative overflow-visible px-3 py-1.5 text-[11px] select-none cursor-pointer transition-colors text-surface-500 hover:text-surface-300"
+                      style={seqColor ? { borderLeft: `3px solid ${seqColor}55` } : undefined}
+                      onClick={() => toggleCollapseSequence(element.id)}>
+                      ↕ {count} element{count !== 1 ? 's' : ''} hidden — click to expand
+                    </div>
+                  )];
+                }
+
+                return [mainEl];
               })
             )}
             {elements.length > 0 && canEdit && (
@@ -2175,6 +2371,17 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             )}
           </div>
         </div>
+
+        {/* Script Minimap */}
+        {displaySettings.showMinimap && (
+          <ScriptMinimap
+            elements={elements}
+            scrollEl={scrollContainerRef}
+            showLabels={displaySettings.minimapLabels}
+            showColors={displaySettings.minimapColors}
+            darkMode={darkMode}
+          />
+        )}
       </div>
 
       {/* ── Version Panel (right sidebar) ────────────────────── */}
@@ -2256,6 +2463,91 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         projectId={params.id} userId={user?.id || ''}
         onCreated={() => { fetchScripts(params.id); setShowNewScript(false); }}
       />
+
+      {/* Floating format toolbar — shown when text is selected in a script element */}
+      {formatToolbar && (
+        <div
+          className="fixed z-[9990] flex items-center gap-0.5 rounded-lg px-1.5 py-1 no-print"
+          style={{ left: formatToolbar.x, top: formatToolbar.y - 4, transform: 'translateX(-50%) translateY(-100%)', backgroundColor: '#252542', border: '1px solid rgba(255,255,255,0.13)', boxShadow: '0 16px 48px rgba(0,0,0,0.7), 0 2px 12px rgba(0,0,0,0.5)' }}
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <button
+            onClick={() => { document.execCommand('bold'); }}
+            className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors font-bold text-white text-sm"
+            title="Bold (⌘B)"
+          ><b>B</b></button>
+          <button
+            onClick={() => { document.execCommand('italic'); }}
+            className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors italic text-white text-sm"
+            title="Italic (⌘I)"
+          ><i>I</i></button>
+          <button
+            onClick={() => { document.execCommand('underline'); }}
+            className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors underline text-white text-sm"
+            title="Underline (⌘U)"
+          >U</button>
+          <div className="w-px h-4 bg-surface-600 mx-0.5" />
+          <button
+            onClick={() => { document.execCommand('strikeThrough'); }}
+            className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors line-through text-surface-300 text-sm"
+            title="Strikethrough"
+          >S</button>
+          <div className="w-px h-4 bg-surface-600 mx-0.5" />
+          <button
+            onClick={() => { document.execCommand('removeFormat'); }}
+            className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors text-surface-400 hover:text-white text-xs"
+            title="Clear formatting"
+          >✕</button>
+        </div>
+      )}
+
+      {/* Sequence colour picker */}
+      {sequenceColorModalId && (() => {
+        const el = document.getElementById('el-' + sequenceColorModalId);
+        const rect = el?.getBoundingClientRect();
+        const seqEl = elements.find((e) => e.id === sequenceColorModalId);
+        return (
+          <>
+            <div className="fixed inset-0 z-[9998]" onClick={() => setSequenceColorModalId(null)} />
+            <div className="fixed z-[9999] rounded-xl p-4"
+              style={{
+                top: rect ? Math.min(rect.bottom + 8, window.innerHeight - 120) : '50%',
+                left: rect ? Math.max(8, rect.left) : '50%',
+                backgroundColor: '#252542',
+                border: '1px solid rgba(255,255,255,0.13)',
+                boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
+              }}>
+              <p className="text-[10px] font-semibold text-surface-400 uppercase tracking-[0.12em] mb-3">{seqEl?.element_type === 'scene_heading' ? 'Scene Colour' : seqEl?.element_type === 'act' ? 'Act Colour' : 'Sequence Colour'}</p>
+              <div className="grid grid-cols-4 gap-2">
+                {SEQUENCE_COLORS.map((color) => (
+                  <button key={color}
+                    onClick={() => {
+                      useScriptStore.getState().updateElement(sequenceColorModalId, { metadata: { ...(seqEl?.metadata || {}), color } });
+                      setSequenceColorModalId(null);
+                    }}
+                    className={cn('w-8 h-8 rounded-lg border-2 transition-all hover:scale-110',
+                      (seqEl?.metadata?.color as string) === color ? 'border-white scale-110' : 'border-transparent hover:border-surface-400')}
+                    style={{ background: color }}
+                    title={color}
+                  />
+                ))}
+              </div>
+              {(seqEl?.metadata?.color as string) && (
+                <button
+                  onClick={() => {
+                    const { color: _c, ...restMeta } = (seqEl?.metadata || {}) as Record<string, unknown>;
+                    useScriptStore.getState().updateElement(sequenceColorModalId, { metadata: restMeta });
+                    setSequenceColorModalId(null);
+                  }}
+                  className="mt-2 w-full text-[10px] text-surface-400 hover:text-surface-200 transition-colors text-center"
+                >
+                  Remove colour
+                </button>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
       {/* Save Draft Modal */}
       <Modal isOpen={showSaveDraftModal} onClose={() => setShowSaveDraftModal(false)} title="Save Draft Snapshot" size="sm">
@@ -2536,6 +2828,190 @@ function ScriptCommentPanel({
 }
 
 // ============================================================
+// SCRIPT MINIMAP — proportional overview with sequence bands,
+// scene ticks, act dividers, and a draggable viewport indicator
+// ============================================================
+const ScriptMinimap = memo(function ScriptMinimap({
+  elements,
+  scrollEl,
+  showLabels,
+  showColors,
+  darkMode,
+}: {
+  elements: ScriptElement[];
+  scrollEl: React.RefObject<HTMLDivElement>;
+  showLabels: boolean;
+  showColors: boolean;
+  darkMode: boolean;
+}) {
+  const barRef = useRef<HTMLDivElement>(null);
+  const [scrollFrac, setScrollFrac] = useState(0);
+  const [viewFrac, setViewFrac] = useState(1);
+
+  useEffect(() => {
+    const el = scrollEl.current;
+    if (!el) return;
+    const update = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const maxScroll = scrollHeight - clientHeight;
+      setScrollFrac(maxScroll > 0 ? scrollTop / maxScroll : 0);
+      setViewFrac(scrollHeight > 0 ? clientHeight / scrollHeight : 1);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => { el.removeEventListener('scroll', update); ro.disconnect(); };
+  }, [scrollEl]);
+
+  const total = Math.max(elements.length, 1);
+
+  // Build sequence spans from sequence → sequence_end pairs
+  // Only include sequences that have an explicit color set
+  const sequences: { start: number; end: number; color: string; name: string }[] = [];
+  const seqStack: { idx: number; color: string; name: string }[] = [];
+  elements.forEach((el, i) => {
+    if (el.element_type === 'sequence') {
+      seqStack.push({ idx: i, color: (el.metadata?.color as string) || '', name: el.content || 'Sequence' });
+    } else if (el.element_type === 'sequence_end' && seqStack.length > 0) {
+      const top = seqStack.pop()!;
+      if (top.color) sequences.push({ start: top.idx, color: top.color, name: top.name, end: i });
+    }
+  });
+  // Any unclosed sequences with color run to end of script
+  seqStack.forEach((sq) => { if (sq.color) sequences.push({ start: sq.idx, color: sq.color, name: sq.name, end: total - 1 }); });
+
+  // Build act color bands — each colored act spans until the next act element or end
+  const actBands: { start: number; end: number; color: string }[] = [];
+  let acBandStart = -1;
+  let acBandColor = '';
+  for (let i = 0; i < elements.length; i++) {
+    const el = elements[i];
+    if (el.element_type === 'act') {
+      if (acBandStart >= 0 && acBandColor) actBands.push({ start: acBandStart, end: i - 1, color: acBandColor });
+      const c = el.metadata?.color as string | undefined;
+      if (c) { acBandStart = i; acBandColor = c; } else { acBandStart = -1; acBandColor = ''; }
+    }
+  }
+  if (acBandStart >= 0 && acBandColor) actBands.push({ start: acBandStart, end: total - 1, color: acBandColor });
+
+  // Build scene color bands: each colored scene heading spans until the next scene heading
+  const sceneBands: { start: number; end: number; color: string }[] = [];
+  let scBandStart = -1;
+  let scBandColor = '';
+  for (let i = 0; i < elements.length; i++) {
+    const el = elements[i];
+    if (el.element_type === 'scene_heading') {
+      if (scBandStart >= 0 && scBandColor) {
+        sceneBands.push({ start: scBandStart, end: i - 1, color: scBandColor });
+      }
+      const c = el.metadata?.color as string | undefined;
+      if (c) { scBandStart = i; scBandColor = c; }
+      else { scBandStart = -1; scBandColor = ''; }
+    }
+  }
+  if (scBandStart >= 0 && scBandColor) {
+    sceneBands.push({ start: scBandStart, end: total - 1, color: scBandColor });
+  }
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const sc = scrollEl.current;
+    const bar = barRef.current;
+    if (!sc || !bar) return;
+    const { left, width } = bar.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (e.clientX - left) / width));
+    sc.scrollTop = frac * (sc.scrollHeight - sc.clientHeight);
+  };
+
+  const handleDragStart = (startE: React.MouseEvent<HTMLDivElement>) => {
+    startE.preventDefault();
+    startE.stopPropagation();
+    const sc = scrollEl.current;
+    const bar = barRef.current;
+    if (!sc || !bar) return;
+    const move = (e: MouseEvent) => {
+      const { left, width } = bar.getBoundingClientRect();
+      const frac = Math.max(0, Math.min(1, (e.clientX - left) / width));
+      sc.scrollTop = frac * (sc.scrollHeight - sc.clientHeight);
+    };
+    const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  const vpW = Math.max(2, viewFrac * 100);
+  const vpL = scrollFrac * (100 - vpW);
+
+  return (
+    <div
+      ref={barRef}
+      className={cn('relative h-7 select-none cursor-pointer border-t shrink-0 no-print', darkMode ? 'border-surface-800 bg-surface-950' : 'border-gray-200 bg-gray-100')}
+      onClick={handleClick}
+      title="Script minimap — click or drag to navigate"
+    >
+      {/* Colour bands — dynamic vertical fill: each position uses only as many rows as it has active colours */}
+      {showColors && (() => {
+        // Build sorted breakpoints from all three band types
+        const bpSet = new Set<number>([0, total]);
+        actBands.forEach(b => { bpSet.add(b.start); bpSet.add(b.end + 1); });
+        sequences.forEach(s => { bpSet.add(s.start); bpSet.add(s.end + 1); });
+        sceneBands.forEach(b => { bpSet.add(b.start); bpSet.add(b.end + 1); });
+        const bps = Array.from(bpSet).sort((a, b2) => a - b2);
+
+        const rects: React.ReactNode[] = [];
+        for (let si = 0; si < bps.length - 1; si++) {
+          const from = bps[si];
+          const to = bps[si + 1];
+          // NOTE: actBands, sequences, sceneBands share the same ordering (act / seq / scene)
+          const actColor = actBands.find(b => b.start <= from && b.end >= from)?.color;
+          const seqColor = sequences.find(b => b.start <= from && b.end >= from)?.color;
+          const sceneColor = sceneBands.find(b => b.start <= from && b.end >= from)?.color;
+          const layers = [actColor, seqColor, sceneColor].filter(Boolean) as string[];
+          if (!layers.length) continue;
+          const left = `${(from / total) * 100}%`;
+          const width = `${Math.max(0.2, ((to - from) / total) * 100)}%`;
+          layers.forEach((color, j) => {
+            rects.push(
+              <div key={`${si}-${j}`} className="absolute pointer-events-none opacity-30"
+                style={{ left, width, top: `${(j / layers.length) * 100}%`, height: `${(100 / layers.length)}%`, backgroundColor: color }} />
+            );
+          });
+        }
+        return rects;
+      })()}
+
+      {/* Sequence name labels */}
+      {showLabels && showColors && sequences.map((seq, i) => (
+        <div key={`lbl-${i}`} className="absolute top-0 bottom-0 flex items-center px-1 pointer-events-none overflow-hidden"
+          style={{ left: `${(seq.start / total) * 100}%`, width: `${Math.max(0.5, ((seq.end - seq.start + 1) / total) * 100)}%` }}>
+          <span className="text-[8px] font-semibold truncate" style={{ color: seq.color, opacity: 0.9 }}>{seq.name}</span>
+        </div>
+      ))}
+
+      {/* Scene heading ticks — always grey, no color override */}
+      {elements.map((el, i) => {
+        if (el.element_type === 'scene_heading') {
+          return <div key={el.id}
+            className={cn('absolute top-1 bottom-1 w-px pointer-events-none', darkMode ? 'bg-surface-500/60' : 'bg-gray-400/60')}
+            style={{ left: `${(i / total) * 100}%` }}
+            title={showLabels ? (el.content || '') : undefined} />;
+        }
+        return null;
+      })}
+
+      {/* Draggable viewport indicator */}
+      <div
+        className={cn('absolute top-0 bottom-0 border pointer-events-auto cursor-grab active:cursor-grabbing',
+          darkMode ? 'border-surface-400/50 bg-white/5' : 'border-gray-500/50 bg-black/5')}
+        style={{ left: `${vpL}%`, width: `${vpW}%` }}
+        onMouseDown={handleDragStart}
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+});
+
+// ============================================================
 // LINE EDITOR — fully self-contained, reads fresh state via getState()
 // No function props go through the memo boundary.
 // ============================================================
@@ -2556,6 +3032,9 @@ interface LineEditorProps {
   sceneNumberMap: Record<string, string>;
   commentCount: number;
   onComment: (elementId: string) => void;
+  onSequenceSettings: (id: string) => void;
+  isCollapsed?: boolean;
+  onCollapseToggle?: () => void;
   isContentCreator: boolean;
   isAudioDrama: boolean;
   isStagePlay: boolean;
@@ -2580,6 +3059,9 @@ const LineEditor = memo(function LineEditor({
   sceneNumberMap,
   commentCount,
   onComment,
+  onSequenceSettings,
+  isCollapsed,
+  onCollapseToggle,
   isContentCreator,
   isAudioDrama,
   isStagePlay,
@@ -2609,7 +3091,7 @@ const LineEditor = memo(function LineEditor({
   // Mount: populate DOM from element content
   useEffect(() => {
     if (divRef.current && element) {
-      divRef.current.textContent = element.content || '';
+      divRef.current.innerHTML = sanitizeContentHtml(element.content || '');
       localContentRef.current = element.content || '';
     }
   }, [elementId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -2618,7 +3100,7 @@ const LineEditor = memo(function LineEditor({
   useEffect(() => {
     if (!divRef.current || !element) return;
     if (element.content !== localContentRef.current && !isFocusedRef.current) {
-      divRef.current.textContent = element.content || '';
+      divRef.current.innerHTML = sanitizeContentHtml(element.content || '');
       localContentRef.current = element.content || '';
     }
   }, [element?.content]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -2641,10 +3123,11 @@ const LineEditor = memo(function LineEditor({
   // --- Input handler ---
   const handleInput = () => {
     if (!divRef.current) return;
+    const html = sanitizeContentHtml(divRef.current.innerHTML || '');
     const text = divRef.current.textContent || '';
-    localContentRef.current = text;
+    localContentRef.current = html;
 
-    // Auto-detect type from content
+    // Auto-detect type from content (use plain text)
     if (!skipAutoDetectRef.current) {
       const trimmed = text.trimStart().toUpperCase();
       if (element.element_type !== 'scene_heading' && /^(INT\.|EXT\.|INT\.\/EXT\.|I\/E\.)/.test(trimmed)) {
@@ -2655,24 +3138,73 @@ const LineEditor = memo(function LineEditor({
       }
     }
 
-    // Character autocomplete
+    // Character autocomplete (name when no paren, modifier list after '(')
     if (element.element_type === 'character' && text.length > 0) {
-      const upper = text.toUpperCase();
-      const matches = characterNames.filter((n) => n.startsWith(upper) && n !== upper);
-      setSuggestions(matches.slice(0, 5));
-      setSelectedSuggestion(0);
+      const parenIdx = text.lastIndexOf('(');
+      if (parenIdx !== -1) {
+        const afterParen = text.slice(parenIdx);
+        const modMatches = CHARACTER_MODIFIERS.filter(
+          (m) => m.toLowerCase().startsWith(afterParen.toLowerCase()) && m.toLowerCase() !== afterParen.toLowerCase()
+        );
+        setSuggestions(modMatches);
+        setSelectedSuggestion(0);
+      } else {
+        const upper = text.toUpperCase();
+        const matches = characterNames.filter((n) => n.startsWith(upper) && n !== upper);
+        setSuggestions(matches.slice(0, 5));
+        setSelectedSuggestion(0);
+      }
     } else {
       if (suggestions.length > 0) setSuggestions([]);
     }
 
-    save(text);
+    save(html);
+  };
+
+  // --- Paste: strip HTML, keep plain text ---
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
+  // --- Check whether same character is speaking again (for auto-CONT'D) ---
+  const checkShouldAddContd = (charName: string): boolean => {
+    const els = useScriptStore.getState().elements;
+    const idx = els.findIndex((e) => e.id === elementId);
+    if (idx <= 0) return false;
+    const nameClean = charName.replace(/\s*\(.*?\)/g, '').trim().toUpperCase();
+    let foundAction = false;
+    for (let j = idx - 1; j >= 0; j--) {
+      const t = els[j].element_type;
+      if (t === 'action' || t === 'note') { foundAction = true; continue; }
+      if (t === 'dialogue' || t === 'parenthetical') { continue; }
+      if (t === 'character') {
+        const prevName = (els[j].content || '').replace(/\s*\(.*?\)/g, '').trim().toUpperCase();
+        return foundAction && prevName === nameClean;
+      }
+      break;
+    }
+    return false;
   };
 
   // --- Apply character autocomplete ---
   const applySuggestion = (name: string) => {
     if (!divRef.current) return;
-    divRef.current.textContent = name;
-    localContentRef.current = name;
+    let full: string;
+    if (name.startsWith('(')) {
+      // Modifier: replace from the last '(' in current text onwards
+      const currentText = divRef.current.textContent || '';
+      const parenIdx = currentText.lastIndexOf('(');
+      const base = (parenIdx !== -1 ? currentText.slice(0, parenIdx) : currentText).trimEnd();
+      full = base + ' ' + name;
+    } else {
+      // Character name — optionally append auto-CONT'D
+      const shouldContd = checkShouldAddContd(name);
+      full = shouldContd ? name + " (CONT'D)" : name;
+    }
+    divRef.current.textContent = full;
+    localContentRef.current = full;
     setSuggestions([]);
     const range = document.createRange();
     const sel = window.getSelection();
@@ -2680,7 +3212,7 @@ const LineEditor = memo(function LineEditor({
     range.collapse(false);
     sel?.removeAllRanges();
     sel?.addRange(range);
-    save(name);
+    save(full);
   };
 
   // --- Cursor position detection ---
@@ -2727,6 +3259,13 @@ const LineEditor = memo(function LineEditor({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     // Viewers cannot edit
     if (!canEdit) return;
+
+    // Formatting shortcuts: Cmd/Ctrl + B / I / U
+    if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
+      if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); return; }
+      if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); return; }
+      if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); return; }
+    }
 
     // Character autocomplete navigation
     if (suggestions.length > 0) {
@@ -3015,10 +3554,28 @@ const LineEditor = memo(function LineEditor({
   return (
     <>
       {showPageBreak && (
-        <div className="relative py-2">
-          <div className={cn('border-t border-dashed', darkMode ? 'border-surface-600' : 'border-white/15')} />
-          <span className={cn('absolute right-0 -top-2 text-[9px] px-1', darkMode ? 'text-surface-500' : 'text-gray-400')}>Page {pageNumber}</span>
-        </div>
+        displaySettings.pageSplitGap
+          ? <div style={{
+                marginLeft: 'calc(-1.5in)',
+                marginRight: 'calc(-1in)',
+                marginTop: '3rem',
+                marginBottom: '3rem',
+              }}>
+              <div style={{
+                height: '3.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                paddingRight: '1rem',
+                background: darkMode ? '#07070e' : '#b0b5bf',
+              }}>
+                <span style={{ fontSize: 9, color: darkMode ? '#1e1e30' : '#8a909a', userSelect: 'none', letterSpacing: '0.06em' }}>Page {pageNumber}</span>
+              </div>
+            </div>
+          : <div className="relative" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+              <div className={cn('border-t border-dashed', darkMode ? 'border-surface-700' : 'border-gray-200')} />
+              <span className={cn('absolute right-0 -top-2.5 text-[9px] px-1', darkMode ? 'text-surface-600' : 'text-gray-300')}>Page {pageNumber}</span>
+            </div>
       )}
       <div
         data-etype={element.element_type}
@@ -3036,6 +3593,9 @@ const LineEditor = memo(function LineEditor({
           ...audioCueBorderStyle,
           fontSize: `${displaySettings.fontSize}pt`,
           ...(element.element_type === 'scene_heading' ? { paddingTop: '24pt' } : {}),
+          ...(element.element_type === 'scene_heading' && (element.metadata?.color as string)
+            ? { color: element.metadata!.color as string }
+            : {}),
         }}
       >
         {/* Scene number badge */}
@@ -3057,11 +3617,59 @@ const LineEditor = memo(function LineEditor({
           </div>
         )}
         {/* Gutter — shown on hover */}
-        <div className="sp-gutter">
+        <div className="sp-gutter" style={element.element_type === 'scene_heading' ? { top: '24pt' } : undefined}>
           <button onClick={() => setShowTypeMenu(!showTypeMenu)}
             className="px-1.5 py-0.5 rounded text-[9px] font-medium text-surface-400 hover:bg-surface-700 whitespace-nowrap">
             {ELEMENT_LABELS[element.element_type]}
           </button>
+          {element.element_type === 'sequence' && (
+            <>
+              <button
+                onClick={() => onCollapseToggle?.()}
+                title={isCollapsed ? 'Expand sequence' : 'Collapse sequence'}
+                className="w-4 h-4 flex items-center justify-center text-surface-400 hover:text-surface-200 transition-colors shrink-0"
+              >
+                <svg className={cn('w-3 h-3 transition-transform', isCollapsed ? '-rotate-90' : '')} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              <button
+                onClick={() => onSequenceSettings(elementId)}
+                title="Set sequence colour"
+                className={cn(
+                  'w-4 h-4 rounded-sm border transition-all hover:scale-110 shrink-0',
+                  (element.metadata?.color as string)
+                    ? 'border-surface-600 hover:border-surface-300'
+                    : 'border-surface-500 border-dashed hover:border-surface-300'
+                )}
+                style={{ background: (element.metadata?.color as string) || 'transparent' }}
+              />
+            </>
+          )}
+          {element.element_type === 'act' && (
+            <button
+              onClick={() => onSequenceSettings(elementId)}
+              title="Set act colour"
+              className={cn(
+                'w-4 h-4 rounded-sm border transition-all hover:scale-110 shrink-0',
+                (element.metadata?.color as string)
+                  ? 'border-surface-600 hover:border-surface-300'
+                  : 'border-surface-500 border-dashed hover:border-surface-300'
+              )}
+              style={{ background: (element.metadata?.color as string) || 'transparent' }}
+            />
+          )}
+          {element.element_type === 'scene_heading' && (
+            <button
+              onClick={() => onSequenceSettings(elementId)}
+              title="Set scene colour"
+              className={cn(
+                'w-4 h-4 rounded-full border transition-all hover:scale-110 shrink-0',
+                (element.metadata?.color as string)
+                  ? 'border-surface-600 hover:border-surface-300'
+                  : 'border-surface-500 border-dashed hover:border-surface-300'
+              )}
+              style={(element.metadata?.color as string) ? { background: element.metadata!.color as string } : {}}
+            />
+          )}
         </div>
 
         {/* Comment button — right side */}
@@ -3112,14 +3720,17 @@ const LineEditor = memo(function LineEditor({
         )}
 
         {showTypeMenu && (
-          <div className="absolute -left-24 top-6 z-20 bg-surface-800 border border-surface-700 rounded-lg shadow-lg py-1 min-w-[140px]">
+          <div className="absolute -left-24 top-6 z-[9999] rounded-xl py-1.5" style={{ minWidth: 150, backgroundColor: '#252542', border: '1px solid rgba(255,255,255,0.13)', boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)' }}>
             {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : ELEMENT_CYCLE).map((type) => (
               <button key={type} onClick={() => {
                 useScriptStore.getState().updateElement(elementId, { element_type: type });
                 setShowTypeMenu(false);
-              }} className={cn('w-full text-left px-3 py-1 text-xs hover:bg-surface-700',
-                element.element_type === type ? 'text-[#FF5F1F] font-medium' : 'text-surface-300'
-              )}>{ELEMENT_LABELS[type]}</button>
+              }} className={cn('w-full text-left px-3 py-1.5 text-[12px] transition-colors',
+                element.element_type === type ? 'text-[#FF7A43] font-medium' : 'text-surface-300 hover:text-white'
+              )}
+                onMouseEnter={(e) => { if (element.element_type !== type) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'; }}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+              >{ELEMENT_LABELS[type]}</button>
             ))}
           </div>
         )}
@@ -3136,14 +3747,18 @@ const LineEditor = memo(function LineEditor({
           onKeyUp={handleKeyUp}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          onPaste={handlePaste}
           data-placeholder={getElementPlaceholder(element.element_type, isContentCreator)}
+          style={(element.element_type === 'sequence' && element.metadata?.color)
+            ? { color: element.metadata.color as string }
+            : undefined}
         />
 
         {/* Autocomplete dropdown */}
         {suggestions.length > 0 && (
           <div className="absolute z-30 mt-0.5 bg-surface-800 border border-surface-600 rounded-lg shadow-xl py-1 min-w-[180px]" style={{ left: '2.2in' }}>
             {suggestions.map((name, i) => (
-              <button key={name} onMouseDown={(ev) => { ev.preventDefault(); applySuggestion(name); }}
+              <button key={i} onMouseDown={(ev) => { ev.preventDefault(); applySuggestion(name); }}
                 className={cn('w-full text-left px-3 py-1.5 text-xs font-mono',
                   i === selectedSuggestion ? 'bg-[#E54E15]/30 text-[#FF8F5F]' : 'text-surface-300 hover:bg-surface-700'
                 )}>{name}</button>
