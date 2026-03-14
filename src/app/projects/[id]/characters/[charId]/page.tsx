@@ -83,6 +83,14 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [folderAdd, setFolderAdd] = useState<Record<string, { url: string; caption: string }>>({});
 
+  // Lightbox + per-tile delete confirm
+  const [lightbox, setLightbox] = useState<{
+    images: InspoImage[];
+    index: number;
+    onDelete?: (idx: number) => void;
+  } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+
   // ---- Load ----
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -243,6 +251,16 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
+      {/* Lightbox */}
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+          onDelete={lightbox.onDelete}
+        />
+      )}
+
       {/* Back nav */}
       <button
         onClick={() => router.push(`/projects/${params.id}/characters`)}
@@ -376,27 +394,46 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
           </p>
 
           {inspoImages.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {inspoImages.map((img, idx) => (
-                <div key={idx} className="group relative rounded-xl overflow-hidden bg-surface-800 aspect-square">
-                  <ImageTile url={img.url} alt={img.caption || `Inspo ${idx + 1}`} />
-                  {img.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
-                      <p className="text-[10px] text-white/90 truncate">{img.caption}</p>
-                    </div>
-                  )}
-                  {canEdit && (
-                    <button
-                      onClick={() => removeInspoImage(idx)}
-                      className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              ))}
+            <div className="columns-2 sm:columns-3 md:columns-4 gap-3">
+              {inspoImages.map((img, idx) => {
+                const delKey = `inspo-${idx}`;
+                const confirming = pendingDelete === delKey;
+                return (
+                  <div
+                    key={idx}
+                    className="group relative rounded-xl overflow-hidden bg-surface-800 break-inside-avoid mb-3 cursor-zoom-in"
+                    onClick={() => { setPendingDelete(null); setLightbox({ images: inspoImages, index: idx, onDelete: (i) => removeInspoImage(i) }); }}
+                  >
+                    <ImageTile url={img.url} alt={img.caption || `Inspo ${idx + 1}`} />
+                    {img.caption && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                        <p className="text-[10px] text-white/90 truncate">{img.caption}</p>
+                      </div>
+                    )}
+                    {canEdit && (
+                      <div className="absolute top-1.5 right-1.5" onClick={(e) => e.stopPropagation()}>
+                        {confirming ? (
+                          <div className="flex items-center gap-1 bg-black/80 rounded-lg px-1.5 py-1 border border-red-500/30">
+                            <span className="text-[9px] text-white/70">Delete?</span>
+                            <button onClick={() => { removeInspoImage(idx); setPendingDelete(null); }} className="text-[9px] text-red-400 hover:text-red-300 font-semibold">Yes</button>
+                            <button onClick={() => setPendingDelete(null)} className="text-[9px] text-surface-400 hover:text-white">No</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); if (e.shiftKey) { removeInspoImage(idx); } else { setPendingDelete(delKey); } }}
+                            className="p-1 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                            title="Delete · shift+click to skip confirm"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -541,9 +578,16 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                 </div>
                 <div className="p-4 space-y-3">
                   {folder.images.length > 0 && (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {folder.images.map((img, idx) => (
-                        <div key={idx} className="group relative rounded-lg overflow-hidden bg-surface-700 aspect-square">
+                    <div className="columns-2 sm:columns-3 gap-2">
+                      {folder.images.map((img, idx) => {
+                        const delKey = `folder-${folder.id}-${idx}`;
+                        const confirming = pendingDelete === delKey;
+                        return (
+                        <div
+                          key={idx}
+                          className="group relative rounded-lg overflow-hidden bg-surface-700 break-inside-avoid mb-2 cursor-zoom-in"
+                          onClick={() => { setPendingDelete(null); setLightbox({ images: folder.images, index: idx, onDelete: (i) => removeFolderImage(folder.id, i) }); }}
+                        >
                           <ImageTile url={img.url} alt={img.caption || `Ref ${idx + 1}`} />
                           {img.caption && (
                             <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5">
@@ -551,17 +595,29 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                             </div>
                           )}
                           {canEdit && (
-                            <button
-                              onClick={() => removeFolderImage(folder.id, idx)}
-                              className="absolute top-1 right-1 p-0.5 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                            >
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                            <div className="absolute top-1 right-1" onClick={(e) => e.stopPropagation()}>
+                              {confirming ? (
+                                <div className="flex items-center gap-1 bg-black/80 rounded-lg px-1.5 py-0.5 border border-red-500/30">
+                                  <span className="text-[9px] text-white/70">Delete?</span>
+                                  <button onClick={() => { removeFolderImage(folder.id, idx); setPendingDelete(null); }} className="text-[9px] text-red-400 hover:text-red-300 font-semibold">Yes</button>
+                                  <button onClick={() => setPendingDelete(null)} className="text-[9px] text-surface-400 hover:text-white">No</button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); if (e.shiftKey) { removeFolderImage(folder.id, idx); } else { setPendingDelete(delKey); } }}
+                                  className="p-0.5 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                                  title="Delete · shift+click to skip confirm"
+                                >
+                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                   {canEdit && (
@@ -760,16 +816,151 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 // ============================================================
 // Image tile with broken-link fallback
 // ============================================================
+// ============================================================
+// Lightbox
+// ============================================================
+function ImageLightbox({
+  images,
+  startIndex,
+  onClose,
+  onDelete,
+}: {
+  images: InspoImage[];
+  startIndex: number;
+  onClose: () => void;
+  onDelete?: (idx: number) => void;
+}) {
+  const [idx, setIdx] = useState(startIndex);
+  const [confirming, setConfirming] = useState(false);
+  const total = images.length;
+  const img = images[idx];
+
+  useEffect(() => {
+    const handle = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); }
+      else if (e.key === 'ArrowRight') { setIdx((i) => (i + 1) % total); setConfirming(false); }
+      else if (e.key === 'ArrowLeft') { setIdx((i) => (i - 1 + total) % total); setConfirming(false); }
+    };
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
+  }, [total, onClose]);
+
+  if (!img) { onClose(); return null; }
+
+  const tryDelete = (e: React.MouseEvent) => {
+    if (e.shiftKey || confirming) {
+      onDelete!(idx);
+      onClose();
+    } else {
+      setConfirming(true);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      {/* Prev */}
+      {total > 1 && (
+        <button
+          className="absolute left-3 md:left-6 p-3 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors z-10"
+          onClick={(e) => { e.stopPropagation(); setIdx((i) => (i - 1 + total) % total); setConfirming(false); }}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Image */}
+      <div
+        className="relative flex items-center justify-center mx-16 md:mx-24"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={img.url}
+          alt={img.caption || ''}
+          className="max-w-[80vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
+        />
+        {img.caption && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-4 rounded-b-xl">
+            <p className="text-white text-sm text-center">{img.caption}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Next */}
+      {total > 1 && (
+        <button
+          className="absolute right-3 md:right-6 p-3 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors z-10"
+          onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % total); setConfirming(false); }}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Close */}
+      <button
+        className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors z-10"
+        onClick={onClose}
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      {/* Counter */}
+      {total > 1 && (
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/50 text-xs tabular-nums select-none pointer-events-none">
+          {idx + 1} / {total}
+        </div>
+      )}
+
+      {/* Delete */}
+      {onDelete && (
+        <div className="absolute top-4 left-4 z-10" onClick={(e) => e.stopPropagation()}>
+          {confirming ? (
+            <div className="flex items-center gap-2 bg-black/75 backdrop-blur-sm rounded-xl px-3 py-2 border border-red-500/30">
+              <span className="text-xs text-white/80">Delete image?</span>
+              <button
+                onClick={() => { onDelete(idx); onClose(); }}
+                className="text-xs text-red-400 hover:text-red-300 font-semibold"
+              >Yes</button>
+              <button
+                onClick={() => setConfirming(false)}
+                className="text-xs text-surface-400 hover:text-white"
+              >No</button>
+            </div>
+          ) : (
+            <button
+              onClick={tryDelete}
+              className="p-2.5 rounded-full bg-black/50 hover:bg-red-500/20 text-white/60 hover:text-red-400 transition-colors"
+              title="Delete · shift+click to skip confirm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ImageTile({ url, alt }: { url: string; alt: string }) {
   const [errored, setErrored] = useState(false);
   return errored ? (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-surface-700/60 p-2 gap-1">
+    <div className="w-full min-h-20 flex flex-col items-center justify-center bg-surface-700/60 p-2 gap-1">
       <svg className="w-5 h-5 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
       </svg>
       <p className="text-[8px] text-surface-500 text-center break-all line-clamp-2 px-1">{url}</p>
     </div>
   ) : (
-    <img src={url} alt={alt} className="w-full h-full object-cover" onError={() => setErrored(true)} />
+    <img src={url} alt={alt} className="w-full h-auto block" onError={() => setErrored(true)} />
   );
 }

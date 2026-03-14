@@ -66,6 +66,18 @@ const PAGE_LABELS: Record<string, string> = {
   rehearsal: 'Rehearsal',
 };
 
+/**
+ * Returns the top-level section slug for a project pathname.
+ * e.g. /projects/abc/characters/uuid → 'characters'
+ * Prevents UUIDs from sub-routes leaking into labels and presence.
+ */
+function getPageSection(pathname: string, projectId: string): string {
+  const prefix = `/projects/${projectId}/`;
+  if (!pathname.startsWith(prefix)) return 'overview';
+  const first = pathname.slice(prefix.length).split('/')[0];
+  return first || 'overview';
+}
+
 export default function ProjectLayout({
   children,
   params,
@@ -187,9 +199,7 @@ export default function ProjectLayout({
 
   useEffect(() => {
     if (user && params.id) {
-      const raw = pathname.split('/').pop() || '';
-      const page = raw === params.id || raw === '' ? 'overview' : raw;
-      updatePresence(page);
+      updatePresence(getPageSection(pathname, params.id));
     }
   }, [pathname]);
 
@@ -212,8 +222,7 @@ export default function ProjectLayout({
   // ── Browser tab title ──────────────────────────────────────────────
   useEffect(() => {
     if (!currentProject) return;
-    const raw = pathname.split('/').pop() || '';
-    const pageKey = raw === params.id || raw === '' ? 'overview' : raw;
+    const pageKey = getPageSection(pathname, params.id);
     const pageLabel = PAGE_LABELS[pageKey] || pageKey;
     document.title = `${pageLabel} — ${currentProject.title} — Screenplay Studio`;
     return () => { document.title = 'Screenplay Studio'; };
@@ -221,7 +230,7 @@ export default function ProjectLayout({
   // ─────────────────────────────────────────────────────────────────
 
   // ── Discord Rich Presence via PreMiD ──────────────────────────────
-  const currentPageSlug = pathname.split('/').pop() || 'overview';
+  const currentPageSlug = getPageSection(pathname, params.id);
   const currentToolLabel = PAGE_LABELS[currentPageSlug] ?? 'Overview';
   usePreMiD({
     projectName: currentProject?.title ?? null,
@@ -831,7 +840,7 @@ export default function ProjectLayout({
   };
 
   // Active page label for mobile header
-  const currentPage = pathname.split('/').pop() || 'overview';
+  const currentPage = getPageSection(pathname, params.id);
   const pageLabel = PAGE_LABELS[currentPage] || currentProject.title;
 
   // Sidebar content — shared between desktop and mobile
@@ -1088,7 +1097,7 @@ export default function ProjectLayout({
               <NotificationBell />
               <PopoutButton
                 projectId={params.id}
-                pageLabel={PAGE_LABELS[pathname.split('/').pop() || 'overview']}
+                pageLabel={PAGE_LABELS[getPageSection(pathname, params.id)]}
               />
               <button
                 onClick={() => setShowCustomiser(true)}
