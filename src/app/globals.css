@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Fonts are self-hosted via next/font (see layout.tsx) — no @import needed */
 
 @layer base {
   /* ── Accent color CSS variables ────────────────────────── */
@@ -1000,7 +1000,7 @@ a:active:not(:disabled) {
   text-transform: uppercase;
   letter-spacing: 0.26em;
   color: rgba(255,255,255,0.22);
-  font-family: ui-monospace, 'Courier Prime', monospace;
+  font-family: 'Courier Prime', 'Courier New', Courier, monospace;
 }
 .ss-label-orange {
   font-size: 9px;

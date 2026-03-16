@@ -37,8 +37,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        screenplay: ['Courier Prime', 'Courier New', 'Courier', 'monospace'],
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        screenplay: ['var(--font-courier-prime)', 'Courier New', 'Courier', 'monospace'],
+        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',

@@ -294,13 +294,20 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       await new Promise(r => setTimeout(r, 300));
 
+      // Calculate the largest scale that won't exceed browser canvas limits.
+      // Most browsers cap at ~16.7 M pixels (4096×4096). Use 14 M to be safe.
+      const MAX_CANVAS_PX = 14_000_000;
+      const contentH = content.scrollHeight || 1200;
+      const rawScale = Math.sqrt(MAX_CANVAS_PX / (816 * contentH));
+      const safeScale = Math.min(1.5, Math.max(0.8, rawScale));
+
       const html2pdf = (await import('html2pdf.js')).default;
       await html2pdf().set({
         margin: [0.75, 0.75],
         filename,
-        image: { type: 'jpeg', quality: 0.97 },
+        image: { type: 'jpeg', quality: 0.95 },
         html2canvas: {
-          scale: 1.5,
+          scale: safeScale,
           useCORS: true,
           letterRendering: true,
           logging: false,

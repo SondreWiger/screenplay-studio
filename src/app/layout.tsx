@@ -1,8 +1,23 @@
 import type { Metadata } from 'next';
+import { Inter, Courier_Prime } from 'next/font/google';
 import { Providers } from './providers';
 import { CookieConsentBanner } from '@/components/CookieConsent';
 import { isOpenSourceEnabled } from '@/lib/site-settings';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const courierPrime = Courier_Prime({
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  variable: '--font-courier-prime',
+  display: 'swap',
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const oss = await isOpenSourceEnabled();
@@ -49,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`dark ${inter.variable} ${courierPrime.variable}`}>
       <body className="min-h-screen bg-surface-950">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[#E54E15] focus:text-white focus:rounded-lg focus:text-sm">Skip to content</a>
         <Providers><main id="main-content">{children}</main></Providers>
