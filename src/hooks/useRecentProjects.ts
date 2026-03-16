@@ -23,6 +23,12 @@ function readStorage(): RecentProject[] {
   }
 }
 
+/** Synchronously read recent projects from localStorage (for use outside a hook context). */
+export function getRecentProjects(): RecentProject[] {
+  if (typeof window === 'undefined') return [];
+  return readStorage();
+}
+
 function writeStorage(items: RecentProject[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));

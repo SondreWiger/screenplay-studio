@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
+import { getRecentProjects } from '@/hooks/useRecentProjects';
 
 // ─── Types ────────────────────────────────────────────────
 type ResultGroup =
@@ -87,6 +88,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [cursor, setCursor] = useState(0);
+  const [recentProjects] = useState(() => getRecentProjects().slice(0, 5));
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -361,9 +363,56 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
         {/* Results */}
         <div ref={listRef} className="max-h-[58vh] overflow-y-auto py-1">
           {query.trim() === '' ? (
-            <p className="px-4 py-8 text-sm text-surface-500 text-center">
-              Search across projects, scripts, lines, characters, locations, scenes, ideas, documents, chat, messages, contacts and stories.
-            </p>
+            <div className="py-3">
+              {/* Recent projects */}
+              {recentProjects.length > 0 && (
+                <>
+                  <p className="px-4 pb-1 text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Recent</p>
+                  {recentProjects.map((rp, i) => (
+                    <button
+                      key={rp.id}
+                      onClick={() => navigate(`/projects/${rp.id}`)}
+                      onMouseEnter={() => setCursor(-(100 + i))}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-white/[0.04] transition-colors group"
+                    >
+                      {rp.cover_url ? (
+                        <img src={rp.cover_url} alt="" className="w-5 h-5 rounded object-cover shrink-0" />
+                      ) : (
+                        <span className="text-base w-5 text-center shrink-0 opacity-60">📁</span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-surface-200 group-hover:text-white transition-colors truncate">{rp.title || 'Untitled'}</p>
+                        <p className="text-[11px] text-surface-500">{rp.project_type ?? 'Project'} · {new Date(rp.viewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                      </div>
+                      <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-[#FF5F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  ))}
+                  <div className="mx-4 my-2 border-t border-surface-800" />
+                </>
+              )}
+              <p className="px-4 pb-2 text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Quick navigation</p>
+              {([
+                { label: 'Dashboard',       sublabel: 'Your projects',                path: '/dashboard',       icon: '🏠' },
+                { label: 'Accountability',  sublabel: 'Streaks, buddies & groups',    path: '/accountability',  icon: '🎯' },
+                { label: 'Idea Boards',     sublabel: 'Brainstorm & capture ideas',   path: '/idea-boards',     icon: '💡' },
+                { label: 'Community',       sublabel: 'Posts & discussions',          path: '/community',       icon: '💬' },
+                { label: 'Settings',        sublabel: 'Profile, preferences & more',  path: '/settings',        icon: '⚙️' },
+              ] as { label: string; sublabel: string; path: string; icon: string }[]).map((item, i) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  onMouseEnter={() => setCursor(-(i + 1))}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-white/[0.04] transition-colors group"
+                >
+                  <span className="text-base w-5 text-center shrink-0">{item.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-surface-200 group-hover:text-white transition-colors">{item.label}</p>
+                    <p className="text-[11px] text-surface-500">{item.sublabel}</p>
+                  </div>
+                  <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-[#FF5F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              ))}
+            </div>
           ) : !loading && results.length === 0 ? (
             <p className="px-4 py-8 text-sm text-surface-500 text-center">No results for &ldquo;{query}&rdquo;</p>
           ) : (

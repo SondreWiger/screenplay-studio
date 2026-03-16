@@ -23,6 +23,7 @@ import {
   deserializeVersionConfig,
 } from '@/lib/versioning';
 import { paginateScript, type PaginatedPage } from '@/lib/screenplay-paginator';
+import { logWork } from '@/lib/work-tracker';
 
 // ============================================================
 // Display Settings — persisted in localStorage
@@ -855,6 +856,42 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }, [elements]);
 
   const totalPages = paginatorResult.pages.length || 1;
+
+  // ── Auto-track pages written per session ─────────────────────────────────
+  // Captures the page count when the user first lands on the script, then
+  // logs the delta when they leave.  Only fires if the user can actually edit.
+  const startPageCountRef = useRef<number | null>(null);
+  const currentPageCountRef = useRef(totalPages);
+  currentPageCountRef.current = totalPages;
+  const sessionStartRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    if (!canEdit || elements.length === 0) return;
+    // Set baseline only once, after the script has loaded (elements > 0)
+    if (startPageCountRef.current === null) {
+      startPageCountRef.current = currentPageCountRef.current;
+    }
+  }, [elements.length > 0, canEdit]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!canEdit) return;
+    sessionStartRef.current = Date.now();
+    return () => {
+      const pagesStart = startPageCountRef.current;
+      if (pagesStart === null) return;
+      const pagesEnd = currentPageCountRef.current;
+      const pagesWritten = Math.max(0, pagesEnd - pagesStart);
+      const sessionMinutes = Math.round((Date.now() - sessionStartRef.current) / 60000);
+      // Only log if there's something meaningful to report
+      if (pagesWritten > 0 || sessionMinutes >= 2) {
+        logWork({
+          projectId: params.id,
+          pagesWritten,
+          sessionMinutes,
+        });
+      }
+    };
+  }, [canEdit, params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Word count
   const wordCount = useMemo(() => {

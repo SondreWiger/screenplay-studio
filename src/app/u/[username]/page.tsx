@@ -10,6 +10,8 @@ import { formatDate, timeAgo } from '@/lib/utils';
 import type { Profile, Project, CommunityPost, ProductionRole, UserBadge } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
 import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
+import ActivityGrid from '@/components/activity/ActivityGrid';
+import { fetchUserWorkLogs, calculateStreak, aggregateLogsByDate } from '@/lib/work-tracker';
 
 // ============================================================
 // Public User Profile Page — /u/<username>
@@ -55,6 +57,7 @@ export default function UserProfilePage({ params }: { params: { username: string
   const [profileBadges, setProfileBadges] = useState<UserBadge[]>([]);
   type ProfileCourse = { id: string; progress_percent: number; completed_at: string | null; course: { id: string; title: string; short_desc: string | null; difficulty: string; xp_reward: number; thumbnail_url: string | null } };
   const [profileCourses, setProfileCourses] = useState<ProfileCourse[]>([]);
+  const [workLogs, setWorkLogs] = useState<Array<{ log_date: string; pages_written: number; session_minutes: number }>>([]);
 
   const isOwnProfile = currentUser?.id === profile?.id;
   const theme = PROFILE_THEMES[profile?.profile_theme || 'default'] || PROFILE_THEMES.default;
@@ -167,6 +170,12 @@ export default function UserProfilePage({ params }: { params: { username: string
 
     setLoading(false);
   };
+
+  // Fetch work logs after profile is set (respects RLS visibility)
+  useEffect(() => {
+    if (!profile?.id) return;
+    fetchUserWorkLogs(profile.id, 365).then(setWorkLogs);
+  }, [profile?.id]);
 
   // ============================================================
   // START DM
@@ -470,6 +479,36 @@ export default function UserProfilePage({ params }: { params: { username: string
             </div>
           ))}
         </div>
+
+        {/* Activity Grid — shown if user has data AND visibility allows */}
+        {workLogs.length > 0 && (
+          profile?.show_activity_grid === 'public' ||
+          isOwnProfile ||
+          profile?.show_activity_grid !== 'private'
+        ) && (
+          <div className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] p-5 mb-8`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold text-white/30 uppercase tracking-widest">Activity — past year</h2>
+              <div className="flex items-center gap-3 text-xs text-white/25">
+                <span>🔥 {calculateStreak(workLogs)} day streak</span>
+                <span>·</span>
+                <span>{aggregateLogsByDate(workLogs).size} days active</span>
+              </div>
+            </div>
+            <div className="overflow-x-auto pb-1">
+              <ActivityGrid
+                logs={workLogs}
+                activityColor={profile?.activity_color || '#22c55e'}
+                dailyGoal={profile?.daily_goal_pages || 1}
+                cellSize={11}
+                cellGap={2}
+                showMonthLabels
+                showDayLabels
+                showLegend
+              />
+            </div>
+          </div>
+        )}
 
         {/* Featured projects — cinematic cards */}
         {featuredProjects.length > 0 && (

@@ -15,11 +15,15 @@ interface SeasonDef {
   num: number;
   name: string;
   color: string;
+  logline?: string;
+  synopsis?: string;
+  dbId?: string; // UUID from series_seasons table
 }
 
 // Per-episode metadata stored in scripts.metadata
 interface EpisodeMeta {
   sort_order?: number;
+  story_order?: number;
   episode_season?: number;
   episode_color?: string;
   version_config?: unknown;
@@ -119,6 +123,9 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
   const [dragging,  setDragging]  = useState<string | null>(null);
   const [dragOver,  setDragOver]  = useState<string | null>(null);
 
+  // View mode: broadcast episode order vs story timeline order
+  const [viewMode, setViewMode] = useState<'episode' | 'timeline'>('episode');
+
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
   // ── Data loading ───────────────────────────────────────────────────────────
@@ -142,8 +149,32 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     setLoading(false);
   }, [params.id]);
 
-  const loadSeasons = useCallback(() => {
+  const loadSeasons = useCallback(async () => {
     if (!currentProject) return;
+    const sb = createClient();
+
+    // Try the DB table first
+    const { data: dbSeasons } = await sb
+      .from('series_seasons')
+      .select('*')
+      .eq('project_id', params.id)
+      .order('sort_order');
+
+    if (dbSeasons && dbSeasons.length > 0) {
+      const mapped: SeasonDef[] = dbSeasons.map(r => ({
+        num: r.season_number,
+        name: r.title || `Season ${r.season_number}`,
+        color: r.color || '#6366f1',
+        logline: r.logline ?? '',
+        synopsis: r.synopsis ?? '',
+        dbId: r.id,
+      }));
+      setSeasons(mapped);
+      setNewSeason(mapped[0].num);
+      return;
+    }
+
+    // Fall back to JSONB in content_metadata (legacy migration path)
     const stored = (currentProject.content_metadata as any)?.series_seasons;
     if (stored) {
       try {
@@ -160,7 +191,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     const def = defaultSeasons(count);
     setSeasons(def);
     setNewSeason(def[0].num);
-  }, [currentProject]);
+  }, [currentProject, params.id]);
 
   useEffect(() => { fetchScripts(); }, [fetchScripts]);
   useEffect(() => { loadSeasons(); }, [loadSeasons]);
@@ -183,11 +214,37 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     setSavingSeason(true);
     try {
       const sb = createClient();
-      const existing = (currentProject?.content_metadata ?? {}) as Record<string, unknown>;
-      await sb
-        .from('projects')
-        .update({ content_metadata: { ...existing, series_seasons: next } })
-        .eq('id', params.id);
+
+      // Upsert to the DB table
+      const rows = next.map((s, i) => ({
+        ...(s.dbId ? { id: s.dbId } : {}),
+        project_id: params.id,
+        season_number: s.num,
+        title: s.name,
+        logline: s.logline ?? null,
+        synopsis: s.synopsis ?? null,
+        color: s.color,
+        sort_order: i,
+      }));
+      const { data: upserted } = await sb
+        .from('series_seasons')
+        .upsert(rows, { onConflict: 'project_id,season_number' })
+        .select('id, season_number');
+
+      // Assign returned DB ids to local state
+      if (upserted) {
+        const idMap = new Map(upserted.map((r: { id: string; season_number: number }) => [r.season_number, r.id]));
+        setSeasons(next.map(s => ({ ...s, dbId: idMap.get(s.num) ?? s.dbId })));
+      }
+
+      // Delete removed seasons from DB
+      const keptNums = next.map(s => s.num);
+      const removedDbIds = seasons
+        .filter(s => !keptNums.includes(s.num) && s.dbId)
+        .map(s => s.dbId!);
+      if (removedDbIds.length > 0) {
+        await sb.from('series_seasons').delete().in('id', removedDbIds);
+      }
     } finally {
       setSavingSeason(false);
     }
@@ -299,25 +356,37 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
 
   // ── Reorder (move up / down) ───────────────────────────────────────────────
 
+  // Compute display-sorted list here so handlers below can reference it
+  const displayedScripts = [...scripts].sort((a, b) => {
+    const orderKey = viewMode === 'timeline' ? 'story_order' : 'sort_order';
+    const oa = (epMeta(a)[orderKey] as number | undefined) ?? (epMeta(a).sort_order ?? 9999);
+    const ob = (epMeta(b)[orderKey] as number | undefined) ?? (epMeta(b).sort_order ?? 9999);
+    if (oa !== ob) return oa - ob;
+    return a.created_at < b.created_at ? -1 : 1;
+  });
+
   const moveEpisode = async (scriptId: string, direction: 'up' | 'down') => {
-    const idx = scripts.findIndex(s => s.id === scriptId);
+    const idx = displayedScripts.findIndex(s => s.id === scriptId);
     if (idx < 0) return;
     const newIdx = direction === 'up' ? idx - 1 : idx + 1;
-    if (newIdx < 0 || newIdx >= scripts.length) return;
+    if (newIdx < 0 || newIdx >= displayedScripts.length) return;
 
-    const next = [...scripts];
+    const next = [...displayedScripts];
     [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
 
-    // Re-assign sort_order values
+    const orderKey = viewMode === 'timeline' ? 'story_order' : 'sort_order';
     const sb = createClient();
     await Promise.all(
       next.map((s, i) =>
         sb.from('scripts')
-          .update({ metadata: { ...(s.metadata ?? {}), sort_order: i } })
+          .update({ metadata: { ...(s.metadata ?? {}), [orderKey]: i } })
           .eq('id', s.id)
       )
     );
-    setScripts(next.map((s, i) => ({ ...s, metadata: { ...(s.metadata ?? {}), sort_order: i } })));
+    setScripts(prev => {
+      const updated = new Map(next.map((s, i) => [s.id, { ...s, metadata: { ...(s.metadata ?? {}), [orderKey]: i } }]));
+      return prev.map(s => updated.get(s.id) ?? s);
+    });
   };
 
   // ── Drag-and-drop ──────────────────────────────────────────────────────────
@@ -335,23 +404,27 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
   const onDrop = async (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     if (!dragging || dragging === targetId) { setDragging(null); setDragOver(null); return; }
-    const fromIdx = scripts.findIndex(s => s.id === dragging);
-    const toIdx   = scripts.findIndex(s => s.id === targetId);
+    const fromIdx = displayedScripts.findIndex(s => s.id === dragging);
+    const toIdx   = displayedScripts.findIndex(s => s.id === targetId);
     if (fromIdx < 0 || toIdx < 0) { setDragging(null); setDragOver(null); return; }
 
-    const next = [...scripts];
+    const next = [...displayedScripts];
     const [item] = next.splice(fromIdx, 1);
     next.splice(toIdx, 0, item);
 
+    const orderKey = viewMode === 'timeline' ? 'story_order' : 'sort_order';
     const sb = createClient();
     await Promise.all(
       next.map((s, i) =>
         sb.from('scripts')
-          .update({ metadata: { ...(s.metadata ?? {}), sort_order: i } })
+          .update({ metadata: { ...(s.metadata ?? {}), [orderKey]: i } })
           .eq('id', s.id)
       )
     );
-    setScripts(next.map((s, i) => ({ ...s, metadata: { ...(s.metadata ?? {}), sort_order: i } })));
+    setScripts(prev => {
+      const updated = new Map(next.map((s, i) => [s.id, { ...s, metadata: { ...(s.metadata ?? {}), [orderKey]: i } }]));
+      return prev.map(s => updated.get(s.id) ?? s);
+    });
     setDragging(null);
     setDragOver(null);
   };
@@ -367,7 +440,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
 
   // Group episodes by season for rendering
   const bySeasonMap = new Map<number, Script[]>();
-  for (const s of scripts) {
+  for (const s of displayedScripts) {
     const snum = epMeta(s).episode_season ?? 1;
     if (!bySeasonMap.has(snum)) bySeasonMap.set(snum, []);
     bySeasonMap.get(snum)!.push(s);
@@ -415,30 +488,57 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
             {' · '}{locked} locked · {ready} ready
           </p>
         </div>
-        {canEdit && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="ghost" onClick={() => setShowSeasonMgr(true)}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h8m-8 4h16m-8 4h8" />
-              </svg>
-              Seasons
-            </Button>
-            <Link href={`/projects/${params.id}/arc-planner`}>
-              <Button variant="ghost">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Arc Planner
-              </Button>
-            </Link>
-            <Button onClick={() => setShowNew(true)}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Episode
-            </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* View mode toggle — available to all */}
+          <div className="flex items-center bg-surface-900 border border-surface-700 rounded-lg p-0.5 text-xs">
+            <button
+              onClick={() => setViewMode('episode')}
+              className={cn(
+                'px-3 py-1.5 rounded-md font-medium transition-all',
+                viewMode === 'episode'
+                  ? 'bg-surface-700 text-white shadow'
+                  : 'text-surface-400 hover:text-surface-200'
+              )}
+            >
+              Episode Order
+            </button>
+            <button
+              onClick={() => setViewMode('timeline')}
+              className={cn(
+                'px-3 py-1.5 rounded-md font-medium transition-all',
+                viewMode === 'timeline'
+                  ? 'bg-surface-700 text-white shadow'
+                  : 'text-surface-400 hover:text-surface-200'
+              )}
+            >
+              Story Timeline
+            </button>
           </div>
-        )}
+          {canEdit && (
+            <>
+              <Button variant="ghost" onClick={() => setShowSeasonMgr(true)}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h8m-8 4h16m-8 4h8" />
+                </svg>
+                Seasons
+              </Button>
+              <Link href={`/projects/${params.id}/arc-planner`}>
+                <Button variant="ghost">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Arc Planner
+                </Button>
+              </Link>
+              <Button onClick={() => setShowNew(true)}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Episode
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* ── Progress bar ── */}
@@ -870,44 +970,64 @@ function SeasonManager({
 
   const removeSeason = (num: number) => setDraft(prev => prev.filter(s => s.num !== num));
 
-  const updateName  = (num: number, name: string)  => setDraft(prev => prev.map(s => s.num === num ? { ...s, name } : s));
-  const updateColor = (num: number, color: string) => setDraft(prev => prev.map(s => s.num === num ? { ...s, color } : s));
+  const updateName     = (num: number, name: string)     => setDraft(prev => prev.map(s => s.num === num ? { ...s, name } : s));
+  const updateColor    = (num: number, color: string)    => setDraft(prev => prev.map(s => s.num === num ? { ...s, color } : s));
+  const updateLogline  = (num: number, logline: string)  => setDraft(prev => prev.map(s => s.num === num ? { ...s, logline } : s));
+  const updateSynopsis = (num: number, synopsis: string) => setDraft(prev => prev.map(s => s.num === num ? { ...s, synopsis } : s));
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Manage Seasons" size="md">
-      <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
         {draft.map(s => (
-          <div key={s.num} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-surface-800/50 border border-surface-700">
-            {/* Color swatch picker */}
-            <div className="flex gap-1 shrink-0">
-              {SEASON_PALETTE.map(c => (
-                <button
-                  key={c}
-                  onClick={() => updateColor(s.num, c)}
-                  className={cn(
-                    'w-4 h-4 rounded-full border-2 transition-transform hover:scale-110 shrink-0',
-                    s.color === c ? 'border-white scale-110' : 'border-transparent',
-                  )}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
+          <div key={s.num} className="rounded-xl bg-surface-800/50 border border-surface-700 p-3 space-y-2.5">
+            {/* Row: color swatches + name + S# + remove */}
+            <div className="flex items-center gap-2.5">
+              {/* Color swatch picker */}
+              <div className="flex gap-1 shrink-0">
+                {SEASON_PALETTE.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => updateColor(s.num, c)}
+                    className={cn(
+                      'w-4 h-4 rounded-full border-2 transition-transform hover:scale-110 shrink-0',
+                      s.color === c ? 'border-white scale-110' : 'border-transparent',
+                    )}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+              {/* Name input */}
+              <input
+                className="flex-1 min-w-0 bg-transparent border-b border-surface-600 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F]/60 py-0.5 transition-colors"
+                value={s.name}
+                onChange={e => updateName(s.num, e.target.value)}
+                placeholder={`Season ${s.num}`}
+              />
+              <span className="text-[10px] text-surface-600 font-mono shrink-0">S{s.num}</span>
+              <button
+                onClick={() => removeSeason(s.num)}
+                className="shrink-0 text-surface-600 hover:text-red-400 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            {/* Name input */}
+            {/* Logline */}
             <input
-              className="flex-1 min-w-0 bg-transparent border-b border-surface-600 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F]/60 py-0.5 transition-colors"
-              value={s.name}
-              onChange={e => updateName(s.num, e.target.value)}
-              placeholder={`Season ${s.num}`}
+              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-[#FF5F1F]/40 transition-colors"
+              value={s.logline ?? ''}
+              onChange={e => updateLogline(s.num, e.target.value)}
+              placeholder="Logline — one sentence that captures this season…"
             />
-            <span className="text-[10px] text-surface-600 font-mono shrink-0">S{s.num}</span>
-            <button
-              onClick={() => removeSeason(s.num)}
-              className="shrink-0 text-surface-600 hover:text-red-400 transition-colors"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            {/* Synopsis */}
+            <textarea
+              rows={2}
+              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-[#FF5F1F]/40 transition-colors resize-none"
+              value={s.synopsis ?? ''}
+              onChange={e => updateSynopsis(s.num, e.target.value)}
+              placeholder="Synopsis — brief overview of this season's arc…"
+            />
           </div>
         ))}
 

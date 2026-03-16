@@ -26,6 +26,7 @@ const FEATURE_TOGGLES = [
   { key: 'show_community' as const, label: 'Community Hub', description: 'Share scripts, get feedback, join challenges', icon: 'globe' },
   { key: 'show_production_tools' as const, label: 'Production Tools', description: 'Locations, shots, schedule, budget tracking', icon: 'film' },
   { key: 'show_collaboration' as const, label: 'Collaboration', description: 'Team members, real-time editing, comments', icon: 'users' },
+  { key: 'show_accountability' as const, label: 'Writing Accountability', description: 'Streaks, writing buddies, groups, activity grid', icon: 'activity' },
 ];
 
 export default function OnboardingPage() {
@@ -40,6 +41,7 @@ export default function OnboardingPage() {
   const [showCommunity, setShowCommunity] = useState(true);
   const [showProductionTools, setShowProductionTools] = useState(true);
   const [showCollaboration, setShowCollaboration] = useState(true);
+  const [showAccountability, setShowAccountability] = useState(true);
   const [displayName, setDisplayName] = useState('');
 
   // Optional company creation
@@ -57,28 +59,33 @@ export default function OnboardingPage() {
         setShowCommunity(true);
         setShowProductionTools(false);
         setShowCollaboration(false);
+        setShowAccountability(true);
         setScriptType('screenplay');
         break;
       case 'producer':
         setShowCommunity(false);
         setShowProductionTools(true);
         setShowCollaboration(true);
+        setShowAccountability(false);
         break;
       case 'both':
         setShowCommunity(true);
         setShowProductionTools(true);
         setShowCollaboration(true);
+        setShowAccountability(true);
         break;
       case 'content_creator':
         setShowCommunity(true);
         setShowProductionTools(true);
         setShowCollaboration(true);
+        setShowAccountability(true);
         setScriptType('youtube');
         break;
       case 'student':
         setShowCommunity(true);
         setShowProductionTools(false);
         setShowCollaboration(false);
+        setShowAccountability(true);
         break;
     }
   };
@@ -94,6 +101,7 @@ export default function OnboardingPage() {
       show_community: showCommunity,
       show_production_tools: showProductionTools,
       show_collaboration: showCollaboration,
+      show_accountability: showAccountability,
       preferred_script_type: scriptType,
       display_name: displayName.trim() || user.full_name || null,
     }).eq('id', user.id);
@@ -106,6 +114,7 @@ export default function OnboardingPage() {
         show_community: showCommunity,
         show_production_tools: showProductionTools,
         show_collaboration: showCollaboration,
+        show_accountability: showAccountability,
         preferred_script_type: scriptType,
         display_name: displayName.trim() || user.full_name || null,
       });
@@ -238,12 +247,14 @@ export default function OnboardingPage() {
         {FEATURE_TOGGLES.map((feat) => {
           const isOn = feat.key === 'show_community' ? showCommunity
             : feat.key === 'show_production_tools' ? showProductionTools
-            : showCollaboration;
+            : feat.key === 'show_collaboration' ? showCollaboration
+            : showAccountability;
 
           const toggle = () => {
             if (feat.key === 'show_community') setShowCommunity(!showCommunity);
             else if (feat.key === 'show_production_tools') setShowProductionTools(!showProductionTools);
-            else setShowCollaboration(!showCollaboration);
+            else if (feat.key === 'show_collaboration') setShowCollaboration(!showCollaboration);
+            else setShowAccountability(!showAccountability);
           };
 
           return (

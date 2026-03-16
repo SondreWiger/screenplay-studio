@@ -208,7 +208,7 @@ function PreMiDCard() {
 
 
 
-type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security' | 'gamification';
+type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security' | 'gamification' | 'accountability';
 
 // ── Gamification Settings Tab ─────────────────────────────────
 function GamificationSettingsTab() {
@@ -429,8 +429,14 @@ export default function UserSettingsPage() {
   const [showCommunity, setShowCommunity] = useState(true);
   const [showProductionTools, setShowProductionTools] = useState(true);
   const [showCollaboration, setShowCollaboration] = useState(true);
+  const [showAccountability, setShowAccountability] = useState(true);
   const [preferredScriptType, setPreferredScriptType] = useState<ScriptType>('screenplay');
   const [accentColor, setAccentColor] = useState('brand');
+  // Accountability
+  const [activityColor, setActivityColor] = useState('#22c55e');
+  const [showActivityGrid, setShowActivityGrid] = useState<'private' | 'buddies' | 'public'>('buddies');
+  const [dailyGoalPages, setDailyGoalPages] = useState('1');
+  const [dailyGoalMinutes, setDailyGoalMinutes] = useState('0');
   const [sidebarTabs, setSidebarTabs] = useState<Record<string, boolean>>({
     script: true, scenes: true, characters: true, locations: true,
     shots: true, storyboard: true, schedule: true, budget: true,
@@ -468,8 +474,13 @@ export default function UserSettingsPage() {
     setShowCommunity(user.show_community !== false);
     setShowProductionTools(user.show_production_tools !== false);
     setShowCollaboration(user.show_collaboration !== false);
+    setShowAccountability(user.show_accountability !== false);
     setPreferredScriptType(user.preferred_script_type || 'screenplay');
     setAccentColor(user.accent_color || 'brand');
+    setActivityColor(user.activity_color || '#22c55e');
+    setShowActivityGrid((user.show_activity_grid as 'private' | 'buddies' | 'public') || 'buddies');
+    setDailyGoalPages(String(user.daily_goal_pages ?? 1));
+    setDailyGoalMinutes(String(user.daily_goal_minutes ?? 0));
     if (user.sidebar_tabs) setSidebarTabs(prev => ({ ...prev, ...user.sidebar_tabs }));
 
     loadCompanies();
@@ -530,6 +541,7 @@ export default function UserSettingsPage() {
       show_community: showCommunity,
       show_production_tools: showProductionTools,
       show_collaboration: showCollaboration,
+      show_accountability: showAccountability,
       preferred_script_type: preferredScriptType,
       accent_color: accentColor,
       sidebar_tabs: sidebarTabs,
@@ -544,11 +556,30 @@ export default function UserSettingsPage() {
       show_community: showCommunity,
       show_production_tools: showProductionTools,
       show_collaboration: showCollaboration,
+      show_accountability: showAccountability,
       preferred_script_type: preferredScriptType,
       accent_color: accentColor,
       sidebar_tabs: sidebarTabs,
     });
 
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const saveAccountability = async () => {
+    if (!user) return;
+    setSaving(true);
+    const supabase = createClient();
+    const updates = {
+      activity_color: activityColor,
+      show_activity_grid: showActivityGrid,
+      daily_goal_pages: parseFloat(dailyGoalPages) || 1,
+      daily_goal_minutes: parseInt(dailyGoalMinutes, 10) || 0,
+    };
+    const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
+    if (error) { toast.error('Failed to save: ' + error.message); setSaving(false); return; }
+    useAuthStore.getState().setUser({ ...user, ...updates });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -601,6 +632,7 @@ export default function UserSettingsPage() {
     { key: 'privacy', label: 'Privacy & Data', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
     { key: 'security', label: 'Security', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> },
     { key: 'gamification' as SettingsTab, label: 'Gamification', icon: <span className="text-sm">🎮</span> },
+    { key: 'accountability' as SettingsTab, label: 'Accountability', icon: <span className="text-sm">🎯</span> },
   ];
 
   return (
@@ -844,6 +876,7 @@ export default function UserSettingsPage() {
                   { key: 'community' as const, label: 'Community Hub', desc: 'Share scripts, get feedback, join challenges', icon: 'globe', value: showCommunity, set: setShowCommunity },
                   { key: 'production' as const, label: 'Production Tools', desc: 'Locations, shots, schedule, budget', icon: 'film', value: showProductionTools, set: setShowProductionTools },
                   { key: 'collab' as const, label: 'Collaboration', desc: 'Team members, real-time editing', icon: 'users', value: showCollaboration, set: setShowCollaboration },
+                  { key: 'accountability' as const, label: 'Writing Accountability', desc: 'Streaks, buddies, groups, activity grid', icon: 'activity', value: showAccountability, set: setShowAccountability },
                 ].map((feat) => (
                   <button
                     key={feat.key}
@@ -1358,6 +1391,103 @@ export default function UserSettingsPage() {
         {/* Gamification Tab */}
         {tab === 'gamification' && (
           <GamificationSettingsTab />
+        )}
+
+        {/* Accountability Tab */}
+        {tab === 'accountability' && (
+          <div className="space-y-6 max-w-xl">
+            <div className="rounded-2xl border border-white/[0.07] p-6 space-y-5" style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Activity Grid</h2>
+
+              {/* Activity color */}
+              <div>
+                <label className="text-xs text-white/40 uppercase tracking-widest block mb-2">Grid color</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={activityColor}
+                    onChange={e => setActivityColor(e.target.value)}
+                    className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
+                    title="Pick your activity color"
+                  />
+                  <input
+                    type="text"
+                    value={activityColor}
+                    onChange={e => setActivityColor(e.target.value)}
+                    placeholder="#22c55e"
+                    className="w-28 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-white/30"
+                  />
+                  <span className="text-xs text-white/30">Shown on your activity heatmap</span>
+                </div>
+              </div>
+
+              {/* Who can see */}
+              <div>
+                <label className="text-xs text-white/40 uppercase tracking-widest block mb-2">Who can see your grid</label>
+                <div className="flex flex-col gap-2">
+                  {([
+                    { value: 'private', label: 'Only me', desc: 'Nobody else can see your activity' },
+                    { value: 'buddies', label: 'Accountability buddies', desc: 'Only accepted buddies see it' },
+                    { value: 'public', label: 'Everyone', desc: 'Visible on your public profile' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setShowActivityGrid(opt.value)}
+                      className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-colors ${
+                        showActivityGrid === opt.value
+                          ? 'border-[#FF5F1F]/50 bg-[#FF5F1F]/10'
+                          : 'border-white/[0.06] hover:border-white/20 bg-white/[0.02]'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${
+                        showActivityGrid === opt.value ? 'border-[#FF5F1F] bg-[#FF5F1F]' : 'border-white/20'
+                      }`}>
+                        {showActivityGrid === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <p className={`text-sm font-medium ${showActivityGrid === opt.value ? 'text-white' : 'text-white/50'}`}>{opt.label}</p>
+                        <p className="text-xs text-white/25 mt-0.5">{opt.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.07] p-6 space-y-5" style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Daily Goals</h2>
+              <p className="text-xs text-white/30">Used to calibrate the intensity of cells in your activity grid.</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-white/40 uppercase tracking-widest block mb-1.5">Pages per day</label>
+                  <input
+                    type="number" min="0" step="0.5" value={dailyGoalPages}
+                    onChange={e => setDailyGoalPages(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-white/40 uppercase tracking-widest block mb-1.5">Minutes per day</label>
+                  <input
+                    type="number" min="0" step="15" value={dailyGoalMinutes}
+                    onChange={e => setDailyGoalMinutes(e.target.value)}
+                    placeholder="0 = not set"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={saveAccountability}
+              disabled={saving}
+              className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50"
+              style={{ background: '#FF5F1F' }}
+            >
+              {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+            </button>
+          </div>
         )}
       </div>
     </div>

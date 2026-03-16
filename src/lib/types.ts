@@ -99,6 +99,7 @@ export interface Profile {
   show_community: boolean;
   show_production_tools: boolean;
   show_collaboration: boolean;
+  show_accountability?: boolean;
   preferred_script_type: ScriptType;
   theme_preference: string;
   company_id: string | null;
@@ -131,6 +132,90 @@ export interface Profile {
   // Badge display slots
   selected_badge_id?: string | null;
   selected_badge2_id?: string | null;
+  // Accountability & Work Tracking
+  activity_color?: string | null;
+  show_activity_grid?: 'private' | 'buddies' | 'public' | null;
+  daily_goal_pages?: number | null;
+  daily_goal_minutes?: number | null;
+}
+
+// ── Work Tracking ──────────────────────────────────────────────────────────
+
+export interface WorkLog {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  log_date: string; // ISO date string e.g. "2025-01-15"
+  pages_written: number;
+  scenes_created: number;
+  words_written: number;
+  session_minutes: number;
+  manual_note: string | null;
+  is_manual: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkLogInput {
+  projectId?: string;
+  pagesWritten?: number;
+  scenesCreated?: number;
+  wordsWritten?: number;
+  sessionMinutes?: number;
+  manualNote?: string;
+  isManual?: boolean;
+}
+
+// ── Accountability Buddies ─────────────────────────────────────────────────
+
+export interface AccountabilityBuddy {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: 'pending' | 'accepted' | 'declined' | 'blocked';
+  message: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  requester?: Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url' | 'activity_color' | 'daily_goal_pages'>;
+  addressee?: Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url' | 'activity_color' | 'daily_goal_pages'>;
+}
+
+// ── Accountability Groups ──────────────────────────────────────────────────
+
+export interface AccountabilityGroup {
+  id: string;
+  name: string;
+  description: string | null;
+  created_by: string;
+  invite_code: string;
+  is_public: boolean;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  member_count?: number;
+  my_role?: 'owner' | 'admin' | 'member';
+}
+
+export interface AccountabilityGroupMember {
+  group_id: string;
+  user_id: string;
+  role: 'owner' | 'admin' | 'member';
+  joined_at: string;
+  profile?: Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url' | 'activity_color' | 'daily_goal_pages'>;
+}
+
+export interface AccountabilityFeedPost {
+  id: string;
+  author_id: string;
+  group_id: string | null;
+  buddy_pair: string | null;
+  work_log_id: string | null;
+  content: string;
+  post_type: 'message' | 'checkin' | 'nudge' | 'milestone';
+  created_at: string;
+  author?: Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url'>;
 }
 
 // ── Gamification ─────────────────────────────────────────────

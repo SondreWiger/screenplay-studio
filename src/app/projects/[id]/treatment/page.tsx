@@ -120,7 +120,7 @@ function buildSeriesBibleHTML(f: Omit<Treatment, 'id'>, projectTitle: string): s
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(projectTitle)} — Series Bible</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Palatino,'Palatino Linotype','Book Antiqua',Georgia,serif;font-size:9.5pt;line-height:1.6;color:#1a1a1a;background:#fff}
+body{font-family:Georgia,'Times New Roman',Times,serif;font-size:9.5pt;line-height:1.6;color:#1a1a1a;background:#fff}
 @page{size:letter;margin:1in}
 .cover{page-break-after:always;min-height:9in;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:.75in}
 .cover-eyebrow{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:6.5pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#888;margin-bottom:14pt}
@@ -272,7 +272,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
         'width: 816px',
         'background: #ffffff',
         'color: #1a1a1a',
-        'font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif',
+        'font-family: Georgia, "Times New Roman", Times, serif',
         'font-size: 12pt',
         'line-height: 1.65',
         'z-index: -1',
@@ -300,7 +300,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
         filename,
         image: { type: 'jpeg', quality: 0.97 },
         html2canvas: {
-          scale: 2,
+          scale: 1.5,
           useCORS: true,
           letterRendering: true,
           logging: false,
