@@ -16,7 +16,12 @@ AS $$
   SELECT company_id FROM company_members WHERE user_id = p_user_id;
 $$;
 
-CREATE OR REPLACE FUNCTION get_user_company_role(p_company_id UUID, p_user_id UUID)
+-- Must drop with CASCADE — dependent policies on companies, company_teams,
+-- company_team_members, company_blog_posts, company_blog_comments, projects
+-- will be dropped and recreated below.
+DROP FUNCTION IF EXISTS get_user_company_role(UUID, UUID) CASCADE;
+
+CREATE FUNCTION get_user_company_role(p_company_id UUID, p_user_id UUID)
 RETURNS TEXT        -- TEXT is safe even if company_role enum doesn't exist yet
 LANGUAGE sql
 SECURITY DEFINER
@@ -87,5 +92,95 @@ CREATE POLICY "company_members_delete"
   USING (
     user_id = auth.uid()
     OR company_id IN (SELECT id FROM companies WHERE owner_id = auth.uid())
+    OR get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin')
+  );
+
+-- ── 5. Recreate policies that were CASCADE-dropped ───────────────────────────
+
+-- companies
+CREATE POLICY "Company admins can update"
+  ON companies FOR UPDATE
+  USING (
+    owner_id = auth.uid()
+    OR get_user_company_role(id, auth.uid()) IN ('owner', 'admin')
+  );
+
+-- company_teams
+CREATE POLICY "Company admins can manage teams"
+  ON company_teams FOR ALL
+  USING (
+    get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin', 'manager')
+  )
+  WITH CHECK (
+    get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin', 'manager')
+  );
+
+-- company_team_members
+CREATE POLICY "Company admins manage team members"
+  ON company_team_members FOR ALL
+  USING (
+    get_user_company_role(
+      (SELECT company_id FROM company_teams WHERE id = team_id),
+      auth.uid()
+    ) IN ('owner', 'admin', 'manager')
+  )
+  WITH CHECK (
+    get_user_company_role(
+      (SELECT company_id FROM company_teams WHERE id = team_id),
+      auth.uid()
+    ) IN ('owner', 'admin', 'manager')
+  );
+
+-- company_blog_posts
+CREATE POLICY "Company members can create blog posts"
+  ON company_blog_posts FOR INSERT
+  WITH CHECK (
+    get_user_company_role(company_id, auth.uid()) IS NOT NULL
+  );
+
+CREATE POLICY "Blog post authors and admins can update"
+  ON company_blog_posts FOR UPDATE
+  USING (
+    author_id = auth.uid()
+    OR get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin')
+  );
+
+CREATE POLICY "Company admins can delete blog posts"
+  ON company_blog_posts FOR DELETE
+  USING (
+    author_id = auth.uid()
+    OR get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin')
+  );
+
+-- company_blog_comments
+CREATE POLICY "Comment authors and admins can delete"
+  ON company_blog_comments FOR DELETE
+  USING (
+    author_id = auth.uid()
+    OR get_user_company_role(
+      (SELECT company_id FROM company_blog_posts WHERE id = post_id),
+      auth.uid()
+    ) IN ('owner', 'admin')
+  );
+
+-- projects (company-scoped)
+CREATE POLICY "Company admins can create company projects"
+  ON projects FOR INSERT
+  WITH CHECK (
+    company_id IS NULL
+    OR get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin', 'manager')
+  );
+
+CREATE POLICY "Company admins can update company projects"
+  ON projects FOR UPDATE
+  USING (
+    company_id IS NULL
+    OR get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin', 'manager')
+  );
+
+CREATE POLICY "Company owners can delete company projects"
+  ON projects FOR DELETE
+  USING (
+    company_id IS NULL
     OR get_user_company_role(company_id, auth.uid()) IN ('owner', 'admin')
   );

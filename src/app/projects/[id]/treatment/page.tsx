@@ -122,7 +122,7 @@ function buildSeriesBibleHTML(f: Omit<Treatment, 'id'>, projectTitle: string): s
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Georgia,'Times New Roman',Times,serif;font-size:9.5pt;line-height:1.6;color:#1a1a1a;background:#fff}
 @page{size:letter;margin:1in}
-.cover{min-height:9in;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:.75in}
+.cover{page-break-after:always;min-height:9in;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:.75in}
 .cover-eyebrow{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:6.5pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#888;margin-bottom:14pt}
 .cover-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:30pt;font-weight:900;line-height:1.05;letter-spacing:-.02em;color:#1a1a1a;margin-bottom:9pt}
 .cover-meta{font-size:9pt;color:#555;margin-bottom:20pt}
@@ -148,6 +148,7 @@ body{font-family:Georgia,'Times New Roman',Times,serif;font-size:9.5pt;line-heig
 .ep{border-bottom:1pt solid #eee;padding-bottom:8pt;margin-bottom:8pt;page-break-inside:avoid}
 .ep-n{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:6.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888}
 .ep-title{font-size:10pt;font-weight:700;margin-bottom:2pt}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.cover{page-break-after:always}}
 </style></head><body>
 <div class="cover">
   <div class="cover-eyebrow">Series Bible</div>
@@ -157,7 +158,6 @@ body{font-family:Georgia,'Times New Roman',Times,serif;font-size:9.5pt;line-heig
   ${f.logline ? `<div class="cover-logline">${esc(f.logline)}</div>` : ''}
   <div class="cover-date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
 </div>
-<div class="html2pdf__page-break"></div>
 ${sec('Overview', `${f.logline ? `<div class="logline-box">${esc(f.logline)}</div>` : ''}${f.tagline ? `<p><em>&ldquo;${esc(f.tagline)}&rdquo;</em></p>` : ''}<div class="meta-grid">${[['Format', f.format], ['Genre', f.genre], ['Tone', f.tone], ['Budget', f.budget_level]].filter(([, v]) => v).map(([l, v]) => `<div><div class="ml">${l}</div><div class="mv">${esc(v as string)}</div></div>`).join('')}</div>`)}
 ${sec('World Building', `${f.world ? `<h3>The World</h3><p>${esc(f.world)}</p>` : ''}${f.rules_of_world ? `<h3>Rules of the World</h3><p>${esc(f.rules_of_world)}</p>` : ''}${f.atmosphere ? `<h3>Atmosphere</h3><p>${esc(f.atmosphere)}</p>` : ''}${f.visual_style ? `<h3>Visual Style</h3><p>${esc(f.visual_style)}</p>` : ''}`)}
 ${sec('Premise & Theme', `${f.premise ? `<h3>Premise</h3><p>${esc(f.premise)}</p>` : ''}${f.theme ? `<h3>Theme</h3><p>${esc(f.theme)}</p>` : ''}`)}
@@ -251,83 +251,28 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
 
   const handleExportPDF = async () => {
     const projectTitle = currentProject?.title || 'Untitled';
-    const filename = `${projectTitle.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-') || 'series-bible'}-series-bible.pdf`;
     const htmlStr = buildSeriesBibleHTML(form, projectTitle);
 
-    toast('Generating PDF…', 'info', 20000);
-    try {
-      // Render in a sandboxed same-origin iframe so the app's dark CSS never touches it
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('data-pdf-host', '1');
-      iframe.style.cssText = 'position:absolute;top:-99999px;left:0;width:816px;height:1px;border:none;visibility:hidden';
-      iframe.srcdoc = htmlStr;
-      document.body.appendChild(iframe);
-
-      // Wait for the iframe document to fully load and paint
-      await new Promise<void>(r => {
-        if (iframe.contentDocument?.readyState === 'complete') { r(); return; }
-        iframe.addEventListener('load', () => r(), { once: true });
-        setTimeout(r, 3000); // fallback
-      });
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-      await new Promise(r => setTimeout(r, 500));
-
-      const iframeDoc = iframe.contentDocument!;
-      const body = iframeDoc.body;
-      const contentH = iframeDoc.documentElement.scrollHeight || 1200;
-
-      // Expand iframe to its real content height so html2canvas can see it all
-      iframe.style.height = contentH + 'px';
-      iframe.style.visibility = 'visible';
-      await new Promise(r => setTimeout(r, 100));
-
-      const MAX_CANVAS_PX = 14_000_000;
-      const rawScale = Math.sqrt(MAX_CANVAS_PX / (816 * contentH));
-      const safeScale = Math.min(1.5, Math.max(0.8, rawScale));
-
-      const { default: html2canvas } = await import('html2canvas');
-
-      // Capture the iframe body directly — it has its own isolated CSS context
-      const canvas = await html2canvas(body, {
-        scale: safeScale,
-        useCORS: true,
-        logging: false,
-        windowWidth: 816,
-        windowHeight: contentH,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0,
-        width: 816,
-        height: contentH,
-      });
-
-      document.body.removeChild(iframe);
-
-      // Slice the canvas into letter-size pages
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      const { jsPDF } = await import('jspdf');
-      const pdf = new jsPDF({ unit: 'px', format: 'letter', orientation: 'portrait' });
-      const pdfPageW = pdf.internal.pageSize.getWidth();
-      const pdfPageH = pdf.internal.pageSize.getHeight();
-      // Scale image to fit page width, then walk down page by page
-      const ratio = pdfPageW / canvas.width;
-      const totalImgH = canvas.height * ratio;
-      let yPos = 0;
-      let pageNum = 0;
-      while (yPos < totalImgH) {
-        if (pageNum > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, -yPos, pdfPageW, totalImgH, undefined, 'FAST');
-        yPos += pdfPageH;
-        pageNum++;
-      }
-      pdf.save(filename);
-
-      toast.success('PDF downloaded.');
-    } catch (err) {
-      document.querySelector('[data-pdf-host]')?.remove();
-      toast.error('PDF export failed.');
-      console.error(err);
+    // Open in a new window and trigger the system print dialog.
+    // This is the only approach that works reliably across Chrome, Firefox,
+    // and Safari without html2canvas / iframe sandboxing issues.
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) {
+      toast.error('Pop-up blocked — please allow pop-ups for this site.');
+      return;
     }
+    win.document.open();
+    win.document.write(htmlStr);
+    win.document.close();
+    // Wait for fonts / images to load before printing
+    win.addEventListener('load', () => {
+      setTimeout(() => {
+        win.focus();
+        win.print();
+        // Close after print dialog is dismissed
+        win.addEventListener('afterprint', () => win.close());
+      }, 500);
+    });
   };
 
   const addEpisode = () => setForm(f => ({ ...f, episode_breakdown: [...f.episode_breakdown, { id: uid(), title: '', logline: '', synopsis: '' }] }));
@@ -409,8 +354,9 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
             </button>
           )}
           <button onClick={handleExportPDF}
-            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-surface-800 text-surface-300 hover:text-white hover:bg-surface-700 transition-all">
-            <Download size={11} /> Export PDF
+            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-surface-800 text-surface-300 hover:text-white hover:bg-surface-700 transition-all"
+            title="Opens print dialog — choose 'Save as PDF'">
+            <Download size={11} /> Print / Save PDF
           </button>
         </div>
       </aside>
