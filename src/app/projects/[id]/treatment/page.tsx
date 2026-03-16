@@ -122,7 +122,7 @@ function buildSeriesBibleHTML(f: Omit<Treatment, 'id'>, projectTitle: string): s
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Georgia,'Times New Roman',Times,serif;font-size:9.5pt;line-height:1.6;color:#1a1a1a;background:#fff}
 @page{size:letter;margin:1in}
-.cover{page-break-after:always;min-height:9in;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:.75in}
+.cover{min-height:9in;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:.75in}
 .cover-eyebrow{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:6.5pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#888;margin-bottom:14pt}
 .cover-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:30pt;font-weight:900;line-height:1.05;letter-spacing:-.02em;color:#1a1a1a;margin-bottom:9pt}
 .cover-meta{font-size:9pt;color:#555;margin-bottom:20pt}
@@ -157,6 +157,7 @@ body{font-family:Georgia,'Times New Roman',Times,serif;font-size:9.5pt;line-heig
   ${f.logline ? `<div class="cover-logline">${esc(f.logline)}</div>` : ''}
   <div class="cover-date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
 </div>
+<div class="html2pdf__page-break"></div>
 ${sec('Overview', `${f.logline ? `<div class="logline-box">${esc(f.logline)}</div>` : ''}${f.tagline ? `<p><em>&ldquo;${esc(f.tagline)}&rdquo;</em></p>` : ''}<div class="meta-grid">${[['Format', f.format], ['Genre', f.genre], ['Tone', f.tone], ['Budget', f.budget_level]].filter(([, v]) => v).map(([l, v]) => `<div><div class="ml">${l}</div><div class="mv">${esc(v as string)}</div></div>`).join('')}</div>`)}
 ${sec('World Building', `${f.world ? `<h3>The World</h3><p>${esc(f.world)}</p>` : ''}${f.rules_of_world ? `<h3>Rules of the World</h3><p>${esc(f.rules_of_world)}</p>` : ''}${f.atmosphere ? `<h3>Atmosphere</h3><p>${esc(f.atmosphere)}</p>` : ''}${f.visual_style ? `<h3>Visual Style</h3><p>${esc(f.visual_style)}</p>` : ''}`)}
 ${sec('Premise & Theme', `${f.premise ? `<h3>Premise</h3><p>${esc(f.premise)}</p>` : ''}${f.theme ? `<h3>Theme</h3><p>${esc(f.theme)}</p>` : ''}`)}
@@ -275,7 +276,6 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
         'font-family: Georgia, "Times New Roman", Times, serif',
         'font-size: 12pt',
         'line-height: 1.65',
-        'z-index: -1',
       ].join(';');
 
       // Inject the template's scoped styles (they use class selectors, so
@@ -315,6 +315,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
           backgroundColor: '#ffffff',
         },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak: { mode: 'css', before: '.html2pdf__page-break', avoid: '.section,.char,.ep,.thread' },
       }).from(content).save();
 
       document.body.removeChild(host);
