@@ -316,7 +316,8 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
         },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
         pagebreak: { mode: 'css', before: '.html2pdf__page-break', avoid: '.section,.char,.ep,.thread' },
-      }).from(content).save();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any).from(content).save();
 
       document.body.removeChild(host);
       toast.success('PDF downloaded.');
