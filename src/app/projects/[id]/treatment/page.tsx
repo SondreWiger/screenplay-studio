@@ -254,72 +254,74 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
     const filename = `${projectTitle.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-') || 'series-bible'}-series-bible.pdf`;
     const htmlStr = buildSeriesBibleHTML(form, projectTitle);
 
-    toast('Generating PDF…', 'info', 15000);
+    toast('Generating PDF…', 'info', 20000);
     try {
-      // Parse the generated HTML and extract styles + body content
-      const parsed = new DOMParser().parseFromString(htmlStr, 'text/html');
-      const styleContent = Array.from(parsed.querySelectorAll('style')).map(s => s.textContent || '').join('\n');
-      const bodyContent = parsed.body.innerHTML;
+      // Render in a sandboxed same-origin iframe so the app's dark CSS never touches it
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('data-pdf-host', '1');
+      iframe.style.cssText = 'position:absolute;top:-99999px;left:0;width:816px;height:1px;border:none;visibility:hidden';
+      iframe.srcdoc = htmlStr;
+      document.body.appendChild(iframe);
 
-      // Build a fully isolated container — 'all:initial' prevents the dark
-      // Next.js theme from bleeding in via html2canvas's parent-document context
-      const host = document.createElement('div');
-      host.setAttribute('data-pdf-host', '1');
-      host.style.cssText = [
-        'all: initial',
-        'position: fixed',
-        'left: -9999px',
-        'top: 0',
-        'width: 816px',
-        'background: #ffffff',
-        'color: #1a1a1a',
-        'font-family: Georgia, "Times New Roman", Times, serif',
-        'font-size: 12pt',
-        'line-height: 1.65',
-      ].join(';');
-
-      // Inject the template's scoped styles (they use class selectors, so
-      // they only affect children of this container)
-      const styleEl = document.createElement('style');
-      styleEl.textContent = styleContent;
-      host.appendChild(styleEl);
-
-      const content = document.createElement('div');
-      content.innerHTML = bodyContent;
-      host.appendChild(content);
-
-      document.body.appendChild(host);
-
-      // Give the browser a frame to paint it
+      // Wait for the iframe document to fully load and paint
+      await new Promise<void>(r => {
+        if (iframe.contentDocument?.readyState === 'complete') { r(); return; }
+        iframe.addEventListener('load', () => r(), { once: true });
+        setTimeout(r, 3000); // fallback
+      });
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 500));
 
-      // Calculate the largest scale that won't exceed browser canvas limits.
-      // Most browsers cap at ~16.7 M pixels (4096×4096). Use 14 M to be safe.
+      const iframeDoc = iframe.contentDocument!;
+      const body = iframeDoc.body;
+      const contentH = iframeDoc.documentElement.scrollHeight || 1200;
+
+      // Expand iframe to its real content height so html2canvas can see it all
+      iframe.style.height = contentH + 'px';
+      iframe.style.visibility = 'visible';
+      await new Promise(r => setTimeout(r, 100));
+
       const MAX_CANVAS_PX = 14_000_000;
-      const contentH = content.scrollHeight || 1200;
       const rawScale = Math.sqrt(MAX_CANVAS_PX / (816 * contentH));
       const safeScale = Math.min(1.5, Math.max(0.8, rawScale));
 
-      const html2pdf = (await import('html2pdf.js')).default;
-      await html2pdf().set({
-        margin: [0.75, 0.75],
-        filename,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: {
-          scale: safeScale,
-          useCORS: true,
-          letterRendering: true,
-          logging: false,
-          windowWidth: 816,
-          backgroundColor: '#ffffff',
-        },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak: { mode: 'css', before: '.html2pdf__page-break', avoid: '.section,.char,.ep,.thread' },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any).from(content).save();
+      const { default: html2canvas } = await import('html2canvas');
 
-      document.body.removeChild(host);
+      // Capture the iframe body directly — it has its own isolated CSS context
+      const canvas = await html2canvas(body, {
+        scale: safeScale,
+        useCORS: true,
+        logging: false,
+        windowWidth: 816,
+        windowHeight: contentH,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        width: 816,
+        height: contentH,
+      });
+
+      document.body.removeChild(iframe);
+
+      // Slice the canvas into letter-size pages
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const { jsPDF } = await import('jspdf');
+      const pdf = new jsPDF({ unit: 'px', format: 'letter', orientation: 'portrait' });
+      const pdfPageW = pdf.internal.pageSize.getWidth();
+      const pdfPageH = pdf.internal.pageSize.getHeight();
+      // Scale image to fit page width, then walk down page by page
+      const ratio = pdfPageW / canvas.width;
+      const totalImgH = canvas.height * ratio;
+      let yPos = 0;
+      let pageNum = 0;
+      while (yPos < totalImgH) {
+        if (pageNum > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, -yPos, pdfPageW, totalImgH, undefined, 'FAST');
+        yPos += pdfPageH;
+        pageNum++;
+      }
+      pdf.save(filename);
+
       toast.success('PDF downloaded.');
     } catch (err) {
       document.querySelector('[data-pdf-host]')?.remove();
