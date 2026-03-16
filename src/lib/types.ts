@@ -392,6 +392,7 @@ export interface Project {
   updated_at: string;
   accent_color?: string | null;
   sidebar_tabs?: Record<string, boolean> | null;
+  page_size?: 'letter' | 'a4' | null;
   custom_branding?: {
     primary_color?: string;
     secondary_color?: string;

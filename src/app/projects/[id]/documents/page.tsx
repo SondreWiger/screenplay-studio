@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Input, Modal, Badge, LoadingSpinner, toast } from '@/components/ui';
@@ -45,6 +46,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   const versionSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const searchParams = useSearchParams();
 
   // Keep ref in sync with currentDoc
   useEffect(() => { currentDocRef.current = currentDoc?.id || null; }, [currentDoc?.id]);
@@ -62,6 +64,21 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     if (!params.id) return;
     fetchData();
   }, [params.id]);
+
+  // Auto-open a specific document when ?doc=ID is in the URL
+  const docParam = searchParams.get('doc');
+  useEffect(() => {
+    if (!docParam || loading || documents.length === 0) return;
+    const target = documents.find((d) => d.id === docParam);
+    if (target && target.id !== currentDoc?.id) {
+      setCurrentDoc(target);
+      // Navigate into the correct folder if needed
+      if (target.folder_id && target.folder_id !== currentFolder) {
+        setCurrentFolder(target.folder_id);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [docParam, loading, documents.length]);
 
   // ── Realtime subscriptions for collaborative editing ──
   useEffect(() => {

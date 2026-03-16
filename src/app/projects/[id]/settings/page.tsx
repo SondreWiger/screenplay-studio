@@ -37,6 +37,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   // Project customization
   const [projectAccentColor, setProjectAccentColor] = useState<string | null>(null);
   const [projectSidebarTabs, setProjectSidebarTabs] = useState<Record<string, boolean> | null>(null);
+  const [pageSize, setPageSize] = useState<'letter' | 'a4'>('letter');
   const [savingCustom, setSavingCustom] = useState(false);
   const [savedCustom, setSavedCustom] = useState(false);
 
@@ -53,6 +54,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       setLanguage(data?.language || '');
       setProjectAccentColor(data?.accent_color || null);
       setProjectSidebarTabs(data?.sidebar_tabs || null);
+      setPageSize((data?.page_size as 'letter' | 'a4') || 'letter');
     } catch (err) {
       console.error('Unexpected error fetching project settings:', err);
     } finally {
@@ -280,7 +282,36 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
         <h2 className="text-lg font-semibold text-white mb-2">Project Customization</h2>
         <p className="text-sm text-surface-400 mb-6">Override your global preferences for this project only. Leave on "Default" to use your account settings.</p>
 
-        {/* Accent Color Override */}
+        {/* Script Page Size */}
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-surface-300 mb-1">Script Page Size</h3>
+          <p className="text-[11px] text-surface-500 mb-3">Sets the page dimensions for the script editor and PDF export.</p>
+          <div className="flex gap-3">
+            {([
+              { value: 'letter', label: 'US Letter', sub: '8.5 × 11 in — standard for Hollywood scripts' },
+              { value: 'a4',     label: 'A4',        sub: '210 × 297 mm — standard in Europe & internationally' },
+            ] as { value: 'letter' | 'a4'; label: string; sub: string }[]).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setPageSize(opt.value)}
+                className={`flex-1 p-3 rounded-lg border-2 text-left transition-all ${
+                  pageSize === opt.value
+                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
+                    : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {/* Page icon */}
+                  <svg className="w-4 h-4 text-surface-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className={`text-sm font-semibold ${pageSize === opt.value ? 'text-white' : 'text-surface-300'}`}>{opt.label}</span>
+                </div>
+                <p className="text-[11px] text-surface-500 leading-snug">{opt.sub}</p>
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="mb-6">
           <h3 className="text-sm font-medium text-surface-300 mb-3">Accent Color</h3>
           <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
@@ -406,6 +437,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               await supabase.from('projects').update({
                 accent_color: projectAccentColor,
                 sidebar_tabs: projectSidebarTabs,
+                page_size: pageSize,
               }).eq('id', params.id);
               // Apply immediately
               if (projectAccentColor) {

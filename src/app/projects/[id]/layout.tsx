@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -111,6 +112,72 @@ export default function ProjectLayout({
   const [otherIcons, setOtherIcons] = useState<Set<string>>(new Set());
   const [otherExpanded, setOtherExpanded] = useState(false);
   const { canUse: canUseFeature } = useFeatureAccess();
+
+  // ── Quick Access shortcuts (personal, localStorage) ───────────────
+  type Shortcut = { id: string; type: 'script' | 'document'; title: string };
+  const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
+  const [showShortcutPicker, setShowShortcutPicker] = useState(false);
+  const [pickerItems, setPickerItems] = useState<Shortcut[]>([]);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerQuery, setPickerQuery] = useState('');
+  const [pickerPos, setPickerPos] = useState<{ top: number; left: number } | null>(null);
+  const shortcutAddBtnRef = useRef<HTMLButtonElement>(null);
+  const scKey = user?.id && params.id ? `qaccess:${user.id}:${params.id}` : null;
+
+  useEffect(() => {
+    if (!scKey) return;
+    try {
+      const raw = localStorage.getItem(scKey);
+      if (raw) setShortcuts(JSON.parse(raw));
+    } catch { /* ignore */ }
+  }, [scKey]);
+
+  const saveShortcuts = (next: Shortcut[]) => {
+    setShortcuts(next);
+    if (scKey) {
+      try { localStorage.setItem(scKey, JSON.stringify(next)); } catch { /* ignore */ }
+    }
+  };
+
+  const toggleShortcut = (item: Shortcut) => {
+    const already = shortcuts.some((s) => s.id === item.id);
+    saveShortcuts(already ? shortcuts.filter((s) => s.id !== item.id) : [...shortcuts, item]);
+    setShowShortcutPicker(false);
+  };
+
+  const openShortcutPicker = async (anchorEl?: HTMLButtonElement | null) => {
+    // Position the popup next to the anchor button
+    if (anchorEl) {
+      const r = anchorEl.getBoundingClientRect();
+      setPickerPos({ top: r.bottom + 6, left: r.left });
+    } else if (shortcutAddBtnRef.current) {
+      const r = shortcutAddBtnRef.current.getBoundingClientRect();
+      setPickerPos({ top: r.bottom + 6, left: r.left });
+    }
+    setShowShortcutPicker(true);
+    setPickerQuery('');
+    // Always refresh
+    setPickerLoading(true);
+    const supabase = createClient();
+    const [sRes, dRes] = await Promise.all([
+      supabase.from('scripts').select('id,title').eq('project_id', params.id).order('title'),
+      supabase.from('project_documents').select('id,title').eq('project_id', params.id).order('title'),
+    ]);
+    const scripts: Shortcut[] = (sRes.data ?? []).map((s: { id: string; title: string }) => ({ id: s.id, type: 'script', title: s.title }));
+    const docs: Shortcut[] = (dRes.data ?? []).map((d: { id: string; title: string }) => ({ id: d.id, type: 'document', title: d.title }));
+    setPickerItems([...scripts, ...docs]);
+    setPickerLoading(false);
+  };
+
+  const shortcutHref = (sc: Shortcut) =>
+    sc.type === 'script'
+      ? `/projects/${params.id}/script?script_id=${sc.id}`
+      : `/projects/${params.id}/documents?doc=${sc.id}`;
+
+  const isShortcutActive = (sc: Shortcut) => {
+    const base = sc.type === 'script' ? `/projects/${params.id}/script` : `/projects/${params.id}/documents`;
+    return pathname === base;
+  };
 
   const toggleSection = (cat: string) => {
     setCollapsedSections((prev) => {
@@ -1055,7 +1122,78 @@ export default function ProjectLayout({
         )}
       </nav>
 
-      {/* Online Users */}
+      {/* ── Quick Access ───────────────────────────────────────── */}
+      {(mobile || !sidebarCollapsed) && (
+        <div className="border-t border-surface-800/50 px-2 py-2">
+          <div className="flex items-center justify-between px-2 mb-1">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-surface-600">Quick Access</span>
+            <button
+              ref={shortcutAddBtnRef}
+              onClick={(e) => openShortcutPicker(e.currentTarget)}
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-surface-500 hover:text-[#FF5F1F] hover:bg-surface-800 transition-colors text-[10px]"
+              title="Pin scripts or documents here"
+            >
+              <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+              Pin
+            </button>
+          </div>
+
+          {shortcuts.length === 0 ? (
+            <button
+              onClick={(e) => openShortcutPicker(e.currentTarget)}
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg border border-dashed border-surface-800 text-surface-600 hover:border-surface-700 hover:text-surface-400 transition-colors text-xs"
+            >
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+              Pin a script or document…
+            </button>
+          ) : (
+            <div className="space-y-0.5">
+              {shortcuts.map((sc) => {
+                const active = isShortcutActive(sc);
+                return (
+                  <div key={sc.id} className="group/sc flex items-center">
+                    <Link
+                      href={shortcutHref(sc)}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        'flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg text-xs transition-colors',
+                        active ? 'bg-[#FF5F1F]/10 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+                      )}
+                      title={`Open ${sc.type === 'script' ? 'script' : 'document'}: ${sc.title}`}
+                    >
+                      {sc.type === 'script' ? (
+                        <svg className={cn('w-3.5 h-3.5 shrink-0', active ? 'text-[#FF5F1F]' : 'text-surface-500')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      ) : (
+                        <svg className={cn('w-3.5 h-3.5 shrink-0', active ? 'text-[#FF5F1F]' : 'text-surface-500')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+                      )}
+                      <span className="truncate">{sc.title}</span>
+                    </Link>
+                    <button
+                      onClick={() => saveShortcuts(shortcuts.filter((s) => s.id !== sc.id))}
+                      className="mr-0.5 p-1 rounded opacity-0 group-hover/sc:opacity-100 text-surface-600 hover:text-red-400 transition-all shrink-0"
+                      title="Unpin"
+                    >
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Quick Access picker portal ────────────────────────────── */}
       {(mobile || !sidebarCollapsed) && onlineUsers.length > 0 && (
         <div className="border-t border-surface-800/50 px-3 py-3">
           <p className="meta-label mb-2 px-2">Live now</p>
@@ -1128,6 +1266,120 @@ export default function ProjectLayout({
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: '#070710' }}>
+
+      {/* Quick Access picker — rendered in a portal so it floats above all stacking contexts */}
+      {showShortcutPicker && pickerPos && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999]" onClick={() => setShowShortcutPicker(false)}>
+          <div
+            className="fixed w-80 rounded-xl bg-surface-800 border border-surface-700 shadow-2xl overflow-hidden"
+            style={{ top: Math.min(pickerPos.top, window.innerHeight - 380), left: Math.min(pickerPos.left, window.innerWidth - 330) }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-surface-700">
+              <p className="text-xs font-semibold text-white">Pin to Quick Access</p>
+              <button onClick={() => setShowShortcutPicker(false)} className="text-surface-500 hover:text-white transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Search */}
+            <div className="px-2 py-1.5 border-b border-surface-700/60">
+              <input
+                autoFocus
+                value={pickerQuery}
+                onChange={(e) => setPickerQuery(e.target.value)}
+                placeholder="Search scripts & documents…"
+                className="w-full bg-surface-900/60 rounded-lg px-3 py-1.5 text-sm text-white placeholder-surface-500 outline-none border border-surface-700 focus:border-[#FF5F1F]/50"
+              />
+            </div>
+            {/* List */}
+            <div className="max-h-72 overflow-y-auto p-1">
+              {pickerLoading && (
+                <p className="text-center text-surface-500 py-8 text-xs">Loading…</p>
+              )}
+              {!pickerLoading && pickerItems.filter(i => !pickerQuery || i.title.toLowerCase().includes(pickerQuery.toLowerCase())).length === 0 && (
+                <p className="text-center text-surface-500 py-8 text-xs">No scripts or documents found</p>
+              )}
+              {!pickerLoading && (() => {
+                const q = pickerQuery.toLowerCase();
+                const filtered = pickerQuery ? pickerItems.filter(i => i.title.toLowerCase().includes(q)) : pickerItems;
+                const scriptItems = filtered.filter(i => i.type === 'script');
+                const docItems = filtered.filter(i => i.type === 'document');
+                return (
+                  <>
+                    {scriptItems.length > 0 && (
+                      <>
+                        <p className="px-2.5 pt-2 pb-0.5 text-[9px] font-bold uppercase tracking-widest text-surface-600">Scripts</p>
+                        {scriptItems.map((item) => {
+                          const pinned = shortcuts.some((s) => s.id === item.id);
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => toggleShortcut(item)}
+                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-left transition-colors hover:bg-surface-700/60 group/pi"
+                            >
+                              <svg className="w-3.5 h-3.5 shrink-0 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <span className={cn('truncate flex-1', pinned ? 'text-white' : 'text-surface-300 group-hover/pi:text-white')}>{item.title}</span>
+                              <span className={cn('w-4 h-4 shrink-0 flex items-center justify-center rounded-full border transition-all',
+                                pinned ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'border-surface-600 group-hover/pi:border-surface-400'
+                              )}>
+                                {pinned && (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                    {docItems.length > 0 && (
+                      <>
+                        <p className="px-2.5 pt-2 pb-0.5 text-[9px] font-bold uppercase tracking-widest text-surface-600">Documents</p>
+                        {docItems.map((item) => {
+                          const pinned = shortcuts.some((s) => s.id === item.id);
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => toggleShortcut(item)}
+                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-left transition-colors hover:bg-surface-700/60 group/pi"
+                            >
+                              <svg className="w-3.5 h-3.5 shrink-0 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                              </svg>
+                              <span className={cn('truncate flex-1', pinned ? 'text-white' : 'text-surface-300 group-hover/pi:text-white')}>{item.title}</span>
+                              <span className={cn('w-4 h-4 shrink-0 flex items-center justify-center rounded-full border transition-all',
+                                pinned ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'border-surface-600 group-hover/pi:border-surface-400'
+                              )}>
+                                {pinned && (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+            {shortcuts.length > 0 && (
+              <div className="border-t border-surface-700/60 px-3 py-2 text-[10px] text-surface-500">
+                {shortcuts.length} pinned · click any item to toggle
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Mobile header */}
       <div className="fixed top-0 left-0 right-0 z-40 md:hidden"

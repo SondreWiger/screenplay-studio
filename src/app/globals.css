@@ -133,18 +133,29 @@
 
 @layer components {
   /* =============================================
-     Screenplay Page — continuous-document feel
+     Screenplay Page — hard page, matches print exactly
      ============================================= */
   .sp-page {
     @apply font-screenplay;
     font-size: 12pt;
     line-height: 1;
+    /* Fixed page dimensions — matches printed US Letter exactly */
+    width: 8.5in;
     max-width: 8.5in;
+    min-height: 11in;
     padding: 1in 1in 1in 1.5in;
     background: white;
     color: black;
-    min-height: 11in;
     box-shadow: 0 4px 32px rgba(0,0,0,0.38), 0 1px 8px rgba(0,0,0,0.22);
+    flex-shrink: 0;
+  }
+
+  /* A4 page size variant — overrides Letter dimensions */
+  .sp-page-a4 {
+    width: 210mm;
+    max-width: 210mm;
+    min-height: 297mm;
+    padding: 25mm 25mm 25mm 37mm;
   }
 
   /* Each line wrapper: holds gutter + editable element */
@@ -794,8 +805,10 @@ a:active:not(:disabled) {
    ============================================= */
 @media (max-width: 768px) {
   /* Script page: remove inch-based padding that crushes mobile */
-  .sp-page {
+  .sp-page,
+  .sp-page-a4 {
     padding: 12px 10px 12px 14px !important;
+    width: 100% !important;
     max-width: 100% !important;
     min-height: auto !important;
     border-radius: 0 !important;
@@ -1338,7 +1351,8 @@ a:active:not(:disabled) {
   }
 
   /* Make the script area fill the page */
-  .sp-page {
+  .sp-page,
+  .sp-page-a4 {
     width: auto !important;
     max-width: none !important;
     min-height: auto !important;

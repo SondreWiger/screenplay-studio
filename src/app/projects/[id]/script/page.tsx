@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback, memo, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, memo, useMemo, Fragment } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
@@ -22,6 +22,7 @@ import {
   serializeVersionConfig,
   deserializeVersionConfig,
 } from '@/lib/versioning';
+import { paginateScript, type PaginatedPage } from '@/lib/screenplay-paginator';
 
 // ============================================================
 // Display Settings — persisted in localStorage
@@ -827,31 +828,14 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [elements, selectedElementIds.size]);
 
-  // Page numbers — accurate per-element line estimation
-  // Assumes US letter, 12pt Courier, margins: 1in top/right/bottom, 1.5in left → 6in × 9in usable
-  // 10 chars/inch → 60 chars for action, 35 for dialogue (1.5in L + 2in R indent), etc.
-  const elementPages = useMemo(() => {
-    const pages: Record<string, number> = {};
-    let lineCount = 0;
-    const linesPerPage = 55; // ~55 usable lines per printed page
-    const estimateEl = (el: ScriptElement): number => {
-      const len = stripHtml(el.content || '').length;
-      switch (el.element_type) {
-        case 'scene_heading':   return Math.max(1, Math.ceil(len / 60)) + 3; // blank before + blank after
-        case 'action':         return Math.max(1, Math.ceil(len / 60)) + 1; // blank after
-        case 'character':      return Math.max(1, Math.ceil(len / 38)) + 1; // blank before
-        case 'parenthetical':  return Math.max(1, Math.ceil(len / 30));
-        case 'dialogue':       return Math.max(1, Math.ceil(len / 35)) + 1; // narrow col + blank after
-        case 'transition':     return Math.max(1, Math.ceil(len / 60)) + 2; // blank before + after
-        default:               return Math.max(1, Math.ceil(len / 60)) + 1;
-      }
-    };
-    elements.forEach((el) => {
-      pages[el.id] = Math.floor(lineCount / linesPerPage) + 1;
-      lineCount += estimateEl(el);
-    });
-    return pages;
-  }, [elements]);
+  // Paginate elements into hard pages using the shared screenplay-paginator.
+  // Returns both the ordered pages array (for rendering) and a quick-lookup map.
+  const scriptPageSize = (currentProject?.page_size as 'letter' | 'a4') || 'letter';
+  const paginatorResult = useMemo(
+    () => paginateScript(elements, scriptPageSize),
+    [elements, scriptPageSize],
+  );
+  const elementPages = paginatorResult.elementPageMap;
 
   const sceneHeadings = elements.filter((e) => e.element_type === 'scene_heading');
   const chapterMarkers = elements.filter((e) => e.element_type === 'chapter_marker');
@@ -870,8 +854,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return map;
   }, [elements]);
 
-  const totalPages = Object.values(elementPages).length > 0
-    ? Math.max(...Object.values(elementPages)) : 1;
+  const totalPages = paginatorResult.pages.length || 1;
 
   // Word count
   const wordCount = useMemo(() => {
@@ -1038,36 +1021,13 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       return `<div class="el el-${cls}">${content}</div>`;
     };
 
-    // Paginate — same accurate model as editor page numbers
-    const linesPerPage = 55;
-    const pages: string[][] = [[]];
-    let lineCount = 0;
-    const estimateEl = (el: ScriptElement): number => {
-      const len = stripHtml(el.content || '').length;
-      switch (el.element_type) {
-        case 'scene_heading':   return Math.max(1, Math.ceil(len / 60)) + 3;
-        case 'action':         return Math.max(1, Math.ceil(len / 60)) + 1;
-        case 'character':      return Math.max(1, Math.ceil(len / 38)) + 1;
-        case 'parenthetical':  return Math.max(1, Math.ceil(len / 30));
-        case 'dialogue':       return Math.max(1, Math.ceil(len / 35)) + 1;
-        case 'transition':     return Math.max(1, Math.ceil(len / 60)) + 2;
-        default:               return Math.max(1, Math.ceil(len / 60)) + 1;
-      }
-    };
-    for (const el of els) {
-      if (el.is_omitted) continue;
-      const elLines = estimateEl(el);
-      if (lineCount + elLines > linesPerPage && pages[pages.length - 1].length > 0) {
-        pages.push([]);
-        lineCount = 0;
-      }
-      pages[pages.length - 1].push(elementHTML(el));
-      lineCount += elLines;
-    }
+    // Paginate using the shared screenplay-paginator utility
+    const exportPageSize = (useProjectStore.getState().currentProject?.page_size as 'letter' | 'a4') || 'letter';
+    const { pages: paginatedPages } = paginateScript(els, exportPageSize);
 
-    const pageHTML = pages.map((p, i) => `
+    const pageHTML = paginatedPages.map((page, i) => `
       <div class="page">
-        <div class="page-content">${p.join('')}</div>
+        <div class="page-content">${page.elements.map(elementHTML).join('')}</div>
         <div class="page-number">${i + 1}.</div>
       </div>
     `).join('');
@@ -1111,18 +1071,15 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }
 
   .page {
-    width: 8.5in;
-    min-height: 11in;
-    padding: 1in 1in 1in 1.5in;
+    width: ${exportPageSize === 'a4' ? '210mm' : '8.5in'};
+    min-height: ${exportPageSize === 'a4' ? '297mm' : '11in'};
+    padding: ${exportPageSize === 'a4' ? '25mm 25mm 25mm 37mm' : '1in 1in 1in 1.5in'};
     position: relative;
     page-break-after: always;
+    break-after: page;
     margin: 0 auto;
   }
-  .page:last-child { page-break-after: auto; }
-
-  .page-content {
-    min-height: calc(11in - 2in);
-  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
 
   .page-number {
     position: absolute;
@@ -1132,11 +1089,10 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   }
 
   /* Title page */
-  .title-page { position: relative; }
   .title-page .page-number { display: none; }
-  .title-page .page-content { display: flex; flex-direction: column; min-height: calc(11in - 2in); }
-  .title-center { text-align: center; padding-top: 3in; }
-  .title-bottom { position: absolute; bottom: 1in; left: 0; }
+  .title-page .page-content { display: flex; flex-direction: column; position: relative; height: ${exportPageSize === 'a4' ? 'calc(297mm - 50mm)' : 'calc(11in - 2in)'}; overflow: hidden; }
+  .title-center { text-align: center; padding-top: ${exportPageSize === 'a4' ? '80mm' : '3in'}; }
+  .title-bottom { position: absolute; bottom: 0; left: 0; }
   .tp-project-logo { max-height: 72pt; max-width: 240pt; object-fit: contain; margin-bottom: 24pt; display: block; margin-left: auto; margin-right: auto; }
   .tp-title { font-size: 24pt; font-weight: bold; text-transform: uppercase; margin-bottom: 24pt; }
   .tp-credit { font-size: 12pt; margin-bottom: 12pt; }
@@ -1204,38 +1160,24 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
   /* Screen preview */
   @media screen {
-    body { background: #e0e0e0; padding: 20px 0; }
+    body { background: #e0e0e0; padding: 40px 0; }
     .page {
       background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      margin-bottom: 32px;
     }
   }
 
-  /* Print */
+  /* Print — keep .page padding so layout matches the screen preview exactly.
+     margin: 0 on @page prevents the browser adding its own margins on top. */
   @media print {
-    body { background: white; }
-    .page {
-      width: auto;
-      min-height: auto;
-      padding: 0;
-      margin: 0;
-      page-break-after: always;
-    }
-    .page-content { min-height: auto; }
-    .title-page {
-      min-height: 100vh;
-      padding: 0;
-      position: relative;
-    }
-    .title-page .page-content { min-height: 100vh; }
-    .title-page .title-center { padding-top: 30vh; }
-    .title-page .title-bottom { position: absolute; bottom: 0.5in; left: 0; }
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; margin: 0; background: white; }
   }
 
   @page {
-    size: letter;
-    margin: 1in 1in 1in 1.5in;
+    size: ${exportPageSize === 'a4' ? 'a4' : 'letter'};
+    margin: 0;
   }
 </style>
 </head>
@@ -2118,9 +2060,9 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30">
           {/* Title page — always shown, all fields editable inline */}
           {currentScript && (
-            <div ref={titlePageRef} className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0 shadow-2xl rounded-sm', darkMode && 'sp-dark')}>
+            <div ref={titlePageRef} className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0', scriptPageSize === 'a4' && 'sp-page-a4', darkMode && 'sp-dark')}>
               {/* Use sp-page's own 1in/1.5in padding — no extra padding inside */}
-              <div className="flex flex-col" style={{ minHeight: 'calc(11in - 2in)' }}>
+              <div className="flex flex-col" style={{ minHeight: scriptPageSize === 'a4' ? 'calc(297mm - 50mm)' : 'calc(11in - 2in)' }}>
 
                 {/* Hint */}
                 <div className="text-right mb-4 pointer-events-none select-none">
@@ -2247,13 +2189,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
           )}
 
-          <div className={cn(
-            'sp-page mx-auto my-4 md:my-8 shadow-2xl rounded-sm',
-            darkMode && 'sp-dark',
-            displaySettings.pageWidth === 'narrow' && 'md:max-w-[6.5in]',
-            displaySettings.pageWidth === 'wide' && 'md:max-w-[9in]',
-          )} style={{ fontSize: `${displaySettings.fontSize}pt` }}>
-            {elements.length === 0 ? (
+          {/* ── Hard screenplay pages — one sp-page div per paginated page ── */}
+          {elements.length === 0 ? (
+            /* Empty state — single blank page */
+            <div className={cn(
+              'sp-page mx-auto my-4 md:my-8',
+              scriptPageSize === 'a4' && 'sp-page-a4',
+              darkMode && 'sp-dark',
+            )} style={{ fontSize: `${displaySettings.fontSize}pt` }}>
               <div className="flex flex-col items-center justify-center py-32 text-center">
                 <svg className="w-12 h-12 mb-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -2271,105 +2214,158 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   + Add {isAudioDrama && audioElementCycle.length > 0 ? ELEMENT_LABELS[audioElementCycle[0]] : isContentCreator ? 'Chapter' : 'Scene Heading'}
                 </button>
               </div>
-            ) : (
-              filteredElements.flatMap((element, index) => {
-                if (collapsedElementIds.has(element.id)) return [];
-                const isVersionHidden = versionConfig.disabled.length > 0
-                  && !isElementVisible(element, versionConfig.disabled);
-                const isFaded = isVersionHidden && versionConfig.showFaded;
-                const isSelected = selectedElementIds.has(element.id);
-                const seqColor = sequenceColorMap[element.id];
-                const isCollapsedSeq = element.element_type === 'sequence' && collapsedSequences.has(element.id);
-
-                // Hidden (and not showing faded) → show a subtle ··· indicator
-                if (isVersionHidden && !versionConfig.showFaded) {
-                  const versionNames = getElementVersions(element).join(', ');
-                  return [
-                    <div key={element.id} className="relative flex items-center h-3 my-0.5 group/hidden" title={`Hidden version content${versionNames ? ': ' + versionNames : ''}`}>
-                      <span className="absolute -left-5 text-[10px] text-surface-700 select-none font-mono leading-none group-hover/hidden:text-surface-500 transition-colors">···</span>
-                    </div>
-                  ];
-                }
-
-                const mainEl = (
-                  <div
-                    key={element.id}
-                    className={cn(
-                      'relative overflow-visible',
-                      isFaded ? 'opacity-20 pointer-events-none select-none' : undefined,
-                      isSelected ? 'outline outline-2 outline-[#FF5F1F]/40 outline-offset-1 rounded-sm' : undefined,
-                    )}
-                    style={element.element_type === 'sequence_end' && seqColor ? { color: seqColor } : undefined}
-                    onClick={(e) => {
-                      if ((e.metaKey || e.ctrlKey) && canEdit && !isFaded) {
-                        e.preventDefault();
-                        setSelectedElementIds((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(element.id)) next.delete(element.id);
-                          else next.add(element.id);
-                          return next;
-                        });
-                      }
-                    }}
-                  >
-                    <LineEditor
-                      elementId={element.id}
-                      darkMode={darkMode}
-                      characterNames={characterNames}
-                      isHighlighted={searchQuery !== '' && (element.content || '').replace(/<[^>]*>/g, '').toLowerCase().includes(searchQuery.toLowerCase())}
-                      showPageBreak={index > 0 && elementPages[element.id] !== elementPages[filteredElements[index - 1]?.id]}
-                      pageNumber={elementPages[element.id]}
-                      onFocused={(type) => setActiveElementType(type)}
-                      collaborators={collabMap[element.id] || []}
-                      projectId={params.id}
-                      canEdit={canEdit}
-                      displaySettings={displaySettings}
-                      characterColorMap={characterColorMap}
-                      sceneNumberMap={sceneNumberMap}
-                      commentCount={commentCountMap[element.id] || 0}
-                      onComment={openCommentPanel}
-                      onSequenceSettings={setSequenceColorModalId}
-                      isCollapsed={isCollapsedSeq}
-                      onCollapseToggle={element.element_type === 'sequence' ? () => toggleCollapseSequence(element.id) : undefined}
-                      isContentCreator={isContentCreator}
-                      isAudioDrama={isAudioDrama}
-                      isStagePlay={isStagePlay}
-                      audioFormat={resolvedAudioFormat}
-                      audioElementCycle={audioElementCycle}
-                      stagePlayElementCycle={STAGEPLAY_ELEMENT_CYCLE}
-                    />
-                  </div>
+            </div>
+          ) : (
+            <>
+              {paginatorResult.pages.map((page: PaginatedPage, pageIdx: number) => {
+                // When a search is active, check if this page has any matching elements
+                const pageHasVisible = !searchQuery || page.elements.some(
+                  (el) => !collapsedElementIds.has(el.id) && (el.content || '').toLowerCase().includes(searchQuery.toLowerCase()),
                 );
+                if (!pageHasVisible) return null;
 
-                if (isCollapsedSeq) {
-                  const count = collapsedCounts[element.id] || 0;
-                  return [mainEl, (
-                    <div key={`${element.id}-stub`}
-                      className="relative overflow-visible px-3 py-1.5 text-[11px] select-none cursor-pointer transition-colors text-surface-500 hover:text-surface-300"
-                      style={seqColor ? { borderLeft: `3px solid ${seqColor}55` } : undefined}
-                      onClick={() => toggleCollapseSequence(element.id)}>
-                      ↕ {count} element{count !== 1 ? 's' : ''} hidden — click to expand
+                return (
+                  <Fragment key={page.pageNum}>
+                    {/* Page number strip between pages */}
+                    {pageIdx > 0 && (
+                      <div className={cn(
+                        'text-center text-[10px] font-screenplay select-none pointer-events-none py-1',
+                        darkMode ? 'text-surface-600' : 'text-gray-400',
+                      )}>
+                        {page.pageNum}.
+                      </div>
+                    )}
+                    <div
+                      className={cn(
+                        'sp-page mx-auto my-2 md:my-3',
+                        scriptPageSize === 'a4' && 'sp-page-a4',
+                        pageIdx === 0 && 'mt-4 md:mt-8',
+                        darkMode && 'sp-dark',
+                      )}
+                      style={{ fontSize: `${displaySettings.fontSize}pt` }}
+                    >
+                    {page.elements.map((element) => {
+                      // Skip elements hidden inside collapsed sequences
+                      if (collapsedElementIds.has(element.id)) return null;
+                      // Skip elements that don't match the search query
+                      if (searchQuery && !(element.content || '').toLowerCase().includes(searchQuery.toLowerCase())) return null;
+
+                      const isVersionHidden = versionConfig.disabled.length > 0
+                        && !isElementVisible(element, versionConfig.disabled);
+                      const isFaded = isVersionHidden && versionConfig.showFaded;
+                      const isSelected = selectedElementIds.has(element.id);
+                      const seqColor = sequenceColorMap[element.id];
+                      const isCollapsedSeq = element.element_type === 'sequence' && collapsedSequences.has(element.id);
+
+                      // Hidden (and not showing faded) → subtle ··· indicator
+                      if (isVersionHidden && !versionConfig.showFaded) {
+                        const versionNames = getElementVersions(element).join(', ');
+                        return (
+                          <div key={element.id} className="relative flex items-center h-3 my-0.5 group/hidden" title={`Hidden version content${versionNames ? ': ' + versionNames : ''}`}>
+                            <span className="absolute -left-5 text-[10px] text-surface-700 select-none font-mono leading-none group-hover/hidden:text-surface-500 transition-colors">···</span>
+                          </div>
+                        );
+                      }
+
+                      const mainEl = (
+                        <div
+                          key={element.id}
+                          className={cn(
+                            'relative overflow-visible',
+                            isFaded ? 'opacity-20 pointer-events-none select-none' : undefined,
+                            isSelected ? 'outline outline-2 outline-[#FF5F1F]/40 outline-offset-1 rounded-sm' : undefined,
+                          )}
+                          style={element.element_type === 'sequence_end' && seqColor ? { color: seqColor } : undefined}
+                          onClick={(e) => {
+                            if ((e.metaKey || e.ctrlKey) && canEdit && !isFaded) {
+                              e.preventDefault();
+                              setSelectedElementIds((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(element.id)) next.delete(element.id);
+                                else next.add(element.id);
+                                return next;
+                              });
+                            }
+                          }}
+                        >
+                          <LineEditor
+                            elementId={element.id}
+                            darkMode={darkMode}
+                            characterNames={characterNames}
+                            isHighlighted={searchQuery !== '' && (element.content || '').replace(/<[^>]*>/g, '').toLowerCase().includes(searchQuery.toLowerCase())}
+                            showPageBreak={false}
+                            pageNumber={elementPages[element.id]}
+                            onFocused={(type) => setActiveElementType(type)}
+                            collaborators={collabMap[element.id] || []}
+                            projectId={params.id}
+                            canEdit={canEdit}
+                            displaySettings={displaySettings}
+                            characterColorMap={characterColorMap}
+                            sceneNumberMap={sceneNumberMap}
+                            commentCount={commentCountMap[element.id] || 0}
+                            onComment={openCommentPanel}
+                            onSequenceSettings={setSequenceColorModalId}
+                            isCollapsed={isCollapsedSeq}
+                            onCollapseToggle={element.element_type === 'sequence' ? () => toggleCollapseSequence(element.id) : undefined}
+                            isContentCreator={isContentCreator}
+                            isAudioDrama={isAudioDrama}
+                            isStagePlay={isStagePlay}
+                            audioFormat={resolvedAudioFormat}
+                            audioElementCycle={audioElementCycle}
+                            stagePlayElementCycle={STAGEPLAY_ELEMENT_CYCLE}
+                          />
+                        </div>
+                      );
+
+                      if (isCollapsedSeq) {
+                        const count = collapsedCounts[element.id] || 0;
+                        return (
+                          <Fragment key={element.id}>
+                            {mainEl}
+                            <div
+                              className="relative overflow-visible px-3 py-1.5 text-[11px] select-none cursor-pointer transition-colors text-surface-500 hover:text-surface-300"
+                              style={seqColor ? { borderLeft: `3px solid ${seqColor}55` } : undefined}
+                              onClick={() => toggleCollapseSequence(element.id)}
+                            >
+                              ↕ {count} element{count !== 1 ? 's' : ''} hidden — click to expand
+                            </div>
+                          </Fragment>
+                        );
+                      }
+
+                      return mainEl;
+                    })}
+
+                    {/* Page number footer at bottom-right of each page (except title page) */}
+                    {pageIdx > 0 && (
+                      <div className={cn(
+                        'text-right text-[10pt] font-screenplay select-none pointer-events-none pt-4',
+                        darkMode ? 'text-surface-600' : 'text-gray-400',
+                      )}>
+                        {page.pageNum}.
+                      </div>
+                    )}
                     </div>
-                  )];
-                }
+                  </Fragment>
+                );
+              })}
 
-                return [mainEl];
-              })
-            )}
-            {elements.length > 0 && canEdit && (
-              <div className="py-12 text-center">
-                <button onClick={() => {
-                  const lastType = elements[elements.length - 1]?.element_type || 'action';
-                  handleToolbarAdd(isAudioDrama ? getAudioNextElementType(lastType, resolvedAudioFormat) : getNextElementType(lastType));
-                }} className={cn('inline-flex items-center gap-1 px-3 py-1.5 rounded text-xs transition-colors',
-                  darkMode ? 'text-surface-400 hover:text-white hover:bg-surface-700' : 'text-gray-400 hover:text-white/60 hover:bg-surface-800'
-                )}>
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                  Add Element
-                </button>
-              </div>
-            )}
-          </div>
+              {/* Add Element button — sits after the last page */}
+              {canEdit && (
+                <div className="flex justify-center my-4">
+                  <button onClick={() => {
+                    const lastType = elements[elements.length - 1]?.element_type || 'action';
+                    handleToolbarAdd(isAudioDrama ? getAudioNextElementType(lastType, resolvedAudioFormat) : getNextElementType(lastType));
+                  }} className={cn('inline-flex items-center gap-1 px-3 py-1.5 rounded text-xs transition-colors',
+                    darkMode ? 'text-surface-400 hover:text-white hover:bg-surface-700' : 'text-gray-400 hover:text-white/60 hover:bg-surface-800'
+                  )}>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    Add Element
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Script Minimap */}
@@ -2847,6 +2843,9 @@ const ScriptMinimap = memo(function ScriptMinimap({
   const barRef = useRef<HTMLDivElement>(null);
   const [scrollFrac, setScrollFrac] = useState(0);
   const [viewFrac, setViewFrac] = useState(1);
+  // Actual element top positions as a fraction of scrollHeight (same coordinate
+  // system as the viewport bar). Falls back to linear (i/total) when not yet measured.
+  const [elFracs, setElFracs] = useState<number[]>([]);
 
   useEffect(() => {
     const el = scrollEl.current;
@@ -2863,6 +2862,34 @@ const ScriptMinimap = memo(function ScriptMinimap({
     ro.observe(el);
     return () => { el.removeEventListener('scroll', update); ro.disconnect(); };
   }, [scrollEl]);
+
+  // Measure each element's actual vertical position (as fraction of scrollHeight)
+  // so colour bands align with the scroll-based viewport indicator.
+  useEffect(() => {
+    const sc = scrollEl.current;
+    if (!sc) return;
+    const measure = () => {
+      const sh = sc.scrollHeight;
+      if (sh <= 0) return;
+      const scTop = sc.getBoundingClientRect().top;
+      const fracs = elements.map((el) => {
+        const dom = document.getElementById(`el-${el.id}`);
+        if (!dom) return -1;
+        return Math.max(0, (dom.getBoundingClientRect().top - scTop + sc.scrollTop) / sh);
+      });
+      setElFracs(fracs);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(sc);
+    return () => { ro.disconnect(); };
+  }, [elements, scrollEl]);
+
+  // Returns the real scroll-fraction for element at index i, falling back to linear.
+  const getElFrac = (i: number): number => {
+    const f = elFracs[i];
+    return (f !== undefined && f >= 0) ? f : i / total;
+  };
 
   const total = Math.max(elements.length, 1);
 
@@ -2968,8 +2995,8 @@ const ScriptMinimap = memo(function ScriptMinimap({
           const sceneColor = sceneBands.find(b => b.start <= from && b.end >= from)?.color;
           const layers = [actColor, seqColor, sceneColor].filter(Boolean) as string[];
           if (!layers.length) continue;
-          const left = `${(from / total) * 100}%`;
-          const width = `${Math.max(0.2, ((to - from) / total) * 100)}%`;
+          const left = `${getElFrac(from) * 100}%`;
+          const width = `${Math.max(0.2, (getElFrac(to) - getElFrac(from)) * 100)}%`;
           layers.forEach((color, j) => {
             rects.push(
               <div key={`${si}-${j}`} className="absolute pointer-events-none opacity-30"
@@ -2983,7 +3010,7 @@ const ScriptMinimap = memo(function ScriptMinimap({
       {/* Sequence name labels */}
       {showLabels && showColors && sequences.map((seq, i) => (
         <div key={`lbl-${i}`} className="absolute top-0 bottom-0 flex items-center px-1 pointer-events-none overflow-hidden"
-          style={{ left: `${(seq.start / total) * 100}%`, width: `${Math.max(0.5, ((seq.end - seq.start + 1) / total) * 100)}%` }}>
+          style={{ left: `${getElFrac(seq.start) * 100}%`, width: `${Math.max(0.5, (getElFrac(seq.end) - getElFrac(seq.start)) * 100)}%` }}>
           <span className="text-[8px] font-semibold truncate" style={{ color: seq.color, opacity: 0.9 }}>{seq.name}</span>
         </div>
       ))}
@@ -2993,7 +3020,7 @@ const ScriptMinimap = memo(function ScriptMinimap({
         if (el.element_type === 'scene_heading') {
           return <div key={el.id}
             className={cn('absolute top-1 bottom-1 w-px pointer-events-none', darkMode ? 'bg-surface-500/60' : 'bg-gray-400/60')}
-            style={{ left: `${(i / total) * 100}%` }}
+            style={{ left: `${getElFrac(i) * 100}%` }}
             title={showLabels ? (el.content || '') : undefined} />;
         }
         return null;
