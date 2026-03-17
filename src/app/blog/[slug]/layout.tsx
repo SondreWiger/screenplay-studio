@@ -19,9 +19,17 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const author = post.author as { full_name?: string; display_name?: string } | null;
   const authorName = author?.full_name || author?.display_name || 'Screenplay Studio';
-  const title = post.title || 'Blog Post';
+  const title       = post.title  || 'Blog Post';
   const description = post.excerpt || 'Read this article on Screenplay Studio Blog.';
-  const url = `${BASE_URL}/blog/${params.slug}`;
+  const url         = `${BASE_URL}/blog/${params.slug}`;
+
+  const ogFallbackParams = new URLSearchParams({
+    type:  'blog',
+    title,
+    ...(authorName && authorName !== 'Screenplay Studio' ? { author: authorName } : {}),
+  });
+  const fallbackOgImage = `/api/og?${ogFallbackParams.toString()}`;
+  const ogImage = post.cover_image_url ?? fallbackOgImage;
 
   return {
     title,
@@ -30,22 +38,20 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     authors: [{ name: authorName }],
     openGraph: {
       type: 'article',
-      title,
+      title: `${title} — Screenplay Studio Blog`,
       description,
       url,
       siteName: 'Screenplay Studio',
       publishedTime: post.published_at || undefined,
       authors: [authorName],
       tags: post.tags || [],
-      images: post.cover_image_url
-        ? [{ url: post.cover_image_url, width: 1200, height: 630, alt: title }]
-        : [{ url: '/api/og?title=' + encodeURIComponent(title), width: 1200, height: 630, alt: 'Screenplay Studio' }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: `${title} — Screenplay Studio`,
       description,
-      images: post.cover_image_url ? [post.cover_image_url] : ['/api/og?title=' + encodeURIComponent(title)],
+      images: [ogImage],
     },
   };
 }

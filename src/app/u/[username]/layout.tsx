@@ -26,6 +26,14 @@ export async function generateMetadata({ params }: { params: { username: string 
   const name = profile.full_name || profile.display_name || params.username;
   const description = profile.bio || `${name}'s profile on Screenplay Studio.`;
 
+  const ogFallbackParams = new URLSearchParams({
+    type:  'user',
+    title: name,
+    ...(profile.bio && { subtitle: profile.bio }),
+  });
+  const fallbackOgImage = `/api/og?${ogFallbackParams.toString()}`;
+  const ogImage = profile.avatar_url ?? fallbackOgImage;
+
   return {
     title: name,
     description,
@@ -34,15 +42,13 @@ export async function generateMetadata({ params }: { params: { username: string 
       title: `${name} — Screenplay Studio`,
       description,
       url: `${BASE_URL}/u/${params.username}`,
-      images: profile.avatar_url
-        ? [{ url: profile.avatar_url, width: 400, height: 400, alt: name }]
-        : [{ url: `/api/og?title=${encodeURIComponent(name)}&subtitle=Screenwriter`, width: 1200, height: 630 }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: name }],
     },
     twitter: {
-      card: profile.avatar_url ? 'summary' : 'summary_large_image',
+      card: 'summary_large_image',
       title: `${name} — Screenplay Studio`,
       description,
-      images: profile.avatar_url ? [profile.avatar_url] : [`/api/og?title=${encodeURIComponent(name)}&subtitle=Screenwriter`],
+      images: [ogImage],
     },
   };
 }

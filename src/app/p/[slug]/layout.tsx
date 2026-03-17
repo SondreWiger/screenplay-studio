@@ -27,6 +27,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const title = company.name || params.slug;
   const description = company.description || `${title} on Screenplay Studio.`;
 
+  const ogFallbackParams = new URLSearchParams({
+    type:     'company',
+    title,
+    subtitle: description,
+  });
+  const fallbackOgImage = `/api/og?${ogFallbackParams.toString()}`;
+  const ogImage = company.logo_url ?? fallbackOgImage;
+
   return {
     title,
     description,
@@ -35,15 +43,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: `${title} — Screenplay Studio`,
       description,
       url: `${BASE_URL}/p/${params.slug}`,
-      images: company.logo_url
-        ? [{ url: company.logo_url, width: 400, height: 400, alt: title }]
-        : [{ url: `/api/og?title=${encodeURIComponent(title)}&subtitle=Production+Company`, width: 1200, height: 630 }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${title} — Screenplay Studio`,
       description,
-      images: company.logo_url ? [company.logo_url] : [`/api/og?title=${encodeURIComponent(title)}&subtitle=Production+Company`],
+      images: [ogImage],
     },
   };
 }

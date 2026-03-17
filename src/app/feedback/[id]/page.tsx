@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 import { toast } from '@/components/ui';
 import { SiteVersion } from '@/components/SiteVersion';
-import { STATUS_META, TYPE_META } from '@/app/feedback/page';
-import type { FeedbackItem, FeedbackStatus, FeedbackType } from '@/app/feedback/page';
+import { STATUS_META, TYPE_META } from '@/app/feedback/config';
+import type { FeedbackItem, FeedbackStatus, FeedbackType } from '@/app/feedback/config';
 
 interface Comment {
   id: string;

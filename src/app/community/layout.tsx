@@ -2,6 +2,12 @@ import { Metadata } from 'next';
 import { SupportButton } from '@/components/SupportButton';
 import { CommunityNav } from '@/components/CommunityNav';
 
+const _ogCommunity = `/api/og?${new URLSearchParams({
+  type:    'post',
+  title:   'Community',
+  subtitle: 'Share scripts, get feedback, join writing challenges, and discover free-to-use screenplays.',
+}).toString()}`;
+
 export const metadata: Metadata = {
   title: 'Community — Screenplay Studio',
   description: 'Share scripts, get feedback, join writing challenges, and discover free-to-use screenplays.',
@@ -9,13 +15,15 @@ export const metadata: Metadata = {
     type: 'website',
     title: 'Community — Screenplay Studio',
     description: 'Share scripts, get feedback, join writing challenges, and discover free-to-use screenplays.',
-    images: [{ url: '/api/og?title=Community&subtitle=Share+scripts+and+collaborate', width: 1200, height: 630, alt: 'Screenplay Studio Community' }],
+    url: 'https://screenplaystudio.fun/community',
+    siteName: 'Screenplay Studio',
+    images: [{ url: _ogCommunity, width: 1200, height: 630, alt: 'Screenplay Studio Community' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Community — Screenplay Studio',
     description: 'Share scripts, get feedback, join writing challenges, and discover free-to-use screenplays.',
-    images: ['/api/og?title=Community&subtitle=Share+scripts+and+collaborate'],
+    images: [_ogCommunity],
   },
 };
 
