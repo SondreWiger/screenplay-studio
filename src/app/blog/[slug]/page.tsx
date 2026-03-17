@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -9,9 +9,27 @@ import type { BlogPost, BlogComment, Profile } from '@/lib/types';
 import { formatDate, timeAgo } from '@/lib/utils';
 import { SiteVersion } from '@/components/SiteVersion';
 
-// ============================================================
-// Individual blog post page — clean reading experience
-// ============================================================
+// ── Lightweight inline markdown renderer (links + bold, no deps) ──────────
+function renderInline(text: string): ReactNode[] {
+  // Tokenise: **bold** and [label](url)
+  const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
+  return parts.map((part, i) => {
+    const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (link) {
+      return (
+        <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer"
+          className="text-[#FF5F1F] underline underline-offset-2 hover:opacity-80 transition-opacity">
+          {link[1]}
+        </a>
+      );
+    }
+    const bold = part.match(/^\*\*([^*]+)\*\*$/);
+    if (bold) return <strong key={i} className="text-white font-semibold">{bold[1]}</strong>;
+    return part;
+  });
+}
+
+
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const { user } = useAuth();
@@ -308,7 +326,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                       <div className="ss-prose">
                         {section.body.split('\n\n').map((paragraph, pIdx) => (
                           <p key={pIdx} className="text-white/60 leading-relaxed mb-4 last:mb-0">
-                            {paragraph}
+                            {renderInline(paragraph)}
                           </p>
                         ))}
                       </div>
