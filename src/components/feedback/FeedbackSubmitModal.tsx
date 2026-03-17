@@ -96,38 +96,50 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
 
   const submit = async () => {
     setSubmitting(true);
-    const supabase = createClient();
-    const payload: Record<string, unknown> = {
-      type,
-      title: title.trim(),
-      body: body.trim(),
-      user_id: user?.id ?? null,
-      author_name: authorName.trim() || (user ? null : 'Anonymous'),
-      author_email: authorEmail.trim() || null,
-      browser_info: browserInfo,
-      is_public: true,
-    };
-    if (type === 'bug_report') {
-      payload.steps_to_reproduce = stepsToReproduce.trim() || null;
-      payload.expected_behavior  = expectedBehavior.trim() || null;
-      payload.actual_behavior    = actualBehavior.trim() || null;
-      payload.url_where_occurred = browserInfo.url ?? null;
+    try {
+      const payload: Record<string, unknown> = {
+        type,
+        title: title.trim(),
+        body: body.trim(),
+        author_name: authorName.trim() || (user ? null : 'Anonymous'),
+        author_email: authorEmail.trim() || null,
+        browser_info: browserInfo,
+        is_public: true,
+      };
+      if (type === 'bug_report') {
+        payload.steps_to_reproduce = stepsToReproduce.trim() || null;
+        payload.expected_behavior  = expectedBehavior.trim() || null;
+        payload.actual_behavior    = actualBehavior.trim() || null;
+        payload.url_where_occurred = browserInfo.url ?? null;
+      }
+      if (type === 'feature_request') {
+        payload.use_case = useCase.trim() || null;
+      }
+      if (type === 'testimonial') {
+        payload.rating           = rating;
+        payload.show_author_name = showAuthorName;
+      }
+
+      const res = await fetch('/api/feedback/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        alert('Submit failed: ' + (json.error ?? res.statusText));
+        return;
+      }
+
+      setSubmittedId(json.id);
+      setDone(true);
+      setTimeout(() => onSubmitted(), 2500);
+    } catch (err) {
+      alert('Submit failed: ' + String(err));
+    } finally {
+      setSubmitting(false);
     }
-    if (type === 'feature_request') {
-      payload.use_case = useCase.trim() || null;
-    }
-    if (type === 'testimonial') {
-      payload.rating           = rating;
-      payload.show_author_name = showAuthorName;
-      payload.is_approved      = false;
-      payload.is_public        = false; // pending review
-    }
-    const { data, error } = await supabase.from('feedback_items').insert(payload).select('id').single();
-    setSubmitting(false);
-    if (error) { alert('Submit failed: ' + error.message); return; }
-    setSubmittedId(data.id);
-    setDone(true);
-    setTimeout(() => onSubmitted(), 2500);
   };
 
   if (done) {

@@ -297,6 +297,17 @@ GRANT SELECT ON public_roadmap TO anon, authenticated;
 
 GRANT EXECUTE ON FUNCTION find_similar_feedback(TEXT,TEXT,TEXT,INT) TO anon, authenticated;
 
+-- ── 9b. Table-level grants (required alongside RLS policies) ─────────────────
+-- Supabase requires both a permissive RLS policy AND a table-level GRANT.
+-- Without these, anon/authenticated roles are blocked at the privilege layer
+-- before RLS even runs.
+
+GRANT SELECT, INSERT                ON feedback_items         TO anon, authenticated;
+GRANT SELECT, INSERT, DELETE        ON feedback_votes         TO anon, authenticated;
+GRANT SELECT, INSERT, DELETE        ON feedback_comments      TO anon, authenticated;
+GRANT SELECT                        ON feedback_similar_links TO anon, authenticated;
+GRANT SELECT, INSERT, DELETE        ON feedback_subscriptions TO anon, authenticated;
+
 -- ── 10. Re-point feedback_items.user_id FK to profiles(id) ──────────────────
 -- This lets PostgREST discover the join feedback_items → profiles directly.
 -- profiles.id is a PK that mirrors auth.users.id, so data integrity is the same.
