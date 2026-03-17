@@ -8,7 +8,7 @@ import {
   Bug, Lightbulb, Star, MessageSquare, X, AlertTriangle,
   ChevronUp, ArrowRight, CheckCircle2, Loader2,
 } from 'lucide-react';
-import type { FeedbackType } from '@/app/feedback/page';
+import type { FeedbackType } from '@/app/feedback/config';
 
 interface SimilarItem {
   id: string;
