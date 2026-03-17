@@ -51,7 +51,7 @@ export function SupportButton() {
           <div className="p-2">
             {/* Report a Bug — top priority quick action */}
             <Link
-              href="/support?bug=1"
+              href="/feedback"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors group/bug"
             >

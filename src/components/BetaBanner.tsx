@@ -45,7 +45,7 @@ export function BetaBanner() {
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <Link
-            href="/support"
+            href="/feedback"
             className="text-xs font-medium text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors underline underline-offset-2"
           >
             Report a bug

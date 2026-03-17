@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { ReportIssueButton } from '@/components/feedback/ReportIssueButton';
 
 export default function GlobalError({
   error,
@@ -27,7 +28,7 @@ export default function GlobalError({
       {error.digest && (
         <p className="mt-2 font-mono text-xs text-surface-600">Error ID: {error.digest}</p>
       )}
-      <div className="mt-8 flex gap-3">
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button
           onClick={reset}
           className="rounded-lg bg-[#E54E15] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#FF5F1F]"
@@ -40,6 +41,12 @@ export default function GlobalError({
         >
           Dashboard
         </a>
+        <ReportIssueButton
+          label="Report this error"
+          isErrorReport
+          prefillTitle={`Error: ${error.message?.slice(0, 80) ?? 'Unknown error'}`}
+          prefillBody={`An unexpected error occurred.\n\nError message: ${error.message ?? ''}${error.digest ? `\nError ID: ${error.digest}` : ''}\n\nSteps to reproduce:\n`}
+        />
       </div>
     </div>
   );

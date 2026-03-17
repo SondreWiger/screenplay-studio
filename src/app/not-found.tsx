@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ReportIssueButton } from '@/components/feedback/ReportIssueButton';
 
 export default function NotFound() {
   return (
@@ -23,6 +24,11 @@ export default function NotFound() {
         >
           Dashboard
         </Link>
+        <ReportIssueButton
+          label="Report a broken link"
+          prefillTitle="404 – Page not found"
+          prefillBody="I got a 404 error trying to visit a page on Screenplay Studio. The URL was: "
+        />
       </div>
     </div>
   );

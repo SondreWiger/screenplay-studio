@@ -32,6 +32,85 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
+async function TestimonialsSection() {
+  const supabase = createServerSupabaseClient();
+  const { data: testimonials } = await supabase
+    .from('public_testimonials')
+    .select('id,title,body,rating,display_name,created_at')
+    .order('created_at', { ascending: false })
+    .limit(6);
+
+  if (!testimonials || testimonials.length === 0) return null;
+
+  return (
+    <>
+      <div className="max-w-screen-xl mx-auto px-6">
+        <div className="h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+      </div>
+      <section className="max-w-screen-xl mx-auto px-6 py-20">
+        <div className="flex items-end justify-between mb-12">
+          <div>
+            <Eyebrow>Testimonials</Eyebrow>
+            <h2
+              className="font-black text-white"
+              style={{ fontSize: 'clamp(1.8rem, 4vw, 3.5rem)', letterSpacing: '-0.02em', lineHeight: 0.95 }}
+            >
+              WHAT WRITERS<br />ARE SAYING.
+            </h2>
+          </div>
+          <Link
+            href="/testimonials"
+            className="hidden md:inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 hover:text-white/70 transition-colors border-b border-white/10 pb-0.5"
+          >
+            See all reviews →
+          </Link>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {testimonials.map((t: { id: string; title: string; body: string; rating: number | null; display_name: string | null; created_at: string }) => (
+            <div
+              key={t.id}
+              className="flex flex-col gap-4 p-6 border"
+              style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+            >
+              {t.rating && (
+                <div className="text-sm" style={{ color: '#FF5F1F' }}>
+                  {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+                </div>
+              )}
+              <p className="text-sm text-white/50 leading-[1.85] flex-1">"{t.body}"</p>
+              <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                  style={{ background: '#FF5F1F' }}>
+                  {(t.display_name ?? 'A')[0].toUpperCase()}
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25">
+                  {t.display_name ?? 'Anonymous'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+          <Link
+            href="/testimonials"
+            className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50 hover:text-white/80 transition-colors border-b border-white/20 pb-0.5"
+          >
+            See all reviews →
+          </Link>
+          <Link
+            href="/feedback?submit=testimonial"
+            className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 hover:text-white/70 transition-colors border-b border-white/10 pb-0.5"
+          >
+            Leave a review →
+          </Link>
+        </div>
+      </section>
+    </>
+  );
+}
+
 export default async function LandingPage() {
   const supabase = createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -97,7 +176,7 @@ export default async function LandingPage() {
 
         {/* Links */}
         <div className="flex items-center">
-          {[['About', '/about'], ['Blog', '/blog'], ['Community', '/community']].map(([label, href]) => (
+          {[['About', '/about'], ['Blog', '/blog'], ['Community', '/community'], ['Feedback', '/feedback']].map(([label, href]) => (
             <Link
               key={href}
               href={href}
@@ -477,6 +556,9 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* ─── TESTIMONIALS ─────────────────────────────── */}
+        <TestimonialsSection />
 
       </main>
 
