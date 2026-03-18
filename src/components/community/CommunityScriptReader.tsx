@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { parseScreenplayElements } from '@/components/ScreenplayRenderer';
+import { estimateLines, PAGE_CONFIGS } from '@/lib/screenplay-paginator';
 import type { Profile } from '@/lib/types';
 
 // ============================================================
@@ -57,7 +58,11 @@ function computeStats(content: string | null): ScriptStats {
     ).size;
     const dia = elements.filter(e => e.element_type === 'dialogue').reduce((n, e) => n + e.content.split(/\s+/).filter(Boolean).length, 0);
     const act = elements.filter(e => e.element_type === 'action').reduce((n, e) => n + e.content.split(/\s+/).filter(Boolean).length, 0);
-    const pageEstimate = Math.max(1, Math.ceil(elements.filter(e => e.element_type !== 'title_page').length / 55));
+    const cfg = PAGE_CONFIGS['letter'];
+    const totalLines = elements
+      .filter(e => e.element_type !== 'title_page' && !e.is_omitted)
+      .reduce((n, el) => n + estimateLines(el, cfg), 0);
+    const pageEstimate = Math.max(1, Math.ceil(totalLines / cfg.linesPerPage));
     return {
       wordCount: totalWords,
       sceneCount,
@@ -388,7 +393,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
 
   // Display options
   const [fontSize, setFontSize] = useState(12);
-  const [darkScript, setDarkScript] = useState(false);
+  const [darkScript, setDarkScript] = useState(true);
   const [showSceneNumbers, setShowSceneNumbers] = useState(true);
   const [showCharColors, setShowCharColors] = useState(true);
 

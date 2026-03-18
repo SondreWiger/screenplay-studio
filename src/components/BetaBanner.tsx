@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const STORAGE_KEY = 'ss_beta_banner_dismissed_v1';
 
@@ -12,6 +13,7 @@ const STORAGE_KEY = 'ss_beta_banner_dismissed_v1';
  */
 export function BetaBanner() {
   const [visible, setVisible] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     try {
@@ -26,6 +28,9 @@ export function BetaBanner() {
     try { localStorage.setItem(STORAGE_KEY, '1'); } catch {}
     setVisible(false);
   };
+
+  // Don't show on public share pages — they have their own minimal chrome
+  if (pathname?.startsWith('/share/')) return null;
 
   if (!visible) return null;
 

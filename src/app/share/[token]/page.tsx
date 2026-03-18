@@ -325,24 +325,6 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top bar */}
-      <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-3 border-b border-white/10 bg-[#0a0a0b]/90 backdrop-blur-sm">
-        <div className="flex items-center gap-3 min-w-0">
-          {project?.cover_url && (
-            <img src={project.cover_url} alt="" className="w-7 h-7 rounded object-cover flex-shrink-0" />
-          )}
-          <div className="min-w-0">
-            <span className="font-semibold text-white text-sm truncate block">{project?.title ?? link.name}</span>
-            {project?.format && (
-              <span className="text-gray-500 text-xs">{project.format}</span>
-            )}
-          </div>
-        </div>
-        <a href="https://screenplaystudio.fun" className="text-xs text-gray-500 hover:text-gray-300 transition-colors flex-shrink-0 ml-4">
-          Screenplay Studio
-        </a>
-      </header>
-
       {/* Tabs */}
       {tabs.length > 1 && (
         <div className="flex gap-0.5 px-6 pt-4 border-b border-white/10 overflow-x-auto">
