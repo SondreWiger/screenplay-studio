@@ -6,6 +6,11 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { slugify, formatDate } from '@/lib/utils';
+import { CollaboratorPicker } from '@/components/community/CollaboratorPicker';
+import { sendNotification } from '@/lib/notifications';
+import type { Profile } from '@/lib/types';
+
+type CollabProfile = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
 
 function generatePostSlug(title: string): string {
   const base = slugify(title.trim()).slice(0, 48);
@@ -82,6 +87,31 @@ export default function ShareScriptPage() {
   const [scriptOpen, setScriptOpen] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
+  const [collaborators, setCollaborators] = useState<CollabProfile[]>([]);
+  const [importingMembers, setImportingMembers] = useState(false);
+
+  const importProjectMembers = async () => {
+    if (!selectedProject || !user) return;
+    setImportingMembers(true);
+    try {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('project_members')
+        .select('user_id, profile:profiles!user_id(id, username, display_name, avatar_url)')
+        .eq('project_id', selectedProject)
+        .neq('user_id', user.id);
+
+      if (data && data.length > 0) {
+        const existing = new Set(collaborators.map((c) => c.id));
+        const toAdd: CollabProfile[] = (data as any[])
+          .map((row) => row.profile)
+          .filter((p): p is CollabProfile => !!p && !existing.has(p.id));
+        setCollaborators((prev) => [...prev, ...toAdd]);
+      }
+    } finally {
+      setImportingMembers(false);
+    }
+  };
   const [error, setError] = useState('');
 
   // Whether disclaimer needs to be shown
@@ -384,6 +414,30 @@ export default function ShareScriptPage() {
           await supabase.from('community_post_categories').insert(
             selectedCategories.map((catId) => ({ post_id: post.id, category_id: catId }))
           );
+        }
+
+        // Insert collaborators
+        if (collaborators.length > 0 && post) {
+          await supabase.from('community_post_collaborators').insert(
+            collaborators.map((c) => ({
+              post_id: post.id,
+              user_id: c.id,
+              added_by: user!.id,
+            }))
+          );
+          // Notify each collaborator
+          for (const c of collaborators) {
+            await sendNotification({
+              userId: c.id,
+              type: 'collaborator_added',
+              title: 'You were added as a collaborator',
+              body: `${user!.full_name || user!.username || 'Someone'} added you as a collaborator on "${title.trim()}"`,
+              link: `/community/post/${slug}`,
+              actorId: user!.id,
+              entityType: 'community_post',
+              entityId: post.id,
+            });
+          }
         }
       }
 
@@ -911,6 +965,34 @@ export default function ShareScriptPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Collaborators */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-white/70">Collaborators</label>
+              {selectedProject && (
+                <button
+                  type="button"
+                  onClick={importProjectMembers}
+                  disabled={importingMembers}
+                  className="flex items-center gap-1.5 text-[11px] font-mono text-[#FF5F1F] hover:text-[#FF7A3D] disabled:opacity-50 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {importingMembers ? 'Importing…' : 'Import from project'}
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-white/40 mb-3">
+              Credit others who helped create this post — they'll be notified and it'll appear on their stats.
+            </p>
+            <CollaboratorPicker
+              collaborators={collaborators}
+              onChange={setCollaborators}
+              excludeIds={user ? [user.id] : []}
+            />
           </div>
 
           {/* Permissions */}

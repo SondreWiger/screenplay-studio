@@ -195,7 +195,7 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
     case 'scene_heading': return 'action';
     case 'action': return 'action';
     case 'character': return 'dialogue';
-    case 'dialogue': return 'action';
+    case 'dialogue': return 'character'; // Enter after dialogue → next character by default
     case 'parenthetical': return 'dialogue';
     case 'transition': return 'scene_heading';
     case 'act': return 'scene_heading';
@@ -720,7 +720,10 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     const names = new Set<string>();
     elements.forEach((e) => {
       if (e.element_type === 'character' && e.content?.trim()) {
-        names.add(e.content.trim().toUpperCase());
+        // Strip modifier suffixes like (CONT'D), (V.O.), (O.S.) before deduplicating
+        // so "BOB" and "BOB (CONT'D)" both resolve to just "BOB" in suggestions
+        const clean = e.content.trim().toUpperCase().replace(/\s*\([^)]*\)\s*$/, '').trim();
+        if (clean) names.add(clean);
       }
     });
     return Array.from(names).sort();
@@ -3214,8 +3217,19 @@ const LineEditor = memo(function LineEditor({
         setSelectedSuggestion(0);
       } else {
         const upper = text.toUpperCase();
-        const matches = characterNames.filter((n) => n.startsWith(upper) && n !== upper);
-        setSuggestions(matches.slice(0, 5));
+        // Strip modifiers at match time too — guards against any (CONT'D)/(V.O.)
+        // variants already stored in the DB with curly vs straight apostrophes etc.
+        const seen = new Set<string>();
+        const matches: string[] = [];
+        for (const n of characterNames) {
+          const clean = n.replace(/\s*\([^)]*\)\s*$/, '').trim();
+          if (clean.startsWith(upper) && clean !== upper && !seen.has(clean)) {
+            seen.add(clean);
+            matches.push(clean);
+            if (matches.length === 5) break;
+          }
+        }
+        setSuggestions(matches);
         setSelectedSuggestion(0);
       }
     } else {
@@ -3353,6 +3367,16 @@ const LineEditor = memo(function LineEditor({
 
       const els = store.elements;
       const idx = els.findIndex((el) => el.id === elementId);
+
+      // Empty character → escape to action (instead of creating another character)
+      if (element.element_type === 'character') {
+        const text = divRef.current?.textContent?.trim() ?? '';
+        if (text === '') {
+          store.updateElement(elementId, { element_type: 'action' });
+          return;
+        }
+      }
+
       // Place new element between current and next
       const currentOrder = idx >= 0 ? els[idx].sort_order : 0;
       const nextOrder = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder + 2;
@@ -3576,7 +3600,7 @@ const LineEditor = memo(function LineEditor({
   const charColorIdx = (() => {
     if (!displaySettings.showCharacterHighlights) return -1;
     if (element.element_type === 'character') {
-      const name = (element.content || '').trim().toUpperCase();
+      const name = (element.content || '').trim().toUpperCase().replace(/\s*\([^)]*\)\s*$/, '').trim();
       return characterColorMap[name] ?? -1;
     }
     // For dialogue/parenthetical: find the nearest preceding character element
@@ -3585,7 +3609,7 @@ const LineEditor = memo(function LineEditor({
       const idx = els.findIndex((e) => e.id === element.id);
       for (let j = idx - 1; j >= 0; j--) {
         if (els[j].element_type === 'character') {
-          const name = (els[j].content || '').trim().toUpperCase();
+          const name = (els[j].content || '').trim().toUpperCase().replace(/\s*\([^)]*\)\s*$/, '').trim();
           return characterColorMap[name] ?? -1;
         }
         if (els[j].element_type !== 'dialogue' && els[j].element_type !== 'parenthetical') break;

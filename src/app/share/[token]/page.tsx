@@ -1,513 +1,515 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Button, Card, Input, LoadingPage, toast } from '@/components/ui';
-import type { ExternalShare, ReviewSession } from '@/lib/types';
+import type { ProjectShareLink } from '@/lib/types';
 
 // ============================================================
-// Public Share Viewer — external stakeholders view shared content
-// No authentication required.
+// Public Share Viewer — new token-based share system
+// No authentication required for content links.
+// Invite links prompt sign in / sign up then auto-join project.
 // ============================================================
+
+// ---- Types --------------------------------------------------
+
+interface ShareProject {
+  id: string;
+  title: string;
+  logline: string | null;
+  format: string;
+  cover_url: string | null;
+  accent_color: string | null;
+}
+
+interface ScriptElement {
+  id: string;
+  element_type: string;
+  content: string;
+  sort_order: number;
+}
+
+interface ShareScript {
+  id: string;
+  title: string;
+  version: number;
+  elements: ScriptElement[];
+}
+
+interface ShareCharacter {
+  id: string;
+  name: string;
+  full_name: string | null;
+  age: string | null;
+  description: string | null;
+  avatar_url: string | null;
+  color: string;
+  is_main: boolean;
+  role: string | null;
+}
+
+interface ShareScene {
+  id: string;
+  scene_number: string | null;
+  scene_heading: string | null;
+  location_type: string;
+  location_name: string | null;
+  time_of_day: string;
+  synopsis: string | null;
+  page_count: number;
+  sort_order: number;
+}
+
+interface ShareDocument {
+  id: string;
+  title: string;
+  doc_type: string;
+  content: string;
+  word_count: number;
+  tags: string[];
+}
+
+interface ShareData {
+  link: Pick<ProjectShareLink,
+    'id' | 'name' | 'is_invite' | 'invite_role' |
+    'can_view_script' | 'can_view_characters' | 'can_view_scenes' |
+    'can_view_schedule' | 'can_view_documents' | 'expires_at'
+  >;
+  project: ShareProject | null;
+  script?: ShareScript | null;
+  characters?: ShareCharacter[];
+  scenes?: ShareScene[];
+  schedule?: Record<string, unknown>[];
+  documents?: ShareDocument[];
+}
+
+// ---- Script element styles ----------------------------------
+
+const ELEMENT_STYLES: Record<string, string> = {
+  scene_heading: 'font-bold uppercase tracking-wide text-white mt-6 mb-1',
+  action: 'text-gray-200 my-2',
+  character: 'ml-[3rem] font-semibold text-gray-100 mt-4',
+  dialogue: 'ml-[1.5rem] mr-[1.5rem] text-gray-200',
+  parenthetical: 'ml-[2rem] mr-[2rem] italic text-gray-400',
+  transition: 'text-right uppercase text-gray-400 mt-4',
+  shot: 'font-semibold uppercase text-gray-300 mt-4',
+  title_page: 'text-center text-white mb-4',
+  general: 'text-gray-200 my-1',
+};
+
+// ---- Tab definitions ----------------------------------------
+
+type Tab = 'script' | 'characters' | 'scenes' | 'schedule' | 'documents';
+const TAB_LABELS: Record<Tab, string> = {
+  script: 'Script',
+  characters: 'Characters',
+  scenes: 'Scenes',
+  schedule: 'Schedule',
+  documents: 'Documents',
+};
+
+// ---- Main component -----------------------------------------
 
 export default function ShareViewerPage({ params }: { params: { token: string } }) {
-  const [share, setShare] = useState<ExternalShare | null>(null);
-  const [project, setProject] = useState<{ title: string; logline?: string; genre?: string[]; format?: string; cover_url?: string } | null>(null);
-  const [scriptContent, setScriptContent] = useState<{ title?: string; content: { type?: string; text: string }[] | string }[]>([]);
-  const [scriptElements, setScriptElements] = useState<{ type?: string; text: string }[]>([]);
-  const [shots, setShots] = useState<{ id: string; scene_id?: string; image_url?: string; description?: string; shot_type?: string; shot_size?: string }[]>([]);
-  const [scenes, setScenes] = useState<{ id: string; scene_heading?: string; scene_number?: string }[]>([]);
-  const [locations, setLocations] = useState<{ id: string; name: string; location_type?: string; description?: string; address?: string; photos?: string[] }[]>([]);
-  const [characters, setCharacters] = useState<{ id: string; name: string; avatar_url?: string; is_main?: boolean; description?: string; age?: string; role_type?: string }[]>([]);
+  const router = useRouter();
+  const token = params.token;
+
+  const [data, setData] = useState<ShareData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [passwordInput, setPasswordInput] = useState('');
-  const [authenticated, setAuthenticated] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('script');
 
-  // Review state
-  const [reviewerName, setReviewerName] = useState('');
-  const [reviewerEmail, setReviewerEmail] = useState('');
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewSession, setReviewSession] = useState<ReviewSession | null>(null);
-  const [overallRating, setOverallRating] = useState(0);
-  const [overallNotes, setOverallNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  // Invite / auth state
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState(false);
 
-  useEffect(() => { fetchShare(); }, [params.token]);
-
-  const fetchShare = async () => {
-    try {
-      const supabase = createClient();
-      // Fetch via RPC or direct select (public access needed)
-      const { data, error: fetchErr } = await supabase
-        .from('external_shares')
-        .select('*')
-        .eq('access_token', params.token)
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (fetchErr || !data) {
-        setError('This share link is invalid or has been deactivated.');
+  // ---- Fetch share data -------------------------------------
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch(`/api/share/${token}`);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          setError(body.error ?? 'Link not found or has expired.');
+          return;
+        }
+        const json: ShareData = await res.json();
+        setData(json);
+        // Set default tab to first available
+        if (json.link.can_view_script) setActiveTab('script');
+        else if (json.link.can_view_characters) setActiveTab('characters');
+        else if (json.link.can_view_scenes) setActiveTab('scenes');
+        else if (json.link.can_view_schedule) setActiveTab('schedule');
+        else if (json.link.can_view_documents) setActiveTab('documents');
+      } catch {
+        setError('Failed to load shared content.');
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // Check expiry
-      if (data.expires_at && new Date(data.expires_at) < new Date()) {
-        setError('This share link has expired.');
-        setLoading(false);
-        return;
-      }
-
-      // Check max views
-      if (data.max_views && data.view_count >= data.max_views) {
-        setError('This share link has reached its maximum number of views.');
-        setLoading(false);
-        return;
-      }
-
-      setShare(data);
-
-      // Check if password protected
-      if (data.password_hash) {
-        setLoading(false);
-        return;
-      }
-
-      setAuthenticated(true);
-      await loadContent(data, supabase);
-    } catch {
-      setError('Something went wrong loading this share.');
-      setLoading(false);
     }
-  };
+    load();
+  }, [token]);
 
-  const handlePasswordSubmit = async () => {
-    if (!share) return;
-    // Simple check (in production, use bcrypt)
-    if (btoa(passwordInput) !== share.password_hash) {
-      setError('Incorrect password');
-      setTimeout(() => setError(null), 3000);
+  // ---- Auth handler (invite links) --------------------------
+  async function handleAuth(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    const supabase = createClient();
+
+    let authErr: string | null = null;
+
+    if (authMode === 'signup') {
+      const { error: signUpErr } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: displayName } },
+      });
+      if (signUpErr) authErr = signUpErr.message;
+    } else {
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInErr) authErr = signInErr.message;
+    }
+
+    if (authErr) {
+      setAuthError(authErr);
+      setAuthLoading(false);
       return;
     }
-    setAuthenticated(true);
-    setLoading(true);
-    const supabase = createClient();
-    await loadContent(share, supabase);
-  };
 
-  const loadContent = async (shareData: ExternalShare, supabase: ReturnType<typeof createClient>) => {
-    try {
-      // Increment view count
-      supabase.from('external_shares').update({
-        view_count: (shareData.view_count || 0) + 1,
-      }).eq('id', shareData.id).then(() => {});
-
-      // Use snapshot data stored at share creation time
-      if (shareData.content_snapshot) {
-        const snap = shareData.content_snapshot as Record<string, unknown>;
-        if (snap.project) setProject(snap.project as typeof project);
-        if (snap.scripts) setScriptContent(snap.scripts as typeof scriptContent);
-        if (snap.script_elements) setScriptElements(snap.script_elements as typeof scriptElements);
-        if (snap.shots) setShots(snap.shots as typeof shots);
-        if (snap.scenes) setScenes(snap.scenes as typeof scenes);
-        if (snap.locations) setLocations(snap.locations as typeof locations);
-        if (snap.characters) setCharacters(snap.characters as typeof characters);
-      }
-    } catch (err) {
-      console.error('Error loading content:', err);
-    } finally {
-      setLoading(false);
+    // Accept the invite
+    const { error: rpcErr } = await supabase.rpc('accept_share_invite', { link_token: token });
+    if (rpcErr && !rpcErr.message.includes('already')) {
+      setAuthError('Could not join the project: ' + rpcErr.message);
+      setAuthLoading(false);
+      return;
     }
-  };
 
-  const startReview = async () => {
-    if (!share || !reviewerName.trim()) return;
-    const supabase = createClient();
-    const { data, error } = await supabase.from('review_sessions').insert({
-      share_id: share.id,
-      project_id: share.project_id,
-      reviewer_name: reviewerName.trim(),
-      reviewer_email: reviewerEmail.trim() || null,
-      status: 'in_progress',
-    }).select().single();
-    if (error) { toast.error('Failed to start review session'); return; }
-    if (data) setReviewSession(data);
-    setShowReviewForm(false);
-  };
+    setAuthSuccess(true);
+    // Redirect to the project after a brief delay
+    setTimeout(() => {
+      if (data?.project?.id) {
+        router.push(`/projects/${data.project.id}`);
+      } else {
+        router.push('/dashboard');
+      }
+    }, 1500);
+    setAuthLoading(false);
+  }
 
-  const submitReview = async () => {
-    if (!reviewSession) return;
-    setSubmitting(true);
-    const supabase = createClient();
-    await supabase.from('review_sessions').update({
-      status: 'submitted',
-      overall_rating: overallRating || null,
-      overall_notes: overallNotes.trim() || null,
-      submitted_at: new Date().toISOString(),
-    }).eq('id', reviewSession.id);
-    setReviewSession({ ...reviewSession, status: 'submitted' });
-    setSubmitting(false);
-  };
+  // ---- Render states ----------------------------------------
 
-  if (loading) return <LoadingPage />;
-
-  if (error && !share) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
-        <Card className="p-8 max-w-md text-center">
-          <div className="text-4xl mb-4">🔗</div>
-          <h1 className="text-xl font-black text-white mb-2">Link Unavailable</h1>
-          <p className="text-sm text-surface-400">{error}</p>
-        </Card>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
-  // Password gate
-  if (share && !authenticated) {
+  if (error || !data) {
     return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
-        <Card className="p-8 max-w-sm w-full">
-          <div className="text-center mb-6">
-            <div className="text-3xl mb-3">🔒</div>
-            <h1 className="text-xl font-black text-white mb-1">Password Protected</h1>
-            <p className="text-sm text-surface-400">Enter the password to view this content.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
+        <div className="text-4xl">🔗</div>
+        <h1 className="text-xl font-semibold text-white">{error ?? 'Link unavailable'}</h1>
+        <p className="text-gray-400 text-sm max-w-xs">This link may have expired, been deactivated, or the URL is incorrect.</p>
+        <a href="https://screenplaystudio.fun" className="text-sm text-indigo-400 hover:underline mt-2">
+          Screenplay Studio
+        </a>
+      </div>
+    );
+  }
+
+  const { link, project } = data;
+  const tabs = (['script', 'characters', 'scenes', 'schedule', 'documents'] as Tab[]).filter((t) => {
+    if (t === 'script') return link.can_view_script && data.script;
+    if (t === 'characters') return link.can_view_characters;
+    if (t === 'scenes') return link.can_view_scenes;
+    if (t === 'schedule') return link.can_view_schedule;
+    if (t === 'documents') return link.can_view_documents;
+    return false;
+  });
+
+  // ---- Invite link view -------------------------------------
+  if (link.is_invite) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        {/* Top bar */}
+        <header className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            {project?.cover_url && (
+              <img src={project.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
+            )}
+            <span className="font-semibold text-white text-sm">{project?.title ?? 'Screenplay Studio'}</span>
           </div>
-          {error && <p className="text-sm text-red-400 text-center mb-3">{error}</p>}
-          <Input
-            type="password"
-            value={passwordInput}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPasswordInput(e.target.value)}
-            placeholder="Enter password"
-            onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handlePasswordSubmit()}
-          />
-          <Button className="w-full mt-3" onClick={handlePasswordSubmit}>Access</Button>
-        </Card>
+          <a href="https://screenplaystudio.fun" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+            Screenplay Studio
+          </a>
+        </header>
+
+        <main className="flex flex-1 items-center justify-center px-4 py-12">
+          <div className="w-full max-w-sm">
+            {authSuccess ? (
+              <div className="text-center">
+                <div className="text-3xl mb-4">✓</div>
+                <p className="text-white font-semibold">You&apos;ve joined the project!</p>
+                <p className="text-gray-400 text-sm mt-2">Redirecting you now…</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-8 text-center">
+                  <p className="text-gray-400 text-sm">You&apos;ve been invited to collaborate on</p>
+                  <h1 className="text-xl font-bold text-white mt-1">{project?.title ?? 'a project'}</h1>
+                  <p className="text-gray-500 text-sm mt-1">
+                    You&apos;ll join as <span className="text-indigo-400 capitalize">{link.invite_role}</span>
+                  </p>
+                </div>
+
+                {/* Auth toggle */}
+                <div className="flex bg-white/5 rounded-lg p-1 mb-6">
+                  <button
+                    onClick={() => { setAuthMode('signin'); setAuthError(null); }}
+                    className={`flex-1 py-1.5 text-sm rounded-md transition-colors ${authMode === 'signin' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    onClick={() => { setAuthMode('signup'); setAuthError(null); }}
+                    className={`flex-1 py-1.5 text-sm rounded-md transition-colors ${authMode === 'signup' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    Sign up
+                  </button>
+                </div>
+
+                <form onSubmit={handleAuth} className="space-y-3">
+                  {authMode === 'signup' && (
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    />
+                  )}
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  />
+
+                  {authError && (
+                    <p className="text-red-400 text-xs">{authError}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
+                  >
+                    {authLoading ? 'Please wait…' : authMode === 'signup' ? 'Create account & join' : 'Sign in & join'}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </main>
       </div>
     );
   }
+
+  // ---- Content viewer (no auth required) --------------------
 
   return (
-    <div className="min-h-screen bg-surface-950">
-      {/* Header */}
-      <div className="border-b border-surface-800 bg-surface-950 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {share?.branding?.logo_url ? (
-              <img src={share.branding.logo_url} alt={'Branding logo'} className="h-8 w-auto" />
-            ) : (
-              <div className="w-8 h-8 bg-[#E54E15] rounded-lg flex items-center justify-center text-xs font-bold text-white">
-                SS
-              </div>
-            )}
-            <div>
-              <h1 className="text-sm font-semibold text-white">{share?.title || project?.title || 'Shared Content'}</h1>
-              {share?.branding?.company_name && (
-                <p className="text-[11px] text-surface-500">{share.branding.company_name}</p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {share?.allow_comments && !reviewSession && (
-              <Button size="sm" variant="secondary" onClick={() => setShowReviewForm(true)}>
-                Leave Feedback
-              </Button>
-            )}
-            {reviewSession && reviewSession.status !== 'submitted' && (
-              <Button size="sm" onClick={submitReview} loading={submitting}>
-                Submit Review
-              </Button>
-            )}
-            {reviewSession?.status === 'submitted' && (
-              <span className="text-xs text-green-400 font-medium">✓ Review Submitted</span>
+    <div className="min-h-screen flex flex-col">
+      {/* Top bar */}
+      <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-3 border-b border-white/10 bg-[#0a0a0b]/90 backdrop-blur-sm">
+        <div className="flex items-center gap-3 min-w-0">
+          {project?.cover_url && (
+            <img src={project.cover_url} alt="" className="w-7 h-7 rounded object-cover flex-shrink-0" />
+          )}
+          <div className="min-w-0">
+            <span className="font-semibold text-white text-sm truncate block">{project?.title ?? link.name}</span>
+            {project?.format && (
+              <span className="text-gray-500 text-xs">{project.format}</span>
             )}
           </div>
         </div>
-      </div>
+        <a href="https://screenplaystudio.fun" className="text-xs text-gray-500 hover:text-gray-300 transition-colors flex-shrink-0 ml-4">
+          Screenplay Studio
+        </a>
+      </header>
 
-      {/* Watermark overlay */}
-      {share?.watermark_text && (
-        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden opacity-[0.04]">
-          <div className="text-8xl font-bold text-white whitespace-nowrap rotate-[-30deg] select-none">
-            {share.watermark_text}
-          </div>
+      {/* Tabs */}
+      {tabs.length > 1 && (
+        <div className="flex gap-0.5 px-6 pt-4 border-b border-white/10 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
+                activeTab === tab
+                  ? 'text-white bg-white/10 border-b-2 border-indigo-500'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {TAB_LABELS[tab]}
+            </button>
+          ))}
         </div>
       )}
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Project header */}
-        {project && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-black text-white mb-1">{project.title}</h2>
-            {project.logline && <p className="text-surface-400">{project.logline}</p>}
-            {project.genre && <p className="text-xs text-surface-500 mt-2">{Array.isArray(project.genre) ? project.genre.join(', ') : project.genre} • {project.format}</p>}
+      <main className="flex-1 overflow-y-auto">
+        {/* Script tab */}
+        {activeTab === 'script' && data.script && (
+          <div className="max-w-3xl mx-auto px-4 py-8">
+            <div className="font-mono text-sm leading-relaxed space-y-0">
+              {data.script.elements.map((el) => (
+                <div
+                  key={el.id}
+                  className={ELEMENT_STYLES[el.element_type] ?? 'text-gray-200 my-1'}
+                >
+                  {el.content || '\u00A0'}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Script content — prefer script_elements over scripts.content */}
-        {(scriptElements.length > 0 || scriptContent.length > 0) && (
-          <div className="space-y-6">
-            {scriptElements.length > 0 ? (
-              <Card key="elements" className="p-6 sm:p-8">
-                <div className="screenplay-content space-y-2">
-                  {scriptElements.map((element, elIdx: number) => (
-                    <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
-                      {element.type === 'scene_heading' && (
-                        <p className="font-bold text-[#FF5F1F] uppercase tracking-wide mt-6">{element.text}</p>
-                      )}
-                      {element.type === 'action' && (
-                        <p className="text-surface-200">{element.text}</p>
-                      )}
-                      {element.type === 'character' && (
-                        <p className="text-center font-semibold text-white uppercase mt-4">{element.text}</p>
-                      )}
-                      {element.type === 'dialogue' && (
-                        <p className="text-surface-100 mx-auto max-w-md text-center">{element.text}</p>
-                      )}
-                      {element.type === 'parenthetical' && (
-                        <p className="text-surface-400 italic mx-auto max-w-sm text-center">({element.text})</p>
-                      )}
-                      {element.type === 'transition' && (
-                        <p className="text-right text-surface-300 uppercase">{element.text}</p>
-                      )}
-                      {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && element.text && (
-                        <p className="text-surface-300">{element.text}</p>
-                      )}
+        {/* Characters tab */}
+        {activeTab === 'characters' && data.characters && (
+          <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.characters.map((char) => (
+                <div key={char.id} className="bg-white/5 rounded-xl p-4 flex gap-3">
+                  {char.avatar_url ? (
+                    <img src={char.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                  ) : (
+                    <div
+                      className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold"
+                      style={{ background: char.color ?? '#4f46e5' }}
+                    >
+                      {char.name[0]?.toUpperCase()}
                     </div>
-                  ))}
-                </div>
-              </Card>
-            ) : (
-              scriptContent.map((script, idx) => (
-                <Card key={idx} className="p-6 sm:p-8">
-                  {script.title && <h3 className="text-lg font-semibold text-white mb-4 pb-3 border-b border-surface-800">{script.title}</h3>}
-                  <div className="screenplay-content space-y-2">
-                    {Array.isArray(script.content) ? (
-                      (script.content as { type?: string; text: string }[]).map((element, elIdx: number) => (
-                        <div key={elIdx} className={`script-element ${element.type || 'action'}`}>
-                          {element.type === 'scene_heading' && <p className="font-bold text-[#FF5F1F] uppercase tracking-wide mt-6">{element.text}</p>}
-                          {element.type === 'action' && <p className="text-surface-200">{element.text}</p>}
-                          {element.type === 'character' && <p className="text-center font-semibold text-white uppercase mt-4">{element.text}</p>}
-                          {element.type === 'dialogue' && <p className="text-surface-100 mx-auto max-w-md text-center">{element.text}</p>}
-                          {element.type === 'parenthetical' && <p className="text-surface-400 italic mx-auto max-w-sm text-center">({element.text})</p>}
-                          {element.type === 'transition' && <p className="text-right text-surface-300 uppercase">{element.text}</p>}
-                          {!['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(element.type || '') && <p className="text-surface-300">{element.text}</p>}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-surface-400 whitespace-pre-wrap">{typeof script.content === 'string' ? script.content : JSON.stringify(script.content, null, 2)}</p>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white text-sm truncate">{char.name}</p>
+                    {char.role && <p className="text-xs text-gray-400 capitalize mt-0.5">{char.role}</p>}
+                    {char.age && <p className="text-xs text-gray-500 mt-0.5">{char.age}</p>}
+                    {char.description && (
+                      <p className="text-xs text-gray-400 mt-1 line-clamp-3">{char.description}</p>
                     )}
                   </div>
-                </Card>
-              ))
-            )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Storyboard content */}
-        {shots.length > 0 && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white">Storyboard</h3>
-            {(() => {
-              // Group shots by scene
-              const sceneMap = new Map<string, any>();
-              for (const s of scenes) sceneMap.set(s.id, s);
-              const grouped = new Map<string, any[]>();
-              for (const shot of shots) {
-                const key = shot.scene_id || 'unassigned';
-                if (!grouped.has(key)) grouped.set(key, []);
-                grouped.get(key)!.push(shot);
-              }
-              return Array.from(grouped.entries()).map(([sceneId, sceneShots]) => {
-                const scene = sceneMap.get(sceneId);
-                return (
-                  <Card key={sceneId} className="p-5">
-                    {scene && (
-                      <h4 className="text-sm font-semibold text-white mb-3">
-                        {scene.scene_heading || `Scene ${scene.scene_number}`}
-                      </h4>
+        {/* Scenes tab */}
+        {activeTab === 'scenes' && data.scenes && (
+          <div className="max-w-4xl mx-auto px-4 py-8 space-y-3">
+            {data.scenes.map((scene, i) => (
+              <div key={scene.id} className="bg-white/5 rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                      Scene {scene.scene_number ?? i + 1}
+                    </p>
+                    <p className="font-semibold text-white text-sm mt-0.5 uppercase">
+                      {scene.scene_heading ?? `${scene.location_type === 'INT' ? 'INT.' : 'EXT.'} ${scene.location_name ?? 'LOCATION'} — ${scene.time_of_day}`}
+                    </p>
+                    {scene.synopsis && (
+                      <p className="text-xs text-gray-400 mt-2">{scene.synopsis}</p>
                     )}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {sceneShots.map((shot) => (
-                        <div key={shot.id} className="rounded-lg border border-surface-800 overflow-hidden">
-                          {shot.image_url ? (
-                            <img src={shot.image_url} alt={shot.description || ''} className="w-full aspect-video object-cover" />
-                          ) : (
-                            <div className="w-full aspect-video bg-surface-800 flex items-center justify-center text-surface-600 text-xs">
-                              No image
-                            </div>
-                          )}
-                          <div className="p-2">
-                            <p className="text-xs font-medium text-surface-300">
-                              {[shot.shot_type, shot.shot_size].filter(Boolean).join(' — ') || 'Shot'}
-                            </p>
-                            {shot.description && <p className="text-[11px] text-surface-500 mt-0.5 line-clamp-2">{shot.description}</p>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                );
-              });
-            })()}
+                  </div>
+                  <span className="text-xs text-gray-500 flex-shrink-0 bg-white/5 px-2 py-0.5 rounded">
+                    {scene.page_count}p
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Locations / Moodboard content */}
-        {locations.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Locations</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {locations.map((loc) => (
-                <Card key={loc.id} className="p-4">
-                  <h4 className="text-sm font-semibold text-white">{loc.name}</h4>
-                  {loc.location_type && <p className="text-xs text-surface-500 mt-0.5">{loc.location_type}</p>}
-                  {loc.description && <p className="text-sm text-surface-400 mt-2">{loc.description}</p>}
-                  {loc.address && <p className="text-xs text-surface-500 mt-1">{loc.address}</p>}
-                  {loc.photos && loc.photos.length > 0 && (
-                    <div className="flex gap-2 mt-3 overflow-x-auto">
-                      {loc.photos.slice(0, 4).map((photo: string, i: number) => (
-                        <img key={i} src={photo} alt={`Location photo ${i + 1}`} className="w-24 h-16 object-cover rounded" />
+        {/* Schedule tab */}
+        {activeTab === 'schedule' && data.schedule && (
+          <div className="max-w-4xl mx-auto px-4 py-8 space-y-3">
+            {data.schedule.length === 0 && (
+              <p className="text-gray-500 text-sm text-center py-12">No schedule days added yet.</p>
+            )}
+            {data.schedule.map((day, i) => (
+              <div key={String(day.id ?? i)} className="bg-white/5 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-white text-sm">
+                      Day {String(day.day_number ?? i + 1)}
+                      {day.shoot_date ? ` — ${new Date(day.shoot_date as string).toLocaleDateString()}` : ''}
+                    </p>
+                    {!!(day.call_time || day.wrap_time) && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Call {String(day.call_time ?? '')} · Wrap {String(day.wrap_time ?? '')}
+                      </p>
+                    )}
+                    {!!day.notes && <p className="text-xs text-gray-500 mt-1">{String(day.notes)}</p>}
+                  </div>
+                  {!!day.is_completed && (
+                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Done</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Documents tab */}
+        {activeTab === 'documents' && data.documents && (
+          <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
+            {data.documents.map((doc) => (
+              <div key={doc.id} className="bg-white/5 rounded-xl p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-white">{doc.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 capitalize">{doc.doc_type.replace('_', ' ')} · {doc.word_count.toLocaleString()} words</p>
+                  </div>
+                  {doc.tags.length > 0 && (
+                    <div className="flex gap-1 flex-wrap justify-end">
+                      {doc.tags.map((tag) => (
+                        <span key={tag} className="text-xs bg-white/10 text-gray-300 px-2 py-0.5 rounded-full">{tag}</span>
                       ))}
                     </div>
                   )}
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Characters (full project share) */}
-        {characters.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Characters</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {characters.map((char) => (
-                <Card key={char.id} className="p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    {char.avatar_url ? (
-                      <img src={char.avatar_url} alt={char.name || 'Character avatar'} className="w-10 h-10 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center text-sm font-bold text-white">
-                        {char.name?.[0]?.toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">{char.name}</h4>
-                      <div className="flex items-center gap-2">
-                        {char.is_main && <span className="text-[10px] text-amber-400 font-medium">Lead</span>}
-                        {char.age && <span className="text-[10px] text-surface-500">{char.age}</span>}
-                        {(char as any).gender && <span className="text-[10px] text-surface-500">{(char as any).gender}</span>}
-                      </div>
-                    </div>
-                  </div>
-                  {char.description && <p className="text-sm text-surface-400 line-clamp-3">{char.description}</p>}
-                  {(char as any).cast_actor && <p className="text-xs text-[#FF5F1F] mt-2">Actor: {(char as any).cast_actor}</p>}
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* No content fallback */}
-        {scriptContent.length === 0 && scriptElements.length === 0 && shots.length === 0 && locations.length === 0 && characters.length === 0 && (
-          <Card className="p-12 text-center">
-            <div className="text-4xl mb-4">📄</div>
-            <h3 className="text-lg font-semibold text-white mb-2">No content available</h3>
-            <p className="text-surface-400 text-sm">This share link doesn't contain any viewable content yet. The project owner may need to re-create the share link.</p>
-          </Card>
-        )}
-
-        {/* License notice */}
-        {share && (
-          <div className="mt-8 pt-6 border-t border-surface-800/60">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                <span className="text-xs text-surface-500">License:</span>
+                </div>
+                <p className="text-sm text-gray-300 whitespace-pre-wrap">{doc.content}</p>
               </div>
-              {(() => {
-                const lic = (share.branding as any)?.license || 'all-rights-reserved';
-                const labels: Record<string, { label: string; free: boolean }> = {
-                  'all-rights-reserved': { label: 'All Rights Reserved', free: false },
-                  'confidential': { label: 'Confidential — Do Not Distribute', free: false },
-                  'nda': { label: 'Under NDA', free: false },
-                  'wga-registered': { label: 'WGA Registered', free: false },
-                  'cc-by': { label: 'CC BY (Attribution)', free: true },
-                  'cc-by-sa': { label: 'CC BY-SA', free: true },
-                  'cc-by-nc': { label: 'CC BY-NC (NonCommercial)', free: false },
-                  'cc-by-nc-sa': { label: 'CC BY-NC-SA', free: false },
-                  'cc-by-nd': { label: 'CC BY-ND (NoDerivatives)', free: false },
-                  'cc-by-nc-nd': { label: 'CC BY-NC-ND', free: false },
-                  'cc0': { label: 'CC0 / Public Domain', free: true },
-                };
-                const entry = labels[lic] || labels['all-rights-reserved'];
-                return (
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${entry.free ? 'bg-green-900/40 text-green-400 border border-green-800/60' : 'bg-surface-800 text-surface-300 border border-surface-700'}`}>
-                    {entry.label}
-                  </span>
-                );
-              })()}
-              <a href="/licenses" target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline ml-1">
-                What does this mean? →
-              </a>
-            </div>
+            ))}
           </div>
         )}
 
-        {/* Review rating */}
-        {reviewSession && reviewSession.status !== 'submitted' && (
-          <Card className="p-6 mt-8 border border-[#FF5F1F]/20">
-            <h3 className="text-lg font-semibold text-white mb-4">Your Review</h3>
-            <div className="mb-4">
-              <label className="block text-sm text-surface-300 mb-2">Overall Rating</label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => setOverallRating(star)}
-                    className={`text-2xl transition-colors ${star <= overallRating ? 'text-amber-400' : 'text-surface-700 hover:text-surface-500'}`}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm text-surface-300 mb-2">Notes</label>
-              <textarea
-                value={overallNotes}
-                onChange={(e) => setOverallNotes(e.target.value)}
-                rows={4}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white resize-none"
-                placeholder="Share your overall thoughts..."
-              />
-            </div>
-            <Button onClick={submitReview} loading={submitting}>Submit Review</Button>
-          </Card>
-        )}
-      </div>
-
-      {/* Review form modal */}
-      {showReviewForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowReviewForm(false)}>
-          <div onClick={(e) => e.stopPropagation()}>
-                <Card className="p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Start Your Review</h3>
-            <div className="space-y-3">
-              <Input label="Your Name" value={reviewerName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReviewerName(e.target.value)} placeholder="Jane Smith" />
-              <Input label="Email (optional)" type="email" value={reviewerEmail} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReviewerEmail(e.target.value)} placeholder="jane@company.com" />
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <Button variant="secondary" onClick={() => setShowReviewForm(false)}>Cancel</Button>
-              <Button onClick={startReview} disabled={!reviewerName.trim()}>Start Reviewing</Button>
-            </div>
-          </Card>
+        {/* Empty state when no content tabs available */}
+        {tabs.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-4">
+            <p className="text-gray-400 text-sm">This link doesn&apos;t have any viewable content yet.</p>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }

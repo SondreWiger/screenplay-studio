@@ -7,7 +7,23 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/community/', '/legal/', '/pro', '/support', '/blog/', '/sitemap-visual'],
+        allow: [
+          '/',
+          '/community/',
+          '/legal/',
+          '/pro',
+          '/support',
+          '/blog/',
+          '/sitemap-visual',
+          '/about',
+          '/press',
+          '/testimonials',
+          '/licenses',
+          '/contribute',
+          '/feedback',
+          '/changelog',
+          '/u/',
+        ],
         disallow: [
           '/api/',
           '/dashboard',
@@ -20,6 +36,9 @@ export default function robots(): MetadataRoute.Robots {
           '/auth/',
           '/share/',
           '/company/invite/',
+          '/idea-boards',
+          '/accountability',
+          '/casting',
         ],
       },
       // Block AI training crawlers from ALL content
@@ -85,6 +104,54 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'Meta-ExternalAgent',
+        disallow: ['/'],
+      },
+      // xAI / Grok
+      {
+        userAgent: 'Grok',
+        disallow: ['/'],
+      },
+      {
+        userAgent: 'xAI-Bot',
+        disallow: ['/'],
+      },
+      // DuckDuckGo AI assistant
+      {
+        userAgent: 'DuckAssistBot',
+        disallow: ['/'],
+      },
+      // AI2 (Allen Institute for AI)
+      {
+        userAgent: 'Ai2Bot',
+        disallow: ['/'],
+      },
+      // Dataset collectors
+      {
+        userAgent: 'img2dataset',
+        disallow: ['/'],
+      },
+      {
+        userAgent: 'CommonCrawl',
+        disallow: ['/'],
+      },
+      // Mistral AI
+      {
+        userAgent: 'Mistral-AI',
+        disallow: ['/'],
+      },
+      // PetalBot
+      {
+        userAgent: 'PetalBot',
+        disallow: ['/'],
+      },
+      // Scrapy (generic scraping framework)
+      {
+        userAgent: 'Scrapy',
+        disallow: ['/'],
+      },
+      // OAI SearchBot (OpenAI search)
+      {
+        userAgent: 'OAI-SearchBot',
         disallow: ['/'],
       },
     ],

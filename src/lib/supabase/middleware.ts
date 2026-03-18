@@ -45,12 +45,53 @@ function checkRateLimit(key: string, max: number): { allowed: boolean; remaining
   return { allowed: true, remaining: max - entry.count, resetAt: entry.resetAt };
 }
 
-// ── Known bot user agents to block ──────────────────────────
+// ── Known bot/scraper user agents to block ──────────────────
+// AI training crawlers + aggressive data-harvesting scrapers
 const BLOCKED_BOTS = [
-  'gptbot', 'chatgpt-user', 'google-extended', 'ccbot', 'anthropic-ai',
-  'claude-web', 'bytespider', 'diffbot', 'omgilibot', 'applebot-extended',
-  'perplexitybot', 'youbot', 'amazonbot', 'cohere-ai', 'meta-externalagent',
-  'ai2bot', 'img2dataset', 'commoncrawl',
+  // OpenAI
+  'gptbot', 'chatgpt-user', 'oai-searchbot',
+  // Google AI
+  'google-extended',
+  // Common Crawl (used by many AI training pipelines)
+  'ccbot', 'commoncrawl',
+  // Anthropic
+  'anthropic-ai', 'claude-web',
+  // ByteDance / TikTok
+  'bytespider',
+  // Diffbot
+  'diffbot',
+  // Omgili
+  'omgilibot',
+  // Apple AI
+  'applebot-extended',
+  // Perplexity
+  'perplexitybot',
+  // You.com
+  'youbot',
+  // Amazon
+  'amazonbot',
+  // Cohere
+  'cohere-ai',
+  // Meta
+  'meta-externalagent', 'facebookexternalhit/scraper',
+  // AI2 (Allen Institute)
+  'ai2bot',
+  // Dataset harvesting
+  'img2dataset',
+  // xAI / Grok
+  'grok', 'xai-bot',
+  // DuckDuckGo AI assistant
+  'duckassistbot',
+  // Scrapy (generic scraping framework — no legit search crawler uses it)
+  'scrapy',
+  // Mistral AI
+  'mistral-ai',
+  // Turnitin AI detection harvester
+  'turnitin',
+  // News aggregators that train AI
+  'newsgardbot',
+  // PetalBot
+  'petalbot',
 ];
 
 export async function updateSession(request: NextRequest) {
@@ -61,6 +102,12 @@ export async function updateSession(request: NextRequest) {
 
   // ── Block known AI scraper bots ───────────────────────────
   if (BLOCKED_BOTS.some(bot => ua.includes(bot))) {
+    return new NextResponse('Forbidden', { status: 403 });
+  }
+
+  // ── Block empty / suspiciously short user agents ─────────
+  // Legitimate browsers always have a non-trivial UA string.
+  if (!ua || ua.length < 10) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
@@ -129,7 +176,10 @@ export async function updateSession(request: NextRequest) {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.paypalobjects.com",
+      // unsafe-inline is required for Next.js inline styles/scripts; unsafe-eval only in dev for Fast Refresh
+      process.env.NODE_ENV === 'development'
+        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.paypalobjects.com"
+        : "script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.paypalobjects.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
@@ -137,8 +187,9 @@ export async function updateSession(request: NextRequest) {
       "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://www.paypal.com https://www.sandbox.paypal.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://www.paypal.com",
       "upgrade-insecure-requests",
+      "object-src 'none'",
     ].join('; ')
   );
 
@@ -157,7 +208,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ── Protected routes ──────────────────────────────────────
-  const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding'];
+  const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding', '/messages'];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

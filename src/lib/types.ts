@@ -390,6 +390,28 @@ export interface ReviewAnnotation {
   created_at: string;
 }
 
+export interface ProjectShareLink {
+  id: string;
+  project_id: string;
+  created_by: string;
+  name: string;
+  token: string;
+  can_view_script: boolean;
+  can_view_characters: boolean;
+  can_view_scenes: boolean;
+  can_view_schedule: boolean;
+  can_view_documents: boolean;
+  can_view_notes: boolean;
+  can_edit_notes: boolean;
+  is_invite: boolean;
+  invite_role: 'viewer' | 'commenter' | 'editor';
+  view_count: number;
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ProjectAnalyticsEvent {
   id: string;
   project_id: string;
@@ -1470,7 +1492,11 @@ export type NotificationType =
   | 'chat_mention'
   | 'direct_message'
   | 'ticket_reply'
-  | 'general';
+  | 'general'
+  | 'mention'
+  | 'blog_comment'
+  | 'feedback_update'
+  | 'collaborator_added';
 
 // ============================================================
 // Mind Map Types

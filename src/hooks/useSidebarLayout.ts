@@ -7,6 +7,12 @@ import type { SidebarLayout, SidebarSection, SidebarNavItem } from '@/lib/types'
 
 export type SaveScope = 'user-project' | 'user-global' | 'project-default';
 
+// Icons that used to exist in the nav but have been permanently removed.
+// Any stored layout entry with one of these icons is silently dropped so that
+// stale items (e.g. 'Share Portal', 'Client Review') never resurface from old
+// saved sidebar layouts in the database.
+const DEAD_NAV_ICONS = new Set(['review', 'share-portal', 'client-review']);
+
 interface UseSidebarLayoutReturn {
   layout: SidebarLayout | null;
   loading: boolean;
@@ -44,15 +50,46 @@ export function useSidebarLayout(projectId: string, userId: string | undefined, 
     const projectDefault = data.find(r => r.user_id === null && r.project_id === projectId);
     const userGlobal = data.find(r => r.user_id === userId && r.project_id === null);
 
+    let resolved: { layout: SidebarLayout; scope: SaveScope } | null = null;
+
     if (userProject) {
-      setLayout(userProject.layout as SidebarLayout);
-      setActiveScope('user-project');
+      resolved = { layout: userProject.layout as SidebarLayout, scope: 'user-project' };
     } else if (projectDefault) {
-      setLayout(projectDefault.layout as SidebarLayout);
-      setActiveScope('project-default');
+      resolved = { layout: projectDefault.layout as SidebarLayout, scope: 'project-default' };
     } else if (userGlobal) {
-      setLayout(userGlobal.layout as SidebarLayout);
-      setActiveScope('user-global');
+      resolved = { layout: userGlobal.layout as SidebarLayout, scope: 'user-global' };
+    }
+
+    if (resolved) {
+      // Scrub known-dead icons from the stored layout so the DB row doesn't
+      // keep resurfacing stale items (Share Portal, Client Review, etc.) on reload.
+      const rawSections = resolved.layout.sections ?? [];
+      const hasDead = rawSections.some(s =>
+        s.items?.some(i => DEAD_NAV_ICONS.has(i.icon) || i.label === 'Share Portal' || i.label === 'Client Review')
+      );
+      if (hasDead) {
+        const cleaned: SidebarLayout = {
+          ...resolved.layout,
+          sections: rawSections.map(s => ({
+            ...s,
+            items: (s.items ?? []).filter(
+              i => !DEAD_NAV_ICONS.has(i.icon) && i.label !== 'Share Portal' && i.label !== 'Client Review'
+            ),
+          })),
+        };
+        // Write the cleaned layout back so the next load is already clean.
+        const scope = resolved.scope;
+        const row = {
+          layout: cleaned,
+          user_id: scope === 'project-default' ? null : userId,
+          project_id: scope === 'user-global' ? null : projectId,
+        };
+        supabase.from('sidebar_layouts').upsert(row, { onConflict: 'user_id,project_id' }).then(() => {});
+        resolved = { layout: cleaned, scope };
+      }
+
+      setLayout(resolved.layout);
+      setActiveScope(resolved.scope);
     }
 
     setLoading(false);
@@ -81,7 +118,9 @@ export function useSidebarLayout(projectId: string, userId: string | undefined, 
 
     for (const storedSection of stored) {
       const defaultSection = defaultSections.find(d => d.id === storedSection.id);
-      if (!defaultSection && !storedSection.items?.length) continue; // orphaned empty custom section
+      // Skip orphaned sections entirely — sections saved in old layouts that no
+      // longer exist in the current nav definition should not ghost-render.
+      if (!defaultSection) continue;
 
       const baseItems: SidebarNavItem[] = defaultSection?.items ?? [];
       const storedItems = storedSection.items ?? [];
@@ -92,13 +131,15 @@ export function useSidebarLayout(projectId: string, userId: string | undefined, 
       const seenItems = new Set<string>();
 
       for (const si of storedItems) {
+        // Block known-dead icons — stale items from old saved layouts can't resurface.
+        if (DEAD_NAV_ICONS.has(si.icon)) { seenItems.add(si.icon); continue; }
         const base = baseItems.find(b => b.icon === si.icon);
         if (base) {
-          orderedItems.push({ ...base, label: si.label ?? base.label, hidden: si.hidden ?? false });
-        } else {
-          // Custom item added by user that's no longer in defaults — keep it but mark
-          orderedItems.push(si);
+          // Always use the current nav label — prevents stale labels (e.g. 'Share Portal') from
+          // old saved layouts overriding the current default.
+          orderedItems.push({ ...base, hidden: si.hidden ?? false });
         }
+        // Orphaned items (icon not in current nav for this section) are dropped.
         seenItems.add(si.icon);
       }
       // Append new default items not in stored order

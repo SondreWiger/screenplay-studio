@@ -9,6 +9,7 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
+import { MentionTextarea, parseMentionHandles } from '@/components/community/MentionTextarea';
 import { toast } from '@/components/ui';
 import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction, Profile, SubCommunity } from '@/lib/types';
 
@@ -29,6 +30,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'comments' | 'suggestions' | 'distros' | 'productions'>('comments');
   const [commentText, setCommentText] = useState('');
+  const [commentMentionedIds, setCommentMentionedIds] = useState<string[]>([]);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -151,6 +153,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           setReplyingTo(null);
         } else {
           setCommentText('');
+          setCommentMentionedIds([]);
         }
         // Notify post author about the comment
         if (post.author_id !== user.id) {
@@ -175,6 +178,25 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               userId: parentComment.author_id,
               type: 'community_reply',
               title: `${actorName} replied to your comment`,
+              body: content.length > 120 ? content.slice(0, 120) + '…' : content,
+              link: `/community/post/${post.slug}`,
+              actorId: user.id,
+              entityType: 'community_comment',
+              entityId: data.id,
+            });
+          }
+        }
+        // Notify @mentioned users
+        const mentionedIds = parentId ? [] : commentMentionedIds;
+        const notifiedAlready = new Set([post.author_id, parentId ? comments.find((c) => c.id === parentId)?.author_id : null, user.id].filter(Boolean));
+        const actorName = (user as Profile)?.display_name || (user as Profile)?.full_name || 'Someone';
+        for (const mentionedId of mentionedIds) {
+          if (!notifiedAlready.has(mentionedId)) {
+            notifiedAlready.add(mentionedId);
+            sendNotification({
+              userId: mentionedId,
+              type: 'mention',
+              title: `${actorName} mentioned you`,
               body: content.length > 120 ? content.slice(0, 120) + '…' : content,
               link: `/community/post/${post.slug}`,
               actorId: user.id,
@@ -546,12 +568,11 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           <div>
             {user ? (
               <div className="mb-8 rounded-xl border border-white/10 bg-surface-900 p-5">
-                <textarea
+                <MentionTextarea
                   value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder={activeTab === 'suggestions' ? 'Share a suggestion for improvement...' : 'Write a comment...'}
-                  rows={3}
-                  className="w-full rounded-lg border border-white/10 bg-surface-900 px-4 py-3 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none resize-none transition-colors"
+                  onChange={(text, ids) => { setCommentText(text); setCommentMentionedIds(ids); }}
+                  placeholder={activeTab === 'suggestions' ? 'Share a suggestion for improvement… use @ to mention users' : 'Write a comment… use @ to mention users'}
+                  minRows={3}
                 />
                 <div className="flex justify-end mt-2">
                   <button

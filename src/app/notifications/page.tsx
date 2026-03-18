@@ -12,8 +12,14 @@ import type { NotificationType } from '@/lib/types';
 
 const FILTER_OPTIONS: { key: 'all' | NotificationType; label: string }[] = [
   { key: 'all', label: 'All' },
+  { key: 'mention', label: 'Mentions' },
+  { key: 'direct_message', label: 'Messages' },
   { key: 'community_comment', label: 'Comments' },
+  { key: 'community_reply', label: 'Replies' },
   { key: 'community_upvote', label: 'Likes' },
+  { key: 'collaborator_added', label: 'Collaborations' },
+  { key: 'blog_comment', label: 'Blog' },
+  { key: 'feedback_update', label: 'Feedback' },
   { key: 'project_invitation', label: 'Project Invites' },
   { key: 'company_invitation', label: 'Company Invites' },
   { key: 'project_comment', label: 'Project Comments' },

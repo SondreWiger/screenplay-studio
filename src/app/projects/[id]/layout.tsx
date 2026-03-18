@@ -35,7 +35,7 @@ const PAGE_LABELS: Record<string, string> = {
   budget: 'Budget', team: 'Team', settings: 'Settings',
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
-  showcase: 'Showcase', share: 'Share Portal', analytics: 'Analytics',
+  showcase: 'Showcase', share: 'Share', analytics: 'Analytics',
   export: 'Advanced Export', casting: 'Casting', actors: 'Actors', 'ai-analysis': 'Script Analysis',
   // New pages
   corkboard: 'Corkboard', 'beat-sheet': 'Beat Sheet', invoice: 'Invoice Generator',
@@ -516,7 +516,7 @@ export default function ProjectLayout({
     {
       category: 'Pro',
       items: [
-        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
+        { label: 'Share', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
         { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
         { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
         { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
@@ -580,7 +580,7 @@ export default function ProjectLayout({
     {
       category: 'Pro',
       items: [
-        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
+        { label: 'Share', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
         { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
         { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
         { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
@@ -642,12 +642,11 @@ export default function ProjectLayout({
     {
       category: 'Pro',
       items: [
-        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
+        { label: 'Share', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
         { label: 'Analytics', href: `/projects/${params.id}/analytics`, icon: 'analytics', pro: true },
         { label: 'Revisions', href: `/projects/${params.id}/revisions`, icon: 'revisions', pro: true },
         { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
         { label: 'Script Analysis', href: `/projects/${params.id}/ai-analysis`, icon: 'ai', pro: true },
-        { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
         { label: 'Brand Kit', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },
         { label: 'Casting', href: `/projects/${params.id}/casting`, icon: 'casting', pro: true },
         { label: 'Actors', href: `/projects/${params.id}/actors`, icon: 'actors', pro: true },
@@ -733,8 +732,7 @@ export default function ProjectLayout({
       category: 'Deliver',
       items: [
         { label: 'Export', href: `/projects/${params.id}/export`, icon: 'export', pro: true },
-        { label: 'Share Portal', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
-        { label: 'Client Review', href: `/projects/${params.id}/review`, icon: 'review', pro: true },
+        { label: 'Share', href: `/projects/${params.id}/share`, icon: 'share', pro: true },
         { label: 'Submissions', href: `/projects/${params.id}/submissions`, icon: 'submissions', pro: true },
         { label: 'Press Kit', href: `/projects/${params.id}/press-kit`, icon: 'presskit', pro: true },
         { label: 'Custom Branding', href: `/projects/${params.id}/branding`, icon: 'branding', pro: true },

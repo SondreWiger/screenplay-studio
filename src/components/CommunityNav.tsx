@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { CommunityStatsPanel } from '@/components/community/CommunityStatsPanel';
 import { createClient } from '@/lib/supabase/client';
+import { useNotificationStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 
 // ============================================================
@@ -35,6 +37,10 @@ export function CommunityNav() {
   const pathname = usePathname();
   const router   = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [statsOpen, setStatsOpen]   = useState(false);
+
+  const { notifications } = useNotificationStore();
+  const unreadDMs = notifications.filter((n) => n.type === 'direct_message' && !n.read).length;
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -147,26 +153,43 @@ export function CommunityNav() {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
-                </Link>
-
-                {/* Avatar */}
-                <Link href={`/u/${user.username || user.id}`} className="shrink-0">
-                  {user.avatar_url ? (
-                    <img
-                      src={user.avatar_url}
-                      alt={user.full_name || 'Avatar'}
-                      className="w-7 h-7 rounded-full"
-                      style={{ boxShadow: '0 0 0 1.5px rgba(255,255,255,0.12)' }}
-                    />
-                  ) : (
-                    <div
-                      className="w-7 h-7 flex items-center justify-center text-[10px] font-black text-white rounded-full shrink-0"
+                  {unreadDMs > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 min-w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-black text-white px-0.5"
                       style={{ background: '#FF5F1F' }}
                     >
-                      {(user.full_name || user.email || '?')[0].toUpperCase()}
-                    </div>
+                      {unreadDMs > 99 ? '99+' : unreadDMs}
+                    </span>
                   )}
                 </Link>
+
+                {/* Avatar → Stats Panel */}
+                <div className="relative shrink-0">
+                  <button
+                    onClick={() => setStatsOpen((v) => !v)}
+                    aria-label="My community stats"
+                    className="focus:outline-none rounded-full"
+                    style={{ boxShadow: statsOpen ? '0 0 0 2px #FF5F1F' : '0 0 0 1.5px rgba(255,255,255,0.12)' }}
+                  >
+                    {user.avatar_url ? (
+                      <img
+                        src={user.avatar_url}
+                        alt={user.full_name || 'Avatar'}
+                        className="w-7 h-7 rounded-full block"
+                      />
+                    ) : (
+                      <div
+                        className="w-7 h-7 flex items-center justify-center text-[10px] font-black text-white rounded-full"
+                        style={{ background: '#FF5F1F' }}
+                      >
+                        {(user.full_name || user.email || '?')[0].toUpperCase()}
+                      </div>
+                    )}
+                  </button>
+                  {statsOpen && (
+                    <CommunityStatsPanel user={user} onClose={() => setStatsOpen(false)} />
+                  )}
+                </div>
 
                 {/* Sign out — desktop */}
                 <button

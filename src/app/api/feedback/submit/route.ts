@@ -2,7 +2,47 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
+// ── In-memory rate limiter for anonymous feedback submissions ─────────────────
+// 5 submissions per IP per 15 minutes. Resets on server restart (acceptable —
+// this is a soft-spam guard, not a hard security boundary).
+const FEEDBACK_LIMIT = 5;
+const FEEDBACK_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+interface FeedbackRateBucket {
+  count: number;
+  resetAt: number;
+}
+const feedbackBuckets = new Map<string, FeedbackRateBucket>();
+
+function checkFeedbackRateLimit(ip: string): { allowed: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  const bucket = feedbackBuckets.get(ip);
+  if (!bucket || bucket.resetAt < now) {
+    feedbackBuckets.set(ip, { count: 1, resetAt: now + FEEDBACK_WINDOW_MS });
+    return { allowed: true, retryAfterSec: 0 };
+  }
+  bucket.count++;
+  if (bucket.count > FEEDBACK_LIMIT) {
+    return { allowed: false, retryAfterSec: Math.ceil((bucket.resetAt - now) / 1000) };
+  }
+  return { allowed: true, retryAfterSec: 0 };
+}
+
 export async function POST(req: NextRequest) {
+  // ── Rate limit (extra guard for anonymous submissions) ─────────────────────
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || req.headers.get('x-real-ip')
+    || 'unknown';
+  const rateCheck = checkFeedbackRateLimit(ip);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: 'Too many submissions. Please wait before submitting again.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rateCheck.retryAfterSec) },
+      },
+    );
+  }
   try {
     const body = await req.json();
 

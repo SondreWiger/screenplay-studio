@@ -4,30 +4,32 @@ import { createClient } from '@/lib/supabase/client';
 import type { NotificationType } from '@/lib/types';
 
 // ---------------------------------------------------------------------------
-// Push delivery helper — calls our API route which uses web-push to deliver
-// real push notifications to subscribed devices (works even when tab is closed).
-// This is a best-effort fire-and-forget call.
+// Push delivery helper — fires from the RECIPIENT's browser via their own
+// Supabase session token. Called in useNotifications after receiving a
+// realtime notification, so it pushes to the user's OTHER subscribed devices
+// (e.g., the notification arrives on their laptop via realtime, and this
+// also pushes it to their phone).
 // ---------------------------------------------------------------------------
-export async function triggerPush(
-  userId: string | string[],
+export async function triggerSelfPush(
   title: string,
   body?: string,
   url?: string,
 ): Promise<void> {
   try {
-    const payload: Record<string, unknown> = { title, body: body || '', url: url || '/notifications' };
-    if (Array.isArray(userId)) {
-      payload.user_ids = userId;
-    } else {
-      payload.user_id = userId;
-    }
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+
     await fetch('/api/push/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ title, body: body || '', url: url || '/notifications' }),
     });
   } catch {
-    // Push delivery is best-effort — don't block the caller
+    // Push delivery is best-effort
   }
 }
 
@@ -77,9 +79,9 @@ export async function sendNotification({
       entity_id: entityId || null,
       metadata,
     });
-
-    // Fire Web Push to the user's subscribed devices
-    triggerPush(userId, title, body, link);
+    // Push delivery is handled by the recipient's useNotifications hook,
+    // which triggers triggerSelfPush() after receiving the realtime event.
+    // This allows proper session auth without exposing PUSH_API_SECRET client-side.
   } catch (err) {
     console.error('Failed to create notification:', err);
   }

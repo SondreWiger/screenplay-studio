@@ -12,7 +12,8 @@ export default function PrivacyPolicyPage() {
         <div className="mb-10">
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Privacy</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Privacy Policy</h1>
-          <p className="text-sm text-surface-500 mt-2">Effective: February 22, 2026</p>
+          <p className="text-sm text-surface-500 mt-2">Effective: March 18, 2026</p>
+          <p className="text-xs text-surface-600 mt-1">Previous version: February 22, 2026 &mdash; <a href="mailto:dpo@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
         </div>
 
         {/* Table of Contents */}
@@ -128,6 +129,8 @@ export default function PrivacyPolicyPage() {
             <li><strong>Support requests</strong> — messages, tickets, and attachments sent to our support team.</li>
             <li><strong>Direct messages</strong> — messages sent to other users through the Service&apos;s messaging features.</li>
             <li><strong>Community posts</strong> — content posted in community forums, showcase comments, and discussion threads.</li>
+            <li><strong>@Mentions</strong> — when another user mentions you by username in a community comment or post, we record the mention (your user ID, the post ID, the comment ID, and the mentioning user&apos;s ID) solely to deliver a notification to you. Mention records are deleted when the originating post or comment is deleted.</li>
+            <li><strong>Collaborator credits</strong> — when a post author credits you as a collaborator on their community post, we store the association (your user ID and the post ID) to display your collaborator credit. You may remove yourself as a collaborator at any time.</li>
             <li><strong>Feedback and surveys</strong> — responses to feedback requests or surveys.</li>
           </ul>
 
@@ -204,7 +207,7 @@ export default function PrivacyPolicyPage() {
             <li><strong>Account Management:</strong> Creating, authenticating, and maintaining your user account, including password recovery and two-factor authentication.</li>
             <li><strong>Service Delivery:</strong> Providing core Service functionality, including script editing, formatting, project management, and storage.</li>
             <li><strong>Collaboration:</strong> Enabling real-time and asynchronous collaboration between users you invite to your projects, including notifications, presence indicators, and change tracking.</li>
-            <li><strong>Community Features:</strong> Operating community showcase pages, forums, messaging, user profiles, and social features.</li>
+            <li><strong>Community Features:</strong> Operating community showcase pages, forums, messaging, user profiles, and social features — including sending @mention notifications when you are tagged in a comment, and displaying collaborator credits on posts where you have been credited by the post author.</li>
             <li><strong>Payment Processing:</strong> Processing subscription purchases, renewals, cancellations, and refunds through PayPal.</li>
             <li><strong>Customer Support:</strong> Responding to support requests, troubleshooting issues, and providing technical assistance.</li>
             <li><strong>Service Improvement:</strong> Analysing anonymized and aggregated usage data to identify bugs, improve features, optimize performance, and develop new functionality.</li>
@@ -403,6 +406,16 @@ export default function PrivacyPolicyPage() {
                   <td className="py-2 pr-4">Until deleted by user or moderation action</td>
                   <td className="py-2">Consent; legitimate interest</td>
                 </tr>
+                <tr className="border-b border-surface-800">
+                  <td className="py-2 pr-4">@Mention records</td>
+                  <td className="py-2 pr-4">Until originating post/comment is deleted</td>
+                  <td className="py-2">Contract; notification delivery</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4">Collaborator credits</td>
+                  <td className="py-2 pr-4">Until removed by user or post is deleted</td>
+                  <td className="py-2">Consent; user-controlled</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -590,8 +603,10 @@ export default function PrivacyPolicyPage() {
           </p>
           <ul>
             <li>Spam detection in community features — flagging potentially spam content for human review.</li>
-            <li>Rate limiting and abuse prevention — automatically throttling requests that exceed normal usage patterns.</li>
+            <li>Rate limiting and abuse prevention — automatically throttling requests that exceed normal usage patterns. IP addresses that exceed rate limits receive a temporary block (typically 60 seconds); no permanent record of blocked IPs is retained beyond the active window.</li>
             <li>Basic personalization — displaying recently used features or projects.</li>
+            <li>@mention detection — when a comment or post is submitted, our system parses the text for <code>@username</code> patterns to identify mentioned users and generate notifications. This is a rule-based string-matching process with no AI or machine learning. No content analysis beyond username extraction is performed.</li>
+            <li>Bot and scraper detection — automated analysis of request patterns, user agent strings, and request frequency to identify and block AI training crawlers and abusive scrapers. No personal data is stored as a result of this process beyond what is already captured in standard server request logs.</li>
           </ul>
           <p>
             None of these automated processes make decisions that have legal or similarly significant effects on you. Moderation actions affecting your account are always subject to human review.

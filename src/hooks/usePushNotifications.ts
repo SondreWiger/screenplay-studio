@@ -132,14 +132,14 @@ export function usePushNotifications(userId: string | undefined) {
       if (reg) {
         await reg.showNotification(title, {
           body,
-          icon: '/icon-192.png',
+          icon: '/icon-192',
           tag: 'local-' + Date.now(),
           data: { url: url || '/dashboard' },
         });
       }
     } catch {
       // Fallback to basic Notification API
-      new Notification(title, { body, icon: '/icon-192.png' });
+      new Notification(title, { body, icon: '/icon-192' });
     }
   }, [isSupported]);
 

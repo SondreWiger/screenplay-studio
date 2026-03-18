@@ -31,6 +31,10 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
   direct_message: { label: 'DM', color: 'bg-blue-500/20' },
   ticket_reply: { label: 'TKT', color: 'bg-[#FF5F1F]/20' },
   general: { label: 'NEW', color: 'bg-surface-700' },
+  mention: { label: '@', color: 'bg-[#FF5F1F]/20' },
+  blog_comment: { label: 'BLG', color: 'bg-teal-500/20' },
+  feedback_update: { label: 'FB', color: 'bg-amber-500/20' },
+  collaborator_added: { label: 'CO', color: 'bg-green-500/20' },
 };
 
 // ============================================================

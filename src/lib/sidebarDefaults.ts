@@ -68,7 +68,6 @@ export function getDefaultOtherIcons(
         // Technical / advanced
         'revisions',
         'coverage',
-        'review', // client review portal
         'presskit',
       ]);
 
@@ -156,7 +155,6 @@ export function getDefaultOtherIcons(
         'reports',
         'analytics',
         'branding',
-        'review',
         // Advanced
         'revisions',
         'coverage',

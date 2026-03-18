@@ -9,7 +9,7 @@ import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Selec
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
 import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
 import { BadgeDisplay } from '@/components/BadgeDisplay';
-import { triggerPush } from '@/lib/notifications';
+
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 const MOD_TABS: Tab[] = ['tickets', 'community'];
@@ -510,8 +510,7 @@ export default function AdminPage() {
           entity_type: 'support_ticket',
           entity_id: ticket.id,
         });
-        // Trigger Web Push delivery
-        triggerPush(ticket.user_id, notifTitle, notifBody, notifLink);
+        // Push delivery is handled by the recipient's useNotifications hook (triggerSelfPush)
         // Trigger email notification
         const { data: ownerProfile, error: profileError } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', ticket.user_id).single();
         if (profileError) console.error('Failed to fetch ticket owner profile:', profileError.message);

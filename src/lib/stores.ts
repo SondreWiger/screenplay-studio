@@ -360,8 +360,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         if (reg.active && Notification.permission === 'granted') {
           reg.showNotification(n.title, {
             body: n.body || undefined,
-            icon: '/icon-192.png',
-            badge: '/icon-192.png',
+            icon: '/icon-192',
+            badge: '/icon-192',
             tag: `notif-${n.id}`,
             data: { url: n.link || '/notifications' },
           });

@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
 
-// Regenerate sitemap on each request (includes dynamic DB content)
-export const dynamic = 'force-dynamic';
+// Regenerate sitemap at most every 30 minutes; stale sitemap is fine between revalidations.
+export const revalidate = 1800;
 
 // Use a plain Supabase client (no cookies) — sitemap runs at build time with no request context
 function getSupabase() {
@@ -20,18 +20,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+
+    // ── Product / marketing ──────────────────────────────────────────────────
     { url: `${BASE_URL}/pro`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/press`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE_URL}/testimonials`, lastModified: now, changeFrequency: 'weekly', priority: 0.5 },
+    { url: `${BASE_URL}/licenses`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${BASE_URL}/contribute`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+
+    // ── Community ─────────────────────────────────────────────────────────────
     { url: `${BASE_URL}/community`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE_URL}/community/showcase`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE_URL}/community/challenges`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
     { url: `${BASE_URL}/community/free-scripts`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE_URL}/community/share`, lastModified: now, changeFrequency: 'daily', priority: 0.6 },
-    { url: `${BASE_URL}/support`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
 
+    // ── Resources ─────────────────────────────────────────────────────────────
+    { url: `${BASE_URL}/support`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/feedback`, lastModified: now, changeFrequency: 'daily', priority: 0.5 },
     { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
     { url: `${BASE_URL}/changelog`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${BASE_URL}/sitemap-visual`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
-    // Legal pages
+
+    // ── Legal ─────────────────────────────────────────────────────────────────
     { url: `${BASE_URL}/legal`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/legal/terms`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/legal/privacy`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },

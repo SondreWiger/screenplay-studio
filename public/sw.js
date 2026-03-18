@@ -1,7 +1,13 @@
 // Screenplay Studio — Service Worker
 // Handles: Push Notifications + Offline Caching (PWA)
+//
+// ⚠️  CACHE_VERSION — bump this string on any meaningful deploy that changes
+//     cached pages or the SW logic itself. The browser byte-diffs sw.js on
+//     every page load and will re-install if the file changed at all, but an
+//     explicit version bump forces old caches to be purged even if the rest of
+//     the SW logic is identical.
 
-const CACHE_VERSION = 'ss-v1';
+const CACHE_VERSION = 'ss-v4';   // bumped March 2026
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE  = `${CACHE_VERSION}-dynamic`;
 
@@ -159,8 +165,8 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     const options = {
       body: data.body || '',
-      icon: '/icon-192.png',
-      badge: '/icon-badge.png',
+      icon: '/icon-192',
+      badge: '/icon-192',
       tag: data.tag || `ss-${Date.now()}`,
       data: {
         url: data.url || '/notifications',
@@ -178,7 +184,7 @@ self.addEventListener('push', (event) => {
     event.waitUntil(
       self.registration.showNotification('Screenplay Studio', {
         body: event.data.text(),
-        icon: '/icon-192.png',
+        icon: '/icon-192',
         tag: `ss-text-${Date.now()}`,
       })
     );

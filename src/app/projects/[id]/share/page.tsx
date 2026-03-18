@@ -1,550 +1,691 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Input, Modal, Toggle, toast, ToastContainer } from '@/components/ui';
-import type { ExternalShare } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import type { ProjectShareLink } from '@/lib/types';
 
-// ============================================================
-// External Share Portal — Pro feature
-// Create secure, branded links to share project content externally
-// ============================================================
+// ── Constants ────────────────────────────────────────────────
 
-const SHARE_TYPES = [
-  { value: 'script', label: 'Script', desc: 'Share the full script for reading', icon: '📝' },
-  { value: 'storyboard', label: 'Storyboard', desc: 'Visual storyboard and shot plans', icon: '🖼️' },
-  { value: 'moodboard', label: 'Mood Board', desc: 'Visual references and inspiration', icon: '🎨' },
-  { value: 'full', label: 'Full Project', desc: 'Script, storyboard, characters, and locations', icon: '📦' },
-] as const;
+const PERM_ITEMS: { key: keyof PermMap; label: string; icon: string }[] = [
+  { key: 'can_view_script',     label: 'Script',      icon: '📄' },
+  { key: 'can_view_characters', label: 'Characters',  icon: '👤' },
+  { key: 'can_view_scenes',     label: 'Scenes',      icon: '🎬' },
+  { key: 'can_view_schedule',   label: 'Schedule',    icon: '📅' },
+  { key: 'can_view_documents',  label: 'Documents',   icon: '📁' },
+  { key: 'can_view_notes',      label: 'View notes',  icon: '📝' },
+  { key: 'can_edit_notes',      label: 'Write notes', icon: '✏️'  },
+];
 
-export default function SharePortalPage({ params }: { params: { id: string } }) {
+type PermMap = Pick<
+  ProjectShareLink,
+  | 'can_view_script'
+  | 'can_view_characters'
+  | 'can_view_scenes'
+  | 'can_view_schedule'
+  | 'can_view_documents'
+  | 'can_view_notes'
+  | 'can_edit_notes'
+>;
+
+interface LinkForm {
+  name: string;
+  perms: PermMap;
+  is_invite: boolean;
+  invite_role: 'viewer' | 'commenter' | 'editor';
+  expires_at: string;
+}
+
+const BLANK_FORM: LinkForm = {
+  name: '',
+  perms: {
+    can_view_script: false,
+    can_view_characters: false,
+    can_view_scenes: false,
+    can_view_schedule: false,
+    can_view_documents: false,
+    can_view_notes: false,
+    can_edit_notes: false,
+  },
+  is_invite: false,
+  invite_role: 'viewer',
+  expires_at: '',
+};
+
+// ── Helpers ──────────────────────────────────────────────────
+
+function getOrigin() {
+  if (typeof window !== 'undefined') return window.location.origin;
+  return process.env.NEXT_PUBLIC_SITE_URL ?? 'https://screenplaystudio.fun';
+}
+
+function friendlyDate(iso: string) {
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+// ── Main page ────────────────────────────────────────────────
+
+export default function SharePage({ params }: { params: { id: string } }) {
+  const projectId = params.id;
   const { user } = useAuth();
-  const { isPro, hasExternalShares } = useProFeatures();
-  const { currentProject } = useProjectStore();
-  const [shares, setShares] = useState<ExternalShare[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
+  const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
 
-  // Press Kit state
-  const [pkEnabled, setPkEnabled] = useState(false);
-  const [pkPassword, setPkPassword] = useState('');
-  const [pkTagline, setPkTagline] = useState('');
-  const [pkContact, setPkContact] = useState('');
-  const [pkSaving, setPkSaving] = useState(false);
-  const [pkLoaded, setPkLoaded] = useState(false);
+  const [links, setLinks]                   = useState<ProjectShareLink[]>([]);
+  const [loading, setLoading]               = useState(true);
+  const [drawerOpen, setDrawerOpen]         = useState(false);
+  const [form, setForm]                     = useState<LinkForm>(BLANK_FORM);
+  const [saving, setSaving]                 = useState(false);
+  const [formError, setFormError]           = useState<string | null>(null);
+  const [copiedId, setCopiedId]             = useState<string | null>(null);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId]         = useState<string | null>(null);
+  const [pageError, setPageError]           = useState<string | null>(null);
 
-  // Create form
-  const [shareType, setShareType] = useState<string>('script');
-  const [title, setTitle] = useState('');
-  const [password, setPassword] = useState('');
-  const [allowComments, setAllowComments] = useState(true);
-  const [allowDownload, setAllowDownload] = useState(false);
-  const [watermark, setWatermark] = useState('');
-  const [license, setLicense] = useState('all-rights-reserved');
-  const [expiresInDays, setExpiresInDays] = useState<number | null>(null);
-  const [maxViews, setMaxViews] = useState<number | null>(null);
-  const [creating, setCreating] = useState(false);
+  // ── Data ──────────────────────────────────────────────────
 
-  useEffect(() => { fetchShares(); fetchPressKitSettings(); }, [params.id]);
-
-  const fetchPressKitSettings = async () => {
+  const loadLinks = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase
-      .from('projects')
-      .select('press_kit_enabled, press_kit_password, press_kit_tagline, press_kit_contact')
-      .eq('id', params.id)
-      .maybeSingle();
-    if (data) {
-      setPkEnabled(!!data.press_kit_enabled);
-      setPkPassword(data.press_kit_password || '');
-      setPkTagline(data.press_kit_tagline || '');
-      setPkContact(data.press_kit_contact || '');
-    }
-    setPkLoaded(true);
-  };
-
-  const handleSavePressKit = async () => {
-    setPkSaving(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from('projects')
-      .update({
-        press_kit_enabled: pkEnabled,
-        press_kit_password: pkPassword.trim() || null,
-        press_kit_tagline: pkTagline.trim() || null,
-        press_kit_contact: pkContact.trim() || null,
-      })
-      .eq('id', params.id);
-    if (error) {
-      toast('Failed to save press kit settings', 'error');
-    } else {
-      toast('Press kit settings saved', 'success');
-    }
-    setPkSaving(false);
-  };
-
-  const fetchShares = async () => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('external_shares')
+    const { data, error } = await supabase
+      .from('project_share_links')
       .select('*')
-      .eq('project_id', params.id)
+      .eq('project_id', projectId)
       .order('created_at', { ascending: false });
-    setShares(data || []);
+    if (error) setPageError('Failed to load share links.');
+    else setLinks((data ?? []) as ProjectShareLink[]);
     setLoading(false);
-  };
+  }, [projectId]);
 
-  const handleCreate = async () => {
-    if (!user) return;
-    setCreating(true);
-    const supabase = createClient();
+  useEffect(() => { loadLinks(); }, [loadLinks]);
 
-    // Snapshot project + content so the public viewer doesn't need auth
-    let contentSnapshot: any = {};
-    try {
-      const { data: proj } = await supabase
-        .from('projects')
-        .select('title, logline, genre, format, cover_url, custom_branding')
-        .eq('id', params.id)
-        .single();
-      contentSnapshot.project = proj || {};
+  // ── Actions ───────────────────────────────────────────────
 
-      if (['script', 'full'].includes(shareType)) {
-        // Get scripts
-        const { data: scripts } = await supabase
-          .from('scripts')
-          .select('id, title, content, updated_at')
-          .eq('project_id', params.id)
-          .order('created_at', { ascending: true });
-        contentSnapshot.scripts = scripts || [];
-
-        // Get actual script_elements for rich content
-        if (scripts && scripts.length > 0) {
-          const { data: elements } = await supabase
-            .from('script_elements')
-            .select('element_type, content, sort_order, scene_number')
-            .eq('script_id', scripts[0].id)
-            .eq('is_omitted', false)
-            .order('sort_order');
-
-          // Derive character names positionally for the snapshot
-          const enriched: any[] = [];
-          let charName: string | null = null;
-          for (const e of (elements || [])) {
-            if (e.element_type === 'character') {
-              charName = (e.content || '').replace(/\s*\(.*\)\s*$/, '').trim();
-            }
-            enriched.push({
-              type: e.element_type,
-              text: e.content,
-              scene_number: e.scene_number,
-              character_name: e.element_type === 'dialogue' || e.element_type === 'parenthetical' ? charName : null,
-            });
-            if (e.element_type !== 'dialogue' && e.element_type !== 'parenthetical' && e.element_type !== 'character') {
-              charName = null;
-            }
-          }
-          contentSnapshot.script_elements = enriched;
-        }
-      }
-
-      if (['storyboard', 'full'].includes(shareType)) {
-        const { data: shots } = await supabase
-          .from('shots')
-          .select('id, scene_id, shot_type, shot_size, description, image_url, sort_order, notes')
-          .eq('project_id', params.id)
-          .order('sort_order');
-        contentSnapshot.shots = shots || [];
-
-        const { data: scenes } = await supabase
-          .from('scenes')
-          .select('id, scene_number, scene_heading, location_type, time_of_day')
-          .eq('project_id', params.id)
-          .order('scene_number');
-        contentSnapshot.scenes = scenes || [];
-      }
-
-      if (['moodboard', 'full'].includes(shareType)) {
-        // Moodboard images are typically in project metadata or a dedicated table
-        // Snapshot locations as visual reference data
-        const { data: locations } = await supabase
-          .from('locations')
-          .select('id, name, description, address, photos, location_type')
-          .eq('project_id', params.id);
-        contentSnapshot.locations = locations || [];
-      }
-
-      if (shareType === 'full') {
-        const { data: characters } = await supabase
-          .from('characters')
-          .select('id, name, full_name, description, age, gender, is_main, cast_actor, avatar_url, personality_traits')
-          .eq('project_id', params.id)
-          .order('is_main', { ascending: false })
-          .order('name');
-        contentSnapshot.characters = characters || [];
-      }
-    } catch (err) {
-      console.error('Error snapshotting content:', err);
+  async function createLink() {
+    if (!form.name.trim()) { setFormError('Give this link a name.'); return; }
+    const anyPerm = Object.values(form.perms).some(Boolean);
+    if (!anyPerm && !form.is_invite) {
+      setFormError('Enable at least one content section, or turn on Invite link.');
+      return;
     }
-
-    const { data, error } = await supabase.from('external_shares').insert({
-      project_id: params.id,
-      created_by: user.id,
-      share_type: shareType,
-      title: title.trim() || `${currentProject?.title || 'Project'} — ${SHARE_TYPES.find(s => s.value === shareType)?.label}`,
-      allow_comments: allowComments,
-      allow_download: allowDownload,
-      watermark_text: watermark.trim() || null,
-      expires_at: expiresInDays ? new Date(Date.now() + expiresInDays * 86400000).toISOString() : null,
-      max_views: maxViews || null,
-      branding: { ...(currentProject?.custom_branding || {}), license } as ExternalShare['branding'],
-      content_snapshot: contentSnapshot,
-    }).select().single();
-
-    if (error) {
-      toast('Failed to create share link', 'error');
-    } else if (data) {
-      // If password needed, hash it (simple for now — in production, use bcrypt)
-      if (password.trim()) {
-        await supabase.from('external_shares').update({
-          password_hash: btoa(password.trim()), // Simple encoding for dev — use bcrypt in prod
-        }).eq('id', data.id);
-      }
-      toast('Share link created!', 'success');
-      setShowCreate(false);
-      resetForm();
-      fetchShares();
-    }
-    setCreating(false);
-  };
-
-  const handleToggleActive = async (share: ExternalShare) => {
+    setSaving(true);
+    setFormError(null);
     const supabase = createClient();
-    await supabase.from('external_shares').update({
-      is_active: !share.is_active,
-      updated_at: new Date().toISOString(),
-    }).eq('id', share.id);
-    fetchShares();
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this share link? External reviewers will lose access.')) return;
-    const supabase = createClient();
-    await supabase.from('external_shares').delete().eq('id', id);
-    fetchShares();
-    toast('Share link deleted');
-  };
-
-  const getShareUrl = (token: string) => {
-    if (typeof window !== 'undefined') {
-      return `${window.location.origin}/share/${token}`;
-    }
-    return `/share/${token}`;
-  };
-
-  const copyLink = (token: string) => {
-    navigator.clipboard.writeText(getShareUrl(token));
-    toast('Link copied to clipboard!', 'success');
-  };
-
-  const resetForm = () => {
-    setShareType('script');
-    setTitle('');
-    setPassword('');
-    setAllowComments(true);
-    setAllowDownload(false);
-    setWatermark('');
-    setLicense('all-rights-reserved');
-    setExpiresInDays(null);
-    setMaxViews(null);
-  };
-
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
-
-  if (!hasProAccess) {
-    return (
-      <div className="p-6 flex items-center justify-center h-full">
-        <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4">
-            <svg className="w-12 h-12 mx-auto text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-          </div>
-          <h2 className="text-lg font-semibold text-white mb-2">Share Portal</h2>
-          <p className="text-sm text-surface-400 mb-4">Create secure, branded links to share project content with external stakeholders.</p>
-          <Badge variant="warning">Pro Feature</Badge>
-        </Card>
-      </div>
-    );
+    const { error } = await supabase.from('project_share_links').insert({
+      project_id: projectId,
+      created_by: user?.id,
+      name: form.name.trim(),
+      ...form.perms,
+      is_invite: form.is_invite,
+      invite_role: form.invite_role,
+      is_active: true,
+      ...(form.expires_at ? { expires_at: new Date(form.expires_at).toISOString() } : {}),
+    });
+    if (error) { setFormError(error.message); setSaving(false); return; }
+    setDrawerOpen(false);
+    setForm(BLANK_FORM);
+    await loadLinks();
+    setSaving(false);
   }
 
+  async function copyLink(token: string, id: string) {
+    await navigator.clipboard.writeText(`${getOrigin()}/share/${token}`).catch(() => {});
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2200);
+  }
+
+  async function regenerate(id: string) {
+    setRegeneratingId(id);
+    const supabase = createClient();
+    const { error } = await supabase.rpc('regenerate_share_link_token', { link_id: id });
+    if (error) setPageError('Could not regenerate: ' + error.message);
+    else await loadLinks();
+    setRegeneratingId(null);
+  }
+
+  async function deactivate(id: string) {
+    setDeletingId(id);
+    const supabase = createClient();
+    await supabase.from('project_share_links').update({ is_active: false }).eq('id', id);
+    setLinks((prev) => prev.filter((l) => l.id !== id));
+    setDeletingId(null);
+  }
+
+  // ── Render ────────────────────────────────────────────────
+
+  const activeLinks   = links.filter((l) => l.is_active);
+  const inactiveLinks = links.filter((l) => !l.is_active);
+
   return (
-    <div className="p-3 sm:p-4 md:p-8 max-w-4xl">
-      <ToastContainer />
-      <div className="flex items-center justify-between mb-6">
+    <div className="h-full flex flex-col overflow-hidden">
+
+      {/* Top bar */}
+      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-white">Share Portal</h1>
-            <Badge variant="warning">⭐ Pro</Badge>
-          </div>
-          <p className="text-sm text-surface-400 mt-1">Create secure, branded links to share project content with external stakeholders.</p>
+          <h1 className="text-base font-semibold text-white tracking-tight">Share</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Shareable links for{' '}
+            <span className="text-gray-400">{project?.title ?? 'this project'}</span>
+          </p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        <button
+          onClick={() => { setDrawerOpen(true); setForm(BLANK_FORM); setFormError(null); }}
+          className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-sm"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          New Share Link
-        </Button>
+          New link
+        </button>
       </div>
 
-      {/* Existing shares */}
-      {shares.length > 0 ? (
-        <div className="space-y-3">
-          {shares.map((share) => {
-            const isExpired = share.expires_at && new Date(share.expires_at) < new Date();
-            const isMaxed = share.max_views && share.view_count >= share.max_views;
-            const isLive = share.is_active && !isExpired && !isMaxed;
-            return (
-              <Card key={share.id} className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">{SHARE_TYPES.find(s => s.value === share.share_type)?.icon || '📤'}</span>
-                      <h3 className="text-sm font-semibold text-white truncate">{share.title || 'Untitled Share'}</h3>
-                      <Badge variant={isLive ? 'success' : 'error'}>
-                        {isLive ? 'Live' : isExpired ? 'Expired' : isMaxed ? 'Max views' : 'Paused'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-surface-500 mb-2">
-                      <span>{share.view_count} views{share.max_views ? ` / ${share.max_views} max` : ''}</span>
-                      {share.expires_at && <span>Expires {new Date(share.expires_at).toLocaleDateString()}</span>}
-                      {share.password_hash && <span>🔒 Password</span>}
-                      {share.watermark_text && <span>💧 Watermark</span>}
-                      {share.allow_comments && <span>💬 Comments</span>}
-                      {share.allow_download && <span>📥 Download</span>}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <code className="text-xs text-surface-400 bg-surface-800/50 px-2 py-1 rounded font-mono truncate max-w-xs">
-                        {getShareUrl(share.access_token)}
-                      </code>
-                      <button onClick={() => copyLink(share.access_token)} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] whitespace-nowrap">
-                        Copy
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => handleToggleActive(share)}
-                      className={`p-2 rounded-lg transition-colors ${share.is_active ? 'text-green-400 hover:bg-green-500/10' : 'text-surface-500 hover:bg-surface-800'}`}
-                      title={share.is_active ? 'Pause' : 'Activate'}
-                    >
-                      {share.is_active ? (
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      )}
-                    </button>
-                    <button onClick={() => handleDelete(share.id)} className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+      {/* Page-level error */}
+      {pageError && (
+        <div className="mx-6 mt-3 flex-shrink-0 text-xs text-red-400 bg-red-500/10 border border-red-500/15 rounded-lg px-3 py-2.5 flex items-center justify-between gap-3">
+          <span>{pageError}</span>
+          <button
+            onClick={() => setPageError(null)}
+            className="text-red-400/60 hover:text-red-400 transition-colors"
+          >
+            ✕
+          </button>
         </div>
-      ) : (
-        <Card className="p-12 text-center">
-          <div className="text-4xl mb-4">📤</div>
-          <h3 className="text-lg font-semibold text-white mb-2">No share links yet</h3>
-          <p className="text-sm text-surface-400 mb-4">Create a secure link to share your script, storyboard, or full project with clients and stakeholders.</p>
-          <Button onClick={() => setShowCreate(true)}>Create First Share Link</Button>
-        </Card>
       )}
 
-      {/* ── Press Kit ─────────────────────────────── */}
-      <Card className="p-6 mt-6">
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div>
-            <h2 className="text-base font-bold text-white">Public Press Kit</h2>
-            <p className="text-xs text-surface-400 mt-0.5">A public, shareable page with your project's key info — no login required.</p>
+      {/* Link list */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+        {loading ? (
+          <div className="flex justify-center pt-20">
+            <div className="w-5 h-5 border-2 border-white/15 border-t-white/60 rounded-full animate-spin" />
           </div>
-          <Toggle checked={pkEnabled} onChange={setPkEnabled} size="sm" />
-        </div>
-
-        {pkLoaded && (
-          <div className="space-y-4">
-            {/* Public URL */}
-            {pkEnabled && (
-              <div className="p-3 rounded-lg bg-surface-800/50 border border-surface-700">
-                <p className="text-[11px] text-surface-500 mb-1">Press kit URL</p>
-                <div className="flex items-center gap-2">
-                  <code className="text-xs text-[#FF8F5F] font-mono flex-1 truncate">
-                    {typeof window !== 'undefined' ? window.location.origin : ''}/press/{params.id}
-                  </code>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/press/${params.id}`);
-                      toast('Link copied!', 'success');
-                    }}
-                    className="text-xs text-surface-400 hover:text-white transition-colors px-2 py-1 rounded bg-surface-700 hover:bg-surface-600"
-                  >
-                    Copy
-                  </button>
-                  <a
-                    href={`/press/${params.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-surface-400 hover:text-white transition-colors px-2 py-1 rounded bg-surface-700 hover:bg-surface-600"
-                  >
-                    Open ↗
-                  </a>
-                </div>
-              </div>
-            )}
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Input
-                label="Tagline (optional)"
-                value={pkTagline}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPkTagline(e.target.value)}
-                placeholder="A short, punchy tagline for the press kit"
-              />
-              <Input
-                label="Press contact email"
-                value={pkContact}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPkContact(e.target.value)}
-                placeholder="press@yourproject.com"
-              />
-            </div>
-
-            <Input
-              label="Password protection (optional)"
-              type="password"
-              value={pkPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPkPassword(e.target.value)}
-              placeholder="Leave blank for open access"
+        ) : activeLinks.length === 0 ? (
+          <EmptyState onNew={() => { setDrawerOpen(true); setForm(BLANK_FORM); }} />
+        ) : (
+          activeLinks.map((link) => (
+            <LinkRow
+              key={link.id}
+              link={link}
+              copied={copiedId === link.id}
+              regenerating={regeneratingId === link.id}
+              deleting={deletingId === link.id}
+              onCopy={() => copyLink(link.token, link.id)}
+              onRegenerate={() => regenerate(link.id)}
+              onDelete={() => deactivate(link.id)}
             />
-
-            <div className="flex justify-end">
-              <Button onClick={handleSavePressKit} loading={pkSaving} size="sm">
-                Save Press Kit Settings
-              </Button>
-            </div>
-          </div>
+          ))
         )}
-      </Card>
 
-      {/* Create Modal */}
-      {showCreate && (
-        <Modal isOpen onClose={() => setShowCreate(false)} title="Create Share Link" size="lg">
-          <div className="space-y-5 p-1">
-            {/* Share type */}
-            <div>
-              <label className="block text-sm font-medium text-surface-300 mb-2">What to share</label>
-              <div className="grid grid-cols-2 gap-2">
-                {SHARE_TYPES.map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => setShareType(t.value)}
-                    className={`p-3 rounded-lg border-2 text-left transition-all ${
-                      shareType === t.value ? 'border-[#FF5F1F] bg-[#FF5F1F]/10' : 'border-surface-700 hover:border-surface-600'
-                    }`}
-                  >
-                    <span className="text-lg">{t.icon}</span>
-                    <p className="text-sm font-medium text-white mt-1">{t.label}</p>
-                    <p className="text-[11px] text-surface-500">{t.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Input label="Title (optional)" value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder={`${currentProject?.title || 'Project'} — Script`} />
-
-            {/* Security */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Input label="Password (optional)" type="password" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} placeholder="Leave blank for no password" />
-              <Input label="Watermark text (optional)" value={watermark} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWatermark(e.target.value)} placeholder="e.g. CONFIDENTIAL" />
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-surface-300 mb-1.5">Expires after</label>
-                <select
-                  value={expiresInDays ?? ''}
-                  onChange={(e) => setExpiresInDays(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white"
-                >
-                  <option value="">Never</option>
-                  <option value="1">1 day</option>
-                  <option value="7">7 days</option>
-                  <option value="30">30 days</option>
-                  <option value="90">90 days</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-surface-300 mb-1.5">Max views</label>
-                <select
-                  value={maxViews ?? ''}
-                  onChange={(e) => setMaxViews(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white"
-                >
-                  <option value="">Unlimited</option>
-                  <option value="1">1 view</option>
-                  <option value="5">5 views</option>
-                  <option value="10">10 views</option>
-                  <option value="50">50 views</option>
-                  <option value="100">100 views</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Toggles */}
-            <div className="flex gap-6">
-              <Toggle checked={allowComments} onChange={setAllowComments} label="Allow comments" size="sm" />
-              <Toggle checked={allowDownload} onChange={setAllowDownload} label="Allow download" size="sm" />
-            </div>
-
-            {/* License */}
-            <div>
-              <label className="block text-sm font-medium text-surface-300 mb-1.5">License</label>
-              <select
-                value={license}
-                onChange={(e) => setLicense(e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white"
+        {inactiveLinks.length > 0 && !loading && (
+          <details className="mt-5 group">
+            <summary className="list-none flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-400 cursor-pointer transition-colors select-none w-fit">
+              <svg
+                className="w-3 h-3 transition-transform group-open:rotate-90"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
               >
-                <optgroup label="Traditional">
-                  <option value="all-rights-reserved">All Rights Reserved</option>
-                  <option value="confidential">Confidential — Do Not Distribute</option>
-                  <option value="nda">Under NDA</option>
-                  <option value="wga-registered">WGA Registered</option>
-                </optgroup>
-                <optgroup label="Creative Commons (Free to Use)">
-                  <option value="cc-by">CC BY — Attribution (free with credit)</option>
-                  <option value="cc-by-sa">CC BY-SA — Attribution + ShareAlike</option>
-                  <option value="cc0">CC0 — Public Domain (no restrictions)</option>
-                </optgroup>
-                <optgroup label="Creative Commons (Restricted)">
-                  <option value="cc-by-nc">CC BY-NC — NonCommercial only</option>
-                  <option value="cc-by-nc-sa">CC BY-NC-SA — NonCommercial + ShareAlike</option>
-                  <option value="cc-by-nd">CC BY-ND — NoDerivatives</option>
-                  <option value="cc-by-nc-nd">CC BY-NC-ND — NonCommercial + NoDerivatives</option>
-                </optgroup>
-              </select>
-              <p className="text-[11px] text-surface-500 mt-1.5">
-                {license === 'cc-by' || license === 'cc-by-sa' || license === 'cc0' ? '✓ Recipients may reuse this work' : '✗ Recipients may not reuse this work without permission'} —{' '}
-                <a href="/licenses" target="_blank" className="text-[#FF5F1F] hover:underline">Learn about licenses</a>
-              </p>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+              {inactiveLinks.length} deactivated link{inactiveLinks.length !== 1 ? 's' : ''}
+            </summary>
+            <div className="mt-2 space-y-1.5 opacity-40 pointer-events-none">
+              {inactiveLinks.map((link) => (
+                <LinkRow
+                  key={link.id}
+                  link={link}
+                  copied={false}
+                  regenerating={false}
+                  deleting={false}
+                  onCopy={() => {}}
+                  onRegenerate={() => {}}
+                  onDelete={() => {}}
+                  inactive
+                />
+              ))}
+            </div>
+          </details>
+        )}
+      </div>
+
+      {/* Slide-in create drawer */}
+      {drawerOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-sm bg-[#111113] border-l border-white/10 shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+              <h2 className="text-sm font-semibold text-white">New share link</h2>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 hover:text-white hover:bg-white/8 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
-              <Button onClick={handleCreate} loading={creating}>Create Share Link</Button>
+            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+              <Field label="Link name">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="e.g. Director cut, Client draft…"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  onKeyDown={(e) => e.key === 'Enter' && createLink()}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/70 focus:bg-white/8 transition-colors"
+                />
+              </Field>
+
+              <Field label="What can they see?">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {PERM_ITEMS.map(({ key, label, icon }) => {
+                    const checked = form.perms[key];
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() =>
+                          setForm((f) => ({ ...f, perms: { ...f.perms, [key]: !f.perms[key] } }))
+                        }
+                        className={cn(
+                          'flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-colors',
+                          checked
+                            ? 'bg-indigo-500/15 border-indigo-500/40 text-white'
+                            : 'bg-white/4 border-white/8 text-gray-400 hover:text-gray-200 hover:border-white/15',
+                        )}
+                      >
+                        <span className="text-base leading-none">{icon}</span>
+                        <span className="text-xs font-medium">{label}</span>
+                        {checked && (
+                          <svg
+                            className="w-3 h-3 ml-auto text-indigo-400 flex-shrink-0"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </Field>
+
+              <div className="border-t border-white/[0.06]" />
+
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm text-gray-200 font-medium">Invite link</p>
+                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                    Recipient signs in or creates an account and automatically joins the project
+                  </p>
+                </div>
+                <Toggle
+                  checked={form.is_invite}
+                  onChange={(v) => setForm((f) => ({ ...f, is_invite: v }))}
+                />
+              </div>
+
+              {form.is_invite && (
+                <Field label="Join as">
+                  <div className="flex gap-2">
+                    {(['viewer', 'commenter', 'editor'] as const).map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, invite_role: role }))}
+                        className={cn(
+                          'flex-1 py-2 rounded-lg border text-xs font-medium capitalize transition-colors',
+                          form.invite_role === role
+                            ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300'
+                            : 'bg-white/4 border-white/8 text-gray-400 hover:text-gray-200 hover:border-white/15',
+                        )}
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+              )}
+
+              <Field
+                label={
+                  <>
+                    Expires{' '}
+                    <span className="text-gray-600 font-normal">— optional</span>
+                  </>
+                }
+              >
+                <input
+                  type="datetime-local"
+                  value={form.expires_at}
+                  onChange={(e) => setForm((f) => ({ ...f, expires_at: e.target.value }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-indigo-500/70 transition-colors [color-scheme:dark]"
+                />
+              </Field>
+
+              {formError && (
+                <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/15 rounded-lg px-3 py-2">
+                  {formError}
+                </p>
+              )}
             </div>
-          </div>
-        </Modal>
+
+            <div className="flex-shrink-0 flex items-center justify-end gap-2.5 px-5 py-4 border-t border-white/[0.08]">
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="text-xs text-gray-500 hover:text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createLink}
+                disabled={saving || !form.name.trim()}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+              >
+                {saving && (
+                  <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                )}
+                {saving ? 'Creating…' : 'Create link'}
+              </button>
+            </div>
+          </aside>
+        </>
       )}
     </div>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────
+
+function EmptyState({ onNew }: { onNew: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center pt-16 pb-8 text-center px-4">
+      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
+        <svg
+          className="w-7 h-7 text-gray-500"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.3}
+        >
+          <path
+            strokeLinecap="round" strokeLinejoin="round"
+            d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+          />
+        </svg>
+      </div>
+      <p className="text-sm font-medium text-gray-300">No share links yet</p>
+      <p className="text-xs text-gray-600 mt-1.5 max-w-[240px] leading-relaxed">
+        Create a link to share scripts, characters, or other content — no login needed for recipients.
+      </p>
+      <button
+        onClick={onNew}
+        className="mt-5 flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Create first link
+      </button>
+
+      <div className="mt-10 w-full max-w-sm text-left space-y-3">
+        <p className="text-[11px] text-gray-600 uppercase tracking-widest font-semibold px-1">
+          How it works
+        </p>
+        {[
+          { icon: '🔗', text: 'Create a named link with per-section permissions' },
+          { icon: '📤', text: 'Share the URL — no account needed to view' },
+          { icon: '👥', text: 'Invite links auto-add the recipient to your project' },
+        ].map(({ icon, text }) => (
+          <div
+            key={text}
+            className="flex items-start gap-3 bg-white/[0.03] border border-white/[0.05] rounded-xl px-3.5 py-3"
+          >
+            <span className="text-base mt-0.5 flex-shrink-0">{icon}</span>
+            <p className="text-xs text-gray-400 leading-relaxed">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface LinkRowProps {
+  link: ProjectShareLink;
+  copied: boolean;
+  regenerating: boolean;
+  deleting: boolean;
+  onCopy: () => void;
+  onRegenerate: () => void;
+  onDelete: () => void;
+  inactive?: boolean;
+}
+
+function LinkRow({
+  link, copied, regenerating, deleting,
+  onCopy, onRegenerate, onDelete, inactive = false,
+}: LinkRowProps) {
+  const origin    = getOrigin();
+  const url       = `${origin}/share/${link.token}`;
+  const perms     = PERM_ITEMS.filter(({ key }) => link[key as keyof ProjectShareLink]);
+  const expired   = link.expires_at ? new Date(link.expires_at) < new Date() : false;
+  const expiresAt = link.expires_at ? friendlyDate(link.expires_at) : null;
+
+  return (
+    <div className={cn(
+      'group rounded-xl border transition-colors',
+      inactive
+        ? 'bg-white/[0.02] border-white/[0.04]'
+        : 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.05] hover:border-white/10',
+    )}>
+      {/* Top row */}
+      <div className="flex items-start gap-3 px-4 pt-3.5 pb-2">
+        {/* Type icon */}
+        <div className={cn(
+          'w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5',
+          link.is_invite ? 'bg-emerald-500/15' : 'bg-indigo-500/15',
+        )}>
+          {link.is_invite ? (
+            <svg
+              className="w-4 h-4 text-emerald-400"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3M13.5 19.5l-.75-1.5M5.625 19.5l.75-1.5M9 4.5l1.5 6h3l1.5 6M9 4.5L7.5 10.5h9" />
+            </svg>
+          ) : (
+            <svg
+              className="w-4 h-4 text-indigo-400"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.81 15.312a4.5 4.5 0 01-1.242-7.244l4.5-4.5a4.5 4.5 0 016.364 6.364l-1.757 1.757" />
+            </svg>
+          )}
+        </div>
+
+        {/* Name + badges */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-white truncate">{link.name}</span>
+            {link.is_invite && (
+              <span className="inline-flex items-center text-[10px] font-semibold text-emerald-400 bg-emerald-500/12 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                Invite · {link.invite_role}
+              </span>
+            )}
+            {expired && (
+              <span className="inline-flex items-center text-[10px] font-semibold text-red-400 bg-red-500/12 border border-red-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                Expired
+              </span>
+            )}
+          </div>
+
+          <div className="mt-0.5">
+            <span className="text-[11px] text-gray-600 font-mono truncate block">
+              {url.replace(/^https?:\/\//, '')}
+            </span>
+          </div>
+        </div>
+
+        {/* Action icons (fade in on hover) */}
+        {!inactive && (
+          <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
+            <ActionBtn
+              onClick={onCopy}
+              title={copied ? 'Copied!' : 'Copy link'}
+              active={copied}
+              activeClass="text-emerald-400"
+            >
+              {copied
+                ? <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                : <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              }
+            </ActionBtn>
+            <ActionBtn
+              onClick={onRegenerate}
+              title="Regenerate token — old link stops working"
+              disabled={regenerating}
+              spin={regenerating}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </ActionBtn>
+            <ActionBtn
+              onClick={onDelete}
+              title="Deactivate link"
+              disabled={deleting}
+              spin={deleting}
+              hoverClass="hover:text-red-400 hover:bg-red-500/10"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </ActionBtn>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom row — permission pills + stats */}
+      <div className="flex items-center justify-between px-4 pb-3 gap-3">
+        <div className="flex flex-wrap gap-1">
+          {perms.length === 0 ? (
+            <span className="text-[11px] text-gray-600 italic">No content access</span>
+          ) : (
+            perms.map(({ label, icon }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full"
+              >
+                <span className="text-[10px]">{icon}</span>
+                {label}
+              </span>
+            ))
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 flex-shrink-0 text-[11px] text-gray-600">
+          <span className="flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {link.view_count}
+          </span>
+          {expiresAt && (
+            <span className={expired ? 'text-red-500/70' : ''}>
+              {expired ? 'Expired' : 'Expires'} {expiresAt}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Expandable copy bar — shown on hover */}
+      {!inactive && (
+        <div className="max-h-0 overflow-hidden group-hover:max-h-12 border-t border-transparent group-hover:border-white/[0.04] transition-all duration-150">
+          <div className="flex items-center gap-2 mx-4 my-2 bg-white/[0.03] rounded-lg px-3 py-1.5">
+            <span className="text-[11px] font-mono text-gray-500 truncate flex-1">{url}</span>
+            <button
+              onClick={onCopy}
+              className={cn(
+                'text-[11px] font-semibold px-2 py-0.5 rounded transition-colors flex-shrink-0',
+                copied ? 'text-emerald-400' : 'text-gray-400 hover:text-white',
+              )}
+            >
+              {copied ? '✓ Copied' : 'Copy'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Tiny UI atoms ─────────────────────────────────────────────
+
+function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-medium text-gray-500">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none mt-0.5',
+        checked ? 'bg-indigo-600' : 'bg-white/20',
+      )}
+    >
+      <span
+        className={cn(
+          'inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-150',
+          checked ? 'translate-x-4' : 'translate-x-0',
+        )}
+      />
+    </button>
+  );
+}
+
+interface ActionBtnProps {
+  onClick: () => void;
+  title?: string;
+  disabled?: boolean;
+  spin?: boolean;
+  active?: boolean;
+  activeClass?: string;
+  hoverClass?: string;
+  children: React.ReactNode;
+}
+
+function ActionBtn({
+  onClick, title, disabled, spin, active,
+  activeClass = 'text-white',
+  hoverClass  = 'hover:text-white hover:bg-white/10',
+  children,
+}: ActionBtnProps) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      disabled={disabled}
+      className={cn(
+        'w-7 h-7 flex items-center justify-center rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
+        active ? activeClass : 'text-gray-500',
+        !active && hoverClass,
+      )}
+    >
+      <svg
+        className={cn('w-3.5 h-3.5', spin && 'animate-spin')}
+        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+      >
+        {children}
+      </svg>
+    </button>
   );
 }

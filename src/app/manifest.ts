@@ -17,10 +17,10 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     // Enables offline storage & background sync signals to the browser
     prefer_related_applications: false,
     icons: [
-      { src: '/icon', sizes: '32x32', type: 'image/png' },
+      { src: '/icon',     sizes: '32x32',   type: 'image/png' },
       { src: '/apple-icon', sizes: '180x180', type: 'image/png' },
-      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: '/icon-192', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+      { src: '/icon-512', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
     categories: ['productivity', 'entertainment', 'utilities'],
     screenshots: [],
