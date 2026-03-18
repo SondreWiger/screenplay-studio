@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import type { ProjectShareLink } from '@/lib/types';
 
 // ============================================================
@@ -82,20 +83,6 @@ interface ShareData {
   schedule?: Record<string, unknown>[];
   documents?: ShareDocument[];
 }
-
-// ---- Script element styles ----------------------------------
-
-const ELEMENT_STYLES: Record<string, string> = {
-  scene_heading: 'font-bold uppercase tracking-wide text-white mt-6 mb-1',
-  action: 'text-gray-200 my-2',
-  character: 'ml-[3rem] font-semibold text-gray-100 mt-4',
-  dialogue: 'ml-[1.5rem] mr-[1.5rem] text-gray-200',
-  parenthetical: 'ml-[2rem] mr-[2rem] italic text-gray-400',
-  transition: 'text-right uppercase text-gray-400 mt-4',
-  shot: 'font-semibold uppercase text-gray-300 mt-4',
-  title_page: 'text-center text-white mb-4',
-  general: 'text-gray-200 my-1',
-};
 
 // ---- Tab definitions ----------------------------------------
 
@@ -379,17 +366,17 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
       <main className="flex-1 overflow-y-auto">
         {/* Script tab */}
         {activeTab === 'script' && data.script && (
-          <div className="max-w-3xl mx-auto px-4 py-8">
-            <div className="font-mono text-sm leading-relaxed space-y-0">
-              {data.script.elements.map((el) => (
-                <div
-                  key={el.id}
-                  className={ELEMENT_STYLES[el.element_type] ?? 'text-gray-200 my-1'}
-                >
-                  {el.content || '\u00A0'}
-                </div>
-              ))}
+          <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-white">{data.script.title}</h2>
+              {data.script.version > 1 && (
+                <span className="text-xs text-gray-500 mt-0.5">Version {data.script.version}</span>
+              )}
             </div>
+            <CommunityScriptInfoPanel
+              content={JSON.stringify(data.script.elements)}
+              title={data.script.title}
+            />
           </div>
         )}
 
