@@ -60,8 +60,8 @@ function computeStats(content: string | null): ScriptStats {
     const act = elements.filter(e => e.element_type === 'action').reduce((n, e) => n + e.content.split(/\s+/).filter(Boolean).length, 0);
     const cfg = PAGE_CONFIGS['letter'];
     const totalLines = elements
-      .filter(e => e.element_type !== 'title_page' && !e.is_omitted)
-      .reduce((n, el) => n + estimateLines(el, cfg), 0);
+      .filter(e => e.element_type !== 'title_page')
+      .reduce((n, el) => n + estimateLines(el as Parameters<typeof estimateLines>[0], cfg), 0);
     const pageEstimate = Math.max(1, Math.ceil(totalLines / cfg.linesPerPage));
     return {
       wordCount: totalWords,
