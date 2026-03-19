@@ -232,7 +232,8 @@ export type XPEventType =
   | 'profile_complete'
   | 'lesson_complete'
   | 'course_complete'
-  | 'quiz_perfect_score';
+  | 'quiz_perfect_score'
+  | 'poll_complete';
 
 export interface Badge {
   id: string;
@@ -1496,7 +1497,62 @@ export type NotificationType =
   | 'mention'
   | 'blog_comment'
   | 'feedback_update'
-  | 'collaborator_added';
+  | 'collaborator_added'
+  | 'poll_published';
+
+// ============================================================
+// Poll / Survey Types
+// ============================================================
+
+export type PollStatus = 'draft' | 'review' | 'published' | 'closed';
+export type PollQuestionType = 'yes_no' | 'single_select' | 'multi_select' | 'ranking' | 'short_text' | 'long_text';
+
+export interface PollSession {
+  id: string;
+  title: string;
+  preface: string | null;
+  status: PollStatus;
+  created_by: string;
+  published_at: string | null;
+  closed_at: string | null;
+  response_count: number;
+  created_at: string;
+  updated_at: string;
+  // joined
+  questions?: PollQuestion[];
+}
+
+export interface PollQuestion {
+  id: string;
+  session_id: string;
+  sort_order: number;
+  question_text: string;
+  question_type: PollQuestionType;
+  options: string[] | null;
+  is_required: boolean;
+  is_approved: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PollResponse {
+  id: string;
+  session_id: string;
+  user_id: string;
+  completed_at: string;
+  xp_awarded: number;
+}
+
+export interface PollAnswer {
+  id: string;
+  response_id: string;
+  session_id: string;
+  question_id: string;
+  user_id: string;
+  answer_text: string | null;
+  answer_json: unknown | null;
+  created_at: string;
+}
 
 // ============================================================
 // Mind Map Types

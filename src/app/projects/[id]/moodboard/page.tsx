@@ -365,8 +365,10 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
             <img
               src={item.image_url}
               alt={item.title || 'Mood board image'}
+              referrerPolicy="no-referrer"
               className={cn('w-full object-cover rounded-lg', isCanvas ? 'h-full' : 'h-auto')}
               draggable={false}
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.1'; }}
             />
             {item.title && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 rounded-b-lg">

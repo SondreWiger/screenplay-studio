@@ -8,6 +8,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import type { Notification, NotificationType, CompanyRole } from '@/lib/types';
 import { timeAgo } from '@/lib/utils';
 import { toast } from '@/components/ui';
+import { PollModal } from '@/components/PollModal';
 
 // ============================================================
 // ICON MAP
@@ -35,6 +36,7 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
   blog_comment: { label: 'BLG', color: 'bg-teal-500/20' },
   feedback_update: { label: 'FB', color: 'bg-amber-500/20' },
   collaborator_added: { label: 'CO', color: 'bg-green-500/20' },
+  poll_published: { label: '📊', color: 'bg-[#FF5F1F]/20' },
 };
 
 // ============================================================
@@ -44,6 +46,7 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
 export function NotificationBell() {
   const { unreadCount } = useNotificationStore();
   const [open, setOpen] = useState(false);
+  const [activePollId, setActivePollId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -73,7 +76,8 @@ export function NotificationBell() {
           </span>
         )}
       </button>
-      {open && <NotificationsDropdown onClose={() => setOpen(false)} />}
+      {open && <NotificationsDropdown onClose={() => setOpen(false)} onOpenPoll={(id) => { setActivePollId(id); setOpen(false); }} />}
+      {activePollId && <PollModal pollId={activePollId} onClose={() => setActivePollId(null)} />}
     </div>
   );
 }
@@ -82,7 +86,7 @@ export function NotificationBell() {
 // DROPDOWN PANEL — shown when bell is clicked
 // ============================================================
 
-function NotificationsDropdown({ onClose }: { onClose: () => void }) {
+function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; onOpenPoll?: (pollId: string) => void }) {
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const { user } = useAuthStore();
   const push = usePushNotifications(user?.id || undefined);
@@ -119,7 +123,7 @@ function NotificationsDropdown({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           latest.map((n) => (
-            <NotificationRow key={n.id} notification={n} onNavigate={onClose} />
+            <NotificationRow key={n.id} notification={n} onNavigate={onClose} onOpenPoll={onOpenPoll} />
           ))
         )}
       </div>
@@ -179,10 +183,12 @@ export function NotificationRow({
   notification: n,
   onNavigate,
   showDate = false,
+  onOpenPoll,
 }: {
   notification: Notification;
   onNavigate?: () => void;
   showDate?: boolean;
+  onOpenPoll?: (pollId: string) => void;
 }) {
   const { markAsRead, deleteNotification } = useNotificationStore();
   const icon = TYPE_ICON[n.type] || TYPE_ICON.general;
@@ -215,7 +221,17 @@ export function NotificationRow({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        {n.link && !isActionable ? (
+        {n.link && !isActionable && n.type === 'poll_published' && onOpenPoll ? (
+          <button
+            onClick={() => { handleClick(); const id = n.link!.replace('/poll/', '').split('/')[0]; onOpenPoll(id); }}
+            className="block text-left w-full"
+          >
+            <p className="text-[13px] text-white leading-snug line-clamp-2">{n.title}</p>
+            {n.body && (
+              <p className="text-[11px] text-surface-400 mt-0.5 line-clamp-1">{n.body}</p>
+            )}
+          </button>
+        ) : n.link && !isActionable ? (
           <Link href={n.link} onClick={handleClick} className="block">
             <p className="text-[13px] text-white leading-snug line-clamp-2">{n.title}</p>
             {n.body && (

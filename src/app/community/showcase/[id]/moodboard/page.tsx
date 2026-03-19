@@ -200,7 +200,7 @@ export default function DeepDiveMoodboardPage() {
                       <span className="text-xs text-white/50">Link</span>
                     </div>
                     {item.image_url && (
-                      <img src={item.image_url} alt={item.title || 'Moodboard image'} className="w-full aspect-video object-cover rounded-lg mb-2" loading="lazy" />
+                      <img src={item.image_url} alt={item.title || 'Moodboard image'} referrerPolicy="no-referrer" className="w-full aspect-video object-cover rounded-lg mb-2" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.2'; }} />
                     )}
                   </div>
                 )}
@@ -257,7 +257,7 @@ export default function DeepDiveMoodboardPage() {
 
             {/* Image */}
             {selectedItem.item_type === 'image' && selectedItem.image_url && (
-              <img src={selectedItem.image_url} alt={selectedItem.title || ''} className="w-full rounded-t-2xl" />
+              <img src={selectedItem.image_url} alt={selectedItem.title || ''} referrerPolicy="no-referrer" className="w-full rounded-t-2xl" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )}
 
             {/* Color */}

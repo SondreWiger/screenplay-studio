@@ -208,7 +208,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ── Protected routes ──────────────────────────────────────
-  const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding', '/messages'];
+  // /dev/features is intentionally public; /dev/stats and /dev/test require login
+  const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding', '/messages', '/dev/stats', '/dev/test'];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

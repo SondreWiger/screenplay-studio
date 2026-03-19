@@ -339,6 +339,10 @@ interface AvatarProps {
 }
 
 export function Avatar({ src, name, size = 'md', color, className, online }: AvatarProps) {
+  const [imgFailed, setImgFailed] = React.useState(false);
+  // Reset failed state when src changes
+  React.useEffect(() => { setImgFailed(false); }, [src]);
+
   const sizes = {
     sm: 'h-7 w-7 text-[10px]',
     md: 'h-9 w-9 text-xs',
@@ -351,11 +355,13 @@ export function Avatar({ src, name, size = 'md', color, className, online }: Ava
 
   return (
     <div className={cn('relative inline-flex', className)}>
-      {src ? (
+      {src && !imgFailed ? (
         <img
           src={src}
           alt={name || 'Avatar'}
           className={cn('rounded-full object-cover', sizes[size])}
+          referrerPolicy="no-referrer"
+          onError={() => setImgFailed(true)}
         />
       ) : (
         <div

@@ -7,7 +7,7 @@
 //     explicit version bump forces old caches to be purged even if the rest of
 //     the SW logic is identical.
 
-const CACHE_VERSION = 'ss-v4';   // bumped March 2026
+const CACHE_VERSION = 'ss-v5';   // bumped March 2026 — fix external image loading
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE  = `${CACHE_VERSION}-dynamic`;
 
@@ -55,6 +55,12 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-http requests (chrome-extension://, etc.)
   if (!url.protocol.startsWith('http')) return;
+
+  // Skip cross-origin requests entirely — let the browser handle them directly.
+  // The SW's fetch() is governed by connect-src CSP which only allows same-origin
+  // and Supabase. Intercepting and re-fetching external URLs (avatars, cover images,
+  // etc.) from the SW would be blocked by that CSP, breaking all external images.
+  if (url.origin !== self.location.origin) return;
 
   // Never cache API calls or Supabase requests
   if (

@@ -18,6 +18,7 @@ export const XP_VALUES: Record<XPEventType, number> = {
   lesson_complete:            15,   // per lesson
   course_complete:           100,   // bonus on course finish
   quiz_perfect_score:         25,   // bonus for 100% quiz
+  poll_complete:             100,   // filled in a platform poll
 };
 
 // ── Time multiplier ───────────────────────────────────────────

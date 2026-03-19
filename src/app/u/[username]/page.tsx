@@ -520,15 +520,14 @@ export default function UserProfilePage({ params }: { params: { username: string
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {featuredProjects.map((project) => (
                 <div key={project.id} className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-all group`}>
-                  {project.poster_url || project.cover_url ? (
-                    <div className="aspect-[16/10] overflow-hidden">
-                      <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                  ) : (
-                    <div className={`aspect-[16/10] bg-gradient-to-br ${theme.gradient} flex items-center justify-center`}>
+                  <div className={`relative aspect-[16/10] bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
+                    <div className="absolute inset-0 flex items-center justify-center">
                       <svg className="w-12 h-12 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
                     </div>
-                  )}
+                    {(project.poster_url || project.cover_url) && (
+                      <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    )}
+                  </div>
                   <div className="p-5">
                     <h3 className="font-semibold text-white truncate">{project.title}</h3>
                     {project.logline && <p className="text-xs text-white/40 mt-1.5 line-clamp-2 leading-relaxed">{project.logline}</p>}
@@ -681,15 +680,14 @@ export default function UserProfilePage({ params }: { params: { username: string
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {publicProjects.map((project) => (
                   <div key={project.id} className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-all group`}>
-                    {project.poster_url || project.cover_url ? (
-                      <div className="aspect-[16/10] overflow-hidden">
-                        <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      </div>
-                    ) : (
-                      <div className={`aspect-[16/10] bg-gradient-to-br ${theme.gradient} flex items-center justify-center`}>
+                    <div className={`relative aspect-[16/10] bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
+                      <div className="absolute inset-0 flex items-center justify-center">
                         <svg className="w-12 h-12 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
                       </div>
-                    )}
+                      {(project.poster_url || project.cover_url) && (
+                        <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      )}
+                    </div>
                     <div className="p-5">
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-md ${

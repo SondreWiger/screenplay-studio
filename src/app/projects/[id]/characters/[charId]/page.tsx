@@ -881,6 +881,7 @@ function ImageLightbox({
         <img
           src={img.url}
           alt={img.caption || ''}
+          referrerPolicy="no-referrer"
           className="max-w-[80vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
         />
         {img.caption && (
@@ -961,6 +962,6 @@ function ImageTile({ url, alt }: { url: string; alt: string }) {
       <p className="text-[8px] text-surface-500 text-center break-all line-clamp-2 px-1">{url}</p>
     </div>
   ) : (
-    <img src={url} alt={alt} className="w-full h-auto block" onError={() => setErrored(true)} />
+    <img src={url} alt={alt} referrerPolicy="no-referrer" className="w-full h-auto block" onError={() => setErrored(true)} />
   );
 }

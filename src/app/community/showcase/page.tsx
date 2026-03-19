@@ -235,29 +235,19 @@ export default function ShowcasePage() {
                   style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                 >
                   {/* Thumbnail */}
-                  <div className="aspect-video relative bg-black overflow-hidden">
-                    {thumb ? (
+                  <div className="aspect-video relative bg-gradient-to-br from-neutral-900 to-neutral-800 overflow-hidden">
+                    {/* Film icon fallback always behind */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-12 h-12 text-white/10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                    </div>
+                    {(thumb || project.cover_url || project.poster_url) && (
                       <img
-                        src={thumb}
+                        src={thumb || project.cover_url || project.poster_url || ''}
                         alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className={`absolute inset-0 w-full h-full ${(project.poster_url && !thumb && !project.cover_url) ? 'object-contain bg-neutral-900' : 'object-cover'} group-hover:scale-105 transition-transform duration-500`}
+                        referrerPolicy="no-referrer"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
-                    ) : project.cover_url ? (
-                      <img
-                        src={project.cover_url}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : project.poster_url ? (
-                      <img
-                        src={project.poster_url}
-                        alt={project.title}
-                        className="w-full h-full object-contain bg-neutral-900 group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-neutral-800 flex items-center justify-center">
-                        <svg className="w-12 h-12 text-white/10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                      </div>
                     )}
                     {/* Play overlay */}
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

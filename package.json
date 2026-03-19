@@ -17,6 +17,7 @@
     "@types/node-media-server": "^2.3.7",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.14.0",
     "idb": "^8.0.3",

@@ -625,13 +625,12 @@ function DashboardContent() {
                   href={`/projects/${rp.id}`}
                   className="flex-shrink-0 group flex items-center gap-2.5 bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 hover:border-surface-600 rounded-xl px-3 py-2.5 transition-all"
                 >
-                  {rp.cover_url ? (
-                    <img src={rp.cover_url} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center shrink-0">
-                      <span className="text-sm font-bold text-surface-400">{(rp.title || '?')[0].toUpperCase()}</span>
-                    </div>
-                  )}
+                  <div className="relative w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center shrink-0 overflow-hidden">
+                    <span className="text-sm font-bold text-surface-400">{(rp.title || '?')[0].toUpperCase()}</span>
+                    {rp.cover_url && (
+                      <img src={rp.cover_url} alt="" className="absolute inset-0 w-full h-full rounded-lg object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    )}
+                  </div>
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-surface-200 group-hover:text-white truncate max-w-[120px] transition-colors">{rp.title}</p>
                     <p className="text-[10px] text-surface-500">{timeAgo(rp.viewed_at)}</p>
@@ -1010,14 +1009,11 @@ function DashboardContent() {
                     <Link key={project.id} href={`/projects/${project.id}`}>
                       <Card hover className="overflow-hidden group">
                         <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
-                          {project.cover_url ? (
-                            <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
-                                {project.title[0]}
-                              </span>
-                            </div>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
+                          </div>
+                          {project.cover_url && (
+                            <img src={project.cover_url} alt={project.title || 'Project cover'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                           )}
                           <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
                           <div className="absolute top-2.5 left-2.5">
@@ -1142,13 +1138,12 @@ function ProjectCard({
         <Link href={`/projects/${project.id}`}>
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-surface-800 bg-surface-900/50 hover:border-surface-700 hover:bg-surface-800/50 transition-all group">
             {/* Thumbnail */}
-            <div className="w-10 h-10 rounded-lg bg-surface-800 overflow-hidden flex-shrink-0">
-              {project.cover_url ? (
-                <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-lg font-bold text-surface-600">{project.title[0]}</span>
-                </div>
+            <div className="relative w-10 h-10 rounded-lg bg-surface-800 overflow-hidden flex-shrink-0">
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-lg font-bold text-surface-600">{project.title[0]}</span>
+              </div>
+              {project.cover_url && (
+                <img src={project.cover_url} alt={project.title || 'Project cover'} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -1213,14 +1208,11 @@ function ProjectCard({
       <Link href={`/projects/${project.id}`}>
         <Card hover className="overflow-hidden group">
           <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
-            {project.cover_url ? (
-              <img src={project.cover_url} alt={project.title || 'Project cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">
-                  {project.title[0]}
-                </span>
-              </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
+            </div>
+            {project.cover_url && (
+              <img src={project.cover_url} alt={project.title || 'Project cover'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )}
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute top-2.5 right-2.5">
