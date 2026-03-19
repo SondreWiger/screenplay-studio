@@ -552,6 +552,28 @@ export default function PrivacyPolicyPage() {
           <p>
             We do not use advertising cookies, tracking pixels, or any third-party advertising or retargeting technologies. We do not engage in cross-site tracking.
           </p>
+
+          <h3 id="vercel-analytics">14.1 Vercel Analytics</h3>
+          <p>
+            We use <strong>Vercel Analytics</strong>, a privacy-friendly, cookieless web analytics service provided by Vercel Inc. (340 Pine Street, Suite 801, San Francisco, CA 94104, USA). Vercel Analytics helps us understand aggregate traffic patterns and page popularity so we can improve the Service.
+          </p>
+          <p>
+            Vercel Analytics <strong>does not use cookies</strong> and does not track individual users across sessions or websites. The data collected is aggregated and anonymised. Specifically, Vercel Analytics records:
+          </p>
+          <ul>
+            <li>Page URL visited</li>
+            <li>HTTP referrer (the page you came from)</li>
+            <li>Browser and operating system (user-agent string)</li>
+            <li>Country-level geographic region (derived from IP address — IP is not stored)</li>
+            <li>Device type (desktop, mobile, tablet)</li>
+          </ul>
+          <p>
+            No personally identifiable information (PII) is stored by Vercel Analytics. Your IP address is used only to derive a country-level location and is immediately discarded. This data is processed on Vercel infrastructure under their <a href="https://vercel.com/legal/privacy-policy" className="text-red-400 hover:text-red-300 transition-colors" target="_blank" rel="noopener noreferrer">Privacy Policy</a>. The legal basis for this processing is our legitimate interest (Article 6(1)(f) GDPR) in operating and improving the Service.
+          </p>
+          <p>
+            Because Vercel Analytics does not use cookies or persistent identifiers, it does not require cookie consent under the ePrivacy Directive. If you prefer not to be counted, you may enable a &quot;Do Not Track&quot; browser signal or use a content-blocking browser extension.
+          </p>
+
           <p>
             For complete details about our cookie practices, including how to manage or disable cookies, please see our <Link href="/legal/cookies" className="text-red-400 hover:text-red-300 transition-colors">Cookie Policy</Link>.
           </p>
