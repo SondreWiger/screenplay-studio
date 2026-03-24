@@ -163,6 +163,85 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // ── Ban / IP ban enforcement ──────────────────────────────
+  // Allow access to /banned, /suspended, static assets, and auth pages
+  const enforcementExemptPaths = ['/banned', '/suspended', '/auth/', '/api/auth/', '/_next/', '/favicon.ico'];
+  const isEnforcementExempt = enforcementExemptPaths.some(p => pathname.startsWith(p));
+
+  if (!isEnforcementExempt) {
+    // Check IP ban first (catches new accounts from banned IPs)
+    const { data: ipBan } = await supabase
+      .from('banned_ips')
+      .select('id, reason')
+      .eq('ip_address', ip)
+      .eq('is_active', true)
+      .limit(1)
+      .single();
+
+    if (ipBan) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/banned';
+      url.searchParams.set('reason', ipBan.reason || 'IP address banned');
+      url.searchParams.set('ip', '1');
+      return redirectWithCookies(url);
+    }
+
+    // Check user ban/suspension status
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('moderation_status, moderation_notes, last_known_ip')
+        .eq('id', user.id)
+        .single();
+
+      // Track IP for ban enforcement
+      if (profile && profile.last_known_ip !== ip) {
+        // Fire-and-forget IP update
+        supabase.from('profiles').update({ last_known_ip: ip }).eq('id', user.id).then(() => {});
+      }
+
+      if (profile?.moderation_status === 'banned') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/banned';
+        url.searchParams.set('reason', profile.moderation_notes || 'Account banned');
+        return redirectWithCookies(url);
+      }
+
+      if (profile?.moderation_status === 'suspended') {
+        // Check if suspension has expired
+        const { data: activeSuspension } = await supabase
+          .from('user_bans')
+          .select('expires_at')
+          .eq('user_id', user.id)
+          .eq('ban_type', 'temporary')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (activeSuspension?.expires_at && new Date(activeSuspension.expires_at) < new Date()) {
+          // Suspension expired — auto-unsuspend
+          await supabase.from('user_bans')
+            .update({ is_active: false })
+            .eq('user_id', user.id)
+            .eq('ban_type', 'temporary')
+            .eq('is_active', true);
+          await supabase.from('profiles')
+            .update({ moderation_status: 'clean', moderation_notes: 'Suspension expired' })
+            .eq('id', user.id);
+        } else {
+          const url = request.nextUrl.clone();
+          url.pathname = '/suspended';
+          url.searchParams.set('reason', profile.moderation_notes || 'Account suspended');
+          if (activeSuspension?.expires_at) {
+            url.searchParams.set('expires', activeSuspension.expires_at);
+          }
+          return redirectWithCookies(url);
+        }
+      }
+    }
+  }
+
   // ── Security headers ──────────────────────────────────────
   supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff');
   supabaseResponse.headers.set('X-Frame-Options', 'DENY');

@@ -52,6 +52,19 @@ export function useOnlineStatus(): OnlineStatus {
     };
   }, [triggerSync]);
 
+  // On mount: flush any stale sync items if we're online
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const count = await pendingSyncCount();
+      if (count > 0 && navigator.onLine && !cancelled) {
+        triggerSync();
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Poll pending count every 10 s so the badge stays accurate
   useEffect(() => {
     refreshPendingCount();

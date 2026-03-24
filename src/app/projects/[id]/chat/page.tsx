@@ -8,6 +8,7 @@ import { Button, Input, Modal, Avatar, Badge, LoadingSpinner, toast } from '@/co
 import { cn, timeAgo, formatTime } from '@/lib/utils';
 import type { ProjectChannel, ChannelMessage, ProjectMember, UserRole, ProductionRole } from '@/lib/types';
 import { FormattedChatText } from '@/components/FormattedChatText';
+import { automodCheck } from '@/lib/automod';
 import { PRODUCTION_ROLES } from '@/lib/types';
 
 // ============================================================
@@ -233,12 +234,27 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
 
     try {
       const supabase = createClient();
-      await supabase.from('channel_messages').insert({
+      const { data: msg } = await supabase.from('channel_messages').insert({
         channel_id: selectedChannel.id,
         sender_id: user!.id,
         content: newMessage.trim(),
         message_type: 'text',
-      });
+      }).select('id').single();
+
+      // Auto-mod check (fire-and-forget)
+      if (msg) {
+        automodCheck({
+          text: newMessage.trim(),
+          contentType: 'channel_message',
+          contentId: msg.id,
+          projectId: projectId,
+          userId: user!.id,
+          getAccessToken: async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            return session?.access_token;
+          },
+        });
+      }
 
       setNewMessage('');
       inputRef.current?.focus();

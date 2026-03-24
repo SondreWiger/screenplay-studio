@@ -15,8 +15,10 @@ import { cn } from '@/lib/utils';
 export function OfflineIndicator({ className }: { className?: string }) {
   const { isOnline, pendingCount, isSyncing, triggerSync } = useOnlineStatus();
 
-  if (isOnline && pendingCount === 0 && !isSyncing) {
-    // Everything is in sync — show nothing (or a subtle green dot)
+  // Only show when actually offline or actively syncing.
+  // Don't show a persistent "pending" badge — it confuses users into
+  // thinking they're offline when stale queue items exist.
+  if (isOnline && !isSyncing) {
     return null;
   }
 

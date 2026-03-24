@@ -98,6 +98,17 @@ function RegisterForm() {
     setLoading(true);
 
     try {
+      // Check if IP is banned before allowing signup
+      try {
+        const banCheck = await fetch('/api/auth/check-ban', { method: 'POST' });
+        const banResult = await banCheck.json();
+        if (banResult.banned) {
+          setError(banResult.message);
+          setLoading(false);
+          return;
+        }
+      } catch { /* If ban check fails, allow signup to proceed */ }
+
       const supabase = createClient();
       const { data, error: authError } = await supabase.auth.signUp({
         email: formEmail,

@@ -9,6 +9,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Button, Card, Modal, Input, Avatar, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
 import { notifyConversationMembers } from '@/lib/notifications';
+import { automodCheck } from '@/lib/automod';
 import Link from 'next/link';
 import type { Conversation, ConversationMember, DirectMessage, Profile } from '@/lib/types';
 import { FormattedChatText } from '@/components/FormattedChatText';
@@ -17,6 +18,7 @@ export default function MessagesClient() {
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   useNotifications(user?.id);
+  const isAdmin = user?.id === 'f0e0c4a4-0833-4c64-b012-15829c087c77' || user?.role === 'admin';
 
   // State
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -267,6 +269,21 @@ export default function MessagesClient() {
         .single();
 
       if (error) throw error;
+
+      // Auto-mod check (fire-and-forget)
+      if (msg) {
+        automodCheck({
+          text: newMessage.trim(),
+          contentType: 'direct_message',
+          contentId: msg.id,
+          projectId: null,
+          userId: user!.id,
+          getAccessToken: async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            return session?.access_token;
+          },
+        });
+      }
 
       // Update conversation last_message_at
       await supabase
@@ -598,6 +615,11 @@ export default function MessagesClient() {
                 const avatarProfile = getConvoAvatar(conv);
                 const isActive = selectedConvo?.id === conv.id;
                 const hasUnread = (conv.unread_count || 0) > 0;
+                const hasFlagged = isAdmin && conv.members?.some(
+                  (m) => m.user_id !== user?.id && m.profile &&
+                  (m.profile as any).moderation_status &&
+                  (m.profile as any).moderation_status !== 'clean'
+                );
 
                 return (
                   <button
@@ -606,6 +628,7 @@ export default function MessagesClient() {
                     className={cn(
                       'w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-white/5 transition-colors border-b border-surface-800/50',
                       isActive && 'bg-white/5',
+                      hasFlagged && 'border-l-2 border-l-red-500/60',
                     )}
                   >
                     {conv.conversation_type === 'group' ? (
@@ -617,7 +640,12 @@ export default function MessagesClient() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className={cn('text-sm font-medium truncate', hasUnread ? 'text-white' : 'text-surface-300')}>{name}</span>
+                        <span className={cn('text-sm font-medium truncate', hasUnread ? 'text-white' : 'text-surface-300')}>
+                          {hasFlagged && (
+                            <svg className="w-3.5 h-3.5 text-red-400 inline mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                          )}
+                          {name}
+                        </span>
                         {conv.last_message_at && (
                           <span className="text-[10px] text-surface-500 shrink-0 ml-2">{timeAgo(conv.last_message_at)}</span>
                         )}

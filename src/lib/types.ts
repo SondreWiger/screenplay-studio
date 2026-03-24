@@ -137,6 +137,11 @@ export interface Profile {
   show_activity_grid?: 'private' | 'buddies' | 'public' | null;
   daily_goal_pages?: number | null;
   daily_goal_minutes?: number | null;
+  // Moderation
+  moderation_flags?: number;
+  moderation_status?: string;
+  moderation_notes?: string | null;
+  last_flagged_at?: string | null;
 }
 
 // ── Work Tracking ──────────────────────────────────────────────────────────

@@ -64,6 +64,8 @@ interface UserRow {
   created_at: string;
   updated_at: string;
   projectCount?: number;
+  moderation_flags?: number;
+  moderation_status?: string;
 }
 
 interface ContributorRow {
@@ -829,6 +831,10 @@ export default function AdminPage() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 Security
               </Link>
+              <Link href="/admin/moderation" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                Content Moderation
+              </Link>
               <Link href="/admin/reports" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>
                 Reports
@@ -872,6 +878,7 @@ export default function AdminPage() {
               onSearchChange={setUserSearch}
               onEdit={setEditingUser}
               onDelete={handleDeleteUser}
+              onRefresh={() => loadUsers()}
             />
           )}
           {activeTab === 'projects' && (
@@ -1325,19 +1332,63 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
 // Users Tab
 // ============================================================
 
-function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
+function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }: {
   users: UserRow[];
   search: string;
   onSearchChange: (s: string) => void;
   onEdit: (u: UserRow) => void;
   onDelete: (id: string) => void;
+  onRefresh: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [dmAllOpen, setDmAllOpen] = useState(false);
   const [dmAllMessage, setDmAllMessage] = useState('');
   const [dmAllSending, setDmAllSending] = useState(false);
   const [dmAllProgress, setDmAllProgress] = useState('');
+  const [modAction, setModAction] = useState<{ user: UserRow; action: 'warn' | 'suspend' | 'ban' | 'unban' | 'unsuspend' } | null>(null);
+  const [modReason, setModReason] = useState('');
+  const [modDays, setModDays] = useState(30);
+  const [modLoading, setModLoading] = useState(false);
   const router = useRouter();
+
+  const handleModAction = async () => {
+    if (!modAction || !modReason.trim()) return;
+    setModLoading(true);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const actionMap: Record<string, string> = {
+        warn: 'warn_user',
+        suspend: 'suspend_user',
+        ban: 'ban_user',
+        unban: 'unban_user',
+        unsuspend: 'unsuspend_user',
+      };
+      const res = await fetch('/api/admin/moderation/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          action: actionMap[modAction.action],
+          user_id: modAction.user.id,
+          reason: modReason,
+          ...(modAction.action === 'suspend' ? { duration_days: modDays } : {}),
+        }),
+      });
+      if (res.ok) {
+        toast.success(`User ${modAction.action === 'unban' || modAction.action === 'unsuspend' ? 'restored' : modAction.action + 'ned'} successfully`);
+        onRefresh();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || 'Action failed');
+      }
+    } catch {
+      toast.error('Action failed');
+    } finally {
+      setModLoading(false);
+      setModAction(null);
+      setModReason('');
+    }
+  };
 
   const handleDmUser = async (targetUser: UserRow) => {
     const supabase = createClient();
@@ -1555,6 +1606,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
               <th className="text-left text-xs font-medium text-surface-500 px-4 py-3">User</th>
               <th className="text-left text-xs font-medium text-surface-500 px-4 py-3">Email</th>
               <th className="text-left text-xs font-medium text-surface-500 px-4 py-3">Role</th>
+              <th className="text-left text-xs font-medium text-surface-500 px-4 py-3">Status</th>
               <th className="text-left text-xs font-medium text-surface-500 px-4 py-3">Joined</th>
               <th className="text-right text-xs font-medium text-surface-500 px-4 py-3">Actions</th>
             </tr>
@@ -1580,12 +1632,53 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
                     {u.is_pro && <Badge variant="success" size="sm">PRO</Badge>}
                   </div>
                 </td>
+                <td className="px-4 py-3">
+                  {u.moderation_status && u.moderation_status !== 'clean' ? (
+                    <span className={cn(
+                      'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
+                      u.moderation_status === 'banned' ? 'bg-red-500/20 text-red-400' :
+                      u.moderation_status === 'suspended' ? 'bg-orange-500/20 text-orange-400' :
+                      u.moderation_status === 'warned' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-red-500/15 text-red-300'
+                    )}>
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                      {u.moderation_status}{u.moderation_flags ? ` (${u.moderation_flags})` : ''}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-surface-500">Clean</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-xs text-surface-400">{formatDate(u.created_at)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center gap-1 justify-end">
                     <button onClick={() => handleDmUser(u)} className="p-1.5 rounded text-surface-400 hover:text-[#FF5F1F] hover:bg-[#FF5F1F]/10 transition-colors" title="Send DM">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                     </button>
+                    {u.id !== ADMIN_UID && (
+                      <>
+                        {u.moderation_status === 'banned' ? (
+                          <button onClick={() => setModAction({ user: u, action: 'unban' })} className="p-1.5 rounded text-green-400 hover:text-green-300 hover:bg-green-500/10 transition-colors" title="Unban / Pardon">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          </button>
+                        ) : u.moderation_status === 'suspended' ? (
+                          <button onClick={() => setModAction({ user: u, action: 'unsuspend' })} className="p-1.5 rounded text-green-400 hover:text-green-300 hover:bg-green-500/10 transition-colors" title="Unsuspend">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          </button>
+                        ) : (
+                          <>
+                            <button onClick={() => setModAction({ user: u, action: 'warn' })} className="p-1.5 rounded text-surface-400 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors" title="Warn">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                            </button>
+                            <button onClick={() => setModAction({ user: u, action: 'suspend' })} className="p-1.5 rounded text-surface-400 hover:text-orange-400 hover:bg-orange-500/10 transition-colors" title="Suspend">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m4-10V5a2 2 0 00-2-2H8a2 2 0 00-2 2v2m10 0H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2h-2" /></svg>
+                            </button>
+                            <button onClick={() => setModAction({ user: u, action: 'ban' })} className="p-1.5 rounded text-surface-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Ban">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                            </button>
+                          </>
+                        )}
+                      </>
+                    )}
                     <button onClick={() => onEdit(u)} className="p-1.5 rounded text-surface-400 hover:text-white hover:bg-surface-900/10 transition-colors" title="Edit">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </button>
@@ -1622,6 +1715,59 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete }: {
               {dmAllSending ? 'Sending...' : `Send to ${users.filter((u) => u.id !== ADMIN_UID).length} users`}
             </Button>
             <Button variant="secondary" onClick={() => { setDmAllOpen(false); setDmAllMessage(''); }}>Cancel</Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Moderation Action Modal */}
+      <Modal isOpen={!!modAction} onClose={() => { setModAction(null); setModReason(''); }} title={
+        modAction?.action === 'unban' ? `Unban / Pardon ${modAction.user.full_name || modAction.user.email}` :
+        modAction?.action === 'unsuspend' ? `Unsuspend ${modAction?.user.full_name || modAction?.user.email}` :
+        modAction?.action === 'ban' ? `Ban ${modAction.user.full_name || modAction.user.email}` :
+        modAction?.action === 'suspend' ? `Suspend ${modAction.user.full_name || modAction.user.email}` :
+        `Warn ${modAction?.user.full_name || modAction?.user.email}`
+      }>
+        <div className="space-y-4">
+          <p className="text-sm text-surface-400">
+            {modAction?.action === 'unban' && 'This will lift the permanent ban, restore access, and clear all IP bans. The user will be notified via a System DM.'}
+            {modAction?.action === 'unsuspend' && 'This will lift the suspension early and restore full access. The user will be notified via a System DM.'}
+            {modAction?.action === 'warn' && 'This will issue a formal warning. The user will be notified via a System DM with the reason.'}
+            {modAction?.action === 'suspend' && 'This will temporarily suspend the user. They cannot access the platform during the suspension. They will be notified via a System DM.'}
+            {modAction?.action === 'ban' && 'This will permanently ban the user, remove all project memberships, and block their IP address. They will be notified via a System DM.'}
+          </p>
+          {modAction?.action === 'suspend' && (
+            <div>
+              <label className="block text-xs text-surface-400 mb-1">Duration (days)</label>
+              <Input type="number" value={modDays} onChange={(e) => setModDays(Number(e.target.value) || 30)} min={1} max={365} />
+            </div>
+          )}
+          <div>
+            <label className="block text-xs text-surface-400 mb-1">
+              {modAction?.action === 'unban' || modAction?.action === 'unsuspend' ? 'Note (optional but recommended)' : 'Reason *'}
+            </label>
+            <Textarea
+              value={modReason}
+              onChange={(e) => setModReason(e.target.value)}
+              placeholder={modAction?.action === 'unban' ? 'Why are you lifting this ban?' : modAction?.action === 'unsuspend' ? 'Why are you lifting this suspension?' : 'Describe the reason...'}
+              rows={3}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={modAction?.action === 'ban' ? 'danger' : 'primary'}
+              onClick={handleModAction}
+              disabled={modLoading || (!modReason.trim() && modAction?.action !== 'unban' && modAction?.action !== 'unsuspend')}
+              className="flex-1"
+            >
+              {modLoading ? 'Processing...' :
+                modAction?.action === 'unban' ? 'Unban & Restore' :
+                modAction?.action === 'unsuspend' ? 'Unsuspend' :
+                modAction?.action === 'ban' ? 'Permanently Ban' :
+                modAction?.action === 'suspend' ? `Suspend for ${modDays} days` :
+                'Issue Warning'
+              }
+            </Button>
+            <Button variant="secondary" onClick={() => { setModAction(null); setModReason(''); }}>Cancel</Button>
           </div>
         </div>
       </Modal>
