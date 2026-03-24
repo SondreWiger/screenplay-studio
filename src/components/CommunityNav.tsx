@@ -102,6 +102,18 @@ export function CommunityNav() {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {user ? (
               <>
+                {/* Dashboard link */}
+                <Link
+                  href="/dashboard"
+                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+                  title="Back to Dashboard"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
+                  </svg>
+                  <span className="text-[10px] font-mono uppercase tracking-widest">Dashboard</span>
+                </Link>
+
                 {/* Context-sensitive CTAs */}
                 {pathname.startsWith('/community/courses') && canCreateCourse && (
                   <Link

@@ -18,6 +18,7 @@ const LEGAL_NAV = [
   { href: '/legal/data-processing', label: 'Data Processing' },
   { href: '/legal/security', label: 'Security' },
   { href: '/legal/blog', label: 'Legal Updates' },
+  { href: '/legal/creator-terms', label: 'Creator Affiliate Terms' },
 ];
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {

@@ -7,6 +7,7 @@ import { useSubCommunity } from '@/lib/SubCommunityContext';
 import { Button, Input, Modal, Avatar, LoadingSpinner } from '@/components/ui';
 import { cn, formatTime } from '@/lib/utils';
 import type { CommunityChannel, CommunityMessage, SubCommunityMemberRole } from '@/lib/types';
+import { FormattedChatText } from '@/components/FormattedChatText';
 
 type RichMessage = CommunityMessage & {
   author: { id: string; full_name: string | null; avatar_url: string | null; username: string | null } | null;
@@ -500,7 +501,7 @@ function CommunityChatUI({
                                 <EditBox value={editingMsgContent} onChange={setEditingMsgContent}
                                   onSave={() => saveEdit(msg.id)} onCancel={() => setEditingMsgId(null)} accent={accent} />
                               ) : (
-                                <p className="text-sm text-surface-200 break-words mt-0.5 whitespace-pre-wrap">{msg.content}</p>
+                                <p className="text-sm text-surface-200 break-words mt-0.5 whitespace-pre-wrap"><FormattedChatText content={msg.content} /></p>
                               )}
                             </div>
                             {editingMsgId !== msg.id && (
@@ -524,7 +525,7 @@ function CommunityChatUI({
                               </div>
                             ) : (
                               <>
-                                <p className="text-sm text-surface-200 break-words flex-1 whitespace-pre-wrap">{msg.content}</p>
+                                <p className="text-sm text-surface-200 break-words flex-1 whitespace-pre-wrap"><FormattedChatText content={msg.content} /></p>
                                 <MsgActions isOwn={isOwn} canDel={canDel}
                                   onEdit={() => { setEditingMsgId(msg.id); setEditingMsgContent(msg.content); }}
                                   onDelete={() => deleteMessage(msg.id)}

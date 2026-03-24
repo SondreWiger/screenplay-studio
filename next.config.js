@@ -15,6 +15,10 @@ const nextConfig = {
         hostname: '*.supabase.co',
         pathname: '/storage/v1/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'framerusercontent.com',
+      },
     ],
     // Serve modern formats first
     formats: ['image/avif', 'image/webp'],

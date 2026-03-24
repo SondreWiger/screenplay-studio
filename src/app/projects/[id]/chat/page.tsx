@@ -7,6 +7,7 @@ import { useProjectStore } from '@/lib/stores';
 import { Button, Input, Modal, Avatar, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
 import type { ProjectChannel, ChannelMessage, ProjectMember, UserRole, ProductionRole } from '@/lib/types';
+import { FormattedChatText } from '@/components/FormattedChatText';
 import { PRODUCTION_ROLES } from '@/lib/types';
 
 // ============================================================
@@ -536,7 +537,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                                 )}
                                 <span className="text-[10px] text-surface-600">{formatTime(msg.created_at)}</span>
                               </div>
-                              <p className="text-sm text-surface-200 break-words mt-0.5">{msg.content}</p>
+                              <p className="text-sm text-surface-200 break-words mt-0.5"><FormattedChatText content={msg.content} /></p>
                             </div>
                             <span className="text-[10px] text-surface-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0 mt-1">
                               {formatTime(msg.created_at)}
@@ -549,7 +550,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                                 {formatTime(msg.created_at)}
                               </span>
                             </div>
-                            <p className="text-sm text-surface-200 break-words flex-1">{msg.content}</p>
+                            <p className="text-sm text-surface-200 break-words flex-1"><FormattedChatText content={msg.content} /></p>
                           </div>
                         )}
                       </div>

@@ -11,6 +11,7 @@ import { cn, timeAgo, formatTime } from '@/lib/utils';
 import { notifyConversationMembers } from '@/lib/notifications';
 import Link from 'next/link';
 import type { Conversation, ConversationMember, DirectMessage, Profile } from '@/lib/types';
+import { FormattedChatText } from '@/components/FormattedChatText';
 
 export default function MessagesClient() {
   const { user, loading: authLoading } = useAuth();
@@ -753,7 +754,7 @@ export default function MessagesClient() {
                               ? 'bg-[#FF5F1F]/20 text-white rounded-tr-md'
                               : 'bg-surface-800 text-surface-200 rounded-tl-md'
                           )}>
-                            {msg.content}
+                            <FormattedChatText content={msg.content} />
                           </div>
                         </div>
                         {/* Timestamp on hover */}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Input } from '@/components/ui';
@@ -28,8 +28,9 @@ function friendlyAuthError(msg: string): string {
   return msg;
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,6 +39,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successEmail, setSuccessEmail] = useState<string | null>(null);
+
+  // Capture ref from ?ref= query param and persist to localStorage
+  useEffect(() => {
+    const ref = searchParams?.get('ref');
+    if (ref) {
+      try { localStorage.setItem('creator_ref', ref); } catch { /* ssr */ }
+    }
+  }, [searchParams]);
 
   // Derived from React state for the strength indicator only.
   // Validation on submit uses the DOM value to handle autofill.
@@ -106,6 +115,23 @@ export default function RegisterPage() {
 
       // If Supabase returned a live session (email confirmation disabled),
       // go straight to the dashboard.
+      // Track referral signup regardless of whether email confirmation is required.
+      // Uses service-role API so no session needed at this point.
+      if (data?.user?.id) {
+        try {
+          const ref = localStorage.getItem('creator_ref');
+          if (ref) {
+            fetch('/api/creator/track-signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ref_code: ref, new_user_id: data.user.id }),
+            }).then(() => {
+              try { localStorage.removeItem('creator_ref'); } catch { /* ok */ }
+            }).catch(() => {});
+          }
+        } catch { /* ok */ }
+      }
+
       if (data?.session) {
         router.push('/dashboard');
         return;
@@ -341,5 +367,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }

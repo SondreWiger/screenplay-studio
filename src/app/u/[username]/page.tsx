@@ -58,6 +58,8 @@ export default function UserProfilePage({ params }: { params: { username: string
   type ProfileCourse = { id: string; progress_percent: number; completed_at: string | null; course: { id: string; title: string; short_desc: string | null; difficulty: string; xp_reward: number; thumbnail_url: string | null } };
   const [profileCourses, setProfileCourses] = useState<ProfileCourse[]>([]);
   const [workLogs, setWorkLogs] = useState<Array<{ log_date: string; pages_written: number; session_minutes: number }>>([]);
+  type CreatorProfile = { ref_code: string; social_instagram: string | null; social_twitter: string | null; social_tiktok: string | null; social_youtube: string | null };
+  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
 
   const isOwnProfile = currentUser?.id === profile?.id;
   const theme = PROFILE_THEMES[profile?.profile_theme || 'default'] || PROFILE_THEMES.default;
@@ -175,6 +177,19 @@ export default function UserProfilePage({ params }: { params: { username: string
   useEffect(() => {
     if (!profile?.id) return;
     fetchUserWorkLogs(profile.id, 365).then(setWorkLogs);
+  }, [profile?.id]);
+
+  // Fetch creator profile after profile is set
+  useEffect(() => {
+    if (!profile?.id) return;
+    const supabase = createClient();
+    supabase
+      .from('creator_profiles')
+      .select('ref_code,social_instagram,social_twitter,social_tiktok,social_youtube')
+      .eq('user_id', profile.id)
+      .eq('status', 'approved')
+      .maybeSingle()
+      .then(({ data }) => setCreatorProfile(data as CreatorProfile | null));
   }, [profile?.id]);
 
   // ============================================================
@@ -434,6 +449,13 @@ export default function UserProfilePage({ params }: { params: { username: string
                 {(profile.profile_views || 0) > 0 && (
                   <span className="text-xs text-white/20">{profile.profile_views.toLocaleString()} profile views</span>
                 )}
+                {creatorProfile && (
+                  <a href={`/ref/${creatorProfile.ref_code}`} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#FF5F1F] bg-[#FF5F1F]/10 border border-[#FF5F1F]/25 rounded-full hover:bg-[#FF5F1F]/15 transition-colors">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    Creator
+                  </a>
+                )}
               </div>
 
               {/* Social links */}
@@ -451,6 +473,35 @@ export default function UserProfilePage({ params }: { params: { username: string
                       {platform}
                     </a>
                   ))}
+                </div>
+              )}
+              {/* Creator socials */}
+              {creatorProfile && (creatorProfile.social_instagram || creatorProfile.social_twitter || creatorProfile.social_tiktok || creatorProfile.social_youtube) && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {creatorProfile.social_instagram && (
+                    <a href={`https://instagram.com/${creatorProfile.social_instagram}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      <span className="text-sm">📷</span> Instagram
+                    </a>
+                  )}
+                  {creatorProfile.social_twitter && (
+                    <a href={`https://x.com/${creatorProfile.social_twitter}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      <span className="text-base leading-none font-bold">𝕏</span> Twitter / X
+                    </a>
+                  )}
+                  {creatorProfile.social_tiktok && (
+                    <a href={`https://tiktok.com/@${creatorProfile.social_tiktok}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      <span className="text-sm">🎵</span> TikTok
+                    </a>
+                  )}
+                  {creatorProfile.social_youtube && (
+                    <a href={`https://youtube.com/@${creatorProfile.social_youtube}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      <span className="text-sm">▶️</span> YouTube
+                    </a>
+                  )}
                 </div>
               )}
             </div>

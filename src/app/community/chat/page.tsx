@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { timeAgo, cn } from '@/lib/utils';
 import type { ChatChannel, ChatMessage, Profile } from '@/lib/types';
+import { FormattedChatText } from '@/components/FormattedChatText';
 
 // ============================================================
 // Community Chat Forum
@@ -338,7 +339,7 @@ export default function ChatPage() {
                         </div>
                       ) : (
                         <p className="text-sm text-white/70 whitespace-pre-wrap break-words">
-                          {msg.content}
+                          <FormattedChatText content={msg.content} />
                           {msg.edited_at && <span className="text-[10px] text-white/50 ml-1">(edited)</span>}
                         </p>
                       )}

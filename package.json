@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "NODE_OPTIONS='--max-http-header-size=32768' next dev --turbo",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_OPTIONS='--max-http-header-size=32768' next start",
     "lint": "next lint",
     "media-server": "npx ts-node --project tsconfig.server.json server/media-server.ts",
     "dev:full": "concurrently \"npm run dev\" \"npm run media-server\""
