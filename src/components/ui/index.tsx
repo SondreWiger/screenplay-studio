@@ -817,6 +817,267 @@ export function Toggle({ checked, onChange, label, description, disabled, size =
 }
 
 // ============================================================
+// STAT CARD — Consistent stat display for dashboards
+// ============================================================
+
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  icon?: React.ReactNode;
+  color?: string;
+  trend?: { direction: 'up' | 'down' | 'flat'; label: string };
+  className?: string;
+}
+
+export function StatCard({ label, value, icon, color = 'text-white', trend, className }: StatCardProps) {
+  return (
+    <div className={cn('rounded-xl bg-surface-900/60 border border-surface-800/80 p-4', className)}>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className={cn('text-2xl font-black tracking-tight', color)}>{value}</p>
+          <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mt-1">{label}</p>
+        </div>
+        {icon && (
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-800/80 text-surface-400">
+            {icon}
+          </div>
+        )}
+      </div>
+      {trend && (
+        <div className={cn(
+          'mt-2 flex items-center gap-1 text-[10px] font-semibold',
+          trend.direction === 'up' ? 'text-green-400' : trend.direction === 'down' ? 'text-red-400' : 'text-surface-500'
+        )}>
+          {trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '→'} {trend.label}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// SEARCH INPUT — Styled search with icon & clear button
+// ============================================================
+
+interface SearchInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  autoFocus?: boolean;
+}
+
+export function SearchInput({ value, onChange, placeholder = 'Search...', className, autoFocus }: SearchInputProps) {
+  return (
+    <div className={cn('relative', className)}>
+      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        className={cn(
+          'w-full rounded-lg border bg-surface-900/80 pl-10 pr-8 py-2.5 text-sm text-white font-medium',
+          'border-surface-700/80 placeholder:text-surface-600',
+          'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+          'transition-all duration-200'
+        )}
+      />
+      {value && (
+        <button
+          onClick={() => onChange('')}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-surface-500 hover:text-white transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// ALERT BANNER — Inline notice/warning strip
+// ============================================================
+
+interface AlertProps {
+  variant?: 'info' | 'warning' | 'error' | 'success';
+  title?: string;
+  children: React.ReactNode;
+  onDismiss?: () => void;
+  className?: string;
+}
+
+export function Alert({ variant = 'info', title, children, onDismiss, className }: AlertProps) {
+  const variants = {
+    info:    'bg-blue-500/8  border-blue-500/25  text-blue-300',
+    warning: 'bg-amber-500/8 border-amber-500/25 text-amber-300',
+    error:   'bg-red-500/8   border-red-500/25   text-red-300',
+    success: 'bg-green-500/8 border-green-500/25 text-green-300',
+  };
+  const icons = {
+    info:    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    warning: <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+    error:   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    success: <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  };
+
+  return (
+    <div className={cn('flex items-start gap-3 rounded-xl border px-4 py-3', variants[variant], className)}>
+      {icons[variant]}
+      <div className="flex-1 min-w-0">
+        {title && <p className="text-sm font-semibold mb-0.5">{title}</p>}
+        <div className="text-sm opacity-90">{children}</div>
+      </div>
+      {onDismiss && (
+        <button onClick={onDismiss} className="opacity-60 hover:opacity-100 transition-opacity shrink-0">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// CHIP — Removable tag/chip
+// ============================================================
+
+interface ChipProps {
+  label: string;
+  onRemove?: () => void;
+  color?: string;
+  className?: string;
+}
+
+export function Chip({ label, onRemove, color, className }: ChipProps) {
+  return (
+    <span className={cn(
+      'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors',
+      color || 'bg-surface-800 text-surface-300 border border-surface-700',
+      onRemove && 'pr-1.5',
+      className
+    )}>
+      {label}
+      {onRemove && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 transition-colors ml-0.5"
+        >
+          ×
+        </button>
+      )}
+    </span>
+  );
+}
+
+// ============================================================
+// DIVIDER — Section separator
+// ============================================================
+
+interface DividerProps {
+  label?: string;
+  className?: string;
+}
+
+export function Divider({ label, className }: DividerProps) {
+  if (label) {
+    return (
+      <div className={cn('flex items-center gap-3', className)}>
+        <div className="flex-1 h-px bg-surface-800" />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-surface-500">{label}</span>
+        <div className="flex-1 h-px bg-surface-800" />
+      </div>
+    );
+  }
+  return <div className={cn('h-px bg-surface-800', className)} />;
+}
+
+// ============================================================
+// MOVE BUTTONS — Reorder items up/down
+// ============================================================
+
+interface MoveButtonsProps {
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  disableUp?: boolean;
+  disableDown?: boolean;
+  className?: string;
+}
+
+export function MoveButtons({ onMoveUp, onMoveDown, disableUp, disableDown, className }: MoveButtonsProps) {
+  return (
+    <div className={cn('flex flex-col gap-0.5', className)}>
+      <button
+        onClick={(e) => { e.stopPropagation(); onMoveUp(); }}
+        disabled={disableUp}
+        className="p-1 rounded text-surface-500 hover:text-white hover:bg-surface-700 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+        title="Move up"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); onMoveDown(); }}
+        disabled={disableDown}
+        className="p-1 rounded text-surface-500 hover:text-white hover:bg-surface-700 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+        title="Move down"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+      </button>
+    </div>
+  );
+}
+
+// ============================================================
+// FILTER TABS — Reusable filter button row
+// ============================================================
+
+interface FilterTab {
+  key: string;
+  label: string;
+  count?: number;
+}
+
+interface FilterTabsProps {
+  tabs: FilterTab[];
+  active: string;
+  onChange: (key: string) => void;
+  className?: string;
+}
+
+export function FilterTabs({ tabs, active, onChange, className }: FilterTabsProps) {
+  return (
+    <div className={cn('flex flex-wrap gap-1.5', className)}>
+      {tabs.map((tab) => (
+        <button
+          key={tab.key}
+          onClick={() => onChange(tab.key)}
+          className={cn(
+            'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200',
+            active === tab.key
+              ? 'bg-[#E54E15]/15 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/20'
+              : 'text-surface-400 hover:text-white hover:bg-surface-800/60'
+          )}
+        >
+          {tab.label}
+          {tab.count !== undefined && (
+            <span className={cn(
+              'ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full',
+              active === tab.key ? 'bg-[#FF5F1F]/20' : 'bg-surface-800 text-surface-500'
+            )}>
+              {tab.count}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
 // CONFIRMATION DIALOG
 // ============================================================
 

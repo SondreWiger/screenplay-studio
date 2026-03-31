@@ -14,8 +14,16 @@ import type {
   CompanyInvitation, CompanyActivityLog, CompanyRole, Profile, Project,
   CompanyBlogPost, CompanyBlogComment
 } from '@/lib/types';
+import { OrgPipeline } from '@/components/org/OrgPipeline';
+import { OrgChannels } from '@/components/org/OrgChannels';
+import { OrgAssignments } from '@/components/org/OrgAssignments';
+import { OrgCalendar } from '@/components/org/OrgCalendar';
+import { OrgResources } from '@/components/org/OrgResources';
+import { OrgPitches } from '@/components/org/OrgPitches';
+import { OrgAnnouncements } from '@/components/org/OrgAnnouncements';
+import { OrgEducation } from '@/components/org/OrgEducation';
 
-type CompanyTab = 'overview' | 'members' | 'teams' | 'projects' | 'blog' | 'settings' | 'activity';
+type CompanyTab = 'overview' | 'members' | 'teams' | 'projects' | 'blog' | 'pipeline' | 'channels' | 'assignments' | 'calendar' | 'resources' | 'pitches' | 'announcements' | 'education' | 'settings' | 'activity';
 
 export default function CompanyDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -384,6 +392,14 @@ export default function CompanyDashboard() {
     { key: 'teams', label: `Teams (${teams.length})` },
     { key: 'projects', label: `Projects (${projects.length})` },
     { key: 'blog', label: `Blog (${blogPosts.length})` },
+    { key: 'pipeline' as CompanyTab, label: 'Pipeline' },
+    { key: 'channels' as CompanyTab, label: 'Channels' },
+    { key: 'assignments' as CompanyTab, label: 'Assignments' },
+    { key: 'calendar' as CompanyTab, label: 'Calendar' },
+    { key: 'resources' as CompanyTab, label: 'Resources' },
+    { key: 'pitches' as CompanyTab, label: 'Pitches' },
+    { key: 'announcements' as CompanyTab, label: 'Announcements' },
+    { key: 'education' as CompanyTab, label: 'Education' },
     ...(canManage ? [
       { key: 'settings' as CompanyTab, label: 'Settings' },
       { key: 'activity' as CompanyTab, label: 'Activity' },
@@ -875,6 +891,46 @@ export default function CompanyDashboard() {
             </Card>
             <Button onClick={saveSettings} loading={saving}>Save Settings</Button>
           </div>
+        )}
+
+        {/* Pipeline */}
+        {tab === 'pipeline' && company && (
+          <OrgPipeline companyId={company.id} canManage={canManage} />
+        )}
+
+        {/* Channels */}
+        {tab === 'channels' && company && (
+          <OrgChannels companyId={company.id} userId={user!.id} canManage={canManage} />
+        )}
+
+        {/* Assignments */}
+        {tab === 'assignments' && company && (
+          <OrgAssignments companyId={company.id} userId={user!.id} canManage={canManage} />
+        )}
+
+        {/* Calendar */}
+        {tab === 'calendar' && company && (
+          <OrgCalendar companyId={company.id} userId={user!.id} canManage={canManage} />
+        )}
+
+        {/* Resources */}
+        {tab === 'resources' && company && (
+          <OrgResources companyId={company.id} userId={user!.id} canManage={canManage} />
+        )}
+
+        {/* Pitches */}
+        {tab === 'pitches' && company && (
+          <OrgPitches companyId={company.id} userId={user!.id} canManage={canManage} />
+        )}
+
+        {/* Announcements */}
+        {tab === 'announcements' && company && (
+          <OrgAnnouncements companyId={company.id} userId={user!.id} canManage={canManage} />
+        )}
+
+        {/* Education */}
+        {tab === 'education' && company && (
+          <OrgEducation companyId={company.id} userId={user!.id} canManage={canManage} />
         )}
 
         {/* Activity */}

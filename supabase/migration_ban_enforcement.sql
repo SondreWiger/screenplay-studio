@@ -43,7 +43,28 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_known_ip TEXT;
 -- ═══════════════════════════════════════════════════════════════
 -- SYSTEM USER — A special profile for system-generated messages
 -- Using a deterministic UUID so it's consistent everywhere
+-- Must create in auth.users first (FK constraint on profiles)
 -- ═══════════════════════════════════════════════════════════════
+INSERT INTO auth.users (
+  id, instance_id, aud, role,
+  email, encrypted_password,
+  email_confirmed_at, created_at, updated_at,
+  raw_app_meta_data, raw_user_meta_data,
+  is_super_admin, confirmation_token
+)
+VALUES (
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  'authenticated', 'authenticated',
+  'system@screenplaystudio.app',
+  '$2a$10$SYSTEM_ACCOUNT_NO_LOGIN_ALLOWED',
+  now(), now(), now(),
+  '{"provider":"email","providers":["email"],"is_system":true}'::jsonb,
+  '{"full_name":"Screenplay Studio","is_system":true}'::jsonb,
+  false, ''
+)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO profiles (id, email, full_name, display_name, role, avatar_url)
 VALUES (
   '00000000-0000-0000-0000-000000000000'::uuid,

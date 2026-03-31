@@ -264,7 +264,7 @@ export default function AdminPage() {
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('projects').select('id', { count: 'exact', head: true }),
         supabase.from('scripts').select('id', { count: 'exact', head: true }),
-        supabase.from('script_elements').select('id, content', { count: 'exact' }),
+        supabase.from('script_elements').select('id', { count: 'exact', head: true }),
         supabase.from('characters').select('id', { count: 'exact', head: true }),
         supabase.from('locations').select('id', { count: 'exact', head: true }),
         supabase.from('scenes').select('id', { count: 'exact', head: true }),
@@ -295,12 +295,15 @@ export default function AdminPage() {
         supabase.from('support_tickets').select('status, category'),
       ]);
 
-      // ── Words ─────────────────────────────────────────────────────────
-      const allElements = elementsRes.data || [];
-      const totalWords = allElements.reduce((sum, el) => {
-        const words = (el.content || '').trim().split(/\s+/).filter(Boolean).length;
-        return sum + words;
-      }, 0);
+      // ── Words (platform-wide via service role API) ──────────────────
+      let totalWords = 0;
+      try {
+        const res = await fetch('/api/admin/stats');
+        if (res.ok) {
+          const json = await res.json();
+          totalWords = json.totalWords ?? 0;
+        }
+      } catch { /* fallback to 0 */ }
 
       // ── 30-day trend buckets ──────────────────────────────────────────
       const bucketByDay = (rows: { created_at: string }[]) => {
