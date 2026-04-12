@@ -78,11 +78,11 @@ export function useAuth() {
 
         if (profile) {
           // Update last_seen when profile is loaded
-          supabase.from('profiles')
-            .update({ last_seen: new Date().toISOString() })
-            .eq('id', authUser.id)
-            .then(() => {})
-            .catch((err) => console.error('Failed to update last_seen:', err));
+          Promise.resolve(
+            supabase.from('profiles')
+              .update({ last_seen: new Date().toISOString() })
+              .eq('id', authUser.id)
+          ).then(() => {}).catch((err) => console.error('Failed to update last_seen:', err));
 
           setUser(profile as Profile);
           // Apply global accent color from profile
@@ -142,11 +142,11 @@ export function useAuth() {
             );
             if (profile) {
               // Update last_seen when profile is loaded
-              supabase.from('profiles')
-                .update({ last_seen: new Date().toISOString() })
-                .eq('id', session.user.id)
-                .then(() => {})
-                .catch((err) => console.error('Failed to update last_seen:', err));
+              Promise.resolve(
+                supabase.from('profiles')
+                  .update({ last_seen: new Date().toISOString() })
+                  .eq('id', session.user.id)
+              ).then(() => {}).catch((err) => console.error('Failed to update last_seen:', err));
 
               setUser(profile as Profile);
               if (typeof document !== 'undefined' && (profile as Profile).accent_color) {
