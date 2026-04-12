@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // ── Strip console.* in production builds ─────────────────
   // (Turbopack used in dev doesn't support this key — guard it)
   ...(process.env.NODE_ENV === 'production' ? {

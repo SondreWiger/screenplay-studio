@@ -252,11 +252,13 @@ function RegisterForm() {
             <div className="absolute -top-[9999px] -left-[9999px]" aria-hidden="true">
               <input
                 type="text"
-                name="company"
+                name="hidden_field"
                 tabIndex={-1}
                 autoComplete="off"
+                inputMode="none"
                 value={honeypot}
                 onChange={(e) => setHoneypot(e.target.value)}
+                style={{ pointerEvents: 'none' }}
               />
             </div>
 
