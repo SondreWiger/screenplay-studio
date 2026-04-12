@@ -3883,6 +3883,7 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_projects BOOLEAN DEFAULT true
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_activity BOOLEAN DEFAULT true;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS allow_dms BOOLEAN DEFAULT true;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS profile_views INTEGER DEFAULT 0;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS country TEXT;
 
 -- Index for fast username lookups (public profile pages)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_username ON profiles(username) WHERE username IS NOT NULL;

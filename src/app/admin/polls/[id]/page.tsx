@@ -56,6 +56,10 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
 
+  // Notifying
+  const [notifying, setNotifying] = useState(false);
+  const [notifyError, setNotifyError] = useState<string | null>(null);
+
   // New question form
   const [addingQ, setAddingQ] = useState(false);
   const [newQText, setNewQText] = useState('');
@@ -203,6 +207,25 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
     }
     load();
     setView('results');
+  };
+
+  const handleNotify = async () => {
+    setNotifying(true);
+    setNotifyError(null);
+    const res = await fetch(`/api/admin/polls/${params.id}/notify`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) {
+      setNotifyError(data.error ?? 'Notify failed');
+      setNotifying(false);
+      return;
+    }
+    setNotifying(false);
+    // Show any notification errors as a warning
+    if (data.notification_errors?.length) {
+      setNotifyError(`Notifications sent! But some failed: ${data.notification_errors[0]}`);
+    } else {
+      setNotifyError(`Notifications sent to ${data.notified} users!`);
+    }
   };
 
   const moveQuestion = async (q: PollQuestion, direction: -1 | 1) => {
@@ -582,10 +605,34 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                   <p className="text-sm text-white/40">
                     <span className="text-white font-bold text-base">{session.response_count}</span> total response{session.response_count !== 1 ? 's' : ''}
                   </p>
-                  <button onClick={() => { setResults(null); loadResults(); }} className="text-xs text-white/30 hover:text-white transition-colors">
-                    Refresh
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleNotify}
+                      disabled={notifying}
+                      className="text-xs px-3 py-1.5 bg-[#FF5F1F] hover:bg-[#FF7F3F] disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      {notifying ? (
+                        <>
+                          <span className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                          Sending…
+                        </>
+                      ) : (
+                        <>
+                          🔔 Push Notify
+                        </>
+                      )}
+                    </button>
+                    <button onClick={() => { setResults(null); loadResults(); }} className="text-xs text-white/30 hover:text-white transition-colors">
+                      Refresh
+                    </button>
+                  </div>
                 </div>
+
+                {notifyError && (
+                  <div className={`text-sm p-3 rounded-lg ${notifyError.includes('failed') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
+                    {notifyError}
+                  </div>
+                )}
 
                 {results.map((r) => (
                   <PollResultCard key={r.question_id} result={r} />

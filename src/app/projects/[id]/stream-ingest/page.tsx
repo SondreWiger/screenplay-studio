@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Badge, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastStreamIngest, BroadcastIngestProtocol, BroadcastIngestStatus } from '@/lib/types';
+// BroadcastIngestStatus used for statusColor helper
 import { BROADCAST_INGEST_PROTOCOL_OPTIONS } from '@/lib/types';
 
 // ────────────────────────────────────────────────────────────
@@ -58,10 +59,11 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
   // ─── CRUD ────────────────────────────────────────
 
   const defaultIngestUrl = (protocol: BroadcastIngestProtocol) => {
+    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
     switch (protocol) {
-      case 'rtmp': return `rtmp://your-server.com/live`;
-      case 'srt': return `srt://your-server.com:9000`;
-      case 'whip': return `https://your-server.com/whip/ingest`;
+      case 'rtmp': return `rtmp://${host}:1935/live/${projectId}`;
+      case 'srt': return `srt://${host}:9000`;
+      case 'whip': return `https://${host}/whip/ingest`;
       case 'rtsp': return `rtsp://`;
       case 'ndi': return `ndi://`;
       case 'hls_pull': return `https://`;
@@ -94,12 +96,6 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
     if (selectedIngest?.id === id) setSelectedIngest(null);
     fetchIngests();
     toast.success('Ingest removed');
-  };
-
-  const updateStatus = async (id: string, status: BroadcastIngestStatus) => {
-    const supabase = createClient();
-    await supabase.from('broadcast_stream_ingests').update({ status }).eq('id', id);
-    fetchIngests();
   };
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -353,29 +349,13 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
               </div>
             )}
 
-            {/* Status Controls */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => updateStatus(selectedIngest.id, 'live')}
-                className={selectedIngest.status === 'live' ? 'ring-1 ring-green-500' : ''}
-              >
-                Simulate Live
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => updateStatus(selectedIngest.id, 'idle')}
-              >
-                Set Idle
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => updateStatus(selectedIngest.id, 'error')}
-                className="text-red-400"
-              >
-                Simulate Error
-              </Button>
-            </div>
+            {/* Status Note */}
+            {selectedIngest.status === 'idle' && (
+              <div className="bg-surface-900 rounded-xl border border-surface-700 p-4 text-xs text-surface-400">
+                <strong className="text-surface-300">Status updates automatically.</strong>{' '}
+                When OBS connects to the ingest URL with the stream key above, the status will change to <span className="text-green-400 font-bold">LIVE</span> and stream health metrics will appear.
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">

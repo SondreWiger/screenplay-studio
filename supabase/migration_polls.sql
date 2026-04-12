@@ -29,6 +29,7 @@ END $$;
 -- Add poll_published to notification_type enum if not already there
 DO $$ BEGIN
   ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'poll_published';
+  ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'poll_reminder';
 END $$;
 
 -- ── poll_sessions ─────────────────────────────────────────────

@@ -102,26 +102,30 @@ export default function OutputPage({ params }: { params: { id: string } }) {
   };
 
   const toggleStream = async (output: BroadcastStreamOutput) => {
+    const isLive = output.status === 'live' || output.status === 'starting';
+    const action = isLive ? 'stop' : 'start';
+
+    // Optimistic UI
     const supabase = createClient();
-    if (output.status === 'live' || output.status === 'starting') {
-      await supabase.from('broadcast_stream_outputs').update({
-        status: 'idle',
-        started_at: null,
-      }).eq('id', output.id);
-      toast.success(`Stopped: ${output.name}`);
-    } else {
-      await supabase.from('broadcast_stream_outputs').update({
-        status: 'live',
-        started_at: new Date().toISOString(),
-      }).eq('id', output.id);
-      toast.success(`Started: ${output.name}`);
-      // Log to as-run
-      await supabase.from('broadcast_as_run_log').insert({
-        project_id: projectId,
-        event_type: 'segment_start',
-        title: `OUTPUT STARTED: ${output.name} (${output.platform})`,
-        is_automatic: false,
+    await supabase.from('broadcast_stream_outputs').update({
+      status: isLive ? 'stopping' : 'starting',
+    }).eq('id', output.id);
+    fetchOutputs();
+
+    try {
+      const res = await fetch('/api/broadcast/relay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, outputId: output.id, projectId }),
       });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to toggle stream');
+      } else {
+        toast.success(isLive ? `Stopped: ${output.name}` : `Started: ${output.name}`);
+      }
+    } catch (err: any) {
+      toast.error(`Network error: ${err.message}`);
     }
     fetchOutputs();
   };

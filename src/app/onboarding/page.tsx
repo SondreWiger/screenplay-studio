@@ -29,6 +29,15 @@ const FEATURE_TOGGLES = [
   { key: 'show_accountability' as const, label: 'Writing Accountability', description: 'Streaks, writing buddies, groups, activity grid', icon: 'activity' },
 ];
 
+const COUNTRIES = [
+  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Sweden',
+  'Norway', 'Denmark', 'Finland', 'Japan', 'South Korea', 'China', 'India', 'Brazil', 'Mexico', 'Argentina',
+  'Chile', 'Colombia', 'Peru', 'Venezuela', 'Russia', 'Poland', 'Czech Republic', 'Hungary', 'Romania', 'Greece',
+  'Turkey', 'Israel', 'South Africa', 'Egypt', 'Nigeria', 'Kenya', 'Ghana', 'Morocco', 'Thailand', 'Vietnam',
+  'Philippines', 'Indonesia', 'Malaysia', 'Singapore', 'New Zealand', 'Ireland', 'Portugal', 'Belgium', 'Switzerland', 'Austria',
+  'Other'
+];
+
 export default function OnboardingPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -47,6 +56,9 @@ export default function OnboardingPage() {
   // Optional company creation
   const [wantsCompany, setWantsCompany] = useState(false);
   const [companyName, setCompanyName] = useState('');
+
+  // Optional country for analytics
+  const [country, setCountry] = useState<string>('');
 
   // Gamification opt-in (null = skip / decide later)
   const [gamificationChoice, setGamificationChoice] = useState<boolean | null>(null);
@@ -104,6 +116,7 @@ export default function OnboardingPage() {
       show_accountability: showAccountability,
       preferred_script_type: scriptType,
       display_name: displayName.trim() || user.full_name || null,
+      country: country.trim() || null,
     }).eq('id', user.id);
 
     if (!error) {

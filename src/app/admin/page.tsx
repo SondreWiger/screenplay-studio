@@ -33,6 +33,10 @@ interface PlatformStats {
   totalComments: number;
   proUsers: number;
   pushSubscriptions: number;
+  // Active users (last 5 minutes, 15 minutes, 1 hour)
+  activeUsers5Min: number;
+  activeUsers15Min: number;
+  activeUsers1Hour: number;
   // Tickets
   totalTickets: number;
   openTickets: number;
@@ -45,6 +49,7 @@ interface PlatformStats {
   // Breakdowns
   scriptTypeBreakdown: { type: string; count: number }[];
   projectTypeBreakdown: { type: string; count: number }[];
+  countryBreakdown: { country: string; count: number }[];
   episodicProjects: number;
   // Recent
   recentUsers: any[];
@@ -253,10 +258,12 @@ export default function AdminPage() {
         budgetRes, schedRes, commentsRes,
         recentUsersRes, recentProjectsRes,
         proUsersRes, pushSubsRes,
+        // Active users
+        active5MinRes, active15MinRes, active1HourRes,
         // Trends
         recentSignupsRes, recentProjectsCreatedRes,
         // Breakdowns
-        scriptTypesRes, projectTypesRes, episodicRes,
+        scriptTypesRes, projectTypesRes, countryRes, episodicRes,
         // Tickets
         ticketsTotalRes, ticketsOpenRes, ticketsBugRes,
         allTicketsRes,
@@ -277,6 +284,10 @@ export default function AdminPage() {
         supabase.from('projects').select('*').order('created_at', { ascending: false }).limit(8),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_pro', true),
         supabase.from('push_subscriptions').select('id', { count: 'exact', head: true }),
+        // Active users (last seen within time windows)
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 15 * 60 * 1000).toISOString()),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 60 * 60 * 1000).toISOString()),
         // 30-day signup trend
         supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
         // 30-day project creation trend
@@ -285,6 +296,8 @@ export default function AdminPage() {
         supabase.from('scripts').select('script_type'),
         // Project type breakdown
         supabase.from('projects').select('project_type'),
+        // Country breakdown
+        supabase.from('profiles').select('country'),
         // Episodic projects
         supabase.from('projects').select('id', { count: 'exact', head: true }).eq('script_type', 'episodic'),
         // Ticket counts
@@ -334,6 +347,7 @@ export default function AdminPage() {
       };
       const scriptTypeBreakdown  = groupBy(scriptTypesRes.data || [], 'script_type');
       const projectTypeBreakdown = groupBy(projectTypesRes.data || [], 'project_type');
+      const countryBreakdown = groupBy(countryRes.data || [], 'country').map(({ type: country, count }) => ({ country, count }));
       const ticketsByCat  = groupBy(allTicketsRes.data || [], 'category').map(({ type: category, count }) => ({ category, count }));
       const ticketsByStat = groupBy(allTicketsRes.data || [], 'status').map(({ type: status, count }) => ({ status, count }));
 
@@ -353,6 +367,9 @@ export default function AdminPage() {
         totalComments: commentsRes.count || 0,
         proUsers: proUsersRes.count || 0,
         pushSubscriptions: pushSubsRes.count || 0,
+        activeUsers5Min: active5MinRes.count || 0,
+        activeUsers15Min: active15MinRes.count || 0,
+        activeUsers1Hour: active1HourRes.count || 0,
         totalTickets: ticketsTotalRes.count || 0,
         openTickets: ticketsOpenRes.count || 0,
         bugReports: ticketsBugRes.count || 0,
@@ -362,6 +379,7 @@ export default function AdminPage() {
         projectsByDay,
         scriptTypeBreakdown,
         projectTypeBreakdown,
+        countryBreakdown,
         episodicProjects: episodicRes.count || 0,
         recentUsers: recentUsersRes.data || [],
         recentProjects: recentProjectsRes.data || [],
@@ -1063,6 +1081,41 @@ function KpiCard({ label, value, sub, color, icon }: { label: string; value: str
 // ─────────────────────────────────────────────────────────────────────────────
 
 function OverviewTab({ stats }: { stats: PlatformStats }) {
+  const [liveActiveUsers, setLiveActiveUsers] = useState({
+    activeUsers5Min: stats.activeUsers5Min,
+    activeUsers15Min: stats.activeUsers15Min,
+    activeUsers1Hour: stats.activeUsers1Hour,
+  });
+
+  // Live update active users every 30 seconds
+  useEffect(() => {
+    const loadActiveUsers = async () => {
+      try {
+        const supabase = createClient();
+        const [active5MinRes, active15MinRes, active1HourRes] = await Promise.all([
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 15 * 60 * 1000).toISOString()),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 60 * 60 * 1000).toISOString()),
+        ]);
+        setLiveActiveUsers({
+          activeUsers5Min: active5MinRes.count || 0,
+          activeUsers15Min: active15MinRes.count || 0,
+          activeUsers1Hour: active1HourRes.count || 0,
+        });
+      } catch (err) {
+        console.error('Error loading active users:', err);
+      }
+    };
+
+    // Initial load
+    loadActiveUsers();
+
+    // Set up interval for live updates
+    const interval = setInterval(loadActiveUsers, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   const proRate      = stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : '0';
   const projPerUser  = stats.totalUsers > 0 ? (stats.totalProjects / stats.totalUsers).toFixed(1) : '0';
   const avgWords     = stats.totalScripts > 0 ? Math.round(stats.totalWords / stats.totalScripts).toLocaleString() : '0';
@@ -1090,6 +1143,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
 
   const maxScript  = Math.max(...stats.scriptTypeBreakdown.map((d) => d.count), 1);
   const maxProj    = Math.max(...stats.projectTypeBreakdown.map((d) => d.count), 1);
+  const maxCountry = Math.max(...stats.countryBreakdown.map((d) => d.count), 1);
   const maxTickCat = Math.max(...stats.ticketsByCategory.map((d) => d.count), 1);
   const maxTickSt  = Math.max(...stats.ticketsByStatus.map((d) => d.count), 1);
 
@@ -1101,13 +1155,34 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
       </div>
 
       {/* ── Primary KPI row ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <KpiCard
           label="Total Users"
           value={stats.totalUsers}
           sub={`+${newSignups30} in last 30 days`}
           color="from-blue-500/20 to-blue-900/5"
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
+        />
+        <KpiCard
+          label="Active (5m)"
+          value={liveActiveUsers.activeUsers5Min}
+          sub="Users online now"
+          color="from-green-500/20 to-green-900/5"
+          icon={<svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>}
+        />
+        <KpiCard
+          label="Active (15m)"
+          value={liveActiveUsers.activeUsers15Min}
+          sub="Recent activity"
+          color="from-lime-500/20 to-lime-900/5"
+          icon={<svg className="w-5 h-5 text-lime-400" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>}
+        />
+        <KpiCard
+          label="Active (1h)"
+          value={liveActiveUsers.activeUsers1Hour}
+          sub="Last hour"
+          color="from-emerald-500/20 to-emerald-900/5"
+          icon={<svg className="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>}
         />
         <KpiCard
           label="Pro Users"
@@ -1127,7 +1202,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           label="Total Words Written"
           value={stats.totalWords}
           sub={`~${avgWords} per script`}
-          color="from-emerald-500/20 to-emerald-900/5"
+          color="from-cyan-500/20 to-cyan-900/5"
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>}
         />
       </div>
@@ -1192,7 +1267,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
       </div>
 
       {/* ── Content breakdown charts ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Script types */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Script Types</h3>
@@ -1208,6 +1283,15 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           <div className="space-y-2.5">
             {stats.projectTypeBreakdown.map((d) => (
               <BarRow key={d.type} label={d.type} count={d.count} max={maxProj} color={projColors[d.type] || '#374151'} />
+            ))}
+          </div>
+        </div>
+        {/* User countries */}
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">User Countries</h3>
+          <div className="space-y-2.5">
+            {stats.countryBreakdown.slice(0, 10).map((d) => (
+              <BarRow key={d.country} label={d.country || 'Not specified'} count={d.count} max={maxCountry} color="#7c3aed" />
             ))}
           </div>
         </div>
