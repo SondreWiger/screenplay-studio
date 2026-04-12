@@ -284,10 +284,10 @@ export default function AdminPage() {
         supabase.from('projects').select('*').order('created_at', { ascending: false }).limit(8),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_pro', true),
         supabase.from('push_subscriptions').select('id', { count: 'exact', head: true }),
-        // Active users (last seen within time windows)
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 15 * 60 * 1000).toISOString()),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 60 * 60 * 1000).toISOString()),
+        // Active users (last seen within time windows, fallback to updated_at)
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()}`),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 15 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 15 * 60 * 1000).toISOString()}`),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 60 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 60 * 60 * 1000).toISOString()}`),
         // 30-day signup trend
         supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
         // 30-day project creation trend
@@ -1093,9 +1093,9 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
       try {
         const supabase = createClient();
         const [active5MinRes, active15MinRes, active1HourRes] = await Promise.all([
-          supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()),
-          supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 15 * 60 * 1000).toISOString()),
-          supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(Date.now() - 60 * 60 * 1000).toISOString()),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()}`),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 15 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 15 * 60 * 1000).toISOString()}`),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 60 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 60 * 60 * 1000).toISOString()}`),
         ]);
         setLiveActiveUsers({
           activeUsers5Min: active5MinRes.count || 0,

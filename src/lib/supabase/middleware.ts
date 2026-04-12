@@ -243,23 +243,28 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ── Update last_seen for authenticated users ──────────────
-  // Only update if user is authenticated and not on exempt paths
+  // Only update if user is authenticated and not on static/auth paths
   // Throttle updates to once per 5 minutes per user to reduce DB writes
-  if (user && !isEnforcementExempt) {
-    const now = Date.now();
-    const lastUpdateKey = `last_seen_update:${user.id}`;
-    const lastUpdate = rateLimitMap.get(lastUpdateKey);
+  if (user) {
+    const activityExemptPaths = ['/_next/', '/favicon.ico', '/robots.txt', '/sitemap', '/api/health'];
+    const isActivityExempt = activityExemptPaths.some(p => pathname.startsWith(p));
+    
+    if (!isActivityExempt) {
+      const now = Date.now();
+      const lastUpdateKey = `last_seen_update:${user.id}`;
+      const lastUpdate = rateLimitMap.get(lastUpdateKey);
 
-    // Update if never updated or more than 5 minutes ago
-    if (!lastUpdate || now - lastUpdate.resetAt > 300_000) {
-      // Fire-and-forget update
-      supabase.from('profiles')
-        .update({ last_seen: new Date().toISOString() })
-        .eq('id', user.id)
-        .then(() => {});
-      
-      // Track the update time
-      rateLimitMap.set(lastUpdateKey, { count: 1, resetAt: now });
+      // Update if never updated or more than 5 minutes ago
+      if (!lastUpdate || now - lastUpdate.resetAt > 300_000) {
+        // Fire-and-forget update
+        supabase.from('profiles')
+          .update({ last_seen: new Date().toISOString() })
+          .eq('id', user.id)
+          .then(() => {});
+        
+        // Track the update time
+        rateLimitMap.set(lastUpdateKey, { count: 1, resetAt: now });
+      }
     }
   }
 
