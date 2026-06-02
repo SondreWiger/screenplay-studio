@@ -528,33 +528,11 @@
   }
   .glow-sm { box-shadow: 0 0 12px rgb(var(--brand-500) / 0.25); }
 
-  /* ── Glass morphism — vivid version ────────────────────── */
-  .glass {
-    background: rgb(255 255 255 / 0.04);
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgb(255 255 255 / 0.08);
-  }
-  .glass-strong {
-    background: rgb(255 255 255 / 0.07);
-    backdrop-filter: blur(32px) saturate(200%);
-    border: 1px solid rgb(255 255 255 / 0.12);
-  }
+  /* ── Glass morphism — removed for clean design ─────────── */
 
   /* ── Gradient text ───────────────────────────────────── */
   .gradient-text {
     background: linear-gradient(135deg, rgb(var(--brand-300)), rgb(var(--brand-500)) 50%, #f97316);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .gradient-text-cool {
-    background: linear-gradient(135deg, #a78bfa, #60a5fa 50%, #34d399);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .gradient-text-fire {
-    background: linear-gradient(135deg, #fbbf24, #ef4444 50%, #ec4899);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -671,7 +649,6 @@
   }
   .btn-primary:hover {
     box-shadow: 0 4px 20px rgb(var(--brand-500) / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.15);
-    transform: translateY(-1px);
   }
   .btn-primary:active { transform: translateY(0) scale(0.98); }
 
@@ -805,7 +782,7 @@
 /* Press micro-interaction */
 button:active:not(:disabled),
 a:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 /* =============================================
@@ -964,7 +941,6 @@ a:active:not(:disabled) {
 }
 .stat-card:hover {
   border-color: rgb(var(--surface-700) / 0.8);
-  transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 }
 
@@ -1126,7 +1102,6 @@ a:active:not(:disabled) {
   cursor: pointer;
 }
 .ss-btn-orange:hover {
-  transform: translateY(-1px);
   box-shadow: 0 8px 28px rgba(255,95,31,0.28);
 }
 .ss-btn-orange:active {
@@ -1151,7 +1126,6 @@ a:active:not(:disabled) {
 .ss-btn-ghost:hover {
   color: #fff;
   border-color: rgba(255,255,255,0.3);
-  transform: translateY(-1px);
 }
 
 /* ── Page-level header block (title + meta) ──────────────── */

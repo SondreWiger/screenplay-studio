@@ -9,10 +9,6 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil } from '@/lib/utils';
 import type { CommunityPost, CommunityCategory, CommunityChallenge, SubCommunity } from '@/lib/types';
 
-// ============================================================
-// Community Hub — main feed & browse page
-// ============================================================
-
 export default function CommunityPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -265,13 +261,13 @@ export default function CommunityPage() {
             {/* Quick links */}
             <div className="mt-8 pt-6 border-t border-white/10">
               <Link href="/community/showcase" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
-                🎬 Finished Projects
+                Finished Projects
               </Link>
               <Link href="/community/challenges" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
-                🏆 Writing Challenges
+                Writing Challenges
               </Link>
               <Link href="/community/free-scripts" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
-                📖 Free-to-Use Scripts
+                Free-to-Use Scripts
               </Link>
             </div>
 
@@ -287,7 +283,7 @@ export default function CommunityPage() {
                   {joinedCommunities.slice(0, 8).map(c => (
                     <Link key={c.id} href={`/community/c/${c.slug}`}
                       className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors py-1">
-                      <span className="text-base">{c.icon ?? '🎬'}</span>
+                      <span className="text-base">{c.icon ?? 'C'}</span>
                       <span className="truncate">c/{c.slug}</span>
                     </Link>
                   ))}
@@ -298,7 +294,7 @@ export default function CommunityPage() {
             {featuredCourses.length > 0 && (
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">📚 Courses</p>
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Courses</p>
                   <Link href="/community/courses" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">All →</Link>
                 </div>
                 <div className="space-y-2">
@@ -330,7 +326,7 @@ export default function CommunityPage() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
-                <div className="text-5xl mb-4">📝</div>
+                <div className="text-5xl mb-4 font-bold text-white/20">S</div>
                 <p className="text-lg font-semibold text-white/70 mb-2">No scripts shared yet</p>
                 <p className="text-sm text-white/40 mb-6">Be the first to share your work with the community!</p>
                 {user && (
@@ -345,7 +341,7 @@ export default function CommunityPage() {
                   <Link
                     key={post.id}
                     href={`/community/post/${post.slug}`}
-                    className="block rounded-xl border border-white/[0.12] bg-surface-800/50 hover:border-white/20 hover:bg-surface-800/70 transition-all hover:-translate-y-0.5 p-5 animate-fade-in"
+                    className="block rounded-xl border border-white/[0.12] bg-surface-800/50 hover:border-white/20 hover:bg-surface-800/70 transition-all p-5 animate-fade-in"
                     style={{ animationDelay: `${idx * 30}ms`, animationFillMode: 'backwards' }}>
                     <div className="flex items-start gap-4">
                       {/* Upvote count */}
@@ -367,7 +363,7 @@ export default function CommunityPage() {
                                 color: (post as any).sub_community.accent_color ?? '#FF5F1F',
                               }}
                             >
-                              <span>{(post as any).sub_community.icon ?? '🎬'}</span>
+                               <span>{(post as any).sub_community.icon ?? 'C'}</span>
                               <span>c/{(post as any).sub_community.slug}</span>
                             </Link>
                           )}
@@ -410,8 +406,8 @@ export default function CommunityPage() {
                             )}
                             <span className="text-white/60 font-medium">{post.author?.full_name || 'Anonymous'}</span>
                           </Link>
-                          {post.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>🔰 Moderator</span>}
-                          {post.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>🛡️ Admin</span>}
+                          {post.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>MOD</span>}
+                          {post.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>ADMIN</span>}
                           <span>{timeAgo(post.created_at)}</span>
                           <span className="flex items-center gap-1">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -467,8 +463,8 @@ export default function CommunityPage() {
 
       {/* Mobile category bar */}
       <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-2 z-20 backdrop-blur-xl"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.95)' }}
+        className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-2 z-20"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#070710' }}
       >
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           <button

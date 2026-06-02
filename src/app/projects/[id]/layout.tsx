@@ -781,7 +781,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       {/* Mobile header */}
       <div className="fixed top-0 left-0 right-0 z-40 md:hidden"
-        style={{ backgroundColor: 'rgba(7, 7, 16, 0.95)', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)', backdropFilter: 'blur(16px)' }}
+        style={{ backgroundColor: '#070710', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)' }}
       >
         {/* Gradient top line on mobile too */}
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--brand-500) / 0.4), transparent)' }} />

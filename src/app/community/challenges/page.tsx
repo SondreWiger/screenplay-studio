@@ -9,10 +9,6 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil } from '@/lib/utils';
 import type { CommunityChallenge } from '@/lib/types';
 
-// ============================================================
-// Community Challenges — listing page
-// ============================================================
-
 export default function ChallengesPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -198,9 +194,6 @@ export default function ChallengesPage() {
   );
 }
 
-// ============================================================
-// Active Challenge Card — hero component
-// ============================================================
 function ActiveChallengeCard({ challenge, user }: { challenge: CommunityChallenge; user: any }) {
   const phase = getChallengePhase(challenge);
 
@@ -237,7 +230,7 @@ function ActiveChallengeCard({ challenge, user }: { challenge: CommunityChalleng
 
             {challenge.prize_title && (
               <div className="mt-4 flex items-center gap-2 text-sm">
-                <span className="text-amber-400">🏆</span>
+                <span className="text-amber-400 font-bold">W</span>
                 <span className="text-white/80 font-medium">{challenge.prize_title}</span>
                 {challenge.prize_description && (
                   <span className="text-white/50">— {challenge.prize_description}</span>

@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
-import { AppHeader } from '@/components/AppHeader';
 import { Icon } from '@/components/ui/icons';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import type { UsageIntent, ScriptType, Company, Profile } from '@/lib/types';
@@ -18,11 +17,6 @@ import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
 import { XPBar } from '@/components/XPBar';
 
 
-// ============================================================
-// User Settings — profile, preferences, company
-// ============================================================
-
-// ── Insider Program Card ─────────────────────────────────────
 function InsiderProgramCard() {
   const { user } = useAuth();
   const [tier, setTier] = useState<InsiderTier>(null);
@@ -92,7 +86,6 @@ function InsiderProgramCard() {
   );
 }
 
-// ── PreMiD Discord Presence Card ────────────────────────────────
 function PreMiDCard() {
   const read = (key: string, def: boolean): boolean => {
     if (typeof window === 'undefined') return def;
@@ -210,7 +203,6 @@ function PreMiDCard() {
 
 type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security' | 'gamification' | 'accountability';
 
-// ── Gamification Settings Tab ─────────────────────────────────
 function GamificationSettingsTab() {
   const { user } = useAuth();
   const { gamif, badges, enabled, levelInfo, multiplier, setGamificationEnabled, reload } = useGamification();
@@ -248,7 +240,7 @@ function GamificationSettingsTab() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <span>🎮</span> Gamification
+              Gamification
             </h2>
             <p className="text-sm text-surface-400 mt-0.5">
               Show your XP, level, and badges across the platform.
@@ -376,18 +368,17 @@ function GamificationSettingsTab() {
         <h3 className="text-sm font-semibold text-white mb-3">How to earn XP</h3>
         <div className="space-y-2">
           {[
-            { icon: '✍️', label: 'Every 10 words written', xp: '+1 XP' },
-            { icon: '📝', label: 'Create a community post', xp: '+25 XP' },
-            { icon: '💬', label: 'Leave a comment', xp: '+5 XP' },
-            { icon: '❤️', label: 'Receive a like', xp: '+2 XP' },
-            { icon: '🏆', label: 'Challenge submission', xp: '+50 XP' },
-            { icon: '🚀', label: 'Create a project', xp: '+10 XP' },
-            { icon: '☀️', label: 'Daily login', xp: '+5 XP' },
-            { icon: '🔥', label: 'Time multiplier (1h = 2×, 2h = 4×, 3h = 8×)', xp: 'up to 16×' },
-          ].map(({ icon, label, xp }) => (
+            { label: 'Every 10 words written', xp: '+1 XP' },
+            { label: 'Create a community post', xp: '+25 XP' },
+            { label: 'Leave a comment', xp: '+5 XP' },
+            { label: 'Receive a like', xp: '+2 XP' },
+            { label: 'Challenge submission', xp: '+50 XP' },
+            { label: 'Create a project', xp: '+10 XP' },
+            { label: 'Daily login', xp: '+5 XP' },
+            { label: 'Time multiplier (1h = 2x, 2h = 4x, 3h = 8x)', xp: 'up to 16x' },
+          ].map(({ label, xp }) => (
             <div key={label} className="flex items-center justify-between py-1.5 border-b border-surface-800 last:border-0">
               <div className="flex items-center gap-2 text-sm text-surface-300">
-                <span>{icon}</span>
                 <span>{label}</span>
               </div>
               <span className="text-xs font-mono font-bold text-[#FF5F1F]">{xp}</span>
@@ -402,7 +393,8 @@ function GamificationSettingsTab() {
 export default function UserSettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<SettingsTab>('profile');
+  const searchParams = useSearchParams();
+  const tab = (searchParams.get('tab') as SettingsTab) || 'profile';
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const { canUse: canUseFeature } = useFeatureAccess();
@@ -636,69 +628,8 @@ export default function UserSettingsPage() {
   if (authLoading) return <LoadingPage />;
   if (!user) return null;
 
-  const tabs: { key: SettingsTab; label: string; icon: React.ReactNode }[] = [
-    { key: 'profile', label: 'Profile', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> },
-    { key: 'preferences', label: 'Preferences', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg> },
-    { key: 'company', label: 'Company', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
-    { key: 'privacy', label: 'Privacy & Data', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
-    { key: 'security', label: 'Security', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> },
-    { key: 'gamification' as SettingsTab, label: 'Gamification', icon: <span className="text-sm">🎮</span> },
-    { key: 'accountability' as SettingsTab, label: 'Accountability', icon: <span className="text-sm">🎯</span> },
-  ];
-
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
-      <AppHeader />
-
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-        {/* Page header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-            <span className="ss-label">Account</span>
-          </div>
-          <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>SETTINGS</h1>
-        </div>
-
-        {/* Tab bar */}
-        <div className="flex gap-px mb-6 md:mb-10 overflow-x-auto max-w-full" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className="flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 text-xs font-mono uppercase tracking-wider transition-all whitespace-nowrap relative"
-              style={{
-                color: tab === t.key ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
-                borderBottom: tab === t.key ? '2px solid #FF5F1F' : '2px solid transparent',
-                marginBottom: '-1px',
-              }}
-            >
-              {t.icon}
-              {t.label}
-            </button>
-          ))}
-          {/* Billing link navigates to its own page */}
-          {canUseFeature('pro_subscription') && (
-            <Link
-              href="/settings/billing"
-              className="flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 text-xs font-mono uppercase tracking-wider transition-all whitespace-nowrap relative"
-              style={{ color: 'rgba(255,255,255,0.3)', borderBottom: '2px solid transparent', marginBottom: '-1px' }}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-              Billing
-            </Link>
-          )}
-          {/* Creator Program */}
-          <Link
-            href="/settings/creator"
-            className="flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 text-xs font-mono uppercase tracking-wider transition-all whitespace-nowrap relative"
-            style={{ color: 'rgba(255,255,255,0.3)', borderBottom: '2px solid transparent', marginBottom: '-1px' }}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-            Creator
-          </Link>
-        </div>
-
+    <div className="space-y-6">
         {/* Profile Tab */}
         {tab === 'profile' && (
           <div className="space-y-6">
@@ -1231,55 +1162,21 @@ export default function UserSettingsPage() {
                 associated with your account. This is your right under GDPR Article 20.
               </p>
               <Button variant="secondary" onClick={async () => {
-                const supabase = createClient();
-                const userId = user?.id;
-                if (!userId) return;
-                const [
-                  profileRes, projectsRes, scriptsRes, elementsRes,
-                  charsRes, locsRes, scenesRes, shotsRes,
-                  ideasRes, commentsRes, notificationsRes,
-                  dmsRes, communityRes,
-                ] = await Promise.all([
-                  supabase.from('profiles').select('*').eq('id', userId),
-                  supabase.from('projects').select('*').eq('created_by', userId),
-                  supabase.from('scripts').select('*').eq('created_by', userId),
-                  supabase.from('script_elements').select('*').eq('created_by', userId),
-                  supabase.from('characters').select('*').eq('created_by', userId),
-                  supabase.from('locations').select('*').eq('created_by', userId),
-                  supabase.from('scenes').select('*').eq('created_by', userId),
-                  supabase.from('shots').select('*').eq('created_by', userId),
-                  supabase.from('ideas').select('*').eq('created_by', userId),
-                  supabase.from('comments').select('*').eq('user_id', userId),
-                  supabase.from('notifications').select('*').eq('user_id', userId),
-                  supabase.from('direct_messages').select('*').eq('sender_id', userId),
-                  supabase.from('community_posts').select('*').eq('author_id', userId),
-                ]);
-                const exportData = {
-                  exported_at: new Date().toISOString(),
-                  gdpr_notice: 'This file contains all personal data associated with your Screenplay Studio account.',
-                  profile: profileRes.data?.[0] || null,
-                  projects: projectsRes.data || [],
-                  scripts: scriptsRes.data || [],
-                  script_elements: elementsRes.data || [],
-                  characters: charsRes.data || [],
-                  locations: locsRes.data || [],
-                  scenes: scenesRes.data || [],
-                  shots: shotsRes.data || [],
-                  ideas: ideasRes.data || [],
-                  comments: commentsRes.data || [],
-                  notifications: notificationsRes.data || [],
-                  direct_messages: dmsRes.data || [],
-                  community_posts: communityRes.data || [],
-                };
-                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `screenplay_studio_data_export_${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                try {
+                  const res = await fetch('/api/user/data-export', { method: 'POST' });
+                  if (!res.ok) throw new Error('Export failed');
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `screenplay_studio_data_export_${new Date().toISOString().slice(0, 10)}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch {
+                  toast.error('Failed to export data. Please try again.');
+                }
               }}>
                 Download My Data
               </Button>
@@ -1303,7 +1200,7 @@ export default function UserSettingsPage() {
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">Privacy Settings</h2>
               <p className="text-sm text-surface-400">
-                Profile visibility toggles (email, projects, activity, DMs) are on the <button onClick={() => setTab('profile')} className="text-[#FF5F1F] hover:text-[#FF8F5F] underline">Profile tab</button>.
+                Profile visibility toggles (email, projects, activity, DMs) are on the <Link href="/settings?tab=profile" className="text-[#FF5F1F] hover:text-[#FF8F5F] underline">Profile tab</Link>.
               </p>
             </Card>
 
@@ -1311,65 +1208,24 @@ export default function UserSettingsPage() {
             <Card className="p-6 border-red-500/20">
               <h2 className="text-lg font-semibold text-red-400 mb-2">Delete Account</h2>
               <p className="text-sm text-surface-400 mb-4">
-                Permanently delete your account and all associated data. This action cannot be undone.
-                All your projects, scripts, characters, and other content will be permanently removed
-                within 30 days as required by GDPR Article 17 (Right to Erasure).
+                Permanently delete your account and all associated data. This action is <strong className="text-red-300">immediate and irreversible</strong>.
               </p>
               <Button variant="danger" onClick={async () => {
-                const confirmation = prompt('Type "DELETE" to confirm account deletion:');
-                if (confirmation !== 'DELETE') return;
-
-                const secondConfirm = confirm(
-                  'Are you absolutely sure? This will permanently delete:\n\n' +
-                  '- Your profile and all personal data\n' +
-                  '- All projects you own\n' +
-                  '- All scripts and documents\n' +
-                  '- All community posts and comments\n' +
-                  '- All messages and conversations\n\n' +
-                  'This cannot be undone.'
-                );
-                if (!secondConfirm) return;
-
+                if (!confirm('Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.')) return;
                 try {
-                  const supabase = createClient();
-                  const userId = user?.id;
-                  if (!userId) return;
-
-                  // Delete user's owned projects (cascade deletes scripts, elements, etc.)
-                  await supabase.from('projects').delete().eq('created_by', userId);
-
-                  // Delete community posts
-                  await supabase.from('community_posts').delete().eq('author_id', userId);
-
-                  // Delete direct messages
-                  await supabase.from('direct_messages').delete().eq('sender_id', userId);
-
-                  // Delete notifications
-                  await supabase.from('notifications').delete().eq('user_id', userId);
-
-                  // Anonymize comments on other's content
-                  await supabase.from('comments').update({
-                    content: '[deleted]',
-                    user_id: null,
-                  }).eq('user_id', userId);
-
-                  // Delete profile
-                  await supabase.from('profiles').delete().eq('id', userId);
-
-                  // Sign out auth
-                  await supabase.auth.signOut();
-
-                  // Redirect
-                  router.push('/');
+                  const res = await fetch('/api/user/delete-account', { method: 'POST' });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || 'Failed to delete account');
+                  window.location.href = '/';
                 } catch (err) {
                   console.error('Account deletion error:', err);
-                  toast.error('An error occurred. Please contact support.');
+                  toast.error(err instanceof Error ? err.message : 'An error occurred. Please try again.');
                 }
               }}>
                 Delete My Account
               </Button>
               <p className="text-[10px] text-surface-600 mt-3">
-                By proceeding, you acknowledge that this action is permanent and irreversible.
+                This cannot be undone. All your projects, scripts, comments, and personal data will be permanently removed.
                 <br />
                 <a href="/legal/privacy" className="text-[#FF5F1F] hover:text-[#FF8F5F]">Read our Privacy Policy</a>
               </p>
@@ -1532,9 +1388,8 @@ export default function UserSettingsPage() {
             <Button onClick={saveAccountability} disabled={saving}>
               {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
             </Button>
-          </div>
-        )}
-      </div>
-    </div>
+           </div>
+         )}
+     </div>
   );
 }

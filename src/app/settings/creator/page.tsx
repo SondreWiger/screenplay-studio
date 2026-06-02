@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { AppHeader } from '@/components/AppHeader';
 import { Button, Card, Input, LoadingPage, toast } from '@/components/ui';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -180,19 +179,9 @@ export default function CreatorSettingsPage() {
   const refUrl = creator ? `${typeof window !== 'undefined' ? window.location.origin : 'https://screenplaystudio.fun'}/ref/${creator.ref_code}` : '';
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
-      <AppHeader />
-
-      <div className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-surface-500 mb-6 font-mono uppercase tracking-wider">
-          <Link href="/settings" className="hover:text-white transition-colors">Settings</Link>
-          <span>/</span>
-          <span className="text-white">Creator Program</span>
-        </div>
-
-        <div className="mb-8">
-          <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>CREATOR PROGRAM</h1>
+    <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>Creator Program</h1>
           <p className="text-surface-400 text-sm mt-1">Share your referral link, grow the community, earn when payouts go live.</p>
         </div>
 
@@ -383,7 +372,6 @@ export default function CreatorSettingsPage() {
             </Card>
           </div>
         )}
-      </div>
     </div>
   );
 }

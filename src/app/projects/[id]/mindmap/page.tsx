@@ -654,7 +654,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
   return (
     <div className="h-[calc(100vh-48px)] md:h-screen flex flex-col bg-surface-950 relative">
       {/* TOOLBAR */}
-      <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-4 py-2 flex items-center justify-between gap-2 z-10">
+      <div className="border-b border-surface-800 bg-surface-950 px-4 py-2 flex items-center justify-between gap-2 z-10">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold text-white hidden sm:block">Mind Map</h1>
           <Badge variant="default">{nodes.length} nodes</Badge>

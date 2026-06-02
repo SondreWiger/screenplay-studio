@@ -482,7 +482,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
   return (
     <div className="h-[calc(100vh-48px)] md:h-screen flex flex-col bg-surface-950">
       {/* TOOLBAR */}
-      <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-4 py-2 flex items-center justify-between gap-3 z-10 shrink-0">
+      <div className="border-b border-surface-800 bg-surface-950 px-4 py-2 flex items-center justify-between gap-3 z-10 shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           <h1 className="text-lg font-bold text-white hidden sm:block shrink-0">Mood Board</h1>
           <Badge variant="default">{filteredItems.length} items</Badge>

@@ -18,14 +18,14 @@ interface BreakdownItem {
 }
 
 const CATEGORY_META: Record<Category, { label: string; color: string; bg: string; icon: string }> = {
-  props: { label: 'Props', color: 'text-amber-400', bg: 'bg-amber-500/10', icon: '📦' },
-  characters: { label: 'Characters', color: 'text-[#FF8F5F]', bg: 'bg-[#FF5F1F]/10', icon: '🎭' },
-  locations: { label: 'Locations', color: 'text-teal-400', bg: 'bg-teal-500/10', icon: '📍' },
-  sfx: { label: 'SFX', color: 'text-orange-400', bg: 'bg-orange-500/10', icon: '💥' },
-  vehicles: { label: 'Vehicles', color: 'text-cyan-400', bg: 'bg-cyan-500/10', icon: '🚗' },
-  costumes: { label: 'Costumes', color: 'text-pink-400', bg: 'bg-pink-500/10', icon: '👗' },
-  music: { label: 'Music', color: 'text-indigo-400', bg: 'bg-indigo-500/10', icon: '🎵' },
-  weather: { label: 'Weather', color: 'text-sky-400', bg: 'bg-sky-500/10', icon: '🌧️' },
+  props: { label: 'Props', color: 'text-amber-400', bg: 'bg-amber-500/10', icon: 'P' },
+  characters: { label: 'Characters', color: 'text-[#FF8F5F]', bg: 'bg-[#FF5F1F]/10', icon: 'C' },
+  locations: { label: 'Locations', color: 'text-teal-400', bg: 'bg-teal-500/10', icon: 'L' },
+  sfx: { label: 'SFX', color: 'text-orange-400', bg: 'bg-orange-500/10', icon: 'S' },
+  vehicles: { label: 'Vehicles', color: 'text-cyan-400', bg: 'bg-cyan-500/10', icon: 'V' },
+  costumes: { label: 'Costumes', color: 'text-pink-400', bg: 'bg-pink-500/10', icon: 'O' },
+  music: { label: 'Music', color: 'text-indigo-400', bg: 'bg-indigo-500/10', icon: 'M' },
+  weather: { label: 'Weather', color: 'text-sky-400', bg: 'bg-sky-500/10', icon: 'W' },
 };
 
 const PROP_CONTEXT = /\b(holds?|carries?|picks?\s*up|puts?\s*down|grabs?|wields?|sets?\s*down|tosses?|throws?|catches?|places?|lifts?|drops?|sets)\s+(?:the\s+|a\s+|an\s+)?([A-Z][A-Z\s]{1,30})\b/g;
@@ -331,7 +331,7 @@ export default function AutoBreakdownPage() {
                       : 'border-surface-800 bg-surface-900/60 hover:bg-surface-800/60'
                   )}
                 >
-                  <div className="text-lg mb-0.5">{meta.icon}</div>
+                  <div className="text-xs font-bold mb-0.5">{meta.icon}</div>
                   <div className={cn('text-lg font-black', selectedCategory === cat ? meta.color : 'text-white')}>
                     {count}
                   </div>
@@ -407,7 +407,7 @@ export default function AutoBreakdownPage() {
                 <div className={cn('rounded-xl border border-surface-800 bg-surface-900/60 sticky top-4')}>
                   <div className={cn('px-4 py-3 border-b border-surface-800', CATEGORY_META[selectedItem.category].bg)}>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm">{CATEGORY_META[selectedItem.category].icon}</span>
+                      <span className="text-xs font-bold">{CATEGORY_META[selectedItem.category].icon}</span>
                       <span className={cn('text-sm font-bold', CATEGORY_META[selectedItem.category].color)}>
                         {selectedItem.name}
                       </span>
