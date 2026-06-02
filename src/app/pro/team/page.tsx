@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -27,16 +27,15 @@ export default function TeamLicensingPage() {
   const [emails, setEmails] = useState<string[]>(['', '']);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [purchasing, setPurchasing] = useState(false);
-  const [devBypass, setDevBypass] = useState(false);
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [paypalError, setPaypalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     fetchData();
-  }, [user?.id]);
+  }, [user, fetchData]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const supabase = createClient();
     const [licRes, compRes] = await Promise.all([
       supabase.from('team_licenses').select('*, recipient:profiles!recipient_id(*)').eq('purchaser_id', user!.id).order('created_at', { ascending: false }),
@@ -45,7 +44,7 @@ export default function TeamLicensingPage() {
     setLicenses(licRes.data || []);
     setCompanies(compRes.data || []);
     setLoading(false);
-  };
+  }, [user]);
 
   const handleSeatsChange = (n: number) => {
     const count = Math.max(1, n);

@@ -116,7 +116,7 @@ function ContributorCard({ c, large = false }: { c: Contributor; large?: boolean
         style={{ background: c.is_featured ? ORANGE : 'rgba(255,255,255,0.08)' }}
       >
         {c.cached_avatar_url
-          ? <img src={c.cached_avatar_url} className="w-full h-full object-cover" alt="" />
+          ? <img src={c.cached_avatar_url} className="w-full h-full object-cover" alt="" loading="lazy" />
           : initials}
       </div>
 

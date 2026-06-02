@@ -224,7 +224,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
           </div>
 
           {filtered.length === 0 ? (
-            <EmptyState title="No locations yet" description="Add locations for your production"
+            <EmptyState title="Set the stage" description="Locations give your story a world. Log addresses, add photos, note permit requirements, and track costs per day."
               action={canEdit ? <Button onClick={() => { setSelectedLocation(null); setShowEditor(true); }}>Add Location</Button> : undefined} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">

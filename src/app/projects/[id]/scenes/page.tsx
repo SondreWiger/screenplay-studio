@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, SkeletonList, toast } from '@/components/ui';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Scene, Location, Character, SceneLocationType, SceneTime, ScriptElement } from '@/lib/types';
@@ -168,6 +169,14 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
           </p>
         </div>
         <div className="flex gap-2">
+          <Link href={`/projects/${params.id}/script`}>
+            <Button variant="ghost" size="sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              Jump to Script
+            </Button>
+          </Link>
           {canEdit && (
             <>
               <Button variant="secondary" onClick={handleAutoSync} loading={syncing}>
@@ -200,7 +209,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
       )}
 
       {scenes.length === 0 ? (
-        <EmptyState title="No scenes yet" description="Break down your script into scenes for production planning"
+        <EmptyState title="Start planning your scenes" description="Scenes are the building blocks of your production. Import them from your script or create one manually to track locations, cast, props, and more."
           action={canEdit ? <Button onClick={() => { setSelectedScene(null); setShowEditor(true); }}>Add Scene</Button> : undefined} />
       ) : (
         <div className="space-y-3 stagger-children">

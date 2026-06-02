@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, LoadingPage } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
 
 // ============================================================
@@ -36,7 +36,6 @@ function CheckoutContent() {
 
   useEffect(() => {
     const urlStatus = searchParams.get('status');
-    const token = searchParams.get('token'); // PayPal sends token param on approve
 
     if (urlStatus === 'cancelled') {
       setStatus('cancelled');
@@ -52,9 +51,9 @@ function CheckoutContent() {
     }
 
     captureOrder(orderId);
-  }, []);
+  }, [captureOrder, searchParams]);
 
-  const captureOrder = async (orderId: string) => {
+  const captureOrder = useCallback(async (orderId: string) => {
     try {
       const res = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -84,7 +83,7 @@ function CheckoutContent() {
       setStatus('error');
       setError(err instanceof Error ? err.message : 'Something went wrong. Please contact support.');
     }
-  };
+  }, [user]);
 
   if (status === 'processing') {
     return (
@@ -94,7 +93,7 @@ function CheckoutContent() {
             💳
           </div>
           <h1 className="text-xl font-black text-white mb-2">Processing your payment...</h1>
-          <p className="text-surface-400 text-sm">Please don't close this tab.</p>
+          <p className="text-surface-400 text-sm">Please don&apos;t close this tab.</p>
         </div>
       </div>
     );
@@ -126,7 +125,7 @@ function CheckoutContent() {
             </div>
             <h1 className="text-2xl font-black text-white mb-2">Payment Cancelled</h1>
             <p className="text-surface-400 mb-6">
-              No worries — you weren't charged. You can upgrade anytime.
+              No worries — you weren&apos;t charged. You can upgrade anytime.
             </p>
             <div className="flex gap-3">
               <Button variant="secondary" className="flex-1" onClick={() => router.push('/dashboard')}>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 // ────────────────────────────────────────────────────────────
 // Broadcast Timing Engine API
@@ -16,24 +17,17 @@ import { createClient } from '@supabase/supabase-js';
 // is the source of truth, not the client.
 // ────────────────────────────────────────────────────────────
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-function getServiceClient() {
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
 // ─── GET: Timing state for a rundown ───────────────────────
 
 export async function GET(request: NextRequest) {
+  const supabase = createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const rundownId = request.nextUrl.searchParams.get('rundown_id');
   if (!rundownId) {
     return NextResponse.json({ error: 'rundown_id required' }, { status: 400 });
   }
-
-  const supabase = getServiceClient();
 
   // Fetch rundown metadata
   const { data: rundown, error: rundownError } = await supabase
@@ -44,6 +38,17 @@ export async function GET(request: NextRequest) {
 
   if (rundownError || !rundown) {
     return NextResponse.json({ error: 'Rundown not found' }, { status: 404 });
+  }
+
+  const { data: membership } = await supabase
+    .from('project_members')
+    .select('id')
+    .eq('project_id', rundown.project_id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (!membership) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // Call server-side back-timing function
@@ -102,6 +107,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const ip = getClientIp(request);
+    const rateResult = checkRateLimit(`timing:${ip}`, 60, 60_000);
+    if (!rateResult.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { action, rundown_id, item_id, data } = body;
 
@@ -109,7 +124,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'action and rundown_id required' }, { status: 400 });
     }
 
-    const supabase = getServiceClient();
+    const { data: checkRundown } = await supabase
+      .from('broadcast_rundowns')
+      .select('project_id')
+      .eq('id', rundown_id)
+      .single();
+
+    if (!checkRundown) {
+      return NextResponse.json({ error: 'Rundown not found' }, { status: 404 });
+    }
+
+    const { data: membership } = await supabase
+      .from('project_members')
+      .select('id')
+      .eq('project_id', checkRundown.project_id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!membership) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const now = new Date().toISOString();
 
     switch (action) {

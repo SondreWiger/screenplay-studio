@@ -58,6 +58,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/idea-boards', label: 'Ideas', match: ['/idea-boards'] },
+    { href: '/quotes', label: 'Quotes', match: ['/quotes'] },
     { href: '/blog', label: 'Blog', match: ['/blog'] },
     ...(canUseFeature('community') ? [{ href: '/community', label: 'Community', match: ['/community'] }] : []),
     ...(user?.show_accountability !== false ? [{ href: '/accountability', label: 'Accountability', match: ['/accountability'] }] : []),

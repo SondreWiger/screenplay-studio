@@ -12,21 +12,24 @@ export async function POST(req: NextRequest) {
     const body = await req.text();
     const webhookId = process.env.PAYPAL_WEBHOOK_ID;
 
-    // Verify signature if webhook ID is configured
-    if (webhookId) {
-      const headers: Record<string, string> = {};
-      req.headers.forEach((v, k) => { headers[k] = v; });
+    // Verify signature — reject early if webhook ID is not configured
+    if (!webhookId) {
+      console.error('[paypal/webhook] PAYPAL_WEBHOOK_ID not configured — rejecting');
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
+    }
 
-      const isValid = await verifyWebhookSignature({
-        webhookId,
-        headers,
-        body,
-      });
+    const headers: Record<string, string> = {};
+    req.headers.forEach((v, k) => { headers[k] = v; });
 
-      if (!isValid) {
-        console.error('Invalid PayPal webhook signature');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    const isValid = await verifyWebhookSignature({
+      webhookId,
+      headers,
+      body,
+    });
+
+    if (!isValid) {
+      console.error('Invalid PayPal webhook signature');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const event = JSON.parse(body);

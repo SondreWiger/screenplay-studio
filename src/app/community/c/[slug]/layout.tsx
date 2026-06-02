@@ -89,7 +89,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
         <div className="relative w-full overflow-hidden" style={{ height: '7rem', background: gradient }}>
           {community.banner_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={community.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+            <img src={community.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" loading="lazy" />
           )}
         </div>
 

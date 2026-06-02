@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateResult = checkRateLimit(`creator-visit:${ip}`, 10, 60_000);
+    if (!rateResult.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { ref_code } = await req.json();
     if (!ref_code) return NextResponse.json({ error: 'missing ref_code' }, { status: 400 });
 

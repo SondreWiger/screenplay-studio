@@ -102,6 +102,11 @@ export async function POST(req: NextRequest) {
 
     const destUrl = `${output.rtmp_url}/${output.stream_key}`;
 
+    const allowedSchemes = ['rtmp://', 'rtmps://', 'http://', 'https://'];
+    if (!allowedSchemes.some(s => sourceUrl.startsWith(s)) || !allowedSchemes.some(s => destUrl.startsWith(s))) {
+      return NextResponse.json({ error: 'Invalid URL scheme' }, { status: 400 });
+    }
+
     // Start ffmpeg relay
     const ffmpegPath = process.env.FFMPEG_PATH || 'ffmpeg';
     const args = [
@@ -187,6 +192,10 @@ export async function POST(req: NextRequest) {
  * Check if a relay is active for a given output.
  */
 export async function GET(req: NextRequest) {
+  const supabase = createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const outputId = req.nextUrl.searchParams.get('outputId');
   if (!outputId) return NextResponse.json({ error: 'outputId required' }, { status: 400 });
 

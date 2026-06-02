@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 
+const BASE_URL = () => process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
+
 const _ogChangelog = `/api/og?${new URLSearchParams({
   type:     'changelog',
   title:    'Changelog',
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
     type: 'website',
     title: 'Changelog — Screenplay Studio',
     description: 'Every feature, fix, and improvement shipped to Screenplay Studio.',
-    url: 'https://screenplaystudio.fun/changelog',
+    url: `${BASE_URL()}/changelog`,
     siteName: 'Screenplay Studio',
     images: [{ url: _ogChangelog, width: 1200, height: 630, alt: 'Screenplay Studio Changelog' }],
   },

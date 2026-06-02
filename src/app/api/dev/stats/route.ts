@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { readdir, readFile, stat } from 'fs/promises';
 import path from 'path';
 
-const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || '';
 
 async function requireAdmin() {
   const supabase = createServerSupabaseClient();

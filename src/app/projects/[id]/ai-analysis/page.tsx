@@ -91,6 +91,16 @@ type PacingBucket = { label: string; count: number; scenes: string[] };
 
 type LocationFreq = { location: string; count: number };
 
+type ScriptIssue = {
+  type: 'action-block' | 'dialogue-block' | 'parenthetical' | 'weak-verb' | 'repeated-location' | 'scene-heading' | 'adverb';
+  severity: 'error' | 'warning' | 'info';
+  title: string;
+  detail: string;
+  snippet: string;
+  elementId?: string;
+  lineRef?: number;
+};
+
 type FullAnalysis = {
   overview: OverviewStats;
   characterDialogues: CharacterDialogue[];
@@ -107,6 +117,7 @@ type FullAnalysis = {
     castCoverage: number;
     castTotal: number;
   };
+  contentIssues: ScriptIssue[];
 };
 
 // ---- Utility helpers ----
@@ -301,6 +312,8 @@ function computeAnalysis(
   const shotsCompleted = shots.filter(s => s.is_completed).length;
   const castCoverage = characters.filter(c => c.cast_actor).length;
 
+  const contentIssues = scanContentIssues(elements);
+
   return {
     overview,
     characterDialogues,
@@ -317,7 +330,149 @@ function computeAnalysis(
       castCoverage,
       castTotal: characters.length,
     },
+    contentIssues,
   };
+}
+
+// ── Content-Aware Issue Scanner ────────────────────────────
+// Scans actual script element text for specific writing issues.
+
+function scanContentIssues(elements: ScriptElement[]): ScriptIssue[] {
+  const issues: ScriptIssue[] = [];
+  const weakVerbs = /\b(is|are|was|were|be|been|being|has|have|had|get|got|gets|make|made|makes|do|does|did|put|puts|take|takes|took)\b/gi;
+  const lyAdverbs = /\b\w+ly\b/gi;
+
+  for (let i = 0; i < elements.length; i++) {
+    const el = elements[i];
+    const content = (el.content || '').trim();
+    if (!content) continue;
+
+    if (el.element_type === 'action') {
+      const wordCount = wc(content);
+      // Long action block
+      if (wordCount > 60) {
+        issues.push({
+          type: 'action-block',
+          severity: 'warning',
+          title: 'Long action paragraph',
+          detail: `${wordCount} words in one action block. Break it into shorter, punchier paragraphs. Film action should be quick to read — aim for 3-4 lines max.`,
+          snippet: content.slice(0, 200) + (content.length > 200 ? '...' : ''),
+          elementId: el.id,
+          lineRef: el.sort_order,
+        });
+      }
+      // Weak verb usage in action
+      const weakMatches = content.match(weakVerbs);
+      if (weakMatches && weakMatches.length >= 3) {
+        issues.push({
+          type: 'weak-verb',
+          severity: 'info',
+          title: 'Weak verbs in action line',
+          detail: `Found "${weakMatches.slice(0, 4).join('", "')}" in action. Replace weak verbs (is, was, has, get) with vivid, specific action verbs.`,
+          snippet: content.slice(0, 150) + (content.length > 150 ? '...' : ''),
+          elementId: el.id,
+          lineRef: el.sort_order,
+        });
+      }
+    }
+
+    if (el.element_type === 'dialogue') {
+      const wordCount = wc(content);
+      // Long dialogue block
+      if (wordCount > 70) {
+        issues.push({
+          type: 'dialogue-block',
+          severity: 'warning',
+          title: 'Very long dialogue block',
+          detail: `${wordCount} words in one speech. Break it into shorter exchanges or add an action beat between sentences. Audiences listen in short bursts.`,
+          snippet: content.slice(0, 200) + (content.length > 200 ? '...' : ''),
+          elementId: el.id,
+          lineRef: el.sort_order,
+        });
+      } else if (wordCount > 40) {
+        issues.push({
+          type: 'dialogue-block',
+          severity: 'info',
+          title: 'Long dialogue block',
+          detail: `${wordCount} words in one speech. Consider trimming or breaking with a beat action.`,
+          snippet: content.slice(0, 180) + (content.length > 180 ? '...' : ''),
+          elementId: el.id,
+          lineRef: el.sort_order,
+        });
+      }
+      // Adverb in dialogue
+      const adverbMatches = content.match(lyAdverbs);
+      if (adverbMatches && adverbMatches.length >= 2) {
+        issues.push({
+          type: 'adverb',
+          severity: 'info',
+          title: 'Adverbs in dialogue',
+          detail: `"${adverbMatches.join('", "')}" — let the words speak for themselves. Trust the actor to convey the tone without adverb crutches.`,
+          snippet: content.slice(0, 150) + (content.length > 150 ? '...' : ''),
+          elementId: el.id,
+          lineRef: el.sort_order,
+        });
+      }
+    }
+
+    // Next element after character — check for parenthetical
+    if (el.element_type === 'character' && i + 1 < elements.length) {
+      const next = elements[i + 1];
+      if (next.element_type === 'parenthetical') {
+        const charName = content.replace(/\s*\(.*\)\s*$/, '').trim();
+        const parentheticalContent = (next.content || '').toLowerCase();
+        const tellingAdverbs = ['angrily', 'sadly', 'happily', 'excitedly', 'quietly', 'loudly', 'slowly', 'quickly', 'sarcastically'];
+        const foundAdverb = tellingAdverbs.find(adv => parentheticalContent.includes(adv));
+        if (foundAdverb) {
+          issues.push({
+            type: 'parenthetical',
+            severity: 'info',
+            title: 'Telling parenthetical',
+            detail: `"(${next.content.trim()})" tells the actor how to deliver the line. Let the dialogue and context do the work. Mark only what's essential.`,
+            snippet: `(${next.content.trim()})`,
+            elementId: next.id,
+            lineRef: next.sort_order,
+          });
+        }
+      }
+    }
+  }
+
+  // Scene heading format check
+  for (const el of elements) {
+    if (el.element_type === 'scene_heading') {
+      const heading = (el.content || '').trim();
+      if (!/^(INT|EXT|INT\/EXT|I\.?\/E\.?)/i.test(heading)) {
+        issues.push({
+          type: 'scene-heading',
+          severity: 'warning',
+          title: 'Non-standard scene heading',
+          detail: `"${heading}" doesn't start with INT, EXT, or INT/EXT. Scene headings should follow the standard format for professional screenplays.`,
+          snippet: heading,
+          elementId: el.id,
+          lineRef: el.sort_order,
+        });
+      }
+      // Scene heading with no time of day
+      if (/^(INT|EXT|INT\/EXT|I\.?\/E\.?)/i.test(heading) && !/[-–—].+/.test(heading)) {
+        issues.push({
+          type: 'scene-heading',
+          severity: 'info',
+          title: 'Scene heading missing time of day',
+          detail: `"${heading}" has no time of day (DAY/NIGHT/etc.). Include it after a dash for clarity.`,
+          snippet: heading,
+          elementId: el.id,
+          lineRef: el.sort_order,
+        });
+      }
+    }
+  }
+
+  // Limit total issues to avoid overwhelming
+  const severityOrder = { error: 0, warning: 1, info: 2 };
+  return issues
+    .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
+    .slice(0, 50);
 }
 
 // ---- Visualization components ----
@@ -377,11 +532,12 @@ function ProgressRing({ value, max, label, color }: { value: number; max: number
 }
 
 // ---- Tab types ----
-type Tab = 'overview' | 'feedback' | 'dialogue' | 'scenes' | 'pacing' | 'characters' | 'production';
+type Tab = 'overview' | 'feedback' | 'issues' | 'dialogue' | 'scenes' | 'pacing' | 'characters' | 'production';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'overview', label: 'Overview', icon: '📊' },
   { key: 'feedback', label: 'Feedback', icon: '💡' },
+  { key: 'issues', label: 'Issues', icon: '🔍' },
   { key: 'dialogue', label: 'Dialogue', icon: '💬' },
   { key: 'scenes', label: 'Scenes', icon: '🎬' },
   { key: 'pacing', label: 'Pacing', icon: '⚡' },
@@ -396,7 +552,7 @@ const TABS: { key: Tab; label: string; icon: string }[] = [
 export default function AIAnalysisPage() {
   const params = useParams();
   const projectId = params.id as string;
-  const { user } = useAuth();
+  useAuth();
   const { isPro } = useProFeatures();
   const { currentProject } = useProjectStore();
   const hasProAccess = isPro || currentProject?.pro_enabled === true;
@@ -482,7 +638,7 @@ export default function AIAnalysisPage() {
     );
   }
 
-  const { overview, characterDialogues, sceneAnalyses, intExtRatio, dayNightRatio, pacingBuckets, locationFrequencies, productionStats } = analysis;
+  const { overview, characterDialogues, sceneAnalyses, intExtRatio, dayNightRatio, pacingBuckets, locationFrequencies, productionStats, contentIssues } = analysis;
   const maxCharWords = characterDialogues.length > 0 ? characterDialogues[0].wordCount : 1;
   const maxSceneWords = sceneAnalyses.length > 0 ? Math.max(...sceneAnalyses.map(s => s.wordCount)) : 1;
   const maxLocFreq = locationFrequencies.length > 0 ? locationFrequencies[0].count : 1;
@@ -747,6 +903,78 @@ export default function AIAnalysisPage() {
           </div>
         );
       })()}
+
+      {/* ============ ISSUES TAB ============ */}
+      {activeTab === 'issues' && (
+        <div className="space-y-6">
+          <Card className="p-5 border border-[#FF5F1F]/20">
+            <h3 className="text-base font-semibold text-white mb-2">Content Scan</h3>
+            <p className="text-sm text-surface-400">Writing-level issues found in your actual script text — specific lines with suggestions.</p>
+          </Card>
+
+          {contentIssues.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-surface-400 text-sm">No content issues detected. Your writing looks clean!</p>
+            </Card>
+          ) : (
+            <>
+              {/* Summary */}
+              <div className="grid grid-cols-3 gap-3">
+                {(['error', 'warning', 'info'] as const).map(sev => {
+                  const count = contentIssues.filter(i => i.severity === sev).length;
+                  const colors = { error: 'text-red-400 bg-red-500/10 border-red-500/20', warning: 'text-amber-400 bg-amber-500/10 border-amber-500/20', info: 'text-blue-400 bg-blue-500/10 border-blue-500/20' };
+                  return (
+                    <Card key={sev} className={`p-3 text-center border ${colors[sev]}`}>
+                      <p className={`text-xl font-black ${colors[sev].split(' ')[0]}`}>{count}</p>
+                      <p className="text-xs text-surface-500 uppercase tracking-wider mt-0.5">{sev === 'error' ? 'Errors' : sev === 'warning' ? 'Warnings' : 'Suggestions'}</p>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Issue list */}
+              <div className="space-y-4">
+                {contentIssues.map((issue, idx) => {
+                  const borderColors = {
+                    error: 'border-red-500/30', warning: 'border-amber-500/30', info: 'border-blue-500/30',
+                  };
+                  const badgeColors = {
+                    error: 'bg-red-500/10 text-red-400', warning: 'bg-amber-500/10 text-amber-400', info: 'bg-blue-500/10 text-blue-400',
+                  };
+                  return (
+                    <Card key={idx} className={`p-4 border ${borderColors[issue.severity]}`}>
+                      <div className="flex items-start gap-3">
+                        <div className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider shrink-0 mt-0.5 ${badgeColors[issue.severity]}`}>
+                          {issue.severity}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-semibold text-white">{issue.title}</h4>
+                            {issue.lineRef && (
+                              <span className="text-[10px] text-surface-600 font-mono">L{issue.lineRef}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-surface-400 mb-2">{issue.detail}</p>
+                          {/* Snippet */}
+                          <div className="bg-surface-900 border border-surface-800 rounded-lg p-3 overflow-x-auto">
+                            <pre className="text-xs text-surface-300 font-mono whitespace-pre-wrap leading-relaxed">{issue.snippet}</pre>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              <Card className="p-4 bg-surface-900/50">
+                <p className="text-xs text-surface-500 text-center">
+                  {contentIssues.length} issue{contentIssues.length !== 1 ? 's' : ''} found. These are suggestions — use your creative judgment.
+                </p>
+              </Card>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ============ DIALOGUE TAB ============ */}
       {activeTab === 'dialogue' && (

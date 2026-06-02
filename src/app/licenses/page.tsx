@@ -4,6 +4,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Content Licenses Explained — Screenplay Studio',
   description: 'A plain-English guide to script and creative work licenses: Creative Commons, All Rights Reserved, Public Domain, and more.',
+  openGraph: {
+    title: 'Content Licenses Explained — Screenplay Studio',
+    description: 'A plain-English guide to script and creative work licenses: Creative Commons, All Rights Reserved, Public Domain, and more.',
+  },
+  twitter: {
+    title: 'Content Licenses Explained — Screenplay Studio',
+    description: 'A plain-English guide to script and creative work licenses: Creative Commons, All Rights Reserved, Public Domain, and more.',
+  },
 };
 
 // ============================================================

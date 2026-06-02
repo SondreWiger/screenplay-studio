@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
@@ -52,9 +52,9 @@ interface MemberActivity {
 }
 
 export default function AnalyticsPage({ params }: { params: { id: string } }) {
-  const { user } = useAuth();
+  useAuth();
   const { isPro } = useProFeatures();
-  const { currentProject, members } = useProjectStore();
+  const { currentProject } = useProjectStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<ProjectStats | null>(null);
   const [scriptActivity, setScriptActivity] = useState<ScriptActivity[]>([]);
@@ -73,16 +73,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
   }
   const [workTime, setWorkTime] = useState<WorkTimeData | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/work-session?projectId=${params.id}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: WorkTimeData | null) => setWorkTime(d))
-      .catch(() => null);
-  }, [params.id]);
-
-  useEffect(() => { fetchAnalytics(); }, [params.id, range]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
 
@@ -250,7 +241,16 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     );
 
     setLoading(false);
-  };
+  }, [params.id, range]);
+
+  useEffect(() => {
+    fetch(`/api/work-session?projectId=${params.id}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: WorkTimeData | null) => setWorkTime(d))
+      .catch(() => null);
+  }, [params.id]);
+
+  useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
 
   const maxActivity = Math.max(...scriptActivity.map(a => a.elementCount), 1);
 
@@ -568,7 +568,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                 {memberActivity.map((m) => (
                   <div key={m.userId} className="flex items-center gap-4 p-3 rounded-lg bg-surface-800/30 hover:bg-surface-800/50 transition-colors">
                     {m.avatar ? (
-                      <img src={m.avatar} alt={m.name || 'Team member avatar'} className="w-9 h-9 rounded-full object-cover" />
+                      <img src={m.avatar} alt={m.name || 'Team member avatar'} className="w-9 h-9 rounded-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-surface-700 flex items-center justify-center text-xs font-semibold text-white">
                         {m.name[0]?.toUpperCase()}

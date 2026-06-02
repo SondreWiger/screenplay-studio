@@ -250,7 +250,7 @@ export default function FeedbackPage() {
                 <button onClick={() => signOut()} className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Sign Out</button>
                 <div className="flex items-center">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-6 h-6 rounded-full" />
+                    <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-6 h-6 rounded-full" loading="lazy" />
                   ) : (
                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{ background: '#FF5F1F' }}>
                       {(user.full_name || user.email || '?')[0].toUpperCase()}

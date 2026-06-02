@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, memo, useMemo, Fragment } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
@@ -39,6 +40,26 @@ interface DisplaySettings {
   minimapLabels: boolean;
   minimapColors: boolean;
   pageSplitGap: boolean;
+}
+
+interface AIReviewIssue {
+  type: 'formatting' | 'structure' | 'character' | 'dialogue' | 'pacing';
+  severity: 'low' | 'medium' | 'high';
+  location: { startIndex: number; endIndex: number };
+  message: string;
+  suggestion?: string;
+}
+
+interface AIReviewStats {
+  readabilityScore: number; // 0-100
+  avgSceneLength: number; // pages
+  dialogueRatio: number; // percentage
+  issueCount: number;
+}
+
+interface AIReviewResult {
+  issues: AIReviewIssue[];
+  stats: AIReviewStats;
 }
 
 const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
@@ -147,6 +168,11 @@ const SEQUENCE_COLORS = [
 
 // Character extension modifiers shown when user types '(' in a character element
 const CHARACTER_MODIFIERS = ["(V.O.)", "(O.S.)", "(O.C.)", "(CONT'D)", "(O.S. CONT'D)", "(V.O. CONT'D)", "(PRE-LAP)"];
+
+// Haptic feedback helper — light tap on supported devices
+const haptic = () => {
+  try { navigator.vibrate?.(10); } catch {}
+};
 
 // Strip HTML tags — used for length-based page/word count (content may now contain <b>/<i>/<u>)
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
@@ -379,6 +405,15 @@ function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
     }
     sel.removeAllRanges();
     sel.addRange(range);
+    // Auto-scroll: keep the focused element visible, accounting for mobile keyboard
+    const vh = window.visualViewport?.height ?? window.innerHeight;
+    const keyboardOffset = window.visualViewport?.offsetY ?? 0;
+    const rect = el.getBoundingClientRect();
+    const visibleTop = keyboardOffset;
+    const visibleBottom = keyboardOffset + vh;
+    if (rect.bottom > visibleBottom - 40 || rect.top < visibleTop + 40) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   });
 }
 
@@ -388,11 +423,17 @@ function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
 
 export default function ScriptEditorPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
-  const {
-    scripts, currentScript, elements,
-    setCurrentScript, fetchScripts, fetchElements, saving,
-    undo: undoScript, redo: redoScript, _undoStack, _redoStack,
-  } = useScriptStore();
+  const scripts = useScriptStore((s) => s.scripts);
+  const currentScript = useScriptStore((s) => s.currentScript);
+  const elements = useScriptStore((s) => s.elements);
+  const setCurrentScript = useScriptStore((s) => s.setCurrentScript);
+  const fetchScripts = useScriptStore((s) => s.fetchScripts);
+  const fetchElements = useScriptStore((s) => s.fetchElements);
+  const saving = useScriptStore((s) => s.saving);
+  const undoScript = useScriptStore((s) => s.undo);
+  const redoScript = useScriptStore((s) => s.redo);
+  const _undoStack = useScriptStore((s) => s._undoStack);
+  const _redoStack = useScriptStore((s) => s._redoStack);
   const onlineUsers = usePresenceStore((s) => s.onlineUsers);
 
   const [showTitlePage, setShowTitlePage] = useState(false);
@@ -425,6 +466,34 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   });
   const [showRevisionColorPicker, setShowRevisionColorPicker] = useState(false);
   const revisionColorPickerRef = useRef<HTMLButtonElement>(null);
+  const [showMobileTypePicker, setShowMobileTypePicker] = useState(false);
+  const [showSceneJump, setShowSceneJump] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  // Detect mobile keyboard open/close via visualViewport
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      // Keyboard is open when viewport height drops significantly below window height
+      const threshold = window.innerHeight * 0.75;
+      setKeyboardOpen(vv.height < threshold);
+    };
+    vv.addEventListener('resize', onResize);
+    onResize();
+    return () => vv.removeEventListener('resize', onResize);
+  }, []);
+
+  // AI Review Feature Flag (Alpha)
+  const AI_REVIEW_ENABLED = false; // Set to true to enable AI Review (requires @xenova/transformers build fix)
+  const [showAIReviewPanel, setShowAIReviewPanel] = useState(false);
+  const [aiReviewResults, setAIReviewResults] = useState<AIReviewResult | null>(null);
+  const [aiReviewLoading, setAIReviewLoading] = useState(false);
+  const [aiReviewError, setAIReviewError] = useState<string | null>(null);
+  const aiReviewRef = useRef<HTMLDivElement>(null);
+  const [aiReviewAutoInterval, setAIReviewAutoInterval] = useState<NodeJS.Timeout | null>(null);
+  const aiReviewIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Role awareness: determine if user can edit
   const { members, currentProject } = useProjectStore();
@@ -435,6 +504,31 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
   // ⏱ Work-time tracking — fires heartbeats every 30s while the user is active
   useWorkTimeTracker({ projectId: params.id, context: 'script', disabled: !canEdit });
+
+  // 🤖 AI Review — automatic periodic review when panel is open (feature flagged)
+  useEffect(() => {
+    if (!AI_REVIEW_ENABLED || !showAIReviewPanel) return;
+    
+    // Clear existing interval
+    if (aiReviewIntervalRef.current) {
+      clearInterval(aiReviewIntervalRef.current);
+    }
+    
+    // Set up auto-review every 30 seconds when panel is open
+    const interval = setInterval(() => {
+      triggerAIReview();
+    }, 30000);
+    
+    aiReviewIntervalRef.current = interval;
+    
+    // Cleanup on unmount or when panel closes
+    return () => {
+      if (aiReviewIntervalRef.current) {
+        clearInterval(aiReviewIntervalRef.current);
+        aiReviewIntervalRef.current = null;
+      }
+    };
+  }, [showAIReviewPanel, AI_REVIEW_ENABLED]);
 
   // Detect YouTube/Content Creator project
   const isContentCreator = useMemo(() => {
@@ -1449,6 +1543,237 @@ ${pageHTML}
     }
   };
 
+  // ─── AI Review Trigger ──────────────────────────────────────────────────
+  const triggerAIReview = useCallback(async () => {
+    if (!currentScript || elements.length === 0) return;
+    setAIReviewLoading(true);
+    setAIReviewError(null);
+
+    try {
+      // Analyse script using rule-based heuristics (no external AI model needed)
+      const issues: AIReviewIssue[] = [];
+      let dialogueCount = 0;
+      let actionCount = 0;
+      let sceneCount = 0;
+      let characterCount = 0;
+      let totalDialogueWords = 0;
+      let totalActionWords = 0;
+      const characters = new Set<string>();
+      const sceneLengths: number[] = [];
+      let currentSceneStart = 0;
+
+      elements.forEach((el, idx) => {
+        const c = (el.content || '').trim();
+        if (!c) return;
+
+        switch (el.element_type) {
+          case 'scene_heading': {
+            if (currentSceneStart >= 0 && idx > currentSceneStart) {
+              sceneLengths.push(idx - currentSceneStart);
+            }
+            currentSceneStart = idx;
+            sceneCount++;
+            // Check for missing scene heading
+            if (c.length > 100) {
+              issues.push({
+                type: 'formatting',
+                severity: 'low',
+                location: { startIndex: idx, endIndex: idx },
+                message: 'Scene heading is very long — consider breaking it up.',
+                suggestion: 'Keep scene headings concise: INT/EXT. LOCATION - TIME',
+              });
+            }
+            break;
+          }
+          case 'character': {
+            characterCount++;
+            characters.add(c.toUpperCase());
+            if (c.length > 40) {
+              issues.push({
+                type: 'formatting',
+                severity: 'low',
+                location: { startIndex: idx, endIndex: idx },
+                message: `Character name "${c}" is longer than typical (max ~35 chars).`,
+                suggestion: 'Keep character names short for readability.',
+              });
+            }
+            break;
+          }
+          case 'dialogue': {
+            dialogueCount++;
+            totalDialogueWords += c.split(/\s+/).length;
+            // Check for walls of text
+            const wordCount = c.split(/\s+/).length;
+            if (wordCount > 100) {
+              issues.push({
+                type: 'dialogue',
+                severity: 'medium',
+                location: { startIndex: idx, endIndex: idx },
+                message: `Character speaks ${wordCount} words in one block — consider breaking it up.`,
+                suggestion: 'Long speeches can be broken with parentheticals or character reactives.',
+              });
+            }
+            break;
+          }
+          case 'action': {
+            actionCount++;
+            totalActionWords += c.split(/\s+/).length;
+            // Check for walls of action text
+            const wordCount = c.split(/\s+/).length;
+            if (wordCount > 80) {
+              issues.push({
+                type: 'pacing',
+                severity: 'low',
+                location: { startIndex: idx, endIndex: idx },
+                message: `Action block is ${wordCount} words — consider trimming.`,
+                suggestion: 'Keep action paragraphs under 4 lines (~60 words) for cinematic pacing.',
+              });
+            }
+            break;
+          }
+        }
+      });
+
+      // Final scene length
+      if (currentSceneStart >= 0 && currentSceneStart < elements.length) {
+        sceneLengths.push(elements.length - currentSceneStart);
+      }
+
+      // Structural checks
+      if (sceneCount === 0) {
+        issues.push({
+          type: 'structure',
+          severity: 'high',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: 'No scene headings found. Script needs scene breaks.',
+          suggestion: 'Add scene headings (INT./EXT.) to structure your story.',
+        });
+      } else if (sceneCount < 2) {
+        issues.push({
+          type: 'structure',
+          severity: 'medium',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: 'Only one scene heading. Consider adding more scene breaks.',
+          suggestion: 'Break your script into multiple scenes for better pacing.',
+        });
+      }
+
+      // Dialogue ratio analysis
+      const totalContentWords = totalDialogueWords + totalActionWords;
+      const dialogueRatio = totalContentWords > 0 ? Math.round((totalDialogueWords / totalContentWords) * 100) : 0;
+      if (dialogueCount > 0 && dialogueRatio > 80) {
+        issues.push({
+          type: 'dialogue',
+          severity: 'low',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: `Script is ${dialogueRatio}% dialogue — consider adding more action/description.`,
+          suggestion: 'Use action lines to show what characters are doing, not just saying.',
+        });
+      } else if (dialogueCount > 0 && dialogueRatio < 15) {
+        issues.push({
+          type: 'pacing',
+          severity: 'low',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: `Only ${dialogueRatio}% dialogue — characters should speak more.`,
+          suggestion: 'Consider adding dialogue to develop character relationships.',
+        });
+      }
+
+      // Character count check
+      if (characterCount > 15) {
+        issues.push({
+          type: 'character',
+          severity: 'medium',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: `${characterCount} characters speak — consider consolidating roles.`,
+          suggestion: 'Reduce number of speaking characters to keep the story focused.',
+        });
+      } else if (characterCount > 8) {
+        issues.push({
+          type: 'character',
+          severity: 'low',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: `${characterCount} characters speak — watch for overcrowding.`,
+          suggestion: 'Consider if all characters are essential to the story.',
+        });
+      }
+
+      // Scene length analysis
+      const avgSceneLength = sceneLengths.length > 0
+        ? Math.round((sceneLengths.reduce((a, b) => a + b, 0) / sceneLengths.length) * 10) / 10
+        : 0;
+      if (avgSceneLength > 25) {
+        issues.push({
+          type: 'structure',
+          severity: 'medium',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: `Average scene is ${avgSceneLength} elements — scenes may be too long.`,
+          suggestion: 'Aim for scenes around 3 pages (~15-20 elements) for modern pacing.',
+        });
+      } else if (avgSceneLength < 3 && sceneCount > 2) {
+        issues.push({
+          type: 'structure',
+          severity: 'low',
+          location: { startIndex: 0, endIndex: elements.length },
+          message: `Average scene is only ${avgSceneLength} elements — scenes may be too short.`,
+          suggestion: 'Consider expanding scenes to give them more depth.',
+        });
+      }
+
+      // Formatting checks
+      elements.forEach((el, idx) => {
+        const c = (el.content || '').trim();
+        if (el.element_type === 'transition' && !/[A-Z\s]+$/.test(c)) {
+          issues.push({
+            type: 'formatting',
+            severity: 'low',
+            location: { startIndex: idx, endIndex: idx },
+            message: 'Transitions should be in ALL CAPS.',
+            suggestion: 'Format as: CUT TO:, FADE OUT., etc.',
+          });
+        }
+      });
+
+      // Calculate readability score (0-100)
+      let readabilityScore = 85;
+      readabilityScore -= Math.min(issues.filter(i => i.severity === 'high').length * 10, 40);
+      readabilityScore -= Math.min(issues.filter(i => i.severity === 'medium').length * 5, 30);
+      readabilityScore -= Math.min(issues.filter(i => i.severity === 'low').length * 2, 20);
+      readabilityScore = Math.max(20, Math.min(100, readabilityScore));
+
+      setAIReviewResults({
+        issues,
+        stats: {
+          readabilityScore,
+          avgSceneLength,
+          dialogueRatio,
+          issueCount: issues.length,
+        },
+      });
+    } catch (err: any) {
+      console.error('AI Review error:', err);
+      setAIReviewError(err.message || 'Failed to analyze script');
+      setAIReviewResults({
+        issues: [],
+        stats: {
+          readabilityScore: 50,
+          avgSceneLength: 0,
+          dialogueRatio: 0,
+          issueCount: 0,
+        },
+      });
+    } finally {
+      setAIReviewLoading(false);
+    }
+  }, [currentScript, elements]);
+
+  // Initial review when panel opens and elements exist
+  useEffect(() => {
+    if (AI_REVIEW_ENABLED && showAIReviewPanel && !aiReviewResults && !aiReviewLoading && elements.length > 0) {
+      triggerAIReview();
+    }
+  }, [showAIReviewPanel, AI_REVIEW_ENABLED, elements.length]);
+
   return (
     <>
       {/* Creator Format Intro Modal */}
@@ -1516,21 +1841,21 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       )}
 
       <div className="flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden" onKeyDown={handleEditorKeyDown}>
-      {/* Scripts sidebar toggle on mobile */}
+      {/* Scripts sidebar toggle on mobile/tablet */}
       <button onClick={() => setShowScriptsSidebar(!showScriptsSidebar)}
-        className="fixed bottom-4 left-4 z-30 md:hidden p-3 bg-[#E54E15] text-white rounded-full shadow-lg">
+        className="fixed bottom-4 left-4 z-30 lg:hidden p-3 bg-[#E54E15] text-white rounded-full shadow-lg">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" /></svg>
       </button>
 
       {/* Sidebar */}
       <div className={cn(
         'w-56 border-r border-surface-800 flex flex-col bg-surface-950 overflow-hidden shrink-0',
-        'max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:w-64 max-md:transition-transform max-md:duration-200',
-        showScriptsSidebar ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
+        'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-40 max-lg:w-64 max-lg:transition-transform max-lg:duration-200',
+        showScriptsSidebar ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'
       )}>
-        {/* Mobile close */}
+        {/* Mobile/tablet close */}
         <button onClick={() => setShowScriptsSidebar(false)}
-          className="md:hidden absolute top-2 right-2 p-1.5 text-surface-500 hover:text-white z-10">
+          className="lg:hidden absolute top-2 right-2 p-1.5 text-surface-500 hover:text-white z-10">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
         <div className="p-3 border-b border-surface-800">
@@ -1649,13 +1974,15 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       {/* Editor */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Toolbar — Row 1: Element Types */}
-        <div className="border-b border-surface-800/60 bg-surface-950/80 backdrop-blur-sm px-2 md:px-4 py-1.5 flex items-center gap-1.5 no-print">
+        <div className={cn('border-b border-surface-800/60 bg-surface-950/90 backdrop-blur-md px-2 md:px-4 py-2 flex items-center gap-2 no-print', focusMode && 'hidden')}>
           {canEdit && (
-            <div className="flex items-center gap-1 flex-wrap min-w-0">
+            <div className="flex items-center gap-0.5 flex-wrap min-w-0">
               {elementCycle.map((type) => (
                 <button key={type} onClick={() => handleToolbarAdd(type)}
-                  className={cn('px-2 py-0.5 rounded text-[10px] md:text-[11px] font-medium transition-colors whitespace-nowrap',
-                    activeElementType === type ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-500 hover:text-white hover:bg-surface-800'
+                  className={cn('px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150 whitespace-nowrap',
+                    activeElementType === type
+                      ? 'bg-[#E54E15]/20 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30 shadow-sm'
+                      : 'text-surface-400 hover:text-white hover:bg-surface-800/80'
                   )} title={`Add ${ELEMENT_LABELS[type]}`}>
                   {ELEMENT_LABELS[type]}
                 </button>
@@ -1663,10 +1990,10 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
           )}
           {!canEdit && (
-            <span className="text-[11px] text-surface-500 px-2 py-0.5 bg-surface-800 rounded font-medium shrink-0">Read Only</span>
+            <span className="text-[11px] text-surface-500 px-2.5 py-1 bg-surface-800/80 rounded-md font-medium shrink-0 ring-1 ring-surface-700/50">Read Only</span>
           )}
           {isAudioDrama && (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 shrink-0 ml-1">
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 shrink-0 ml-2">
               <svg className="w-3 h-3 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-7a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
               <span className="text-[10px] font-medium text-violet-300">
                 {resolvedAudioFormat === 'bbc_radio' ? 'BBC Scene' : resolvedAudioFormat === 'us_radio' ? 'US Radio' : 'STARC'}
@@ -1674,7 +2001,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
           )}
           {isStagePlay && (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 shrink-0 ml-1">
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 shrink-0 ml-2">
               <span className="text-[11px]">🎭</span>
               <span className="text-[10px] font-medium text-rose-300">Stage Play</span>
             </div>
@@ -1692,15 +2019,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </div>
 
         {/* Toolbar — Row 2: Tools */}
-        <div className="border-b border-surface-800 bg-surface-950/60 backdrop-blur-sm px-2 md:px-4 py-1 flex items-center gap-0.5 no-print">
-          <span className="text-[10px] text-surface-700 hidden md:inline mr-2 select-none">Tab: cycle &middot; Hold: pick &middot; Enter: new line</span>
-          {/* Undo / Redo */}
+        <div className={cn('border-b border-surface-800 bg-surface-950/70 backdrop-blur-md px-2 md:px-4 py-1 flex items-center gap-1 no-print', focusMode && 'hidden')}>
+          {/* Left: Editing tools */}
           {canEdit && (
             <>
               <button
                 onClick={() => undoScript()}
                 disabled={_undoStack.length === 0}
-                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-25 disabled:cursor-not-allowed"
+                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                 title={`Undo (Cmd+Z)${_undoStack.length > 0 ? ` · ${_undoStack.length} step${_undoStack.length > 1 ? 's' : ''}` : ''}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
@@ -1708,103 +2034,108 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 onClick={() => redoScript()}
                 disabled={_redoStack.length === 0}
-                className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-25 disabled:cursor-not-allowed"
+                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                 title={`Redo (Cmd+Shift+Z)${_redoStack.length > 0 ? ` · ${_redoStack.length} step${_redoStack.length > 1 ? 's' : ''}` : ''}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
               </button>
-              <div className="w-px h-4 bg-surface-800 mx-0.5" />
+              <div className="w-px h-4 bg-surface-800 mx-1" />
             </>
           )}
-          <div className="flex-1" />
-          <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Search (Cmd+F)">
+
+          {/* Center: Navigation & Comments */}
+          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-all duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Search (Cmd+F)">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
           <button
             onClick={() => setShowCommentPanel(!showCommentPanel)}
-            className={cn('p-1.5 rounded transition-colors relative', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')}
+            className={cn('p-2 md:p-1.5 rounded-md transition-all duration-150 relative min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title="Comments"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
             {scriptComments.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#FF5F1F] text-[7px] font-bold text-white flex items-center justify-center">
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#FF5F1F] text-[7px] font-bold text-white flex items-center justify-center shadow-sm">
                 {scriptComments.filter(c => !c.parent_id).length}
               </span>
             )}
           </button>
-          <button onClick={() => titlePageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Scroll to Title Page">
+          <button onClick={() => titlePageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-150" title="Scroll to Title Page">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
           </button>
-          <button onClick={handleExportPDF} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800" title="Export PDF (Cmd+P)">
+
+          <div className="w-px h-4 bg-surface-800 mx-1" />
+
+          {/* Right: Export & Tools */}
+          <button onClick={handleExportPDF} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-150" title="Export PDF (Cmd+P)">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
           </button>
           {/* Import / Export dropdown */}
           <div className="relative">
-            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded transition-colors', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')} title="Import / Export">
+            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded-md transition-all duration-150', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Import / Export">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             </button>
+            {showImportExport && (
+              <>
+                <div className="fixed inset-0 z-[9998]" onClick={() => setShowImportExport(false)} />
+                <div className="fixed z-[9999] rounded-xl p-2 animate-scale-in"
+                  style={{
+                    top: importExportRef.current ? importExportRef.current.getBoundingClientRect().bottom + 8 : 60,
+                    right: importExportRef.current ? window.innerWidth - importExportRef.current.getBoundingClientRect().right : 16,
+                    minWidth: 220,
+                    backgroundColor: '#252542',
+                    border: '1px solid rgba(255,255,255,0.13)',
+                    boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
+                  }}>
+                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Import</p>
+                  <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.fdx</span> Final Draft
+                  </button>
+                  <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.ftn</span> Fountain
+                  </button>
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
+                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Export</p>
+                  <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.pdf</span> PDF (Print)
+                  </button>
+                  <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.fdx</span> Final Draft
+                  </button>
+                  <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.ftn</span> Fountain
+                  </button>
+                  <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.txt</span> Plain Text
+                  </button>
+                  <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-          {showImportExport && (
-            <>
-              <div className="fixed inset-0 z-[9998]" onClick={() => setShowImportExport(false)} />
-              <div className="fixed z-[9999] rounded-xl overflow-hidden py-1.5"
-                style={{
-                  top: importExportRef.current ? importExportRef.current.getBoundingClientRect().bottom + 8 : 60,
-                  right: importExportRef.current ? window.innerWidth - importExportRef.current.getBoundingClientRect().right : 16,
-                  minWidth: 220,
-                  backgroundColor: '#252542',
-                  border: '1px solid rgba(255,255,255,0.13)',
-                  boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
-                }}>
-                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Import</p>
-                <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                  <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.fdx</span> Final Draft
-                </button>
-                <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                  <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.ftn</span> Fountain
-                </button>
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
-                <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Export</p>
-                <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                  <span className="w-8 text-[10px] font-mono text-emerald-400">.pdf</span> PDF (Print)
-                </button>
-                <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                  <span className="w-8 text-[10px] font-mono text-emerald-400">.fdx</span> Final Draft
-                </button>
-                <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                  <span className="w-8 text-[10px] font-mono text-emerald-400">.ftn</span> Fountain
-                </button>
-                <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                  <span className="w-8 text-[10px] font-mono text-emerald-400">.txt</span> Plain Text
-                </button>
-                <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                  <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
-                </button>
-              </div>
-            </>
-          )}
           {/* Script Lock Button */}
           {canLock && currentScript && (
             <button
               onClick={handleToggleLock}
-              className={cn('p-1.5 rounded transition-colors',
+              className={cn('p-1.5 rounded-md transition-all duration-150',
                 currentScript.locked
                   ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/20'
-                  : 'text-surface-500 hover:text-white hover:bg-surface-800'
+                  : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
               )}
               title={currentScript.locked ? 'Script locked — click to unlock' : 'Lock script (prevent edits)'}
             >
@@ -1821,7 +2152,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 ref={revisionColorPickerRef}
                 onClick={() => setShowRevisionColorPicker(!showRevisionColorPicker)}
-                className={cn('p-1.5 rounded transition-colors flex items-center gap-1', showRevisionColorPicker ? 'bg-surface-800' : 'hover:bg-surface-800')}
+                className={cn('p-1.5 rounded-md transition-all duration-150 flex items-center gap-1', showRevisionColorPicker ? 'bg-surface-800/80' : 'hover:bg-surface-800/80')}
                 title={`Revision colour: ${currentScript.revision_color || 'white'}`}
               >
                 <span
@@ -1833,7 +2164,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               {showRevisionColorPicker && (
                 <>
                   <div className="fixed inset-0 z-[9998]" onClick={() => setShowRevisionColorPicker(false)} />
-                  <div className="fixed z-[9999] rounded-xl p-3"
+                  <div className="fixed z-[9999] rounded-xl p-3 animate-scale-in"
                     style={{
                       top: revisionColorPickerRef.current ? revisionColorPickerRef.current.getBoundingClientRect().bottom + 8 : 60,
                       right: revisionColorPickerRef.current ? window.innerWidth - revisionColorPickerRef.current.getBoundingClientRect().right : 16,
@@ -1861,16 +2192,16 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               )}
             </div>
           )}
-          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-50" title="Save Draft Snapshot">
+          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-all duration-150" title="Save Draft Snapshot">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
           </button>
-          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded transition-colors', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')} title="Draft Timeline">
+          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded-md transition-all duration-150', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </button>
           {/* Format Guide Button (for content creators) */}
           {isContentCreator && (
             <button onClick={() => setShowFormatIntro(true)}
-              className="p-1.5 rounded text-surface-500 hover:text-white hover:bg-surface-800"
+              className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-150"
               title="Format Guide">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>
@@ -1879,8 +2210,8 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <div className="relative">
             <button
               onClick={() => setShowVersionPanel(!showVersionPanel)}
-              className={cn('relative p-1.5 rounded transition-colors',
-                showVersionPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800'
+              className={cn('relative p-1.5 rounded-md transition-all duration-150',
+                showVersionPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
               )}
               title="Story Versions"
             >
@@ -1888,23 +2219,29 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
               {allVersions.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5 shadow-sm">
                   {allVersions.length}
                 </span>
               )}
             </button>
           </div>
+          {/* Focus Mode Toggle */}
+          <button onClick={() => setFocusMode(!focusMode)}
+            className={cn('p-1.5 rounded-md transition-all duration-150', focusMode ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            title={focusMode ? 'Exit Focus Mode' : 'Focus Mode — hide toolbars'}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          </button>
           {/* Display Settings */}
           <div className="relative">
             <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
-              className={cn('p-1.5 rounded transition-colors', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800')}
+              className={cn('p-1.5 rounded-md transition-all duration-150', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
               title="Display Settings">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
             </button>
             {showDisplaySettings && (
               <>
                 <div className="fixed inset-0 z-[9998]" onClick={() => setShowDisplaySettings(false)} />
-                <div className="fixed z-[9999] rounded-xl overflow-hidden"
+                <div className="fixed z-[9999] rounded-xl overflow-hidden animate-scale-in"
                   style={{
                     top: displaySettingsRef.current ? displaySettingsRef.current.getBoundingClientRect().bottom + 8 : 60,
                     right: displaySettingsRef.current ? window.innerWidth - displaySettingsRef.current.getBoundingClientRect().right : 16,
@@ -2007,8 +2344,9 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               </>
             )}
           </div>
+          {/* Dark Mode Toggle */}
           <button onClick={() => setDarkMode(!darkMode)}
-            className={cn('p-1.5 rounded transition-colors', darkMode ? 'text-yellow-400 hover:bg-surface-800' : 'text-surface-500 hover:text-white hover:bg-surface-800')}
+            className={cn('p-1.5 rounded-md transition-all duration-150', darkMode ? 'text-yellow-400 hover:bg-surface-800/80' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title={darkMode ? 'Light Mode' : 'Dark Mode'}>
             {darkMode ? (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -2016,73 +2354,171 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
             )}
           </button>
+          {/* AI Review Toggle (Alpha) */}
+          {AI_REVIEW_ENABLED && (
+            <button
+              onClick={() => setShowAIReviewPanel(v => !v)}
+              className={cn('p-1.5 rounded-md transition-all duration-150 relative', showAIReviewPanel ? 'text-emerald-400 bg-emerald-400/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+              title="AI Script Review (Alpha)"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+              {aiReviewResults && aiReviewResults.stats.issueCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-emerald-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5 shadow-sm">
+                  {aiReviewResults.stats.issueCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
 
-        {/* Search bar */}
-        {showSearch && (
-          <div className="border-b border-surface-800 bg-surface-900 px-4 py-2 flex items-center gap-2 no-print">
-            <svg className="w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search script..." className="flex-1 bg-transparent text-sm text-white placeholder:text-surface-600 outline-none" autoFocus />
-            <span className="text-xs text-surface-500">{searchQuery ? `${filteredElements.length} results` : ''}</span>
-            <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="p-1 rounded text-surface-500 hover:text-white">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-        )}
-
-        {/* Draft Timeline Panel */}
-        {showDrafts && (
-          <div className="border-b border-surface-800 bg-surface-900/80 px-4 py-3 no-print">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Draft Timeline</h4>
-              <button onClick={() => setShowDrafts(false)} className="p-1 rounded text-surface-500 hover:text-white">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            {drafts.length === 0 ? (
-              <p className="text-xs text-surface-500 py-2">No drafts saved yet. Use the save button to create snapshots.</p>
-            ) : (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {/* Timeline line */}
-                <div className="relative flex items-center gap-0">
-                  {drafts.map((draft, i) => (
-                    <div key={draft.id} className="flex items-center">
-                      {i > 0 && <div className="w-8 h-px bg-surface-700" />}
-                      <button
-                        onClick={() => handleRestoreDraft(draft.id, draft.draft_name || `Draft ${draft.draft_number}`)}
-                        disabled={restoringDraft || draft.is_current}
-                        className={cn(
-                          'relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-left transition-all min-w-[100px]',
-                          draft.is_current
-                            ? 'bg-[#FF5F1F]/15 border border-[#FF5F1F]/30'
-                            : 'hover:bg-surface-800 border border-transparent'
-                        )}
-                        title={draft.notes || undefined}
-                      >
-                        <div className={cn(
-                          'w-3 h-3 rounded-full border-2',
-                          draft.is_current ? 'border-[#FF5F1F] bg-[#FF5F1F]' : 'border-surface-600 bg-surface-800'
-                        )} />
-                        <span className={cn('text-[11px] font-medium truncate max-w-[90px]', draft.is_current ? 'text-[#FF5F1F]' : 'text-surface-300')}>
-                          {draft.draft_name || `Draft ${draft.draft_number}`}
-                        </span>
-                        <span className="text-[9px] text-surface-500">
-                          {new Date(draft.created_at).toLocaleDateString()} {new Date(draft.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        {draft.word_count > 0 && (
-                          <span className="text-[9px] text-surface-600">{draft.word_count} words · {draft.page_count}p</span>
-                        )}
-                        {draft.is_current && (
-                          <span className="text-[8px] font-bold text-[#FF5F1F] uppercase">Current</span>
-                        )}
-                      </button>
-                    </div>
-                  ))}
+        {/* AI Review Panel (Alpha) */}
+        {AI_REVIEW_ENABLED && showAIReviewPanel && (
+          <>
+            <div className="fixed inset-0 z-[9998]" onClick={() => setShowAIReviewPanel(false)} />
+            <div ref={aiReviewRef} className="fixed z-[9999] right-0 top-0 h-full w-[340px] bg-surface-950/95 border-l border-surface-800/30 backdrop-blur-md shadow-2xl animate-scale-in flex flex-col">
+              {/* Panel Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800/50 shrink-0">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                  <span className="text-sm font-semibold text-white">AI Review</span>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400">Alpha</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={triggerAIReview} disabled={aiReviewLoading} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors disabled:opacity-50" title="Re-run review">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  </button>
+                  <button onClick={() => setShowAIReviewPanel(false)} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Panel Body */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {aiReviewLoading && (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <div className="w-8 h-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-400 animate-spin" />
+                    <p className="text-xs text-surface-500">Analyzing script...</p>
+                    <p className="text-[10px] text-surface-600">Loading AI model (first load may take a moment)</p>
+                  </div>
+                )}
+
+                {aiReviewError && !aiReviewLoading && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                    <p className="text-sm font-medium text-red-400 mb-1">Analysis Error</p>
+                    <p className="text-xs text-red-300/70">{aiReviewError}</p>
+                    <button onClick={triggerAIReview} className="mt-3 text-xs font-semibold text-red-400 hover:text-red-300 transition-colors">Try again</button>
+                  </div>
+                )}
+
+                {aiReviewResults && !aiReviewLoading && (
+                  <>
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
+                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Readability</p>
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-xl font-black text-white">{aiReviewResults.stats.readabilityScore}</span>
+                          <span className="text-[10px] text-surface-500 mb-0.5">/100</span>
+                        </div>
+                        <div className="mt-2 h-1 rounded-full bg-surface-800 overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-500" style={{
+                            width: `${aiReviewResults.stats.readabilityScore}%`,
+                            background: aiReviewResults.stats.readabilityScore >= 70 ? '#22c55e' : aiReviewResults.stats.readabilityScore >= 40 ? '#eab308' : '#ef4444',
+                          }} />
+                        </div>
+                      </div>
+                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
+                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Issues</p>
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-xl font-black text-white">{aiReviewResults.stats.issueCount}</span>
+                          <span className="text-[10px] text-surface-500 mb-0.5">found</span>
+                        </div>
+                      </div>
+                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
+                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Avg Scene</p>
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-xl font-black text-white">{aiReviewResults.stats.avgSceneLength.toFixed(1)}</span>
+                          <span className="text-[10px] text-surface-500 mb-0.5">pages</span>
+                        </div>
+                      </div>
+                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
+                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Dialogue</p>
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-xl font-black text-white">{aiReviewResults.stats.dialogueRatio}%</span>
+                          <span className="text-[10px] text-surface-500 mb-0.5">of script</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Issues List */}
+                    {aiReviewResults.issues.length > 0 && (
+                      <div>
+                        <h3 className="text-[11px] font-semibold text-surface-400 uppercase tracking-wider mb-3">Issues ({aiReviewResults.issues.length})</h3>
+                        <div className="space-y-2">
+                          {aiReviewResults.issues.map((issue, idx) => {
+                            const severityColors = {
+                              high: 'border-l-red-500 bg-red-500/5',
+                              medium: 'border-l-amber-500 bg-amber-500/5',
+                              low: 'border-l-blue-500 bg-blue-500/5',
+                            };
+                            const typeColors = {
+                              formatting: 'text-purple-400',
+                              structure: 'text-blue-400',
+                              character: 'text-amber-400',
+                              dialogue: 'text-emerald-400',
+                              pacing: 'text-rose-400',
+                            };
+                            return (
+                              <div key={idx} className={`border-l-2 pl-3 py-2 pr-3 rounded-r-lg ${severityColors[issue.severity]}`}>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className={`text-[9px] font-bold uppercase tracking-wider ${typeColors[issue.type] || 'text-surface-400'}`}>{issue.type}</span>
+                                  <span className={`text-[9px] font-medium uppercase px-1 rounded ${
+                                    issue.severity === 'high' ? 'bg-red-500/20 text-red-400' :
+                                    issue.severity === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                                    'bg-blue-500/20 text-blue-400'
+                                  }`}>{issue.severity}</span>
+                                </div>
+                                <p className="text-xs text-surface-300 leading-relaxed">{issue.message}</p>
+                                {issue.suggestion && (
+                                  <p className="text-[10px] text-surface-500 mt-1 italic">{issue.suggestion}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {aiReviewResults.issues.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <svg className="w-10 h-10 text-emerald-500/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <p className="text-sm font-medium text-surface-400">No issues found</p>
+                        <p className="text-xs text-surface-600 mt-1">Your script looks great!</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {!aiReviewResults && !aiReviewLoading && !aiReviewError && (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <svg className="w-12 h-12 text-surface-700 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    <p className="text-sm font-medium text-surface-500 mb-1">AI Script Review</p>
+                    <p className="text-xs text-surface-600">Click "Analyze" to get feedback on your script</p>
+                    <button onClick={triggerAIReview} className="mt-4 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors">
+                      Analyze Script
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Panel Footer */}
+              <div className="px-4 py-2.5 border-t border-surface-800/50 text-[9px] text-surface-600 flex items-center justify-between shrink-0">
+                <span>Powered by local AI · Fully private</span>
+                <span className="text-[#FF5F1F]">Alpha</span>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Locked script banner */}
@@ -2097,7 +2533,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         )}
 
         {/* Document */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30 transition-colors duration-300 pb-20 lg:pb-0">
           {/* Title page — always shown, all fields editable inline */}
           {currentScript && (
             <div ref={titlePageRef} className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0', scriptPageSize === 'a4' && 'sp-page-a4', darkMode && 'sp-dark')}>
@@ -2230,7 +2666,26 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
 
           {/* ── Hard screenplay pages — one sp-page div per paginated page ── */}
-          {elements.length === 0 ? (
+          {scripts.length === 0 ? (
+            /* No scripts at all — guide to create first script */
+            <div className={cn(
+              'sp-page mx-auto my-4 md:my-8',
+              scriptPageSize === 'a4' && 'sp-page-a4',
+              darkMode && 'sp-dark',
+            )} style={{ fontSize: `${displaySettings.fontSize}pt` }}>
+              <div className="flex flex-col items-center justify-center py-32 text-center">
+                <svg className="w-12 h-12 mb-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" />
+                </svg>
+                <p className="text-sm mb-2">No scripts yet</p>
+                <p className="text-xs opacity-60 mb-6">Create your first script in this project</p>
+                <button onClick={() => setShowNewScript(true)}
+                  className={cn('px-4 py-2 rounded text-sm', darkMode ? 'bg-surface-700 hover:bg-surface-600 text-white' : 'bg-surface-800 hover:bg-gray-200 text-white/60')}>
+                  + Create Script
+                </button>
+              </div>
+            </div>
+          ) : elements.length === 0 ? (
             /* Empty state — single blank page */
             <div className={cn(
               'sp-page mx-auto my-4 md:my-8',
@@ -2422,7 +2877,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
       {/* ── Version Panel (right sidebar) ────────────────────── */}
       {showVersionPanel && (
-        <div className="w-72 shrink-0">
+        <div className="w-72 shrink-0 max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-40 max-md:shadow-2xl">
           <VersionPanel
             versions={allVersions}
             config={versionConfig}
@@ -2467,6 +2922,162 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
         </div>
       )}
+
+      {/* ── Mobile Writing Toolbar (above keyboard) ───────────── */}
+      {canEdit && keyboardOpen && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface-950/95 backdrop-blur-xl border-t border-surface-800/80 safe-area-pb">
+          {/* Element type picker */}
+          <div className="flex items-center gap-1 px-2 py-1.5 overflow-x-auto scrollbar-none">
+            {elementCycle.map((type) => (
+              <button key={type} onClick={() => {
+                haptic();
+                if (activeElementType === type) {
+                  // Same type tapped: change current element's type
+                  const focused = document.activeElement;
+                  if (focused && focused.id?.startsWith('el-')) {
+                    const elId = focused.id.replace('el-', '');
+                    useScriptStore.getState().updateElement(elId, { element_type: type });
+                  }
+                } else {
+                  handleToolbarAdd(type);
+                }
+              }}
+                className={cn('shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-[44px]',
+                  activeElementType === type
+                    ? 'bg-[#E54E15] text-white shadow-sm'
+                    : 'text-surface-400 bg-surface-800/60 active:bg-surface-700'
+                )}>
+                {ELEMENT_LABELS[type]}
+              </button>
+            ))}
+          </div>
+          {/* Quick format shortcuts for scene headings */}
+          {activeElementType === 'scene_heading' && (
+            <div className="flex items-center gap-1 px-2 pb-1.5 overflow-x-auto scrollbar-none">
+              {['INT.', 'EXT.', 'INT./EXT.', 'FADE IN:', 'CUT TO:', 'FADE OUT.', 'SMASH CUT', 'MATCH CUT'].map((shortcut) => (
+                <button key={shortcut} onClick={() => {
+                  haptic();
+                  const focused = document.activeElement;
+                  if (focused && focused.id?.startsWith('el-')) {
+                    const elId = focused.id.replace('el-', '');
+                    const store = useScriptStore.getState();
+                    const el = store.elements.find(e => e.id === elId);
+                    if (el) {
+                      const newContent = el.content ? el.content + ' ' + shortcut : shortcut;
+                      store.updateElement(elId, { content: newContent });
+                      // Focus and place cursor at end
+                      requestAnimationFrame(() => {
+                        const div = document.getElementById(`el-${elId}`);
+                        if (div) {
+                          div.innerHTML = newContent;
+                          div.focus();
+                          const sel = window.getSelection();
+                          const range = document.createRange();
+                          range.selectNodeContents(div);
+                          range.collapse(false);
+                          sel?.removeAllRanges();
+                          sel?.addRange(range);
+                        }
+                      });
+                    }
+                  }
+                }} className="shrink-0 px-2.5 py-1.5 rounded-md text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
+                  {shortcut}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Quick format shortcuts for transitions */}
+          {activeElementType === 'transition' && (
+            <div className="flex items-center gap-1 px-2 pb-1.5 overflow-x-auto scrollbar-none">
+              {['CUT TO:', 'FADE TO:', 'DISSOLVE TO:', 'SMASH CUT TO:', 'MATCH CUT TO:', 'JUMP CUT TO:'].map((shortcut) => (
+                <button key={shortcut} onClick={() => {
+                  haptic();
+                  const focused = document.activeElement;
+                  if (focused && focused.id?.startsWith('el-')) {
+                    const elId = focused.id.replace('el-', '');
+                    const store = useScriptStore.getState();
+                    const el = store.elements.find(e => e.id === elId);
+                    if (el) {
+                      const newContent = shortcut;
+                      store.updateElement(elId, { content: newContent });
+                      requestAnimationFrame(() => {
+                        const div = document.getElementById(`el-${elId}`);
+                        if (div) {
+                          div.innerHTML = newContent;
+                          div.focus();
+                          const sel = window.getSelection();
+                          const range = document.createRange();
+                          range.selectNodeContents(div);
+                          range.collapse(false);
+                          sel?.removeAllRanges();
+                          sel?.addRange(range);
+                        }
+                      });
+                    }
+                  }
+                }} className="shrink-0 px-2.5 py-1.5 rounded-md text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
+                  {shortcut}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Status bar */}
+          <div className="flex items-center justify-between px-3 py-1 border-t border-surface-800/50 text-[10px] text-surface-500">
+            <span>{totalPages} pgs · {elements.filter(e => e.element_type === 'scene_heading').length} scenes · {wordCount.toLocaleString()} words</span>
+            <span className="flex items-center gap-1.5">
+              {saving ? (
+                <><span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />Saving</>
+              ) : lastSaved ? (
+                <><span className="w-1.5 h-1.5 rounded-full bg-green-500" />Saved</>
+              ) : null}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Mobile Scene Jump Bottom Sheet ────────────────────── */}
+      {showSceneJump && (
+        <div className="lg:hidden fixed inset-0 z-50" onClick={() => setShowSceneJump(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute bottom-0 left-0 right-0 bg-surface-900 rounded-t-2xl max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800">
+              <h3 className="text-sm font-bold text-white">Jump to Scene</h3>
+              <button onClick={() => setShowSceneJump(false)} className="p-1 text-surface-500 hover:text-white">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2">
+              {elements.filter(e => e.element_type === 'scene_heading').map((el, i) => (
+                <button key={el.id} onClick={() => {
+                  document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  setShowSceneJump(false);
+                }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:bg-surface-800 active:bg-surface-700 transition-colors flex items-center gap-2 min-h-[44px]">
+                  <span className="text-[#FF5F1F] font-mono text-xs font-bold">{sceneNumberMap[el.id] ?? i + 1}</span>
+                  <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || 'Untitled Scene' }} />
+                </button>
+              ))}
+              {elements.filter(e => e.element_type === 'scene_heading').length === 0 && (
+                <p className="text-sm text-surface-500 text-center py-8">No scenes yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Mobile Scene Jump FAB ─────────────────────────────── */}
+      {elements.some(e => e.element_type === 'scene_heading') && (
+        <button onClick={() => setShowSceneJump(true)}
+          className="lg:hidden fixed bottom-[100px] right-4 z-30 p-3 bg-surface-800/90 backdrop-blur text-white rounded-full shadow-lg border border-surface-700/50 min-h-[44px] min-w-[44px] flex items-center justify-center">
+          <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.2 2.5 0 00-2.5-2.5H14" /></svg>
+        </button>
+      )}
+
+      {/* ── Mobile Scroll-to-Top FAB ─────────────────────────── */}
+      <button onClick={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="lg:hidden fixed bottom-[100px] left-4 z-30 p-3 bg-surface-800/90 backdrop-blur text-white rounded-full shadow-lg border border-surface-700/50 min-h-[44px] min-w-[44px] flex items-center justify-center">
+        <svg className="w-5 h-5 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+      </button>
 
       {/* ── Comment Panel (right sidebar) ────────────────────── */}
       {showCommentPanel && (
@@ -3012,13 +3623,17 @@ const ScriptMinimap = memo(function ScriptMinimap({
   return (
     <div
       ref={barRef}
-      className={cn('relative h-7 select-none cursor-pointer border-t shrink-0 no-print', darkMode ? 'border-surface-800 bg-surface-950' : 'border-gray-200 bg-gray-100')}
+      className={cn('relative h-9 select-none cursor-pointer shrink-0 no-print transition-all duration-200',
+        darkMode ? 'bg-surface-950/90 border-t border-surface-800/60' : 'bg-gray-100/90 border-t border-gray-200/60')}
       onClick={handleClick}
       title="Script minimap — click or drag to navigate"
     >
-      {/* Colour bands — dynamic vertical fill: each position uses only as many rows as it has active colours */}
+      {/* Subtle inner gradient overlay for depth */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: `linear-gradient(to bottom, transparent 60%, ${darkMode ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.03)'})` }} />
+
+      {/* Colour bands — dynamic vertical fill with better visual hierarchy */}
       {showColors && (() => {
-        // Build sorted breakpoints from all three band types
         const bpSet = new Set<number>([0, total]);
         actBands.forEach(b => { bpSet.add(b.start); bpSet.add(b.end + 1); });
         sequences.forEach(s => { bpSet.add(s.start); bpSet.add(s.end + 1); });
@@ -3029,18 +3644,25 @@ const ScriptMinimap = memo(function ScriptMinimap({
         for (let si = 0; si < bps.length - 1; si++) {
           const from = bps[si];
           const to = bps[si + 1];
-          // NOTE: actBands, sequences, sceneBands share the same ordering (act / seq / scene)
           const actColor = actBands.find(b => b.start <= from && b.end >= from)?.color;
           const seqColor = sequences.find(b => b.start <= from && b.end >= from)?.color;
           const sceneColor = sceneBands.find(b => b.start <= from && b.end >= from)?.color;
           const layers = [actColor, seqColor, sceneColor].filter(Boolean) as string[];
           if (!layers.length) continue;
           const left = `${getElFrac(from) * 100}%`;
-          const width = `${Math.max(0.2, (getElFrac(to) - getElFrac(from)) * 100)}%`;
+          const width = `${Math.max(0.3, (getElFrac(to) - getElFrac(from)) * 100)}%`;
           layers.forEach((color, j) => {
+            const opacity = j === 0 ? 0.35 : j === 1 ? 0.25 : 0.15;
             rects.push(
-              <div key={`${si}-${j}`} className="absolute pointer-events-none opacity-30"
-                style={{ left, width, top: `${(j / layers.length) * 100}%`, height: `${(100 / layers.length)}%`, backgroundColor: color }} />
+              <div key={`${si}-${j}`} className="absolute pointer-events-none"
+                style={{
+                  left, width,
+                  top: `${(j / Math.max(layers.length, 1)) * 100}%`,
+                  height: `${(100 / Math.max(layers.length, 1))}%`,
+                  backgroundColor: color,
+                  opacity,
+                  transition: 'opacity 0.15s ease',
+                }} />
             );
           });
         }
@@ -3049,17 +3671,20 @@ const ScriptMinimap = memo(function ScriptMinimap({
 
       {/* Sequence name labels */}
       {showLabels && showColors && sequences.map((seq, i) => (
-        <div key={`lbl-${i}`} className="absolute top-0 bottom-0 flex items-center px-1 pointer-events-none overflow-hidden"
-          style={{ left: `${getElFrac(seq.start) * 100}%`, width: `${Math.max(0.5, (getElFrac(seq.end) - getElFrac(seq.start)) * 100)}%` }}>
-          <span className="text-[8px] font-semibold truncate" style={{ color: seq.color, opacity: 0.9 }}>{seq.name}</span>
+        <div key={`lbl-${i}`} className="absolute top-0 bottom-0 flex items-center px-1.5 pointer-events-none overflow-hidden"
+          style={{ left: `${getElFrac(seq.start) * 100}%`, width: `${Math.max(1, (getElFrac(seq.end) - getElFrac(seq.start)) * 100)}%` }}>
+          <span className={cn('text-[9px] font-semibold truncate tracking-wide', darkMode ? 'text-white/70' : 'text-black/60')}
+            style={{ textShadow: darkMode ? '0 1px 2px rgba(0,0,0,0.5)' : '0 1px 0 rgba(255,255,255,0.3)' }}>
+            {seq.name}
+          </span>
         </div>
       ))}
 
-      {/* Scene heading ticks — always grey, no color override */}
+      {/* Scene heading ticks */}
       {elements.map((el, i) => {
         if (el.element_type === 'scene_heading') {
           return <div key={el.id}
-            className={cn('absolute top-1 bottom-1 w-px pointer-events-none', darkMode ? 'bg-surface-500/60' : 'bg-gray-400/60')}
+            className={cn('absolute top-0.5 bottom-0.5 w-[1.5px] rounded-full pointer-events-none', darkMode ? 'bg-surface-500/50' : 'bg-gray-400/50')}
             style={{ left: `${getElFrac(i) * 100}%` }}
             title={showLabels ? (el.content || '') : undefined} />;
         }
@@ -3068,12 +3693,21 @@ const ScriptMinimap = memo(function ScriptMinimap({
 
       {/* Draggable viewport indicator */}
       <div
-        className={cn('absolute top-0 bottom-0 border pointer-events-auto cursor-grab active:cursor-grabbing',
-          darkMode ? 'border-surface-400/50 bg-white/5' : 'border-gray-500/50 bg-black/5')}
+        className={cn('absolute top-0 bottom-0 rounded-sm pointer-events-auto cursor-grab active:cursor-grabbing transition-shadow duration-150',
+          darkMode
+            ? 'border border-white/15 bg-white/[0.07] shadow-sm hover:shadow-md hover:bg-white/[0.10]'
+            : 'border border-black/15 bg-black/[0.05] shadow-sm hover:shadow-md hover:bg-black/[0.08]')}
         style={{ left: `${vpL}%`, width: `${vpW}%` }}
         onMouseDown={handleDragStart}
         onClick={(e) => e.stopPropagation()}
-      />
+      >
+        {/* Grip indicator lines */}
+        <div className={cn('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-[2px] opacity-40',
+          darkMode ? '' : '')}>
+          <div className={cn('w-[1.5px] h-3 rounded-full', darkMode ? 'bg-white/40' : 'bg-black/30')} />
+          <div className={cn('w-[1.5px] h-3 rounded-full', darkMode ? 'bg-white/40' : 'bg-black/30')} />
+        </div>
+      </div>
     </div>
   );
 });
@@ -3136,8 +3770,12 @@ const LineEditor = memo(function LineEditor({
   audioElementCycle,
   stagePlayElementCycle,
 }: LineEditorProps) {
-  // Subscribe to just this element via a Zustand selector
-  const element = useScriptStore((s) => s.elements.find((e) => e.id === elementId));
+  // Subscribe to just this element via a Zustand selector — stable reference prevents re-renders
+  const selectElement = useCallback(
+    (s: ReturnType<typeof useScriptStore.getState>) => s.elements.find((e) => e.id === elementId),
+    [elementId]
+  );
+  const element = useScriptStore(selectElement);
 
   const divRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -3154,6 +3792,8 @@ const LineEditor = memo(function LineEditor({
   const [tabPickerIdx, setTabPickerIdx] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
+  const [showLongPressMenu, setShowLongPressMenu] = useState(false);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mount: populate DOM from element content
   useEffect(() => {
@@ -3758,6 +4398,16 @@ const LineEditor = memo(function LineEditor({
               style={(element.metadata?.color as string) ? { background: element.metadata!.color as string } : {}}
             />
           )}
+          {element.element_type === 'character' && (
+            <Link
+              href={`/projects/${projectId}/characters`}
+              onClick={(e) => e.stopPropagation()}
+              className="w-4 h-4 flex items-center justify-center text-surface-400 hover:text-[#FF5F1F] transition-colors shrink-0"
+              title="Manage characters"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            </Link>
+          )}
         </div>
 
         {/* Comment button — right side */}
@@ -3779,6 +4429,13 @@ const LineEditor = memo(function LineEditor({
             </span>
           )}
         </button>
+
+        {/* Mobile element type badge (since gutter is hidden) */}
+        <div className="lg:hidden absolute -left-1 top-0 z-10">
+          <span className="inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-surface-800/80 text-surface-500 border border-surface-700/50">
+            {ELEMENT_LABELS[element.element_type]?.slice(0, 4)}
+          </span>
+        </div>
 
         {/* Tab-hold type picker — floats above the element */}
         {showTabPicker && (
@@ -3836,6 +4493,24 @@ const LineEditor = memo(function LineEditor({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onPaste={handlePaste}
+          onTouchStart={() => {
+            if (!canEdit) return;
+            longPressTimerRef.current = setTimeout(() => {
+              setShowLongPressMenu(true);
+            }, 500);
+          }}
+          onTouchMove={() => {
+            if (longPressTimerRef.current) {
+              clearTimeout(longPressTimerRef.current);
+              longPressTimerRef.current = null;
+            }
+          }}
+          onTouchEnd={() => {
+            if (longPressTimerRef.current) {
+              clearTimeout(longPressTimerRef.current);
+              longPressTimerRef.current = null;
+            }
+          }}
           data-placeholder={getElementPlaceholder(element.element_type, isContentCreator)}
           style={(element.element_type === 'sequence' && element.metadata?.color)
             ? { color: element.metadata.color as string }
@@ -3851,6 +4526,48 @@ const LineEditor = memo(function LineEditor({
                   i === selectedSuggestion ? 'bg-[#E54E15]/30 text-[#FF8F5F]' : 'text-surface-300 hover:bg-surface-700'
                 )}>{name}</button>
             ))}
+          </div>
+        )}
+
+        {/* Long-press context menu (mobile/tablet) */}
+        {showLongPressMenu && (
+          <div className="lg:hidden fixed inset-0 z-[60]" onClick={() => setShowLongPressMenu(false)}>
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 bg-surface-900 border border-surface-700 rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="px-3 py-2 border-b border-surface-800">
+                <p className="text-[10px] text-surface-500 uppercase tracking-wider">Change type</p>
+              </div>
+              <div className="p-1.5 max-h-[50vh] overflow-y-auto">
+                {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : ELEMENT_CYCLE).map((type) => (
+                  <button key={type} onClick={() => {
+                    haptic();
+                    useScriptStore.getState().updateElement(elementId, { element_type: type });
+                    setShowLongPressMenu(false);
+                  }} className={cn('w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors min-h-[44px] flex items-center',
+                    element.element_type === type ? 'bg-[#FF5F1F]/15 text-[#FF7A43] font-medium' : 'text-surface-300 active:bg-surface-800'
+                  )}>
+                    {ELEMENT_LABELS[type]}
+                    {element.element_type === type && <span className="ml-auto text-[#FF5F1F] text-xs">Current</span>}
+                  </button>
+                ))}
+              </div>
+              <div className="border-t border-surface-800 p-1.5">
+                <button onClick={() => {
+                  onComment(elementId);
+                  setShowLongPressMenu(false);
+                }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 active:bg-surface-800 min-h-[44px] flex items-center">
+                  Add Comment
+                </button>
+                <button onClick={() => {
+                  if (confirm('Delete this element?')) {
+                    useScriptStore.getState().deleteElement(elementId);
+                  }
+                  setShowLongPressMenu(false);
+                }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 active:bg-red-500/10 min-h-[44px] flex items-center">
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -438,7 +438,7 @@ export default function ShowcaseDetailPage() {
             </div>
           ) : project.cover_url ? (
             <div className="aspect-video relative">
-              <img src={project.cover_url} alt={project.title} className="w-full h-full object-cover" />
+              <img src={project.cover_url} alt={project.title} className="w-full h-full object-cover" loading="lazy" />
               {project.wrap_url && (
                 <a
                   href={project.wrap_url}
@@ -482,7 +482,7 @@ export default function ShowcaseDetailPage() {
               {/* Poster (if available) */}
               {project.poster_url && (
                 <div className="hidden md:block w-32 shrink-0 rounded-lg overflow-hidden shadow-xl">
-                  <img src={project.poster_url} alt={project.title} className="w-full aspect-[2/3] object-cover" />
+                  <img src={project.poster_url} alt={project.title} className="w-full aspect-[2/3] object-cover" loading="lazy" />
                 </div>
               )}
 
@@ -606,7 +606,7 @@ export default function ShowcaseDetailPage() {
                     <div key={card.id} className="flex items-center gap-3 bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {/* Avatar */}
                       {card.actorAvatar ? (
-                        <img src={card.actorAvatar} alt={card.actorName || card.characterName || 'Cast avatar'} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={card.actorAvatar} alt={card.actorName || card.characterName || 'Cast avatar'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                       ) : (
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${card.actorName ? 'bg-surface-900/10 text-white/40' : 'bg-amber-500/10 text-amber-400/60'}`}>
                           {(card.actorName || card.characterName || '?')[0].toUpperCase()}
@@ -661,7 +661,7 @@ export default function ShowcaseDetailPage() {
                   {crewByRole.map((member) => (
                     <div key={member.id} className="flex items-center gap-3 bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {member.profile?.avatar_url ? (
-                        <img src={member.profile.avatar_url} alt={member.profile.full_name || 'Team member'} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={member.profile.avatar_url} alt={member.profile.full_name || 'Team member'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/40">
                           {(member.profile?.full_name || '?')[0]}
@@ -681,7 +681,7 @@ export default function ShowcaseDetailPage() {
                   {externalCrew.map((credit) => (
                     <div key={credit.id} className="flex items-center gap-3 bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
                       {credit.avatar_url ? (
-                        <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/40">
                           {credit.name[0].toUpperCase()}
@@ -741,7 +741,7 @@ export default function ShowcaseDetailPage() {
                       onClick={() => setLightboxPhoto(photo)}
                       className="text-left aspect-video bg-surface-900/[0.03] border border-white/[0.06] rounded-lg overflow-hidden hover:border-amber-500/30 transition-all group relative"
                     >
-                      <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       {(photo.caption || photo.scene) && (
                         <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -908,7 +908,7 @@ export default function ShowcaseDetailPage() {
                     <div key={review.id} className="bg-surface-900/[0.02] border border-white/[0.05] rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         {review.profile?.avatar_url ? (
-                          <img src={review.profile.avatar_url} alt={review.profile.full_name || 'Reviewer avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          <img src={review.profile.avatar_url} alt={review.profile.full_name || 'Reviewer avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" loading="lazy" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
                             {(review.profile?.full_name || '?')[0].toUpperCase()}
@@ -1015,7 +1015,7 @@ export default function ShowcaseDetailPage() {
                   {comments.map((comment) => (
                     <div key={comment.id} className="flex gap-3 bg-surface-900/[0.02] border border-white/[0.05] rounded-lg p-3">
                       {comment.profile?.avatar_url ? (
-                        <img src={comment.profile.avatar_url} alt={comment.profile.full_name || 'Commenter avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                        <img src={comment.profile.avatar_url} alt={comment.profile.full_name || 'Commenter avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" loading="lazy" />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
                           {(comment.profile?.full_name || '?')[0].toUpperCase()}
@@ -1136,7 +1136,7 @@ export default function ShowcaseDetailPage() {
                 <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">Creator</h3>
                 <div className="flex items-center gap-3">
                   {project.author.avatar_url ? (
-                    <img src={project.author.avatar_url} alt={project.author.full_name || 'Author avatar'} className="w-12 h-12 rounded-full object-cover" />
+                    <img src={project.author.avatar_url} alt={project.author.full_name || 'Author avatar'} className="w-12 h-12 rounded-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-lg font-bold text-amber-400">
                       {(project.author.full_name || '?')[0]}
@@ -1294,7 +1294,7 @@ export default function ShowcaseDetailPage() {
                   >
                     <div className="aspect-video relative bg-black overflow-hidden">
                       {thumb ? (
-                        <img src={thumb} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <img src={thumb} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-neutral-800 flex items-center justify-center">
                           <svg className="w-8 h-8 text-white/10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>

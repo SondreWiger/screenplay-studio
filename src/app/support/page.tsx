@@ -373,7 +373,7 @@ function SupportPage() {
                     <div key={msg.id} className={`flex gap-3 ${msg.is_staff ? 'flex-row-reverse' : ''}`}>
                       <div className="shrink-0">
                         {msg.profile?.avatar_url ? (
-                          <img src={msg.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                          <img src={msg.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" loading="lazy" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-white/40">
                             {(msg.profile?.full_name || '?')[0].toUpperCase()}

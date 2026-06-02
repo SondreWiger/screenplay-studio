@@ -6,6 +6,7 @@ import { useAuthStore, usePresenceStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, EmptyState, LoadingSpinner, Avatar, toast } from '@/components/ui';
 import { cn, getInitials, randomColor, timeAgo, formatDate } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
+import { sendProjectInviteEmailAction } from '@/lib/email-actions';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { ProjectMember, Profile, UserRole, UserPresence, ProductionRole, ExternalCredit, Character } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
@@ -423,7 +424,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
               <Card key={credit.id} className="overflow-hidden">
                 <div className="flex items-center gap-4 p-4">
                   {credit.avatar_url ? (
-                    <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" />
+                    <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-surface-800 flex items-center justify-center text-sm font-bold text-surface-400">
                       {credit.name[0].toUpperCase()}
@@ -535,6 +536,18 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
         entityType: 'project',
         entityId: projectId,
       });
+
+      // Send invitation email (best-effort)
+      const { data: inviteeProfile } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', profile.id).single();
+      if (inviteeProfile?.email) {
+        sendProjectInviteEmailAction(
+          inviteeProfile.email,
+          inviteeProfile.display_name || inviteeProfile.full_name || '',
+          project?.title || 'a project',
+          actorName,
+          projectId,
+        ).catch(() => {});
+      }
 
       setLoading(false);
       onInvited();

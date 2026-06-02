@@ -230,7 +230,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
         <header className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             {project?.cover_url && (
-              <img src={project.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
+              <img src={project.cover_url} alt="" className="w-8 h-8 rounded object-cover" loading="lazy" />
             )}
             <span className="font-semibold text-white text-sm">{project?.title ?? 'Screenplay Studio'}</span>
           </div>
@@ -369,7 +369,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
               {data.characters.map((char) => (
                 <div key={char.id} className="bg-white/5 rounded-xl p-4 flex gap-3">
                   {char.avatar_url ? (
-                    <img src={char.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                    <img src={char.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" loading="lazy" />
                   ) : (
                     <div
                       className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold"

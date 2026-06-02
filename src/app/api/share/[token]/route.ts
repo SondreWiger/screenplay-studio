@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { checkRateLimit, rateLimitKey, getClientIp, addRateLimitHeaders } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -11,6 +12,16 @@ export async function GET(
 
   if (!token) {
     return NextResponse.json({ error: 'Missing token' }, { status: 400 });
+  }
+
+  const ip = getClientIp(req);
+  const rateResult = checkRateLimit(rateLimitKey(ip, `/api/share/${token}`), 20, 60_000);
+  if (!rateResult.allowed) {
+    return addRateLimitHeaders(
+      NextResponse.json({ error: 'Too many requests' }, { status: 429 }),
+      rateResult,
+      20,
+    );
   }
 
   const admin = createAdminSupabaseClient();

@@ -185,6 +185,13 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   // Collapse Recent Activity by default to improve page form factor
   const [activityExpanded, setActivityExpanded] = useState(false);
+  const [statsLoaded, setStatsLoaded] = useState(false);
+  const [isWelcomeDismissed, setIsWelcomeDismissed] = useState(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem(`project-onboarding-dismissed-${params.id}`);
+    if (dismissed === 'true') setIsWelcomeDismissed(true);
+  }, [params.id]);
 
   useEffect(() => {
     fetchStats();
@@ -352,6 +359,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
       activityItems.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       setActivity(activityItems.slice(0, 20));
+      setStatsLoaded(true);
     } catch (err) {
       console.error('Error fetching stats:', err);
     }
@@ -368,6 +376,10 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
   const targetStr = targetMinutes > 0 ? (Math.floor(targetMinutes / 60) > 0 ? Math.floor(targetMinutes / 60) + 'h ' + (targetMinutes % 60) + 'm' : targetMinutes + ' min') : '';
 
   const isAudioDrama = currentProject.project_type === 'audio_drama' || currentProject.script_type === 'audio_drama';
+  const showWelcomeCard = !isWelcomeDismissed && statsLoaded && (
+    (stats.scripts === 0 && stats.characters === 0 && stats.scenes === 0) ||
+    (Date.now() - new Date(currentProject.created_at).getTime() < 60 * 60 * 1000)
+  );
 
   const statusColor =
     currentProject.status === 'production' ? '#22c55e' :
@@ -376,6 +388,16 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
   return (
     <div className="page-root">
+
+      {/* ── Breadcrumbs ──────────────────────────── */}
+      <nav aria-label="Breadcrumb" className="text-xs text-surface-500 mb-4 flex items-center gap-1.5">
+        <Link href="/dashboard" className="flex items-center gap-1.5 hover:text-surface-300 transition-colors group">
+          <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-surface-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+          Projects
+        </Link>
+        <svg className="w-3 h-3 text-surface-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        <span className="text-surface-400 font-medium">{currentProject.title}</span>
+      </nav>
 
       {/* ── Page Header ─────────────────────────────── */}
       <div className="mb-10">
@@ -410,6 +432,77 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           )}
         </div>
       </div>
+
+      {/* ── Welcome Card ──────────────────────────────── */}
+      {showWelcomeCard && (
+        <div className="relative mb-8 p-6 rounded-2xl border border-[#FF5F1F]/20 bg-gradient-to-br from-[#FF5F1F]/5 to-surface-900/50">
+          <button
+            onClick={() => {
+              setIsWelcomeDismissed(true);
+              localStorage.setItem(`project-onboarding-dismissed-${params.id}`, 'true');
+            }}
+            className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center text-surface-500 hover:text-white hover:bg-surface-800 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-[#FF5F1F]/15 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Welcome to your new project!</h2>
+              <p className="text-sm text-surface-400">Start building your screenplay project. Here are some first steps:</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Link href={`/projects/${params.id}/script`}>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white text-center">Write Your Script</p>
+              </div>
+            </Link>
+            <Link href={`/projects/${params.id}/characters`}>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white text-center">Add Characters</p>
+              </div>
+            </Link>
+            <Link href={`/projects/${params.id}/locations`}>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white text-center">Plan Locations</p>
+              </div>
+            </Link>
+            <Link href={`/projects/${params.id}/moodboard`}>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white text-center">Create Moodboard</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* ── Primary Stats ────────────────────────────── */}
       <div className="mb-3">
@@ -501,33 +594,53 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
                 onClick={() => setActivityExpanded((v) => !v)}
                 className="text-[10px] font-bold uppercase tracking-wider text-surface-600 hover:text-white transition-colors"
               >
-                {activityExpanded ? 'Show less' : 'Show all'}
+                {activityExpanded ? 'Show less' : `Show all (${activity.length})`}
               </button>
             )}
           </div>
           {activity.length === 0 ? (
-            <p className="text-sm text-surface-500">No activity yet — add scripts, characters, or scenes to start.</p>
+            <p className="text-sm text-surface-500">Get started by creating a script, adding characters, or planning scenes.</p>
           ) : (
             <div className="relative">
               <div className="absolute left-3 top-1 bottom-1 w-px" style={{ background: 'linear-gradient(to bottom, rgb(var(--brand-500)/0.3), transparent)' }} />
-              <div className="space-y-3">
-                {(activityExpanded ? activity : activity.slice(0, 6)).map((item) => (
-                  <div key={item.id} className="flex items-start gap-3 group">
-                    <div
-                      className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center z-10 mt-0.5 ring-2 ring-surface-950 transition-transform group-hover:scale-110"
-                      style={{ backgroundColor: item.color + '25' }}
+              <div className="space-y-2">
+                {(activityExpanded ? activity : activity.slice(0, 6)).map((item) => {
+                  const typeIcon = ({
+                    Script: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+                    Character: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
+                    Scene: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
+                    Shot: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>,
+                    Location: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+                    Idea: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>,
+                    Document: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+                    Comment: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>,
+                    Ensemble: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+                  } as Record<string, React.ReactNode>)[item.type] || null;
+                  const routeMap = { Script: 'script', Character: 'characters', Scene: 'scenes', Shot: 'shots', Location: 'locations', Idea: 'ideas', Document: 'documents', Comment: 'comments', Ensemble: 'ensemble' } as Record<string, string>;
+                  return (
+                    <Link key={item.id} href={`/projects/${params.id}/${routeMap[item.type] || ''}`}
+                      className="flex items-start gap-3 group rounded-lg transition-all duration-150 hover:bg-white/[0.03] -mx-2 px-2 py-1.5"
                     >
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                    </div>
-                    <div className="min-w-0 flex-1 pb-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-white truncate">{item.label}</p>
-                        <Badge size="sm">{item.type}</Badge>
+                      <div
+                        className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center z-10 ring-2 ring-surface-950 transition-all duration-150 group-hover:scale-110 group-hover:ring-[#FF5F1F]/30"
+                        style={{ backgroundColor: item.color + '20' }}
+                      >
+                        {typeIcon ? (
+                          <span style={{ color: item.color }}>{typeIcon}</span>
+                        ) : (
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                        )}
                       </div>
-                      <p className="text-[11px] text-surface-500 mt-0.5">{item.detail} · {timeAgo(item.timestamp)}</p>
-                    </div>
-                  </div>
-                ))}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-white truncate group-hover:text-[#FF5F1F] transition-colors">{item.label}</p>
+                          <Badge size="sm">{item.type}</Badge>
+                        </div>
+                        <p className="text-[11px] text-surface-500 mt-0.5">{item.detail} · {timeAgo(item.timestamp)}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}

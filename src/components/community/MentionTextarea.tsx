@@ -189,7 +189,7 @@ export function MentionTextarea({
                 ].join(' ')}
               >
                 {s.avatar_url ? (
-                  <img src={s.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" />
+                  <img src={s.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" loading="lazy" />
                 ) : (
                   <div
                     className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-black text-white"

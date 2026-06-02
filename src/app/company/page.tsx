@@ -414,7 +414,7 @@ export default function CompanyDashboard() {
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="flex items-center gap-4">
             {company.logo_url ? (
-              <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" />
+              <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" loading="lazy" />
             ) : (
               <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
@@ -574,7 +574,7 @@ export default function CompanyDashboard() {
                 <Card key={m.id} className="p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-surface-800 flex items-center justify-center text-sm font-bold text-white shrink-0">
                     {(m as CompanyMember & { profile?: Profile }).profile?.avatar_url ? (
-                      <img src={(m as CompanyMember & { profile?: Profile }).profile!.avatar_url!} alt={'Team member avatar'} className="w-10 h-10 rounded-full object-cover" />
+                      <img src={(m as CompanyMember & { profile?: Profile }).profile!.avatar_url!} alt={'Team member avatar'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                     ) : (
                       (m as CompanyMember & { profile?: Profile }).profile?.display_name?.[0] || (m as CompanyMember & { profile?: Profile }).profile?.full_name?.[0] || '?'
                     )}
@@ -701,7 +701,7 @@ export default function CompanyDashboard() {
                 <Link key={project.id} href={`/projects/${project.id}`}>
                   <Card className="p-4 flex items-center gap-4 hover:bg-surface-800/50 transition-colors cursor-pointer">
                     {project.poster_url ? (
-                      <img src={project.poster_url} alt={project.title || 'Project poster'} className="w-12 h-16 rounded-lg object-cover" />
+                      <img src={project.poster_url} alt={project.title || 'Project poster'} className="w-12 h-16 rounded-lg object-cover" loading="lazy" />
                     ) : (
                       <div className="w-12 h-16 rounded-lg bg-surface-800 flex items-center justify-center text-surface-500">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
@@ -796,7 +796,7 @@ export default function CompanyDashboard() {
               <Card key={post.id} className="p-5">
                 <div className="flex items-start gap-4">
                   {post.cover_image_url && (
-                    <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-20 h-14 rounded-lg object-cover shrink-0" />
+                    <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-20 h-14 rounded-lg object-cover shrink-0" loading="lazy" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

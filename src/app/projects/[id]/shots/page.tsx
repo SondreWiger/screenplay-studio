@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
+import Link from 'next/link';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -104,6 +105,14 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
           <h1 className="text-2xl font-black text-white">Shot List</h1>
           <p className="text-sm text-surface-400 mt-1">{completed}/{shots.length} shots completed</p>
         </div>
+        <Link href={`/projects/${params.id}/script`}>
+          <Button variant="ghost" size="sm">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            Jump to Script
+          </Button>
+        </Link>
         {canEdit && <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -131,7 +140,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
       )}
 
       {filtered.length === 0 ? (
-        <EmptyState title="No shots yet" description="Build your shot list for production"
+        <EmptyState title="Plan your shots" description="A shot list turns your scenes into a visual plan. Define camera angles, movement, lens choices, and track takes per shot."
           action={canEdit ? <Button onClick={() => { setSelectedShot(null); setShowEditor(true); }}>Add Shot</Button> : undefined} />
       ) : (
         <div className="space-y-2 stagger-children">

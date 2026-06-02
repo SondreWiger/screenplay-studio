@@ -437,6 +437,12 @@ export default function UserSettingsPage() {
   const [showActivityGrid, setShowActivityGrid] = useState<'private' | 'buddies' | 'public'>('buddies');
   const [dailyGoalPages, setDailyGoalPages] = useState('1');
   const [dailyGoalMinutes, setDailyGoalMinutes] = useState('0');
+  // Email preferences
+  const [emailProjectInvites, setEmailProjectInvites] = useState(true);
+  const [emailMentions, setEmailMentions] = useState(true);
+  const [emailDirectMessages, setEmailDirectMessages] = useState(true);
+  const [emailTicketReplies, setEmailTicketReplies] = useState(true);
+  const [emailWeeklyDigest, setEmailWeeklyDigest] = useState(false);
   const [sidebarTabs, setSidebarTabs] = useState<Record<string, boolean>>({
     script: true, scenes: true, characters: true, locations: true,
     shots: true, storyboard: true, schedule: true, budget: true,
@@ -512,6 +518,11 @@ export default function UserSettingsPage() {
       show_projects: showProjects,
       show_activity: showActivity,
       allow_dms: allowDms,
+      email_project_invites: emailProjectInvites,
+      email_mentions: emailMentions,
+      email_direct_messages: emailDirectMessages,
+      email_ticket_replies: emailTicketReplies,
+      email_weekly_digest: emailWeeklyDigest,
     };
     const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
 
@@ -692,7 +703,7 @@ export default function UserSettingsPage() {
         {tab === 'profile' && (
           <div className="space-y-6">
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-6">Your Profile</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">Your Profile</h2>
               <div className="space-y-4">
                 <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" />
                 <Input label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="How you appear to others" />
@@ -799,6 +810,35 @@ export default function UserSettingsPage() {
                   { label: 'Show projects', desc: 'Display your projects on your public profile', value: showProjects, set: setShowProjects },
                   { label: 'Show activity', desc: 'Display recent activity and stats', value: showActivity, set: setShowActivity },
                   { label: 'Allow direct messages', desc: 'Let people message you from your profile', value: allowDms, set: setAllowDms },
+                ].map((toggle) => (
+                  <button
+                    key={toggle.label}
+                    onClick={() => toggle.set(!toggle.value)}
+                    className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-surface-700 hover:border-surface-600 transition-colors text-left"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white">{toggle.label}</p>
+                      <p className="text-[11px] text-surface-500">{toggle.desc}</p>
+                    </div>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            {/* Email Notifications */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Email Notifications</h2>
+              <p className="text-sm text-surface-400 mb-6">Choose which emails you receive. Transactional emails (security alerts) are always sent.</p>
+              <div className="space-y-3">
+                {[
+                  { label: 'Project invitations', desc: 'When someone invites you to a project', value: emailProjectInvites, set: setEmailProjectInvites },
+                  { label: 'Mentions & comments', desc: 'When someone mentions you or replies to your comments', value: emailMentions, set: setEmailMentions },
+                  { label: 'Direct messages', desc: 'When someone sends you a direct message', value: emailDirectMessages, set: setEmailDirectMessages },
+                  { label: 'Support ticket replies', desc: 'When our team replies to your support ticket', value: emailTicketReplies, set: setEmailTicketReplies },
+                  { label: 'Weekly digest', desc: 'Summary of your writing activity and project updates', value: emailWeeklyDigest, set: setEmailWeeklyDigest },
                 ].map((toggle) => (
                   <button
                     key={toggle.label}
@@ -1081,7 +1121,7 @@ export default function UserSettingsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
                           {company.logo_url ? (
-                            <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-12 h-12 rounded-xl object-cover" />
+                            <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-12 h-12 rounded-xl object-cover" loading="lazy" />
                           ) : (
                             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold text-white" style={{ backgroundColor: company.brand_color }}>
                               {company.name[0]}
@@ -1340,7 +1380,7 @@ export default function UserSettingsPage() {
         {/* Security Tab */}
         {tab === 'security' && (
           <div className="space-y-6">
-            <div className="bg-surface-900 rounded-xl border border-surface-800 p-6">
+            <Card className="p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Account Security</h3>
               <p className="text-sm text-surface-400 mb-4">
                 View your login history, manage active sessions, and review security events.
@@ -1349,7 +1389,7 @@ export default function UserSettingsPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                 Open Security Dashboard
               </Link>
-            </div>
+            </Card>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Card>
@@ -1405,18 +1445,19 @@ export default function UserSettingsPage() {
         {/* Accountability Tab */}
         {tab === 'accountability' && (
           <div className="space-y-6 max-w-xl">
-            <div className="rounded-2xl border border-white/[0.07] p-6 space-y-5" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Activity Grid</h2>
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Activity Grid</h3>
+              <p className="text-sm text-surface-400 mb-6">Configure your activity heatmap visibility and goals.</p>
 
               {/* Activity color */}
-              <div>
-                <label className="text-xs text-white/40 uppercase tracking-widest block mb-2">Grid color</label>
+              <div className="mb-5">
+                <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-2">Grid color</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
                     value={activityColor}
                     onChange={e => setActivityColor(e.target.value)}
-                    className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
+                    className="w-10 h-10 rounded-lg border border-surface-700 cursor-pointer bg-transparent"
                     title="Pick your activity color"
                   />
                   <input
@@ -1424,15 +1465,15 @@ export default function UserSettingsPage() {
                     value={activityColor}
                     onChange={e => setActivityColor(e.target.value)}
                     placeholder="#22c55e"
-                    className="w-28 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-white/30"
+                    className="w-28 bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-surface-500"
                   />
-                  <span className="text-xs text-white/30">Shown on your activity heatmap</span>
+                  <span className="text-xs text-surface-500">Shown on your activity heatmap</span>
                 </div>
               </div>
 
               {/* Who can see */}
               <div>
-                <label className="text-xs text-white/40 uppercase tracking-widest block mb-2">Who can see your grid</label>
+                <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-3">Who can see your grid</label>
                 <div className="flex flex-col gap-2">
                   {([
                     { value: 'private', label: 'Only me', desc: 'Nobody else can see your activity' },
@@ -1442,60 +1483,55 @@ export default function UserSettingsPage() {
                     <button
                       key={opt.value}
                       onClick={() => setShowActivityGrid(opt.value)}
-                      className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-colors ${
+                      className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all ${
                         showActivityGrid === opt.value
-                          ? 'border-[#FF5F1F]/50 bg-[#FF5F1F]/10'
-                          : 'border-white/[0.06] hover:border-white/20 bg-white/[0.02]'
+                          ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
+                          : 'border-surface-800 hover:border-surface-700 bg-surface-900/50'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${
-                        showActivityGrid === opt.value ? 'border-[#FF5F1F] bg-[#FF5F1F]' : 'border-white/20'
+                      <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center transition-colors ${
+                        showActivityGrid === opt.value ? 'border-[#FF5F1F]' : 'border-surface-600'
                       }`}>
-                        {showActivityGrid === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        {showActivityGrid === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-[#FF5F1F]" />}
                       </div>
                       <div>
-                        <p className={`text-sm font-medium ${showActivityGrid === opt.value ? 'text-white' : 'text-white/50'}`}>{opt.label}</p>
-                        <p className="text-xs text-white/25 mt-0.5">{opt.desc}</p>
+                        <p className={`text-sm font-medium ${showActivityGrid === opt.value ? 'text-white' : 'text-surface-300'}`}>{opt.label}</p>
+                        <p className="text-xs text-surface-500 mt-0.5">{opt.desc}</p>
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="rounded-2xl border border-white/[0.07] p-6 space-y-5" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Daily Goals</h2>
-              <p className="text-xs text-white/30">Used to calibrate the intensity of cells in your activity grid.</p>
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Daily Goals</h3>
+              <p className="text-sm text-surface-400 mb-6">Used to calibrate the intensity of cells in your activity grid.</p>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-white/40 uppercase tracking-widest block mb-1.5">Pages per day</label>
+                  <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-1.5">Pages per day</label>
                   <input
                     type="number" min="0" step="0.5" value={dailyGoalPages}
                     onChange={e => setDailyGoalPages(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30"
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-surface-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-white/40 uppercase tracking-widest block mb-1.5">Minutes per day</label>
+                  <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-1.5">Minutes per day</label>
                   <input
                     type="number" min="0" step="15" value={dailyGoalMinutes}
                     onChange={e => setDailyGoalMinutes(e.target.value)}
                     placeholder="0 = not set"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30"
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-surface-500"
                   />
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <button
-              onClick={saveAccountability}
-              disabled={saving}
-              className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50"
-              style={{ background: '#FF5F1F' }}
-            >
+            <Button onClick={saveAccountability} disabled={saving}>
               {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
-            </button>
+            </Button>
           </div>
         )}
       </div>

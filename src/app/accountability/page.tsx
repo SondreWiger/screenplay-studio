@@ -154,7 +154,7 @@ function BuddyCard({
       {/* Avatar */}
       <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 shrink-0">
         {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt={profile.display_name || ''} className="w-full h-full object-cover" />
+          <img src={profile.avatar_url} alt={profile.display_name || ''} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/30 text-lg font-bold">
             {(profile.display_name || profile.username || '?')[0].toUpperCase()}
@@ -209,7 +209,7 @@ function GroupCard({ group, myRole, onEnter }: { group: AccountabilityGroup; myR
     <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500/30 to-pink-500/30 border border-white/10 shrink-0 overflow-hidden">
         {group.avatar_url ? (
-          <img src={group.avatar_url} alt={group.name} className="w-full h-full object-cover" />
+          <img src={group.avatar_url} alt={group.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/40 text-lg">🎯</div>
         )}
@@ -319,7 +319,7 @@ function GroupModal({ group, onClose, onUpdated }: {
                     title={m.profile.display_name || m.profile.username || 'Member'}
                     className="w-7 h-7 rounded-full overflow-hidden border-2 border-[#181818] bg-white/10">
                     {m.profile.avatar_url ? (
-                      <img src={m.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img src={m.profile.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[10px] text-white/40 font-bold">
                         {(m.profile.display_name || m.profile.username || '?')[0].toUpperCase()}
@@ -344,7 +344,7 @@ function GroupModal({ group, onClose, onUpdated }: {
                   <div key={post.id} className="flex gap-2.5">
                     <div className="w-7 h-7 rounded-full overflow-hidden bg-white/10 shrink-0 mt-0.5">
                       {(post.author as any)?.avatar_url ? (
-                        <img src={(post.author as any).avatar_url} alt="" className="w-full h-full object-cover" />
+                        <img src={(post.author as any).avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[10px] text-white/30 font-bold">
                           {((post.author as any)?.display_name || '?')[0]}
@@ -788,7 +788,7 @@ export default function AccountabilityPage() {
                         <div key={r.id} className="flex items-center gap-3 p-2.5 rounded-xl transition-colors" style={{ background: 'rgba(255,255,255,0.02)' }}>
                           <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 shrink-0">
                             {r.avatar_url ? (
-                              <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />
+                              <img src={r.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>
                                 {(r.display_name || r.username || '?')[0]}

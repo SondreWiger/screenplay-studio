@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 
+const BASE_URL = () => process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
+
 const ogImage = `/api/og?${new URLSearchParams({
   type:     'roadmap',
   title:    'Feedback & Roadmap',
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
     type: 'website',
     title: 'Feedback & Roadmap — Screenplay Studio',
     description: 'Report bugs, request features, and track what\'s being built.',
-    url: 'https://screenplaystudio.fun/feedback',
+    url: `${BASE_URL()}/feedback`,
     siteName: 'Screenplay Studio',
     images: [{ url: ogImage, width: 1200, height: 630, alt: 'Screenplay Studio Feedback' }],
   },

@@ -13,14 +13,20 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
  * }
  */
 export async function POST(req: NextRequest) {
-  // Validate request — in production you'd add a shared secret here
+  // Validate request — require a shared secret in production
   const authHeader = req.headers.get('x-media-server-key');
-  const expectedKey = process.env.MEDIA_SERVER_SECRET || 'dev-media-key';
-  if (authHeader !== expectedKey) {
-    // Allow from localhost in development
-    const forwarded = req.headers.get('x-forwarded-for') || '';
-    const isLocal = forwarded.includes('127.0.0.1') || forwarded.includes('::1') || !authHeader;
-    if (!isLocal && process.env.NODE_ENV === 'production') {
+  const expectedKey = process.env.MEDIA_SERVER_SECRET || '';
+  if (process.env.NODE_ENV === 'production') {
+    if (!expectedKey) {
+      return NextResponse.json({ error: 'MEDIA_SERVER_SECRET not configured' }, { status: 500 });
+    }
+    if (authHeader !== expectedKey) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  } else {
+    // Dev default for local testing only
+    const devExpected = expectedKey || 'dev-media-key';
+    if (authHeader !== devExpected) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }

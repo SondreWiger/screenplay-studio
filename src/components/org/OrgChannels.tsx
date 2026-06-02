@@ -146,7 +146,7 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
                 <div key={msg.id} className={cn('group flex gap-3', msg.is_pinned && 'bg-amber-500/5 -mx-2 px-2 py-1 rounded')}>
                   <div className="w-8 h-8 rounded-full bg-surface-800 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5">
                     {msg.author?.avatar_url ? (
-                      <img src={msg.author.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      <img src={msg.author.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" loading="lazy" />
                     ) : (
                       msg.author?.full_name?.[0] || '?'
                     )}

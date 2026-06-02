@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select, toast } from '@/components/ui';
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
 import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
+import { sendTicketReplyEmailAction } from '@/lib/email-actions';
 import { BadgeDisplay } from '@/components/BadgeDisplay';
 
 
@@ -108,7 +109,6 @@ export default function AdminPage() {
   const [proGatingEnabled, setProGatingEnabled] = useState(false);
   const [creatorProgramEnabled, setCreatorProgramEnabled] = useState(false);
   const [creatorPayoutEnabled, setCreatorPayoutEnabled] = useState(false);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Community
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
@@ -578,18 +578,12 @@ export default function AdminPage() {
         const { data: ownerProfile, error: profileError } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', ticket.user_id).single();
         if (profileError) console.error('Failed to fetch ticket owner profile:', profileError.message);
         if (ownerProfile?.email) {
-          fetch('/api/email/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to: { email: ownerProfile.email, name: ownerProfile.display_name || ownerProfile.full_name || undefined },
-              subject: `Re: ${ticket.subject} — Screenplay Studio Support`,
-              heading: 'New reply on your support ticket',
-              body: `Our team responded to your ticket: <strong>${ticket.subject}</strong>`,
-              ctaLabel: 'View Ticket',
-              ctaUrl: `/support?ticket=${ticket.id}`,
-            }),
-          }).catch(() => {}); // best-effort
+          sendTicketReplyEmailAction(
+            ownerProfile.email,
+            ownerProfile.display_name || ownerProfile.full_name || '',
+            ticket.subject,
+            ticket.id,
+          ).catch(() => {});
         }
       }
     }
@@ -792,201 +786,127 @@ export default function AdminPage() {
   const tabs = isFull ? allTabs : allTabs.filter((t) => MOD_TABS.includes(t.key));
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-950 relative">
-      {/* Mobile header bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-12 bg-surface-950 border-b border-surface-800 flex items-center px-3 gap-3">
-        <button onClick={() => setShowMobileSidebar(!showMobileSidebar)} className="p-1.5 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/10">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-        </button>
-        <span className="text-sm font-semibold text-white">{isFull ? 'Admin' : 'Mod'} Panel</span>
+    <>
+      <div className="mb-6">
+        <h1 className="text-2xl font-black text-white">Admin Panel</h1>
+        <p className="text-sm text-surface-400 mt-1">Platform Management &amp; Moderation Tools</p>
       </div>
 
-      {/* Mobile overlay */}
-      {showMobileSidebar && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setShowMobileSidebar(false)} />}
-
-      {/* Sidebar */}
-      <aside className={cn(
-        'w-64 flex flex-col border-r border-surface-800 bg-surface-950 shrink-0',
-        'fixed md:relative inset-y-0 left-0 z-40 transition-transform duration-200',
-        showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-      )}>
-        <div className="border-b border-surface-800 p-4">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">
-                A
-              </div>
-            </Link>
-            <div>
-              <h2 className="text-sm font-semibold text-white">{isFull ? 'Admin Panel' : 'Mod Panel'}</h2>
-              <p className="text-[11px] text-surface-500">{isFull ? 'Platform Management' : 'Moderation Tools'}</p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => { setActiveTab(tab.key); setShowMobileSidebar(false); }}
-              className={cn(
-                'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-                activeTab === tab.key
-                  ? 'bg-[#E54E15]/10 text-[#FF5F1F]'
-                  : 'text-surface-400 hover:bg-surface-900/5 hover:text-white'
-              )}
-            >
+      {/* Tab navigation */}
+      <div className="flex flex-wrap gap-1 mb-8 pb-4 border-b border-surface-800">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => { setActiveTab(tab.key); }}
+            className={cn(
+              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200',
+              activeTab === tab.key
+                ? 'bg-[#E54E15]/12 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/25 shadow-sm'
+                : 'text-surface-400 hover:text-white hover:bg-surface-800/50'
+            )}
+          >
+            <span className="flex items-center gap-1.5">
               {tab.icon}
               {tab.label}
-            </button>
-          ))}
+            </span>
+          </button>
+        ))}
+      </div>
 
-          {isFull && (
-            <div className="mt-4 pt-4 border-t border-surface-800">
-              <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider font-medium">Tools</p>
-              <Link href="/admin/legal" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
-                Legal Blog
-              </Link>
-              <Link href="/admin/security" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                Security
-              </Link>
-              <Link href="/admin/moderation" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-                Content Moderation
-              </Link>
-              <Link href="/admin/reports" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>
-                Reports
-              </Link>
-              <Link href="/admin/features" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
-                Feature Flags
-              </Link>
-              <Link href="/admin/changelog" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-                Changelog
-              </Link>
-              <Link href="/admin/feedback" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 4v-4z" /></svg>
-                Feedback
-              </Link>
-              <Link href="/admin/polls" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                Polls
-              </Link>
-            </div>
-          )}
-        </nav>
-
-        <div className="border-t border-surface-800 p-4">
-          <Link href="/dashboard" className="flex items-center gap-2 text-xs text-surface-500 hover:text-white transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back to Dashboard
-          </Link>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
-        <div className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
-          {activeTab === 'overview' && stats && <OverviewTab stats={stats} />}
-          {activeTab === 'users' && (
-            <UsersTab
-              users={filteredUsers}
-              search={userSearch}
-              onSearchChange={setUserSearch}
-              onEdit={setEditingUser}
-              onDelete={handleDeleteUser}
-              onRefresh={() => loadUsers()}
-            />
-          )}
-          {activeTab === 'projects' && (
-            <ProjectsTab
-              projects={filteredProjects}
-              search={projectSearch}
-              onSearchChange={setProjectSearch}
-            />
-          )}
-          {activeTab === 'system' && (
-            <SystemTab
-              rebootStatus={rebootStatus}
-              onSoftReboot={handleSoftReboot}
-              onClearPresence={handleClearAllPresence}
-              onRefreshStats={() => { setLoading(true); loadStats(); loadUsers(); loadProjects(); }}
-              siteVersion={siteVersion}
-              onUpdateVersion={handleUpdateVersion}
-              opensourceEnabled={opensourceEnabled}
-              onToggleOpensource={handleToggleOpensource}
-              proGatingEnabled={proGatingEnabled}
-              onToggleProGating={handleToggleProGating}
-              creatorProgramEnabled={creatorProgramEnabled}
-              onToggleCreatorProgram={handleToggleCreatorProgram}
-              creatorPayoutEnabled={creatorPayoutEnabled}
-              onToggleCreatorPayout={handleToggleCreatorPayout}
-            />
-          )}
-          {activeTab === 'blog' && (
-            <BlogTab
-              posts={blogPosts}
-              comments={blogComments}
-              onNewPost={() => setEditingPost('new')}
-              onEditPost={(post) => setEditingPost(post)}
-              onDeletePost={handleDeletePost}
-              onToggleCommentHidden={handleToggleCommentHidden}
-              onDeleteComment={handleDeleteComment}
-            />
-          )}
-          {activeTab === 'community' && (
-            <CommunityTab
-              posts={communityPosts}
-              categories={communityCategories}
-              themes={challengeThemes}
-              challenges={challenges}
-              onDeletePost={handleDeleteCommunityPost}
-              onSaveCategory={handleSaveCategory}
-              onDeleteCategory={handleDeleteCategory}
-              onSaveTheme={handleSaveTheme}
-              onDeleteTheme={handleDeleteTheme}
-              onCreateChallenge={handleCreateCustomChallenge}
-            />
-          )}
-          {activeTab === 'tickets' && (
-            <TicketsTab
-              tickets={tickets}
-              selectedTicketId={selectedTicketId}
-              messages={ticketMessages}
-              replyText={ticketReply}
-              onSelectTicket={handleSelectTicket}
-              onReply={handleTicketReply}
-              onReplyChange={setTicketReply}
-              onStatusChange={handleUpdateTicketStatus}
-              onPriorityChange={handleUpdateTicketPriority}
-            />
-          )}
-          {activeTab === 'contributors' && (
-            <ContributorsTab
-              contributors={contributors}
-              onRemove={handleRemoveContributor}
-              onAdd={handleAddContributor}
-              onToggleFeatured={handleToggleFeatured}
-            />
-          )}
-          {activeTab === 'badges' && (
-            <BadgesAdminTab />
-          )}
-          {activeTab === 'courses' && (
-            <CoursesAdminTab />
-          )}
-          {activeTab === 'creators' && (
-            <CreatorsTab
-              programEnabled={creatorProgramEnabled}
-              payoutEnabled={creatorPayoutEnabled}
-            />
-          )}
-        </div>
-      </main>
+      {activeTab === 'overview' && stats && <OverviewTab stats={stats} />}
+      {activeTab === 'users' && (
+        <UsersTab
+          users={filteredUsers}
+          search={userSearch}
+          onSearchChange={setUserSearch}
+          onEdit={setEditingUser}
+          onDelete={handleDeleteUser}
+          onRefresh={() => loadUsers()}
+        />
+      )}
+      {activeTab === 'projects' && (
+        <ProjectsTab
+          projects={filteredProjects}
+          search={projectSearch}
+          onSearchChange={setProjectSearch}
+        />
+      )}
+      {activeTab === 'system' && (
+        <SystemTab
+          rebootStatus={rebootStatus}
+          onSoftReboot={handleSoftReboot}
+          onClearPresence={handleClearAllPresence}
+          onRefreshStats={() => { setLoading(true); loadStats(); loadUsers(); loadProjects(); }}
+          siteVersion={siteVersion}
+          onUpdateVersion={handleUpdateVersion}
+          opensourceEnabled={opensourceEnabled}
+          onToggleOpensource={handleToggleOpensource}
+          proGatingEnabled={proGatingEnabled}
+          onToggleProGating={handleToggleProGating}
+          creatorProgramEnabled={creatorProgramEnabled}
+          onToggleCreatorProgram={handleToggleCreatorProgram}
+          creatorPayoutEnabled={creatorPayoutEnabled}
+          onToggleCreatorPayout={handleToggleCreatorPayout}
+        />
+      )}
+      {activeTab === 'blog' && (
+        <BlogTab
+          posts={blogPosts}
+          comments={blogComments}
+          onNewPost={() => setEditingPost('new')}
+          onEditPost={(post) => setEditingPost(post)}
+          onDeletePost={handleDeletePost}
+          onToggleCommentHidden={handleToggleCommentHidden}
+          onDeleteComment={handleDeleteComment}
+        />
+      )}
+      {activeTab === 'community' && (
+        <CommunityTab
+          posts={communityPosts}
+          categories={communityCategories}
+          themes={challengeThemes}
+          challenges={challenges}
+          onDeletePost={handleDeleteCommunityPost}
+          onSaveCategory={handleSaveCategory}
+          onDeleteCategory={handleDeleteCategory}
+          onSaveTheme={handleSaveTheme}
+          onDeleteTheme={handleDeleteTheme}
+          onCreateChallenge={handleCreateCustomChallenge}
+        />
+      )}
+      {activeTab === 'tickets' && (
+        <TicketsTab
+          tickets={tickets}
+          selectedTicketId={selectedTicketId}
+          messages={ticketMessages}
+          replyText={ticketReply}
+          onSelectTicket={handleSelectTicket}
+          onReply={handleTicketReply}
+          onReplyChange={setTicketReply}
+          onStatusChange={handleUpdateTicketStatus}
+          onPriorityChange={handleUpdateTicketPriority}
+        />
+      )}
+      {activeTab === 'contributors' && (
+        <ContributorsTab
+          contributors={contributors}
+          onRemove={handleRemoveContributor}
+          onAdd={handleAddContributor}
+          onToggleFeatured={handleToggleFeatured}
+        />
+      )}
+      {activeTab === 'badges' && (
+        <BadgesAdminTab />
+      )}
+      {activeTab === 'courses' && (
+        <CoursesAdminTab />
+      )}
+      {activeTab === 'creators' && (
+        <CreatorsTab
+          programEnabled={creatorProgramEnabled}
+          payoutEnabled={creatorPayoutEnabled}
+        />
+      )}
 
       {/* Edit User Modal */}
       {editingUser && (
@@ -1006,7 +926,7 @@ export default function AdminPage() {
           onSaved={() => { setEditingPost(null); loadBlogPosts(); }}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -1063,11 +983,27 @@ function BarRow({ label, count, max, color }: { label: string; count: number; ma
 }
 
 /** A big KPI card */
-function KpiCard({ label, value, sub, color, icon }: { label: string; value: string | number; sub?: string; color: string; icon: React.ReactNode }) {
+function KpiCard({ label, value, sub, color, icon, trend }: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  color: string;
+  icon: React.ReactNode;
+  trend?: number | null;
+}) {
   return (
-    <div className={`rounded-xl border border-surface-800 bg-gradient-to-br p-4 flex flex-col gap-2 ${color}`}>
+    <div className={`rounded-xl border border-surface-800 bg-gradient-to-br p-4 flex flex-col gap-2 ${color} relative overflow-hidden group hover:border-surface-700/80 transition-colors`}>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform" />
       <div className="flex items-center justify-between">
         <span className="text-surface-400">{icon}</span>
+        {trend !== undefined && trend !== null && (
+          <span className={cn(
+            'inline-flex items-center gap-0.5 text-[11px] font-bold',
+            trend > 0 ? 'text-green-400' : trend < 0 ? 'text-red-400' : 'text-surface-500'
+          )}>
+            {trend > 0 ? '↑' : trend < 0 ? '↓' : '→'} {Math.abs(trend)}%
+          </span>
+        )}
       </div>
       <div>
         <p className="text-2xl font-black text-white tracking-tight">{typeof value === 'number' ? value.toLocaleString() : value}</p>
@@ -1086,33 +1022,32 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
     activeUsers15Min: stats.activeUsers15Min,
     activeUsers1Hour: stats.activeUsers1Hour,
   });
+  const [compStats, setCompStats] = useState<any>(null);
 
-  // Live update active users every 30 seconds
+  // Live update active users + fetch comprehensive stats
   useEffect(() => {
-    const loadActiveUsers = async () => {
+    const loadData = async () => {
       try {
         const supabase = createClient();
-        const [active5MinRes, active15MinRes, active1HourRes] = await Promise.all([
+        const [active5MinRes, active15MinRes, active1HourRes, compRes] = await Promise.all([
           supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()}`),
           supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 15 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 15 * 60 * 1000).toISOString()}`),
           supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(Date.now() - 60 * 60 * 1000).toISOString()},updated_at.gte.${new Date(Date.now() - 60 * 60 * 1000).toISOString()}`),
+          fetch('/api/admin/stats/comprehensive').then(r => r.ok ? r.json() : null),
         ]);
         setLiveActiveUsers({
           activeUsers5Min: active5MinRes.count || 0,
           activeUsers15Min: active15MinRes.count || 0,
           activeUsers1Hour: active1HourRes.count || 0,
         });
+        if (compRes) setCompStats(compRes);
       } catch (err) {
-        console.error('Error loading active users:', err);
+        console.error('Error loading admin data:', err);
       }
     };
 
-    // Initial load
-    loadActiveUsers();
-
-    // Set up interval for live updates
-    const interval = setInterval(loadActiveUsers, 30000); // 30 seconds
-
+    loadData();
+    const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -1149,11 +1084,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-black text-white mb-1">Platform Overview</h1>
-        <p className="text-sm text-surface-400">Live stats across all of Screenplay Studio</p>
-      </div>
-
       {/* ── Primary KPI row ── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <KpiCard
@@ -1162,11 +1092,12 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           sub={`+${newSignups30} in last 30 days`}
           color="from-blue-500/20 to-blue-900/5"
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
+          trend={compStats?.growth?.signupGrowth}
         />
         <KpiCard
-          label="Active (5m)"
+          label="Active Now"
           value={liveActiveUsers.activeUsers5Min}
-          sub="Users online now"
+          sub="Users online (5m)"
           color="from-green-500/20 to-green-900/5"
           icon={<svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>}
         />
@@ -1197,6 +1128,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           sub={`+${newProj30} in last 30 days`}
           color="from-violet-500/20 to-violet-900/5"
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>}
+          trend={compStats?.growth?.projectGrowth}
         />
         <KpiCard
           label="Total Words Written"
@@ -1209,31 +1141,50 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
 
       {/* ── Growth charts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Signups sparkline */}
-        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-semibold text-white">New Signups — Last 30 Days</h3>
               <p className="text-xs text-surface-500 mt-0.5">{newSignups30} total new users</p>
             </div>
-            <span className="text-2xl font-black text-blue-400">{newSignups30}</span>
+            <div className="text-right">
+              <span className="text-2xl font-black text-blue-400 block">{newSignups30}</span>
+              {compStats?.growth?.signupGrowth !== undefined && (
+                <span className={cn(
+                  'text-[11px] font-semibold',
+                  compStats.growth.signupGrowth > 0 ? 'text-green-400' : compStats.growth.signupGrowth < 0 ? 'text-red-400' : 'text-surface-500'
+                )}>
+                  {compStats.growth.signupGrowth > 0 ? '↑' : compStats.growth.signupGrowth < 0 ? '↓' : '→'} {Math.abs(compStats.growth.signupGrowth)}% vs prev 30d
+                </span>
+              )}
+            </div>
           </div>
           <Sparkline values={signupValues} color="#3b82f6" height={56} />
-          {/* Day labels: first and last */}
           <div className="flex justify-between text-[10px] text-surface-600 mt-1">
             <span>{stats.signupsByDay[0]?.date.slice(5)}</span>
             <span>{stats.signupsByDay[stats.signupsByDay.length - 1]?.date.slice(5)}</span>
           </div>
         </div>
 
-        {/* Projects sparkline */}
-        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-semibold text-white">New Projects — Last 30 Days</h3>
               <p className="text-xs text-surface-500 mt-0.5">{newProj30} projects created</p>
             </div>
-            <span className="text-2xl font-black text-violet-400">{newProj30}</span>
+            <div className="text-right">
+              <span className="text-2xl font-black text-violet-400 block">{newProj30}</span>
+              {compStats?.growth?.projectGrowth !== undefined && (
+                <span className={cn(
+                  'text-[11px] font-semibold',
+                  compStats.growth.projectGrowth > 0 ? 'text-green-400' : compStats.growth.projectGrowth < 0 ? 'text-red-400' : 'text-surface-500'
+                )}>
+                  {compStats.growth.projectGrowth > 0 ? '↑' : compStats.growth.projectGrowth < 0 ? '↓' : '→'} {Math.abs(compStats.growth.projectGrowth)}% vs prev 30d
+                </span>
+              )}
+            </div>
           </div>
           <Sparkline values={projectValues} color="#7c3aed" height={56} />
           <div className="flex justify-between text-[10px] text-surface-600 mt-1">
@@ -1243,32 +1194,143 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
         </div>
       </div>
 
-      {/* ── Engagement metrics row ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        {[
-          { label: 'Scripts', value: stats.totalScripts, c: 'text-green-400' },
-          { label: 'Elements', value: stats.totalElements.toLocaleString(), c: 'text-cyan-400' },
-          { label: 'Characters', value: stats.totalCharacters, c: 'text-rose-400' },
-          { label: 'Locations', value: stats.totalLocations, c: 'text-emerald-400' },
-          { label: 'Scenes', value: stats.totalScenes, c: 'text-indigo-400' },
-          { label: 'Shots', value: stats.totalShots, c: 'text-orange-400' },
-          { label: 'Ideas', value: stats.totalIdeas, c: 'text-yellow-400' },
-          { label: 'Budget Items', value: stats.totalBudgetItems, c: 'text-teal-400' },
-          { label: 'Schedule Events', value: stats.totalScheduleEvents, c: 'text-pink-400' },
-          { label: 'Comments', value: stats.totalComments, c: 'text-violet-400' },
-          { label: 'Push Subs', value: stats.pushSubscriptions, c: 'text-sky-400' },
-          { label: 'Episodic Projects', value: stats.episodicProjects, c: 'text-blue-400' },
-        ].map((s) => (
-          <div key={s.label} className="rounded-xl border border-surface-800 bg-surface-900/50 p-3 text-center">
-            <p className={`text-xl font-black ${s.c}`}>{typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</p>
-            <p className="text-[10px] text-surface-500 mt-0.5">{s.label}</p>
+      {/* ── Weekly trends (from comprehensive stats) ── */}
+      {compStats?.trends?.weeklySignups && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+            <h3 className="text-sm font-semibold text-white mb-4">Weekly Signups — Last 12 Weeks</h3>
+            <div className="flex items-end gap-1 h-32">
+              {compStats.trends.weeklySignups.map((w: any, i: number) => {
+                const max = Math.max(...compStats.trends.weeklySignups.map((x: any) => x.count), 1);
+                const h = (w.count / max) * 100;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
+                      {w.count}
+                    </div>
+                    <div
+                      className="w-full rounded-t-sm transition-all duration-300 hover:opacity-80"
+                      style={{ height: `${Math.max(h, 2)}%`, background: '#3b82f6' }}
+                    />
+                    <span className="text-[8px] text-surface-600">{w.date.slice(5)}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        ))}
+
+          <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+            <h3 className="text-sm font-semibold text-white mb-4">Weekly Projects — Last 12 Weeks</h3>
+            <div className="flex items-end gap-1 h-32">
+              {compStats.trends.weeklyProjects.map((w: any, i: number) => {
+                const max = Math.max(...compStats.trends.weeklyProjects.map((x: any) => x.count), 1);
+                const h = (w.count / max) * 100;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
+                      {w.count}
+                    </div>
+                    <div
+                      className="w-full rounded-t-sm transition-all duration-300 hover:opacity-80"
+                      style={{ height: `${Math.max(h, 2)}%`, background: '#7c3aed' }}
+                    />
+                    <span className="text-[8px] text-surface-600">{w.date.slice(5)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Hourly signup pattern ── */}
+      {compStats?.trends?.hourlySignupPattern && (
+        <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+          <h3 className="text-sm font-semibold text-white mb-4">Signup Activity — Hour of Day (UTC)</h3>
+          <div className="flex items-end gap-1 h-24">
+            {compStats.trends.hourlySignupPattern.map((h: any) => {
+              const max = Math.max(...compStats.trends.hourlySignupPattern.map((x: any) => x.count), 1);
+              const pct = (h.count / max) * 100;
+              return (
+                <div key={h.hour} className="flex-1 flex flex-col items-center gap-0.5 group relative">
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
+                    {h.count}
+                  </div>
+                  <div
+                    className="w-full rounded-t-sm transition-all duration-200"
+                    style={{ height: `${Math.max(pct, 1)}%`, background: `oklch(0.6 0.15 ${h.hour * 15})` }}
+                  />
+                  <span className="text-[7px] text-surface-600">{h.hour}h</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Growth metrics row ── */}
+      {compStats?.growth && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Signups (30d)', value: compStats.growth.signups30Day, prev: compStats.growth.signupsPrev30Day, c: 'text-blue-400' },
+            { label: 'Projects (30d)', value: compStats.growth.projects30Day, prev: compStats.growth.projectsPrev30Day, c: 'text-violet-400' },
+            { label: 'Pro Rate', value: `${compStats.growth.proRate}%`, c: 'text-yellow-400' },
+            { label: 'Pro Users', value: stats.proUsers, c: 'text-yellow-400' },
+          ].map((m) => (
+            <div key={m.label} className="rounded-xl border border-surface-800 bg-surface-900/50 p-4 relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <p className={`text-2xl font-black ${m.c}`}>
+                  {typeof m.value === 'number' ? m.value.toLocaleString() : m.value}
+                </p>
+                {'prev' in m && m.prev !== undefined && (
+                  <span className={cn(
+                    'text-[11px] font-semibold px-1.5 py-0.5 rounded',
+                    m.value > m.prev ? 'text-green-400 bg-green-500/10' : m.value < m.prev ? 'text-red-400 bg-red-500/10' : 'text-surface-400 bg-surface-800'
+                  )}>
+                    {m.value > m.prev ? '↑' : m.value < m.prev ? '↓' : '→'} {m.value > m.prev ? '+' : ''}{typeof m.value === 'number' && typeof m.prev === 'number' ? m.value - m.prev : ''}
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-surface-500 mt-1">{m.label}</p>
+              {'prev' in m && m.prev !== undefined && (
+                <p className="text-[9px] text-surface-600 mt-0.5">Previous 30d: {m.prev.toLocaleString()}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Engagement metrics row ── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.12em]">Content Metrics</h3>
+          <div className="flex-1 h-px bg-surface-800" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {[
+            { label: 'Scripts', value: stats.totalScripts, c: 'text-green-400' },
+            { label: 'Elements', value: stats.totalElements.toLocaleString(), c: 'text-cyan-400' },
+            { label: 'Characters', value: stats.totalCharacters, c: 'text-rose-400' },
+            { label: 'Locations', value: stats.totalLocations, c: 'text-emerald-400' },
+            { label: 'Scenes', value: stats.totalScenes, c: 'text-indigo-400' },
+            { label: 'Shots', value: stats.totalShots, c: 'text-orange-400' },
+            { label: 'Ideas', value: stats.totalIdeas, c: 'text-yellow-400' },
+            { label: 'Budget Items', value: stats.totalBudgetItems, c: 'text-teal-400' },
+            { label: 'Schedule Events', value: stats.totalScheduleEvents, c: 'text-pink-400' },
+            { label: 'Comments', value: stats.totalComments, c: 'text-violet-400' },
+            { label: 'Push Subs', value: stats.pushSubscriptions, c: 'text-sky-400' },
+            { label: 'Episodic Projects', value: stats.episodicProjects, c: 'text-blue-400' },
+          ].map((s) => (
+            <div key={s.label} className="rounded-xl border border-surface-800 bg-surface-900/50 p-3 text-center hover:border-surface-700/80 transition-colors">
+              <p className={`text-xl font-black ${s.c}`}>{typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</p>
+              <p className="text-[10px] text-surface-500 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Content breakdown charts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Script types */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Script Types</h3>
           <div className="space-y-2.5">
@@ -1277,7 +1339,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
             ))}
           </div>
         </div>
-        {/* Project types */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Project Types</h3>
           <div className="space-y-2.5">
@@ -1286,7 +1347,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
             ))}
           </div>
         </div>
-        {/* User countries */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">User Countries</h3>
           <div className="space-y-2.5">
@@ -1299,7 +1359,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
 
       {/* ── Support / tickets ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick ticket KPIs */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5 flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-white">Support Overview</h3>
           <div className="grid grid-cols-3 gap-3">
@@ -1314,7 +1373,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
               </div>
             ))}
           </div>
-          {/* Open rate bar */}
           <div>
             <div className="flex justify-between text-[10px] text-surface-500 mb-1">
               <span>Open rate</span>
@@ -1329,7 +1387,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           </div>
         </div>
 
-        {/* Tickets by category */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">By Category</h3>
           <div className="space-y-2.5">
@@ -1339,7 +1396,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           </div>
         </div>
 
-        {/* Tickets by status */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">By Status</h3>
           <div className="space-y-2.5">
@@ -1352,7 +1408,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
 
       {/* ── Platform health + recent activity ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Health metrics */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Platform Health</h3>
           <div className="space-y-3">
@@ -1372,7 +1427,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           </div>
         </div>
 
-        {/* Recent users */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Recent Signups</h3>
           <div className="space-y-3">
@@ -1392,7 +1446,6 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           </div>
         </div>
 
-        {/* Recent projects */}
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Recent Projects</h3>
           <div className="space-y-3">
@@ -1687,6 +1740,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
       </div>
 
       <div className="rounded-xl border border-surface-800 overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-surface-800 bg-surface-900/50">
@@ -1780,6 +1834,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* DM All Modal */}
@@ -2746,7 +2801,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
                   <div className="flex items-start gap-4">
                     {prod.thumbnail_url && (
                       <div className="w-20 h-14 rounded-lg overflow-hidden shrink-0">
-                        <img src={prod.thumbnail_url} alt={prod.title || 'Production thumbnail'} className="w-full h-full object-cover" />
+                        <img src={prod.thumbnail_url} alt={prod.title || 'Production thumbnail'} className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -3112,7 +3167,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
           <div>
             <label className="text-sm font-medium text-surface-300 block mb-2">Cover Preview</label>
             <div className="rounded-lg overflow-hidden border border-surface-800 max-h-48">
-              <img src={coverUrl} alt="Cover preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={coverUrl} alt="Cover preview" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             </div>
           </div>
         )}
@@ -3287,7 +3342,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                   <div key={msg.id} className={`flex gap-3 ${msg.is_staff ? 'flex-row-reverse' : ''}`}>
                     <div className="shrink-0">
                       {msg.profile?.avatar_url ? (
-                        <img src={msg.profile.avatar_url} alt={msg.profile.full_name || 'User avatar'} className="w-8 h-8 rounded-full object-cover" />
+                        <img src={msg.profile.avatar_url} alt={msg.profile.full_name || 'User avatar'} className="w-8 h-8 rounded-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-surface-400">
                           {(msg.profile?.full_name || '?')[0].toUpperCase()}
@@ -3555,7 +3610,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center text-sm font-bold text-white shrink-0 overflow-hidden">
                   {c.cached_avatar_url
-                    ? <img src={c.cached_avatar_url} className="w-full h-full object-cover" alt="" />
+                    ? <img src={c.cached_avatar_url} className="w-full h-full object-cover" alt="" loading="lazy" />
                     : (c.cached_name || '?')[0].toUpperCase()
                   }
                 </div>
@@ -4094,7 +4149,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     {c.profile?.avatar_url && (
-                      <img src={c.profile.avatar_url} className="w-9 h-9 rounded-full shrink-0 object-cover" alt="" />
+                      <img src={c.profile.avatar_url} className="w-9 h-9 rounded-full shrink-0 object-cover" alt="" loading="lazy" />
                     )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -4187,6 +4242,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
 
           {payoutPreview.length > 0 && (
             <div>
+              <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-surface-800">
@@ -4207,6 +4263,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                   ))}
                 </tbody>
               </table>
+              </div>
               <div className="mt-4 flex gap-3">
                 <button onClick={markPaid}
                   className="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors">

@@ -257,7 +257,7 @@ export default function DeepDiveMoodboardPage() {
 
             {/* Image */}
             {selectedItem.item_type === 'image' && selectedItem.image_url && (
-              <img src={selectedItem.image_url} alt={selectedItem.title || ''} referrerPolicy="no-referrer" className="w-full rounded-t-2xl" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={selectedItem.image_url} alt={selectedItem.title || ''} referrerPolicy="no-referrer" className="w-full rounded-t-2xl" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )}
 
             {/* Color */}

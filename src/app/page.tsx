@@ -1,6 +1,17 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export const metadata: Metadata = {
+  title: 'Screenplay Studio — Write, plan, and collaborate on screenplays',
+  description: 'Free open-source screenwriting software with a professional script editor, scene breakdowns, shot lists, scheduling tools, and real-time collaboration. Write your next film or TV script.',
+  openGraph: {
+    title: 'Screenplay Studio — Free screenwriting software',
+    description: 'Write screenplays, plan productions, and collaborate with your team. Script editor, scene breakdowns, shot lists, scheduling, budget tracking, and more.',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun',
+  },
+};
 
 const ORANGE = '#FF5F1F';
 
@@ -78,7 +89,7 @@ async function TestimonialsSection() {
                   {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
                 </div>
               )}
-              <p className="text-sm text-white/50 leading-[1.85] flex-1">"{t.body}"</p>
+              <p className="text-sm text-white/50 leading-[1.85] flex-1">&ldquo;{t.body}&rdquo;</p>
               <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
                   style={{ background: '#FF5F1F' }}>
@@ -615,6 +626,67 @@ export default async function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* FAQ Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'What is Screenplay Studio?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Screenplay Studio is a free, open-source screenwriting and film production software. It provides a professional script editor with automatic formatting, real-time collaboration, character bibles, scene breakdowns, shot lists, corkboard planning, production scheduling, and budget tracking — all in one platform.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Is Screenplay Studio really free?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. Screenplay Studio is free and open-source software. You can use the script editor, collaborate with your team, plan scenes, create shot lists, and manage production schedules without paying anything. Pro features like advanced analytics are available for professional productions.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Does Screenplay Studio support real-time collaboration?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. Multiple people can work on the same script simultaneously. You can see who is editing what, leave inline comments, and stop emailing PDFs back and forth.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'What formats does Screenplay Studio support?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'The script editor uses Courier Prime font and automatically formats scene headings, character names, dialogue, action lines, parentheticals, and transitions as you type.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Can I plan a full film production with Screenplay Studio?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. Screenplay Studio covers the full production stack: script writing, character development, scene breakdowns, shot lists with storyboard references, corkboard planning, arc planning, beat sheets, production scheduling, budget tracking, submission tracking, and team role management.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Is Screenplay Studio open source?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. Screenplay Studio is open source and available on GitHub. The community can contribute features, report bugs, and review the code.',
+                },
+              },
+            ],
+          }),
+        }}
+      />
     </div>
   );
 }

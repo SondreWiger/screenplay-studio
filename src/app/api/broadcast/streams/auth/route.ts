@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 /**
  * POST /api/broadcast/streams/auth
@@ -11,6 +12,12 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
  * Returns 200 + ingest data if valid, 403 if invalid.
  */
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rateResult = checkRateLimit(`stream-auth:${ip}`, 20, 60_000);
+  if (!rateResult.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const body = await req.json();
 
   let projectId: string;
