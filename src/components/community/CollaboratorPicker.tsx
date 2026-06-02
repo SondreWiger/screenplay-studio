@@ -81,7 +81,7 @@ export function CollaboratorPicker({
                 className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-white/70"
               >
                 {c.avatar_url ? (
-                  <img src={c.avatar_url} className="w-4 h-4 rounded-full" alt="" />
+                  <img src={c.avatar_url} className="w-4 h-4 rounded-full" alt="" loading="lazy" />
                 ) : (
                   <div
                     className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white"
@@ -133,7 +133,7 @@ export function CollaboratorPicker({
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-white/5 transition-colors"
                 >
                   {p.avatar_url ? (
-                    <img src={p.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" />
+                    <img src={p.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" loading="lazy" />
                   ) : (
                     <div
                       className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-black text-white"

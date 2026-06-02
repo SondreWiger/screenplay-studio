@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, LayoutGroup } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
+
+const MotionDiv = dynamic(() => import('framer-motion').then(m => m.motion.div), { ssr: false });
+const LayoutGroup = dynamic(() => import('framer-motion').then(m => m.LayoutGroup), { ssr: false });
 
 // ── Complete feature catalogue ─────────────────────────────────────────────
 
@@ -654,7 +657,7 @@ const ALL_CATEGORIES = ['All', ...Array.from(new Set(FEATURES.map(f => f.categor
 // ── Feature card ───────────────────────────────────────────────────────────
 function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expanded: boolean; onExpand: (id: string | null) => void }) {
   return (
-    <motion.div
+    <MotionDiv
       layout
       layoutId={`card-${feature.id}`}
       style={{
@@ -693,7 +696,7 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
 
         {/* Expanded content */}
         {expanded && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.08, duration: 0.2 }}
@@ -710,7 +713,7 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
                 ))}
               </ul>
             )}
-          </motion.div>
+          </MotionDiv>
         )}
 
         {/* Category label */}
@@ -718,7 +721,7 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
           <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/15">{feature.category}</span>
         </div>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }
 

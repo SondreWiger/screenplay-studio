@@ -168,6 +168,14 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg>
             Mind Map
           </Link>
+          <Link href={`/projects/${params.id}/script`}>
+            <Button variant="ghost" size="sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              Jump to Script
+            </Button>
+          </Link>
           {canEdit && (
             <Button variant="secondary" onClick={handleAutoSync} loading={syncing}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -214,8 +222,8 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
 
       {filtered.length === 0 ? (
         <EmptyState
-          title="No characters yet"
-          description="Add characters to build your cast"
+          title="Bring your characters to life"
+          description="Characters drive your story. Add profiles with backstory, personality traits, visual references, and casting notes."
           action={canEdit ?
             <Button onClick={() => { setSelectedCharacter(null); setShowEditor(true); }}>
               Add Character
@@ -592,7 +600,7 @@ function CharacterEditor({
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-800/60 border border-surface-700">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-700 shrink-0 flex items-center justify-center">
                     {castMembers.find((m) => m.id === form.cast_member_id)?.photo_url
-                      ? <img src={castMembers.find((m) => m.id === form.cast_member_id)!.photo_url!} alt="" className="w-full h-full object-cover" />
+                      ? <img src={castMembers.find((m) => m.id === form.cast_member_id)!.photo_url!} alt="" className="w-full h-full object-cover" loading="lazy" />
                       : <span className="text-xs font-bold text-white">{form.cast_actor?.[0]?.toUpperCase() ?? '?'}</span>
                     }
                   </div>
@@ -637,7 +645,7 @@ function CharacterEditor({
                       >
                         <div className="w-9 h-9 rounded-full overflow-hidden bg-surface-700 shrink-0 flex items-center justify-center">
                           {member.photo_url
-                            ? <img src={member.photo_url} alt="" className="w-full h-full object-cover" />
+                            ? <img src={member.photo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                             : <span className="text-xs font-bold text-white">{member.name[0].toUpperCase()}</span>
                           }
                         </div>

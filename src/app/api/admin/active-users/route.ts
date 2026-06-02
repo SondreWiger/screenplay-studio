@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || '';
 
 async function requireAdmin() {
   const supabase = createServerSupabaseClient();
@@ -29,8 +29,8 @@ export async function GET() {
       supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${fiveMinAgo},updated_at.gte.${fiveMinAgo}`),
       supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${fifteenMinAgo},updated_at.gte.${fifteenMinAgo}`),
       supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${oneHourAgo},updated_at.gte.${oneHourAgo}`),
-      supabase.from('profiles').select('id, email, last_seen, updated_at').order('last_seen', { ascending: false, nullsFirst: false }).limit(10),
-      supabase.from('profiles').select('id, email, last_seen, updated_at').not('last_seen', 'is', null).limit(5),
+      supabase.from('profiles').select('id, last_seen, updated_at').order('last_seen', { ascending: false, nullsFirst: false }).limit(10),
+      supabase.from('profiles').select('id, last_seen, updated_at').not('last_seen', 'is', null).limit(5),
     ]);
 
     return NextResponse.json({

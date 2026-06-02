@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -401,7 +402,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               className="flex items-center gap-3 group"
             >
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-[#FF5F1F] transition-all" />
+                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-[#FF5F1F] transition-all" loading="lazy" />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-[#FF5F1F]/15 flex items-center justify-center text-sm font-bold text-[#FF5F1F] group-hover:ring-2 ring-[#FF5F1F] transition-all">
                   {(post.author?.full_name || 'A')[0]}
@@ -476,7 +477,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         {/* Cover image */}
         {post.cover_image_url && (
           <div className="rounded-xl overflow-hidden mb-8 max-h-72">
-            <img src={post.cover_image_url} alt={post.title || 'Post cover'} className="w-full h-full object-cover" />
+            <Image src={post.cover_image_url} alt={post.title || 'Post cover'} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
           </div>
         )}
 
@@ -668,7 +669,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                   >
                     {prod.thumbnail_url && (
                       <div className="rounded-lg overflow-hidden mb-3 h-32">
-                        <img src={prod.thumbnail_url} alt={prod.title || 'Production thumbnail'} className="w-full h-full object-cover" />
+                        <img src={prod.thumbnail_url} alt={prod.title || 'Production thumbnail'} className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     )}
                     <h4 className="text-sm font-semibold text-white">{prod.title}</h4>
@@ -810,7 +811,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
         <div className="flex items-start gap-3">
           <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
             {comment.author?.avatar_url ? (
-              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-[#FF5F1F] transition-all')} />
+              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-[#FF5F1F] transition-all')} loading="lazy" />
             ) : (
               <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-[#FF5F1F] transition-all')}>
                 {(comment.author?.full_name || '?')[0]}

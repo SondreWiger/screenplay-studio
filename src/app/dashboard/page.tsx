@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
@@ -11,9 +12,12 @@ import { pickToast, NEW_PROJECT } from '@/lib/funToasts';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
-import { GuidedTour } from '@/components/GuidedTour';
+import dynamic from 'next/dynamic';
 import { GamificationOptIn } from '@/components/GamificationOptIn';
 import { LevelUpCelebration } from '@/components/LevelUpCelebration';
+
+const GuidedTour = dynamic(() => import('@/components/GuidedTour').then(m => ({ default: m.GuidedTour })), { ssr: false });
+const OnboardingChecklist = dynamic(() => import('@/components/OnboardingChecklist').then(m => ({ default: m.OnboardingChecklist })), { ssr: false });
 import { useGamification } from '@/hooks/useGamification';
 import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
@@ -387,15 +391,18 @@ function DashboardContent() {
             </div>
             <h1 className="text-sm sm:text-base font-black text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
+          <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
+            <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
               Blog
             </Link>
-            <Link href="/idea-boards" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
+            <Link href="/idea-boards" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
               Ideas
             </Link>
-            <Link href="/about" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
+            <Link href="/about" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
               About
+            </Link>
+            <Link href="/quotes" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
+              Quotes
             </Link>
             {user?.show_community !== false && canUseFeature('community') && (
               <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
@@ -403,7 +410,7 @@ function DashboardContent() {
               </Link>
             )}
             {companyMemberships.length > 0 && (
-              <Link href="/company" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
+              <Link href="/company" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
                 Company
               </Link>
             )}
@@ -507,7 +514,7 @@ function DashboardContent() {
               <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#FF5F1F]/30 bg-[#FF5F1F]/5 p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ backgroundColor: inv.company_color || '#3B82F6' }}>
-                    {inv.company_logo ? <img src={inv.company_logo} alt={inv.company_name || 'Company logo'} className="w-full h-full object-cover rounded-lg" /> : inv.company_name?.[0] || '?'}
+                    {inv.company_logo ? <img src={inv.company_logo} alt={inv.company_name || 'Company logo'} className="w-full h-full object-cover rounded-lg" loading="lazy" /> : inv.company_name?.[0] || '?'}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">
@@ -531,9 +538,10 @@ function DashboardContent() {
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
               <span className="ss-label">Dashboard</span>
             </div>
-            <h2 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.03em' }}>
+            <h2 className="text-2xl font-black text-white flex items-center gap-2 flex-wrap" style={{ letterSpacing: '-0.03em' }}>
               WELCOME BACK{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
               {user?.is_pro && <span className="text-xs px-2 py-0.5 font-black uppercase tracking-wider" style={{ background: 'rgba(255,95,31,0.12)', color: '#FF5F1F', border: '1px solid rgba(255,95,31,0.2)' }}>Pro</span>}
+              <StreakBadge />
             </h2>
             <p className="mt-1 text-sm text-white/30">Your film projects and recent work</p>
           </div>
@@ -582,6 +590,13 @@ function DashboardContent() {
           </button>
         )}
 
+        {/* Onboarding Checklist */}
+        {projects.length > 0 && (
+          <div className="mb-8">
+            <OnboardingChecklist projectId={projects[0]?.id ?? null} />
+          </div>
+        )}
+
         {/* Search & Filter */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
@@ -599,7 +614,7 @@ function DashboardContent() {
                 key={status}
                 onClick={() => setFilterStatus(status)}
                 className={cn(
-                  'px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap',
+                  'px-3 py-2.5 md:py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap min-h-[44px] md:min-h-0',
                   filterStatus === status
                     ? 'bg-[#E54E15] text-white'
                     : 'text-surface-400 hover:text-white hover:bg-surface-800'
@@ -628,7 +643,7 @@ function DashboardContent() {
                   <div className="relative w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center shrink-0 overflow-hidden">
                     <span className="text-sm font-bold text-surface-400">{(rp.title || '?')[0].toUpperCase()}</span>
                     {rp.cover_url && (
-                      <img src={rp.cover_url} alt="" className="absolute inset-0 w-full h-full rounded-lg object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      <Image src={rp.cover_url} alt="" fill sizes="120px" className="rounded-lg object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     )}
                   </div>
                   <div className="min-w-0">
@@ -966,7 +981,7 @@ function DashboardContent() {
               <div className="mb-4 flex items-center gap-3">
                 <Link href="/company" className="flex items-center gap-3 group">
                   {company.logo_url ? (
-                    <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-7 h-7 rounded-lg object-cover" />
+                    <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-7 h-7 rounded-lg object-cover" loading="lazy" />
                   ) : (
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
@@ -1013,7 +1028,7 @@ function DashboardContent() {
                             <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
                           </div>
                           {project.cover_url && (
-                            <img src={project.cover_url} alt={project.title || 'Project cover'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                           )}
                           <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
                           <div className="absolute top-2.5 left-2.5">
@@ -1143,7 +1158,7 @@ function ProjectCard({
                 <span className="text-lg font-bold text-surface-600">{project.title[0]}</span>
               </div>
               {project.cover_url && (
-                <img src={project.cover_url} alt={project.title || 'Project cover'} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -1152,6 +1167,18 @@ function ProjectCard({
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {project.genre?.slice(0, 1).map((g) => <Badge key={g} size="sm">{g}</Badge>)}
+              <Badge size="sm" variant="default">{({
+  film: 'Film',
+  tv_production: 'TV',
+  audio_drama: 'Audio',
+  stage_play: 'Stage',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  podcast: 'Podcast',
+  educational: 'Edu',
+  livestream: 'Live',
+  documentary: 'Doc',
+} as Record<string, string>)[project.project_type] || project.project_type}</Badge>
               <Badge variant={statusColors[project.status]} size="sm">{project.status.replace('_', ' ')}</Badge>
               <span className="text-[10px] text-surface-600 hidden sm:inline">{timeAgo(project.updated_at)}</span>
             </div>
@@ -1212,7 +1239,7 @@ function ProjectCard({
               <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
             </div>
             {project.cover_url && (
-              <img src={project.cover_url} alt={project.title || 'Project cover'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )}
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute top-2.5 right-2.5">
@@ -1229,9 +1256,23 @@ function ProjectCard({
             )}
           </div>
           <div className="p-4">
-            <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
-              {project.title}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
+                {project.title}
+              </h3>
+              <Badge size="sm" variant="default">{({
+  film: 'Film',
+  tv_production: 'TV',
+  audio_drama: 'Audio',
+  stage_play: 'Stage',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  podcast: 'Podcast',
+  educational: 'Edu',
+  livestream: 'Live',
+  documentary: 'Doc',
+} as Record<string, string>)[project.project_type] || project.project_type}</Badge>
+            </div>
             {project.logline && (
               <p className="mt-1 text-xs text-surface-400 line-clamp-2 leading-relaxed">{project.logline}</p>
             )}
@@ -1572,7 +1613,7 @@ function NewProjectModal({
                     }`}
                   >
                     {m.company.logo_url ? (
-                      <img src={m.company.logo_url} alt={m.company.name || 'Company logo'} className="w-4 h-4 rounded object-cover" />
+                      <img src={m.company.logo_url} alt={m.company.name || 'Company logo'} className="w-4 h-4 rounded object-cover" loading="lazy" />
                     ) : (
                       <div
                         className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold text-white"
@@ -1785,5 +1826,30 @@ function NewProjectModal({
         </form>
       )}
     </Modal>
+  );
+}
+
+// ─── Streak Badge ───────────────────────────────────────────
+function StreakBadge() {
+  const { gamif, loading } = useGamification();
+  const streak = gamif?.login_streak ?? 0;
+
+  if (loading || streak < 2) return null;
+
+  const label = streak >= 30 ? 'HOT' : streak >= 14 ? 'ON FIRE' : streak >= 7 ? 'BLAZING' : 'LIT';
+  const colors = streak >= 30 ? 'from-red-500 to-orange-500 text-red-100 border-red-500/30'
+    : streak >= 14 ? 'from-orange-500 to-amber-500 text-orange-100 border-orange-500/30'
+    : streak >= 7 ? 'from-amber-500 to-yellow-500 text-amber-100 border-amber-500/30'
+    : 'from-yellow-500 to-[#FF5F1F] text-yellow-100 border-yellow-500/30';
+
+  return (
+    <span
+      className={`text-xs px-2 py-0.5 font-black uppercase tracking-wider bg-gradient-to-r ${colors} border rounded-full flex items-center gap-1`}
+      title={`${streak}-day login streak`}
+    >
+      <span className="text-[10px]">🔥</span>
+      {streak}
+      <span className="hidden sm:inline">&nbsp;{label}</span>
+    </span>
   );
 }

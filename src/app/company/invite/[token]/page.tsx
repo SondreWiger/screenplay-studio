@@ -127,7 +127,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
       <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
         <Card className="p-8 max-w-md w-full text-center">
           {company?.logo_url ? (
-            <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" />
+            <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" loading="lazy" />
           ) : company ? (
             <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
               {company.name?.[0] || '?'}
@@ -190,7 +190,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
     <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
       <Card className="p-8 max-w-md w-full text-center">
         {company?.logo_url ? (
-          <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" />
+          <img src={company.logo_url} alt={company.name || 'Company logo'} className="h-12 w-auto mx-auto mb-4" loading="lazy" />
         ) : company ? (
           <div className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color || '#3B82F6' }}>
             {company.name?.[0] || '?'}

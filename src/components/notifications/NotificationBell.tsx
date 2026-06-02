@@ -213,7 +213,7 @@ export function NotificationRow({
       {/* Icon */}
       <div className={`w-9 h-9 rounded-lg ${icon.color} flex items-center justify-center shrink-0 text-sm`}>
         {n.actor?.avatar_url ? (
-          <img src={n.actor.avatar_url} alt="" className="w-9 h-9 rounded-lg object-cover" />
+          <img src={n.actor.avatar_url} alt="" className="w-9 h-9 rounded-lg object-cover" loading="lazy" />
         ) : (
           <span className="font-semibold text-[10px] leading-none">{icon.label}</span>
         )}

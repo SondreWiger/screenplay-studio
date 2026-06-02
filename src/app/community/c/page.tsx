@@ -152,7 +152,7 @@ export default function BrowseCommunitiesPage() {
                     style={{ background: `linear-gradient(135deg, ${c.accent_color}44, ${c.accent_color2 ?? c.accent_color}22)` }}
                   >
                     {c.banner_url && (
-                      <img src={c.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <img src={c.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                     )}
                     <div
                       className="absolute bottom-0 left-4 translate-y-1/2 w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg"

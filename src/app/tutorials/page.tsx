@@ -4,6 +4,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Tutorials — Screenplay Studio',
   description: 'Learn how to use every feature in Screenplay Studio — from writing your first script to managing a full production.',
+  openGraph: {
+    title: 'Tutorials — Screenplay Studio',
+    description: 'Learn how to use every feature in Screenplay Studio — from writing your first script to managing a full production.',
+  },
+  twitter: {
+    title: 'Tutorials — Screenplay Studio',
+    description: 'Learn how to use every feature in Screenplay Studio — from writing your first script to managing a full production.',
+  },
 };
 
 const ORANGE = '#FF5F1F';

@@ -222,7 +222,7 @@ export default function CommunityPage() {
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className="text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 transition-colors"
+                className="text-xs md:text-[10px] font-mono uppercase tracking-wider px-3 py-2.5 md:py-1.5 transition-colors min-h-[44px] md:min-h-0"
               style={{
                   color: sortBy === s ? '#FF5F1F' : 'rgba(255,255,255,0.45)',
                   border: sortBy === s ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
@@ -341,12 +341,12 @@ export default function CommunityPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {filtered.map((post) => (
+                {filtered.map((post, idx) => (
                   <Link
                     key={post.id}
                     href={`/community/post/${post.slug}`}
-                    className="block rounded-xl border border-white/[0.12] bg-surface-800/50 hover:border-white/20 hover:bg-surface-800/70 transition-all p-5"
-                  >
+                    className="block rounded-xl border border-white/[0.12] bg-surface-800/50 hover:border-white/20 hover:bg-surface-800/70 transition-all hover:-translate-y-0.5 p-5 animate-fade-in"
+                    style={{ animationDelay: `${idx * 30}ms`, animationFillMode: 'backwards' }}>
                     <div className="flex items-start gap-4">
                       {/* Upvote count */}
                       <div className="flex flex-col items-center gap-0.5 pt-1 shrink-0">
@@ -402,7 +402,7 @@ export default function CommunityPage() {
                             className="flex items-center gap-1 hover:text-white/70 transition-colors"
                           >
                             {post.author?.avatar_url ? (
-                              <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" />
+                              <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" loading="lazy" />
                             ) : (
                               <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[8px] font-bold text-white/40">
                                 {(post.author?.full_name || '?')[0]}
@@ -429,21 +429,21 @@ export default function CommunityPage() {
                         {/* Permission badges */}
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {post.allow_free_use && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-green-700 bg-green-50 rounded-full">Free to Use</span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold text-green-400 bg-green-500/15 rounded-full">Free to Use</span>
                           )}
                           {post.allow_distros && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded-full">Distros Allowed</span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold text-blue-400 bg-blue-500/15 rounded-full">Distros Allowed</span>
                           )}
                           {post.allow_edits && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-700 bg-purple-50 rounded-full">Open to Edits</span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-400 bg-purple-500/15 rounded-full">Open to Edits</span>
                           )}
                           {/* Mod delete */}
                           {user && (user.id === post.author_id || isMod) && (
                             <button
                               onClick={(e) => handleDeletePost(e, post.id)}
-                              className="ml-auto px-2 py-0.5 text-[10px] font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-full transition-colors flex items-center gap-1"
+                              className="ml-auto px-2 py-0.5 text-[10px] font-semibold text-red-400 bg-red-500/15 hover:bg-red-500/25 rounded-full transition-colors flex items-center gap-1"
                             >
-                              {user.id !== post.author_id && <span className="text-amber-600">MOD</span>}
+                              {user.id !== post.author_id && <span className="text-amber-400">MOD</span>}
                               ✕ Delete
                             </button>
                           )}
@@ -453,7 +453,7 @@ export default function CommunityPage() {
                       {/* Cover image */}
                       {post.cover_image_url && (
                         <div className="hidden sm:block w-28 h-20 rounded-lg overflow-hidden shrink-0">
-                          <img src={post.cover_image_url} alt={post.title || 'Post cover'} className="w-full h-full object-cover" />
+                          <img src={post.cover_image_url} alt={post.title || 'Post cover'} className="w-full h-full object-cover" loading="lazy" />
                         </div>
                       )}
                     </div>
@@ -473,7 +473,7 @@ export default function CommunityPage() {
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setSelectedCategory(null)}
-            className="shrink-0 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors"
+            className="shrink-0 px-3 py-2.5 md:py-1.5 text-xs md:text-[10px] font-mono uppercase tracking-wider transition-colors min-h-[44px] md:min-h-0"
             style={{
               color: !selectedCategory ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
               border: !selectedCategory ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
@@ -484,7 +484,7 @@ export default function CommunityPage() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.slug)}
-              className="shrink-0 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors"
+              className="shrink-0 px-3 py-2.5 md:py-1.5 text-xs md:text-[10px] font-mono uppercase tracking-wider transition-colors min-h-[44px] md:min-h-0"
               style={{
                 color: selectedCategory === cat.slug ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
                 border: selectedCategory === cat.slug ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',

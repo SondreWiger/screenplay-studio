@@ -277,7 +277,7 @@ export default function ShowcasePage() {
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-2">
                         {project.author?.avatar_url ? (
-                          <img src={project.author.avatar_url} alt={project.author.full_name || 'Author avatar'} className="w-5 h-5 rounded-full" />
+                          <img src={project.author.avatar_url} alt={project.author.full_name || 'Author avatar'} className="w-5 h-5 rounded-full" loading="lazy" />
                         ) : (
                           <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white/50">
                             {(project.author?.full_name || '?')[0]}

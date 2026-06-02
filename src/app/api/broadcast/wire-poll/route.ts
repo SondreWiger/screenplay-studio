@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 // ────────────────────────────────────────────────────────────
 // Wire Feed Polling API — Real RSS/Atom feed ingestion
@@ -159,6 +161,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'feed_id and project_id required' }, { status: 400 });
     }
 
+    const authSupabase = createServerSupabaseClient();
+    const { data: { user } } = await authSupabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const ip = getClientIp(request);
+    const rateResult = checkRateLimit(`wire-poll:${ip}`, 10, 60_000);
+    if (!rateResult.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const supabase = getServiceClient();
 
     // 1. Get feed config
@@ -175,6 +187,10 @@ export async function POST(request: NextRequest) {
 
     if (!feed.is_active) {
       return NextResponse.json({ error: 'Feed is inactive' }, { status: 400 });
+    }
+
+    if (!feed.feed_url.startsWith('https://')) {
+      return NextResponse.json({ error: 'Feed URL must use HTTPS' }, { status: 400 });
     }
 
     // 2. Fetch the actual RSS/Atom feed

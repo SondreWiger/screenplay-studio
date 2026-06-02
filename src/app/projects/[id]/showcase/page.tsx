@@ -190,7 +190,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
                     {/* Preview */}
                     {photo.url && (
                       <div className="w-24 h-16 rounded-lg overflow-hidden bg-surface-800 shrink-0">
-                        <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                        <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" onError={(e) => (e.currentTarget.style.display = 'none')} />
                       </div>
                     )}
                     <div className="flex-1 space-y-2">

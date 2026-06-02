@@ -1,23 +1,10 @@
-// ============================================================
-// Zeptomail Email Service (via Nodemailer SMTP)
-// Sends transactional emails via Zoho's Zeptomail.
-// ============================================================
+import { Resend } from 'resend';
 
-import nodemailer from 'nodemailer';
-
-const ZEPTOMAIL_USER = process.env.ZEPTOMAIL_USER || 'emailapikey';
-const ZEPTOMAIL_PASS = process.env.ZEPTOMAIL_PASS || '';
-const DEFAULT_FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@screenplaystudio.fun';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const DEFAULT_FROM_EMAIL = process.env.EMAIL_FROM || 'Screenplay Studio <onboarding@resend.dev>';
 const DEFAULT_FROM_NAME = process.env.EMAIL_FROM_NAME || 'Screenplay Studio';
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.zeptomail.eu',
-  port: 587,
-  auth: {
-    user: ZEPTOMAIL_USER,
-    pass: ZEPTOMAIL_PASS,
-  },
-});
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export interface EmailRecipient {
   email: string;
@@ -40,42 +27,40 @@ interface EmailResult {
   error?: string;
 }
 
-/**
- * Send an email via Zeptomail SMTP (Nodemailer).
- */
 export async function sendEmail(options: SendEmailOptions): Promise<EmailResult> {
-  if (!ZEPTOMAIL_PASS) {
-    console.warn('[mailer] ZEPTOMAIL_PASS not configured — skipping email');
-    return { success: false, error: 'SMTP credentials not configured' };
+  if (!resend) {
+    console.warn('[mailer] RESEND_API_KEY not configured — skipping email');
+    return { success: false, error: 'Resend API key not configured' };
   }
 
   const recipients = Array.isArray(options.to) ? options.to : [options.to];
-  const from = options.from || { email: DEFAULT_FROM_EMAIL, name: DEFAULT_FROM_NAME };
+  const from = options.from
+    ? `${options.from.name || ''} <${options.from.email}>`.trim()
+    : DEFAULT_FROM_EMAIL;
 
   try {
-    const info = await transporter.sendMail({
-      from: `"${from.name || 'Screenplay Studio'}" <${from.email}>`,
-      to: recipients.map((r) => (r.name ? `"${r.name}" <${r.email}>` : r.email)).join(', '),
+    const result = await resend.emails.send({
+      from,
+      to: recipients.map((r) => r.email),
       subject: options.subject,
       text: options.text,
       html: options.html,
-      replyTo: options.replyTo
-        ? `"${options.replyTo.name || ''}" <${options.replyTo.email}>`
-        : undefined,
+      reply_to: options.replyTo?.email,
+      tags: options.tags?.map((t) => ({ name: t, value: t })),
     });
 
-    return { success: true, messageId: info.messageId };
-  } catch (err) {
-    console.error('[mailer] Send error:', err);
-    return { success: false, error: String(err) };
+    if (result.error) {
+      console.error('[mailer] Resend error:', result.error);
+      return { success: false, error: result.error.message || String(result.error) };
+    }
+
+    return { success: true, messageId: result.data?.id };
+  } catch (err: any) {
+    console.error('[mailer] Send error:', err?.message || err);
+    return { success: false, error: err?.message || String(err) };
   }
 }
 
-// ── Convenience helpers ─────────────────────────────────────
-
-/**
- * Send a notification email with the Screenplay Studio branded template.
- */
 export async function sendNotificationEmail({
   to,
   subject,
@@ -123,28 +108,23 @@ export async function sendNotificationEmail({
     to,
     subject,
     html,
-    text: `${heading}\n\n${body}${ctaUrl ? `\n\n${ctaLabel}: ${ctaUrl.startsWith('http') ? ctaUrl : appUrl + ctaUrl}` : ''}`,
+    text: `${heading}\n\n${body.replace(/<[^>]*>/g, '')}${ctaUrl ? `\n\n${ctaLabel}: ${ctaUrl.startsWith('http') ? ctaUrl : appUrl + ctaUrl}` : ''}`,
+    replyTo: { email: 'sondre@screenplaystudio.fun', name: 'Sondre' },
     tags: ['notification'],
   });
 }
 
-/**
- * Send a welcome email to a newly registered user.
- */
 export async function sendWelcomeEmail(to: EmailRecipient): Promise<EmailResult> {
   return sendNotificationEmail({
     to,
-    subject: 'Welcome to Screenplay Studio! 🎬',
-    heading: 'Welcome aboard!',
-    body: `Hey ${to.name || 'there'},<br><br>Thanks for joining Screenplay Studio! You can now create projects, write scripts, collaborate with your team, and showcase your work to the community.<br><br>Let\u2019s start bringing your story to life.`,
-    ctaLabel: 'Go to Dashboard',
+    subject: "You're in — Screenplay Studio",
+    heading: 'Welcome!',
+    body: `Hey ${to.name || 'there'},<br><br>Glad you signed up. You've got a blank dashboard waiting — go create a project and start writing.<br><br>Everything's free. No limits, no paywalls. Just write.<br><br>If you hit anything weird or have ideas, reply to this email. I read every one.<br><br>— Sondre`,
+    ctaLabel: 'Start Writing',
     ctaUrl: '/dashboard',
   });
 }
 
-/**
- * Send a ticket reply notification email.
- */
 export async function sendTicketReplyEmail(
   to: EmailRecipient,
   ticketSubject: string,
@@ -160,9 +140,6 @@ export async function sendTicketReplyEmail(
   });
 }
 
-/**
- * Send a project invitation email.
- */
 export async function sendProjectInviteEmail(
   to: EmailRecipient,
   projectName: string,
@@ -176,5 +153,172 @@ export async function sendProjectInviteEmail(
     body: `<strong>${inviterName}</strong> has invited you to join the project <strong>${projectName}</strong>. Open the project to start collaborating.`,
     ctaLabel: 'Open Project',
     ctaUrl: `/projects/${projectId}`,
+  });
+}
+
+// ── Template functions ───────────────────────────────────────
+
+export async function sendBlogPostEmail(
+  to: EmailRecipient,
+  postTitle: string,
+  postSlug: string,
+  excerpt: string,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: `New post: ${postTitle}`,
+    heading: 'New on the blog',
+    body: `<strong>${postTitle}</strong><br><br>${excerpt}<br><br>Read the full post below.`,
+    ctaLabel: 'Read Post',
+    ctaUrl: `/blog/${postSlug}`,
+  });
+}
+
+export async function sendPollEmail(
+  to: EmailRecipient,
+  pollQuestion: string,
+  pollId: string,
+  description?: string,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: `New poll: ${pollQuestion}`,
+    heading: 'Vote now',
+    body: `<strong>${pollQuestion}</strong>${description ? `<br><br>${description}` : ''}<br><br>Cast your vote — it takes 10 seconds.`,
+    ctaLabel: 'Vote',
+    ctaUrl: `/polls/${pollId}`,
+  });
+}
+
+export async function sendChallengeEmail(
+  to: EmailRecipient,
+  challengeTitle: string,
+  challengeDescription: string,
+  challengeId: string,
+  deadline: string,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: `New challenge: ${challengeTitle}`,
+    heading: 'Challenge time',
+    body: `<strong>${challengeTitle}</strong><br><br>${challengeDescription}<br><br>Deadline: <strong>${deadline}</strong>. Show us what you've got.`,
+    ctaLabel: 'Join Challenge',
+    ctaUrl: `/community/challenges/${challengeId}`,
+  });
+}
+
+export async function sendWeeklyDigestEmail(
+  to: EmailRecipient,
+  stats: {
+    wordsWritten: number;
+    pagesWritten: number;
+    scenesCreated: number;
+    topProject: string;
+    streak: number;
+  },
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: 'Your weekly writing digest',
+    heading: 'This week in your scripts',
+    body: `Here's how your writing week went:<br><br>` +
+      `<strong>${stats.wordsWritten.toLocaleString()}</strong> words written<br>` +
+      `<strong>${stats.pagesWritten}</strong> pages<br>` +
+      `<strong>${stats.scenesCreated}</strong> scenes created<br>` +
+      `<strong>${stats.topProject}</strong> was your most active project<br>` +
+      (stats.streak > 0 ? `<br>You're on a <strong>${stats.streak}-day writing streak</strong>. Keep it going.` : `<br>Start a streak today — write something, anything.`),
+    ctaLabel: 'Keep Writing',
+    ctaUrl: '/dashboard',
+  });
+}
+
+export async function sendScriptFeedbackEmail(
+  to: EmailRecipient,
+  reviewerName: string,
+  scriptTitle: string,
+  scriptId: string,
+  commentCount: number,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: `${reviewerName} left feedback on "${scriptTitle}"`,
+    heading: 'New feedback',
+    body: `<strong>${reviewerName}</strong> left <strong>${commentCount}</strong> comment${commentCount !== 1 ? 's' : ''} on your script <strong>${scriptTitle}</strong>.`,
+    ctaLabel: 'View Feedback',
+    ctaUrl: `/projects/${scriptId}/script`,
+  });
+}
+
+export async function sendBadgeEarnedEmail(
+  to: EmailRecipient,
+  badgeName: string,
+  badgeDescription: string,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: `You earned a badge: ${badgeName}`,
+    heading: 'Badge unlocked',
+    body: `You just earned the <strong>${badgeName}</strong> badge.<br><br>${badgeDescription}<br><br>Check your profile to see it displayed.`,
+    ctaLabel: 'View Profile',
+    ctaUrl: '/settings',
+  });
+}
+
+export async function sendFeatureAnnouncementEmail(
+  to: EmailRecipient,
+  featureName: string,
+  featureDescription: string,
+  featureUrl?: string,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: `New feature: ${featureName}`,
+    heading: 'Just shipped',
+    body: `<strong>${featureName}</strong><br><br>${featureDescription}`,
+    ctaLabel: featureUrl ? 'Check it out' : 'Open App',
+    ctaUrl: featureUrl || '/dashboard',
+  });
+}
+
+export async function sendChangelogEmail(
+  to: EmailRecipient,
+  version: string,
+  changes: string[],
+): Promise<EmailResult> {
+  const changeList = changes.map((c) => `• ${c}`).join('<br>');
+  return sendNotificationEmail({
+    to,
+    subject: `What's new — v${version}`,
+    heading: `Screenplay Studio v${version}`,
+    body: `Here's what changed:<br><br>${changeList}`,
+    ctaLabel: 'View Changelog',
+    ctaUrl: '/changelog',
+  });
+}
+
+export async function sendReengagementEmail(
+  to: EmailRecipient,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: "We miss you — Screenplay Studio",
+    heading: "Come back to your story",
+    body: `Hey ${to.name || 'there'},<br><br>It's been a while since you last visited. Your projects are still here, waiting for you.<br><br>Whether you're mid-draft or just starting out, there's always room for one more scene.`,
+    ctaLabel: 'Continue Writing',
+    ctaUrl: '/dashboard',
+  });
+}
+
+export async function sendCorrectionEmail(
+  to: EmailRecipient,
+  originalSubject: string,
+): Promise<EmailResult> {
+  return sendNotificationEmail({
+    to,
+    subject: `Quick correction — ${originalSubject}`,
+    heading: 'Oops, wrong link',
+    body: `Hey ${to.name || 'there'},<br><br>The last email had a broken link. Sorry about that — here's the correct one:<br><br><strong>${originalSubject}</strong>`,
+    ctaLabel: 'Go to Screenplay Studio',
+    ctaUrl: '/dashboard',
   });
 }

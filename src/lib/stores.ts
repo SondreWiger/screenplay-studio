@@ -297,12 +297,15 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   reorderElements: async (elements) => {
     const supabase = createClient();
     set({ elements, saving: true });
-    const updates = elements.map((e, i) => ({
-      id: e.id,
-      sort_order: i,
-    }));
-    for (const u of updates) {
-      await supabase.from('script_elements').update({ sort_order: u.sort_order }).eq('id', u.id);
+    const BATCH_SIZE = 50;
+    const updates = elements.map((e, i) => ({ id: e.id, sort_order: i }));
+    for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+      const batch = updates.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map((u) =>
+          supabase.from('script_elements').update({ sort_order: u.sort_order }).eq('id', u.id)
+        )
+      );
     }
     set({ saving: false });
   },

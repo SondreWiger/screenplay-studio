@@ -268,15 +268,8 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // ── Security headers ──────────────────────────────────────
-  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff');
-  supabaseResponse.headers.set('X-Frame-Options', 'DENY');
-  supabaseResponse.headers.set('X-XSS-Protection', '1; mode=block');
-  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  supabaseResponse.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
-  supabaseResponse.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  supabaseResponse.headers.set('X-DNS-Prefetch-Control', 'on');
-  supabaseResponse.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
+  // Note: generic security headers are set via `next.config.js` headers().
+  // Keep CSP here because it needs environment-dependent values.
   supabaseResponse.headers.set(
     'Content-Security-Policy',
     [

@@ -170,7 +170,7 @@ export default function ChangelogPage() {
                 </button>
                 <div className="flex items-center gap-2">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" loading="lazy" />
                   ) : (
                     <div
                       className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white"

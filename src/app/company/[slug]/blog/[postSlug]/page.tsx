@@ -161,7 +161,7 @@ export default function CompanyBlogPostPage() {
       <article className="max-w-3xl mx-auto px-6 py-8">
         {/* Cover */}
         {post.cover_image_url && (
-          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-64 object-cover rounded-xl mb-8" />
+          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-64 object-cover rounded-xl mb-8" loading="lazy" />
         )}
 
         {/* Meta */}

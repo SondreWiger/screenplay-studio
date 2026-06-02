@@ -146,7 +146,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 h-full w-80 bg-surface-950 border-l border-surface-700 shadow-2xl flex flex-col">
+      <div className="relative z-10 h-full w-full sm:w-80 bg-surface-950 border-l border-surface-700 shadow-2xl flex flex-col">
         {/* Header */}
         <div className="px-5 py-4 border-b border-surface-800 flex items-center justify-between shrink-0">
           <div>

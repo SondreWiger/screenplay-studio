@@ -311,7 +311,7 @@ export default function SettingsPage() {
                 <div key={m.id} className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
                   {u?.avatar_url
                     // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                    ? <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" loading="lazy" />
                     : <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold" style={{ background: accentColor + '33', color: accentColor }}>{u?.full_name?.[0] ?? '?'}</div>
                   }
                   <p className="flex-1 text-sm">{u?.full_name ?? 'User'}</p>

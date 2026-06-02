@@ -208,7 +208,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
           {/* Preview */}
           <div className="w-48 h-28 rounded-lg border border-surface-700 bg-surface-900 overflow-hidden flex-shrink-0">
             {coverUrl ? (
-              <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+              <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-surface-600">
                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">

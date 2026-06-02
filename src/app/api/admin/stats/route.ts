@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || '';
 
 export async function GET() {
   // Auth check: must be admin

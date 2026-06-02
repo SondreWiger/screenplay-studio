@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Input, Textarea, EmptyState, LoadingSpinner, Avatar } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import { sendNotification, notifyProjectMembers } from '@/lib/notifications';
+import { sendNotificationEmailAction } from '@/lib/email-actions';
 import type { Comment, Profile, CommentType, ScriptElement } from '@/lib/types';
 import { ELEMENT_LABELS } from '@/lib/types';
 
@@ -232,6 +233,34 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
         link: `/projects/${params.id}/comments`,
         entityType: 'comment',
       });
+
+      // Send email notifications to project members (best-effort)
+      try {
+        const supabase = createClient();
+        const { data: members } = await supabase
+          .from('project_members')
+          .select('user_id')
+          .eq('project_id', params.id)
+          .neq('user_id', user.id);
+        if (members) {
+          const { data: actorProfile } = await supabase.from('profiles').select('display_name, full_name').eq('id', user.id).single();
+          const actorName = actorProfile?.display_name || actorProfile?.full_name || 'Someone';
+          for (const member of members) {
+            const { data: memberProfile } = await supabase.from('profiles').select('email, display_name, full_name').eq('id', member.user_id).single();
+            if (memberProfile?.email) {
+              sendNotificationEmailAction(
+                memberProfile.email,
+                memberProfile.display_name || memberProfile.full_name || '',
+                `New ${newType} on ${currentProject?.title || 'project'}`,
+                `New ${newType} from ${actorName}`,
+                newContent.trim().slice(0, 200),
+                'View Comment',
+                `/projects/${params.id}/comments`,
+              ).catch(() => {});
+            }
+          }
+        }
+      } catch { /* email is best-effort */ }
       setNewContent('');
       setNewType('note');
       await fetchComments();

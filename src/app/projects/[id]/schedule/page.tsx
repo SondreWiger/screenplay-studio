@@ -209,7 +209,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
       ) : (
         // List view
         upcoming.length === 0 ? (
-          <EmptyState title="No upcoming events" description="Add shooting days, meetings, and milestones"
+          <EmptyState title="Build your production timeline" description="Schedule shoot days, add call times, assign crew and cast, and track your production calendar from pre-production to wrap."
             action={<Button onClick={() => { setSelectedEvent(null); setShowEditor(true); }}>Add Event</Button>} />
         ) : (
           <div className="space-y-2">
@@ -461,7 +461,7 @@ function ScheduleEditor({ isOpen, onClose, event, projectId, userId, scenes, loc
     <Modal isOpen={isOpen} onClose={onClose} title={event ? `Edit: ${event.title}` : 'New Schedule Event'} size="md">
       <div className="space-y-4">
         <Input label="Title" value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Day 1 - Interior scenes" />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Type</label>
             <select value={form.event_type || 'shooting'} onChange={(e) => setForm({ ...form, event_type: e.target.value })}
@@ -471,7 +471,7 @@ function ScheduleEditor({ isOpen, onClose, event, projectId, userId, scenes, loc
           </div>
           <Input label="Date" type="date" value={form.date || ''} onChange={(e) => setForm({ ...form, date: e.target.value })} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Call Time" type="time" value={form.call_time || ''} onChange={(e) => setForm({ ...form, call_time: e.target.value })} />
           <Input label="Wrap Time" type="time" value={form.wrap_time || ''} onChange={(e) => setForm({ ...form, wrap_time: e.target.value })} />
         </div>

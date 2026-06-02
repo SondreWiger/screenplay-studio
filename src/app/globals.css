@@ -148,6 +148,7 @@
     color: black;
     box-shadow: 0 4px 32px rgba(0,0,0,0.38), 0 1px 8px rgba(0,0,0,0.22);
     flex-shrink: 0;
+    transition: background-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
   }
 
   /* A4 page size variant — overrides Letter dimensions */
@@ -617,6 +618,13 @@
     @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400;
     @apply transition-all duration-150 relative overflow-hidden;
   }
+  @media (max-width: 767px) {
+    .sidebar-link {
+      padding-top: 0.625rem;
+      padding-bottom: 0.625rem;
+      min-height: 44px;
+    }
+  }
   .sidebar-link:hover {
     @apply text-white;
     background: rgb(255 255 255 / 0.05);
@@ -813,6 +821,8 @@ a:active:not(:disabled) {
     min-height: auto !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+    touch-action: pinch-zoom pan-y;
+    overflow: visible;
   }
 
   .sp-character {
@@ -1396,4 +1406,26 @@ a:active:not(:disabled) {
   color: #4a4a6a;
   pointer-events: none;
   cursor: text;
+}
+
+/* ── Mobile: Better tap behavior ─────────────────────────────── */
+@media (max-width: 767px) {
+  button, a, [role="button"], select, input, textarea {
+    touch-action: manipulation;
+  }
+}
+
+/* ── Safe area padding for notched iPhones ───────────────────── */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Accessibility: Reduced motion ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

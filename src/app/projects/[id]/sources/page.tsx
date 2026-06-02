@@ -293,7 +293,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                         !source.is_active && 'opacity-40',
                       )}>
                         {source.thumbnail_url ? (
-                          <img src={source.thumbnail_url} alt="" className="w-full h-full object-cover rounded" />
+                          <img src={source.thumbnail_url} alt="" className="w-full h-full object-cover rounded" loading="lazy" />
                         ) : (
                           <span className="text-white/60 text-[10px] font-bold uppercase">
                             {source.short_name || source.source_type.replace(/_/g, ' ')}
@@ -343,7 +343,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
               !selectedSource.is_active && 'opacity-30',
             )}>
               {selectedSource.thumbnail_url ? (
-                <img src={selectedSource.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                <img src={selectedSource.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
               ) : selectedSource.source_type === 'web_feed' && selectedSource.connection_url ? (
                 <iframe
                   src={selectedSource.connection_url}

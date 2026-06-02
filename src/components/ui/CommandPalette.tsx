@@ -376,7 +376,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                       className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-white/[0.04] transition-colors group"
                     >
                       {rp.cover_url ? (
-                        <img src={rp.cover_url} alt="" className="w-5 h-5 rounded object-cover shrink-0" />
+                        <img src={rp.cover_url} alt="" className="w-5 h-5 rounded object-cover shrink-0" loading="lazy" />
                       ) : (
                         <span className="text-base w-5 text-center shrink-0 opacity-60">📁</span>
                       )}

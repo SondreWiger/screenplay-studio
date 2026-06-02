@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Input } from '@/components/ui';
 import { validatePassword } from '@/lib/security';
+import { sendWelcomeEmailAction } from '@/lib/email-actions';
 
 // Map raw Supabase/auth error messages to user-friendly ones
 function friendlyAuthError(msg: string): string {
@@ -141,6 +142,9 @@ function RegisterForm() {
             }).catch(() => {});
           }
         } catch { /* ok */ }
+
+        // Send welcome email (best-effort, fire-and-forget)
+        sendWelcomeEmailAction(formEmail, formName).catch(() => {});
       }
 
       if (data?.session) {

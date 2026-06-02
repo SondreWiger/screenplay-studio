@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "NODE_OPTIONS='--max-http-header-size=32768' next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "media-server": "npx ts-node --project tsconfig.server.json server/media-server.ts",
     "dev:full": "concurrently \"npm run dev\" \"npm run media-server\""
   },
@@ -19,6 +21,8 @@
     "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "docx": "^9.7.1",
+    "dompurify": "^3.4.5",
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.14.0",
@@ -33,12 +37,16 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
+    "resend": "^6.12.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.6.0",
     "web-push": "^3.6.7",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/dompurify": "^3.0.5",
     "@types/node": "^22.10.5",
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^18.3.12",
@@ -47,9 +55,12 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.2.21",
+    "jsdom": "^29.1.1",
+    "null-loader": "^4.0.1",
     "pg": "^8.20.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.7"
   }
 }

@@ -56,6 +56,59 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function BlogPostLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function BlogPostLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { slug: string };
+}) {
+  const supabase = createServerSupabaseClient();
+
+  const { data: post } = await supabase
+    .from('blog_posts')
+    .select('title, excerpt, tags, published_at, updated_at, author:profiles!author_id(display_name, full_name)')
+    .eq('slug', params.slug)
+    .eq('status', 'published')
+    .single();
+
+  if (!post) {
+    return <>{children}</>;
+  }
+
+  const author = post.author as { full_name?: string; display_name?: string } | null;
+  const authorName = author?.full_name || author?.display_name || 'Screenplay Studio';
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt || undefined,
+    author: {
+      '@type': 'Person',
+      name: authorName,
+    },
+    publisher: {
+      '@type': 'Organization',
+      '@id': `${BASE_URL}/#organization`,
+      name: 'Screenplay Studio',
+    },
+    datePublished: post.published_at || undefined,
+    dateModified: post.updated_at || post.published_at || undefined,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${BASE_URL}/blog/${params.slug}`,
+    },
+    keywords: post.tags?.join(', ') || undefined,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      {children}
+    </>
+  );
 }

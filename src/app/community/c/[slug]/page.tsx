@@ -226,7 +226,7 @@ export default function CommunityFeedPage() {
                         <div className="w-5 h-5 rounded-full flex-shrink-0 overflow-hidden"
                           style={{ background: 'rgba(255,255,255,0.1)' }}>
                           {author?.avatar_url
-                            ? <img src={author.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ? <img src={author.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                             : <span className="w-full h-full flex items-center justify-center text-[9px]">
                                 {(author?.full_name ?? '?')[0]}
                               </span>}
@@ -271,7 +271,7 @@ export default function CommunityFeedPage() {
                   {post.cover_image_url && (
                     <Link href={`/community/post/${post.slug}`}
                       className="hidden sm:block flex-shrink-0 w-24 h-16 rounded-xl overflow-hidden">
-                      <img src={post.cover_image_url} alt="" className="w-full h-full object-cover" />
+                      <img src={post.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     </Link>
                   )}
 

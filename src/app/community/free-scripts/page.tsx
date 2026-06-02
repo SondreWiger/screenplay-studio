@@ -224,7 +224,7 @@ export default function FreeScriptsPage() {
                     {/* Cover image */}
                     {post.cover_image_url && (
                       <div className="h-36 bg-white/5 overflow-hidden">
-                        <img src={post.cover_image_url} alt={post.title || 'Script cover'} className="w-full h-full object-cover" />
+                        <img src={post.cover_image_url} alt={post.title || 'Script cover'} className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     )}
 
@@ -256,7 +256,7 @@ export default function FreeScriptsPage() {
                       <div className="flex items-center gap-3 mt-3 text-xs font-mono text-white/50">
                         <span className="flex items-center gap-1">
                           {post.author?.avatar_url ? (
-                            <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" />
+                            <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" loading="lazy" />
                           ) : (
                             <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[8px] font-bold text-white">
                               {(post.author?.full_name || '?')[0]}

@@ -312,7 +312,8 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                   <h2 className="text-xs font-bold text-surface-400 uppercase tracking-widest mb-2 pl-1">{groupKey}</h2>
                 )}
                 <div className="rounded-xl border border-surface-700/40 overflow-hidden">
-                  <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] gap-0 bg-surface-800/80 border-b border-surface-700/40 px-2 py-2 text-[10px] font-bold text-surface-400 uppercase tracking-wider">
+                  <div className="overflow-x-auto">
+                  <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] min-w-[380px] gap-0 bg-surface-800/80 border-b border-surface-700/40 px-2 py-2 text-[10px] font-bold text-surface-400 uppercase tracking-wider">
                     <span>#</span><span>Scene</span>
                     <span className="text-center">Int/Ext</span>
                     <span className="text-center">Time</span>
@@ -398,11 +399,12 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                       </div>
                     );
                   })}
-                  <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] gap-0 bg-surface-800/60 border-t border-surface-700/40 px-2 py-1.5 text-xs font-medium text-surface-400">
+                  <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] min-w-[380px] gap-0 bg-surface-800/60 border-t border-surface-700/40 px-2 py-1.5 text-xs font-medium text-surface-400">
                     <span /><span>Total — {groupScenes.length} scenes</span><span /><span />
                     <span className="text-right font-bold text-white font-mono">
                       {groupScenes.reduce((a, s) => a + (s.page_count ?? 0), 0).toFixed(1)}
                     </span>
+                  </div>
                   </div>
                 </div>
               </div>

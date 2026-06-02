@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationStore } from '@/lib/stores';
 import { NotificationRow } from '@/components/notifications/NotificationBell';
@@ -38,7 +37,7 @@ export default function NotificationsPage() {
     if (authLoading) return;
     if (!user) { router.replace('/auth/login'); return; }
     fetchNotifications();
-  }, [user, authLoading]);
+  }, [user, authLoading, fetchNotifications, router]);
 
   if (authLoading || (!user && loading)) return <LoadingPage />;
 

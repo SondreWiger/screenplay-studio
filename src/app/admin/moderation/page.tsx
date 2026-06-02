@@ -666,7 +666,7 @@ export default function ModerationPage() {
                     {/* Owner */}
                     <div className="flex items-center gap-2 shrink-0">
                       {owner?.avatar_url ? (
-                        <img src={owner.avatar_url} alt="" className="w-6 h-6 rounded-full" />
+                        <img src={owner.avatar_url} alt="" className="w-6 h-6 rounded-full" loading="lazy" />
                       ) : (
                         <div className="w-6 h-6 rounded-full bg-surface-700 flex items-center justify-center text-[10px] text-surface-400">
                           {(owner?.display_name || owner?.email)?.[0]?.toUpperCase() || '?'}

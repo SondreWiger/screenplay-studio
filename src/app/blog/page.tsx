@@ -96,7 +96,7 @@ export default function BlogPage() {
                 </button>
                 <div className="flex items-center gap-2">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" />
+                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" loading="lazy" />
                   ) : (
                     <div
                       className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white"
@@ -223,7 +223,7 @@ export default function BlogPage() {
                   )}
                   <div className="mt-6 flex items-center gap-3">
                     {featured.author?.avatar_url ? (
-                      <img src={featured.author.avatar_url} alt={featured.author.full_name || 'Author avatar'} className="w-6 h-6" />
+                      <img src={featured.author.avatar_url} alt={featured.author.full_name || 'Author avatar'} className="w-6 h-6" loading="lazy" />
                     ) : (
                       <div className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
                         {(featured.author?.full_name || 'A')[0]}

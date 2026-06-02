@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from './useAuth';
+import { toast } from '@/components/ui';
 import {
   getSessionMultiplier, touchSession, getSessionHours,
   getLevelInfo, getLevelUnlocks, SESSION_STORAGE_KEY,
@@ -95,6 +96,11 @@ export function useGamification() {
       };
 
       setGamif((prev) => prev ? { ...prev, xp_total, level } : prev);
+
+      // Show XP toast (silent for small amounts unless gamification is enabled)
+      if (xp_awarded > 0 && (xp_awarded >= 5 || (gamif?.gamification_enabled ?? false))) {
+        toast(`+${xp_awarded} XP`, 'success', 2000);
+      }
 
       // Level-up detection
       if (level > prevLevelRef.current) {

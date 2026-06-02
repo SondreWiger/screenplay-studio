@@ -215,7 +215,7 @@ export default function BrandingPage() {
           </div>
           {/* Cover Preview */}
           <div className="rounded-lg border border-surface-700 bg-surface-900 p-6 flex flex-col items-center justify-center min-h-[240px]" style={{ fontFamily }}>
-            {logoUrl && <img src={logoUrl} alt="Logo" className="max-h-8 mb-4" />}
+            {logoUrl && <img src={logoUrl} alt="Logo" className="max-h-8 mb-4" loading="lazy" />}
             <p className="text-lg font-bold text-white text-center">{coverTitle || 'UNTITLED PROJECT'}</p>
             {coverSubtitle && <p className="text-sm text-white/60 mt-1 text-center">{coverSubtitle}</p>}
             {watermarkText && (

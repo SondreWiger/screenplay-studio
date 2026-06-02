@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Check if an IP is banned before allowing signup
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-             req.headers.get('x-real-ip') || 'unknown';
+  const ip = getClientIp(req);
+  const rateResult = checkRateLimit(`check-ban:${ip}`, 20, 60_000);
+  if (!rateResult.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
 
   const supabase = createAdminSupabaseClient();
 

@@ -23,7 +23,6 @@
  * HTTP-FLV:   http://<your-host>:8888/live/<project_id>/<stream_key>.flv
  */
 
-// @ts-nocheck — node-media-server types are incomplete
 const NodeMediaServer = require('node-media-server');
 const { createClient } = require('@supabase/supabase-js');
 const https = require('https');
@@ -86,10 +85,19 @@ const nms = new NodeMediaServer(config);
 
 // ─── Stream Validation ─────────────────────────────────────
 
-/**
- * Parse the RTMP stream path into project_id and stream_key.
- * Expected format: /live/<project_id>/<stream_key>
- */
+interface IngestRecord {
+  id: string;
+  name: string;
+  stream_key: string;
+  auto_source: boolean;
+  protocol?: string;
+}
+
+interface StreamInfo {
+  video?: { codec?: string; width?: number; height?: number; fps?: number };
+  audio?: { codec?: string; sampleRate?: number; channels?: number };
+}
+
 function parseStreamPath(path: string): { projectId: string; streamKey: string } | null {
   // /live/project-uuid/stream-key
   const parts = path.split('/').filter(Boolean);
@@ -101,7 +109,7 @@ function parseStreamPath(path: string): { projectId: string; streamKey: string }
  * Validate a stream key against the broadcast_stream_ingests table in Supabase.
  * Returns the ingest record if valid, null otherwise.
  */
-async function validateStreamKey(projectId: string, streamKey: string) {
+async function validateStreamKey(projectId: string, streamKey: string): Promise<IngestRecord | null> {
   try {
     const { data, error } = await supabase
       .from('broadcast_stream_ingests')
@@ -126,10 +134,10 @@ async function updateIngestStatus(
   projectId: string,
   streamKey: string,
   status: 'live' | 'idle' | 'error',
-  meta?: Record<string, any>
+  meta?: StreamInfo
 ) {
   try {
-    const updateData: any = { status };
+    const updateData: Record<string, unknown> = { status };
     if (status === 'live') {
       updateData.connected_at = new Date().toISOString();
       if (meta) {
@@ -162,7 +170,7 @@ async function updateIngestStatus(
 /**
  * Register the stream as a broadcast source automatically.
  */
-async function autoRegisterSource(projectId: string, ingest: any) {
+async function autoRegisterSource(projectId: string, ingest: IngestRecord): Promise<void> {
   if (!ingest.auto_source) return;
 
   // Check if a source already exists for this ingest
@@ -191,7 +199,7 @@ async function autoRegisterSource(projectId: string, ingest: any) {
 
 // ─── Event Handlers ────────────────────────────────────────
 
-nms.on('prePublish', async (id: string, StreamPath: string, args: any) => {
+nms.on('prePublish', async (id: string, StreamPath: string, args: Record<string, unknown>) => {
   console.log(`[RTMP] prePublish id=${id} path=${StreamPath}`);
 
   const parsed = parseStreamPath(StreamPath);
@@ -213,7 +221,7 @@ nms.on('prePublish', async (id: string, StreamPath: string, args: any) => {
   console.log(`[RTMP] ✅ Authenticated: "${ingest.name}" (${parsed.projectId})`);
 });
 
-nms.on('postPublish', async (id: string, StreamPath: string, args: any) => {
+nms.on('postPublish', async (id: string, StreamPath: string, args: Record<string, unknown>) => {
   console.log(`[RTMP] postPublish — stream is live: ${StreamPath}`);
 
   const parsed = parseStreamPath(StreamPath);
@@ -221,19 +229,11 @@ nms.on('postPublish', async (id: string, StreamPath: string, args: any) => {
 
   // Get stream metadata
   const session = nms.getSession(id);
-  const meta: any = {};
+  const meta: StreamInfo = {};
   if (session && session.publishStreamInfo) {
-    meta.video = {
-      codec: session.publishStreamInfo.video?.codec,
-      width: session.publishStreamInfo.video?.width,
-      height: session.publishStreamInfo.video?.height,
-      fps: session.publishStreamInfo.video?.fps,
-    };
-    meta.audio = {
-      codec: session.publishStreamInfo.audio?.codec,
-      sampleRate: session.publishStreamInfo.audio?.sampleRate,
-      channels: session.publishStreamInfo.audio?.channels,
-    };
+    const psi = session.publishStreamInfo as StreamInfo;
+    meta.video = psi.video;
+    meta.audio = psi.audio;
   }
 
   await updateIngestStatus(parsed.projectId, parsed.streamKey, 'live', meta);
@@ -243,7 +243,7 @@ nms.on('postPublish', async (id: string, StreamPath: string, args: any) => {
   if (ingest) await autoRegisterSource(parsed.projectId, ingest);
 });
 
-nms.on('donePublish', async (id: string, StreamPath: string, args: any) => {
+nms.on('donePublish', async (id: string, StreamPath: string, args: Record<string, unknown>) => {
   console.log(`[RTMP] donePublish — stream ended: ${StreamPath}`);
 
   const parsed = parseStreamPath(StreamPath);
@@ -252,12 +252,12 @@ nms.on('donePublish', async (id: string, StreamPath: string, args: any) => {
   await updateIngestStatus(parsed.projectId, parsed.streamKey, 'idle');
 });
 
-nms.on('prePlay', (id: string, StreamPath: string, args: any) => {
+nms.on('prePlay', (id: string, StreamPath: string, args: Record<string, unknown>) => {
   console.log(`[PLAY] prePlay id=${id} path=${StreamPath}`);
   // Allow all viewers for now — could add auth here
 });
 
-nms.on('donePlay', (id: string, StreamPath: string, args: any) => {
+nms.on('donePlay', (id: string, StreamPath: string, args: Record<string, unknown>) => {
   console.log(`[PLAY] donePlay id=${id} path=${StreamPath}`);
 });
 

@@ -8,7 +8,7 @@ import { createHash } from 'crypto';
 // Uses service role to bypass RLS for full content access.
 // ═══════════════════════════════════════════════════════════════
 
-const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || '';
 
 // Terms that indicate CSAM or child exploitation content.
 // These are deliberately broad to catch variations.

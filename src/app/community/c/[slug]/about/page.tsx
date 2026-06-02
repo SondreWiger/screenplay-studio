@@ -96,7 +96,7 @@ export default function CommunityAboutPage() {
                   style={{ background: 'rgba(255,255,255,0.04)' }}>
                   {u?.avatar_url
                     // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={u.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                    ? <img src={u.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" loading="lazy" />
                     : <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
                         style={{ background: accent + '33', color: accent }}>
                         {u?.full_name?.[0] ?? '?'}

@@ -128,7 +128,7 @@ function ShotThumbnail({ shot, size }: { shot: ShotWithStoryboard; size: 'sm' | 
   // Show storyboard_url image
   if (shot.storyboard_url) return (
     <div className={cn('relative bg-surface-900 flex items-center justify-center', h)}>
-      <img src={shot.storyboard_url} alt={`Shot ${shot.shot_number}`} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+      <img src={shot.storyboard_url} alt={`Shot ${shot.shot_number}`} className="w-full h-full object-cover" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
     </div>
   );
   
@@ -455,7 +455,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
             <div className="space-y-4">
               {imageUrl && (
                 <div className="rounded-lg overflow-hidden border border-surface-700 bg-surface-900">
-                  <img src={imageUrl} alt="Storyboard" className="w-full max-h-64 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={imageUrl} alt="Storyboard" className="w-full max-h-64 object-contain" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 </div>
               )}
               <Input label="Image URL" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." />
@@ -472,7 +472,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {refImages.map((ref, i) => (
                     <div key={i} className="group relative rounded-lg overflow-hidden border border-surface-700 bg-surface-900">
-                      <img src={ref.url} alt={ref.label || `Ref ${i+1}`} className="w-full h-20 sm:h-32 object-cover" />
+                      <img src={ref.url} alt={ref.label || `Ref ${i+1}`} className="w-full h-20 sm:h-32 object-cover" loading="lazy" />
                       <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button onClick={() => setRefImages(refImages.filter((_,idx) => idx !== i))} className="p-1.5 bg-red-600 rounded-full text-white">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>

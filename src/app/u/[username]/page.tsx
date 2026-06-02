@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -329,7 +330,7 @@ export default function UserProfilePage({ params }: { params: { username: string
       {/* Hero banner — larger, more dramatic */}
       <div className={`relative h-56 md:h-72 bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
         {profile.banner_url ? (
-          <img src={profile.banner_url} alt={`${displayName}'s profile banner`} className="absolute inset-0 w-full h-full object-cover" />
+          <Image src={profile.banner_url} alt={`${displayName}'s profile banner`} fill sizes="100vw" className="object-cover" />
         ) : (
           /* Animated subtle grid pattern for non-banner profiles */
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
@@ -576,7 +577,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                       <svg className="w-12 h-12 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
                     </div>
                     {(project.poster_url || project.cover_url) && (
-                      <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     )}
                   </div>
                   <div className="p-5">
@@ -614,7 +615,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                   >
                     <div className="w-28 h-[4.5rem] rounded-lg overflow-hidden shrink-0 bg-white/5">
                       {thumb ? (
-                        <img src={thumb} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={thumb} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <svg className="w-6 h-6 text-white/10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
@@ -708,7 +709,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                       </div>
                       {post.cover_image_url && (
                         <div className="hidden sm:block w-24 h-16 rounded-lg overflow-hidden shrink-0">
-                          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                         </div>
                       )}
                     </div>
@@ -736,7 +737,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                         <svg className="w-12 h-12 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
                       </div>
                       {(project.poster_url || project.cover_url) && (
-                        <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       )}
                     </div>
                     <div className="p-5">
@@ -871,7 +872,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                       className={`block rounded-2xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.18] transition-all overflow-hidden group`}>
                       {course.thumbnail_url ? (
                         <div className="aspect-video overflow-hidden">
-                          <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                         </div>
                       ) : (
                         <div className="aspect-video bg-gradient-to-br from-[#FF5F1F]/10 to-[#0E0E1C] flex items-center justify-center">

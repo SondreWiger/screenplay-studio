@@ -8,9 +8,9 @@ import { createHash } from 'crypto';
 //          DM users, delete content, unban/unsuspend
 // ═══════════════════════════════════════════════════════════════
 
-const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || '';
 const SYSTEM_UID = '00000000-0000-0000-0000-000000000000';
-const APPEAL_EMAIL = 'sondre@northem.no';
+const APPEAL_EMAIL = process.env.APPEAL_EMAIL || 'support@screenplaystudio.app';
 
 // ── Send a SYSTEM DM to a user ──────────────────────────────
 async function sendSystemDM(supabase: ReturnType<typeof createAdminSupabaseClient>, userId: string, message: string) {

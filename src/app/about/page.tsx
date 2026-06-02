@@ -5,11 +5,20 @@ import { isOpenSourceEnabled } from '@/lib/site-settings';
 
 export async function generateMetadata(): Promise<Metadata> {
   const oss = await isOpenSourceEnabled();
+  const desc = oss
+    ? 'Why we built an open-source screenwriting suite — and where we want to take it.'
+    : 'Why we built Screenplay Studio — and where we want to take it.';
   return {
     title: 'About — Screenplay Studio',
-    description: oss
-      ? 'Why we built an open-source screenwriting suite — and where we want to take it.'
-      : 'Why we built Screenplay Studio — and where we want to take it.',
+    description: desc,
+    openGraph: {
+      title: 'About Screenplay Studio',
+      description: desc,
+    },
+    twitter: {
+      title: 'About Screenplay Studio',
+      description: desc,
+    },
   };
 }
 

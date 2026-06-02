@@ -53,7 +53,7 @@ function CourseCard({
       {/* Thumbnail / header */}
       <div className="relative h-36 bg-gradient-to-br from-surface-800 to-surface-900 overflow-hidden">
         {course.thumbnail_url ? (
-          <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" />
+          <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-5xl opacity-20">

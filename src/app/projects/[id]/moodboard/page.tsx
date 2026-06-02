@@ -823,7 +823,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               <Input value={newItemImageUrl} onChange={(e) => setNewItemImageUrl(e.target.value)} placeholder="https://..." />
               {newItemImageUrl && (
                 <div className="mt-2 rounded-lg overflow-hidden border border-surface-700 bg-surface-900 max-h-40">
-                  <img src={newItemImageUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={newItemImageUrl} alt="Preview" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 </div>
               )}
             </div>
