@@ -72,10 +72,10 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
 
   if (minimal) {
     return (
-      <header className="sticky top-0 z-40 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+      <header className="sticky top-0 z-40" style={{ background: '#070710', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
           <Link href={backHref || '/dashboard'} className="flex items-center gap-2 text-white/40 hover:text-white transition-all group">
-            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             <span className="text-sm font-medium">{backLabel || 'Back'}</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -88,7 +88,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
   }
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+    <header className="sticky top-0 z-40" style={{ background: '#070710', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
 
       <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 h-14">
         {/* Logo + Nav */}
@@ -97,7 +97,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           {/* Wordmark */}
           <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
             <div
-              className="w-8 h-8 flex items-center justify-center transition-all duration-200 group-hover:scale-105"
+              className="w-8 h-8 flex items-center justify-center"
               style={{ background: '#FF5F1F' }}
             >
               <span className="text-white font-black text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>

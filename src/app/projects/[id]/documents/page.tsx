@@ -685,7 +685,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
         {currentDoc ? (
           <>
             {/* Doc toolbar */}
-            <div className="border-b border-surface-800 bg-surface-950/80 backdrop-blur-sm px-4 py-2 flex items-center gap-3">
+            <div className="border-b border-surface-800 bg-surface-950 px-4 py-2 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <input
                   type="text"

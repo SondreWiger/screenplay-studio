@@ -7,13 +7,6 @@ import { Card, LoadingSpinner, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-// ============================================================
-// Production War Room
-// Central dashboard showing the live state of production:
-// scene progress, safety alerts, upcoming call sheets,
-// and DOOD scheduling at a glance.
-// ============================================================
-
 interface SceneSummary { total: number; completed: number }
 interface SafetyAlert { id: string; description: string | null; risk_level: string; scene_id: string | null }
 interface CallSheetItem { id: string; title: string | null; shoot_date: string; general_call: string | null }
@@ -196,18 +189,18 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
           <h2 className="font-bold text-white mb-4">Quick Links</h2>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { label: 'Call Sheets', href: 'call-sheet', icon: '📋' },
-              { label: 'Day Out of Days', href: 'dood', icon: '📅' },
-              { label: 'Breakdown', href: 'breakdown', icon: '🎬' },
-              { label: 'Safety Plan', href: 'safety-plan', icon: '🦺' },
-              { label: reportCount > 0 ? `Camera Reports (${reportCount})` : 'Camera Reports', href: 'camera-reports', icon: '🎥' },
-              { label: 'Continuity', href: 'continuity', icon: '🔄' },
-              { label: 'Table Read', href: 'table-read', icon: '⏱' },
-              { label: 'Treatment', href: 'treatment', icon: '📄' },
+              { label: 'Call Sheets', href: 'call-sheet' },
+              { label: 'Day Out of Days', href: 'dood' },
+              { label: 'Breakdown', href: 'breakdown' },
+              { label: 'Safety Plan', href: 'safety-plan' },
+              { label: reportCount > 0 ? `Camera Reports (${reportCount})` : 'Camera Reports', href: 'camera-reports' },
+              { label: 'Continuity', href: 'continuity' },
+              { label: 'Table Read', href: 'table-read' },
+              { label: 'Treatment', href: 'treatment' },
             ].map((l) => (
               <Link key={l.href + l.label} href={`/projects/${params.id}/${l.href}`}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-800/50 hover:bg-surface-700/60 text-xs text-surface-300 hover:text-white transition-colors">
-                <span>{l.icon}</span><span className="truncate">{l.label}</span>
+                <span className="truncate">{l.label}</span>
               </Link>
             ))}
           </div>

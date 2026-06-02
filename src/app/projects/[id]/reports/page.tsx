@@ -8,23 +8,15 @@ import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingPage, toast, ToastContainer } from '@/components/ui';
 
-// ============================================================
-// Production Reports — Pro Feature (Film/TV)
-// Real data from Supabase: call sheets, DOOD, daily reports,
-// progress summaries, wrap reports — all with working downloads.
-// ============================================================
-
 type ReportType = 'call_sheet' | 'dood' | 'daily_report' | 'progress' | 'wrap_report';
 
 const REPORT_TYPES: { type: ReportType; label: string; icon: string; description: string }[] = [
-  { type: 'call_sheet', label: 'Call Sheet', icon: '📋', description: 'Daily call sheet with crew times, locations, and scene breakdown' },
-  { type: 'dood', label: 'Day Out of Days', icon: '📊', description: 'Cast member scheduling across the entire production' },
-  { type: 'daily_report', label: 'Daily Report', icon: '📝', description: 'End-of-day production report with pages shot, hours, and notes' },
-  { type: 'progress', label: 'Progress Report', icon: '📈', description: 'Overall production progress vs. schedule' },
-  { type: 'wrap_report', label: 'Wrap Report', icon: '🎬', description: 'Final production summary with stats and deliverables' },
+  { type: 'call_sheet', label: 'Call Sheet', icon: 'CS', description: 'Daily call sheet with crew times, locations, and scene breakdown' },
+  { type: 'dood', label: 'Day Out of Days', icon: 'DD', description: 'Cast member scheduling across the entire production' },
+  { type: 'daily_report', label: 'Daily Report', icon: 'DR', description: 'End-of-day production report with pages shot, hours, and notes' },
+  { type: 'progress', label: 'Progress Report', icon: 'PR', description: 'Overall production progress vs. schedule' },
+  { type: 'wrap_report', label: 'Wrap Report', icon: 'WR', description: 'Final production summary with stats and deliverables' },
 ];
-
-// ── DB row types ──────────────────────────────────────────────
 
 interface Scene {
   id: string;
@@ -111,8 +103,6 @@ interface Profile {
   full_name: string;
 }
 
-// ── Helpers ───────────────────────────────────────────────────
-
 function downloadFile(content: string, filename: string, mimeType = 'text/plain') {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -154,8 +144,6 @@ function pct(a: number, b: number): string {
   return `${Math.round((a / b) * 100)}%`;
 }
 
-// ── Generated report data holders ─────────────────────────────
-
 interface GeneratedReport {
   id: string;
   type: ReportType;
@@ -168,8 +156,6 @@ interface GeneratedReport {
   meta?: Record<string, string | number>;
 }
 
-// ── Main Component ────────────────────────────────────────────
-
 export default function ReportsPage() {
   const params = useParams();
   const projectId = params.id as string;
@@ -180,7 +166,6 @@ export default function ReportsPage() {
 
   const supabase = useMemo(() => createClient(), []);
 
-  // ── Central data cache ──────────────────────────────────────
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [shots, setShots] = useState<Shot[]>([]);
@@ -196,10 +181,8 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<GeneratedReport[]>([]);
   const [viewingReport, setViewingReport] = useState<GeneratedReport | null>(null);
 
-  // Call sheet specific
   const [selectedEventId, setSelectedEventId] = useState<string>('');
 
-  // ── Fetch all project data once ─────────────────────────────
   useEffect(() => {
     if (!hasProAccess || !projectId) { setLoading(false); return; }
 
@@ -235,7 +218,6 @@ export default function ReportsPage() {
     fetchAll().catch(() => setLoading(false));
   }, [hasProAccess, projectId, supabase]);
 
-  // ── Character lookup helper ────────────────────────────────
   const charMap = useMemo(() => {
     const m = new Map<string, Character>();
     characters.forEach(c => m.set(c.id, c));
@@ -253,8 +235,6 @@ export default function ReportsPage() {
     profiles.forEach(p => m.set(p.id, p));
     return m;
   }, [profiles]);
-
-  // ── Report generators ──────────────────────────────────────
 
   const generateCallSheet = useCallback((): GeneratedReport | null => {
     const event = scheduleEvents.find(e => e.id === selectedEventId);
@@ -687,13 +667,11 @@ export default function ReportsPage() {
     toast.success(`Downloaded ${report.downloadName}`);
   }, []);
 
-  // ── PRO GATE ────────────────────────────────────────────────
-
   if (!hasProAccess) {
     return (
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4">📊</div>
+          <div className="text-4xl mb-4 font-bold text-surface-400">R</div>
           <h2 className="text-xl font-black text-white mb-2">Production Reports</h2>
           <p className="text-sm text-surface-400 mb-6">Generate call sheets, DOOD reports, daily production reports, and more.</p>
           <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
@@ -704,8 +682,6 @@ export default function ReportsPage() {
   }
 
   if (loading) return <LoadingPage />;
-
-  // ── RENDER ──────────────────────────────────────────────────
 
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
@@ -879,7 +855,7 @@ export default function ReportsPage() {
       {/* ── Empty state ────────────────────────────────────────── */}
       {reports.length === 0 && !selectedType && !viewingReport && (
         <div className="text-center py-12 text-surface-500">
-          <div className="text-4xl mb-3">📊</div>
+          <div className="text-4xl mb-3 font-bold text-surface-400">R</div>
           <p className="text-sm">Select a report type above to generate real production reports from your project data.</p>
           <p className="text-xs mt-2 text-surface-600">
             {scenes.length} scenes · {shots.length} shots · {characters.length} characters loaded

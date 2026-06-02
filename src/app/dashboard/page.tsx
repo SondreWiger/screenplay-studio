@@ -381,8 +381,8 @@ function DashboardContent() {
     <div className="min-h-screen" style={{ background: '#070710' }} id="main-content">
       {/* Top Bar */}
       <header
-        className="sticky top-0 z-40 backdrop-blur-xl"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.88)' }}
+        className="sticky top-0 z-40"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#070710' }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -1022,14 +1022,14 @@ function DashboardContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {cProjects.map((project) => (
                     <Link key={project.id} href={`/projects/${project.id}`}>
-                      <Card hover className="overflow-hidden group">
-                        <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
-                          </div>
-                          {project.cover_url && (
-                            <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                          )}
+            <Card hover className="overflow-hidden group">
+              <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
+                </div>
+                {project.cover_url && (
+                  <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                )}
                           <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
                           <div className="absolute top-2.5 left-2.5">
                             <div
@@ -1122,7 +1122,6 @@ function DashboardContent() {
   );
 }
 
-// ─── Project Card ──────────────────────────────────────────
 function ProjectCard({
   project, folders, moveMenuProjectId, setMoveMenuProjectId, moveToFolder, statusColors,
   draggingProjectId, setDraggingProjectId, viewMode,
@@ -1479,7 +1478,7 @@ function NewProjectModal({
                     onClick={() => applyTemplate(t)}
                     className="flex items-center gap-2 px-3 py-2 bg-surface-800 hover:bg-surface-700 border border-surface-700 hover:border-[#FF5F1F]/40 rounded-lg text-left transition-all"
                   >
-                    <span className="text-sm">📋</span>
+                    <span className="text-sm font-bold text-surface-400">T</span>
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-surface-200 truncate max-w-[120px]">{t.name}</p>
                       {t.description && <p className="text-[10px] text-surface-500 truncate max-w-[120px]">{t.description}</p>}
@@ -1737,7 +1736,7 @@ function NewProjectModal({
 
           {isEpisodic && (
             <div className="bg-surface-800/50 rounded-xl p-4 border border-surface-700">
-              <p className="text-sm text-surface-300 mb-3">📺 Your series gets:</p>
+              <p className="text-sm text-surface-300 mb-3 font-semibold">Your series gets:</p>
               <ul className="text-xs text-surface-400 space-y-1.5">
                 <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Episode manager — one script per episode, tracked together</li>
                 <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Season + episode numbering &amp; arc planning</li>
@@ -1750,7 +1749,7 @@ function NewProjectModal({
 
           {isContentCreator && (
             <div className="bg-surface-800/50 rounded-xl p-4 border border-surface-700">
-              <p className="text-sm text-surface-300 mb-3">🎉 You&apos;ll get access to:</p>
+              <p className="text-sm text-surface-300 mb-3">You&apos;ll get access to:</p>
               <ul className="text-xs text-surface-400 space-y-1.5">
                 <li className="flex items-center gap-2">
                   <span className="text-green-400">✓</span> Script editor with Hook, Intro, CTA templates
@@ -1799,7 +1798,7 @@ function NewProjectModal({
 
           {isAudioDrama && (
             <div className="bg-gradient-to-br from-violet-500/5 to-surface-800/50 rounded-xl p-4 border border-violet-500/20">
-              <p className="text-sm text-violet-300 mb-3 font-semibold">🎧 Your audio drama workspace includes:</p>
+              <p className="text-sm text-violet-300 mb-3 font-semibold">Your audio drama workspace includes:</p>
               <ul className="text-xs text-surface-400 space-y-1.5">
                 <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> Script editor in STARC audio drama format</li>
                 <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> SFX, MUSIC &amp; AMBIENCE cue lines baked-in</li>
@@ -1829,7 +1828,6 @@ function NewProjectModal({
   );
 }
 
-// ─── Streak Badge ───────────────────────────────────────────
 function StreakBadge() {
   const { gamif, loading } = useGamification();
   const streak = gamif?.login_streak ?? 0;
@@ -1847,8 +1845,7 @@ function StreakBadge() {
       className={`text-xs px-2 py-0.5 font-black uppercase tracking-wider bg-gradient-to-r ${colors} border rounded-full flex items-center gap-1`}
       title={`${streak}-day login streak`}
     >
-      <span className="text-[10px]">🔥</span>
-      {streak}
+      <span className="text-[10px] font-bold">{streak}</span>
       <span className="hidden sm:inline">&nbsp;{label}</span>
     </span>
   );

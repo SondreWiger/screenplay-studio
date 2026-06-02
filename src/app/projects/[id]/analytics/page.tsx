@@ -8,12 +8,6 @@ import { useProjectStore } from '@/lib/stores';
 import { Card, Badge, LoadingSpinner, Button } from '@/components/ui';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
 
-// ============================================================
-// Analytics Dashboard — Pro feature
-// Computed from real project data: script_elements, scenes,
-// characters, scripts, shots, comments, project_members
-// ============================================================
-
 type TimeRange = '7d' | '30d' | '90d' | 'all';
 
 interface ProjectStats {
@@ -188,7 +182,6 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
         .sort((a, b) => b.wordCount - a.wordCount)
         .slice(0, 15),
     );
-    // ──────────────────────────────────────────────────────────
 
     const dayMap = new Map<string, { count: number; words: number }>();
     for (const el of filteredElements) {
@@ -582,7 +575,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                       <p className="text-sm font-semibold text-white">{m.elementsCreated} contributions</p>
                       {workTime?.user_totals?.[m.userId] && (
                         <p className="text-xs text-indigo-400 font-medium">
-                          ⏱ {formatWorkSeconds(workTime.user_totals[m.userId])}
+                          {formatWorkSeconds(workTime.user_totals[m.userId])}
                         </p>
                       )}
                       {m.lastActive && (

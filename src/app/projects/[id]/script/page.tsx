@@ -485,8 +485,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return () => vv.removeEventListener('resize', onResize);
   }, []);
 
-  // AI Review Feature Flag (Alpha)
-  const AI_REVIEW_ENABLED = false; // Set to true to enable AI Review (requires @xenova/transformers build fix)
+  const AI_REVIEW_ENABLED = false;
   const [showAIReviewPanel, setShowAIReviewPanel] = useState(false);
   const [aiReviewResults, setAIReviewResults] = useState<AIReviewResult | null>(null);
   const [aiReviewLoading, setAIReviewLoading] = useState(false);
@@ -502,10 +501,8 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const canEdit = currentUserRole !== 'viewer' && !currentScript?.locked;
   const canLock = currentUserRole === 'owner' || currentUserRole === 'admin';
 
-  // ⏱ Work-time tracking — fires heartbeats every 30s while the user is active
   useWorkTimeTracker({ projectId: params.id, context: 'script', disabled: !canEdit });
 
-  // 🤖 AI Review — automatic periodic review when panel is open (feature flagged)
   useEffect(() => {
     if (!AI_REVIEW_ENABLED || !showAIReviewPanel) return;
     
@@ -1974,7 +1971,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       {/* Editor */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Toolbar — Row 1: Element Types */}
-        <div className={cn('border-b border-surface-800/60 bg-surface-950/90 backdrop-blur-md px-2 md:px-4 py-2 flex items-center gap-2 no-print', focusMode && 'hidden')}>
+        <div className={cn('border-b border-surface-800/60 bg-surface-950 px-2 md:px-4 py-2 flex items-center gap-2 no-print', focusMode && 'hidden')}>
           {canEdit && (
             <div className="flex items-center gap-0.5 flex-wrap min-w-0">
               {elementCycle.map((type) => (
@@ -2019,7 +2016,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </div>
 
         {/* Toolbar — Row 2: Tools */}
-        <div className={cn('border-b border-surface-800 bg-surface-950/70 backdrop-blur-md px-2 md:px-4 py-1 flex items-center gap-1 no-print', focusMode && 'hidden')}>
+        <div className={cn('border-b border-surface-800 bg-surface-950 px-2 md:px-4 py-1 flex items-center gap-1 no-print', focusMode && 'hidden')}>
           {/* Left: Editing tools */}
           {canEdit && (
             <>
@@ -2375,7 +2372,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         {AI_REVIEW_ENABLED && showAIReviewPanel && (
           <>
             <div className="fixed inset-0 z-[9998]" onClick={() => setShowAIReviewPanel(false)} />
-            <div ref={aiReviewRef} className="fixed z-[9999] right-0 top-0 h-full w-[340px] bg-surface-950/95 border-l border-surface-800/30 backdrop-blur-md shadow-2xl animate-scale-in flex flex-col">
+            <div ref={aiReviewRef} className="fixed z-[9999] right-0 top-0 h-full w-[340px] bg-surface-950 border-l border-surface-800/30 shadow-2xl animate-scale-in flex flex-col">
               {/* Panel Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800/50 shrink-0">
                 <div className="flex items-center gap-2">
@@ -2925,7 +2922,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
       {/* ── Mobile Writing Toolbar (above keyboard) ───────────── */}
       {canEdit && keyboardOpen && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface-950/95 backdrop-blur-xl border-t border-surface-800/80 safe-area-pb">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface-950 border-t border-surface-800/80 safe-area-pb">
           {/* Element type picker */}
           <div className="flex items-center gap-1 px-2 py-1.5 overflow-x-auto scrollbar-none">
             {elementCycle.map((type) => (

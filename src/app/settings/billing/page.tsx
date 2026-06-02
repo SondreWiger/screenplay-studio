@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures, formatBytes } from '@/hooks/useProFeatures';
 import { Button, Card, Badge, LoadingPage, Progress } from '@/components/ui';
-import { AppHeader } from '@/components/AppHeader';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import type { Subscription, TeamLicense } from '@/lib/types';
 
@@ -29,11 +28,8 @@ export default function BillingPage() {
   // Gate: if pro_subscription flag is not accessible, redirect
   if (!authLoading && !flagsLoading && !canUseFeature('pro_subscription')) {
     return (
-      <div className="min-h-screen bg-surface-950">
-        <AppHeader />
-        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <p className="text-surface-400">Billing is not available yet.</p>
-        </div>
+      <div className="space-y-6">
+        <p className="text-surface-400">Billing is not available yet.</p>
       </div>
     );
   }
@@ -68,10 +64,8 @@ export default function BillingPage() {
   const periodEnd = subscription ? new Date(subscription.current_period_end) : null;
 
   return (
-    <div className="min-h-screen bg-surface-950">
-      <AppHeader />
-      <div className="max-w-3xl mx-auto px-4 py-8 md:py-16">
-        <h1 className="text-2xl font-black text-white mb-8" style={{ letterSpacing: '-0.03em' }}>BILLING &amp; SUBSCRIPTION</h1>
+    <div className="space-y-6">
+        <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>Billing & Subscription</h1>
 
         {/* Current Plan */}
         <Card className="p-6 mb-6">
@@ -196,7 +190,6 @@ export default function BillingPage() {
             </div>
           </Card>
         )}
-      </div>
     </div>
   );
 }

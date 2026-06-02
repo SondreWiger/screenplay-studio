@@ -220,7 +220,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
                   onClick={(e) => toggleCompleted(e, scene)}
                   title={scene.is_completed ? 'Mark incomplete' : 'Mark done'}
                   className={cn(
-                    'w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 transition-all hover:scale-110 focus:outline-none',
+                    'w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 transition-all focus:outline-none',
                     scene.is_completed ? 'bg-green-500/30 text-green-400 ring-1 ring-green-500/50' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
                   )}
                 >
@@ -240,7 +240,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
                         Set Up
                       </Badge>
                     )}
-                    {!needsSetup(scene) && scene.script_element_id && <Badge variant="info" size="sm">📄 Script Linked</Badge>}
+                    {!needsSetup(scene) && scene.script_element_id && <Badge variant="info" size="sm">Script Linked</Badge>}
                   </div>
                   {needsSetup(scene) && !scene.synopsis && (
                     <p className="text-sm text-amber-400/70 mt-1 italic">Click to set up cast, props, location &amp; more</p>
@@ -558,7 +558,7 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
         <LoadingSpinner className="py-12" />
       ) : scriptElements.length === 0 ? (
         <div className="text-center py-12">
-          <span className="text-3xl mb-3 block">📄</span>
+          <span className="text-3xl mb-3 block font-bold text-surface-400">S</span>
           <p className="text-surface-400 text-sm">No script found or no scene headings in the script.</p>
           <p className="text-surface-500 text-xs mt-1">Write your screenplay first, then import scenes here.</p>
         </div>
