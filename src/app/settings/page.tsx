@@ -13,6 +13,7 @@ import type { UsageIntent, ScriptType, Company, Profile } from '@/lib/types';
 import type { InsiderTier } from '@/hooks/useFeatureFlags';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { useGamification } from '@/hooks/useGamification';
+import { ThemePreview } from '@/components/ThemePreview';
 import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
 import { XPBar } from '@/components/XPBar';
 
@@ -424,6 +425,7 @@ export default function UserSettingsPage() {
   const [showAccountability, setShowAccountability] = useState(true);
   const [preferredScriptType, setPreferredScriptType] = useState<ScriptType>('screenplay');
   const [accentColor, setAccentColor] = useState('brand');
+  const [uiTheme, setUiTheme] = useState<'default' | 'soft'>('default');
   // Accountability
   const [activityColor, setActivityColor] = useState('#22c55e');
   const [showActivityGrid, setShowActivityGrid] = useState<'private' | 'buddies' | 'public'>('buddies');
@@ -475,6 +477,7 @@ export default function UserSettingsPage() {
     setShowAccountability(user.show_accountability !== false);
     setPreferredScriptType(user.preferred_script_type || 'screenplay');
     setAccentColor(user.accent_color || 'brand');
+    setUiTheme(user.ui_theme === 'soft' ? 'soft' : 'default');
     setActivityColor(user.activity_color || '#22c55e');
     setShowActivityGrid((user.show_activity_grid as 'private' | 'buddies' | 'public') || 'buddies');
     setDailyGoalPages(String(user.daily_goal_pages ?? 1));
@@ -547,11 +550,18 @@ export default function UserSettingsPage() {
       show_accountability: showAccountability,
       preferred_script_type: preferredScriptType,
       accent_color: accentColor,
+      ui_theme: uiTheme,
       sidebar_tabs: sidebarTabs,
     }).eq('id', user.id);
 
     // Apply accent color to document immediately
     document.documentElement.setAttribute('data-accent', accentColor);
+    // Apply UI theme to document immediately
+    if (uiTheme === 'soft') {
+      document.documentElement.setAttribute('data-theme', 'soft');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
 
     useAuthStore.getState().setUser({
       ...user,
@@ -562,6 +572,7 @@ export default function UserSettingsPage() {
       show_accountability: showAccountability,
       preferred_script_type: preferredScriptType,
       accent_color: accentColor,
+      ui_theme: uiTheme,
       sidebar_tabs: sidebarTabs,
     });
 
@@ -938,6 +949,51 @@ export default function UserSettingsPage() {
                     )}
                   </button>
                 ))}
+              </div>
+              <p className="text-xs text-surface-500 mt-3">Changes apply when you save preferences.</p>
+            </Card>
+
+            {/* Editor Style */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">Editor Style</h2>
+              <p className="text-sm text-surface-400 mb-4">Choose how the script editor looks across all your projects.</p>
+              <div className="grid grid-cols-2 gap-4 max-w-md">
+                <button
+                  onClick={() => setUiTheme('default')}
+                  className={`text-left rounded-xl transition-all duration-200 ${
+                    uiTheme === 'default'
+                      ? 'ring-2 ring-[var(--brand-500)] shadow-lg shadow-[var(--brand-500)]/10'
+                      : 'ring-1 ring-surface-700 hover:ring-surface-500'
+                  }`}
+                >
+                  <ThemePreview theme="default" accentColor={accentColor} />
+                  <div className="px-3 py-2 flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Default</span>
+                    {uiTheme === 'default' && (
+                      <div className="w-4 h-4 rounded-full bg-[var(--brand-500)] flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                    )}
+                  </div>
+                </button>
+                <button
+                  onClick={() => setUiTheme('soft')}
+                  className={`text-left rounded-xl transition-all duration-200 ${
+                    uiTheme === 'soft'
+                      ? 'ring-2 ring-[var(--brand-500)] shadow-lg shadow-[var(--brand-500)]/10'
+                      : 'ring-1 ring-surface-700 hover:ring-surface-500'
+                  }`}
+                >
+                  <ThemePreview theme="soft" accentColor={accentColor} />
+                  <div className="px-3 py-2 flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Soft Pastels</span>
+                    {uiTheme === 'soft' && (
+                      <div className="w-4 h-4 rounded-full bg-[var(--brand-500)] flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                    )}
+                  </div>
+                </button>
               </div>
               <p className="text-xs text-surface-500 mt-3">Changes apply when you save preferences.</p>
             </Card>
