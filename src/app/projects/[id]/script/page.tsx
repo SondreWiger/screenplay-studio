@@ -313,8 +313,8 @@ function getElementClass(type: ScriptElementType, isAudioDrama = false, isComic 
     case 'sequence_end': return 'sp-sequence-end';
     case 'action': return 'sp-action';
     case 'character': return isComic ? 'sp-comic-character' : 'sp-character';
-    case 'dialogue': return 'sp-dialogue';
-    case 'parenthetical': return 'sp-parenthetical';
+    case 'dialogue': return isComic ? 'sp-comic-dialogue' : 'sp-dialogue';
+    case 'parenthetical': return isComic ? 'sp-comic-dialogue' : 'sp-parenthetical';
     case 'transition': return 'sp-transition';
     case 'centered': return 'sp-centered';
     case 'note': return 'sp-note';
@@ -563,8 +563,13 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
   // Detect Comic / Graphic Novel project
   const isComic = useMemo(() => {
-    return currentProject?.script_type === 'comic';
-  }, [currentProject?.script_type]);
+    if (currentProject?.script_type === 'comic') return true;
+    return elements.some(e =>
+      e.element_type === 'comic_page' || e.element_type === 'comic_panel' ||
+      e.element_type === 'comic_panel_description' || e.element_type === 'comic_dialogue' ||
+      e.element_type === 'comic_sfx' || e.element_type === 'comic_caption'
+    );
+  }, [currentProject?.script_type, elements]);
 
   const resolvedAudioFormat = useMemo(() => {
     if (!isAudioDrama) return '';
