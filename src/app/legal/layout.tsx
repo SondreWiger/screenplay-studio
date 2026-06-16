@@ -17,6 +17,7 @@ const LEGAL_NAV = [
   { href: '/legal/dmca', label: 'DMCA & Takedowns' },
   { href: '/legal/data-processing', label: 'Data Processing' },
   { href: '/legal/security', label: 'Security' },
+  { href: '/legal/opensource-killswitch', label: 'Open-Source Kill Switch' },
   { href: '/legal/blog', label: 'Legal Updates' },
   { href: '/legal/creator-terms', label: 'Creator Affiliate Terms' },
 ];

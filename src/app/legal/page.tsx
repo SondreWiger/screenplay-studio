@@ -51,6 +51,11 @@ const legalPages = [
     href: '/legal/security',
     description: 'Our security practices and commitment to keeping your data safe.',
   },
+  {
+    title: 'Open-Source Kill Switch',
+    href: '/legal/opensource-killswitch',
+    description: 'How we use feature flags to disable features platform-wide, and your rights.',
+  },
 ];
 
 const quickFacts = [
@@ -93,7 +98,7 @@ export default function LegalCenterPage() {
             <Link
               key={page.href}
               href={page.href}
-              className="group rounded-lg border border-surface-800/60 bg-surface-900/40 p-5 transition-all duration-200 hover:border-red-500/20 hover:bg-surface-900/70"
+              className="group rounded-lg border border-surface-800/60 bg-surface-900/40 p-5 transition-colors duration-200 hover:border-red-500/20 hover:bg-surface-900/70"
             >
               <h2 className="text-[15px] font-semibold text-white group-hover:text-red-400 transition-colors">{page.title}</h2>
               <p className="mt-1.5 text-[13px] text-surface-500 leading-relaxed">{page.description}</p>

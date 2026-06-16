@@ -36,6 +36,7 @@ export default function TermsOfServicePage() {
             <li><a href="#privacy" className="hover:text-red-400 transition-colors">Privacy</a></li>
             <li><a href="#ai-ml" className="hover:text-red-400 transition-colors">AI &amp; Machine Learning</a></li>
             <li><a href="#api" className="hover:text-red-400 transition-colors">API &amp; Automation</a></li>
+            <li><a href="#kill-switch" className="hover:text-red-400 transition-colors">Open-Source Kill Switch</a></li>
             <li><a href="#availability" className="hover:text-red-400 transition-colors">Service Availability &amp; Modifications</a></li>
             <li><a href="#disclaimers" className="hover:text-red-400 transition-colors">Disclaimers</a></li>
             <li><a href="#liability" className="hover:text-red-400 transition-colors">Limitation of Liability</a></li>
@@ -363,6 +364,30 @@ export default function TermsOfServicePage() {
             <li>We reserve the right to modify, deprecate, or discontinue APIs with reasonable prior notice.</li>
             <li>Automated access to the Service outside of provided APIs is expressly prohibited.</li>
           </ul>
+
+          {/* 17b. Open-Source Kill Switch */}
+          <h2 id="kill-switch" className="scroll-mt-24">17b. Open-Source Kill Switch</h2>
+          <p>
+            Screenplay Studio operates an open-source kill switch &mdash; a platform-level feature flag system that
+            allows us to instantly disable specific features across the entire platform without a code deployment.
+            This mechanism is used as a safety tool to protect users, maintain platform integrity, and respond to
+            urgent situations such as security vulnerabilities or legal requirements.
+          </p>
+          <p>
+            Activating the kill switch for a feature does not delete, modify, or restrict access to any of your
+            content. Your screenplays, scripts, and all creative works remain fully accessible and intact. The
+            kill switch affects only the availability of the feature itself, not your data or account.
+          </p>
+          <p>
+            We are committed to transparency in how the kill switch is used. All activations are logged, and
+            significant activations will be accompanied by public notice explaining the reason and expected
+            resolution timeline. Features disabled via the kill switch will be restored as soon as the
+            underlying issue is resolved.
+          </p>
+          <p>
+            For full details on how the kill switch operates, what it controls, and your rights, see our{' '}
+            <Link href="/legal/opensource-killswitch" className="text-red-400 hover:text-red-300 transition-colors">Open-Source Kill Switch Policy</Link>.
+          </p>
 
           {/* 18. Service Availability & Modifications */}
           <h2 id="availability" className="scroll-mt-24">18. Service Availability &amp; Modifications</h2>
