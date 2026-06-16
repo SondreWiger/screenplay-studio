@@ -6,7 +6,6 @@ import { parseScreenplayElements } from '@/components/ScreenplayRenderer';
 import { estimateLines, PAGE_CONFIGS } from '@/lib/screenplay-paginator';
 import type { Profile } from '@/lib/types';
 
-// ============================================================
 // Community Script Reader — Info Panel + Full-screen Modal
 //
 // Design mirrors the Deep Dive script viewer with:
@@ -19,9 +18,8 @@ import type { Profile } from '@/lib/types';
 //   - Keyboard shortcuts (Esc, T, J/K)
 //   - Font size & display options
 //   - Accepts both structured JSON (Fountain-parsed) and plaintext
-// ============================================================
 
-// ── Colour helpers ───────────────────────────────────────────
+// Colour helpers
 const CHARACTER_COLORS = [
   '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
   '#06b6d4', '#f97316', '#84cc16', '#6366f1', '#14b8a6', '#e11d48',
@@ -32,7 +30,7 @@ function hashColor(str: string): string {
   return CHARACTER_COLORS[Math.abs(h) % CHARACTER_COLORS.length];
 }
 
-// ── Script stats ─────────────────────────────────────────────
+// Script stats
 interface ScriptStats {
   wordCount: number;
   sceneCount: number;
@@ -89,7 +87,7 @@ function computeStats(content: string | null): ScriptStats {
   };
 }
 
-// ── Scene info ────────────────────────────────────────────────
+// Scene info
 interface SceneInfo {
   elementIndex: number;
   number: string;
@@ -152,7 +150,7 @@ function extractCharacters(elements: ReturnType<typeof parseScreenplayElements>)
     .sort((a, b) => b.dialogueWords - a.dialogueWords);
 }
 
-// ── Annotation type ───────────────────────────────────────────
+// Annotation type
 interface Annotation {
   id: string;
   line_ref: string | null;
@@ -162,7 +160,7 @@ interface Annotation {
   author?: Profile;
 }
 
-// ── Element style (mirrors Deep Dive) ───────────────────────
+// Element style (mirrors Deep Dive)
 function getElementStyle(type: string, dark: boolean): React.CSSProperties {
   const muted = dark ? '#666' : '#888';
   const subtle = dark ? '#555' : '#ccc';
@@ -195,9 +193,7 @@ function getElementStyle(type: string, dark: boolean): React.CSSProperties {
   }
 }
 
-// =============================================================
 // Script Info Panel — summary card shown on post/submission
-// =============================================================
 export interface CommunityScriptInfoPanelProps {
   content: string | null;
   fileType?: string | null;
@@ -343,7 +339,7 @@ export function CommunityScriptInfoPanel({
         {stats.isStructured && stats.wordCount > 0 && (
           <div className="px-5 pb-4">
             <div className="h-1.5 rounded-full overflow-hidden bg-white/[0.04] flex">
-              <div className="h-full transition-all" style={{ width: `${stats.dialoguePct}%`, background: '#FF5F1F55' }} />
+              <div className="h-full transition-[width]" style={{ width: `${stats.dialoguePct}%`, background: '#FF5F1F55' }} />
               <div className="h-full" style={{ width: `${100 - stats.dialoguePct}%`, background: '#3b82f635' }} />
             </div>
             <div className="flex justify-between text-[10px] mt-1">
@@ -367,9 +363,7 @@ export function CommunityScriptInfoPanel({
   );
 }
 
-// =============================================================
 // Fullscreen Reader Modal
-// =============================================================
 type SidebarTab = 'scenes' | 'characters' | 'stats' | 'annotations';
 
 interface ReaderModalProps {

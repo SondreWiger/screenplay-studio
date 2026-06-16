@@ -3,13 +3,11 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Modal, Input, Textarea, EmptyState, LoadingSpinner, Badge, toast } from '@/components/ui';
+import { Button, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
-// ============================================================
 // Types
-// ============================================================
 
 type PayUnit = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'per_episode' | 'flat';
 type ContractStatus = 'negotiating' | 'pending' | 'signed' | 'on_set' | 'completed' | 'released';
@@ -60,9 +58,7 @@ interface CastDocument {
   created_at: string;
 }
 
-// ============================================================
 // Constants
-// ============================================================
 
 const PAY_UNITS: { value: PayUnit; label: string }[] = [
   { value: 'flat',        label: 'Flat Fee' },
@@ -123,9 +119,7 @@ function formatPay(member: CastMember) {
   return `${formatted} / ${unit.toLowerCase().replace('per ', '')}`;
 }
 
-// ============================================================
 // Main Page
-// ============================================================
 
 type MainTab = 'roster' | 'payments' | 'overview';
 type DetailTab = 'profile' | 'documents' | 'pay';
@@ -169,7 +163,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
 
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  // ── Load data ──────────────────────────────────────────────
+  // Load data
   const loadAll = useCallback(async () => {
     const sb = createClient();
     const [{ data: a }, { data: p }, { data: d }] = await Promise.all([
@@ -190,7 +184,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
     if (selected) setSelected(actors.find(a => a.id === selected.id) ?? null);
   }, [actors]);
 
-  // ── Save actor ─────────────────────────────────────────────
+  // Save actor
   const saveActor = async () => {
     if (!editingActor.name?.trim() || !user) return;
     setSavingActor(true);
@@ -228,7 +222,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
     setSavingActor(false);
   };
 
-  // ── Save payment ───────────────────────────────────────────
+  // Save payment
   const savePayment = async () => {
     if (!editingPay.amount || !editingPay.cast_member_id) return;
     setSavingPay(true);
@@ -261,7 +255,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
     setSavingPay(false);
   };
 
-  // ── Mark payment paid ──────────────────────────────────────
+  // Mark payment paid
   const markPaid = async (payId: string) => {
     const sb = createClient();
     const paidAt = new Date().toISOString();
@@ -270,7 +264,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
     toast.success('Marked as paid');
   };
 
-  // ── Save document ──────────────────────────────────────────
+  // Save document
   const saveDocument = async () => {
     if (!editingDoc.title?.trim() || !editingDoc.cast_member_id) return;
     setSavingDoc(true);
@@ -301,7 +295,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
     setSavingDoc(false);
   };
 
-  // ── Delete ─────────────────────────────────────────────────
+  // Delete
   const deleteActor = async (actor: CastMember) => {
     const ok = await confirm({ title: `Delete "${actor.name}"?`, message: 'This deletes all their payments and documents too.', confirmLabel: 'Delete', variant: 'danger' });
     if (!ok) return;
@@ -330,7 +324,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
     toast.success('Document deleted');
   };
 
-  // ── Computed overview stats ────────────────────────────────
+  // Computed overview stats
   const stats = useMemo(() => {
     const totalActors = actors.length;
     const signed = actors.filter(a => a.contract_status === 'signed' || a.contract_status === 'on_set' || a.contract_status === 'completed').length;
@@ -355,7 +349,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
 
   const filteredPayments = payFilter === 'all' ? payments : payments.filter(p => p.status === payFilter);
 
-  // ── Print overview ─────────────────────────────────────────
+  // Print overview
   const printOverview = () => window.print();
 
   if (loading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;
@@ -426,7 +420,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                 const isSelected = selected?.id === actor.id;
                 return (
                   <button key={actor.id} onClick={() => { setSelected(actor); setDetailTab('profile'); }}
-                    className={cn('w-full text-left p-3 rounded-xl border transition-all',
+                    className={cn('w-full text-left p-3 rounded-xl border transition-colors',
                       isSelected ? 'border-[#FF5F1F]/50 bg-[#FF5F1F]/5' : 'border-surface-800 bg-surface-900/40 hover:border-surface-700')}>
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
@@ -683,7 +677,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                 const pm      = paymentStatusMeta(pay.status);
                 const actor   = actors.find(a => a.id === pay.cast_member_id);
                 return (
-                  <div key={pay.id} className="flex items-center gap-4 p-3.5 rounded-xl border border-surface-800 bg-surface-900/40 hover:border-surface-700 transition-all">
+                  <div key={pay.id} className="flex items-center gap-4 p-3.5 rounded-xl border border-surface-800 bg-surface-900/40 hover:border-surface-700 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-bold text-white">{formatCurrency(pay.amount)}</p>

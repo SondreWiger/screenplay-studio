@@ -130,7 +130,7 @@ export default function SettingsPage() {
       <div className="flex gap-1 mb-6 p-0.5 rounded-xl w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
         {(['appearance','rules','members','automod','pending'] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={cn('px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-all',
+            className={cn('px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-colors',
               tab === t ? 'text-white' : 'text-white/40 hover:text-white/70')}
             style={tab === t ? { background: accentColor + '33', color: accentColor } : undefined}>
             {t}
@@ -152,7 +152,7 @@ export default function SettingsPage() {
             <div className="flex flex-wrap gap-1.5">
               {ICON_OPTIONS.map(i => (
                 <button key={i} type="button" onClick={() => setIcon(i)}
-                  className={cn('w-9 h-9 text-xl rounded-xl transition-all', icon === i ? 'ring-2 scale-110' : 'opacity-40 hover:opacity-70')}
+                  className={cn('w-9 h-9 text-xl rounded-xl transition-colors', icon === i ? 'ring-2 scale-110' : 'opacity-40 hover:opacity-70')}
                   style={{ background: icon === i ? accentColor + '33' : 'rgba(255,255,255,0.05)' }}>
                   {i}
                 </button>
@@ -176,7 +176,7 @@ export default function SettingsPage() {
             <div className="flex flex-wrap gap-2 items-center">
               {ACCENT_PRESETS.map(c => (
                 <button key={c} type="button" onClick={() => setAccentColor(c)}
-                  className={cn('w-7 h-7 rounded-full border-2 transition-all hover:scale-110', accentColor === c ? 'border-white scale-110' : 'border-transparent')}
+                  className={cn('w-7 h-7 rounded-full border-2 transition-colors', accentColor === c ? 'border-white scale-110' : 'border-transparent')}
                   style={{ background: c }} />
               ))}
               <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)} className="w-7 h-7 rounded-full cursor-pointer border-0 bg-transparent" />
@@ -204,9 +204,9 @@ export default function SettingsPage() {
           </div>
           <label className="flex items-center gap-3 cursor-pointer">
             <div onClick={() => setAutomodEnabled(v => !v)}
-              className={cn('w-9 h-5 rounded-full relative transition-all', automodEnabled ? '' : 'bg-white/20')}
+              className={cn('w-9 h-5 rounded-full relative transition-colors', automodEnabled ? '' : 'bg-white/20')}
               style={automodEnabled ? { background: accentColor } : {}}>
-              <span className={cn('absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all', automodEnabled ? 'left-4' : 'left-0.5')} />
+              <span className={cn('absolute top-0.5 w-4 h-4 bg-white rounded-full transition-colors', automodEnabled ? 'left-4' : 'left-0.5')} />
             </div>
             <span className="text-sm">Automod Enabled</span>
           </label>

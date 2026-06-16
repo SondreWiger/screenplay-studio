@@ -10,20 +10,16 @@ import { createClient } from '@/lib/supabase/client';
 import { useNotificationStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 
-// ============================================================
 // Unified Community Nav
 // Replaces the duplicated <nav> in every community page.
 // Active tab is derived from the current pathname automatically.
-// ============================================================
 
 const NAV_LINKS = [
   { href: '/community',             label: 'Feed'       },
   { href: '/community/c',           label: 'Communities'},
   { href: '/community/showcase',    label: 'Showcase'   },
   { href: '/community/challenges',  label: 'Challenges' },
-  { href: '/community/courses',     label: 'Courses'    },
   { href: '/community/free-scripts',label: 'Scripts'    },
-  { href: '/community/chat',        label: 'Chat'       },
   { href: '/blog',                  label: 'Blog'       },
 ] as const;
 

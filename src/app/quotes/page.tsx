@@ -120,7 +120,7 @@ export default function QuotesPage() {
     return () => style.remove();
   }, []);
 
-  const groups = [...new Set(quotes.map(q => q.group_name).filter(Boolean) as string[])];
+  const groups = Array.from(new Set(quotes.map(q => q.group_name).filter(Boolean) as string[]));;
   const timelineGroups = !search && !groupFilter && !groupIdFilter && sortOrder === 'desc'
     ? groupQuotesByTime(quotes)
     : [{ label: 'All Quotes', quotes }];
@@ -188,7 +188,7 @@ export default function QuotesPage() {
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/15 to-brand-500/15 border border-amber-500/10 mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/15 to-brand-500/15 border border-amber-500/10 mb-4">
               <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
@@ -223,7 +223,7 @@ export default function QuotesPage() {
                   setGroupIdFilter('');
                 }
               }}
-              className="bg-surface-900/80 border border-surface-800 rounded-lg px-3 py-2 text-xs text-surface-300 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/30 transition-all appearance-none cursor-pointer"
+              className="bg-surface-900/80 border border-surface-800 rounded-lg px-3 py-2 text-xs text-surface-300 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/30 transition-colors appearance-none cursor-pointer"
             >
               <option value="">All</option>
               {sharedGroups.map(g => <option key={g.id} value={g.id}>{g.emoji} {g.name}</option>)}
@@ -233,7 +233,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setShowGroupManager(true)}
-              className="px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-all"
+              className="px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-colors"
               title="Manage groups"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,7 +243,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setSortOrder(o => o === 'desc' ? 'asc' : 'desc')}
-              className="px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-all"
+              className="px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-colors"
             >
               {sortOrder === 'desc' ? 'Newest first ↓' : 'Oldest first ↑'}
             </button>
@@ -258,7 +258,7 @@ export default function QuotesPage() {
 
           {/* Full form */}
           {(showForm || editingQuote) && (
-            <div className="bg-gradient-to-br from-surface-900 to-surface-950 border border-surface-800 rounded-2xl p-5 mb-8 shadow-lg shadow-black/20">
+            <div className="bg-gradient-to-br from-surface-900 to-surface-950 border border-surface-800 rounded-xl p-5 mb-8 shadow-lg shadow-black/20">
               <h3 className="text-xs font-semibold text-surface-400 mb-3 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 {editingQuote ? 'Edit Quote' : 'New Quote'}
@@ -277,10 +277,10 @@ export default function QuotesPage() {
           {!showForm && !editingQuote && (
             <button
               onClick={() => setShowQuickForm(true)}
-              className="w-full text-left bg-gradient-to-r from-surface-900/50 to-surface-950/50 border border-surface-800/60 border-dashed rounded-xl p-4 mb-8 text-surface-500 hover:text-surface-300 hover:border-surface-700/60 hover:from-surface-900/80 hover:to-surface-950/80 transition-all group"
+              className="w-full text-left bg-gradient-to-r from-surface-900/50 to-surface-950/50 border border-surface-800/60 border-dashed rounded-xl p-4 mb-8 text-surface-500 hover:text-surface-300 hover:border-surface-700/60 hover:from-surface-900/80 hover:to-surface-950/80 transition-colors group"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface-800/50 flex items-center justify-center group-hover:bg-amber-500/10 group-hover:text-amber-400 transition-all">
+                <div className="w-8 h-8 rounded-lg bg-surface-800/50 flex items-center justify-center group-hover:bg-amber-500/10 group-hover:text-amber-400 transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
@@ -292,7 +292,7 @@ export default function QuotesPage() {
 
           {/* Quick form (inline expand) */}
           {showQuickForm && (
-            <div className="bg-gradient-to-br from-surface-900 to-surface-950 border border-surface-800 rounded-2xl p-5 mb-8 shadow-lg shadow-black/20 animate-fade-in">
+            <div className="bg-gradient-to-br from-surface-900 to-surface-950 border border-surface-800 rounded-xl p-5 mb-8 shadow-lg shadow-black/20 animate-fade-in">
               <h3 className="text-xs font-semibold text-surface-400 mb-3 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Quick Capture
@@ -331,7 +331,7 @@ export default function QuotesPage() {
               <div className="py-16">
                 <EmptyState
                   icon={
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/10 to-brand-500/10 border border-amber-500/10 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/10 to-brand-500/10 border border-amber-500/10 flex items-center justify-center">
                       <svg className="w-7 h-7 text-amber-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                       </svg>
@@ -369,7 +369,7 @@ export default function QuotesPage() {
                           <div className="absolute -left-[23px] top-5 w-2.5 h-2.5 rounded-full bg-surface-900 border-2 border-surface-700" />
 
                           {/* Quote card with cozy styling */}
-                          <div className="group relative bg-gradient-to-br from-surface-900/80 to-surface-950/80 border border-surface-800/50 rounded-2xl p-5 hover:border-surface-700/70 hover:from-surface-900 hover:to-surface-950 transition-all duration-300 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5">
+                          <div className="group relative bg-gradient-to-br from-surface-900/80 to-surface-950/80 border border-surface-800/50 rounded-xl p-5 hover:border-surface-700/70 hover:from-surface-900 hover:to-surface-950 transition-all duration-300 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5">
                             {/* Warm ambient glow per card */}
                             <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-0 group-hover:opacity-[0.04] transition-opacity duration-500 pointer-events-none" style={{ background: 'radial-gradient(circle, #FF5F1F 0%, transparent 70%)' }} />
 

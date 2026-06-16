@@ -199,7 +199,7 @@ export default function ContestsPage() {
             const display  = isExp ? entries : top3;
 
             return (
-              <div key={contest.id} className="rounded-2xl overflow-hidden"
+              <div key={contest.id} className="rounded-xl overflow-hidden"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="p-4 pb-3">
                   <div className="flex items-start gap-3">
@@ -276,7 +276,7 @@ export default function ContestsPage() {
                         <button
                           onClick={() => canVote && toggleVote(entry)}
                           className={cn(
-                            'flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all shrink-0',
+                            'flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-colors shrink-0',
                             entry.has_voted ? 'font-semibold' : 'opacity-50',
                             canVote ? 'hover:opacity-80 cursor-pointer' : 'cursor-default',
                           )}

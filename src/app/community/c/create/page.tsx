@@ -87,7 +87,7 @@ export default function CreateCommunityPage() {
             <div className="flex flex-wrap gap-1.5">
               {ICON_OPTIONS.map(i => (
                 <button key={i} type="button" onClick={() => setIcon(i)}
-                  className={cn('w-9 h-9 text-xl rounded-xl transition-all', icon === i ? 'ring-2 scale-110' : 'opacity-40 hover:opacity-70')}
+                  className={cn('w-9 h-9 text-xl rounded-xl transition-opacity', icon === i ? 'ring-2 scale-110' : 'opacity-40 hover:opacity-70')}
                   style={{ background: icon === i ? accent + '33' : 'rgba(255,255,255,0.05)', outlineColor: accent }}>
                   {i}
                 </button>
@@ -133,7 +133,7 @@ export default function CreateCommunityPage() {
             <div className="flex items-center gap-2 flex-wrap">
               {ACCENT_PRESETS.map(c => (
                 <button key={c} type="button" onClick={() => setAccent(c)}
-                  className={cn('w-7 h-7 rounded-full border-2 transition-all hover:scale-110',
+                  className={cn('w-7 h-7 rounded-full border-2 transition-opacity',
                     accent === c ? 'border-white scale-110' : 'border-transparent')}
                   style={{ background: c }} />
               ))}
@@ -152,7 +152,7 @@ export default function CreateCommunityPage() {
                 ['private',    '🔑', 'Invite only'],
               ] as const).map(([v, ico, desc]) => (
                 <button key={v} type="button" onClick={() => setVisibility(v)}
-                  className={cn('p-2.5 rounded-xl text-left transition-all', visibility === v ? '' : 'opacity-50 hover:opacity-75')}
+                  className={cn('p-2.5 rounded-xl text-left transition-opacity', visibility === v ? '' : 'opacity-50 hover:opacity-75')}
                   style={visibility === v
                     ? { background: accent + '22', border: `1px solid ${accent}` }
                     : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -174,7 +174,7 @@ export default function CreateCommunityPage() {
                 ['apply_to_post',    '📬', 'Users must apply before posting'],
               ] as const).map(([v, ico, desc]) => (
                 <button key={v} type="button" onClick={() => setPostingMode(v)}
-                  className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all', postingMode === v ? '' : 'opacity-50 hover:opacity-75')}
+                  className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-opacity', postingMode === v ? '' : 'opacity-50 hover:opacity-75')}
                   style={postingMode === v
                     ? { background: accent + '22', border: `1px solid ${accent}` }
                     : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -193,7 +193,7 @@ export default function CreateCommunityPage() {
           )}
 
           <button type="submit" disabled={saving || !name.trim() || !slug}
-            className="w-full py-3 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-40 hover:opacity-90"
+            className="w-full py-3 text-sm font-semibold text-white rounded-xl transition-opacity disabled:opacity-40 hover:opacity-90"
             style={{ background: accent }}>
             {saving ? 'Creating…' : `Create c/${slug || '…'}`}
           </button>

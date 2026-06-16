@@ -175,7 +175,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
     let totalRemoved = 0;
     let totalModified = 0;
 
-    for (const key of allKeys) {
+    for (const key of Array.from(allKeys)) {
       const diff = computeElementDiff(leftMap.get(key), rightMap.get(key));
       if (diff) {
         result.push(diff);

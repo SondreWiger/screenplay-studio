@@ -4,13 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { useRouter } from 'next/navigation';
-import { Button, Badge, Input, Textarea, Avatar, LoadingSpinner, Modal } from '@/components/ui';
-import { cn, randomColor } from '@/lib/utils';
-import type { Character, MindMapNode, MindMapEdge } from '@/lib/types';
+import { Button, Badge, Input, Avatar, LoadingSpinner } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import type { Character, MindMapEdge } from '@/lib/types';
 
-// ============================================================
 // Types
-// ============================================================
 type InspoImage = { url: string; caption: string };
 type RefFolder = { id: string; name: string; type: 'makeup' | 'costume' | 'other'; images: InspoImage[] };
 type RelationEntry = {
@@ -21,9 +19,7 @@ type RelationEntry = {
   otherLabel: string; // fallback node label if no character attached
 };
 
-// ============================================================
 // Role helpers (keep in sync with list page)
-// ============================================================
 const ROLE_OPTIONS = [
   { value: 'protagonist',  label: 'Protagonist',  activeText: 'text-amber-300',   activeBg: 'bg-amber-400/10',    activeBorder: 'border-amber-400/40' },
   { value: 'antagonist',   label: 'Antagonist',   activeText: 'text-red-400',      activeBg: 'bg-red-400/10',      activeBorder: 'border-red-400/40' },
@@ -32,7 +28,6 @@ const ROLE_OPTIONS = [
   { value: 'minor',        label: 'Minor',        activeText: 'text-surface-300',  activeBg: 'bg-surface-700/60',  activeBorder: 'border-surface-600' },
   { value: 'ensemble',     label: 'Ensemble',     activeText: 'text-violet-400',   activeBg: 'bg-violet-400/10',   activeBorder: 'border-violet-400/40' },
 ] as const;
-type RoleValue = typeof ROLE_OPTIONS[number]['value'] | '';
 
 function RoleBadge({ role, isMain }: { role: string | null | undefined; isMain: boolean }) {
   const meta = role ? ROLE_OPTIONS.find((r) => r.value === role) : isMain ? ROLE_OPTIONS.find((r) => r.value === 'main') : null;
@@ -52,9 +47,7 @@ function arrowLabel(type: string, isSource: boolean): string {
   return '—';
 }
 
-// ============================================================
 // Main page
-// ============================================================
 export default function CharacterDetailPage({ params }: { params: { id: string; charId: string } }) {
   const { user } = useAuthStore();
   const { members, currentProject } = useProjectStore();
@@ -91,7 +84,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
   } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
-  // ---- Load ----
+  // Load
   const loadAll = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
@@ -164,7 +157,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
 
   useEffect(() => { loadAll(); return () => { document.title = 'Screenplay Studio'; }; }, [loadAll]);
 
-  // ---- Save helpers ----
+  // Save helpers
   const saveField = async (field: string, value: unknown) => {
     if (!character) return;
     setSaving(true);
@@ -421,7 +414,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                         ) : (
                           <button
                             onClick={(e) => { e.stopPropagation(); if (e.shiftKey) { removeInspoImage(idx); } else { setPendingDelete(delKey); } }}
-                            className="p-1 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                            className="p-1 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                             title="Delete · shift+click to skip confirm"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -605,7 +598,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                               ) : (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); if (e.shiftKey) { removeFolderImage(folder.id, idx); } else { setPendingDelete(delKey); } }}
-                                  className="p-0.5 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                                  className="p-0.5 rounded-full bg-black/60 text-white/70 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                                   title="Delete · shift+click to skip confirm"
                                 >
                                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -801,9 +794,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
   );
 }
 
-// ============================================================
 // Section wrapper
-// ============================================================
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
@@ -813,12 +804,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// ============================================================
 // Image tile with broken-link fallback
-// ============================================================
-// ============================================================
 // Lightbox
-// ============================================================
 function ImageLightbox({
   images,
   startIndex,

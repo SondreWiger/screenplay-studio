@@ -7,7 +7,7 @@ import { Card, Button, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-// ─── Types ───────────────────────────────────────────────────
+// Types
 
 type CueType = 'SFX' | 'MUSIC' | 'AMBIENCE' | 'ALL';
 
@@ -61,7 +61,6 @@ const CUE_ICONS: Record<string, string> = {
   AMBIENCE: '🌊',
 };
 
-// ─── Component ───────────────────────────────────────────────
 
 export default function SoundDesignPage({ params }: { params: { id: string } }) {
   const { currentProject } = useProjectStore();
@@ -176,7 +175,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
     toast.success('Sound Design Bible saved');
   };
 
-  // ── Filtered / sorted cues ──
+  // Filtered / sorted cues
   const filtered = useMemo(() => {
     let list = cues;
     if (activeTab !== 'ALL') list = list.filter(c => c.type === activeTab);
@@ -247,7 +246,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
                   key={tab.value}
                   onClick={() => setActiveTab(tab.value)}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                     activeTab === tab.value
                       ? 'bg-surface-700 text-white shadow'
                       : 'text-surface-400 hover:text-white'

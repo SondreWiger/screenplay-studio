@@ -1,6 +1,6 @@
 {
   "name": "screenplay-studio",
-  "version": "1.0.0",
+  "version": "2.7.7",
   "private": true,
   "packageManager": "npm@10.9.3",
   "scripts": {
@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "NODE_OPTIONS='--max-http-header-size=32768' next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "media-server": "npx ts-node --project tsconfig.server.json server/media-server.ts",

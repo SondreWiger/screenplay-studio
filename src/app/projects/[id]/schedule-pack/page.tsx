@@ -11,7 +11,7 @@ import type {
 } from '@/lib/types';
 import { GEAR_CATEGORIES } from '@/lib/types';
 
-// ── Status helpers ──────────────────────────────────────────
+// Status helpers
 const DAY_STATUS_LABEL: Record<ShootDayStatus, string> = {
   planned: 'Planned', confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled',
 };
@@ -23,7 +23,7 @@ const DAY_STATUS_COLOR: Record<ShootDayStatus, string> = {
 };
 const DAY_STATUS_CYCLE: ShootDayStatus[] = ['planned', 'confirmed', 'completed', 'cancelled'];
 
-// ── Enrich type for display ─────────────────────────────────
+// Enrich type for display
 interface EnrichedDay extends ShootDay {
   scenes: ShootDayScene[];
   cast: ShootDayCast[];
@@ -107,7 +107,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
 
   const selectedDay = days.find(d => d.id === selectedDayId) ?? null;
 
-  // ── Day CRUD ─────────────────────────────────────────────
+  // Day CRUD
   const handleAddDay = async () => {
     const supabase = createClient();
     const nextNum = days.length + 1;
@@ -155,7 +155,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
     toast.success('Shoot day deleted.');
   };
 
-  // ── Scene assignment ─────────────────────────────────────
+  // Scene assignment
   const handleAddSceneToDay = async (el: ScriptElement) => {
     if (!selectedDay) return;
     // skip if already assigned
@@ -181,7 +181,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
     })));
   };
 
-  // ── Cast assignment ──────────────────────────────────────
+  // Cast assignment
   const handleAddCast = async () => {
     if (!selectedDay || !newCast.character_name.trim()) return;
     const supabase = createClient();
@@ -205,7 +205,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
     setDays(prev => prev.map(d => ({ ...d, cast: d.cast.filter(c => c.id !== castId) })));
   };
 
-  // ── Gear assignment ──────────────────────────────────────
+  // Gear assignment
   const handleAssignGear = async (gearItem: ShootGear) => {
     if (!selectedDay) return;
     const supabase = createClient();
@@ -255,7 +255,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
     toast.success('Gear item added.');
   };
 
-  // ── Script content helpers ───────────────────────────────
+  // Script content helpers
   const getSceneContent = (sceneElementId: string | null): ScriptElement[] => {
     if (!sceneElementId) return [];
     const idx = allScriptElements.findIndex(el => el.id === sceneElementId);
@@ -285,7 +285,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
     }
   };
 
-  // ── Day pack export ──────────────────────────────────────
+  // Day pack export
   const handleExportDayPack = (day: EnrichedDay) => {
     const projectTitle = currentProject?.title || 'Project';
     const dayTitle = day.title || `Day ${day.day_number}`;
@@ -469,7 +469,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
     if (win) { win.document.write(html); win.document.close(); }
   };
 
-  // ── Export all days as CSV ───────────────────────────────
+  // Export all days as CSV
   const handleExportAllCSV = () => {
     const header = ['Day', 'Date', 'Title', 'Location', 'Call Time', 'Wrap Time', 'Status', 'Scenes', 'Cast'];
     const rows = days.map(d => [
@@ -580,7 +580,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   <button
                     onClick={() => handleCycleStatus(selectedDay)}
                     disabled={!canEdit}
-                    className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium transition-all hover:opacity-80', DAY_STATUS_COLOR[selectedDay.status])}
+                    className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium transition-opacity hover:opacity-80', DAY_STATUS_COLOR[selectedDay.status])}
                   >
                     {DAY_STATUS_LABEL[selectedDay.status]}
                   </button>
@@ -726,7 +726,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       <span className="flex-1 text-surface-200 text-xs">{scene.scene_heading}</span>
                       {scene.estimated_pages && <span className="text-[11px] text-surface-500">{scene.estimated_pages}p</span>}
                       {canEdit && (
-                        <button onClick={() => handleRemoveScene(scene.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
+                        <button onClick={() => handleRemoveScene(scene.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       )}
@@ -777,7 +777,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                         <span className="text-xs font-mono text-surface-300 bg-surface-800 px-2 py-0.5 rounded">{member.call_time}</span>
                       )}
                       {canEdit && (
-                        <button onClick={() => handleRemoveCast(member.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
+                        <button onClick={() => handleRemoveCast(member.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       )}
@@ -884,7 +884,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       <span className="text-xs text-surface-400">{item.quantity} {item.unit}</span>
                       {item.vendor && <span className="text-xs text-surface-600">{item.vendor}</span>}
                       {canEdit && (
-                        <button onClick={() => handleUnassignGear(item.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all" title="Remove from day">
+                        <button onClick={() => handleUnassignGear(item.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" title="Remove from day">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       )}

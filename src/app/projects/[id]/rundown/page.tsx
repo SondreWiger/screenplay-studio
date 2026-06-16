@@ -14,16 +14,14 @@ import {
   formatBroadcastDuration, formatBroadcastTime, calculateBackTimes,
 } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Rundown Page — Production broadcast rundown with real timing
-// ────────────────────────────────────────────────────────────
 
 export default function RundownPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { currentProject } = useProjectStore();
   const projectId = params.id;
 
-  // ─── State ─────────────────────────────────────────────
+  // State
   const [loading, setLoading] = useState(true);
   const [rundowns, setRundowns] = useState<BroadcastRundown[]>([]);
   const [activeRundown, setActiveRundown] = useState<BroadcastRundown | null>(null);
@@ -52,7 +50,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
   const clockRef = useRef<ReturnType<typeof setInterval>>();
   const pollingRef = useRef<ReturnType<typeof setInterval>>();
 
-  // ─── Data Fetching ─────────────────────────────────────
+  // Data Fetching
 
   const fetchRundowns = useCallback(async () => {
     const supabase = createClient();
@@ -175,7 +173,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(channel); };
   }, [activeRundown?.id, fetchItems, fetchTiming]);
 
-  // ─── Timing Helpers (client-side) ──────────────────────
+  // Timing Helpers (client-side)
 
   const backTimeMap = useMemo(() => {
     if (!activeRundown) return new Map<string, Date>();
@@ -199,7 +197,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
       .reduce((sum, i) => sum + i.planned_duration, 0);
   }, [items]);
 
-  // ─── Actions ───────────────────────────────────────────
+  // Actions
 
   const callTimingAction = async (action: string, itemId?: string, extra?: Record<string, unknown>) => {
     try {
@@ -275,7 +273,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     handleDragEnd();
   };
 
-  // ─── Create Rundown ────────────────────────────────────
+  // Create Rundown
 
   const [newRundown, setNewRundown] = useState({
     title: '', show_date: new Date().toISOString().split('T')[0],
@@ -312,7 +310,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     if (data) { setActiveRundown(data); fetchItems(data.id); }
   };
 
-  // ─── Add / Edit Item ──────────────────────────────────
+  // Add / Edit Item
 
   const [itemForm, setItemForm] = useState({
     title: '', item_type: 'anchor_read' as BroadcastRundownItemType,
@@ -421,7 +419,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     toast.success('Item deleted');
   };
 
-  // ─── Derived State ─────────────────────────────────────
+  // Derived State
 
   const isLive = activeRundown?.status === 'live';
   const onAirItem = items.find(i => i.status === 'on_air');
@@ -440,7 +438,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     ? onAirElapsed - onAirItem.planned_duration
     : 0;
 
-  // ─── Render ────────────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 

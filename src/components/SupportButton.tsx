@@ -6,9 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Icon } from '@/components/ui/icons';
 
-// ============================================================
 // Floating Support Button — shows help menu with quick links
-// ============================================================
 
 export function SupportButton() {
   const { user } = useAuth();
@@ -43,7 +41,7 @@ export function SupportButton() {
     <div ref={ref} className="fixed bottom-6 right-6 z-50">
       {/* Popup menu */}
       {open && (
-        <div className="absolute bottom-16 right-0 w-72 bg-surface-900 border border-surface-700 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="absolute bottom-16 right-0 w-72 bg-surface-900 border border-surface-700 rounded-xl shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="p-4 border-b border-surface-800">
             <h3 className="text-sm font-semibold text-white">Help &amp; Support</h3>
             <p className="text-xs text-surface-400 mt-0.5">We&apos;re here to help</p>
@@ -127,7 +125,7 @@ export function SupportButton() {
         className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
           open
             ? 'bg-surface-700 text-white rotate-45 shadow-surface-900/50'
-            : 'bg-[#E54E15] hover:bg-[#FF5F1F] text-white shadow-[#E54E15]/30 hover:shadow-[#FF5F1F]/40 hover:scale-105'
+            : 'bg-[#E54E15] hover:bg-[#FF5F1F] text-white shadow-[#E54E15]/30 hover:shadow-[#FF5F1F]/40'
         }`}
         title="Help & Support"
       >

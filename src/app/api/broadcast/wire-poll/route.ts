@@ -3,7 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
-// ────────────────────────────────────────────────────────────
 // Wire Feed Polling API — Real RSS/Atom feed ingestion
 // POST /api/broadcast/wire-poll
 // Body: { feed_id: string; project_id: string }
@@ -15,7 +14,6 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 // 3. Deduplicates stories by external_id
 // 4. Inserts new stories into broadcast_wire_stories
 // 5. Updates feed metadata (last_polled_at, stories_ingested)
-// ────────────────────────────────────────────────────────────
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -26,7 +24,7 @@ function getServiceClient() {
   });
 }
 
-// ─── XML Parsing (server-side, no DOM) ─────────────────────
+// XML Parsing (server-side, no DOM)
 
 interface FeedItem {
   external_id: string;
@@ -151,7 +149,7 @@ function decodeHTMLEntities(text: string): string {
     .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
 }
 
-// ─── API Route ─────────────────────────────────────────────
+// API Route
 
 export async function POST(request: NextRequest) {
   try {

@@ -3,20 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingPage, toast, ToastContainer } from '@/components/ui';
 
-// ============================================================
 // Custom Branding / Brand Kit — Pro Feature
 // Project-level branding: colors, logos, watermarks, cover pages,
 // and export themes. Saves to projects.custom_branding JSONB column.
-// ============================================================
 
 export default function BrandingPage() {
   const params = useParams();
-  const { user } = useAuth();
   const { isPro } = useProFeatures();
   const { currentProject } = useProjectStore();
   const hasProAccess = isPro || currentProject?.pro_enabled === true;

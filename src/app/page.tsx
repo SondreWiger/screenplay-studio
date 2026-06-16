@@ -3,16 +3,20 @@ import Link from 'next/link';
 import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
+
 export const metadata: Metadata = {
   title: 'Screenplay Studio — Write, plan, and collaborate on screenplays',
   description: 'Free open-source screenwriting software with a professional script editor, scene breakdowns, shot lists, scheduling tools, and real-time collaboration. Write your next film or TV script.',
   openGraph: {
+    type: 'website',
+    siteName: 'Screenplay Studio',
     title: 'Screenplay Studio — Free screenwriting software',
     description: 'Write screenplays, plan productions, and collaborate with your team. Script editor, scene breakdowns, shot lists, scheduling, budget tracking, and more.',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun',
+    url: SITE_URL,
     images: [
       {
-        url: '/api/og?title=Screenplay+Studio&subtitle=Write,+plan,+and+collaborate+on+screenplays',
+        url: `${SITE_URL}/api/og?title=${encodeURIComponent('Screenplay Studio')}&subtitle=${encodeURIComponent('Write, plan, and collaborate on screenplays')}`,
         width: 1200,
         height: 630,
         alt: 'Screenplay Studio — Free screenwriting software',
@@ -23,7 +27,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Screenplay Studio — Free screenwriting software',
     description: 'Write screenplays, plan productions, and collaborate with your team. Script editor, scene breakdowns, shot lists, scheduling, budget tracking, and more.',
-    images: ['/api/og?title=Screenplay+Studio&subtitle=Write,+plan,+and+collaborate+on+screenplays'],
+    images: [`${SITE_URL}/api/og?title=${encodeURIComponent('Screenplay Studio')}&subtitle=${encodeURIComponent('Write, plan, and collaborate on screenplays')}`],
   },
 };
 

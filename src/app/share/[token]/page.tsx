@@ -6,13 +6,11 @@ import { createClient } from '@/lib/supabase/client';
 import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import type { ProjectShareLink } from '@/lib/types';
 
-// ============================================================
 // Public Share Viewer — new token-based share system
 // No authentication required for content links.
 // Invite links prompt sign in / sign up then auto-join project.
-// ============================================================
 
-// ---- Types --------------------------------------------------
+// Types
 
 interface ShareProject {
   id: string;
@@ -84,7 +82,7 @@ interface ShareData {
   documents?: ShareDocument[];
 }
 
-// ---- Tab definitions ----------------------------------------
+// Tab definitions
 
 type Tab = 'script' | 'characters' | 'scenes' | 'schedule' | 'documents';
 const TAB_LABELS: Record<Tab, string> = {
@@ -95,7 +93,7 @@ const TAB_LABELS: Record<Tab, string> = {
   documents: 'Documents',
 };
 
-// ---- Main component -----------------------------------------
+// Main component
 
 export default function ShareViewerPage({ params }: { params: { token: string } }) {
   const router = useRouter();
@@ -115,7 +113,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSuccess, setAuthSuccess] = useState(false);
 
-  // ---- Fetch share data -------------------------------------
+  // Fetch share data
   useEffect(() => {
     async function load() {
       try {
@@ -142,7 +140,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
     load();
   }, [token]);
 
-  // ---- Auth handler (invite links) --------------------------
+  // Auth handler (invite links)
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault();
     setAuthLoading(true);
@@ -189,7 +187,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
     setAuthLoading(false);
   }
 
-  // ---- Render states ----------------------------------------
+  // Render states
 
   if (loading) {
     return (
@@ -222,7 +220,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
     return false;
   });
 
-  // ---- Invite link view -------------------------------------
+  // Invite link view
   if (link.is_invite) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -321,7 +319,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
     );
   }
 
-  // ---- Content viewer (no auth required) --------------------
+  // Content viewer (no auth required)
 
   return (
     <div className="min-h-screen flex flex-col">

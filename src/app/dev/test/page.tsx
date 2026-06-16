@@ -26,7 +26,7 @@ function TestCard({ title, description, icon, color, fields = [], onRun, loading
   );
 
   return (
-    <div className={cn('bg-white/[0.03] border rounded-xl p-5 flex flex-col gap-4 transition-all', color)}>
+    <div className={cn('bg-white/[0.03] border rounded-xl p-5 flex flex-col gap-4 transition-colors', color)}>
       <div className="flex items-start gap-3">
         <span className="text-2xl">{icon}</span>
         <div className="flex-1">

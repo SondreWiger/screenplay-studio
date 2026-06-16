@@ -8,9 +8,7 @@ import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { MoodBoardItem, MoodBoardItemType, MoodBoardSection, MoodBoardConnection } from '@/lib/types';
 
-// ============================================================
 // CONSTANTS
-// ============================================================
 
 const BOARD_SECTIONS: { value: MoodBoardSection; label: string; icon: string }[] = [
   { value: 'general', label: 'General', icon: 'GEN' },
@@ -71,9 +69,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
   const [newItemSection, setNewItemSection] = useState<MoodBoardSection>('general');
   const [newItemTags, setNewItemTags] = useState('');
 
-  // ============================================================
   // FETCH
-  // ============================================================
 
   useEffect(() => {
     fetchItems();
@@ -104,9 +100,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // ============================================================
   // CRUD
-  // ============================================================
 
   const addItem = async () => {
     const supabase = createClient();
@@ -190,9 +184,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
     setNewItemType('image');
   };
 
-  // ============================================================
   // CONNECTION CRUD
-  // ============================================================
 
   const createConnection = async (sourceId: string, targetId: string) => {
     // Check for duplicate
@@ -252,9 +244,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
     y: item.y + item.height / 2,
   });
 
-  // ============================================================
   // CANVAS DRAG
-  // ============================================================
 
   const handleItemMouseDown = useCallback((e: React.MouseEvent, item: MoodBoardItem) => {
     if (viewMode !== 'canvas' || !canEdit) return;
@@ -316,23 +306,19 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
     setSelectedConnection(null);
   }, [connectingFrom]);
 
-  // ============================================================
   // FILTER
-  // ============================================================
 
   const filteredItems = activeSection === 'all'
     ? items
     : items.filter((it) => it.board_section === activeSection);
 
-  // ============================================================
   // RENDER ITEM
-  // ============================================================
 
   const renderItemCard = (item: MoodBoardItem, isCanvas: boolean) => {
     const isConnectSource = connectingFrom === item.id;
     const isConnectTarget = canvasTool === 'connect' && connectingFrom && connectingFrom !== item.id;
     const baseClass = cn(
-      'group relative overflow-hidden transition-all duration-200',
+      'group relative overflow-hidden transition-opacity duration-200',
       isCanvas ? (canvasTool === 'connect' ? 'absolute cursor-crosshair' : 'absolute cursor-move') : 'cursor-pointer',
       !isCanvas && 'rounded-xl hover:ring-2 hover:ring-[#FF5F1F]/30 hover:shadow-lg hover:shadow-brand-500/5',
       isCanvas && isConnectSource && 'ring-2 ring-green-400 ring-offset-2 ring-offset-transparent',
@@ -473,9 +459,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
     );
   };
 
-  // ============================================================
   // LOADING
-  // ============================================================
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
@@ -569,7 +553,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
       {filteredItems.length === 0 && !loading ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">🎨</span>
             </div>
             <h3 className="text-white font-semibold mb-1">
@@ -741,7 +725,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                       key={c}
                       onClick={() => { updateConnection(selectedConnection.id, { color: c }); setSelectedConnection((prev) => prev ? { ...prev, color: c } : null); }}
                       className={cn(
-                        'w-5 h-5 rounded-full transition-transform hover:scale-125',
+                        'w-5 h-5 rounded-full transition-transform',
                         selectedConnection.color === c && 'ring-2 ring-white ring-offset-1 ring-offset-surface-900'
                       )}
                       style={{ backgroundColor: c }}
@@ -838,7 +822,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                     key={c}
                     onClick={() => setNewItemColor(c)}
                     className={cn(
-                      'w-7 h-7 rounded-lg transition-transform hover:scale-110 border',
+                      'w-7 h-7 rounded-lg transition-transform border',
                       newItemColor === c ? 'ring-2 ring-white ring-offset-2 ring-offset-surface-900 border-white/30' : 'border-surface-600',
                     )}
                     style={{ backgroundColor: c }}
@@ -953,7 +937,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
                     key={c}
                     onClick={() => setEditItem((prev) => ({ ...prev, color: c }))}
                     className={cn(
-                      'w-7 h-7 rounded-lg transition-transform hover:scale-110 border',
+                      'w-7 h-7 rounded-lg transition-transform border',
                       editItem.color === c ? 'ring-2 ring-white ring-offset-2 ring-offset-surface-900 border-white/30' : 'border-surface-600',
                     )}
                     style={{ backgroundColor: c }}
@@ -993,9 +977,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ============================================================
 // Utility
-// ============================================================
 
 function isColorLight(hex: string): boolean {
   const c = hex.replace('#', '');

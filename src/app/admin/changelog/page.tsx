@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 const ORANGE = '#FF5F1F';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 type ReleaseStatus = 'draft' | 'published' | 'yanked';
 type ReleaseType = 'major' | 'minor' | 'patch' | 'hotfix';
@@ -53,7 +53,7 @@ interface Entry {
   sort_order: number;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 const STATUS_STYLES: Record<ReleaseStatus, string> = {
   draft: 'bg-yellow-900/30 text-yellow-400 border border-yellow-700/40',
@@ -89,7 +89,6 @@ const AREAS: Area[] = [
 ];
 const RELEASE_TYPES: ReleaseType[] = ['major', 'minor', 'patch', 'hotfix'];
 
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AdminChangelogPage() {
   const { user, loading: authLoading } = useAuth();
@@ -123,7 +122,7 @@ export default function AdminChangelogPage() {
   const [publishing, setPublishing] = useState<string | null>(null);
   const [publishError, setPublishError] = useState('');
 
-  // ─── Auth guard ─────────────────────────────────────────────────────────────
+  // Auth guard
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.id !== ADMIN_UID) {
@@ -131,7 +130,7 @@ export default function AdminChangelogPage() {
     }
   }, [user, authLoading, router]);
 
-  // ─── Data loading ───────────────────────────────────────────────────────────
+  // Data loading
   const loadData = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
@@ -157,7 +156,7 @@ export default function AdminChangelogPage() {
     }
   }, [authLoading, user]);
 
-  // ─── Create release ─────────────────────────────────────────────────────────
+  // Create release
   async function handleCreateRelease() {
     if (!newVersion.trim() || !newTitle.trim()) {
       setCreateError('Version and title are required.');
@@ -185,7 +184,7 @@ export default function AdminChangelogPage() {
     setCreating(false);
   }
 
-  // ─── Add entry ───────────────────────────────────────────────────────────────
+  // Add entry
   async function handleAddEntry() {
     if (!eTitle.trim() || !selectedId) {
       setEntryError('Title is required.');
@@ -217,7 +216,7 @@ export default function AdminChangelogPage() {
     setSavingEntry(false);
   }
 
-  // ─── Delete entry ────────────────────────────────────────────────────────────
+  // Delete entry
   async function handleDeleteEntry(id: string) {
     if (!confirm('Delete this entry?')) return;
     const supabase = createClient();
@@ -227,7 +226,7 @@ export default function AdminChangelogPage() {
     await loadData();
   }
 
-  // ─── Publish release ─────────────────────────────────────────────────────────
+  // Publish release
   async function handlePublish(version: string) {
     if (!confirm(`Publish release v${version}? This will update the live site_version.`)) return;
     setPublishing(version);
@@ -242,7 +241,7 @@ export default function AdminChangelogPage() {
     setPublishing(null);
   }
 
-  // ─── Delete release ───────────────────────────────────────────────────────────
+  // Delete release
   async function handleDeleteRelease(id: string, version: string) {
     if (!confirm(`Delete release v${version} and ALL its entries? This cannot be undone.`)) return;
     const supabase = createClient();
@@ -252,7 +251,7 @@ export default function AdminChangelogPage() {
     if (selectedId === id) setSelectedId(releases.find(r => r.id !== id)?.id || null);
   }
 
-  // ─── UI ───────────────────────────────────────────────────────────────────────
+  // UI
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#07070f' }}>
@@ -279,7 +278,7 @@ export default function AdminChangelogPage() {
           </div>
           <button
             onClick={() => { setShowNewRelease(true); setCreateError(''); }}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-all hover:-translate-y-px"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:-translate-y-px"
             style={{ background: ORANGE }}
           >
             + New Release
@@ -299,7 +298,7 @@ export default function AdminChangelogPage() {
               key={r.id}
               onClick={() => setSelectedId(r.id)}
               className={cn(
-                'w-full text-left p-3 border transition-all',
+                'w-full text-left p-3 border transition-colors',
                 selectedId === r.id
                   ? 'border-orange-600/50 bg-orange-950/20'
                   : 'border-white/5 hover:border-white/10 bg-white/[0.02] hover:bg-white/[0.04]'
@@ -362,7 +361,7 @@ export default function AdminChangelogPage() {
                     <button
                       onClick={() => handlePublish(selectedRelease.version)}
                       disabled={!!publishing}
-                      className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-all hover:-translate-y-px disabled:opacity-50"
+                      className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:-translate-y-px disabled:opacity-50"
                       style={{ background: '#16a34a' }}
                     >
                       {publishing === selectedRelease.version ? 'Publishing…' : '✓ Publish'}
@@ -371,7 +370,7 @@ export default function AdminChangelogPage() {
                   {selectedRelease.status === 'draft' && (
                     <button
                       onClick={() => handleDeleteRelease(selectedRelease.id, selectedRelease.version)}
-                      className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-red-400 border border-red-900/40 hover:bg-red-950/30 transition-all"
+                      className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-red-400 border border-red-900/40 hover:bg-red-950/30 transition-colors"
                     >
                       Delete
                     </button>
@@ -394,7 +393,7 @@ export default function AdminChangelogPage() {
                   {selectedRelease.status === 'draft' && (
                     <button
                       onClick={() => { setShowNewEntry(true); setEntryError(''); }}
-                      className="text-xs font-bold px-3 py-1.5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all"
+                      className="text-xs font-bold px-3 py-1.5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-colors"
                     >
                       + Add Entry
                     </button>
@@ -410,7 +409,7 @@ export default function AdminChangelogPage() {
                     {selectedEntries.map(entry => (
                       <div
                         key={entry.id}
-                        className="flex items-start gap-3 p-3 border border-white/5 hover:border-white/10 transition-all group"
+                        className="flex items-start gap-3 p-3 border border-white/5 hover:border-white/10 transition-colors group"
                       >
                         <div className="w-24 shrink-0">
                           <span className={cn('text-[10px] font-bold uppercase', TYPE_STYLES[entry.entry_type])}>
@@ -432,7 +431,7 @@ export default function AdminChangelogPage() {
                         {selectedRelease.status === 'draft' && (
                           <button
                             onClick={() => handleDeleteEntry(entry.id)}
-                            className="opacity-0 group-hover:opacity-100 text-red-500/50 hover:text-red-400 transition-all text-xs px-1.5"
+                            className="opacity-0 group-hover:opacity-100 text-red-500/50 hover:text-red-400 transition-opacity text-xs px-1.5"
                           >
                             ✕
                           </button>
@@ -509,7 +508,7 @@ export default function AdminChangelogPage() {
               </button>
               <button
                 onClick={() => { setShowNewRelease(false); setCreateError(''); }}
-                className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/50 border border-white/10 hover:border-white/20 transition-all"
+                className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/50 border border-white/10 hover:border-white/20 transition-colors"
               >
                 Cancel
               </button>
@@ -593,7 +592,7 @@ export default function AdminChangelogPage() {
               </button>
               <button
                 onClick={() => { setShowNewEntry(false); setEntryError(''); }}
-                className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/50 border border-white/10 hover:border-white/20 transition-all"
+                className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/50 border border-white/10 hover:border-white/20 transition-colors"
               >
                 Cancel
               </button>

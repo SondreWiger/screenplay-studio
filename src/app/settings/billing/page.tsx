@@ -9,9 +9,7 @@ import { Button, Card, Badge, LoadingPage, Progress } from '@/components/ui';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import type { Subscription, TeamLicense } from '@/lib/types';
 
-// ============================================================
 // Settings / Billing — Subscription management
-// ============================================================
 
 export default function BillingPage() {
   const { user, loading: authLoading } = useAuth();
@@ -91,7 +89,7 @@ export default function BillingPage() {
                     }
                   </p>
                   {subscription.payment_method === 'dev_bypass' && (
-                    <p className="text-xs text-amber-500/60 mt-1">🔧 Dev bypass — no payment charged</p>
+                    <p className="text-xs text-amber-500/60 mt-1">Dev bypass — no payment charged</p>
                   )}
                 </div>
               ) : (
@@ -172,19 +170,19 @@ export default function BillingPage() {
             <h2 className="text-lg font-semibold text-white mb-4">Your Pro Features</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
-                { label: 'Version History', icon: '🔄' },
-                { label: 'External Shares', icon: '📤' },
-                { label: 'Client Reviews', icon: '📝' },
-                { label: 'Team Analytics', icon: '📊' },
-                { label: 'Custom Branding', icon: '🏢' },
-                { label: 'Advanced Exports', icon: '📑' },
-                { label: 'Adv. Scheduling', icon: '📅' },
-                { label: 'API Access', icon: '🔗' },
-                { label: 'Priority Support', icon: '⚡' },
-              ].map((f) => (
-                <div key={f.label} className="flex items-center gap-2 p-2 rounded-lg bg-surface-800/30">
-                  <span>{f.icon}</span>
-                  <span className="text-xs text-surface-300">{f.label}</span>
+                'Version History',
+                'External Shares',
+                'Client Reviews',
+                'Team Analytics',
+                'Custom Branding',
+                'Advanced Exports',
+                'Adv. Scheduling',
+                'API Access',
+                'Priority Support',
+              ].map((label) => (
+                <div key={label} className="flex items-center gap-2 p-2 rounded-lg bg-surface-800/30">
+                  <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <span className="text-xs text-surface-300">{label}</span>
                 </div>
               ))}
             </div>

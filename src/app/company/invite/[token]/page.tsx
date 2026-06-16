@@ -6,11 +6,9 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, LoadingPage } from '@/components/ui';
 
-// ============================================================
 // Company Invitation Acceptance — /company/invite/[token]
 // Allows users to accept invitations via a direct link (email or shared)
 // Works even if the notification was missed or never created.
-// ============================================================
 
 export default function AcceptInvitePage({ params }: { params: { token: string } }) {
   const { user, loading: authLoading } = useAuth();
@@ -97,7 +95,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
     setStatus('accepting');
 
     const supabase = createClient();
-    const { data, error } = await supabase.rpc('accept_company_invitation', {
+    const { error } = await supabase.rpc('accept_company_invitation', {
       p_invitation_id: invitation.id,
     });
 
@@ -133,7 +131,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
               {company.name?.[0] || '?'}
             </div>
           ) : null}
-          <h1 className="text-xl font-black text-white mb-2">You're Invited!</h1>
+          <h1 className="text-xl font-black text-white mb-2">You&apos;re Invited!</h1>
           <p className="text-surface-400 mb-1">
             <span className="text-white font-semibold">{company?.name || 'A company'}</span> has invited you to join as{' '}
             <span className="capitalize text-[#FF5F1F]">{invitation?.role || 'member'}</span>.
@@ -172,7 +170,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
           <div className="text-4xl mb-4">🎉</div>
           <h1 className="text-xl font-black text-white mb-2">Welcome to {company?.name || 'the team'}!</h1>
           <p className="text-sm text-surface-400 mb-6">
-            You've joined as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
+            You&apos;ve joined as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
           </p>
           <div className="flex gap-3 justify-center">
             <Button onClick={() => router.push(company?.slug ? `/company/${company.slug}` : '/company')}>
@@ -199,7 +197,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
 
         <h1 className="text-xl font-black text-white mb-2">Join {company?.name || 'Company'}</h1>
         <p className="text-surface-400 mb-1">
-          You've been invited to join as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
+          You&apos;ve been invited to join as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
         </p>
         <p className="text-xs text-surface-500 mb-6">
           Invited to: <span className="text-surface-300">{invitation?.email}</span>

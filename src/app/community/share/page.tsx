@@ -19,7 +19,7 @@ function generatePostSlug(title: string): string {
 }
 import { ScreenplayRenderer, type ScreenplayElement } from '@/components/ScreenplayRenderer';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
-import type { CommunityCategory, Project, Script, ScriptElement, SubCommunity } from '@/lib/types';
+import type { CommunityCategory, Project, Script, SubCommunity } from '@/lib/types';
 import {
   parseFountain,
   parseFdx,
@@ -30,9 +30,7 @@ import {
   type UploadableFormat,
 } from '@/lib/screenplay-parsers';
 
-// ============================================================
 // Share Script — submit a script to the community
-// ============================================================
 
 export default function ShareScriptPage() {
   const { user, loading: authLoading } = useAuth();
@@ -48,7 +46,6 @@ export default function ShareScriptPage() {
   const [allCommunities, setAllCommunities] = useState<SubCommunity[]>([]); // all public
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]); // community ids
   const [communitySearch, setCommunitySearch] = useState('');
-  const [communitySearchResults, setCommunitySearchResults] = useState<SubCommunity[]>([]);
   const [searchFocused, setSearchFocused] = useState(false);
 
   // Form fields
@@ -168,12 +165,8 @@ export default function ShareScriptPage() {
   // Community search filter
   useEffect(() => {
     const q = communitySearch.trim().toLowerCase();
-    if (!q) { setCommunitySearchResults([]); return; }
-    const results = allCommunities
-      .filter(c => c.slug.includes(q) || c.name?.toLowerCase().includes(q))
-      .slice(0, 8);
-    setCommunitySearchResults(results);
-  }, [communitySearch, allCommunities]);
+    if (!q) return;
+  }, [communitySearch]);
 
   const toggleCommunity = (id: string) => {
     setSelectedCommunities(prev =>
@@ -343,7 +336,7 @@ export default function ShareScriptPage() {
       return;
     }
 
-    // ── Spam safeguard ────────────────────────────────────────────
+    // Spam safeguard
     const supabase = createClient();
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { count: recentCount } = await supabase
@@ -662,7 +655,7 @@ export default function ShareScriptPage() {
                   <div className="flex gap-1 mb-4 rounded-lg p-1 w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
               <button
                 onClick={() => setInputMode('project')}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   inputMode === 'project' ? 'text-white' : 'text-white/40 hover:text-white'
                 }`}
                 style={inputMode === 'project' ? { background: 'rgba(255,95,31,0.15)', color: '#FF5F1F' } : {}}
@@ -671,7 +664,7 @@ export default function ShareScriptPage() {
               </button>
               <button
                 onClick={() => setInputMode('text')}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   inputMode === 'text' ? 'text-white' : 'text-white/40 hover:text-white'
                 }`}
                 style={inputMode === 'text' ? { background: 'rgba(255,95,31,0.15)', color: '#FF5F1F' } : {}}
@@ -680,7 +673,7 @@ export default function ShareScriptPage() {
               </button>
               <button
                 onClick={() => setInputMode('file')}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   inputMode === 'file' ? 'text-white' : 'text-white/40 hover:text-white'
                 }`}
                 style={inputMode === 'file' ? { background: 'rgba(255,95,31,0.15)', color: '#FF5F1F' } : {}}
@@ -719,7 +712,7 @@ export default function ShareScriptPage() {
                                 loadScriptFromProject(p.id);
                               }
                             }}
-                            className={`text-left rounded-xl border-2 p-4 transition-all ${
+                            className={`text-left rounded-xl border-2 p-4 transition-colors ${
                               isSelected
                                 ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-2 ring-[#FF5F1F]/30'
                                 : 'border-white/10 bg-surface-900 hover:border-white/15 hover:shadow-sm'
@@ -986,7 +979,7 @@ export default function ShareScriptPage() {
               )}
             </div>
             <p className="text-xs text-white/40 mb-3">
-              Credit others who helped create this post — they'll be notified and it'll appear on their stats.
+              Credit others who helped create this post — they&apos;ll be notified and it&apos;ll appear on their stats.
             </p>
             <CollaboratorPicker
               collaborators={collaborators}

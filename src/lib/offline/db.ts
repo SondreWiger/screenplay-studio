@@ -6,7 +6,7 @@
 
 import { openDB, type IDBPDatabase } from 'idb';
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 export type SyncOperation = 'upsert' | 'delete';
 
@@ -23,7 +23,7 @@ export interface SyncQueueItem {
 // Generic row – we store the raw Supabase response objects
 export type Row = Record<string, unknown>;
 
-// ── DB Schema ────────────────────────────────────────────────────────────────
+// DB Schema
 
 const DB_NAME = 'ss-offline';
 const DB_VERSION = 1;
@@ -45,7 +45,7 @@ const DATA_STORES = [
 
 export type DataStoreName = (typeof DATA_STORES)[number];
 
-// ── Singleton ────────────────────────────────────────────────────────────────
+// Singleton
 
 let _db: IDBPDatabase | null = null;
 
@@ -79,7 +79,7 @@ export async function getDB(): Promise<IDBPDatabase> {
   return _db;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 /** Cache an array of rows into a given store (upsert by id). */
 export async function cacheRows(store: DataStoreName, rows: Row[]): Promise<void> {
@@ -128,7 +128,7 @@ export async function getCachedProjects(): Promise<Row[]> {
   return db.getAll('projects') as Promise<Row[]>;
 }
 
-// ── Sync Queue ───────────────────────────────────────────────────────────────
+// Sync Queue
 
 /** Add a pending write to the sync queue. */
 export async function enqueueSyncItem(item: Omit<SyncQueueItem, 'retries'>): Promise<void> {

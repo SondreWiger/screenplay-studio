@@ -68,7 +68,7 @@ export function ShortcutPicker({ projectId, userId, shortcuts, onToggle, onClose
           } />
         </svg>
         <span className={cn('truncate flex-1', pinned ? 'text-white' : 'text-surface-300 group-hover/pi:text-white')}>{item.title}</span>
-        <span className={cn('w-4 h-4 shrink-0 flex items-center justify-center rounded-full border transition-all',
+        <span className={cn('w-4 h-4 shrink-0 flex items-center justify-center rounded-full border transition-colors',
           pinned ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'border-surface-600 group-hover/pi:border-surface-400'
         )}>
           {pinned && (

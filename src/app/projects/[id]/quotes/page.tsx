@@ -36,14 +36,14 @@ export default function ProjectQuotesPage({ params }: { params: { id: string } }
   const fetchQuotes = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.set('project_id', params.id);
-      params.set('sort', sortBy);
-      params.set('order', sortOrder);
-      if (search) params.set('q', search);
-      if (groupFilter) params.set('group_name', groupFilter);
+      const searchParams = new URLSearchParams();
+      searchParams.set('project_id', params.id);
+      searchParams.set('sort', sortBy);
+      searchParams.set('order', sortOrder);
+      if (search) searchParams.set('q', search);
+      if (groupFilter) searchParams.set('group_name', groupFilter);
 
-      const res = await fetch(`/api/quotes?${params.toString()}`);
+      const res = await fetch(`/api/quotes?${searchParams.toString()}`);
       const json = await res.json();
       if (json.data) setQuotes(json.data);
     } catch {
@@ -57,7 +57,7 @@ export default function ProjectQuotesPage({ params }: { params: { id: string } }
     fetchQuotes();
   }, [fetchQuotes]);
 
-  const groups = [...new Set(quotes.map(q => q.group_name).filter(Boolean) as string[])];
+  const groups = Array.from(new Set(quotes.map(q => q.group_name).filter(Boolean) as string[]));
 
   const handleSubmit = async (data: QuoteInsert) => {
     try {

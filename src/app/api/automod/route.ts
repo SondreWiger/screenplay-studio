@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// ── Internal route — secured with PUSH_API_SECRET ─────────────────────────────
+// Internal route — secured with PUSH_API_SECRET
 // This route writes to automod_flags using the service role key.
 // All calls must include: x-push-secret: <PUSH_API_SECRET>
 const PUSH_API_SECRET = process.env.PUSH_API_SECRET || '';
 
-// ── Keyword lists ─────────────────────────────────────────────────────────────
+// Keyword lists
 const CRITICAL = [
   'child pornography', 'csam', 'loli explicit', 'shota explicit',
 ];
@@ -68,7 +68,7 @@ function checkContent(text: string): { flagged: boolean; severity: Severity; rea
 
 export async function POST(req: NextRequest) {
   try {
-    // ── Require internal secret ───────────────────────────────────────────────
+    // Require internal secret
     const secret = req.headers.get('x-push-secret');
     if (!PUSH_API_SECRET) {
       return NextResponse.json({ error: 'PUSH_API_SECRET not configured' }, { status: 500 });

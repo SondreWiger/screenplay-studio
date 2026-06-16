@@ -7,9 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 
-// ============================================================
 // Public Changelog — staggered timeline layout
-// ============================================================
 
 type ChangelogEntry = {
   id: string;
@@ -122,7 +120,7 @@ export default function ChangelogPage() {
   const toggleExpand = (id: string) =>
     setExpanded((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
 
@@ -269,7 +267,7 @@ export default function ChangelogPage() {
 
                     {/* Card */}
                     <div
-                      className="flex-1 min-w-0 cursor-pointer transition-all duration-150"
+                      className="flex-1 min-w-0 cursor-pointer transition-colors duration-150"
                       style={{
                         border: `1px solid ${isLatest ? 'rgba(255,95,31,0.22)' : 'rgba(255,255,255,0.07)'}`,
                         background: isLatest ? 'rgba(255,95,31,0.025)' : 'rgba(255,255,255,0.018)',

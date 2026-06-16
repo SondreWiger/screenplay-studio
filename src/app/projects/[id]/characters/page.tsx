@@ -8,7 +8,7 @@ import { cn, randomColor } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import type { Character, ScriptElement } from '@/lib/types';
+import type { Character } from '@/lib/types';
 
 export default function CharactersPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -314,9 +314,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ============================================================
 // Role helpers
-// ============================================================
 
 const ROLE_OPTIONS = [
   { value: 'protagonist',  label: 'Protagonist',  activeText: 'text-amber-300',   activeBg: 'bg-amber-400/10',    activeBorder: 'border-amber-400/40' },
@@ -326,8 +324,6 @@ const ROLE_OPTIONS = [
   { value: 'minor',        label: 'Minor',        activeText: 'text-surface-300',  activeBg: 'bg-surface-700/60',  activeBorder: 'border-surface-600' },
   { value: 'ensemble',     label: 'Ensemble',     activeText: 'text-violet-400',   activeBg: 'bg-violet-400/10',   activeBorder: 'border-violet-400/40' },
 ] as const;
-
-type RoleValue = typeof ROLE_OPTIONS[number]['value'] | '';
 
 function roleMeta(role: string | null | undefined, isMain: boolean) {
   if (role) return ROLE_OPTIONS.find((r) => r.value === role) ?? null;
@@ -348,9 +344,7 @@ function RoleBadge({ role, isMain }: { role: string | null | undefined; isMain: 
   );
 }
 
-// ============================================================
 // Character Editor Modal
-// ============================================================
 
 function CharacterEditor({
   isOpen,
@@ -519,7 +513,7 @@ function CharacterEditor({
                     type="button"
                     onClick={() => setForm({ ...form, role: form.role === r.value ? '' : r.value, is_main: ['protagonist', 'antagonist', 'main'].includes(r.value) })}
                     className={cn(
-                      'px-3 py-1.5 rounded-full border text-xs font-semibold transition-all',
+                      'px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors',
                       form.role === r.value
                         ? `${r.activeText} ${r.activeBg} ${r.activeBorder}`
                         : 'text-surface-400 bg-surface-800/50 border-surface-700 hover:border-surface-500 hover:text-white'

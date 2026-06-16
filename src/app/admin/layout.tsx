@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const NAV_SECTIONS = [
   {
@@ -187,7 +188,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
-                      'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
+                      'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
                       isActive(item)
                         ? 'bg-[#E54E15]/10 text-[#FF5F1F] font-semibold'
                         : 'text-surface-400 hover:bg-surface-900/5 hover:text-white'
@@ -215,7 +216,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main */}
       <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
         <div className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
-          {children}
+          <ErrorBoundary>{children}</ErrorBoundary>
         </div>
       </main>
     </div>

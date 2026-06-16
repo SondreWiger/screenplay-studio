@@ -7,7 +7,7 @@ import { useProjectStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import type { ProjectShareLink } from '@/lib/types';
 
-// ── Constants ────────────────────────────────────────────────
+// Constants
 
 const PERM_ITEMS: { key: keyof PermMap; label: string; icon: string }[] = [
   { key: 'can_view_script',     label: 'Script',      icon: '📄' },
@@ -54,7 +54,7 @@ const BLANK_FORM: LinkForm = {
   expires_at: '',
 };
 
-// ── Helpers ──────────────────────────────────────────────────
+// Helpers
 
 function getOrigin() {
   if (typeof window !== 'undefined') return window.location.origin;
@@ -69,7 +69,6 @@ function friendlyDate(iso: string) {
   });
 }
 
-// ── Main page ────────────────────────────────────────────────
 
 export default function SharePage({ params }: { params: { id: string } }) {
   const projectId = params.id;
@@ -87,7 +86,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
   const [deletingId, setDeletingId]         = useState<string | null>(null);
   const [pageError, setPageError]           = useState<string | null>(null);
 
-  // ── Data ──────────────────────────────────────────────────
+  // Data
 
   const loadLinks = useCallback(async () => {
     const supabase = createClient();
@@ -103,7 +102,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
 
   useEffect(() => { loadLinks(); }, [loadLinks]);
 
-  // ── Actions ───────────────────────────────────────────────
+  // Actions
 
   async function createLink() {
     if (!form.name.trim()) { setFormError('Give this link a name.'); return; }
@@ -155,7 +154,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
     setDeletingId(null);
   }
 
-  // ── Render ────────────────────────────────────────────────
+  // Render
 
   const activeLinks   = links.filter((l) => l.is_active);
   const inactiveLinks = links.filter((l) => !l.is_active);
@@ -401,12 +400,12 @@ export default function SharePage({ params }: { params: { id: string } }) {
   );
 }
 
-// ── Sub-components ────────────────────────────────────────────
+// Sub-components
 
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center pt-16 pb-8 text-center px-4">
-      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
+      <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
         <svg
           className="w-7 h-7 text-gray-500"
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.3}
@@ -619,7 +618,7 @@ function LinkRow({
   );
 }
 
-// ── Tiny UI atoms ─────────────────────────────────────────────
+// Tiny UI atoms
 
 function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (

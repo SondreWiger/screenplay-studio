@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, toast } from '@/components/ui';
 import { cn, formatDate } from '@/lib/utils';
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// Types
 
 type LegalCategory =
   | 'tos_update'
@@ -77,7 +77,7 @@ const EMPTY_DRAFT: PostDraft = {
   metadata: null,
 };
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// Constants
 
 const CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: '', label: 'All Categories' },
@@ -125,7 +125,7 @@ const CATEGORY_LABELS: Record<LegalCategory, string> = {
   announcement: 'Announcement',
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// Helpers
 
 function slugify(text: string): string {
   return text
@@ -147,7 +147,7 @@ function parseContentToSections(content: string): LegalPostSection[] {
   const parts = content.split(/(?=^## )/gm);
   const sections: LegalPostSection[] = [];
 
-  parts.forEach((part, idx) => {
+  parts.forEach((part) => {
     const trimmed = part.trim();
     if (!trimmed) return;
 
@@ -178,7 +178,6 @@ function sectionsToContent(sections: LegalPostSection[]): string {
     .join('\n\n');
 }
 
-// ── Component ──────────────────────────────────────────────────────────────────
 
 export default function AdminLegalPage() {
   const { user, loading: authLoading } = useAuth();
@@ -203,7 +202,7 @@ export default function AdminLegalPage() {
   const [showPublishWarning, setShowPublishWarning] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<LegalPost | null>(null);
 
-  // ── Auth guard ─────────────────────────────────────────────────────────────
+  // Auth guard
 
   useEffect(() => {
     if (authLoading) return;
@@ -212,7 +211,7 @@ export default function AdminLegalPage() {
     }
   }, [user, authLoading, router]);
 
-  // ── Data loading ───────────────────────────────────────────────────────────
+  // Data loading
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
@@ -229,7 +228,7 @@ export default function AdminLegalPage() {
     if (user) loadPosts();
   }, [user, loadPosts]);
 
-  // ── Filtered posts ─────────────────────────────────────────────────────────
+  // Filtered posts
 
   const filteredPosts = posts.filter((p) => {
     if (filterCategory && p.category !== filterCategory) return false;
@@ -239,7 +238,7 @@ export default function AdminLegalPage() {
     return true;
   });
 
-  // ── Editor helpers ─────────────────────────────────────────────────────────
+  // Editor helpers
 
   function openNewPost() {
     setDraft({ ...EMPTY_DRAFT, author_id: user?.id ?? '' });
@@ -313,7 +312,7 @@ export default function AdminLegalPage() {
     });
   };
 
-  // ── Save / Publish ─────────────────────────────────────────────────────────
+  // Save / Publish
 
   async function savePost(publish: boolean) {
     if (!draft.title.trim() || !draft.slug.trim()) return;
@@ -364,7 +363,7 @@ export default function AdminLegalPage() {
     }
   }
 
-  // ── Toggle publish ─────────────────────────────────────────────────────────
+  // Toggle publish
 
   async function togglePublish(post: LegalPost) {
     const newPublished = !post.published;
@@ -380,7 +379,7 @@ export default function AdminLegalPage() {
     if (!error) loadPosts();
   }
 
-  // ── Delete ─────────────────────────────────────────────────────────────────
+  // Delete
 
   async function deletePost(post: LegalPost) {
     const { error } = await supabase.from('legal_posts').delete().eq('id', post.id);
@@ -390,7 +389,7 @@ export default function AdminLegalPage() {
     }
   }
 
-  // ── Render guards ──────────────────────────────────────────────────────────
+  // Render guards
 
   if (authLoading || !user) {
     return (
@@ -403,7 +402,7 @@ export default function AdminLegalPage() {
   // Combine sections for preview
   const previewContent = sectionsToContent(draft.sections);
 
-  // ── Main render ────────────────────────────────────────────────────────────
+  // Main render
 
   return (
     <div className="min-h-screen bg-surface-950 text-white">
@@ -532,7 +531,7 @@ export default function AdminLegalPage() {
           <div className="flex items-center gap-1 bg-surface-900 rounded-lg p-1 w-fit">
             <button
               className={cn(
-                'px-4 py-1.5 rounded-md text-sm font-medium transition-all',
+                'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
                 !showPreview ? 'bg-surface-700 text-white shadow-sm' : 'text-surface-400 hover:text-white'
               )}
               onClick={() => setShowPreview(false)}
@@ -541,7 +540,7 @@ export default function AdminLegalPage() {
             </button>
             <button
               className={cn(
-                'px-4 py-1.5 rounded-md text-sm font-medium transition-all',
+                'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
                 showPreview ? 'bg-surface-700 text-white shadow-sm' : 'text-surface-400 hover:text-white'
               )}
               onClick={() => setShowPreview(true)}

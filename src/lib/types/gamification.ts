@@ -1,9 +1,7 @@
 import type { Profile, CommunityPostStatus, ChallengeType, ChallengeDifficulty, ProductionStatus } from './base';
 import type { SubCommunity } from './community';
 
-// ============================================================
 // Blog Types
-// ============================================================
 
 export interface BlogPostSection {
   heading: string;
@@ -44,9 +42,7 @@ export interface BlogComment {
   replies?: BlogComment[];
 }
 
-// ============================================================
 // Community Types
-// ============================================================
 
 export interface CommunityCategory {
   id: string;

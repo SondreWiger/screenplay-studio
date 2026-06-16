@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Badge, Modal, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Idea, IdeaStatus, IdeaCategory } from '@/lib/types';
@@ -355,7 +355,7 @@ function IdeaCard({
       onDragEnd={onDragEnd}
       onClick={onClick}
       className={cn(
-        'bg-surface-900 rounded-lg p-3 cursor-grab active:cursor-grabbing border border-surface-800 hover:border-surface-700 transition-all',
+        'bg-surface-900 rounded-lg p-3 cursor-grab active:cursor-grabbing border border-surface-800 hover:border-surface-700 transition-colors',
         draggedId === idea.id ? 'opacity-50' : ''
       )}
     >
@@ -632,7 +632,7 @@ function IdeaEditor({ isOpen, onClose, idea, projectId, userId, onSaved, onDelet
         const { error } = await supabase.from('ideas').insert(payload);
         if (error) { toast.error(error.message); setLoading(false); return; }
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to save idea');
     }
     setLoading(false);

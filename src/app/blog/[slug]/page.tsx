@@ -9,7 +9,7 @@ import type { BlogPost, BlogComment, Profile } from '@/lib/types';
 import { formatDate, timeAgo } from '@/lib/utils';
 import { SiteVersion } from '@/components/SiteVersion';
 
-// ── Lightweight inline markdown renderer (links + bold, no deps) ──────────
+// Lightweight inline markdown renderer (links + bold, no deps)
 function renderInline(text: string): ReactNode[] {
   // Tokenise: **bold** and [label](url)
   const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
@@ -201,7 +201,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-10 h-10 mb-6" style={{ background: '#FF5F1F' }} />
           <h1 className="text-3xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>POST NOT FOUND</h1>
-          <p className="text-white/40">This post may have been removed or doesn't exist.</p>
+          <p className="text-white/40">This post may have been removed or doesn&apos;t exist.</p>
           <Link href="/blog" className="mt-8 px-6 py-3 text-sm font-black text-white uppercase tracking-wider transition-opacity hover:opacity-80" style={{ background: '#FF5F1F' }}>
             Browse all posts
           </Link>
@@ -300,7 +300,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               <img
                 src={post.cover_image_url}
                 alt={post.title}
-                className="w-full rounded-2xl"
+                className="w-full rounded-xl"
               />
             </div>
           )}
@@ -453,7 +453,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                       <button
                         key={idx}
                         onClick={() => scrollToSection(idx)}
-                        className={`block w-full text-left text-xs font-mono py-1.5 pl-3 border-l-2 transition-all uppercase tracking-wide ${
+                        className={`block w-full text-left text-xs font-mono py-1.5 pl-3 border-l-2 transition-colors uppercase tracking-wide ${
                           activeSection === idx
                             ? 'border-[#FF5F1F] text-[#FF5F1F]'
                             : 'border-transparent text-white/30 hover:text-white/60'
@@ -497,9 +497,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   );
 }
 
-// ============================================================
 // Comment component
-// ============================================================
 
 function CommentCard({
   comment,

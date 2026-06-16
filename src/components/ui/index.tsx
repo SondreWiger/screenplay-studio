@@ -4,10 +4,6 @@ import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
-// ============================================================
-// BUTTON
-// ============================================================
-
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
   size?: 'sm' | 'md' | 'lg' | 'icon';
@@ -34,7 +30,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200',
+          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5F1F] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           variant === 'primary' && 'bg-gradient-to-r from-[#E54E15] to-[#FF5F1F]',
@@ -57,10 +53,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 Button.displayName = 'Button';
-
-// ============================================================
-// INPUT
-// ============================================================
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -89,7 +81,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
               'border-surface-700/80 placeholder:text-surface-600',
               'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
-              'transition-all duration-200',
+              'transition-colors duration-200',
               icon && 'pl-10',
               error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
               className
@@ -103,10 +95,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 );
 Input.displayName = 'Input';
-
-// ============================================================
-// TEXTAREA
-// ============================================================
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -128,7 +116,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
             'border-surface-700/80 placeholder:text-surface-600 resize-none',
             'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
-            'transition-all duration-200',
+            'transition-colors duration-200',
             error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
             className
           )}
@@ -140,10 +128,6 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   }
 );
 Textarea.displayName = 'Textarea';
-
-// ============================================================
-// SELECT
-// ============================================================
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -166,7 +150,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
             'border-surface-700/80',
             'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
-            'transition-all duration-200',
+            'transition-colors duration-200',
             error && 'border-red-500/70',
             className
           )}
@@ -184,10 +168,6 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   }
 );
 Select.displayName = 'Select';
-
-// ============================================================
-// BADGE
-// ============================================================
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -223,10 +203,6 @@ export function Badge({ children, variant = 'default', size = 'sm', className }:
   );
 }
 
-// ============================================================
-// CARD
-// ============================================================
-
 interface CardProps {
   children: React.ReactNode;
   className?: string;
@@ -238,7 +214,7 @@ export function Card({ children, className, hover = false, onClick }: CardProps)
   return (
     <div
       className={cn(
-        'rounded-xl border transition-all duration-200',
+        'rounded-xl border transition-colors duration-200',
         'border-surface-800/80 bg-surface-900/60 backdrop-blur-sm',
         hover && 'hover:border-surface-600/80 hover:bg-surface-800/60 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/20 cursor-pointer',
         onClick && 'cursor-pointer',
@@ -250,10 +226,6 @@ export function Card({ children, className, hover = false, onClick }: CardProps)
     </div>
   );
 }
-
-// ============================================================
-// MODAL
-// ============================================================
 
 interface ModalProps {
   isOpen: boolean;
@@ -273,9 +245,21 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     if (!isOpen) { hasAutoFocused.current = false; return; }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { e.stopPropagation(); onCloseRef.current(); }
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
-    // Only focus the modal container on initial open, not on every re-render
     if (!hasAutoFocused.current) {
       modalRef.current?.focus();
       hasAutoFocused.current = true;
@@ -294,19 +278,19 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] overflow-y-auto" ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[9999] overflow-y-auto" ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={title ? 'modal-title' : undefined}>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       <div className="relative min-h-full flex items-start justify-center p-4 pt-[8vh] pb-8" onClick={onClose}>
         <div
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'relative w-full rounded-2xl border border-surface-700 bg-surface-900 shadow-2xl animate-slide-up',
+            'relative w-full rounded-xl border border-surface-700 bg-surface-900 shadow-2xl animate-slide-up',
             sizes[size]
           )}
         >
           {title && (
             <div className="flex items-center justify-between border-b border-surface-800/80 px-6 py-4">
-              <h2 className="text-lg font-black text-white tracking-tight">{title}</h2>
+              <h2 id="modal-title" className="text-lg font-black text-white tracking-tight">{title}</h2>
               <button
                 onClick={onClose}
                 className="rounded-lg p-1.5 text-surface-400 hover:bg-white/10 hover:text-white transition-colors"
@@ -324,10 +308,6 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     document.body
   );
 }
-
-// ============================================================
-// AVATAR
-// ============================================================
 
 interface AvatarProps {
   src?: string | null;
@@ -387,10 +367,6 @@ export function Avatar({ src, name, size = 'md', color, className, online }: Ava
   );
 }
 
-// ============================================================
-// TABS
-// ============================================================
-
 interface Tab {
   id: string;
   label: string;
@@ -406,16 +382,19 @@ interface TabsProps {
 }
 
 export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
+  const listId = React.useId();
   return (
-    <div role="tablist" className={cn('flex gap-0.5 rounded-xl p-1', 'bg-surface-900/80 border border-surface-800/60', className)}>
+    <div role="tablist" aria-label="Content tabs" className={cn('flex gap-0.5 rounded-xl p-1', 'bg-surface-900/80 border border-surface-800/60', className)}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
           role="tab"
+          id={`${listId}-tab-${tab.id}`}
           aria-selected={activeTab === tab.id}
+          aria-controls={`${listId}-panel-${tab.id}`}
           onClick={() => onChange(tab.id)}
           className={cn(
-            'flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-wide transition-all duration-200',
+            'flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-wide transition-colors duration-200',
             activeTab === tab.id
               ? 'bg-surface-700 text-white shadow-md'
               : 'text-surface-500 hover:text-surface-200 hover:bg-surface-800/60'
@@ -435,10 +414,6 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
   );
 }
 
-// ============================================================
-// EMPTY STATE
-// ============================================================
-
 interface EmptyStateProps {
   icon?: React.ReactNode;
   title: string;
@@ -450,7 +425,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       {icon && (
-        <div className="mb-6 w-16 h-16 rounded-2xl flex items-center justify-center"
+        <div className="mb-6 w-16 h-16 rounded-xl flex items-center justify-center"
           style={{ background: 'rgba(255,95,31,0.08)', border: '1px solid rgba(255,95,31,0.2)', color: '#FF5F1F' }}>
           {icon}
         </div>
@@ -463,10 +438,6 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
     </div>
   );
 }
-
-// ============================================================
-// LOADING
-// ============================================================
 
 export function LoadingSpinner({ className }: { className?: string }) {
   return (
@@ -486,10 +457,6 @@ export function LoadingPage() {
     </div>
   );
 }
-
-// ============================================================
-// SKELETON LOADING
-// ============================================================
 
 export function Skeleton({ className, count = 1 }: { className?: string; count?: number }) {
   return (
@@ -527,10 +494,6 @@ export function SkeletonList({ count = 5 }: { count?: number }) {
   );
 }
 
-// ============================================================
-// TOOLTIP
-// ============================================================
-
 interface TooltipProps {
   content: string;
   children: React.ReactNode;
@@ -562,10 +525,6 @@ export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
   );
 }
 
-// ============================================================
-// PROGRESS BAR
-// ============================================================
-
 interface ProgressProps {
   value: number;
   max?: number;
@@ -588,7 +547,7 @@ export function Progress({ value, max = 100, label, showPercent = true, color, c
       )}
       <div className="h-2.5 overflow-hidden rounded-full bg-surface-800" style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)' }}>
         <div
-          className="h-full rounded-full transition-all duration-700"
+          className="h-full rounded-full transition-[width] duration-700"
           style={{
             width: `${percent}%`,
             backgroundColor: color || '#FF5F1F',
@@ -599,10 +558,6 @@ export function Progress({ value, max = 100, label, showPercent = true, color, c
     </div>
   );
 }
-
-// ============================================================
-// TOAST NOTIFICATIONS
-// ============================================================
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -673,10 +628,6 @@ export function ToastContainer() {
   );
 }
 
-// ============================================================
-// KEYBOARD SHORTCUTS PANEL
-// ============================================================
-
 interface ShortcutGroup {
   title: string;
   shortcuts: { keys: string[]; description: string }[];
@@ -728,7 +679,7 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="bg-surface-900 border border-surface-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[70vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-surface-900 border border-surface-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[70vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <span className="text-surface-400">⌨️</span> Keyboard Shortcuts
@@ -765,10 +716,6 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
     </div>
   );
 }
-
-// ============================================================
-// TOGGLE / SWITCH
-// ============================================================
 
 interface ToggleProps {
   checked: boolean;
@@ -816,10 +763,6 @@ export function Toggle({ checked, onChange, label, description, disabled, size =
   );
 }
 
-// ============================================================
-// STAT CARD — Consistent stat display for dashboards
-// ============================================================
-
 interface StatCardProps {
   label: string;
   value: string | number;
@@ -855,10 +798,6 @@ export function StatCard({ label, value, icon, color = 'text-white', trend, clas
   );
 }
 
-// ============================================================
-// SEARCH INPUT — Styled search with icon & clear button
-// ============================================================
-
 interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -883,7 +822,7 @@ export function SearchInput({ value, onChange, placeholder = 'Search...', classN
           'w-full rounded-lg border bg-surface-900/80 pl-10 pr-8 py-2.5 text-sm text-white font-medium',
           'border-surface-700/80 placeholder:text-surface-600',
           'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
-          'transition-all duration-200'
+          'transition-colors duration-200'
         )}
       />
       {value && (
@@ -899,10 +838,6 @@ export function SearchInput({ value, onChange, placeholder = 'Search...', classN
     </div>
   );
 }
-
-// ============================================================
-// ALERT BANNER — Inline notice/warning strip
-// ============================================================
 
 interface AlertProps {
   variant?: 'info' | 'warning' | 'error' | 'success';
@@ -942,10 +877,6 @@ export function Alert({ variant = 'info', title, children, onDismiss, className 
   );
 }
 
-// ============================================================
-// CHIP — Removable tag/chip
-// ============================================================
-
 interface ChipProps {
   label: string;
   onRemove?: () => void;
@@ -974,10 +905,6 @@ export function Chip({ label, onRemove, color, className }: ChipProps) {
   );
 }
 
-// ============================================================
-// DIVIDER — Section separator
-// ============================================================
-
 interface DividerProps {
   label?: string;
   className?: string;
@@ -995,10 +922,6 @@ export function Divider({ label, className }: DividerProps) {
   }
   return <div className={cn('h-px bg-surface-800', className)} />;
 }
-
-// ============================================================
-// MOVE BUTTONS — Reorder items up/down
-// ============================================================
 
 interface MoveButtonsProps {
   onMoveUp: () => void;
@@ -1031,10 +954,6 @@ export function MoveButtons({ onMoveUp, onMoveDown, disableUp, disableDown, clas
   );
 }
 
-// ============================================================
-// FILTER TABS — Reusable filter button row
-// ============================================================
-
 interface FilterTab {
   key: string;
   label: string;
@@ -1056,7 +975,7 @@ export function FilterTabs({ tabs, active, onChange, className }: FilterTabsProp
           key={tab.key}
           onClick={() => onChange(tab.key)}
           className={cn(
-            'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200',
+            'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200',
             active === tab.key
               ? 'bg-[#E54E15]/15 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/20'
               : 'text-surface-400 hover:text-white hover:bg-surface-800/60'
@@ -1076,10 +995,6 @@ export function FilterTabs({ tabs, active, onChange, className }: FilterTabsProp
     </div>
   );
 }
-
-// ============================================================
-// CONFIRMATION DIALOG
-// ============================================================
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -1108,7 +1023,7 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onCancel}>
-      <div className="bg-surface-900 border border-surface-800 rounded-2xl shadow-2xl max-w-sm w-full p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-surface-900 border border-surface-800 rounded-xl shadow-2xl max-w-sm w-full p-6" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
         <p className="text-sm text-surface-400 mb-5">{message}</p>
         <div className="flex justify-end gap-3">

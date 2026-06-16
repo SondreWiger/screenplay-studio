@@ -6,7 +6,6 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Project, Profile } from '@/lib/types';
 
-// ============================================================
 // Deep Dive — Script Viewer  (fully redesigned)
 // Dark-mode cinema-grade read-only viewer with:
 //   - Scene navigation sidebar
@@ -15,7 +14,6 @@ import type { Project, Profile } from '@/lib/types';
 //   - Reading progress indicator
 //   - Keyboard navigation (j/k scenes, t toggle sidebar)
 //   - Adjustable font size & display options
-// ============================================================
 
 type ScriptElementType =
   | 'scene_heading' | 'action' | 'character' | 'dialogue' | 'parenthetical'
@@ -51,7 +49,7 @@ interface Script {
   } | null;
 }
 
-// ── Colours ─────────────────────────────────────────────────
+// Colours
 const CHARACTER_COLORS = [
   '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
   '#06b6d4', '#f97316', '#84cc16', '#6366f1', '#14b8a6', '#e11d48',
@@ -64,7 +62,7 @@ function hashColor(str: string): string {
   return CHARACTER_COLORS[Math.abs(h) % CHARACTER_COLORS.length];
 }
 
-// ── Scene info ──────────────────────────────────────────────
+// Scene info
 interface SceneInfo {
   id: string;
   number: string;
@@ -76,7 +74,7 @@ interface SceneInfo {
   timeOfDay: string;
 }
 
-// ── Tabs ────────────────────────────────────────────────────
+// Tabs
 type SidebarTab = 'scenes' | 'characters' | 'stats';
 
 export default function DeepDiveScriptPage() {
@@ -105,7 +103,7 @@ export default function DeepDiveScriptPage() {
   const scriptRef = useRef<HTMLDivElement>(null);
   const sceneRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // ── Fetch data ──────────────────────────────────────────
+  // Fetch data
   useEffect(() => { if (params.id) fetchData(); }, [params.id]);
 
   const fetchData = async () => {
@@ -134,7 +132,7 @@ export default function DeepDiveScriptPage() {
     setLoading(false);
   };
 
-  // ── Derived data ────────────────────────────────────────
+  // Derived data
   const scenes = useMemo<SceneInfo[]>(() => {
     const result: SceneInfo[] = [];
     let counter = 0;
@@ -220,7 +218,7 @@ export default function DeepDiveScriptPage() {
     return { totalWords, dialogueWords, actionWords, pageEstimate, intScenes, extScenes, avgSceneLength, longestScene, readingTimeMin, dialoguePct: totalWords ? Math.round(dialogueWords / totalWords * 100) : 0 };
   }, [elements, scenes]);
 
-  // ── Progress & active scene tracking ────────────────────
+  // Progress & active scene tracking
   useEffect(() => {
     const container = scriptRef.current;
     if (!container) return;
@@ -242,7 +240,7 @@ export default function DeepDiveScriptPage() {
     return () => container.removeEventListener('scroll', onScroll);
   }, [scenes]);
 
-  // ── Keyboard shortcuts ──────────────────────────────────
+  // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
@@ -267,7 +265,7 @@ export default function DeepDiveScriptPage() {
     else sceneRefs.current.delete(id);
   }, []);
 
-  // ── Filtered lists ──────────────────────────────────────
+  // Filtered lists
   const filteredScenes = useMemo(() => {
     if (!sceneFilter) return scenes;
     const q = sceneFilter.toLowerCase();
@@ -280,7 +278,7 @@ export default function DeepDiveScriptPage() {
     return characterStats.filter(c => c.name.toLowerCase().includes(q));
   }, [characterStats, charFilter]);
 
-  // ── Loading / Error ─────────────────────────────────────
+  // Loading / Error
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center">
@@ -652,7 +650,7 @@ export default function DeepDiveScriptPage() {
   );
 }
 
-// ── Element inline styles ───────────────────────────────────
+// Element inline styles
 function getElementStyle(type: ScriptElementType, dark: boolean): React.CSSProperties {
   const muted = dark ? '#666' : '#888';
   const subtle = dark ? '#555' : '#ccc';

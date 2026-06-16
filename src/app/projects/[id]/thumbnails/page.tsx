@@ -329,7 +329,7 @@ export default function ThumbnailsPage() {
                   type="button"
                   onClick={() => setForm({ ...form, a_b_test_group: form.a_b_test_group === group ? '' : group })}
                   className={cn(
-                    'px-4 py-2 rounded-lg border text-sm font-medium transition-all',
+                    'px-4 py-2 rounded-lg border text-sm font-medium transition-colors',
                     form.a_b_test_group === group
                       ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
                       : 'border-surface-700 text-surface-400 hover:border-surface-600'

@@ -3,11 +3,9 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-// ============================================================
 // Public Casting Call Form
 // Anyone with the link can view roles and submit an application.
 // No authentication required.
-// ============================================================
 
 type CastingQuestion = {
   label: string;
@@ -133,7 +131,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
     }
   };
 
-  // ── Loading ─────────────────────────────────────────────────
+  // Loading
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
@@ -142,12 +140,12 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
     );
   }
 
-  // ── Not Found ───────────────────────────────────────────────
+  // Not Found
   if (notFound) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center px-4">
         <div className="max-w-md text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-neutral-900 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-neutral-900 flex items-center justify-center">
             <svg className="w-8 h-8 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
           </div>
           <h1 className="text-xl font-black text-white mb-2">Casting Call Not Found</h1>
@@ -157,12 +155,12 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
     );
   }
 
-  // ── Submitted ───────────────────────────────────────────────
+  // Submitted
   if (submitted) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center px-4">
         <div className="max-w-md text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-green-500/20 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-green-500/20 flex items-center justify-center">
             <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
           </div>
           <h1 className="text-2xl font-black text-white mb-2">Application Submitted!</h1>
@@ -176,7 +174,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
     );
   }
 
-  // ── Form ────────────────────────────────────────────────────
+  // Form
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
       {/* Header */}
@@ -207,7 +205,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
                   key={char.id}
                   type="button"
                   onClick={() => setSelectedRole(char.id)}
-                  className={`text-left p-4 rounded-lg border transition-all ${
+                  className={`text-left p-4 rounded-lg border transition-colors ${
                     selectedRole === char.id
                       ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
                       : 'border-neutral-800 bg-neutral-900 hover:border-neutral-700'

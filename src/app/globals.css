@@ -114,7 +114,19 @@
     z-index: 1;
   }
 
-  /* Scrollbar — invisible */
+  /* Visible focus indicators for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand-500));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Restore default button/input focus for mouse users */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Scrollbar — invisible (WebKit/Blink) */
   ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
@@ -128,6 +140,14 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: rgb(255 255 255 / 0.08);
+  }
+  /* Scrollbar — thin (Firefox) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  *:hover {
+    scrollbar-color: rgba(255 255 255 / 0.08) transparent;
   }
 }
 

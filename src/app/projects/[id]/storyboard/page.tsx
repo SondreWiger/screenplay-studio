@@ -7,7 +7,7 @@ import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner
 import { cn } from '@/lib/utils';
 import type { Shot, Scene } from '@/lib/types';
 
-// ── Types ──────────────────────────────────────────────────────
+// Types
 interface Stroke {
   points: { x: number; y: number }[];
   color: string;
@@ -27,7 +27,7 @@ interface ShotWithStoryboard extends Shot {
   storyboard_notes?: string;
 }
 
-// ── Drawing Canvas Component ──────────────────────────────────
+// Drawing Canvas Component
 function DrawingCanvas({
   strokes, onChange, width, height, tool, color, brushSize, readOnly,
 }: {
@@ -104,7 +104,7 @@ function DrawingCanvas({
   );
 }
 
-// ── Shot Thumbnail ────────────────────────────────────────────
+// Shot Thumbnail
 function ShotThumbnail({ shot, size }: { shot: ShotWithStoryboard; size: 'sm' | 'md' | 'lg' }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const W = 320; const H = 180;
@@ -150,7 +150,7 @@ function ShotThumbnail({ shot, size }: { shot: ShotWithStoryboard; size: 'sm' | 
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────
+// Main
 const DRAW_COLORS = ['#ffffff', '#dd574e', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#64748b'];
 
 export default function StoryboardPage({ params }: { params: { id: string } }) {
@@ -357,7 +357,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
                 key={shot.id} 
                 onClick={() => canEdit && openEditor(shot)}
                 className={cn(
-                  'group rounded-xl border overflow-hidden transition-all',
+                  'group rounded-xl border overflow-hidden transition-colors',
                   canEdit && 'cursor-pointer hover:border-surface-600',
                   (shot.storyboard_url || shot.storyboard_drawing?.length) ? 'border-surface-700' : 'border-dashed border-surface-800'
                 )}
@@ -429,7 +429,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
                 <div className="flex flex-wrap gap-1">
                   {DRAW_COLORS.map(c => (
                     <button key={c} onClick={() => { setDrawColor(c); setDrawTool('pen'); }}
-                      className={cn('w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-transform', drawColor === c && drawTool === 'pen' ? 'border-white scale-110' : 'border-surface-700 hover:scale-105')}
+                      className={cn('w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-transform', drawColor === c && drawTool === 'pen' ? 'border-white scale-110' : 'border-surface-700')}
                       style={{ backgroundColor: c }} />
                   ))}
                 </div>

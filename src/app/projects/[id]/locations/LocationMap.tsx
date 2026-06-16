@@ -106,7 +106,7 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
   const [editingMarker, setEditingMarker] = useState<LocationMarker | null>(null);
   const [markerForm, setMarkerForm] = useState<{ name: string; description: string; location_ids: string[] }>({ name: '', description: '', location_ids: [] });
   const [routeForm, setRouteForm] = useState({ name: '', notes: '', color: '' });
-  const [showRouteForm, setShowRouteForm] = useState(false);
+  const [, setShowRouteForm] = useState(false);
   const [visibleTypes, setVisibleTypes] = useState<Set<MarkerType>>(() => new Set<MarkerType>(['location', 'bus_stop', 'train_station', 'parking', 'base_camp', 'custom']));
 
   useEffect(() => { fetchData(); }, [projectId]);
@@ -204,7 +204,7 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
   const toggleType = (t: MarkerType) => {
     setVisibleTypes((prev) => {
       const next = new Set(prev);
-      next.has(t) ? next.delete(t) : next.add(t);
+      if (next.has(t)) next.delete(t); else next.add(t);
       return next;
     });
   };

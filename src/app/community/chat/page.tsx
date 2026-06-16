@@ -4,14 +4,11 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SiteVersion } from '@/components/SiteVersion';
 import { timeAgo, cn } from '@/lib/utils';
 import type { ChatChannel, ChatMessage, Profile } from '@/lib/types';
 import { FormattedChatText } from '@/components/FormattedChatText';
 
-// ============================================================
 // Community Chat Forum
-// ============================================================
 
 const MESSAGES_PER_PAGE = 50;
 
@@ -164,11 +161,6 @@ export default function ChatPage() {
     await supabase.from('chat_messages').update({ is_deleted: true }).eq('id', msgId);
   };
 
-  const handlePin = async (msg: ChatMessage) => {
-    const supabase = createClient();
-    await supabase.from('chat_messages').update({ is_pinned: !msg.is_pinned }).eq('id', msg.id);
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -209,7 +201,7 @@ export default function ChatPage() {
                   key={ch.id}
                   onClick={() => switchChannel(ch)}
                   className={cn(
-                    'w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center gap-2',
+                    'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2',
                     activeChannel?.id === ch.id
                       ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium'
                       : 'text-white/60 hover:bg-surface-900 hover:text-white'
@@ -235,7 +227,7 @@ export default function ChatPage() {
                       key={ch.id}
                       onClick={() => switchChannel(ch)}
                       className={cn(
-                        'w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center gap-2',
+                        'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2',
                         activeChannel?.id === ch.id
                           ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium'
                           : 'text-white/60 hover:bg-surface-900 hover:text-white'

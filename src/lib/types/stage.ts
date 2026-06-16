@@ -1,8 +1,6 @@
 import type { Profile } from './base';
 
-// ============================================================
 // Stage Play / Theatre Production Types
-// ============================================================
 
 export type StageCueType = 'lighting' | 'sound' | 'music' | 'follow_spot' | 'special_effect' | 'automation' | 'video';
 export type StageEnsembleGroup = 'Principal' | 'Ensemble' | 'Understudy' | 'Dance Captain' | 'Swing' | 'Alternate' | 'Other';
@@ -78,9 +76,7 @@ export const STAGE_DEPARTMENTS: StageProductionDepartment[] = [
   'Musical Direction', 'Choreography', 'Design', 'Technical', 'Marketing', 'Other',
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Shoot Days
-// ─────────────────────────────────────────────────────────────────────────────
 export type ShootDayStatus = 'planned' | 'confirmed' | 'completed' | 'cancelled';
 
 export interface ShootDay {
@@ -125,9 +121,7 @@ export interface ShootDayCast {
   sort_order: number;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Shoot Gear
-// ─────────────────────────────────────────────────────────────────────────────
 export type GearOwnership = 'owned' | 'rented' | 'provided' | 'tbc';
 export type GearStatus = 'confirmed' | 'pending' | 'cancelled';
 export type GearCategory =
@@ -160,9 +154,7 @@ export interface ShootGear {
   updated_at: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Sidebar Layout Customisation
-// ─────────────────────────────────────────────────────────────────────────────
 export interface SidebarNavItem {
   icon: string;
   label: string;        // overrideable display name
@@ -191,9 +183,7 @@ export interface SidebarLayoutRow {
   updated_at: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Community Courses
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type CourseDifficulty = 'beginner' | 'intermediate' | 'advanced';
 export type CourseType = 'system' | 'user';
@@ -294,7 +284,7 @@ export interface CourseLessonProgress {
   answer_data: Record<string, string> | null;
 }
 
-// ── Quotes ──────────────────────────────────────────────────
+// Quotes
 
 export interface Quote {
   id: string;
@@ -333,7 +323,7 @@ export interface QuoteUpdate {
   group_id?: string | null;
 }
 
-// ── Quote Groups ──────────────────────────────────────────────
+// Quote Groups
 
 export interface QuoteGroup {
   id: string;

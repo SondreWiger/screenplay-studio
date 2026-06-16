@@ -10,13 +10,11 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
-import { MentionTextarea, parseMentionHandles } from '@/components/community/MentionTextarea';
+import { MentionTextarea } from '@/components/community/MentionTextarea';
 import { toast } from '@/components/ui';
 import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction, Profile, SubCommunity } from '@/lib/types';
 
-// ============================================================
 // Post Detail — view a community-shared script
-// ============================================================
 
 export default function PostDetailPage({ params }: { params: { slug: string } }) {
   const { user } = useAuth();
@@ -338,7 +336,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-3xl font-black text-white mb-2">Post not found</h1>
-          <p className="text-white/40">This post may have been removed or doesn't exist.</p>
+          <p className="text-white/40">This post may have been removed or doesn&apos;t exist.</p>
           <Link href="/community" className="mt-8 px-6 py-3 bg-[#E54E15] text-white font-medium rounded-lg">Browse Community</Link>
         </div>
       </div>
@@ -402,9 +400,9 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               className="flex items-center gap-3 group"
             >
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-[#FF5F1F] transition-all" loading="lazy" />
+                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-[#FF5F1F] transition-colors" loading="lazy" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-[#FF5F1F]/15 flex items-center justify-center text-sm font-bold text-[#FF5F1F] group-hover:ring-2 ring-[#FF5F1F] transition-all">
+                <div className="w-10 h-10 rounded-full bg-[#FF5F1F]/15 flex items-center justify-center text-sm font-bold text-[#FF5F1F] group-hover:ring-2 ring-[#FF5F1F] transition-colors">
                   {(post.author?.full_name || 'A')[0]}
                 </div>
               )}
@@ -659,7 +657,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             {productions.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-white/50 text-sm mb-1">No productions yet.</p>
-                <p className="text-xs text-white/50">Filmmakers can submit movies they've made based on this script.</p>
+                <p className="text-xs text-white/50">Filmmakers can submit movies they&apos;ve made based on this script.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -688,12 +686,12 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
       {/* Film Submission Modal */}
       {showFilmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}>
-          <div className="bg-surface-900 rounded-2xl shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface-900 rounded-xl shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
             {filmSubmitted ? (
               <div className="text-center py-8">
                 <div className="text-5xl mb-4">🎬</div>
                 <h3 className="text-xl font-black text-white mb-2">Film Submitted!</h3>
-                <p className="text-sm text-white/40 mb-6">Your film has been sent for review. You'll be notified once it's approved.</p>
+                <p className="text-sm text-white/40 mb-6">Your film has been sent for review. You&apos;ll be notified once it&apos;s approved.</p>
                 <button onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}
                   className="px-6 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg hover:bg-[#CC4312] transition-colors">
                   Done
@@ -703,7 +701,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               <>
                 <h3 className="text-lg font-bold text-white mb-1">Submit Your Film</h3>
                 <p className="text-sm text-white/40 mb-5">
-                  Made a film based on this script? Submit it for review — once approved, it'll appear on this page and the original creator will be notified.
+                  Made a film based on this script? Submit it for review — once approved, it&apos;ll appear on this page and the original creator will be notified.
                 </p>
                 <div className="space-y-4">
                   <div>
@@ -811,9 +809,9 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
         <div className="flex items-start gap-3">
           <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
             {comment.author?.avatar_url ? (
-              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-[#FF5F1F] transition-all')} loading="lazy" />
+              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-[#FF5F1F] transition-colors')} loading="lazy" />
             ) : (
-              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-[#FF5F1F] transition-all')}>
+              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-[#FF5F1F] transition-colors')}>
                 {(comment.author?.full_name || '?')[0]}
               </div>
             )}

@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// ── In-memory rate limiter ──────────────────────────────────
+// In-memory rate limiter
 // Tracks request counts per IP per window
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 120; // 120 req/min for normal users
@@ -45,7 +45,7 @@ function checkRateLimit(key: string, max: number): { allowed: boolean; remaining
   return { allowed: true, remaining: max - entry.count, resetAt: entry.resetAt };
 }
 
-// ── Known bot/scraper user agents to block ──────────────────
+// Known bot/scraper user agents to block
 // AI training crawlers + aggressive data-harvesting scrapers
 const BLOCKED_BOTS = [
   // OpenAI
@@ -100,18 +100,18 @@ export async function updateSession(request: NextRequest) {
   const ua = (request.headers.get('user-agent') || '').toLowerCase();
   const pathname = request.nextUrl.pathname;
 
-  // ── Block known AI scraper bots ───────────────────────────
+  // Block known AI scraper bots
   if (BLOCKED_BOTS.some(bot => ua.includes(bot))) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
-  // ── Block empty / suspiciously short user agents ─────────
+  // Block empty / suspiciously short user agents
   // Legitimate browsers always have a non-trivial UA string.
   if (!ua || ua.length < 10) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
-  // ── Rate limiting ─────────────────────────────────────────
+  // Rate limiting
   let maxRequests = RATE_LIMIT_MAX_REQUESTS;
   let limitKey = `general:${ip}`;
 
@@ -163,7 +163,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // ── Ban / IP ban enforcement ──────────────────────────────
+  // Ban / IP ban enforcement
   // Allow access to /banned, /suspended, static assets, and auth pages
   const enforcementExemptPaths = ['/banned', '/suspended', '/auth/', '/api/auth/', '/_next/', '/favicon.ico'];
   const isEnforcementExempt = enforcementExemptPaths.some(p => pathname.startsWith(p));
@@ -242,7 +242,7 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // ── Update last_seen for authenticated users ──────────────
+  // Update last_seen for authenticated users
   // Only update if user is authenticated and not on static/auth paths
   // Throttle updates to once per 5 minutes per user to reduce DB writes
   if (user) {
@@ -291,7 +291,7 @@ export async function updateSession(request: NextRequest) {
     ].join('; ')
   );
 
-  // ── Rate limit headers ────────────────────────────────────
+  // Rate limit headers
   supabaseResponse.headers.set('X-RateLimit-Limit', String(maxRequests));
   supabaseResponse.headers.set('X-RateLimit-Remaining', String(rateResult.remaining));
 
@@ -305,7 +305,7 @@ export async function updateSession(request: NextRequest) {
     return redirectResponse;
   }
 
-  // ── Protected routes ──────────────────────────────────────
+  // Protected routes
   // /dev/features is intentionally public; /dev/stats and /dev/test require login
   const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding', '/messages', '/dev/stats', '/dev/test'];
   const isProtected = protectedPaths.some((path) =>
@@ -319,7 +319,7 @@ export async function updateSession(request: NextRequest) {
     return redirectWithCookies(url);
   }
 
-  // ── Admin / Mod panel route — allow admin UID, admins, and moderators ──
+  // Admin / Mod panel route — allow admin UID, admins, and moderators
   if (request.nextUrl.pathname.startsWith('/admin') && user) {
     const ADMIN_UID = process.env.ADMIN_UID || '';
     if (!ADMIN_UID || user.id !== ADMIN_UID) {
@@ -342,7 +342,7 @@ export async function updateSession(request: NextRequest) {
     return redirectWithCookies(url);
   }
 
-  // ── Redirect logged-in users away from auth pages ─────────
+  // Redirect logged-in users away from auth pages
   const authPaths = ['/auth/login', '/auth/register'];
   const isAuthPage = authPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)

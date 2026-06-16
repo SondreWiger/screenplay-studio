@@ -1,8 +1,6 @@
 'use client';
 
-// ============================================================
 // XPBar — compact experience progress bar for profile pages
-// ============================================================
 
 import { getLevelInfo, getLevelTitle, getGlowTier, GLOW_CLASSES } from '@/lib/gamification';
 
@@ -74,7 +72,7 @@ export function XPBar({
       <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
         <div
           className={`h-full rounded-full bg-gradient-to-r ${barColors[glowTier]} ${
-            animated ? 'transition-all duration-1000 ease-out' : ''
+            animated ? 'transition-[width] duration-1000 ease-out' : ''
           }`}
           style={{ width: `${progressPercent}%` }}
         />

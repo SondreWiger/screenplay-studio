@@ -97,7 +97,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
         <div className="max-w-5xl mx-auto px-4">
           <div className="relative flex items-end gap-4 -mt-8">
             {/* Icon bubble */}
-            <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center text-3xl rounded-2xl border-4 z-10"
+            <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center text-3xl rounded-xl border-4 z-10"
               style={{ background: accent + '22', borderColor: '#070710', backdropFilter: 'blur(8px)' }}>
               {community.icon ?? '🎬'}
             </div>
@@ -111,14 +111,14 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
             <div className="flex items-center gap-2 pb-1">
               {canPost && (
                 <Link href={`/community/c/${slug}?compose=1`}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all hover:opacity-90"
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-opacity hover:opacity-90"
                   style={{ background: accent }}>
                   + Post
                 </Link>
               )}
               {user && !isAdmin && !isMod && (
                 <button onClick={handleJoin} disabled={joinLoading}
-                  className={cn('px-3 py-1.5 text-xs font-semibold rounded-lg transition-all border',
+                  className={cn('px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border',
                     membership ? 'border-white/20 text-white/70 hover:border-red-400 hover:text-red-400'
                                : 'border-transparent text-white hover:opacity-90')}
                   style={!membership ? { background: accent } : undefined}>
@@ -138,7 +138,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
               const active = pathname === t.href || (t.href !== `/community/c/${slug}` && pathname.startsWith(t.href));
               return (
                 <Link key={t.href} href={t.href}
-                  className={cn('px-3 py-2 text-xs font-medium relative transition-all',
+                  className={cn('px-3 py-2 text-xs font-medium relative transition-colors',
                     active ? 'text-white' : 'text-white/40 hover:text-white/70')}>
                   {t.label}
                   {active && (

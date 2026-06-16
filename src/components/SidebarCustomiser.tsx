@@ -49,7 +49,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
     return () => window.removeEventListener('keydown', handler);
   }, [moveMenuKey, showResetMenu]);
 
-  // ── Section operations ──────────────────────────────────
+  // Section operations
   const moveSection = (idx: number, dir: -1 | 1) => {
     setSections(prev => move(prev, idx, idx + dir));
   };
@@ -93,7 +93,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
     setSections(prev => prev.filter(s => s.id !== id));
   };
 
-  // ── Item operations ─────────────────────────────────────
+  // Item operations
   const toggleItemVisible = (sectionId: string, icon: string) => {
     setSections(prev => prev.map(s => s.id === sectionId
       ? { ...s, items: s.items.map(i => i.icon === icon ? { ...i, hidden: !i.hidden } : i) }
@@ -124,7 +124,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
     });
   };
 
-  // ── Save / reset ────────────────────────────────────────
+  // Save / reset
   const handleSave = async () => {
     setSaving(true);
     try {

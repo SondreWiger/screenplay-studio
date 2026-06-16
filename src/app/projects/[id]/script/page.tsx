@@ -26,9 +26,7 @@ import {
 import { paginateScript, type PaginatedPage } from '@/lib/screenplay-paginator';
 import { logWork } from '@/lib/work-tracker';
 
-// ============================================================
 // Display Settings — persisted in localStorage
-// ============================================================
 interface DisplaySettings {
   showSceneNumbers: boolean;
   showCharacterHighlights: boolean;
@@ -40,26 +38,6 @@ interface DisplaySettings {
   minimapLabels: boolean;
   minimapColors: boolean;
   pageSplitGap: boolean;
-}
-
-interface AIReviewIssue {
-  type: 'formatting' | 'structure' | 'character' | 'dialogue' | 'pacing';
-  severity: 'low' | 'medium' | 'high';
-  location: { startIndex: number; endIndex: number };
-  message: string;
-  suggestion?: string;
-}
-
-interface AIReviewStats {
-  readabilityScore: number; // 0-100
-  avgSceneLength: number; // pages
-  dialogueRatio: number; // percentage
-  issueCount: number;
-}
-
-interface AIReviewResult {
-  issues: AIReviewIssue[];
-  stats: AIReviewStats;
 }
 
 const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
@@ -87,9 +65,7 @@ function saveDisplaySettings(settings: DisplaySettings) {
   try { localStorage.setItem('ss_display_settings', JSON.stringify(settings)); } catch {}
 }
 
-// ============================================================
 // Character color map — deterministic colors for character names
-// ============================================================
 const CHARACTER_COLORS = [
   { bg: 'bg-blue-500/10', border: 'border-l-blue-400', text: 'text-blue-300', hex: '#60a5fa' },
   { bg: 'bg-emerald-500/10', border: 'border-l-emerald-400', text: 'text-emerald-300', hex: '#34d399' },
@@ -133,9 +109,7 @@ interface CollabCursor {
 import type { ScriptElement, ScriptElementType, Script, ScriptDraft, Comment, CommentType, Profile, UserPresence, TitlePageData } from '@/lib/types';
 import { ELEMENT_LABELS, REVISION_COLOR_HEX } from '@/lib/types';
 
-// ============================================================
 // Constants
-// ============================================================
 
 const ELEMENT_CYCLE: ScriptElementType[] = [
   'scene_heading', 'act', 'sequence', 'sequence_end', 'action', 'character', 'dialogue', 'parenthetical', 'transition',
@@ -180,6 +154,57 @@ const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 // Sanitise rich-text content: keep only safe formatting tags, strip everything else
 const sanitizeContentHtml = (html: string) =>
   html.replace(/<(?!\/?(?:b|i|u|s|strong|em|br)\b)[^>]+>/gi, '');
+
+// Modern replacement for document.execCommand() — wraps selection in formatting tags
+function applyTextFormatting(command: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'removeFormat') {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+
+  const range = sel.getRangeAt(0);
+  const tagMap: Record<string, string> = {
+    bold: 'b',
+    italic: 'i',
+    underline: 'u',
+    strikethrough: 's',
+  };
+
+  if (command === 'removeFormat') {
+    const text = range.extractContents();
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text.textContent || ''));
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return;
+  }
+
+  const tag = tagMap[command];
+  if (!tag) return;
+
+  // Check if selection is already inside the target tag
+  const ancestor = range.commonAncestorContainer;
+  const ancestorEl = ancestor.nodeType === Node.ELEMENT_NODE ? ancestor as Element : ancestor.parentElement;
+  const parentTag = ancestorEl?.closest(tag)?.tagName;
+  const alreadyApplied = parentTag?.toLowerCase() === tag;
+
+  if (alreadyApplied) {
+    const text = range.extractContents();
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text.textContent || ''));
+  } else {
+    const wrapper = document.createElement(tag);
+    try {
+      range.surroundContents(wrapper);
+    } catch {
+      const fragment = range.extractContents();
+      wrapper.appendChild(fragment);
+      range.deleteContents();
+      range.insertNode(wrapper);
+    }
+  }
+
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
 
 // Audio-drama-aware next element type (Enter key behaviour)
 function getAudioNextElementType(type: ScriptElementType, format: string): ScriptElementType {
@@ -303,10 +328,8 @@ function getElementClass(type: ScriptElementType, isAudioDrama = false): string 
   }
 }
 
-// ============================================================
 // Screenplay Studio Creator Format (SSCF) 
 // A custom script format designed for content creators
-// ============================================================
 const YOUTUBE_FORMAT_GUIDE = {
   title: 'Screenplay Studio Creator Format',
   tagline: 'A structured script format designed for content creators',
@@ -365,9 +388,7 @@ function getElementPlaceholder(type: ScriptElementType, isYouTube = false): stri
   }
 }
 
-// ============================================================
 // Download helper
-// ============================================================
 function downloadFile(content: string, filename: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -380,9 +401,7 @@ function downloadFile(content: string, filename: string, mimeType: string) {
   URL.revokeObjectURL(url);
 }
 
-// ============================================================
 // Focus helper — places cursor at start or end of an element
-// ============================================================
 function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
   requestAnimationFrame(() => {
     const el = document.getElementById(`el-${elementId}`);
@@ -407,7 +426,7 @@ function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
     sel.addRange(range);
     // Auto-scroll: keep the focused element visible, accounting for mobile keyboard
     const vh = window.visualViewport?.height ?? window.innerHeight;
-    const keyboardOffset = window.visualViewport?.offsetY ?? 0;
+    const keyboardOffset = window.visualViewport?.offsetTop ?? 0;
     const rect = el.getBoundingClientRect();
     const visibleTop = keyboardOffset;
     const visibleBottom = keyboardOffset + vh;
@@ -417,9 +436,7 @@ function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
   });
 }
 
-// ============================================================
 // Main Page
-// ============================================================
 
 export default function ScriptEditorPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -485,15 +502,6 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return () => vv.removeEventListener('resize', onResize);
   }, []);
 
-  const AI_REVIEW_ENABLED = false;
-  const [showAIReviewPanel, setShowAIReviewPanel] = useState(false);
-  const [aiReviewResults, setAIReviewResults] = useState<AIReviewResult | null>(null);
-  const [aiReviewLoading, setAIReviewLoading] = useState(false);
-  const [aiReviewError, setAIReviewError] = useState<string | null>(null);
-  const aiReviewRef = useRef<HTMLDivElement>(null);
-  const [aiReviewAutoInterval, setAIReviewAutoInterval] = useState<NodeJS.Timeout | null>(null);
-  const aiReviewIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
   // Role awareness: determine if user can edit
   const { members, currentProject } = useProjectStore();
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
@@ -502,30 +510,6 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const canLock = currentUserRole === 'owner' || currentUserRole === 'admin';
 
   useWorkTimeTracker({ projectId: params.id, context: 'script', disabled: !canEdit });
-
-  useEffect(() => {
-    if (!AI_REVIEW_ENABLED || !showAIReviewPanel) return;
-    
-    // Clear existing interval
-    if (aiReviewIntervalRef.current) {
-      clearInterval(aiReviewIntervalRef.current);
-    }
-    
-    // Set up auto-review every 30 seconds when panel is open
-    const interval = setInterval(() => {
-      triggerAIReview();
-    }, 30000);
-    
-    aiReviewIntervalRef.current = interval;
-    
-    // Cleanup on unmount or when panel closes
-    return () => {
-      if (aiReviewIntervalRef.current) {
-        clearInterval(aiReviewIntervalRef.current);
-        aiReviewIntervalRef.current = null;
-      }
-    };
-  }, [showAIReviewPanel, AI_REVIEW_ENABLED]);
 
   // Detect YouTube/Content Creator project
   const isContentCreator = useMemo(() => {
@@ -565,7 +549,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     : isStagePlay ? STAGEPLAY_ELEMENT_CYCLE
     : ELEMENT_CYCLE;
 
-  // ── Inline comments ──────────────────────────────────────────
+  // Inline comments
   const [scriptComments, setScriptComments] = useState<(Comment & { profile?: Profile })[]>([]);
   const [commentPanelElement, setCommentPanelElement] = useState<string | null>(null); // element id
   const [showCommentPanel, setShowCommentPanel] = useState(false);
@@ -573,7 +557,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [newCommentType, setNewCommentType] = useState<CommentType>('note');
   const [postingComment, setPostingComment] = useState(false);
 
-  // ── Versioned Story Editing ──────────────────────────────────
+  // Versioned Story Editing
   const [showVersionPanel, setShowVersionPanel] = useState(false);
   const [versionConfig, setVersionConfig] = useState<VersionConfig>(DEFAULT_VERSION_CONFIG);
   const [selectedElementIds, setSelectedElementIds] = useState<Set<string>>(new Set());
@@ -592,7 +576,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     return map;
   }, [scriptComments]);
 
-  // ── Title page: save a single field on blur ──────────────────
+  // Title page: save a single field on blur
   const saveTitlePageField = useCallback(async (
     field: keyof TitlePageData,
     value: string,
@@ -688,7 +672,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     }
   }, [currentScript?.id]);
 
-  // ── Honor ?script_id= param — jump to a specific episode when linked from Episodes page ──
+  // Honor ?script_id= param — jump to a specific episode when linked from Episodes page
   const searchParams = useSearchParams();
   const scriptIdParam = searchParams.get('script_id');
   useEffect(() => {
@@ -700,7 +684,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scriptIdParam, scripts.length]);
 
-  // ── Jump to element from command palette (?element=<id>) ─────────────
+  // Jump to element from command palette (?element=<id>)
   const elementParam = searchParams.get('element');
   useEffect(() => {
     if (!elementParam || elements.length === 0) return;
@@ -951,7 +935,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 
   const totalPages = paginatorResult.pages.length || 1;
 
-  // ── Auto-track pages written per session ─────────────────────────────────
+  // Auto-track pages written per session
   // Captures the page count when the user first lands on the script, then
   // logs the delta when they leave.  Only fires if the user can actually edit.
   const startPageCountRef = useRef<number | null>(null);
@@ -1050,7 +1034,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     setCollapsedSequences((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   }, []);
 
-  // --- Floating format toolbar: show when user selects text inside a script element ---
+  // Floating format toolbar: show when user selects text inside a script element
   useEffect(() => {
     const handleSelectionChange = () => {
       const sel = window.getSelection();
@@ -1133,7 +1117,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     }
   };
 
-  // ---- PDF Export ----
+  // PDF Export
   const handleExportPDF = useCallback(() => {
     const store = useScriptStore.getState();
     const script = store.currentScript;
@@ -1333,9 +1317,7 @@ ${pageHTML}
     win.document.close();
   }, []);
 
-  // ============================================================
   // Import / Export Handlers
-  // ============================================================
 
   const handleImportFile = useCallback(async (format: 'fdx' | 'fountain') => {
     const input = document.createElement('input');
@@ -1443,7 +1425,7 @@ ${pageHTML}
   const handleExportPlainText = useCallback(() => {
     if (!currentScript || elements.length === 0) return;
     const tp = currentScript.title_page_data;
-    let lines: string[] = [];
+    const lines: string[] = [];
     // Title page
     if (tp && (tp.title || tp.author)) {
       lines.push('', '');
@@ -1540,243 +1522,12 @@ ${pageHTML}
     }
   };
 
-  // ─── AI Review Trigger ──────────────────────────────────────────────────
-  const triggerAIReview = useCallback(async () => {
-    if (!currentScript || elements.length === 0) return;
-    setAIReviewLoading(true);
-    setAIReviewError(null);
-
-    try {
-      // Analyse script using rule-based heuristics (no external AI model needed)
-      const issues: AIReviewIssue[] = [];
-      let dialogueCount = 0;
-      let actionCount = 0;
-      let sceneCount = 0;
-      let characterCount = 0;
-      let totalDialogueWords = 0;
-      let totalActionWords = 0;
-      const characters = new Set<string>();
-      const sceneLengths: number[] = [];
-      let currentSceneStart = 0;
-
-      elements.forEach((el, idx) => {
-        const c = (el.content || '').trim();
-        if (!c) return;
-
-        switch (el.element_type) {
-          case 'scene_heading': {
-            if (currentSceneStart >= 0 && idx > currentSceneStart) {
-              sceneLengths.push(idx - currentSceneStart);
-            }
-            currentSceneStart = idx;
-            sceneCount++;
-            // Check for missing scene heading
-            if (c.length > 100) {
-              issues.push({
-                type: 'formatting',
-                severity: 'low',
-                location: { startIndex: idx, endIndex: idx },
-                message: 'Scene heading is very long — consider breaking it up.',
-                suggestion: 'Keep scene headings concise: INT/EXT. LOCATION - TIME',
-              });
-            }
-            break;
-          }
-          case 'character': {
-            characterCount++;
-            characters.add(c.toUpperCase());
-            if (c.length > 40) {
-              issues.push({
-                type: 'formatting',
-                severity: 'low',
-                location: { startIndex: idx, endIndex: idx },
-                message: `Character name "${c}" is longer than typical (max ~35 chars).`,
-                suggestion: 'Keep character names short for readability.',
-              });
-            }
-            break;
-          }
-          case 'dialogue': {
-            dialogueCount++;
-            totalDialogueWords += c.split(/\s+/).length;
-            // Check for walls of text
-            const wordCount = c.split(/\s+/).length;
-            if (wordCount > 100) {
-              issues.push({
-                type: 'dialogue',
-                severity: 'medium',
-                location: { startIndex: idx, endIndex: idx },
-                message: `Character speaks ${wordCount} words in one block — consider breaking it up.`,
-                suggestion: 'Long speeches can be broken with parentheticals or character reactives.',
-              });
-            }
-            break;
-          }
-          case 'action': {
-            actionCount++;
-            totalActionWords += c.split(/\s+/).length;
-            // Check for walls of action text
-            const wordCount = c.split(/\s+/).length;
-            if (wordCount > 80) {
-              issues.push({
-                type: 'pacing',
-                severity: 'low',
-                location: { startIndex: idx, endIndex: idx },
-                message: `Action block is ${wordCount} words — consider trimming.`,
-                suggestion: 'Keep action paragraphs under 4 lines (~60 words) for cinematic pacing.',
-              });
-            }
-            break;
-          }
-        }
-      });
-
-      // Final scene length
-      if (currentSceneStart >= 0 && currentSceneStart < elements.length) {
-        sceneLengths.push(elements.length - currentSceneStart);
-      }
-
-      // Structural checks
-      if (sceneCount === 0) {
-        issues.push({
-          type: 'structure',
-          severity: 'high',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: 'No scene headings found. Script needs scene breaks.',
-          suggestion: 'Add scene headings (INT./EXT.) to structure your story.',
-        });
-      } else if (sceneCount < 2) {
-        issues.push({
-          type: 'structure',
-          severity: 'medium',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: 'Only one scene heading. Consider adding more scene breaks.',
-          suggestion: 'Break your script into multiple scenes for better pacing.',
-        });
-      }
-
-      // Dialogue ratio analysis
-      const totalContentWords = totalDialogueWords + totalActionWords;
-      const dialogueRatio = totalContentWords > 0 ? Math.round((totalDialogueWords / totalContentWords) * 100) : 0;
-      if (dialogueCount > 0 && dialogueRatio > 80) {
-        issues.push({
-          type: 'dialogue',
-          severity: 'low',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: `Script is ${dialogueRatio}% dialogue — consider adding more action/description.`,
-          suggestion: 'Use action lines to show what characters are doing, not just saying.',
-        });
-      } else if (dialogueCount > 0 && dialogueRatio < 15) {
-        issues.push({
-          type: 'pacing',
-          severity: 'low',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: `Only ${dialogueRatio}% dialogue — characters should speak more.`,
-          suggestion: 'Consider adding dialogue to develop character relationships.',
-        });
-      }
-
-      // Character count check
-      if (characterCount > 15) {
-        issues.push({
-          type: 'character',
-          severity: 'medium',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: `${characterCount} characters speak — consider consolidating roles.`,
-          suggestion: 'Reduce number of speaking characters to keep the story focused.',
-        });
-      } else if (characterCount > 8) {
-        issues.push({
-          type: 'character',
-          severity: 'low',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: `${characterCount} characters speak — watch for overcrowding.`,
-          suggestion: 'Consider if all characters are essential to the story.',
-        });
-      }
-
-      // Scene length analysis
-      const avgSceneLength = sceneLengths.length > 0
-        ? Math.round((sceneLengths.reduce((a, b) => a + b, 0) / sceneLengths.length) * 10) / 10
-        : 0;
-      if (avgSceneLength > 25) {
-        issues.push({
-          type: 'structure',
-          severity: 'medium',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: `Average scene is ${avgSceneLength} elements — scenes may be too long.`,
-          suggestion: 'Aim for scenes around 3 pages (~15-20 elements) for modern pacing.',
-        });
-      } else if (avgSceneLength < 3 && sceneCount > 2) {
-        issues.push({
-          type: 'structure',
-          severity: 'low',
-          location: { startIndex: 0, endIndex: elements.length },
-          message: `Average scene is only ${avgSceneLength} elements — scenes may be too short.`,
-          suggestion: 'Consider expanding scenes to give them more depth.',
-        });
-      }
-
-      // Formatting checks
-      elements.forEach((el, idx) => {
-        const c = (el.content || '').trim();
-        if (el.element_type === 'transition' && !/[A-Z\s]+$/.test(c)) {
-          issues.push({
-            type: 'formatting',
-            severity: 'low',
-            location: { startIndex: idx, endIndex: idx },
-            message: 'Transitions should be in ALL CAPS.',
-            suggestion: 'Format as: CUT TO:, FADE OUT., etc.',
-          });
-        }
-      });
-
-      // Calculate readability score (0-100)
-      let readabilityScore = 85;
-      readabilityScore -= Math.min(issues.filter(i => i.severity === 'high').length * 10, 40);
-      readabilityScore -= Math.min(issues.filter(i => i.severity === 'medium').length * 5, 30);
-      readabilityScore -= Math.min(issues.filter(i => i.severity === 'low').length * 2, 20);
-      readabilityScore = Math.max(20, Math.min(100, readabilityScore));
-
-      setAIReviewResults({
-        issues,
-        stats: {
-          readabilityScore,
-          avgSceneLength,
-          dialogueRatio,
-          issueCount: issues.length,
-        },
-      });
-    } catch (err: any) {
-      console.error('AI Review error:', err);
-      setAIReviewError(err.message || 'Failed to analyze script');
-      setAIReviewResults({
-        issues: [],
-        stats: {
-          readabilityScore: 50,
-          avgSceneLength: 0,
-          dialogueRatio: 0,
-          issueCount: 0,
-        },
-      });
-    } finally {
-      setAIReviewLoading(false);
-    }
-  }, [currentScript, elements]);
-
-  // Initial review when panel opens and elements exist
-  useEffect(() => {
-    if (AI_REVIEW_ENABLED && showAIReviewPanel && !aiReviewResults && !aiReviewLoading && elements.length > 0) {
-      triggerAIReview();
-    }
-  }, [showAIReviewPanel, AI_REVIEW_ENABLED, elements.length]);
-
   return (
     <>
       {/* Creator Format Intro Modal */}
       {showFormatIntro && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-surface-900 border border-surface-700 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-surface-900 border border-surface-700 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6 border-b border-surface-800 bg-gradient-to-r from-brand-600/20 to-purple-600/20">
               <h2 className="text-2xl font-black text-white">Welcome to Creator Format</h2>
               <p className="text-surface-300 mt-1">A structured script format designed for YouTubers & content creators</p>
@@ -1959,7 +1710,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
             <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
               <div
-                className="h-1.5 rounded-full bg-[#FF5F1F] transition-all duration-500"
+                className="h-1.5 rounded-full bg-[#FF5F1F] transition-[width] duration-500"
                 style={{ width: `${Math.min(100, (totalPages / 120) * 100)}%` }}
               />
             </div>
@@ -1976,7 +1727,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             <div className="flex items-center gap-0.5 flex-wrap min-w-0">
               {elementCycle.map((type) => (
                 <button key={type} onClick={() => handleToolbarAdd(type)}
-                  className={cn('px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150 whitespace-nowrap',
+                  className={cn('px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors duration-150 whitespace-nowrap',
                     activeElementType === type
                       ? 'bg-[#E54E15]/20 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30 shadow-sm'
                       : 'text-surface-400 hover:text-white hover:bg-surface-800/80'
@@ -2023,7 +1774,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 onClick={() => undoScript()}
                 disabled={_undoStack.length === 0}
-                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
+                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                 title={`Undo (Cmd+Z)${_undoStack.length > 0 ? ` · ${_undoStack.length} step${_undoStack.length > 1 ? 's' : ''}` : ''}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
@@ -2031,7 +1782,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 onClick={() => redoScript()}
                 disabled={_redoStack.length === 0}
-                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
+                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                 title={`Redo (Cmd+Shift+Z)${_redoStack.length > 0 ? ` · ${_redoStack.length} step${_redoStack.length > 1 ? 's' : ''}` : ''}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
@@ -2041,12 +1792,12 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
 
           {/* Center: Navigation & Comments */}
-          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-all duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Search (Cmd+F)">
+          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Search (Cmd+F)">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
           <button
             onClick={() => setShowCommentPanel(!showCommentPanel)}
-            className={cn('p-2 md:p-1.5 rounded-md transition-all duration-150 relative min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 relative min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title="Comments"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
@@ -2056,19 +1807,19 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               </span>
             )}
           </button>
-          <button onClick={() => titlePageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-150" title="Scroll to Title Page">
+          <button onClick={() => titlePageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150" title="Scroll to Title Page">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
           </button>
 
           <div className="w-px h-4 bg-surface-800 mx-1" />
 
           {/* Right: Export & Tools */}
-          <button onClick={handleExportPDF} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-150" title="Export PDF (Cmd+P)">
+          <button onClick={handleExportPDF} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150" title="Export PDF (Cmd+P)">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
           </button>
           {/* Import / Export dropdown */}
           <div className="relative">
-            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded-md transition-all duration-150', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Import / Export">
+            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded-md transition-colors duration-150', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Import / Export">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             </button>
             {showImportExport && (
@@ -2129,7 +1880,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           {canLock && currentScript && (
             <button
               onClick={handleToggleLock}
-              className={cn('p-1.5 rounded-md transition-all duration-150',
+              className={cn('p-1.5 rounded-md transition-colors duration-150',
                 currentScript.locked
                   ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/20'
                   : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
@@ -2149,11 +1900,11 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 ref={revisionColorPickerRef}
                 onClick={() => setShowRevisionColorPicker(!showRevisionColorPicker)}
-                className={cn('p-1.5 rounded-md transition-all duration-150 flex items-center gap-1', showRevisionColorPicker ? 'bg-surface-800/80' : 'hover:bg-surface-800/80')}
+                className={cn('p-1.5 rounded-md transition-colors duration-150 flex items-center gap-1', showRevisionColorPicker ? 'bg-surface-800/80' : 'hover:bg-surface-800/80')}
                 title={`Revision colour: ${currentScript.revision_color || 'white'}`}
               >
                 <span
-                  className="w-3 h-3 rounded-sm border border-surface-600 inline-block"
+                  className="w-3 h-3 rounded-md border border-surface-600 inline-block"
                   style={{ background: REVISION_COLOR_HEX[currentScript.revision_color] || '#ffffff' }}
                 />
                 <svg className="w-3 h-3 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -2176,7 +1927,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                         <button
                           key={color}
                           onClick={() => handleSetRevisionColor(color)}
-                          className={cn('w-7 h-7 rounded-md border-2 transition-all hover:scale-110',
+                          className={cn('w-7 h-7 rounded-md border-2 transition-colors',
                             currentScript.revision_color === color ? 'border-[#FF5F1F]' : 'border-transparent hover:border-white/30'
                           )}
                           style={{ background: hex }}
@@ -2189,16 +1940,16 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               )}
             </div>
           )}
-          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-all duration-150" title="Save Draft Snapshot">
+          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-colors duration-150" title="Save Draft Snapshot">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
           </button>
-          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded-md transition-all duration-150', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
+          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded-md transition-colors duration-150', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </button>
           {/* Format Guide Button (for content creators) */}
           {isContentCreator && (
             <button onClick={() => setShowFormatIntro(true)}
-              className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-150"
+              className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150"
               title="Format Guide">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>
@@ -2207,7 +1958,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <div className="relative">
             <button
               onClick={() => setShowVersionPanel(!showVersionPanel)}
-              className={cn('relative p-1.5 rounded-md transition-all duration-150',
+              className={cn('relative p-1.5 rounded-md transition-colors duration-150',
                 showVersionPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
               )}
               title="Story Versions"
@@ -2224,14 +1975,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </div>
           {/* Focus Mode Toggle */}
           <button onClick={() => setFocusMode(!focusMode)}
-            className={cn('p-1.5 rounded-md transition-all duration-150', focusMode ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-1.5 rounded-md transition-colors duration-150', focusMode ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title={focusMode ? 'Exit Focus Mode' : 'Focus Mode — hide toolbars'}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
           </button>
           {/* Display Settings */}
           <div className="relative">
             <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
-              className={cn('p-1.5 rounded-md transition-all duration-150', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+              className={cn('p-1.5 rounded-md transition-colors duration-150', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
               title="Display Settings">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
             </button>
@@ -2269,7 +2020,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                         <button type="button" onClick={() => updateDisplaySettings({ [key]: !displaySettings[key] })}
                           className="relative flex-shrink-0 inline-flex h-[18px] w-[32px] rounded-full transition-colors duration-150 focus:outline-none"
                           style={{ backgroundColor: displaySettings[key] ? '#E54E15' : '#2d2d45' }}>
-                          <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-150', displaySettings[key] ? 'left-[16px]' : 'left-[2px]')} />
+                          <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-[left] duration-150', displaySettings[key] ? 'left-[16px]' : 'left-[2px]')} />
                         </button>
                       </div>
                     ))}
@@ -2293,7 +2044,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       <div className="flex gap-1 p-1 rounded-lg" style={{ backgroundColor: '#171728' }}>
                         {(['narrow', 'standard', 'wide'] as const).map((w) => (
                           <button key={w} onClick={() => updateDisplaySettings({ pageWidth: w })}
-                            className={cn('flex-1 py-1 rounded-md text-[11px] font-medium transition-all capitalize',
+                            className={cn('flex-1 py-1 rounded-md text-[11px] font-medium transition-colors capitalize',
                               displaySettings.pageWidth === w ? 'text-white' : 'text-surface-500 hover:text-surface-300'
                             )}
                             style={displaySettings.pageWidth === w ? { backgroundColor: '#E54E15', boxShadow: '0 1px 6px rgba(229,78,21,0.35)' } : undefined}
@@ -2316,7 +2067,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                         <button type="button" onClick={() => updateDisplaySettings({ [key]: !displaySettings[key] })}
                           className="relative flex-shrink-0 inline-flex h-[18px] w-[32px] rounded-full transition-colors duration-150 focus:outline-none"
                           style={{ backgroundColor: displaySettings[key] ? '#E54E15' : '#2d2d45' }}>
-                          <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-150', displaySettings[key] ? 'left-[16px]' : 'left-[2px]')} />
+                          <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-[left] duration-150', displaySettings[key] ? 'left-[16px]' : 'left-[2px]')} />
                         </button>
                       </div>
                     ))}
@@ -2333,7 +2084,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       <button type="button" onClick={() => updateDisplaySettings({ pageSplitGap: !displaySettings.pageSplitGap })}
                         className="relative flex-shrink-0 inline-flex h-[18px] w-[32px] rounded-full transition-colors duration-150 focus:outline-none"
                         style={{ backgroundColor: displaySettings.pageSplitGap ? '#E54E15' : '#2d2d45' }}>
-                        <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-150', displaySettings.pageSplitGap ? 'left-[16px]' : 'left-[2px]')} />
+                        <span className={cn('pointer-events-none absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-[left] duration-150', displaySettings.pageSplitGap ? 'left-[16px]' : 'left-[2px]')} />
                       </button>
                     </div>
                   </div>
@@ -2343,7 +2094,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </div>
           {/* Dark Mode Toggle */}
           <button onClick={() => setDarkMode(!darkMode)}
-            className={cn('p-1.5 rounded-md transition-all duration-150', darkMode ? 'text-yellow-400 hover:bg-surface-800/80' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-1.5 rounded-md transition-colors duration-150', darkMode ? 'text-yellow-400 hover:bg-surface-800/80' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title={darkMode ? 'Light Mode' : 'Dark Mode'}>
             {darkMode ? (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -2351,172 +2102,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
             )}
           </button>
-          {/* AI Review Toggle (Alpha) */}
-          {AI_REVIEW_ENABLED && (
-            <button
-              onClick={() => setShowAIReviewPanel(v => !v)}
-              className={cn('p-1.5 rounded-md transition-all duration-150 relative', showAIReviewPanel ? 'text-emerald-400 bg-emerald-400/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
-              title="AI Script Review (Alpha)"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-              {aiReviewResults && aiReviewResults.stats.issueCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-emerald-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5 shadow-sm">
-                  {aiReviewResults.stats.issueCount}
-                </span>
-              )}
-            </button>
-          )}
         </div>
-
-        {/* AI Review Panel (Alpha) */}
-        {AI_REVIEW_ENABLED && showAIReviewPanel && (
-          <>
-            <div className="fixed inset-0 z-[9998]" onClick={() => setShowAIReviewPanel(false)} />
-            <div ref={aiReviewRef} className="fixed z-[9999] right-0 top-0 h-full w-[340px] bg-surface-950 border-l border-surface-800/30 shadow-2xl animate-scale-in flex flex-col">
-              {/* Panel Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800/50 shrink-0">
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                  <span className="text-sm font-semibold text-white">AI Review</span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400">Alpha</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button onClick={triggerAIReview} disabled={aiReviewLoading} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors disabled:opacity-50" title="Re-run review">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                  </button>
-                  <button onClick={() => setShowAIReviewPanel(false)} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Panel Body */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {aiReviewLoading && (
-                  <div className="flex flex-col items-center justify-center py-12 gap-3">
-                    <div className="w-8 h-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-400 animate-spin" />
-                    <p className="text-xs text-surface-500">Analyzing script...</p>
-                    <p className="text-[10px] text-surface-600">Loading AI model (first load may take a moment)</p>
-                  </div>
-                )}
-
-                {aiReviewError && !aiReviewLoading && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                    <p className="text-sm font-medium text-red-400 mb-1">Analysis Error</p>
-                    <p className="text-xs text-red-300/70">{aiReviewError}</p>
-                    <button onClick={triggerAIReview} className="mt-3 text-xs font-semibold text-red-400 hover:text-red-300 transition-colors">Try again</button>
-                  </div>
-                )}
-
-                {aiReviewResults && !aiReviewLoading && (
-                  <>
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
-                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Readability</p>
-                        <div className="flex items-end gap-1.5">
-                          <span className="text-xl font-black text-white">{aiReviewResults.stats.readabilityScore}</span>
-                          <span className="text-[10px] text-surface-500 mb-0.5">/100</span>
-                        </div>
-                        <div className="mt-2 h-1 rounded-full bg-surface-800 overflow-hidden">
-                          <div className="h-full rounded-full transition-all duration-500" style={{
-                            width: `${aiReviewResults.stats.readabilityScore}%`,
-                            background: aiReviewResults.stats.readabilityScore >= 70 ? '#22c55e' : aiReviewResults.stats.readabilityScore >= 40 ? '#eab308' : '#ef4444',
-                          }} />
-                        </div>
-                      </div>
-                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
-                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Issues</p>
-                        <div className="flex items-end gap-1.5">
-                          <span className="text-xl font-black text-white">{aiReviewResults.stats.issueCount}</span>
-                          <span className="text-[10px] text-surface-500 mb-0.5">found</span>
-                        </div>
-                      </div>
-                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
-                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Avg Scene</p>
-                        <div className="flex items-end gap-1.5">
-                          <span className="text-xl font-black text-white">{aiReviewResults.stats.avgSceneLength.toFixed(1)}</span>
-                          <span className="text-[10px] text-surface-500 mb-0.5">pages</span>
-                        </div>
-                      </div>
-                      <div className="bg-surface-900/60 border border-surface-800/50 rounded-xl p-3">
-                        <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Dialogue</p>
-                        <div className="flex items-end gap-1.5">
-                          <span className="text-xl font-black text-white">{aiReviewResults.stats.dialogueRatio}%</span>
-                          <span className="text-[10px] text-surface-500 mb-0.5">of script</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Issues List */}
-                    {aiReviewResults.issues.length > 0 && (
-                      <div>
-                        <h3 className="text-[11px] font-semibold text-surface-400 uppercase tracking-wider mb-3">Issues ({aiReviewResults.issues.length})</h3>
-                        <div className="space-y-2">
-                          {aiReviewResults.issues.map((issue, idx) => {
-                            const severityColors = {
-                              high: 'border-l-red-500 bg-red-500/5',
-                              medium: 'border-l-amber-500 bg-amber-500/5',
-                              low: 'border-l-blue-500 bg-blue-500/5',
-                            };
-                            const typeColors = {
-                              formatting: 'text-purple-400',
-                              structure: 'text-blue-400',
-                              character: 'text-amber-400',
-                              dialogue: 'text-emerald-400',
-                              pacing: 'text-rose-400',
-                            };
-                            return (
-                              <div key={idx} className={`border-l-2 pl-3 py-2 pr-3 rounded-r-lg ${severityColors[issue.severity]}`}>
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  <span className={`text-[9px] font-bold uppercase tracking-wider ${typeColors[issue.type] || 'text-surface-400'}`}>{issue.type}</span>
-                                  <span className={`text-[9px] font-medium uppercase px-1 rounded ${
-                                    issue.severity === 'high' ? 'bg-red-500/20 text-red-400' :
-                                    issue.severity === 'medium' ? 'bg-amber-500/20 text-amber-400' :
-                                    'bg-blue-500/20 text-blue-400'
-                                  }`}>{issue.severity}</span>
-                                </div>
-                                <p className="text-xs text-surface-300 leading-relaxed">{issue.message}</p>
-                                {issue.suggestion && (
-                                  <p className="text-[10px] text-surface-500 mt-1 italic">{issue.suggestion}</p>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {aiReviewResults.issues.length === 0 && (
-                      <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <svg className="w-10 h-10 text-emerald-500/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <p className="text-sm font-medium text-surface-400">No issues found</p>
-                        <p className="text-xs text-surface-600 mt-1">Your script looks great!</p>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {!aiReviewResults && !aiReviewLoading && !aiReviewError && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <svg className="w-12 h-12 text-surface-700 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                    <p className="text-sm font-medium text-surface-500 mb-1">AI Script Review</p>
-                    <p className="text-xs text-surface-600">Click "Analyze" to get feedback on your script</p>
-                    <button onClick={triggerAIReview} className="mt-4 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors">
-                      Analyze Script
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Panel Footer */}
-              <div className="px-4 py-2.5 border-t border-surface-800/50 text-[9px] text-surface-600 flex items-center justify-between shrink-0">
-                <span>Powered by local AI · Fully private</span>
-                <span className="text-[#FF5F1F]">Alpha</span>
-              </div>
-            </div>
-          </>
-        )}
 
         {/* Locked script banner */}
         {currentScript?.locked && (
@@ -2765,7 +2351,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                           className={cn(
                             'relative overflow-visible',
                             isFaded ? 'opacity-20 pointer-events-none select-none' : undefined,
-                            isSelected ? 'outline outline-2 outline-[#FF5F1F]/40 outline-offset-1 rounded-sm' : undefined,
+                            isSelected ? 'outline outline-2 outline-[#FF5F1F]/40 outline-offset-1 rounded-md' : undefined,
                           )}
                           style={element.element_type === 'sequence_end' && seqColor ? { color: seqColor } : undefined}
                           onClick={(e) => {
@@ -2893,7 +2479,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
       {/* ── Selection action bar ───────────────────────────────── */}
       {selectedElementIds.size > 0 && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 bg-surface-900 border border-surface-700 rounded-2xl shadow-2xl text-sm select-none">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 bg-surface-900 border border-surface-700 rounded-xl shadow-2xl text-sm select-none">
           <span className="text-white font-medium">{selectedElementIds.size} element{selectedElementIds.size !== 1 ? 's' : ''} selected</span>
           <span className="text-surface-700">·</span>
           <button
@@ -2939,7 +2525,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   handleToolbarAdd(type);
                 }
               }}
-                className={cn('shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-[44px]',
+                className={cn('shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[44px]',
                   activeElementType === type
                     ? 'bg-[#E54E15] text-white shadow-sm'
                     : 'text-surface-400 bg-surface-800/60 active:bg-surface-700'
@@ -3116,29 +2702,29 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           onMouseDown={(e) => e.preventDefault()}
         >
           <button
-            onClick={() => { document.execCommand('bold'); }}
+            onClick={() => { applyTextFormatting('bold'); }}
             className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors font-bold text-white text-sm"
             title="Bold (⌘B)"
           ><b>B</b></button>
           <button
-            onClick={() => { document.execCommand('italic'); }}
+            onClick={() => { applyTextFormatting('italic'); }}
             className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors italic text-white text-sm"
             title="Italic (⌘I)"
           ><i>I</i></button>
           <button
-            onClick={() => { document.execCommand('underline'); }}
+            onClick={() => { applyTextFormatting('underline'); }}
             className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors underline text-white text-sm"
             title="Underline (⌘U)"
           >U</button>
           <div className="w-px h-4 bg-surface-600 mx-0.5" />
           <button
-            onClick={() => { document.execCommand('strikeThrough'); }}
+            onClick={() => { applyTextFormatting('strikethrough'); }}
             className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors line-through text-surface-300 text-sm"
             title="Strikethrough"
           >S</button>
           <div className="w-px h-4 bg-surface-600 mx-0.5" />
           <button
-            onClick={() => { document.execCommand('removeFormat'); }}
+            onClick={() => { applyTextFormatting('removeFormat'); }}
             className="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-600 transition-colors text-surface-400 hover:text-white text-xs"
             title="Clear formatting"
           >✕</button>
@@ -3169,7 +2755,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       useScriptStore.getState().updateElement(sequenceColorModalId, { metadata: { ...(seqEl?.metadata || {}), color } });
                       setSequenceColorModalId(null);
                     }}
-                    className={cn('w-8 h-8 rounded-lg border-2 transition-all hover:scale-110',
+                    className={cn('w-8 h-8 rounded-lg border-2 transition-colors',
                       (seqEl?.metadata?.color as string) === color ? 'border-white scale-110' : 'border-transparent hover:border-surface-400')}
                     style={{ background: color }}
                     title={color}
@@ -3259,9 +2845,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
   );
 }
 
-// ============================================================
 // SCRIPT COMMENT PANEL — right sidebar for inline comments
-// ============================================================
 
 interface ScriptCommentPanelProps {
   elementId: string | null;
@@ -3471,10 +3055,8 @@ function ScriptCommentPanel({
   );
 }
 
-// ============================================================
 // SCRIPT MINIMAP — proportional overview with sequence bands,
 // scene ticks, act dividers, and a draggable viewport indicator
-// ============================================================
 const ScriptMinimap = memo(function ScriptMinimap({
   elements,
   scrollEl,
@@ -3620,7 +3202,7 @@ const ScriptMinimap = memo(function ScriptMinimap({
   return (
     <div
       ref={barRef}
-      className={cn('relative h-9 select-none cursor-pointer shrink-0 no-print transition-all duration-200',
+      className={cn('relative h-9 select-none cursor-pointer shrink-0 no-print transition-[width] duration-200',
         darkMode ? 'bg-surface-950/90 border-t border-surface-800/60' : 'bg-gray-100/90 border-t border-gray-200/60')}
       onClick={handleClick}
       title="Script minimap — click or drag to navigate"
@@ -3690,7 +3272,7 @@ const ScriptMinimap = memo(function ScriptMinimap({
 
       {/* Draggable viewport indicator */}
       <div
-        className={cn('absolute top-0 bottom-0 rounded-sm pointer-events-auto cursor-grab active:cursor-grabbing transition-shadow duration-150',
+        className={cn('absolute top-0 bottom-0 rounded-md pointer-events-auto cursor-grab active:cursor-grabbing transition-shadow duration-150',
           darkMode
             ? 'border border-white/15 bg-white/[0.07] shadow-sm hover:shadow-md hover:bg-white/[0.10]'
             : 'border border-black/15 bg-black/[0.05] shadow-sm hover:shadow-md hover:bg-black/[0.08]')}
@@ -3709,10 +3291,8 @@ const ScriptMinimap = memo(function ScriptMinimap({
   );
 });
 
-// ============================================================
 // LINE EDITOR — fully self-contained, reads fresh state via getState()
 // No function props go through the memo boundary.
-// ============================================================
 
 interface LineEditorProps {
   elementId: string;
@@ -3811,7 +3391,7 @@ const LineEditor = memo(function LineEditor({
 
   if (!element) return null;
 
-  // --- Save debounced ---
+  // Save debounced
   const save = (text: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -3824,7 +3404,7 @@ const LineEditor = memo(function LineEditor({
     }, 400);
   };
 
-  // --- Input handler ---
+  // Input handler
   const handleInput = () => {
     if (!divRef.current) return;
     const html = sanitizeContentHtml(divRef.current.innerHTML || '');
@@ -3876,14 +3456,22 @@ const LineEditor = memo(function LineEditor({
     save(html);
   };
 
-  // --- Paste: strip HTML, keep plain text ---
+  // Paste: strip HTML, keep plain text
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(text));
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
   };
 
-  // --- Check whether same character is speaking again (for auto-CONT'D) ---
+  // Check whether same character is speaking again (for auto-CONT'D)
   const checkShouldAddContd = (charName: string): boolean => {
     const els = useScriptStore.getState().elements;
     const idx = els.findIndex((e) => e.id === elementId);
@@ -3903,7 +3491,7 @@ const LineEditor = memo(function LineEditor({
     return false;
   };
 
-  // --- Apply character autocomplete ---
+  // Apply character autocomplete
   const applySuggestion = (name: string) => {
     if (!divRef.current) return;
     let full: string;
@@ -3930,7 +3518,7 @@ const LineEditor = memo(function LineEditor({
     save(full);
   };
 
-  // --- Cursor position detection ---
+  // Cursor position detection
   const getCursorPosition = (): { atStart: boolean; atEnd: boolean } => {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0 || !divRef.current) return { atStart: false, atEnd: false };
@@ -3952,7 +3540,7 @@ const LineEditor = memo(function LineEditor({
     return { atStart, atEnd };
   };
 
-  // --- Keyboard handler (all store access via getState) ---
+  // Keyboard handler (all store access via getState)
   const getActiveCycle = (): ScriptElementType[] =>
     isAudioDrama ? audioElementCycle
     : isContentCreator ? YOUTUBE_ELEMENT_CYCLE
@@ -3977,9 +3565,9 @@ const LineEditor = memo(function LineEditor({
 
     // Formatting shortcuts: Cmd/Ctrl + B / I / U
     if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
-      if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); return; }
-      if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); return; }
-      if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); return; }
+      if (e.key === 'b') { e.preventDefault(); applyTextFormatting('bold'); return; }
+      if (e.key === 'i') { e.preventDefault(); applyTextFormatting('italic'); return; }
+      if (e.key === 'u') { e.preventDefault(); applyTextFormatting('underline'); return; }
     }
 
     // Character autocomplete navigation
@@ -3990,7 +3578,7 @@ const LineEditor = memo(function LineEditor({
       if (e.key === 'Escape') { setSuggestions([]); return; }
     }
 
-    // ========== ENTER — create new element below ==========
+    // ENTER — create new element below
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       e.stopPropagation();
@@ -4022,8 +3610,6 @@ const LineEditor = memo(function LineEditor({
         ? getAudioNextElementType(element.element_type, audioFormat)
         : getNextElementType(element.element_type);
 
-      console.log('[Enter] Creating element:', { nextType, newOrder, scriptId: store.currentScript.id });
-
       store.addElement({
         script_id: store.currentScript.id,
         element_type: nextType,
@@ -4033,18 +3619,13 @@ const LineEditor = memo(function LineEditor({
         last_edited_by: auth.user.id,
       }).then((newEl) => {
         if (newEl) {
-          console.log('[Enter] Element created:', newEl.id);
           focusElement(newEl.id, 'start');
-        } else {
-          console.error('[Enter] addElement returned null — check RLS / Supabase errors');
         }
-      }).catch((err) => {
-        console.error('[Enter] addElement threw:', err);
-      });
+      }).catch(() => {});
       return;
     }
 
-    // ========== TAB — tap to cycle, hold to open picker ==========
+    // TAB — tap to cycle, hold to open picker
     if (e.key === 'Tab') {
       e.preventDefault();
       // Autocomplete overrides: apply suggestion (no picker)
@@ -4072,7 +3653,7 @@ const LineEditor = memo(function LineEditor({
       return;
     }
 
-    // ========== ARROW KEYS while Tab-picker is open ==========
+    // ARROW KEYS while Tab-picker is open
     if (tabPickerOpenRef.current) {
       const cycle = getActiveCycle();
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
@@ -4102,7 +3683,7 @@ const LineEditor = memo(function LineEditor({
       }
     }
 
-    // ========== BACKSPACE on empty — delete element ==========
+    // BACKSPACE on empty — delete element
     if (e.key === 'Backspace') {
       const text = divRef.current?.textContent || '';
       if (text === '') {
@@ -4118,7 +3699,7 @@ const LineEditor = memo(function LineEditor({
       }
     }
 
-    // ========== ARROW UP at start — focus previous element ==========
+    // ARROW UP at start — focus previous element
     if (e.key === 'ArrowUp') {
       const { atStart } = getCursorPosition();
       if (atStart) {
@@ -4132,7 +3713,7 @@ const LineEditor = memo(function LineEditor({
       }
     }
 
-    // ========== ARROW DOWN at end — focus next element ==========
+    // ARROW DOWN at end — focus next element
     if (e.key === 'ArrowDown') {
       const { atEnd } = getCursorPosition();
       if (atEnd) {
@@ -4146,7 +3727,7 @@ const LineEditor = memo(function LineEditor({
       }
     }
 
-    // ========== ARROW LEFT at start — end of previous element ==========
+    // ARROW LEFT at start — end of previous element
     if (e.key === 'ArrowLeft' && !e.shiftKey) {
       const { atStart } = getCursorPosition();
       if (atStart) {
@@ -4160,7 +3741,7 @@ const LineEditor = memo(function LineEditor({
       }
     }
 
-    // ========== ARROW RIGHT at end — start of next element ==========
+    // ARROW RIGHT at end — start of next element
     if (e.key === 'ArrowRight' && !e.shiftKey) {
       const { atEnd } = getCursorPosition();
       if (atEnd) {
@@ -4175,7 +3756,7 @@ const LineEditor = memo(function LineEditor({
     }
   };
 
-  // --- keyup — commits single-tap Tab cycle or picker selection ---
+  // keyup — commits single-tap Tab cycle or picker selection
   const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Tab') return;
     if (tabPickerOpenRef.current) {
@@ -4360,7 +3941,7 @@ const LineEditor = memo(function LineEditor({
                 onClick={() => onSequenceSettings(elementId)}
                 title="Set sequence colour"
                 className={cn(
-                  'w-4 h-4 rounded-sm border transition-all hover:scale-110 shrink-0',
+                  'w-4 h-4 rounded-md border transition-colors shrink-0',
                   (element.metadata?.color as string)
                     ? 'border-surface-600 hover:border-surface-300'
                     : 'border-surface-500 border-dashed hover:border-surface-300'
@@ -4374,7 +3955,7 @@ const LineEditor = memo(function LineEditor({
               onClick={() => onSequenceSettings(elementId)}
               title="Set act colour"
               className={cn(
-                'w-4 h-4 rounded-sm border transition-all hover:scale-110 shrink-0',
+                'w-4 h-4 rounded-md border transition-colors shrink-0',
                 (element.metadata?.color as string)
                   ? 'border-surface-600 hover:border-surface-300'
                   : 'border-surface-500 border-dashed hover:border-surface-300'
@@ -4387,7 +3968,7 @@ const LineEditor = memo(function LineEditor({
               onClick={() => onSequenceSettings(elementId)}
               title="Set scene colour"
               className={cn(
-                'w-4 h-4 rounded-full border transition-all hover:scale-110 shrink-0',
+                'w-4 h-4 rounded-full border transition-colors shrink-0',
                 (element.metadata?.color as string)
                   ? 'border-surface-600 hover:border-surface-300'
                   : 'border-surface-500 border-dashed hover:border-surface-300'
@@ -4411,7 +3992,7 @@ const LineEditor = memo(function LineEditor({
         <button
           onClick={(e) => { e.stopPropagation(); onComment(elementId); }}
           className={cn(
-            'absolute -right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full transition-all',
+            'absolute -right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full transition-colors',
             commentCount > 0
               ? 'text-[#FF5F1F] bg-[#FF5F1F]/15 opacity-100'
               : 'text-surface-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-surface-700 hover:text-white'
@@ -4448,7 +4029,7 @@ const LineEditor = memo(function LineEditor({
                 onMouseEnter={() => { tabPickerIdxRef.current = i; setTabPickerIdx(i); }}
                 onMouseDown={(ev) => { ev.preventDefault(); commitPickerType(i); }}
                 className={cn(
-                  'px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-all select-none',
+                  'px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors select-none',
                   i === tabPickerIdx
                     ? 'bg-[#E54E15] text-white ring-1 ring-[#FF5F1F]/50'
                     : 'text-surface-400 hover:text-white hover:bg-surface-700',
@@ -4483,6 +4064,7 @@ const LineEditor = memo(function LineEditor({
           id={`el-${elementId}`}
           contentEditable={canEdit}
           suppressContentEditableWarning
+          spellCheck
           className={cn('sp-element', getElementClass(element.element_type, isAudioDrama))}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
@@ -4530,7 +4112,7 @@ const LineEditor = memo(function LineEditor({
         {showLongPressMenu && (
           <div className="lg:hidden fixed inset-0 z-[60]" onClick={() => setShowLongPressMenu(false)}>
             <div className="absolute inset-0 bg-black/40" />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 bg-surface-900 border border-surface-700 rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 bg-surface-900 border border-surface-700 rounded-xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="px-3 py-2 border-b border-surface-800">
                 <p className="text-[10px] text-surface-500 uppercase tracking-wider">Change type</p>
               </div>
@@ -4593,9 +4175,7 @@ const LineEditor = memo(function LineEditor({
   // are intentionally excluded — they're stable parent callbacks.
 });
 
-// ============================================================
 // Title Page — Inline-editable field
-// ============================================================
 
 function TitlePageField({
   value,
@@ -4620,7 +4200,7 @@ function TitlePageField({
       onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
       className={cn(
         'bg-transparent border-none outline-none w-full cursor-text',
-        'rounded-sm px-1 -mx-1',
+        'rounded-md px-1 -mx-1',
         'hover:bg-black/5 focus:bg-black/5',
         'transition-colors duration-100',
         className,
@@ -4630,9 +4210,7 @@ function TitlePageField({
   );
 }
 
-// ============================================================
 // Title Page — Logo upload zone
-// ============================================================
 
 function TitlePageLogoZone({
   url,
@@ -4726,9 +4304,7 @@ function TitlePageLogoZone({
   );
 }
 
-// ============================================================
 // Title Page Modal
-// ============================================================
 
 function TitlePageModal({ isOpen, onClose, script }: { isOpen: boolean; onClose: () => void; script: Script | null }) {
   const [data, setData] = useState<TitlePageData>(script?.title_page_data || {});
@@ -4765,9 +4341,7 @@ function TitlePageModal({ isOpen, onClose, script }: { isOpen: boolean; onClose:
   );
 }
 
-// ============================================================
 // New Script Modal
-// ============================================================
 
 function NewScriptModal({ isOpen, onClose, projectId, userId, onCreated }: {
   isOpen: boolean; onClose: () => void; projectId: string; userId: string; onCreated: () => void;

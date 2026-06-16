@@ -3,9 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// ============================================================
 // Version History — Redirects to Revisions (merged feature)
-// ============================================================
 
 export default function VersionHistoryPage({ params }: { params: { id: string } }) {
   const router = useRouter();

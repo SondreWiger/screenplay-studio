@@ -16,7 +16,7 @@
  * per-document in project_documents.metadata.version_config.
  */
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// Types
 
 export interface VersionConfig {
   /** Version names that are currently hidden / disabled */
@@ -39,7 +39,7 @@ export const DEFAULT_VERSION_CONFIG: VersionConfig = {
   known: [],
 };
 
-// ── Script element helpers ────────────────────────────────────────────────────
+// Script element helpers
 
 /**
  * Return all known version names — union of explicitly created (config.known)
@@ -132,7 +132,7 @@ export function removeVersionFromMetadata(
   return { ...metadata, versions: current.filter((v) => v !== version) };
 }
 
-// ── Document content helpers ─────────────────────────────────────────────────
+// Document content helpers
 
 /** Regex for version spans in document content: [v:name]...[/v] */
 const DOC_VERSION_RE = /\[v:([^\]]+)\]([\s\S]*?)\[\/v\]/g;
@@ -202,7 +202,7 @@ export function renderDocWithVersions(
   return result;
 }
 
-// ── Serialization helpers ─────────────────────────────────────────────────────
+// Serialization helpers
 
 export function serializeVersionConfig(config: VersionConfig): Record<string, unknown> {
   return { disabled: config.disabled, showFaded: config.showFaded, known: config.known ?? [] };
@@ -234,7 +234,7 @@ export function deserializeVersionConfig(raw: unknown): VersionConfig {
   };
 }
 
-// ── Internal ──────────────────────────────────────────────────────────────────
+// Internal
 
 function escapeHtml(str: string): string {
   return str

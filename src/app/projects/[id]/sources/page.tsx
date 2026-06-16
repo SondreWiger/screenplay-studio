@@ -7,9 +7,7 @@ import { Button, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/compo
 import { cn } from '@/lib/utils';
 import type { BroadcastSource, BroadcastSourceType, BroadcastSourceProtocol, BroadcastTallyState } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Sources — live source registry (cameras, feeds, returns, etc.)
-// ────────────────────────────────────────────────────────────
 
 const SOURCE_TYPE_COLORS: Record<string, string> = {
   camera: 'bg-blue-600', robocam: 'bg-blue-500', jib: 'bg-blue-400',
@@ -57,7 +55,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // ─── Fetch ─────────────────────────────────────────────
+  // Fetch
 
   const fetchSources = useCallback(async () => {
     const supabase = createClient();
@@ -81,7 +79,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchSources]);
 
-  // ─── CRUD ──────────────────────────────────────────────
+  // CRUD
 
   const resetForm = () => {
     setForm({ name: '', short_name: '', source_type: 'camera', protocol: 'sdi', connection_url: '', ndi_source_name: '', is_primary: false });
@@ -147,7 +145,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
     setShowForm(true);
   };
 
-  // ─── Filter ────────────────────────────────────────────
+  // Filter
 
   const filtered = sources.filter(s => {
     if (filterType !== 'all' && s.source_type !== filterType) return false;
@@ -273,7 +271,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                       key={source.id}
                       onClick={() => setSelectedSource(source)}
                       className={cn(
-                        'relative text-left p-3 rounded-lg border transition-all',
+                        'relative text-left p-3 rounded-lg border transition-colors',
                         selectedSource?.id === source.id
                           ? 'border-[#FF5F1F] bg-surface-800'
                           : 'border-surface-800 bg-surface-900 hover:border-surface-700',
@@ -388,7 +386,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                     key={state}
                     onClick={() => handleSetTally(selectedSource, state)}
                     className={cn(
-                      'px-3 py-1.5 text-xs rounded font-bold transition-all',
+                      'px-3 py-1.5 text-xs rounded font-bold transition-colors',
                       selectedSource.tally_state === state
                         ? state === 'program' ? 'bg-red-600 text-white' : state === 'preview' ? 'bg-green-600 text-white' : 'bg-surface-600 text-white'
                         : 'bg-surface-800 text-surface-400 hover:text-white',

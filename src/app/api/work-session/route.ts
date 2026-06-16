@@ -1,7 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
-// ============================================================
 // Work Session API — heartbeat-based time tracking
 //
 // POST /api/work-session   — receive a 30-second heartbeat
@@ -14,16 +13,13 @@ import { NextResponse } from 'next/server';
 //   • session_key is a per-tab UUID from sessionStorage so
 //     old replayed keys only update an existing, bounded session
 //   • Project access verified via Supabase RLS before upsert
-// ============================================================
 
 const HEARTBEAT_SECONDS   = 30;  // normal time added per heartbeat
 const MAX_GRACE_SECONDS   = 600; // max one-time "thinking break" credit
 const MIN_GAP_SECONDS     = 20;  // don't accept two heartbeats < 20 s apart
 const CONTEXT_MAX_LEN     = 50;
 
-// ---------------------------------------------------------------------------
 // POST — receive a heartbeat
-// ---------------------------------------------------------------------------
 export async function POST(request: Request) {
   try {
     const supabase = createServerSupabaseClient();
@@ -140,9 +136,7 @@ export async function POST(request: Request) {
   }
 }
 
-// ---------------------------------------------------------------------------
 // GET — read work time stats for a project
-// ---------------------------------------------------------------------------
 export async function GET(request: Request) {
   try {
     const supabase = createServerSupabaseClient();

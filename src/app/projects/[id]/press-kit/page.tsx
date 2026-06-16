@@ -94,7 +94,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
         </div>
 
         {/* Enable toggle */}
-        <div className="rounded-2xl border border-surface-800 bg-surface-900/40 p-5">
+        <div className="rounded-xl border border-surface-800 bg-surface-900/40 p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold text-white">Enable Press Kit</p>
@@ -208,7 +208,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
         </div>
 
         {/* What&apos;s included */}
-        <div className="rounded-2xl border border-surface-800 bg-surface-900/20 p-5">
+        <div className="rounded-xl border border-surface-800 bg-surface-900/20 p-5">
           <p className="text-sm font-semibold text-surface-300 mb-3">What&apos;s included on the public page</p>
           <ul className="space-y-1.5 text-sm text-surface-500">
             {[

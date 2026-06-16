@@ -7,11 +7,9 @@ import { Card, Button, LoadingSpinner, Modal, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
-// ============================================================
 // Table Read / Script Timer
 // Live timer per scene during a table read session.
 // Saves total time + per-scene breakdown to table_read_sessions.
-// ============================================================
 
 interface Scene {
   id: string;
@@ -164,7 +162,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
-  // ─── Summary view ───────────────────────────────────────────
+  // Summary view
   if (view === 'summary') return (
     <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
@@ -216,7 +214,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
     </div>
   );
 
-  // ─── Active session ──────────────────────────────────────────
+  // Active session
   if (view === 'active') {
     const scene = scenes[currentSceneIdx];
     const progress = ((currentSceneIdx) / scenes.length) * 100;
@@ -229,7 +227,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
 
         {/* Progress bar */}
         <div className="h-1.5 bg-surface-800 rounded-full mb-8">
-          <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-orange-500 rounded-full transition-[width]" style={{ width: `${progress}%` }} />
         </div>
 
         {/* Current scene card */}
@@ -281,7 +279,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // ─── List view ─────────────────────────────────────────────
+  // List view
   return (
     <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">

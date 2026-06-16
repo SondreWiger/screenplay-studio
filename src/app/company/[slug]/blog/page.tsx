@@ -90,7 +90,7 @@ export default function CompanyBlogPage() {
             <div className="flex flex-wrap gap-2 mt-6">
               <button
                 onClick={() => setSelectedTag(null)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   !selectedTag ? 'bg-[#E54E15] text-white' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
                 }`}
               >
@@ -100,7 +100,7 @@ export default function CompanyBlogPage() {
                 <button
                   key={tag}
                   onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                     selectedTag === tag ? 'bg-[#E54E15] text-white' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
                   }`}
                 >

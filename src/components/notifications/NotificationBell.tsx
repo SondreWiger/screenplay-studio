@@ -10,9 +10,7 @@ import { timeAgo } from '@/lib/utils';
 import { toast } from '@/components/ui';
 import { PollModal } from '@/components/PollModal';
 
-// ============================================================
 // ICON MAP
-// ============================================================
 
 const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
   community_comment: { label: 'MSG', color: 'bg-blue-500/20' },
@@ -39,9 +37,7 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
   poll_published: { label: '📊', color: 'bg-[#FF5F1F]/20' },
 };
 
-// ============================================================
 // NOTIFICATION BELL — top-bar icon with badge
-// ============================================================
 
 export function NotificationBell() {
   const { unreadCount } = useNotificationStore();
@@ -82,9 +78,7 @@ export function NotificationBell() {
   );
 }
 
-// ============================================================
 // DROPDOWN PANEL — shown when bell is clicked
-// ============================================================
 
 function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; onOpenPoll?: (pollId: string) => void }) {
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
@@ -175,9 +169,7 @@ function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; o
   );
 }
 
-// ============================================================
 // SINGLE NOTIFICATION ROW
-// ============================================================
 
 export function NotificationRow({
   notification: n,
@@ -259,7 +251,7 @@ export function NotificationRow({
       </div>
 
       {/* Actions */}
-      <div className="opacity-0 group-hover:opacity-100 flex flex-col gap-0.5 shrink-0 self-start mt-1 transition-all">
+      <div className="opacity-0 group-hover:opacity-100 flex flex-col gap-0.5 shrink-0 self-start mt-1 transition-opacity">
         {!n.read && (
           <button
             onClick={(e) => { e.stopPropagation(); markAsRead(n.id); }}
@@ -285,9 +277,7 @@ export function NotificationRow({
   );
 }
 
-// ============================================================
 // COMPANY INVITE ACTIONS — Accept / Decline right in the notification
-// ============================================================
 
 function CompanyInviteActions({ notification }: { notification: Notification }) {
   const [loading, setLoading] = useState(false);

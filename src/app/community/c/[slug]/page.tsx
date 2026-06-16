@@ -58,7 +58,7 @@ export default function CommunityFeedPage() {
     if (!user) return;
     const sb = createClient();
     const has = upvoted.has(post.id);
-    setUpvoted(prev => { const n = new Set(prev); has ? n.delete(post.id) : n.add(post.id); return n; });
+    setUpvoted(prev => { const n = new Set(prev); if (has) n.delete(post.id); else n.add(post.id); return n; });
     setPosts(prev => prev.map(p => p.id === post.id
       ? { ...p, upvote_count: (p.upvote_count ?? 0) + (has ? -1 : 1) }
       : p));
@@ -104,7 +104,7 @@ export default function CommunityFeedPage() {
           <div className="flex gap-1 p-0.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
             {(['newest', 'hot', 'top'] as Sort[]).map(s => (
               <button key={s} onClick={() => setSort(s)}
-                className={cn('px-2.5 py-1 text-xs font-medium rounded-md transition-all capitalize',
+                className={cn('px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize',
                   sort === s ? 'text-white' : 'text-white/40 hover:text-white/70')}
                 style={sort === s ? { background: accent + '33', color: accent } : undefined}>
                 {s}
@@ -149,14 +149,14 @@ export default function CommunityFeedPage() {
             const categories: CommunityCategory[] = (post.community_post_categories ?? []).map((c: PostCategory) => c.category).filter(Boolean);
             return (
               <article key={post.id}
-                className="group rounded-2xl p-4 transition-all hover:border-white/20"
+                className="group rounded-xl p-4 transition-colors hover:border-white/20"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <div className="flex gap-3">
 
                   {/* Upvote */}
                   <div className="flex flex-col items-center gap-1 pt-0.5 flex-shrink-0">
                     <button onClick={() => toggleUpvote(post)}
-                      className={cn('transition-transform hover:scale-110', isUpvoted ? '' : 'opacity-30 hover:opacity-70')}>
+                      className={cn('transition-transform', isUpvoted ? '' : 'opacity-30 hover:opacity-70')}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill={isUpvoted ? accent : 'currentColor'}>
                         <path d="M12 4l8 8H4z"/>
                       </svg>
@@ -284,7 +284,7 @@ export default function CommunityFeedPage() {
 
       {/* Sidebar */}
       <aside className="w-56 flex-shrink-0 space-y-4 hidden lg:block">
-        <div className="rounded-2xl p-4 space-y-3"
+        <div className="rounded-xl p-4 space-y-3"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <h3 className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">About</h3>
           {community.description && <p className="text-xs text-white/60 leading-relaxed">{community.description}</p>}

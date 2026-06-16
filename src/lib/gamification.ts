@@ -1,10 +1,8 @@
-// ============================================================
 // Screenplay Studio — Gamification Constants & Helpers
-// ============================================================
 
 import type { XPEventType } from './types';
 
-// ── XP per event ─────────────────────────────────────────────
+// XP per event
 export const XP_VALUES: Record<XPEventType, number> = {
   words_written:               1,   // per 10 words
   community_post:             25,
@@ -21,7 +19,7 @@ export const XP_VALUES: Record<XPEventType, number> = {
   poll_complete:             100,   // filled in a platform poll
 };
 
-// ── Time multiplier ───────────────────────────────────────────
+// Time multiplier
 // Based on continuous uninterrupted work session duration (hours)
 // 1 hr = 2x, 2 hrs = 4x, 3 hrs = 8x  →  2^hours (capped at 16x)
 export const SESSION_INACTIVITY_MS = 30 * 60 * 1000; // 30 min idle = session reset
@@ -68,7 +66,7 @@ export function getSessionHours(): number {
   return (Date.now() - parseInt(startRaw)) / 3_600_000;
 }
 
-// ── Level system ─────────────────────────────────────────────
+// Level system
 // XP to reach level n from 0: cumulative = 80 * n^1.8
 // Solved with a lookup table up to level 100
 
@@ -102,7 +100,7 @@ export function getLevelInfo(xpTotal: number): {
 
 export const LEVEL_THRESHOLDS_EXPORT = LEVEL_THRESHOLDS;
 
-// ── Level titles & unlocks ────────────────────────────────────
+// Level titles & unlocks
 export interface LevelUnlock {
   title: string;
   unlocks: string[];
@@ -136,7 +134,7 @@ export function getLevelUnlocks(level: number): string[] {
   return LEVEL_DATA[level]?.unlocks ?? [];
 }
 
-// ── Multiplier display helper ─────────────────────────────────
+// Multiplier display helper
 export function multiplierLabel(mult: number): string {
   if (mult <= 1) return '';
   return `${mult}×`;
@@ -147,7 +145,7 @@ export function multiplierHours(mult: number): number {
   return Math.log2(mult);
 }
 
-// ── Profile visual unlocks ────────────────────────────────────
+// Profile visual unlocks
 export type GlowTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum' | 'rainbow';
 
 export function getGlowTier(level: number): GlowTier {

@@ -8,7 +8,7 @@ import { cn, getInitials, randomColor } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Character } from '@/lib/types';
 
-// ─── Types ───────────────────────────────────────────────────
+// Types
 
 interface VoiceCastEntry extends Character {
   voice_actor?: string | null;
@@ -39,7 +39,7 @@ function statusBadge(status: string) {
   );
 }
 
-// ─── Component ───────────────────────────────────────────────
+// Component
 
 export default function VoiceCastPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -249,7 +249,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3">
         {(['uncast', 'auditioning', 'cast', 'confirmed'] as const).map(s => (
-          <Card key={s} className={cn('p-3 text-center border-surface-800/80 cursor-pointer transition-all', filter === s && 'ring-1 ring-white/20')} onClick={() => setFilter(filter === s ? 'all' : s)}>
+          <Card key={s} className={cn('p-3 text-center border-surface-800/80 cursor-pointer transition-colors', filter === s && 'ring-1 ring-white/20')} onClick={() => setFilter(filter === s ? 'all' : s)}>
             <p className="text-xl font-bold text-white">{stats[s] || 0}</p>
             <p className="text-[10px] text-surface-500 mt-0.5 capitalize">{s}</p>
           </Card>
@@ -263,7 +263,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
             key={tab}
             onClick={() => setFilter(tab)}
             className={cn(
-              'px-3 py-1.5 rounded-lg font-medium transition-all capitalize',
+              'px-3 py-1.5 rounded-lg font-medium transition-colors capitalize',
               filter === tab ? 'bg-surface-700 text-white shadow' : 'text-surface-400 hover:text-white'
             )}
           >
@@ -344,7 +344,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ─── Editor modal ─────────────────────────────────────────────
+// Editor modal
 
 function VoiceCastEditorModal({
   entry, isOpen, onClose, onSave, onDelete, canEdit,

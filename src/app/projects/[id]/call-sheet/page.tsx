@@ -4,14 +4,11 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Card, Button, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
-import { cn, formatDate } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
-// ============================================================
 // Call Sheet Generator
 // Creates per-shoot-day call sheets with crew call times,
 // advanced schedule, and a print-optimised layout.
-// ============================================================
 
 interface CrewCall { name: string; dept: string; call_time: string; notes: string }
 interface AdvancedScene { scene: string; location: string; cast: string; pages: string; est_time: string }

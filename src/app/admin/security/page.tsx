@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, Avatar } from '@/components/ui';
 import { cn, formatDate, timeAgo } from '@/lib/utils';
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// Constants
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 const isFullAdmin = (id?: string, role?: string) => id === ADMIN_UID || role === 'admin';
@@ -57,7 +57,7 @@ const EVENT_BADGE_COLORS: Record<string, string> = {
   permission_change: 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-yellow-500/30',
 };
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// Types
 
 interface SecurityEvent {
   id: string;
@@ -115,7 +115,6 @@ interface QuickStats {
 
 type ActiveTab = 'events' | 'audit' | 'bans';
 
-// ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function SecurityPage() {
   const { user, loading: authLoading } = useAuth();
@@ -152,7 +151,7 @@ export default function SecurityPage() {
   const [extendBan, setExtendBan] = useState<UserBan | null>(null);
   const [extendDays, setExtendDays] = useState('7');
 
-  // ── Auth Guard ─────────────────────────────────────────────
+  // Auth Guard
 
   useEffect(() => {
     if (authLoading) return;
@@ -163,7 +162,7 @@ export default function SecurityPage() {
     loadAll();
   }, [user, authLoading]);
 
-  // ── Data Loading ───────────────────────────────────────────
+  // Data Loading
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -279,7 +278,7 @@ export default function SecurityPage() {
     loadAudit();
   }, [auditSearch, auditActionFilter, auditDateRange]);
 
-  // ── Ban Actions ────────────────────────────────────────────
+  // Ban Actions
 
   const searchUsersForBan = async (q: string) => {
     setBanUserSearch(q);
@@ -371,7 +370,7 @@ export default function SecurityPage() {
     setBanDuration('7');
   };
 
-  // ── Helpers ────────────────────────────────────────────────
+  // Helpers
 
   const userName = (p?: { display_name: string | null; full_name: string | null; email: string } | null) => {
     if (!p) return 'System';
@@ -383,7 +382,7 @@ export default function SecurityPage() {
     return ua.length > 60 ? ua.substring(0, 60) + '…' : ua;
   };
 
-  // ── Render ─────────────────────────────────────────────────
+  // Render
 
   if (authLoading || loading) {
     return (

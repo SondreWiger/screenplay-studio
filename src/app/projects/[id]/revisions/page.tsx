@@ -9,10 +9,8 @@ import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingPage, Modal, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
 import { timeAgo } from '@/lib/utils';
 
-// ============================================================
 // Revisions (Diff Comparison) — Pro Feature
 // Real snapshot-based revisions with side-by-side diff and restore.
-// ============================================================
 
 type SnapshotElement = {
   id: string;
@@ -138,7 +136,7 @@ export default function RevisionsPage() {
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesValue, setNotesValue] = useState('');
 
-  // ------- Data loading -------
+  // Data loading
 
   const fetchData = useCallback(async () => {
     const supabase = createClient();
@@ -193,7 +191,7 @@ export default function RevisionsPage() {
     fetchData();
   }, [hasProAccess, fetchData]);
 
-  // ------- Create new revision -------
+  // Create new revision
 
   const createRevision = async () => {
     if (!user || !activeScript) return;
@@ -241,7 +239,7 @@ export default function RevisionsPage() {
     }
   };
 
-  // ------- Restore a revision -------
+  // Restore a revision
 
   const restoreRevision = async (rev: Revision) => {
     if (!rev.snapshot || rev.snapshot.length === 0) {
@@ -297,7 +295,7 @@ export default function RevisionsPage() {
     }
   };
 
-  // ------- Save revision notes -------
+  // Save revision notes
 
   const saveNotes = async (revId: string) => {
     const supabase = createClient();
@@ -314,7 +312,7 @@ export default function RevisionsPage() {
     setEditingNotes(null);
   };
 
-  // ------- Compare diff -------
+  // Compare diff
 
   const diffResult = useMemo(() => {
     if (!compareA || !compareB) return null;
@@ -330,7 +328,7 @@ export default function RevisionsPage() {
     return { diff, added, removed, same, revA, revB };
   }, [compareA, compareB, revisions]);
 
-  // ------- Render: Pro gate -------
+  // Render: Pro gate
 
   if (!hasProAccess) {
     return (

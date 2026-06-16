@@ -4,14 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { formatDate } from '@/lib/utils';
 import type { PollSession, PollQuestion, PollQuestionType } from '@/lib/types';
 import type { QuestionResult } from '@/components/PollResultChart';
 import { PollResultCard } from '@/components/PollResultChart';
 
-// ============================================================
 // Admin — Poll Detail / Editor / Results
-// ============================================================
 
 const QUESTION_TYPES: { value: PollQuestionType; label: string; desc: string }[] = [
   { value: 'yes_no',        label: 'Yes / No',       desc: 'Simple binary choice' },
@@ -508,7 +505,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                 </div>
 
                 {/* Question preview card */}
-                <div className={`rounded-2xl border p-6 mb-5 transition-colors ${
+                <div className={`rounded-xl border p-6 mb-5 transition-colors ${
                   reviewQ.is_approved
                     ? 'border-emerald-500/30 bg-emerald-500/5'
                     : 'border-white/10 bg-white/[0.03]'
@@ -646,7 +643,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
   );
 }
 
-// ── Question Card ─────────────────────────────────────────────
+// Question Card
 
 function QuestionCard({
   question, index, total, locked,
@@ -731,7 +728,7 @@ function QuestionCard({
   );
 }
 
-// ── Question Form ─────────────────────────────────────────────
+// Question Form
 
 function QuestionForm({
   qText, setQText, qType, setQType, qOptions, setQOptions, qRequired, setQRequired,

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
 import { Button, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type {
@@ -10,9 +9,7 @@ import type {
   BroadcastGraphicsCue, BroadcastGraphicsCueStatus,
 } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Graphics / CG — CasparCG-style template + cue management
-// ────────────────────────────────────────────────────────────
 
 const TEMPLATE_TYPES: BroadcastGraphicsTemplateType[] = [
   'lower_third', 'full_screen', 'ots', 'locator', 'ticker', 'scorebug',
@@ -27,7 +24,6 @@ const TEMPLATE_COLORS: Record<string, string> = {
 };
 
 export default function GraphicsPage({ params }: { params: { id: string } }) {
-  const { user } = useAuthStore();
   const projectId = params.id;
 
   const [loading, setLoading] = useState(true);
@@ -51,7 +47,7 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
     field_values: '{}', duration_seconds: 5,
   });
 
-  // ─── Fetching ──────────────────────────────────────────
+  // Fetching
 
   const fetchTemplates = useCallback(async () => {
     const supabase = createClient();
@@ -90,7 +86,7 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchTemplates, fetchCues]);
 
-  // ─── Template CRUD ─────────────────────────────────────
+  // Template CRUD
 
   const handleSaveTemplate = async () => {
     if (!tplForm.name) { toast.error('Name is required'); return; }
@@ -123,7 +119,7 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
     fetchTemplates();
   };
 
-  // ─── Cue CRUD ──────────────────────────────────────────
+  // Cue CRUD
 
   const handleSaveCue = async () => {
     if (!cueForm.template_id || !cueForm.title) { toast.error('Template and title required'); return; }
@@ -198,7 +194,7 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
                   key={tpl.id}
                   onClick={() => setSelectedTemplate(tpl)}
                   className={cn(
-                    'p-4 rounded-lg border cursor-pointer transition-all',
+                    'p-4 rounded-lg border cursor-pointer transition-colors',
                     selectedTemplate?.id === tpl.id ? 'border-[#FF5F1F] bg-surface-800' : 'border-surface-800 bg-surface-900 hover:border-surface-700',
                   )}
                 >
@@ -230,7 +226,7 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
                   <div
                     key={cue.id}
                     className={cn(
-                      'flex items-center gap-3 p-3 rounded-lg border transition-all',
+                      'flex items-center gap-3 p-3 rounded-lg border transition-colors',
                       isOnAir ? 'border-red-500/50 bg-red-950/20' : 'border-surface-800 bg-surface-900',
                     )}
                   >

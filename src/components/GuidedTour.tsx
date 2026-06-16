@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { setTourStep, endTour, getTourState } from '@/lib/tourState';
+import { setTourStep, endTour, pauseTour, getTourState } from '@/lib/tourState';
 import { toast } from '@/components/ui';
 import type { UsageIntent } from '@/lib/types';
 
@@ -607,8 +607,9 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: init
 
   const handlePrimary = useCallback(() => {
     if (current.primaryHref) {
-      // Save tour state so it resumes on the destination page
+      // Pause the tour — destination page shows a "Continue tour" banner
       setTourStep(step + 1);
+      pauseTour();
       setPhase('exit');
       setTimeout(() => { router.push(current.primaryHref!); }, 250);
     } else if (step < steps.length - 1) {

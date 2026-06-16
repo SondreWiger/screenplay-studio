@@ -387,7 +387,7 @@ export default function AdminEmailPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                'flex-1 min-w-[140px] px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all duration-200',
+                'flex-1 min-w-[140px] px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors duration-200',
                 activeTab === tab.key
                   ? 'bg-surface-700 text-white shadow-md'
                   : 'text-surface-500 hover:text-surface-200 hover:bg-surface-800/60'
@@ -690,7 +690,7 @@ export default function AdminEmailPage() {
                   </div>
                   <div className="w-full bg-surface-700 rounded-full h-1.5 mb-1">
                     <div
-                      className={cn('h-1.5 rounded-full transition-all', b.status === 'completed' ? 'bg-green-500' : 'bg-[#FF5F1F]')}
+                      className={cn('h-1.5 rounded-full transition-[width]', b.status === 'completed' ? 'bg-green-500' : 'bg-[#FF5F1F]')}
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -765,7 +765,7 @@ export default function AdminEmailPage() {
           </div>
           <div className="w-32 h-2 bg-surface-800 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#FF5F1F] transition-all duration-300"
+              className="h-full rounded-full bg-[#FF5F1F] transition-[width] duration-300"
               style={{ width: `${sendProgress.total > 0 ? (sendProgress.sent / sendProgress.total) * 100 : 0}%` }}
             />
           </div>

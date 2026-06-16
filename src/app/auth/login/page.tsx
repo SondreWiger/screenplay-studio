@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Button, Input } from '@/components/ui';
 
 function friendlyAuthError(msg: string): string {
   const m = msg.toLowerCase();
@@ -47,13 +46,11 @@ function LoginForm() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const log = useCallback((_msg: string) => {
-    // Debug logging removed for production
-  }, []);
+  // Debug logging removed for production
+  const log = (..._args: unknown[]) => {};
 
   // Clear any stale auth cookies on mount
   useEffect(() => {
-    log('Mount — checking for existing session...');
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {

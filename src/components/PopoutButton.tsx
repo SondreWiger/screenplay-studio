@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useBroadcastSync } from '@/hooks/useBroadcastSync';
 
-// ── PopoutButton ─────────────────────────────────────────────
+// PopoutButton
 // Renders a small icon button that opens the current page in a
 // chrome-free popout window (?popout=1). Designed to sit in a
 // page header or sidebar footer.
@@ -36,7 +36,7 @@ export function PopoutButton({ projectId, pageLabel, className }: PopoutButtonPr
     <button
       onClick={handlePopout}
       title={`Pop out ${pageLabel || 'this page'} to a second screen`}
-      className={`flex items-center justify-center rounded-lg text-surface-500 hover:text-white hover:bg-surface-800 transition-all ${className ?? 'p-1.5'}`}
+      className={`flex items-center justify-center rounded-lg text-surface-500 hover:text-white hover:bg-surface-800 transition-colors ${className ?? 'p-1.5'}`}
     >
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -46,7 +46,7 @@ export function PopoutButton({ projectId, pageLabel, className }: PopoutButtonPr
   );
 }
 
-// ── PopoutBar ────────────────────────────────────────────────
+// PopoutBar
 // Thin bar shown at the bottom of a popout window showing the
 // project name, current page, sync status, and a close button.
 
@@ -122,7 +122,7 @@ export function PopoutBar({ projectId, projectTitle, pageLabel }: PopoutBarProps
       <button
         onClick={() => window.close()}
         title="Close popout window"
-        className="flex items-center gap-1 px-2 py-1 rounded text-surface-600 hover:text-white hover:bg-surface-800 transition-all"
+        className="flex items-center gap-1 px-2 py-1 rounded text-surface-600 hover:text-white hover:bg-surface-800 transition-colors"
       >
         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

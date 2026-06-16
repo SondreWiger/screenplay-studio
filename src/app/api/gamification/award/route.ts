@@ -3,11 +3,9 @@ import { NextResponse } from 'next/server';
 import { XP_VALUES } from '@/lib/gamification';
 import type { XPEventType } from '@/lib/types';
 
-// ============================================================
 // Gamification Award API
 // POST /api/gamification/award
 // Body: { event_type: XPEventType, multiplier?: number, metadata?: object }
-// ============================================================
 
 const MAX_MULTIPLIER = 16;
 
@@ -66,7 +64,7 @@ export async function POST(request: Request) {
   }
 }
 
-// ── GET — read current gamification state ─────────────────────
+// GET — read current gamification state
 export async function GET() {
   try {
     const supabase = createServerSupabaseClient();

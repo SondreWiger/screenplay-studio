@@ -56,7 +56,7 @@ function MiniBar({ label, value, max, color = 'bg-violet-500' }: { label: string
     <div className="flex items-center gap-3 py-1.5">
       <span className="text-[11px] text-white/50 w-28 shrink-0 capitalize">{label.replace(/_/g, ' ')}</span>
       <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-        <div className={cn('h-full rounded-full transition-all duration-700', color)} style={{ width: `${pct}%` }} />
+        <div className={cn('h-full rounded-full transition-[width] duration-700', color)} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-[11px] text-white/40 tabular-nums w-12 text-right">{fmt(value)}</span>
     </div>

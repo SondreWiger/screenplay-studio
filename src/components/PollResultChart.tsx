@@ -51,7 +51,7 @@ export function PollResultCard({ result }: { result: QuestionResult }) {
                 </div>
                 <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all duration-500"
+                    className="h-full rounded-full transition-[width] duration-500"
                     style={{ width: `${barPct}%`, background: BAR_COLORS[i % BAR_COLORS.length] }}
                   />
                 </div>
@@ -82,7 +82,7 @@ export function PollResultCard({ result }: { result: QuestionResult }) {
                   </div>
                   <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-500"
+                      className="h-full rounded-full transition-[width] duration-500"
                       style={{
                         width: `${Math.max(4, barPct)}%`,
                         background: BAR_COLORS[i % BAR_COLORS.length],

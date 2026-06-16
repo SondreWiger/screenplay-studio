@@ -9,9 +9,7 @@ import type { BlogPost } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import { SiteVersion } from '@/components/SiteVersion';
 
-// ============================================================
 // Blog index — distinct, magazine-style design
-// ============================================================
 
 export default function BlogPage() {
   const { user } = useAuth();
@@ -187,7 +185,7 @@ export default function BlogPage() {
           {featured && (
             <Link href={`/blog/${featured.slug}`} className="group block mb-16">
               <article
-                className="grid md:grid-cols-2 gap-8 items-center p-8 transition-all duration-200"
+                className="grid md:grid-cols-2 gap-8 items-center p-8 transition-colors duration-200"
                 style={{ border: '1px solid rgba(255,255,255,0.07)' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
@@ -197,7 +195,7 @@ export default function BlogPage() {
                     <img
                       src={featured.cover_image_url}
                       alt={featured.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover transition-transform duration-500"
                     />
                   </div>
                 ) : (
@@ -251,7 +249,7 @@ export default function BlogPage() {
                 {rest.map((post) => (
                   <Link key={post.id} href={`/blog/${post.slug}`} className="group">
                     <article
-                      className="p-5 transition-all duration-200 h-full flex flex-col"
+                      className="p-5 transition-colors duration-200 h-full flex flex-col"
                       style={{ border: '1px solid rgba(255,255,255,0.07)' }}
                       onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
                       onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
@@ -261,7 +259,7 @@ export default function BlogPage() {
                           <img
                             src={post.cover_image_url}
                             alt={post.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="w-full h-full object-cover transition-transform duration-500"
                           />
                         </div>
                       ) : (
@@ -314,7 +312,7 @@ export default function BlogPage() {
                   <Link key={post.id} href={`/blog/${post.slug}`} className="group block relative pl-10">
                     {/* Dot */}
                     <div
-                      className="absolute left-0.5 top-1.5 w-3 h-3 transition-all duration-200"
+                      className="absolute left-0.5 top-1.5 w-3 h-3 transition-colors duration-200"
                       style={{ background: idx === 0 ? '#FF5F1F' : 'rgba(255,255,255,0.12)' }}
                     />
                     <time className="block text-[10px] font-mono text-white/20 uppercase tracking-wider mb-1">
@@ -344,7 +342,7 @@ export default function BlogPage() {
             className="group block"
           >
             <div
-              className="relative overflow-hidden p-8 md:p-10 transition-all duration-300"
+              className="relative overflow-hidden p-8 md:p-10 transition-colors duration-300"
               style={{ border: '1px solid rgba(255,95,31,0.18)', background: 'rgba(255,95,31,0.03)' }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,95,31,0.35)'; e.currentTarget.style.background = 'rgba(255,95,31,0.055)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,95,31,0.18)'; e.currentTarget.style.background = 'rgba(255,95,31,0.03)'; }}
@@ -376,11 +374,11 @@ export default function BlogPage() {
 
                 <div className="shrink-0 flex items-center gap-3">
                   <span
-                    className="inline-flex items-center gap-2 px-5 py-2.5 font-mono text-xs uppercase tracking-widest font-bold transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 font-mono text-xs uppercase tracking-widest font-bold transition-colors duration-200"
                     style={{ background: '#FF5F1F', color: '#fff' }}
                   >
                     View Changelog
-                    <span className="group-hover:translate-x-1 transition-transform duration-200 inline-block">→</span>
+                    <span className="transition-transform duration-200 inline-block">→</span>
                   </span>
                 </div>
               </div>

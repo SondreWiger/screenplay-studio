@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import Link from 'next/link';
 import type { Script } from '@/lib/types';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// Types
 
 interface SeasonDef {
   num: number;
@@ -30,7 +30,7 @@ interface EpisodeMeta {
   [key: string]: unknown;
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// Constants
 
 const EPISODE_STATUSES = [
   { value: 'white',     label: 'Draft',       dot: 'bg-surface-500',  pill: 'bg-surface-700  text-surface-300' },
@@ -57,7 +57,7 @@ const EPISODE_COLORS = [
   { label: 'Teal',      value: '#0d9488' },
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// Helpers
 
 function statusFor(color: string) {
   return EPISODE_STATUSES.find(s => s.value === color) ?? EPISODE_STATUSES[0];
@@ -84,7 +84,6 @@ function defaultSeasons(count: number): SeasonDef[] {
   }));
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function EpisodesPage({ params }: { params: { id: string } }) {
   const { user }              = useAuthStore();
@@ -96,7 +95,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     return role !== 'viewer';
   })();
 
-  // ── State ──────────────────────────────────────────────────────────────────
+  // State
 
   const [scripts,  setScripts]  = useState<Script[]>([]);
   const [loading,  setLoading]  = useState(true);
@@ -128,7 +127,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
 
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  // ── Data loading ───────────────────────────────────────────────────────────
+  // Data loading
 
   const fetchScripts = useCallback(async () => {
     const sb = createClient();
@@ -208,7 +207,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     return () => document.removeEventListener('click', close);
   }, [openStatusFor, openSeasonFor, openColorFor]);
 
-  // ── Season persistence ─────────────────────────────────────────────────────
+  // Season persistence
 
   const saveSeasons = async (next: SeasonDef[]) => {
     setSavingSeason(true);
@@ -250,7 +249,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // ── Episode metadata helpers ───────────────────────────────────────────────
+  // Episode metadata helpers
 
   const patchMeta = async (scriptId: string, patch: Partial<EpisodeMeta>) => {
     const sb = createClient();
@@ -260,7 +259,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     setScripts(prev => prev.map(s => s.id === scriptId ? { ...s, metadata: next } : s));
   };
 
-  // ── Create episode ─────────────────────────────────────────────────────────
+  // Create episode
 
   const createEpisode = async () => {
     if (!newTitle.trim() || !user) return;
@@ -300,7 +299,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // ── Save episode edit ──────────────────────────────────────────────────────
+  // Save episode edit
 
   const saveEdit = async () => {
     if (!showEdit) return;
@@ -317,7 +316,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     toast.success('Episode updated');
   };
 
-  // ── Delete episode ─────────────────────────────────────────────────────────
+  // Delete episode
 
   const deleteEpisode = async (script: Script) => {
     const ok = await confirm({
@@ -333,7 +332,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     toast.success('Episode deleted');
   };
 
-  // ── Status / season / color updates ───────────────────────────────────────
+  // Status / season / color updates
 
   const setStatus = async (script: Script, color: string) => {
     const sb = createClient();
@@ -354,7 +353,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     setOpenColorFor(null);
   };
 
-  // ── Reorder (move up / down) ───────────────────────────────────────────────
+  // Reorder (move up / down)
 
   // Compute display-sorted list here so handlers below can reference it
   const displayedScripts = [...scripts].sort((a, b) => {
@@ -389,7 +388,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     });
   };
 
-  // ── Drag-and-drop ──────────────────────────────────────────────────────────
+  // Drag-and-drop
 
   const onDragStart = (e: React.DragEvent, scriptId: string) => {
     setDragging(scriptId);
@@ -431,7 +430,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
 
   const onDragEnd = () => { setDragging(null); setDragOver(null); };
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
+  // Stats
 
   const planned = currentProject?.episode_count ?? null;
   const total   = scripts.length;
@@ -449,7 +448,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
   const usedSeasonNums = Array.from(bySeasonMap.keys()).sort((a, b) => a - b);
   const allSeasonNums  = Array.from(new Set([...seasons.map(s => s.num), ...usedSeasonNums])).sort((a, b) => a - b);
 
-  // ── Loading ────────────────────────────────────────────────────────────────
+  // Loading
 
   if (loading) {
     return (
@@ -459,7 +458,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // Render
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
@@ -494,7 +493,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
             <button
               onClick={() => setViewMode('episode')}
               className={cn(
-                'px-3 py-1.5 rounded-md font-medium transition-all',
+                'px-3 py-1.5 rounded-md font-medium transition-colors',
                 viewMode === 'episode'
                   ? 'bg-surface-700 text-white shadow'
                   : 'text-surface-400 hover:text-surface-200'
@@ -505,7 +504,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
             <button
               onClick={() => setViewMode('timeline')}
               className={cn(
-                'px-3 py-1.5 rounded-md font-medium transition-all',
+                'px-3 py-1.5 rounded-md font-medium transition-colors',
                 viewMode === 'timeline'
                   ? 'bg-surface-700 text-white shadow'
                   : 'text-surface-400 hover:text-surface-200'
@@ -550,7 +549,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
           </div>
           <div className="h-1.5 rounded-full bg-surface-800 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#FF5F1F] to-[#FF8F5F] transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-[#FF5F1F] to-[#FF8F5F] transition-[width]"
               style={{ width: `${Math.min(Math.round((total / planned) * 100), 100)}%` }}
             />
           </div>
@@ -561,13 +560,13 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                 <div
                   key={s.id}
                   title={s.title}
-                  className={cn('h-1.5 flex-1 rounded-sm', !meta.episode_color && statusFor(s.revision_color).dot, !meta.episode_color && 'opacity-70')}
+                  className={cn('h-1.5 flex-1 rounded-md', !meta.episode_color && statusFor(s.revision_color).dot, !meta.episode_color && 'opacity-70')}
                   style={meta.episode_color ? { backgroundColor: meta.episode_color, opacity: 0.8 } : undefined}
                 />
               );
             })}
             {planned && Array.from({ length: Math.max(0, planned - total) }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-1.5 flex-1 rounded-sm bg-surface-700/30" />
+              <div key={`empty-${i}`} className="h-1.5 flex-1 rounded-md bg-surface-700/30" />
             ))}
           </div>
         </div>
@@ -632,7 +631,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                           onDrop={e => onDrop(e, script.id)}
                           onDragEnd={onDragEnd}
                           className={cn(
-                            'flex items-center gap-2 p-2.5 rounded-xl border transition-all',
+                            'flex items-center gap-2 p-2.5 rounded-xl border transition-colors',
                             isDraggingThis
                               ? 'opacity-40 border-surface-600 bg-surface-900'
                               : isDragTarget
@@ -731,7 +730,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                                           onClick={() => setEpisodeColor(script.id, c.value)}
                                           title={c.label}
                                           className={cn(
-                                            'w-6 h-6 rounded-full border-2 transition-transform hover:scale-110',
+                                            'w-6 h-6 rounded-full border-2 transition-transform',
                                             epColor === c.value ? 'border-white' : 'border-transparent',
                                             !c.value && 'bg-surface-700 flex items-center justify-center',
                                           )}
@@ -876,7 +875,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                     type="button"
                     onClick={() => setNewSeason(s.num)}
                     className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
+                      'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors',
                       newSeason === s.num
                         ? 'text-white border-transparent'
                         : 'text-surface-400 border-surface-700 hover:border-surface-500',
@@ -941,7 +940,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ── Season Manager Modal ───────────────────────────────────────────────────────
+// Season Manager Modal
 
 function SeasonManager({
   isOpen, onClose, seasons, onSave, saving,
@@ -989,7 +988,7 @@ function SeasonManager({
                     key={c}
                     onClick={() => updateColor(s.num, c)}
                     className={cn(
-                      'w-4 h-4 rounded-full border-2 transition-transform hover:scale-110 shrink-0',
+                      'w-4 h-4 rounded-full border-2 transition-transform shrink-0',
                       s.color === c ? 'border-white scale-110' : 'border-transparent',
                     )}
                     style={{ backgroundColor: c }}

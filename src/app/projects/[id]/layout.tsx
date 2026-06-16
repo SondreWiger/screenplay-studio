@@ -33,6 +33,7 @@ const SidebarCustomiser = dynamic(() => import('@/components/SidebarCustomiser')
 const PopoutButton = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutButton })), { ssr: false });
 const PopoutBar = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutBar })), { ssr: false });
 const GuidedTour = dynamic(() => import('@/components/GuidedTour').then(m => ({ default: m.GuidedTour })), { ssr: false });
+const TourBanner = dynamic(() => import('@/components/TourBanner'), { ssr: false });
 
 
 
@@ -70,17 +71,24 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   return new Set(defaults);
 });
   const [showCustomiser, setShowCustomiser] = useState(false);
-  // Guided tour — resume from sessionStorage if active
+  // Guided tour — show banner if paused, full tour if active
   const [showTour, setShowTour] = useState(false);
+  const [showTourBanner, setShowTourBanner] = useState(false);
   const [tourIntent, setTourIntent] = useState<UsageIntent>('writer');
   const [tourProjectId, setTourProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = getTourState();
     if (saved?.active) {
+      // Tour is active — show full overlay
       setTourIntent(saved.intent);
       setTourProjectId(saved.projectId);
       setShowTour(true);
+    } else if (saved && !saved.active && saved.step > 0) {
+      // Tour is paused — show floating banner
+      setTourIntent(saved.intent);
+      setTourProjectId(saved.projectId);
+      setShowTourBanner(true);
     }
   }, []);
   // "Other Tools" folder — persona-aware demotion of less-relevant sidebar items
@@ -918,6 +926,16 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           onComplete={() => { endTour(); setShowTour(false); }}
           usageIntent={tourIntent}
           projectId={tourProjectId}
+        />
+      )}
+
+      {/* Tour Banner — shown when tour is paused, lets user explore freely */}
+      {showTourBanner && !showTour && (
+        <TourBanner
+          onResume={() => {
+            setShowTourBanner(false);
+            setShowTour(true);
+          }}
         />
       )}
     </div>

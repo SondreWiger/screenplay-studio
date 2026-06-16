@@ -13,16 +13,14 @@ import {
   formatBroadcastDuration,
 } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Stories Page — NRCS editorial story management
-// ────────────────────────────────────────────────────────────
 
 export default function StoriesPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { currentProject, members } = useProjectStore();
   const projectId = params.id;
 
-  // ─── State ─────────────────────────────────────────────
+  // State
   const [loading, setLoading] = useState(true);
   const [stories, setStories] = useState<BroadcastStory[]>([]);
   const [selectedStory, setSelectedStory] = useState<BroadcastStory | null>(null);
@@ -40,7 +38,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
   const [editDuration, setEditDuration] = useState(0);
   const [editStatus, setEditStatus] = useState<BroadcastStoryStatus>('draft');
 
-  // ─── Data Fetching ─────────────────────────────────────
+  // Data Fetching
 
   const fetchStories = useCallback(async () => {
     const supabase = createClient();
@@ -82,7 +80,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(channel); };
   }, [projectId, fetchStories]);
 
-  // ─── Story Selection ───────────────────────────────────
+  // Story Selection
 
   const selectStory = async (story: BroadcastStory) => {
     setSelectedStory(story);
@@ -105,7 +103,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
     lockStory(selectedStory.id);
   };
 
-  // ─── Locking ───────────────────────────────────────────
+  // Locking
 
   const lockStory = async (storyId: string) => {
     const supabase = createClient();
@@ -123,7 +121,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
       .eq('id', storyId);
   };
 
-  // ─── CRUD ──────────────────────────────────────────────
+  // CRUD
 
   const [newStory, setNewStory] = useState({ title: '', slug: '', story_type: 'reader' as BroadcastStoryType, priority: 0 });
 
@@ -220,7 +218,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // ─── Filtered Stories ──────────────────────────────────
+  // Filtered Stories
 
   const filteredStories = stories.filter(s => {
     if (filter.status !== 'all' && s.status !== filter.status) return false;
@@ -231,7 +229,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
     return true;
   });
 
-  // ─── Member lookup for display ─────────────────────────
+  // Member lookup for display
 
   const getMemberName = (userId: string | null) => {
     if (!userId) return null;
@@ -239,7 +237,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
     return member?.profile?.full_name || member?.profile?.email || 'User';
   };
 
-  // ─── Render ────────────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 

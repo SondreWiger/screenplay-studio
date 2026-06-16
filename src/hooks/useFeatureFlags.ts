@@ -4,9 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 
-// ============================================================
 // Feature flag types & hook
-// ============================================================
 
 export type FeatureTier = 'alpha' | 'beta' | 'released' | 'disabled';
 export type InsiderTier = 'alpha' | 'beta' | null;
@@ -34,9 +32,25 @@ const CACHE_TTL = 60_000; // 1 minute
  * - 'released' → everyone
  * - 'beta'     → beta + alpha insiders
  * - 'alpha'    → alpha insiders only
- * - 'disabled' → no one
+ * - 'disabled' → no one (unless Pro subscriber accessing a Pro feature)
+ *
+ * Pro subscribers (`isPro = true`) automatically have access to any feature
+ * whose flag key starts with `pro_`, regardless of the flag's tier.
+ * Studio subscribers (`isStudio = true`) get access to all features including `studio_` flags.
  */
-export function canAccess(featureTier: FeatureTier, userTier: InsiderTier): boolean {
+export function canAccess(
+  featureTier: FeatureTier,
+  userTier: InsiderTier,
+  isPro = false,
+  isStudio = false,
+  flagKey = ''
+): boolean {
+  // The Pro subscription page itself is always accessible (self-serve purchase flow)
+  if (flagKey === 'pro_subscription' || flagKey === 'studio_subscription') return true;
+  // Pro subscribers get all Pro features regardless of tier
+  if (isPro && flagKey.startsWith('pro_')) return true;
+  // Studio subscribers get everything
+  if (isStudio) return true;
   if (featureTier === 'released') return true;
   if (featureTier === 'disabled') return false;
   if (!userTier) return false;
@@ -87,9 +101,9 @@ export function useFeatureFlags() {
     (featureKey: string): boolean => {
       const flag = flags.find((f) => f.key === featureKey);
       if (!flag) return true; // unknown flags default to accessible
-      return canAccess(flag.tier, user?.insider_tier ?? null);
+      return canAccess(flag.tier, user?.insider_tier ?? null, user?.is_pro ?? false, user?.is_studio ?? false, flag.key);
     },
-    [flags, user?.insider_tier]
+    [flags, user?.insider_tier, user?.is_pro, user?.is_studio]
   );
 
   const getFlag = useCallback(
@@ -116,5 +130,5 @@ export function useFeatureFlags() {
     }
   }, []);
 
-  return { flags, loading, hasAccess, getFlag, getTier, refresh, userTier: user?.insider_tier ?? null };
+  return { flags, loading, hasAccess, getFlag, getTier, refresh, userTier: user?.insider_tier ?? null, isPro: user?.is_pro ?? false, isStudio: user?.is_studio ?? false };
 }

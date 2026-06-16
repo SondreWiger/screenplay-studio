@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { capturePayPalOrder } from '@/lib/paypal';
-import { PRO_LIMITS, PRO_PRICING } from '@/lib/types';
+import { PRO_LIMITS } from '@/lib/types';
 
-// ============================================================
 // POST /api/paypal/capture-order
 // Captures payment after PayPal approval, activates Pro
 // Supports: pro (yearly), team, project_lifetime ($100/project)
-// ============================================================
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,7 +61,7 @@ export async function POST(req: NextRequest) {
     const forever = new Date(now.getTime() + 100 * 365 * 24 * 60 * 60 * 1000);
 
     switch (plan) {
-      // ── Team licenses ────────────────────────────────────
+      // Team licenses
       case 'team': {
         const { data: sub } = await admin.from('subscriptions').insert({
           user_id: user.id,
@@ -97,7 +95,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // ── Per-project lifetime ($100) ──────────────────────
+      // Per-project lifetime ($100)
       case 'project_lifetime':
       case 'single_project': {
         const { data: sub } = await admin.from('subscriptions').insert({
@@ -134,7 +132,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // ── Individual yearly Pro (default) ──────────────────
+      // Individual yearly Pro (default)
       default: {
         const { data: sub } = await admin.from('subscriptions').insert({
           user_id: user.id,

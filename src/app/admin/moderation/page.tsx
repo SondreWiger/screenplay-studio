@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Badge, Card, Modal, Textarea, Avatar, toast } from '@/components/ui';
+import { Button, Badge, Modal, Textarea, Avatar, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
@@ -196,7 +196,7 @@ export default function ModerationPage() {
         toast.success('Action completed');
         await loadFlags();
       }
-    } catch (err) {
+    } catch {
       toast.error('Action failed');
     }
   };

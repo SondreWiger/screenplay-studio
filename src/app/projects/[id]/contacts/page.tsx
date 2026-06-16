@@ -6,10 +6,8 @@ import { useAuthStore } from '@/lib/stores';
 import { Button, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-// ────────────────────────────────────────────────────────────
 // Contacts — Editorial sources & contacts rolodex
 // Track experts, spokespeople, officials, tipsters
-// ────────────────────────────────────────────────────────────
 
 type Relationship = 'cold' | 'warm' | 'trusted';
 type ContactCategory =
@@ -81,7 +79,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
   const [filterCat, setFilterCat] = useState<ContactCategory | 'all'>('all');
   const [filterRel, setFilterRel] = useState<Relationship | 'all'>('all');
 
-  // ─── Fetch ──────────────────────────────────────────────
+  // Fetch
 
   const fetchContacts = useCallback(async () => {
     const supabase = createClient();
@@ -97,7 +95,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
 
   useEffect(() => { fetchContacts(); }, [fetchContacts]);
 
-  // ─── CRUD ───────────────────────────────────────────────
+  // CRUD
 
   const openNew = () => {
     setEditContact(null);
@@ -157,7 +155,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
     toast.success('Contact removed');
   };
 
-  // ─── Derived ────────────────────────────────────────────
+  // Derived
 
   const filtered = contacts.filter(c => {
     if (filterCat !== 'all' && c.category !== filterCat) return false;

@@ -23,7 +23,7 @@ export function pickToast(pool: FunToastPool): string {
   return pool.common[Math.floor(Math.random() * pool.common.length)];
 }
 
-// ── New project created ───────────────────────────────────────
+// New project created
 export const NEW_PROJECT: FunToastPool = {
   common: [
     'Good luck! This one\'s going to be great ❤️',
@@ -45,7 +45,7 @@ export const NEW_PROJECT: FunToastPool = {
   ],
 };
 
-// ── Festival / submission added ───────────────────────────────
+// Festival / submission added
 export const SUBMISSION_ADDED: FunToastPool = {
   common: [
     'Submitted! We believe in you 🙌',
@@ -67,7 +67,7 @@ export const SUBMISSION_ADDED: FunToastPool = {
   ],
 };
 
-// ── Submission status → accepted ─────────────────────────────
+// Submission status → accepted
 export const SUBMISSION_ACCEPTED: FunToastPool = {
   common: [
     'THEY SAID YES!! 🎉🎉🎉',
@@ -89,7 +89,7 @@ export const SUBMISSION_ACCEPTED: FunToastPool = {
   ],
 };
 
-// ── Work milestones ───────────────────────────────────────────
+// Work milestones
 
 export const WORK_1H: FunToastPool = {
   common: [

@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
-import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil } from '@/lib/utils';
+import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, timeUntil } from '@/lib/utils';
 import type { CommunityPost, CommunityCategory, CommunityChallenge, SubCommunity } from '@/lib/types';
 
 export default function CommunityPage() {
   const { user } = useAuth();
-  const router = useRouter();
   type FeaturedCourse = { id: string; title: string; difficulty: string; xp_reward: number; enrollment_count: number };
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
@@ -110,13 +108,6 @@ export default function CommunityPage() {
 
   useEffect(() => { if (user) fetchSubFeed(); }, [user]);
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    await supabase.auth.signOut();
-    router.refresh();
-  };
-
   const isMod = user?.role === 'moderator' || user?.role === 'admin';
 
   const handleDeletePost = async (e: React.MouseEvent, postId: string) => {
@@ -205,7 +196,7 @@ export default function CommunityPage() {
               <div className="flex items-center gap-1 mt-3 p-0.5 rounded-lg w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
                 {(['all', 'yours'] as const).map(m => (
                   <button key={m} onClick={() => setFeedMode(m)}
-                    className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md transition-all"
+                    className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md transition-colors"
                     style={feedMode === m ? { background: '#FF5F1F', color: '#fff' } : { color: 'rgba(255,255,255,0.45)' }}>
                     {m === 'all' ? 'All Posts' : 'Your Feed'}
                   </button>
@@ -302,7 +293,7 @@ export default function CommunityPage() {
                     const diffColor = c.difficulty === 'beginner' ? 'text-emerald-400' : c.difficulty === 'intermediate' ? 'text-yellow-400' : 'text-red-400';
                     return (
                       <Link key={c.id} href={`/community/courses/${c.id}`}
-                        className="block p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-all group">
+                        className="block p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-colors group">
                         <p className="text-xs font-medium text-white/80 group-hover:text-white transition-colors line-clamp-1">{c.title}</p>
                         <div className="flex items-center gap-1.5 mt-1">
                           <span className={`text-[9px] font-semibold uppercase tracking-wide ${diffColor}`}>{c.difficulty}</span>
@@ -341,7 +332,7 @@ export default function CommunityPage() {
                   <Link
                     key={post.id}
                     href={`/community/post/${post.slug}`}
-                    className="block rounded-xl border border-white/[0.12] bg-surface-800/50 hover:border-white/20 hover:bg-surface-800/70 transition-all p-5 animate-fade-in"
+                    className="block rounded-xl border border-white/[0.12] bg-surface-800/50 hover:border-white/20 hover:bg-surface-800/70 transition-colors p-5 animate-fade-in"
                     style={{ animationDelay: `${idx * 30}ms`, animationFillMode: 'backwards' }}>
                     <div className="flex items-start gap-4">
                       {/* Upvote count */}

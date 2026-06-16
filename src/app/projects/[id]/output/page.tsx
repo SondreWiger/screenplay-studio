@@ -8,10 +8,8 @@ import { cn } from '@/lib/utils';
 import type { BroadcastStreamOutput, BroadcastOutputPlatform, BroadcastOutputStatus } from '@/lib/types';
 import { BROADCAST_OUTPUT_PLATFORMS } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Output / Restream — Push program to YouTube, Twitch, etc.
 // Multi-destination output management
-// ────────────────────────────────────────────────────────────
 
 export default function OutputPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -35,7 +33,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
     auto_start: false,
   });
 
-  // ─── Data Fetching ───────────────────────────────
+  // Data Fetching
   const fetchOutputs = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
@@ -58,7 +56,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchOutputs]);
 
-  // ─── CRUD ────────────────────────────────────────
+  // CRUD
 
   const platformDefault = (platform: BroadcastOutputPlatform) => {
     const defaults: Record<string, string> = {
@@ -146,7 +144,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
     return `${bytes} B`;
   };
 
-  // ─── Render ──────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 
@@ -154,7 +152,6 @@ export default function OutputPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)] md:h-screen bg-surface-950">
-      {/* ── Header ───────────────────────────────────── */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-surface-800">
         <div className="flex items-center gap-4">
           <h1 className="text-sm font-bold text-white uppercase tracking-wider">Output Destinations</h1>
@@ -167,7 +164,6 @@ export default function OutputPage({ params }: { params: { id: string } }) {
         <Button size="sm" onClick={() => setShowAddOutput(true)}>+ Add Destination</Button>
       </div>
 
-      {/* ── Output Grid ──────────────────────────────── */}
       <div className="flex-1 overflow-y-auto p-6">
         {outputs.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -186,7 +182,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                 <div
                   key={output.id}
                   className={cn(
-                    'rounded-xl border p-4 space-y-3 transition-all',
+                    'rounded-xl border p-4 space-y-3 transition-colors',
                     isLive
                       ? 'border-red-600/50 bg-red-950/20 shadow-lg shadow-red-600/5'
                       : 'border-surface-700 bg-surface-900'
@@ -278,7 +274,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                     <button
                       onClick={() => toggleStream(output)}
                       className={cn(
-                        'flex-1 py-2 text-xs font-bold rounded-lg transition-all uppercase',
+                        'flex-1 py-2 text-xs font-bold rounded-lg transition-colors uppercase',
                         isLive
                           ? 'bg-red-600 hover:bg-red-500 text-white'
                           : 'bg-green-600 hover:bg-green-500 text-white'
@@ -310,7 +306,6 @@ export default function OutputPage({ params }: { params: { id: string } }) {
         )}
       </div>
 
-      {/* ── Add Output Modal ─────────────────────────── */}
       <Modal isOpen={showAddOutput} onClose={() => setShowAddOutput(false)} title="Add Output Destination" size="lg">
         <div className="space-y-4">
           <Input

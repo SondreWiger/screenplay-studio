@@ -10,9 +10,7 @@ import { Button, Card, Badge, Input, LoadingPage, toast, ToastContainer } from '
 import { AppHeader } from '@/components/AppHeader';
 import { PRO_PRICING, type TeamLicense, type Company } from '@/lib/types';
 
-// ============================================================
 // Team Licensing — Corporate bulk seat purchase
-// ============================================================
 
 export default function TeamLicensingPage() {
   const { user, loading: authLoading } = useAuth();
@@ -30,11 +28,6 @@ export default function TeamLicensingPage() {
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [paypalError, setPaypalError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    fetchData();
-  }, [user, fetchData]);
-
   const fetchData = useCallback(async () => {
     const supabase = createClient();
     const [licRes, compRes] = await Promise.all([
@@ -45,6 +38,11 @@ export default function TeamLicensingPage() {
     setCompanies(compRes.data || []);
     setLoading(false);
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchData();
+  }, [user, fetchData]);
 
   const handleSeatsChange = (n: number) => {
     const count = Math.max(1, n);

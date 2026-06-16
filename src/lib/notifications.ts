@@ -3,13 +3,11 @@
 import { createClient } from '@/lib/supabase/client';
 import type { NotificationType } from '@/lib/types';
 
-// ---------------------------------------------------------------------------
 // Push delivery helper — fires from the RECIPIENT's browser via their own
 // Supabase session token. Called in useNotifications after receiving a
 // realtime notification, so it pushes to the user's OTHER subscribed devices
 // (e.g., the notification arrives on their laptop via realtime, and this
 // also pushes it to their phone).
-// ---------------------------------------------------------------------------
 export async function triggerSelfPush(
   title: string,
   body?: string,

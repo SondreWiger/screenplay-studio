@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-// ─── Design tokens (matching site aesthetic) ───────────────────────────────
+// Design tokens (matching site aesthetic)
 const ORANGE  = '#FF5F1F';
 const BG      = '#05050a';
 const WHITE   = '#ffffff';

@@ -370,7 +370,7 @@ export default function SponsorsPage() {
                   type="button"
                   onClick={() => setForm({ ...form, segment_type: type.value })}
                   className={cn(
-                    'p-3 rounded-lg border text-left transition-all',
+                    'p-3 rounded-lg border text-left transition-colors',
                     form.segment_type === type.value
                       ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                       : 'border-surface-700 hover:border-surface-600'

@@ -7,9 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatDate } from '@/lib/utils';
 import type { PollSession } from '@/lib/types';
 
-// ============================================================
 // Admin — Poll Sessions List
-// ============================================================
 
 const STATUS_COLOR: Record<string, string> = {
   draft:     'bg-white/10 text-white/50',
@@ -131,7 +129,7 @@ export default function AdminPollsPage() {
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
-          <div className="relative bg-[#111113] border border-white/[0.08] rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="relative bg-[#111113] border border-white/[0.08] rounded-xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-lg font-bold text-white mb-5">New Poll</h2>
             <div className="space-y-4">
               <div>

@@ -65,7 +65,7 @@ function InsiderProgramCard() {
             key={String(opt.value)}
             onClick={() => changeTier(opt.value)}
             disabled={saving}
-            className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all ${
+            className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-colors ${
               tier === opt.value ? opt.border : 'border-surface-700 hover:border-surface-600'
             }`}
           >
@@ -685,7 +685,7 @@ export default function UserSettingsPage() {
                     <button
                       key={t.key}
                       onClick={() => setProfileTheme(t.key)}
-                      className={`relative rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative rounded-lg overflow-hidden border-2 transition-colors ${
                         profileTheme === t.key ? 'border-[#FF5F1F] ring-2 ring-[#FF5F1F]/30' : 'border-surface-700 hover:border-surface-600'
                       }`}
                     >
@@ -819,7 +819,7 @@ export default function UserSettingsPage() {
 
         {/* Preferences Tab */}
         {tab === 'preferences' && (
-          <div className="space-y-6">
+          <><div className="space-y-6">
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">How do you use Screenplay Studio?</h2>
               <p className="text-sm text-surface-400 mb-6">This adjusts your default workspace layout.</p>
@@ -833,7 +833,7 @@ export default function UserSettingsPage() {
                   <button
                     key={opt.value}
                     onClick={() => setUsageIntent(opt.value)}
-                    className={`flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-all ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-colors ${
                       usageIntent === opt.value
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                         : 'border-surface-700 hover:border-surface-600'
@@ -861,7 +861,7 @@ export default function UserSettingsPage() {
                   <button
                     key={feat.key}
                     onClick={() => feat.set(!feat.value)}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-colors ${
                       feat.value ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5' : 'border-surface-700 opacity-50'
                     }`}
                   >
@@ -886,7 +886,7 @@ export default function UserSettingsPage() {
                   <button
                     key={opt.value}
                     onClick={() => setPreferredScriptType(opt.value)}
-                    className={`p-3 rounded-lg border-2 text-left transition-all ${
+                    className={`p-3 rounded-lg border-2 text-left transition-colors ${
                       preferredScriptType === opt.value
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                         : 'border-surface-700 hover:border-surface-600'
@@ -925,7 +925,7 @@ export default function UserSettingsPage() {
                     className={`relative h-10 rounded-lg border-2 transition-all ${
                       accentColor === c.key
                         ? 'border-white scale-105 ring-2 ring-white/20'
-                        : 'border-transparent hover:scale-105'
+                        : 'border-transparent'
                     }`}
                     style={{ backgroundColor: c.color }}
                   >
@@ -968,7 +968,7 @@ export default function UserSettingsPage() {
                       <button
                         key={tab.key}
                         onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
-                        className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
+                        className={`p-2 rounded-lg border text-left transition-colors flex items-center justify-between gap-2 ${
                           sidebarTabs[tab.key]
                             ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
                             : 'border-surface-700 bg-surface-900/50'
@@ -996,7 +996,7 @@ export default function UserSettingsPage() {
                       <button
                         key={tab.key}
                         onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
-                        className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
+                        className={`p-2 rounded-lg border text-left transition-colors flex items-center justify-between gap-2 ${
                           sidebarTabs[tab.key]
                             ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
                             : 'border-surface-700 bg-surface-900/50'
@@ -1039,7 +1039,24 @@ export default function UserSettingsPage() {
               {saved && <span className="text-sm text-green-400">Preferences saved</span>}
             </div>
           </div>
-        )}
+
+          {/* Help & Support */}
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-white mb-2">Help & Support</h2>
+            <p className="text-sm text-surface-400 mb-4">Replay the onboarding tour or get help.</p>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => {
+                try { localStorage.removeItem('ss_tour_dismissed'); } catch {}
+                window.location.href = '/dashboard?tour=1';
+              }}>
+                Replay Onboarding Tour
+              </Button>
+              <Link href="/support">
+                <Button variant="secondary">Support Center</Button>
+              </Link>
+            </div>
+          </Card>
+        </>)}
 
         {/* Company Tab */}
         {tab === 'company' && (
@@ -1091,7 +1108,7 @@ export default function UserSettingsPage() {
               </>
             ) : (
               <Card className="p-8 text-center">
-                <div className="w-16 h-16 bg-surface-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-surface-800 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
@@ -1339,7 +1356,7 @@ export default function UserSettingsPage() {
                     <button
                       key={opt.value}
                       onClick={() => setShowActivityGrid(opt.value)}
-                      className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all ${
+                      className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-colors ${
                         showActivityGrid === opt.value
                           ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
                           : 'border-surface-800 hover:border-surface-700 bg-surface-900/50'

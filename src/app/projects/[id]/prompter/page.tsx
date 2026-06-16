@@ -8,10 +8,8 @@ import { cn } from '@/lib/utils';
 import type { BroadcastRundown, BroadcastRundownItem } from '@/lib/types';
 import { formatBroadcastDuration } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Prompter — broadcast-grade teleprompter display
 // Shows rundown item prompter text in large, scrollable format
-// ────────────────────────────────────────────────────────────
 
 export default function PrompterPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -35,7 +33,7 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
 
-  // ─── Fetch Rundowns ────────────────────────────────────
+  // Fetch Rundowns
 
   const fetchRundowns = useCallback(async () => {
     const supabase = createClient();
@@ -95,7 +93,7 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(ch); };
   }, [selectedRundownId, fetchItems]);
 
-  // ─── Auto-scroll ───────────────────────────────────────
+  // Auto-scroll
 
   useEffect(() => {
     if (scrollIntervalRef.current) {
@@ -113,7 +111,7 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
     };
   }, [speed]);
 
-  // ─── Fullscreen ────────────────────────────────────────
+  // Fullscreen
 
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;

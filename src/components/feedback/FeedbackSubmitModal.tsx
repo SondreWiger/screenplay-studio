@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/ui';
 import {
   Bug, Lightbulb, Star, MessageSquare, X, AlertTriangle,
   ChevronUp, ArrowRight, CheckCircle2, Loader2,
@@ -128,7 +129,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
       const json = await res.json();
 
       if (!res.ok) {
-        alert('Submit failed: ' + (json.error ?? res.statusText));
+        toast.error('Submit failed: ' + (json.error ?? res.statusText));
         return;
       }
 
@@ -136,7 +137,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
       setDone(true);
       setTimeout(() => onSubmitted(), 2500);
     } catch (err) {
-      alert('Submit failed: ' + String(err));
+      toast.error('Submit failed: ' + String(err));
     } finally {
       setSubmitting(false);
     }
@@ -145,7 +146,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
   if (done) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-        <div className="bg-surface-900 border border-surface-700 rounded-2xl p-10 max-w-sm w-full text-center">
+        <div className="bg-surface-900 border border-surface-700 rounded-xl p-10 max-w-sm w-full text-center">
           <CheckCircle2 size={48} className="mx-auto mb-4 text-green-400" />
           <h2 className="text-xl font-black mb-2">Thanks!</h2>
           <p className="text-surface-400 text-sm mb-4">
@@ -165,7 +166,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 p-0 sm:p-4">
-      <div className="bg-surface-900 border border-surface-700 rounded-t-2xl sm:rounded-2xl w-full max-w-xl max-h-[92vh] overflow-y-auto">
+      <div className="bg-surface-900 border border-surface-700 rounded-t-2xl sm:rounded-xl w-full max-w-xl max-h-[92vh] overflow-y-auto">
 
         {/* Header */}
         <div className="sticky top-0 bg-surface-900 border-b border-surface-800 px-6 py-4 flex items-center justify-between z-10">
@@ -175,7 +176,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
               {[0, 1, 2].map(i => (
                 <div
                   key={i}
-                  className={cn('h-1 rounded-full transition-all duration-300', i <= step ? 'w-6' : 'w-2')}
+                  className={cn('h-1 rounded-full transition-[width] duration-300', i <= step ? 'w-6' : 'w-2')}
                   style={{ background: i <= step ? '#FF5F1F' : '#374151' }}
                 />
               ))}
@@ -198,7 +199,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                     key={t.value}
                     onClick={() => { setType(t.value); setTimeout(() => setStep(1), 150); }}
                     className={cn(
-                      'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all',
+                      'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-colors',
                       type === t.value ? 'border-[#FF5F1F] bg-[#FF5F1F]/5' : 'border-surface-700 hover:border-surface-600 bg-surface-800'
                     )}
                   >
@@ -340,7 +341,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map(r => (
                         <button key={r} onClick={() => setRating(r)}
-                          className={cn('w-10 h-10 rounded-lg text-lg transition-all', r <= rating ? 'bg-amber-400/20' : 'bg-surface-800 opacity-40')}>
+                          className={cn('w-10 h-10 rounded-lg text-lg transition-colors', r <= rating ? 'bg-amber-400/20' : 'bg-surface-800 opacity-40')}>
                           ⭐
                         </button>
                       ))}
@@ -400,7 +401,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
         <div className="sticky bottom-0 bg-surface-900 border-t border-surface-800 px-6 py-4 flex items-center justify-between gap-3">
           <button
             onClick={() => step === 0 ? onClose() : setStep(s => Math.max(0, s - 1) as 0|1|2)}
-            className="px-4 py-2 text-sm font-semibold text-surface-400 hover:text-white border border-surface-700 rounded-xl hover:border-surface-600 transition-all"
+            className="px-4 py-2 text-sm font-semibold text-surface-400 hover:text-white border border-surface-700 rounded-xl hover:border-surface-600 transition-colors"
           >
             {step === 0 ? 'Cancel' : '← Back'}
           </button>
@@ -410,7 +411,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
               onClick={() => setStep(s => Math.min(2, s + 1) as 0|1|2)}
               disabled={step === 0 ? !canProceedStep1 : !canProceedStep2}
               className={cn(
-                'px-5 py-2 text-sm font-bold text-white rounded-xl flex items-center gap-2 transition-all',
+                'px-5 py-2 text-sm font-bold text-white rounded-xl flex items-center gap-2 transition-colors',
                 (step === 0 ? canProceedStep1 : canProceedStep2)
                   ? 'hover:-translate-y-px'
                   : 'opacity-40 cursor-not-allowed'

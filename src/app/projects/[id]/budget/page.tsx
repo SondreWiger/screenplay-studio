@@ -8,9 +8,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { BudgetItem, BudgetCategory } from '@/lib/types';
 
-// ============================================================
 // CATEGORY DEFINITIONS
-// ============================================================
 
 const CATEGORIES: { value: BudgetCategory; label: string; icon: string; color: string }[] = [
   { value: 'above_the_line', label: 'Above the Line', icon: 'ATL', color: '#f59e0b' },
@@ -31,9 +29,7 @@ const CATEGORIES: { value: BudgetCategory; label: string; icon: string; color: s
 
 const getCategoryMeta = (value: string) => CATEGORIES.find((c) => c.value === value) || CATEGORIES[CATEGORIES.length - 1];
 
-// ============================================================
 // MAIN PAGE
-// ============================================================
 
 export default function BudgetPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -80,12 +76,12 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  // ---- Split income vs expenses ----
+  // Split income vs expenses
 
   const incomeItems = useMemo(() => items.filter((i) => i.is_income), [items]);
   const expenseItems = useMemo(() => items.filter((i) => !i.is_income), [items]);
 
-  // ---- Computed totals (always from full list, not filtered) ----
+  // Computed totals (always from full list, not filtered)
 
   const totalIncomeEstimated = useMemo(() => incomeItems.reduce((s, i) => s + (i.estimated_amount || 0), 0), [incomeItems]);
   const totalIncomeActual = useMemo(() => incomeItems.reduce((s, i) => s + (i.actual_amount || 0), 0), [incomeItems]);
@@ -103,7 +99,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
     return expenseItems.filter((i) => !i.is_paid && i.due_date && new Date(i.due_date) < now).length;
   }, [expenseItems]);
 
-  // ---- Filtered items ----
+  // Filtered items
 
   const filteredItems = useMemo(() => {
     let result = items;
@@ -146,7 +142,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
     }).filter((c) => c.estimated > 0).sort((a, b) => b.estimated - a.estimated);
   }, [expenseItems]);
 
-  // ---- Handlers ----
+  // Handlers
 
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
@@ -221,7 +217,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
-  // ---- Shared item row renderer ----
+  // Shared item row renderer
   const renderItemRow = (item: BudgetItem) => {
     const itemOver = !item.is_income && (item.actual_amount || 0) > (item.estimated_amount || 0) && (item.estimated_amount || 0) > 0;
     const isOverdue = !item.is_paid && item.due_date && new Date(item.due_date) < new Date();
@@ -402,7 +398,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
               <div
                 key={cat.value}
                 title={`${cat.label}: ${formatCurrency(cat.estimated)} (${Math.round((cat.estimated / totalExpenseEstimated) * 100)}%)`}
-                className="transition-all duration-300 first:rounded-l-full last:rounded-r-full"
+                className="transition-[width] duration-300 first:rounded-l-full last:rounded-r-full"
                 style={{ width: `${(cat.estimated / totalExpenseEstimated) * 100}%`, backgroundColor: cat.color }}
               />
             ))}
@@ -702,9 +698,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ============================================================
 // BUDGET EDITOR MODAL
-// ============================================================
 
 interface EditorForm {
   description: string;

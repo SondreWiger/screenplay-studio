@@ -3,11 +3,9 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createPayPalOrder } from '@/lib/paypal';
 import { PRO_PRICING } from '@/lib/types';
 
-// ============================================================
 // POST /api/paypal/create-order
 // Creates a PayPal checkout order for any Pro plan type
 // Plans: pro (yearly), team, project_lifetime ($100/project)
-// ============================================================
 
 export async function POST(req: NextRequest) {
   try {

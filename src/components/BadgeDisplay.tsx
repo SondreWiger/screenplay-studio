@@ -1,8 +1,6 @@
 'use client';
 
-// ============================================================
 // BadgeDisplay — renders 1 or 2 badge chips next to a username
-// ============================================================
 
 import type { Badge, UserBadge } from '@/lib/types';
 

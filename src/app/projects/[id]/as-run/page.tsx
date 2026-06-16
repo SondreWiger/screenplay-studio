@@ -8,10 +8,8 @@ import { cn } from '@/lib/utils';
 import type { BroadcastAsRunLogEntry, BroadcastAsRunEventType, BroadcastRundown } from '@/lib/types';
 import { formatBroadcastDuration, formatBroadcastTime } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // As-Run Log — official broadcast compliance log
 // Records every event during a live show with precise timing
-// ────────────────────────────────────────────────────────────
 
 const EVENT_COLORS: Record<BroadcastAsRunEventType, string> = {
   segment_start: 'bg-green-600', segment_end: 'bg-blue-600',
@@ -46,7 +44,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
 
   const listEndRef = useRef<HTMLDivElement>(null);
 
-  // ─── Fetch ─────────────────────────────────────────────
+  // Fetch
 
   const fetchRundowns = useCallback(async () => {
     const supabase = createClient();
@@ -96,7 +94,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
     }
   }, [entries.length, autoScroll]);
 
-  // ─── Add Manual Note ───────────────────────────────────
+  // Add Manual Note
 
   const handleAddNote = async () => {
     if (!noteText.trim() || !selectedRundownId) return;
@@ -115,7 +113,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
     fetchEntries();
   };
 
-  // ─── Export ────────────────────────────────────────────
+  // Export
 
   const handleExport = () => {
     const rundown = rundowns.find(r => r.id === selectedRundownId);
@@ -142,7 +140,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
     toast.success('As-run log exported');
   };
 
-  // ─── Filter ────────────────────────────────────────────
+  // Filter
 
   const filtered = entries.filter(e => {
     if (filterEvent === 'all') return true;

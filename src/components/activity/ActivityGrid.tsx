@@ -134,7 +134,7 @@ export default function ActivityGrid({
     const weeksArr: Array<Array<{ date: string; iso: string; intensity: 0 | 1 | 2 | 3 | 4; pages: number; minutes: number; inFuture: boolean }>> = [];
     const monthColsArr: Array<{ month: string; col: number }> = [];
 
-    let cursor = new Date(gridStart);
+    const cursor = new Date(gridStart);
     let lastMonth = -1;
 
     for (let week = 0; week < 53; week++) {

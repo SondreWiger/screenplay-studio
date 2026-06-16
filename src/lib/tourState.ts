@@ -40,6 +40,22 @@ export function setTourStep(step: number): void {
   sessionStorage.setItem(KEY, JSON.stringify({ ...prev, step }));
 }
 
+/** Pause the tour — keeps state so the "Continue tour" banner can resume it. */
+export function pauseTour(): void {
+  if (typeof window === 'undefined') return;
+  const prev = getTourState();
+  if (!prev) return;
+  sessionStorage.setItem(KEY, JSON.stringify({ ...prev, active: false }));
+}
+
+/** Resume a paused tour. */
+export function resumeTour(): void {
+  if (typeof window === 'undefined') return;
+  const prev = getTourState();
+  if (!prev) return;
+  sessionStorage.setItem(KEY, JSON.stringify({ ...prev, active: true }));
+}
+
 export function endTour(): void {
   if (typeof window === 'undefined') return;
   sessionStorage.removeItem(KEY);

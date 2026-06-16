@@ -1,8 +1,6 @@
 import type { ScriptElementType, RevisionColor, ProjectType, ScriptType } from './base';
 
-// ============================================================
 // Project Documents & Folders
-// ============================================================
 
 export type DocumentType = 'plain_text' | 'notes' | 'outline' | 'treatment' | 'research';
 
@@ -130,9 +128,7 @@ export const REVISION_COLOR_HEX: Record<RevisionColor, string> = {
   tan: '#d2b48c',
 };
 
-// ============================================================
 // Moderation & Support Types
-// ============================================================
 
 import type { Profile, TicketCategory, TicketStatus, TicketPriority } from './base';
 
@@ -262,9 +258,7 @@ export const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string; descript
   { value: 'stage_play',    label: 'Stage Play',    description: 'Theatre productions, musicals and stage shows', icon: 'theater' },
 ];
 
-// ============================================================
 // Content Creator Types
-// ============================================================
 
 import type { SponsorSegmentType, ContentHookType, BrollStatus, VideoVisibility } from './base';
 

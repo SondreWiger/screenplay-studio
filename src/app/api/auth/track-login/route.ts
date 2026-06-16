@@ -1,10 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-// ---------------------------------------------------------------------------
 // POST /api/auth/track-login
 // Tracks login events, detects suspicious activity, and logs audit entries.
-// ---------------------------------------------------------------------------
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // ---- Insert login_history record ----
+    // Insert login_history record
     const { error: loginErr } = await supabase.from('login_history').insert({
       user_id,
       ip_address,
@@ -50,7 +48,7 @@ export async function POST(req: NextRequest) {
       console.error('[track-login] login_history insert failed:', loginErr);
     }
 
-    // ---- Insert audit_log entry ----
+    // Insert audit_log entry
     const { error: auditErr } = await supabase.from('audit_log').insert({
       user_id,
       action: success ? 'login_success' : 'login_failed',
@@ -63,7 +61,7 @@ export async function POST(req: NextRequest) {
       console.error('[track-login] audit_log insert failed:', auditErr);
     }
 
-    // ---- Suspicious login detection ----
+    // Suspicious login detection
     // Flag if the same user has 5+ failed logins in the last 15 minutes from different IPs
     if (!success) {
       const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();

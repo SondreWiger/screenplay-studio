@@ -35,7 +35,7 @@ export function BetaBanner() {
   if (!visible) return null;
 
   return (
-    <div className="relative z-50 bg-gradient-to-r from-violet-950 via-indigo-950 to-violet-950 border-b border-[#FF5F1F]/30">
+    <div className="relative z-50 bg-surface-950 border-b border-surface-800">
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
           {/* Beta badge */}

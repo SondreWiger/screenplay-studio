@@ -11,9 +11,7 @@ import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { PRO_PRICING } from '@/lib/types';
 
-// ============================================================
 // Pro Upgrade — Pricing & Checkout
-// ============================================================
 
 const PRO_FEATURES = [
   {
@@ -80,14 +78,14 @@ const PRO_FEATURES = [
 
 export default function ProUpgradePage() {
   const { user, loading: authLoading } = useAuth();
-  const { isPro, subscription } = useProFeatures();
+  const { isPro } = useProFeatures();
   const router = useRouter();
   const { canUse: canUseFeature, loading: flagsLoading } = useFeatureAccess();
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutPlan, setCheckoutPlan] = useState<'pro' | 'team' | 'project_lifetime'>('pro');
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [paypalError, setPaypalError] = useState<string | null>(null);
-  const [teamSeats, setTeamSeats] = useState(1);
+  const [teamSeats] = useState(1);
   const [upgradeProjectId, setUpgradeProjectId] = useState<string | null>(null);
 
   // Auto-open project lifetime checkout if linked from project settings
@@ -149,8 +147,6 @@ export default function ProUpgradePage() {
       setPaypalLoading(false);
     }
   };
-
-  const teamTotal = teamSeats * PRO_PRICING.team_yearly.amount;
 
   // Already Pro
   if (isPro) {
@@ -275,7 +271,7 @@ export default function ProUpgradePage() {
           <div onClick={(e) => e.stopPropagation()}>
           <Card className="p-8 max-w-md mx-4 border-2 border-amber-500/30">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
                 <Icon name={checkoutPlan === 'project_lifetime' ? 'film' : 'star'} size="xl" className="text-white" />
               </div>
               <h2 className="text-xl font-black text-white mb-2">Checkout</h2>
@@ -307,7 +303,7 @@ export default function ProUpgradePage() {
 
               {checkoutPlan === 'project_lifetime' && !upgradeProjectId && (
                 <p className="text-xs text-amber-400 text-center">
-                  Tip: Upgrade from your project's Settings page to auto-select the project.
+                  Tip: Upgrade from your project&apos;s Settings page to auto-select the project.
                 </p>
               )}
 

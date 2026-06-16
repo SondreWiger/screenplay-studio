@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,15 +45,6 @@ const FEATURE_TOGGLES = [
   { key: 'show_accountability' as const, label: 'Writing Accountability', description: 'Streaks, writing buddies, groups, activity grid', emoji: '🔥' },
 ];
 
-const COUNTRIES = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Sweden',
-  'Norway', 'Denmark', 'Finland', 'Japan', 'South Korea', 'China', 'India', 'Brazil', 'Mexico', 'Argentina',
-  'Chile', 'Colombia', 'Peru', 'Venezuela', 'Russia', 'Poland', 'Czech Republic', 'Hungary', 'Romania', 'Greece',
-  'Turkey', 'Israel', 'South Africa', 'Egypt', 'Nigeria', 'Kenya', 'Ghana', 'Morocco', 'Thailand', 'Vietnam',
-  'Philippines', 'Indonesia', 'Malaysia', 'Singapore', 'New Zealand', 'Ireland', 'Portugal', 'Belgium', 'Switzerland', 'Austria',
-  'Other'
-];
-
 const LEVEL_PREVIEW = [
   { level: 1, title: 'Aspiring Writer', icon: '🌱' },
   { level: 2, title: 'Scribbler', icon: '✏️', unlock: 'Bronze username glow' },
@@ -69,7 +60,7 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
       {Array.from({ length: total }).map((_, i) => (
         <div
           key={i}
-          className={`rounded-full transition-all duration-500 ${
+          className={`rounded-full transition-[width] duration-500 ${
             i === current
               ? 'w-8 h-2 bg-[#FF5F1F]'
               : i < current
@@ -95,7 +86,6 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
 
   const [usageIntent, setUsageIntent] = useState<UsageIntent>('writer');
   const [scriptType, setScriptType] = useState<ScriptType>('screenplay');
@@ -104,9 +94,10 @@ export default function OnboardingPage() {
   const [showCollaboration, setShowCollaboration] = useState(true);
   const [showAccountability, setShowAccountability] = useState(true);
   const [displayName, setDisplayName] = useState('');
+  const [country, _setCountry] = useState('');
+  const [_direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const [wantsCompany, setWantsCompany] = useState(false);
   const [companyName, setCompanyName] = useState('');
-  const [country, setCountry] = useState<string>('');
   const [gamificationChoice, setGamificationChoice] = useState<boolean | null>(null);
 
   const applyIntentDefaults = (intent: UsageIntent) => {
@@ -246,7 +237,7 @@ export default function OnboardingPage() {
             <div className="space-y-8">
               <div className="text-center">
                 <div className="relative inline-block mb-6">
-                  <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto relative overflow-hidden"
+                  <div className="w-24 h-24 rounded-xl flex items-center justify-center mx-auto relative overflow-hidden"
                     style={{ background: 'linear-gradient(135deg, #FF5F1F, #E54E15)' }}>
                     <div className="absolute inset-0 opacity-20" style={{
                       background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 70%)'
@@ -291,7 +282,7 @@ export default function OnboardingPage() {
                     <button
                       key={id}
                       onClick={() => { applyIntentDefaults(id as UsageIntent); goNext(); }}
-                      className="p-3 rounded-xl border border-surface-700 bg-surface-900/50 hover:border-[#FF5F1F]/40 hover:bg-[#FF5F1F]/5 transition-all text-center"
+                      className="p-3 rounded-xl border border-surface-700 bg-surface-900/50 hover:border-[#FF5F1F]/40 hover:bg-[#FF5F1F]/5 transition-colors text-center"
                     >
                       <span className="text-sm font-medium text-white">{label}</span>
                     </button>
@@ -316,7 +307,7 @@ export default function OnboardingPage() {
                     <button
                       key={opt.value}
                       onClick={() => applyIntentDefaults(opt.value)}
-                      className={`group relative text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                      className={`group relative text-left p-5 rounded-xl border-2 transition-colors duration-200 ${
                         selected
                           ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
                           : 'border-surface-700 bg-surface-900/50 hover:border-surface-600 hover:bg-surface-800/50 hover:shadow-md'
@@ -366,7 +357,7 @@ export default function OnboardingPage() {
                     <button
                       key={opt.value}
                       onClick={() => setScriptType(opt.value)}
-                      className={`relative text-left p-4 rounded-xl border-2 transition-all duration-200 ${
+                      className={`relative text-left p-4 rounded-xl border-2 transition-colors duration-200 ${
                         selected
                           ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
                           : 'border-surface-700 bg-surface-900/50 hover:border-surface-600 hover:bg-surface-800/50'
@@ -415,7 +406,7 @@ export default function OnboardingPage() {
                     <button
                       key={feat.key}
                       onClick={toggle}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-colors duration-200 ${
                         isOn
                           ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5'
                           : 'border-surface-700/50 bg-surface-900/30 opacity-60 hover:opacity-80'
@@ -426,7 +417,7 @@ export default function OnboardingPage() {
                         <h3 className="text-sm font-semibold text-white">{feat.label}</h3>
                         <p className="text-[11px] text-surface-500">{feat.description}</p>
                       </div>
-                      <div className={`w-11 h-6 rounded-full shrink-0 transition-all duration-300 relative ${
+                      <div className={`w-11 h-6 rounded-full shrink-0 transition-colors duration-300 relative ${
                         isOn ? 'bg-[#FF5F1F] shadow-sm shadow-[#FF5F1F]/30' : 'bg-surface-700'
                       }`}>
                         <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${
@@ -490,7 +481,7 @@ export default function OnboardingPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setGamificationChoice(true)}
-                    className={`flex-1 p-4 rounded-xl border-2 text-center transition-all duration-200 ${
+                    className={`flex-1 p-4 rounded-xl border-2 text-center transition-colors duration-200 ${
                       gamificationChoice === true
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
                         : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
@@ -504,7 +495,7 @@ export default function OnboardingPage() {
                   </button>
                   <button
                     onClick={() => setGamificationChoice(false)}
-                    className={`flex-1 p-4 rounded-xl border-2 text-center transition-all duration-200 ${
+                    className={`flex-1 p-4 rounded-xl border-2 text-center transition-colors duration-200 ${
                       gamificationChoice === false
                         ? 'border-surface-500 bg-surface-800/50'
                         : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
@@ -538,7 +529,7 @@ export default function OnboardingPage() {
                 <div className="flex gap-4">
                   <button
                     onClick={() => setWantsCompany(false)}
-                    className={`flex-1 p-5 rounded-xl border-2 text-center transition-all duration-200 ${
+                    className={`flex-1 p-5 rounded-xl border-2 text-center transition-colors duration-200 ${
                       !wantsCompany
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
                         : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
@@ -550,7 +541,7 @@ export default function OnboardingPage() {
                   </button>
                   <button
                     onClick={() => setWantsCompany(true)}
-                    className={`flex-1 p-5 rounded-xl border-2 text-center transition-all duration-200 ${
+                    className={`flex-1 p-5 rounded-xl border-2 text-center transition-colors duration-200 ${
                       wantsCompany
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
                         : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'

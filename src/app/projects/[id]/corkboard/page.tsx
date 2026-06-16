@@ -3,12 +3,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Badge, LoadingSpinner, toast } from '@/components/ui';
+import { Button, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
-// ============================================================
 // Corkboard — drag-and-drop index-card scene organiser
 // Cards reorder scenes by updating sort_order in the DB.
-// ============================================================
 
 interface Scene {
   id: string;
@@ -45,7 +43,7 @@ function getTimeColor(time?: string) {
 
 type SceneCard = Scene & { _dragIdx?: number };
 
-// ── Inline editable synopsis ──────────────────────────────────
+// Inline editable synopsis
 function SynopsisEditor({
   sceneId,
   value,
@@ -96,7 +94,7 @@ function SynopsisEditor({
   );
 }
 
-// ── Main scene card ───────────────────────────────────────────
+// Main scene card
 function SceneCard({
   scene,
   index,
@@ -158,7 +156,7 @@ function SceneCard({
       onDrop={() => onDrop(index)}
       onDragEnd={onDragEnd}
       className={cn(
-        'relative rounded-xl border p-4 transition-all duration-150 group',
+        'relative rounded-xl border p-4 transition-colors duration-150 group',
         cardColorClass,
         isDragging && 'opacity-30 scale-95',
         isDragOver && !isDragging && 'ring-2 ring-[#FF5F1F]/60 scale-[1.02]',
@@ -198,7 +196,7 @@ function SceneCard({
                     <button
                       key={c.value}
                       onClick={() => { onColorChange(scene.id, c.value); setShowColorPicker(false); }}
-                      className="w-5 h-5 rounded border border-surface-600 hover:scale-110 transition-transform"
+                      className="w-5 h-5 rounded border border-surface-600 transition-transform"
                       style={{ backgroundColor: c.value ? c.value : '#374151' }}
                       title={c.label}
                     />
@@ -267,7 +265,7 @@ function SceneCard({
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────
+// Main page
 export default function CorkboardPage({ params }: { params: { id: string } }) {
   const { user }              = useAuthStore();
   const { members, currentProject } = useProjectStore();

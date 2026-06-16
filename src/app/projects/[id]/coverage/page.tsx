@@ -7,11 +7,9 @@ import { Card, Button, Input, Textarea, LoadingSpinner, toast } from '@/componen
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
-// ============================================================
 // Script Coverage
 // Industry-standard reader report: graded categories,
 // synopsis, logline, and pass / consider / recommend verdict.
-// ============================================================
 
 type Grade = 'excellent' | 'good' | 'fair' | 'poor' | '';
 type Recommendation = 'pass' | 'consider' | 'recommend' | '';
@@ -208,7 +206,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
                     <button key={g}
                       onClick={() => setForm({ ...f, [key]: f[key] === g ? '' : g })}
                       className={cn(
-                        'px-2 py-1 rounded text-[11px] font-medium border transition-all text-left',
+                        'px-2 py-1 rounded text-[11px] font-medium border transition-colors text-left',
                         f[key] === g ? GRADE_COLOR[g] : 'bg-surface-800/40 text-surface-500 border-surface-700/40 hover:border-surface-600',
                       )}
                     >
@@ -229,7 +227,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
               <button key={r}
                 onClick={() => setForm({ ...f, recommendation: f.recommendation === r ? '' : r })}
                 className={cn(
-                  'flex-1 py-3 rounded-xl border-2 font-black text-sm uppercase tracking-wider transition-all',
+                  'flex-1 py-3 rounded-xl border-2 font-black text-sm uppercase tracking-wider transition-colors',
                   f.recommendation === r ? REC_META[r].color : 'border-surface-700 text-surface-500 hover:border-surface-600',
                 )}
               >

@@ -3,14 +3,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
-import { Card, Button, LoadingSpinner, SkeletonList, toast } from '@/components/ui';
+import { Card, Button, SkeletonList, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-// ============================================================
 // Day-Out-of-Days (DOOD)
 // The classic industry grid: characters across top,
 // shoot days down side, cells coded SW / W / WF / SWF / H / T / F
-// ============================================================
 
 const STATUS_OPTIONS = ['', 'SW', 'W', 'WF', 'SWF', 'H', 'T', 'F'] as const;
 type Status = typeof STATUS_OPTIONS[number];
@@ -45,6 +43,18 @@ export default function DOODPage({ params }: { params: { id: string } }) {
   const [addingDay, setAddingDay] = useState(false);
 
   useEffect(() => { load(); }, [params.id]);
+
+  // Realtime: refresh when characters or entries change
+  useEffect(() => {
+    if (!params.id) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`dood-${params.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'characters' }, () => { load(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dood_entries' }, () => { load(); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [params.id]);
 
   const load = async () => {
     const supabase = createClient();
@@ -206,9 +216,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
         <Card className="p-8 text-center text-surface-500">Add shoot days using the button above.</Card>
       ) : (
         <>
-          {/* ─────────────────────────────────────────────────────
-              MOBILE: Character cards with horizontal day strip
-          ───────────────────────────────────────────────────── */}
+          {/* MOBILE: Character cards with horizontal day strip */}
           <div className="block md:hidden space-y-3">
             {characters.map((char, ci) => (
               <div
@@ -243,7 +251,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
                             onClick={() => cycleStatus(char, day)}
                             disabled={!canEdit || saving}
                             className={cn(
-                              'w-14 h-10 rounded-lg font-black text-xs transition-all border',
+                              'w-14 h-10 rounded-lg font-black text-xs transition-colors border',
                               status
                                 ? cn(meta.bg, meta.color, 'border-transparent')
                                 : 'bg-surface-800/40 border-surface-700/60 text-surface-600',
@@ -267,9 +275,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
             ))}
           </div>
 
-          {/* ─────────────────────────────────────────────────────
-              DESKTOP: Full grid table (hidden below md)
-          ───────────────────────────────────────────────────── */}
+          {/* DESKTOP: Full grid table (hidden below md) */}
           <div className="hidden md:block overflow-x-auto rounded-xl border border-surface-700/40">
             <table className="text-xs border-collapse">
               <thead>
@@ -310,7 +316,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
                             onClick={() => cycleStatus(char, day)}
                             disabled={!canEdit || saving}
                             className={cn(
-                              'w-12 h-8 rounded font-bold text-[11px] transition-all',
+                              'w-12 h-8 rounded font-bold text-[11px] transition-colors',
                               meta.bg,
                               meta.color,
                               canEdit ? 'hover:ring-2 hover:ring-white/20 cursor-pointer' : 'cursor-default',

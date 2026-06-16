@@ -7,7 +7,7 @@ import { useAuthStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import { getRecentProjects } from '@/hooks/useRecentProjects';
 
-// ─── Types ────────────────────────────────────────────────
+// Types
 type ResultGroup =
   | 'Projects' | 'Scripts' | 'Script Lines' | 'Characters'
   | 'Locations' | 'Scenes' | 'Ideas' | 'Documents'
@@ -37,7 +37,7 @@ interface SearchResult {
   group: ResultGroup;
 }
 
-// ─── Context ──────────────────────────────────────────────
+// Context
 interface CommandPaletteContextValue {
   open: () => void;
   close: () => void;
@@ -52,7 +52,7 @@ export function useCommandPalette() {
   return React.useContext(CommandPaletteContext);
 }
 
-// ─── Provider (mount this once globally in providers.tsx) ─
+// Provider (mount this once globally in providers.tsx)
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -80,7 +80,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   );
 }
 
-// ─── Modal ────────────────────────────────────────────────
+// Modal
 function CommandPaletteModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -115,7 +115,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
     const supabase = createClient();
     const like = `%${q}%`;
 
-    // ── Phase 1: Resolve accessible project IDs ───────────────────────────
+    // Phase 1: Resolve accessible project IDs
     // Security: build an explicit allowlist from projects the user owns or is
     // a member of. Every project-scoped query below is filtered to this set.
     // Supabase RLS also enforces access at the DB level (double protection).
@@ -133,7 +133,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
     const accessibleIds = Object.keys(projectMap);
     if (accessibleIds.length === 0) { setResults([]); setLoading(false); return; }
 
-    // ── Phase 2: Resolve script IDs + channel IDs ─────────────────────────
+    // Phase 2: Resolve script IDs + channel IDs
     // script_elements / channel_messages don't have direct project_id columns.
     const [{ data: scriptRows }, { data: channelRows }] = await Promise.all([
       supabase.from('scripts').select('id, project_id, title').in('project_id', accessibleIds),
@@ -154,7 +154,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
     });
     const accessibleChannelIds = Object.keys(channelIdToInfo);
 
-    // ── Phase 3: Parallel content searches ────────────────────────────────
+    // Phase 3: Parallel content searches
     const N = 4;
     const [
       prjRes, scrRes, lineRes, chrRes, locRes,
@@ -210,7 +210,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
         .or(`cue_number.ilike.${like},description.ilike.${like}`).limit(N),
     ]);
 
-    // ── Phase 4: Map to SearchResult[] ────────────────────────────────────
+    // Phase 4: Map to SearchResult[]
     const mapped: SearchResult[] = [];
     const sn = (s: string, max = 68) => s.length > max ? s.slice(0, max) + '\u2026' : s;
 
@@ -336,7 +336,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-surface-900 border border-surface-700 rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-2xl bg-surface-900 border border-surface-700 rounded-xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Input */}
@@ -484,7 +484,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Label helpers ───────────────────────────────────────
+// Label helpers
 
 const ELEMENT_LABELS: Record<string, string> = {
   // Screenplay

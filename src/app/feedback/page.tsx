@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn, timeAgo } from '@/lib/utils';
 import {
-  Bug, Lightbulb, ChevronUp, MessageSquare, Search, Plus,
-  Filter, TrendingUp, Clock, CheckCircle2, CircleDot,
-  Hammer, XCircle, BookMarked, AlertTriangle, Tag, Sparkles,
+  ChevronUp, MessageSquare, Search, Plus,
+  TrendingUp, Clock,
+  Sparkles,
   ArrowRight, Star,
 } from 'lucide-react';
 import { toast } from '@/components/ui';
@@ -54,12 +54,12 @@ function FeedbackCard({ item, userVoted, onVote }: {
   onVote: (id: string) => void;
 }) {
   return (
-    <div className="group flex gap-4 p-4 rounded-xl border border-surface-800 bg-surface-900/60 hover:border-surface-700 hover:bg-surface-900 transition-all duration-150">
+    <div className="group flex gap-4 p-4 rounded-xl border border-surface-800 bg-surface-900/60 hover:border-surface-700 hover:bg-surface-900 transition-colors duration-150">
       {/* Vote button */}
       <button
         onClick={(e) => { e.stopPropagation(); onVote(item.id); }}
         className={cn(
-          'flex flex-col items-center justify-center min-w-[44px] py-2 px-1 rounded-lg border text-xs font-black transition-all duration-150 shrink-0',
+          'flex flex-col items-center justify-center min-w-[44px] py-2 px-1 rounded-lg border text-xs font-black transition-colors duration-150 shrink-0',
           userVoted
             ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
             : 'border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-500 hover:text-white'
@@ -153,7 +153,7 @@ export default function FeedbackPage() {
 
     const { data, count, error } = await q;
     if (!error) {
-      reset ? setItems(data ?? []) : setItems(prev => [...prev, ...(data ?? [])]);
+      if (reset) setItems(data ?? []); else setItems(prev => [...prev, ...(data ?? [])]);
       setTotal(count ?? 0);
     }
     setLoading(false);
@@ -331,7 +331,7 @@ export default function FeedbackPage() {
                 key={t}
                 onClick={() => setTypeFilter(t)}
                 className={cn(
-                  'px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide transition-all',
+                  'px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide transition-colors',
                   typeFilter === t
                     ? 'bg-surface-700 text-white'
                     : 'text-surface-500 hover:text-surface-300'
@@ -395,7 +395,7 @@ export default function FeedbackPage() {
             {items.length < total && (
               <button
                 onClick={() => { setPage(p => p + 1); load(false); }}
-                className="w-full py-3 text-sm font-semibold text-surface-400 hover:text-white border border-surface-800 rounded-xl hover:border-surface-700 transition-all"
+                className="w-full py-3 text-sm font-semibold text-surface-400 hover:text-white border border-surface-800 rounded-xl hover:border-surface-700 transition-colors"
               >
                 Load more ({total - items.length} remaining)
               </button>

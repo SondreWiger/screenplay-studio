@@ -103,7 +103,7 @@ function ContributorCard({ c, large = false }: { c: Contributor; large?: boolean
 
   const inner = (
     <div
-      className={`group flex items-center gap-2.5 transition-all duration-150 rounded-sm ${large ? 'px-3 py-2.5' : 'px-2.5 py-2'}`}
+      className={`group flex items-center gap-2.5 transition-colors duration-150 rounded-md ${large ? 'px-3 py-2.5' : 'px-2.5 py-2'}`}
       style={{
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.07)',

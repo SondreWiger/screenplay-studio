@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, sendNotificationEmail } from '@/lib/mailer';
 
-// ---------------------------------------------------------------------------
 // Email sending API route
 // POST /api/email/send
 // Body: { to, subject, heading, body, ctaLabel?, ctaUrl?, tags? }
-// ---------------------------------------------------------------------------
 
 const PUSH_API_SECRET = process.env.PUSH_API_SECRET || '';
 

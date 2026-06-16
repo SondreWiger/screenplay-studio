@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
 import type { SubCommunity } from '@/lib/types';
 
 export default function BrowseCommunitiesPage() {
@@ -80,7 +79,7 @@ export default function BrowseCommunitiesPage() {
           {user && (
             <Link
               href="/community/c/create"
-              className="self-start sm:self-auto px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:opacity-90"
+              className="self-start sm:self-auto px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-opacity hover:opacity-90"
               style={{ background: '#FF5F1F' }}
             >
               + Create Community
@@ -111,7 +110,7 @@ export default function BrowseCommunitiesPage() {
                 <Link
                   key={c.id}
                   href={`/community/c/${c.slug}`}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:opacity-80"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
                   style={{
                     background: c.accent_color + '22',
                     color: c.accent_color,
@@ -143,7 +142,7 @@ export default function BrowseCommunitiesPage() {
               return (
                 <div
                   key={c.id}
-                  className="rounded-2xl overflow-hidden transition-all hover:translate-y-[-1px]"
+                  className="rounded-xl overflow-hidden transition-colors"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
                 >
                   {/* Banner */}
@@ -178,7 +177,7 @@ export default function BrowseCommunitiesPage() {
                         <button
                           onClick={() => joined ? leave(c.id) : join(c)}
                           disabled={joining === c.id}
-                          className="px-3 py-1 text-[11px] font-semibold rounded-lg transition-all"
+                          className="px-3 py-1 text-[11px] font-semibold rounded-lg transition-colors"
                           style={
                             joined
                               ? { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }

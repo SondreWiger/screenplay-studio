@@ -1,8 +1,6 @@
 import type { Profile, ProductionStatus, ScriptElement } from './base';
 
-// ============================================================
 // Sub-Communities
-// ============================================================
 
 export type SubCommunityVisibility = 'public' | 'restricted' | 'private';
 export type SubCommunityPostingMode = 'open' | 'require_approval' | 'apply_to_post';
@@ -151,9 +149,7 @@ export interface ScriptProduction {
   reviewed_by?: string | null;
 }
 
-// ============================================================
 // Chat Forum
-// ============================================================
 
 export interface ChatChannel {
   id: string;
@@ -183,9 +179,7 @@ export interface ChatMessage {
   reply_to?: ChatMessage;
 }
 
-// ============================================================
 // Script Drafts
-// ============================================================
 
 export interface ScriptDraft {
   id: string;

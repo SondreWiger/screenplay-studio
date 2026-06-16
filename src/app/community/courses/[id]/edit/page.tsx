@@ -14,10 +14,8 @@ import type {
 } from '@/lib/types';
 import type { MindmapData } from '@/components/ArcMindmap';
 
-// ============================================================
 // Course Edit Page — /community/courses/[id]/edit
 // Shares the same section/lesson builder as the create page.
-// ============================================================
 
 type DraftLesson = {
   id: string;             // DB uuid or temp "new-*"
@@ -57,7 +55,7 @@ function defaultContent(type: LessonType): unknown {
   }
 }
 
-// ── Lean content editors (same logic as create page) ──────────
+// Lean content editors (same logic as create page)
 
 function LessonContentForm({ type, value, onChange }: {
   type: LessonType;
@@ -118,7 +116,7 @@ function LessonContentForm({ type, value, onChange }: {
               className="w-full bg-white/[0.04] border border-white/10 rounded-lg text-sm text-white/70 px-3 py-2 outline-none" />
           </div>
         ))}
-        <button onClick={addQ} className="w-full py-2 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/15 hover:border-white/30 rounded-xl transition-all">+ Add Question</button>
+        <button onClick={addQ} className="w-full py-2 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/15 hover:border-white/30 rounded-xl transition-colors">+ Add Question</button>
       </div>
     );
   }
@@ -147,7 +145,7 @@ function LessonContentForm({ type, value, onChange }: {
           <input type="checkbox" checked={v.locked} onChange={e => onChange({ ...v, locked: e.target.checked })} className="w-4 h-4 accent-[#FF5F1F]" />
           Read-only
         </label>
-        <div className="rounded-2xl overflow-hidden border border-white/[0.08]" style={{ height: '360px' }}>
+        <div className="rounded-xl overflow-hidden border border-white/[0.08]" style={{ height: '360px' }}>
           <ArcMindmap projectId={`course-edit-${uid()}`} initialData={(v.arc_data as MindmapData | null) ?? null} canEdit={true}
             onSave={data => onChange({ ...v, arc_data: data as unknown })} />
         </div>
@@ -178,7 +176,7 @@ export default function CourseEditPage() {
   const params = useParams();
   const courseId = params.id as string;
 
-  // ─── meta ───────────────────────────────────────────────────
+  // meta
   const [title, setTitle]             = useState('');
   const [shortDesc, setShortDesc]     = useState('');
   const [description, setDescription] = useState('');
@@ -190,14 +188,14 @@ export default function CourseEditPage() {
   const [thumbnail, setThumbnail]     = useState('');
   const [status, setStatus]           = useState<'draft' | 'published'>('draft');
 
-  // ─── build ──────────────────────────────────────────────────
+  // build
   const [step, setStep]               = useState<'meta' | 'build'>('meta');
   const [sections, setSections]       = useState<DraftSection[]>([]);
   const [editingLesson, setEditingLesson] = useState<{ secId: string; lesson: DraftLesson } | null>(null);
   const [saving, setSaving]           = useState(false);
   const [loading, setLoading]         = useState(true);
 
-  // ─── Load existing course data ───────────────────────────────
+  // Load existing course data
   useEffect(() => {
     if (!courseId) return;
     (async () => {
@@ -251,7 +249,7 @@ export default function CourseEditPage() {
     })();
   }, [courseId, user]);
 
-  // ─── Section helpers ──────────────────────────────────────────
+  // Section helpers
   const addSection = () => setSections(s => [...s, { id: uid(), title: 'New Section', lessons: [] }]);
   const updateSection = (id: string, patch: Partial<DraftSection>) => setSections(s => s.map(sec => sec.id === id ? { ...sec, ...patch } : sec));
   const removeSection = (id: string) => setSections(s => s.filter(sec => sec.id !== id));
@@ -270,7 +268,7 @@ export default function CourseEditPage() {
     setEditingLesson(null);
   };
 
-  // ─── Save (UPDATE course + upsert sections/lessons) ───────────
+  // Save (UPDATE course + upsert sections/lessons)
   const handleSave = async (newStatus: 'draft' | 'published') => {
     if (!user || !title.trim()) return;
     setSaving(true);
@@ -356,7 +354,7 @@ export default function CourseEditPage() {
           <div className="flex items-center gap-1 ml-auto">
             {(['meta','build'] as const).map((s, i) => (
               <button key={s} onClick={() => setStep(s)}
-                className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all', step === s ? 'bg-[#FF5F1F] text-white' : 'text-white/40 hover:text-white/60')}>
+                className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors', step === s ? 'bg-[#FF5F1F] text-white' : 'text-white/40 hover:text-white/60')}>
                 <span className="w-3.5 h-3.5 rounded-full bg-current/20 flex items-center justify-center text-[9px]">{i+1}</span>
                 {s === 'meta' ? 'Details' : 'Build'}
               </button>
@@ -367,7 +365,7 @@ export default function CourseEditPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {step === 'meta' ? (
-          // ── Step 1: metadata ─────────────────────────────────
+          // Step 1: metadata
           <div className="max-w-2xl space-y-6">
             <div>
               <h2 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
@@ -442,7 +440,7 @@ export default function CourseEditPage() {
             </div>
           </div>
         ) : (
-          // ── Step 2: Section + Lesson builder ────────────────────
+          // Step 2: Section + Lesson builder
           <div className="space-y-5">
             <div className="flex items-end justify-between flex-wrap gap-3">
               <div>
@@ -467,7 +465,7 @@ export default function CourseEditPage() {
             </div>
 
             {sections.map((sec, si) => (
-              <div key={sec.id} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+              <div key={sec.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
                   <span className="w-5 h-5 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-[10px] font-bold flex items-center justify-center shrink-0">{si+1}</span>
                   <input value={sec.title} onChange={e => updateSection(sec.id, { title: e.target.value })}
@@ -490,7 +488,7 @@ export default function CourseEditPage() {
                 </div>
                 <div className="p-3">
                   <button onClick={() => addLesson(sec.id)}
-                    className="w-full py-2 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 rounded-xl transition-all flex items-center gap-1.5 justify-center">
+                    className="w-full py-2 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 rounded-xl transition-colors flex items-center gap-1.5 justify-center">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                     Add Lesson
                   </button>
@@ -499,7 +497,7 @@ export default function CourseEditPage() {
             ))}
 
             <button onClick={addSection}
-              className="w-full py-4 text-sm text-white/40 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 rounded-2xl transition-all flex items-center gap-2 justify-center">
+              className="w-full py-4 text-sm text-white/40 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 rounded-xl transition-colors flex items-center gap-2 justify-center">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
               Add Section
             </button>
@@ -507,10 +505,10 @@ export default function CourseEditPage() {
         )}
       </div>
 
-      {/* ── Lesson editor modal ── */}
+      {/* Lesson editor modal */}
       {editingLesson && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
-          <div className="w-full sm:max-w-2xl bg-[#0E0E1C] rounded-t-3xl sm:rounded-2xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
+          <div className="w-full sm:max-w-2xl bg-[#0E0E1C] rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-[#0E0E1C] z-10">
               <h3 className="text-sm font-bold text-white">Edit Lesson</h3>
               <button onClick={() => setEditingLesson(null)} className="text-white/40 hover:text-white">
@@ -547,7 +545,7 @@ export default function CourseEditPage() {
                   {LESSON_TYPES.map(opt => (
                     <button key={opt.value}
                       onClick={() => setEditingLesson(el => el ? { ...el, lesson: { ...el.lesson, lesson_type: opt.value, content: defaultContent(opt.value) } } : null)}
-                      className={cn('flex items-start gap-2.5 p-3 rounded-xl border text-left transition-all', editingLesson.lesson.lesson_type === opt.value ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10' : 'border-white/[0.08] bg-white/[0.03] hover:border-white/20')}>
+                      className={cn('flex items-start gap-2.5 p-3 rounded-xl border text-left transition-colors', editingLesson.lesson.lesson_type === opt.value ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10' : 'border-white/[0.08] bg-white/[0.03] hover:border-white/20')}>
                       <span className="text-lg leading-none">{opt.icon}</span>
                       <div>
                         <div className="text-xs font-semibold text-white">{opt.label}</div>

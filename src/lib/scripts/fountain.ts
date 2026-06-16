@@ -12,9 +12,7 @@
 
 import type { ScriptElement, ScriptElementType, TitlePageData } from '@/lib/types';
 
-// ============================================================
 // Fountain Import
-// ============================================================
 
 export interface FountainImportResult {
   titlePage: TitlePageData;
@@ -31,7 +29,7 @@ export function parseFountain(text: string): FountainImportResult {
   // Normalize line endings
   let source = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-  // --- Title Page ---
+  // Title Page
   // Title page is at the very start of the doc, key: value pairs separated by blank line
   const titlePageMatch = source.match(/^([\s\S]*?)(?:\n\n)/);
   if (titlePageMatch) {
@@ -81,17 +79,17 @@ export function parseFountain(text: string): FountainImportResult {
     }
   }
 
-  // --- Remove boneyards (/* ... */) ---
+  // Remove boneyards (/* ... */)
   source = source.replace(/\/\*[\s\S]*?\*\//g, '');
 
-  // --- Remove inline notes [[ ... ]] but preserve content as note elements ---
+  // Remove inline notes [[ ... ]] but preserve content as note elements
   const inlineNotes: string[] = [];
   source = source.replace(/\[\[([\s\S]*?)\]\]/g, (_match, content) => {
     inlineNotes.push(content.trim());
     return '';
   });
 
-  // --- Parse lines ---
+  // Parse lines
   const lines = source.split('\n');
   let sortOrder = 0;
   let sceneCount = 0;
@@ -116,14 +114,14 @@ export function parseFountain(text: string): FountainImportResult {
       continue;
     }
 
-    // === Page Break ===
+    // Page Break
     if (trimmed === '===') {
       pushElement('page_break', '');
       i++;
       continue;
     }
 
-    // === Section (# prefix) ===
+    // Section (# prefix)
     const sectionMatch = trimmed.match(/^(#{1,6})\s*(.+)/);
     if (sectionMatch) {
       pushElement('section', sectionMatch[2]);
@@ -131,28 +129,28 @@ export function parseFountain(text: string): FountainImportResult {
       continue;
     }
 
-    // === Synopsis (= prefix) ===
+    // Synopsis (= prefix)
     if (trimmed.startsWith('= ')) {
       pushElement('synopsis', trimmed.slice(2));
       i++;
       continue;
     }
 
-    // === Centered (> text <) ===
+    // Centered (> text <)
     if (trimmed.startsWith('>') && trimmed.endsWith('<')) {
       pushElement('centered', trimmed.slice(1, -1).trim());
       i++;
       continue;
     }
 
-    // === Transition (> at start or UPPERCASE ending with TO:) ===
+    // Transition (> at start or UPPERCASE ending with TO:)
     if (trimmed.startsWith('>') && !trimmed.endsWith('<')) {
       pushElement('transition', trimmed.slice(1).trim());
       i++;
       continue;
     }
 
-    // === Forced Scene Heading (. prefix) ===
+    // Forced Scene Heading (. prefix)
     if (trimmed.startsWith('.') && !trimmed.startsWith('..')) {
       sceneCount++;
       const { text: sceneText, sceneNumber } = extractSceneNumber(trimmed.slice(1));
@@ -161,7 +159,7 @@ export function parseFountain(text: string): FountainImportResult {
       continue;
     }
 
-    // === Scene Heading (INT. / EXT. / etc.) ===
+    // Scene Heading (INT. / EXT. / etc.)
     const sceneHeadingPattern = /^(INT|EXT|EST|INT\.\/EXT|INT\/EXT|I\/E)[\.\s]/i;
     if (sceneHeadingPattern.test(trimmed)) {
       sceneCount++;
@@ -171,14 +169,14 @@ export function parseFountain(text: string): FountainImportResult {
       continue;
     }
 
-    // === Lyrics (~ prefix) ===
+    // Lyrics (~ prefix)
     if (trimmed.startsWith('~')) {
       pushElement('lyrics', trimmed.slice(1).trim());
       i++;
       continue;
     }
 
-    // === Forced character (@prefix) ===
+    // Forced character (@prefix)
     if (trimmed.startsWith('@')) {
       pushElement('character', trimmed.slice(1).trim());
       // Next lines might be parenthetical/dialogue
@@ -188,7 +186,7 @@ export function parseFountain(text: string): FountainImportResult {
       continue;
     }
 
-    // === Character (ALL CAPS followed by dialogue) ===
+    // Character (ALL CAPS followed by dialogue)
     // A line is a character if it's all uppercase, not a scene heading,
     // and is followed by a non-empty line (dialogue or parenthetical)
     if (isCharacterLine(trimmed, lines, i)) {
@@ -200,21 +198,21 @@ export function parseFountain(text: string): FountainImportResult {
       continue;
     }
 
-    // === Transition (all caps ending with TO:) ===
+    // Transition (all caps ending with TO:)
     if (/^[A-Z\s]+TO:$/.test(trimmed)) {
       pushElement('transition', trimmed);
       i++;
       continue;
     }
 
-    // === Note ===
+    // Note
     if (trimmed.startsWith('[[') && trimmed.endsWith(']]')) {
       pushElement('note', trimmed.slice(2, -2).trim());
       i++;
       continue;
     }
 
-    // === Default: Action ===
+    // Default: Action
     // Collect consecutive non-empty lines as one action block
     let actionText = trimmed;
     i++;
@@ -233,9 +231,7 @@ export function parseFountain(text: string): FountainImportResult {
   return { titlePage, elements };
 }
 
-// ============================================================
 // Fountain Export
-// ============================================================
 
 export interface FountainExportOptions {
   titlePage?: TitlePageData;
@@ -249,7 +245,7 @@ export function generateFountain(options: FountainExportOptions): string {
   const { titlePage, elements } = options;
   const lines: string[] = [];
 
-  // --- Title Page ---
+  // Title Page
   if (titlePage) {
     const tp: [string, string | undefined][] = [
       ['Title', titlePage.title],
@@ -273,7 +269,7 @@ export function generateFountain(options: FountainExportOptions): string {
     }
   }
 
-  // --- Elements ---
+  // Elements
   let prevType: ScriptElementType | null = null;
 
   for (const el of elements) {
@@ -362,9 +358,7 @@ export function generateFountain(options: FountainExportOptions): string {
   return lines.join('\n') + '\n';
 }
 
-// ============================================================
 // Helpers
-// ============================================================
 
 function extractSceneNumber(text: string): { text: string; sceneNumber: string | null } {
   // Fountain scene numbers: #number# at the end

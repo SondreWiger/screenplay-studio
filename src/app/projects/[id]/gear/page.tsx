@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import type { ShootGear, GearCategory, GearOwnership, GearStatus } from '@/lib/types';
 import { GEAR_CATEGORIES } from '@/lib/types';
 
-// ── Constants ────────────────────────────────────────────────
+// Constants
 const OWNERSHIP_LABEL: Record<GearOwnership, string> = {
   owned: 'Owned', rented: 'Rented', provided: 'Provided', tbc: 'TBC',
 };
@@ -28,7 +28,7 @@ const STATUS_COLOR: Record<GearStatus, string> = {
 };
 const STATUS_CYCLE: GearStatus[] = ['pending', 'confirmed', 'cancelled'];
 
-// ── Empty form state ─────────────────────────────────────────
+// Empty form state
 const emptyForm = (): Partial<ShootGear> => ({
   name: '', category: 'Camera', quantity: 1, unit: 'unit',
   ownership: 'tbc', vendor: '', daily_rate: undefined,
@@ -36,7 +36,7 @@ const emptyForm = (): Partial<ShootGear> => ({
   shoot_day_id: null,
 });
 
-// ── Cost helpers ─────────────────────────────────────────────
+// Cost helpers
 function fmt(n: number | null | undefined) {
   if (n == null) return '—';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -148,7 +148,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
     a.click();
   };
 
-  // ── Filter + group ───────────────────────────────────────
+  // Filter + group
   const filteredGear = gear.filter(g =>
     (filterCat === 'All' || g.category === filterCat) &&
     (filterStatus === 'All' || g.status === filterStatus)
@@ -234,7 +234,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
         {filteredGear.length === 0 ? (
           <div className="flex items-center justify-center py-24">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
               </div>
               <p className="text-surface-400 font-medium">No gear yet</p>
@@ -292,7 +292,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
                           <button
                             onClick={() => handleCycleStatus(item)}
                             disabled={!canEdit}
-                            className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium transition-all hover:opacity-80', STATUS_COLOR[item.status])}
+                            className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium transition-opacity hover:opacity-80', STATUS_COLOR[item.status])}
                           >
                             {STATUS_LABEL[item.status]}
                           </button>
@@ -324,7 +324,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowForm(false)} />
           <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-          <div className="relative z-10 w-full max-w-lg bg-surface-950 border border-surface-700 rounded-2xl shadow-2xl p-6">
+          <div className="relative z-10 w-full max-w-lg bg-surface-950 border border-surface-700 rounded-xl shadow-2xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-white">{editingId ? 'Edit Gear Item' : 'Add Gear Item'}</h2>
               <button onClick={() => setShowForm(false)} className="text-surface-500 hover:text-white p-1 rounded transition-colors">

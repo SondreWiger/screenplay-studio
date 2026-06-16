@@ -2,13 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-// ─────────────────────────────────────────────────────────────
 // SMPTE 75% Color Bars  (EBU 3-row layout)
 // Row 1 (67%): 7 bars   White / Yellow / Cyan / Green / Magenta / Red / Blue
 // Row 2 (8%):  reverse cyan/black/magenta/black/yellow/black/white sub-bars
 // Row 3 (25%): –I / white / +Q / black / PLUGE (–4 / black / +4)
 // Audio: 1 kHz tone at –20 dBFS on left channel, silence right
-// ─────────────────────────────────────────────────────────────
 
 const BARS_ROW1: [number, number, number][] = [
   [192, 192, 192], // 75% White

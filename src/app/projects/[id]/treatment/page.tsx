@@ -111,7 +111,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 function FieldCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('bg-surface-800/50 border border-surface-700/60 rounded-2xl p-5 space-y-4', className)}>{children}</div>;
+  return <div className={cn('bg-surface-800/50 border border-surface-700/60 rounded-xl p-5 space-y-4', className)}>{children}</div>;
 }
 
 function buildSeriesBibleHTML(f: Omit<Treatment, 'id'>, projectTitle: string): string {
@@ -323,7 +323,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
               <span className="text-[10px] font-bold text-surface-400">{progressPct}%</span>
             </div>
             <div className="h-1 rounded-full bg-surface-700 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500" style={{ width: `${progressPct}%` }} />
+              <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-[width] duration-500" style={{ width: `${progressPct}%` }} />
             </div>
           </div>
         </div>
@@ -334,7 +334,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
             const active = activeSection === s.id;
             return (
               <button key={s.id} onClick={() => setActiveSection(s.id)}
-                className={cn('w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all', active ? 'text-white' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/60')}
+                className={cn('w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-colors', active ? 'text-white' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/60')}
                 style={active ? { background: `${s.accent}18`, color: s.accent } : undefined}>
                 <Icon size={14} className="flex-shrink-0" />
                 <span className="flex-1 text-left truncate">{s.label}</span>
@@ -348,13 +348,13 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
         <div className="px-3 pb-4 pt-2 border-t border-surface-800 space-y-2">
           {canEdit && (
             <button onClick={save} disabled={saving}
-              className={cn('w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all', isDirty ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-surface-800 text-surface-400 hover:text-white hover:bg-surface-700')}>
+              className={cn('w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-colors', isDirty ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-surface-800 text-surface-400 hover:text-white hover:bg-surface-700')}>
               <Save size={11} />
               {saving ? 'Saving…' : isDirty ? '● Save Changes' : 'Saved'}
             </button>
           )}
           <button onClick={handleExportPDF}
-            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-surface-800 text-surface-300 hover:text-white hover:bg-surface-700 transition-all"
+            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-surface-800 text-surface-300 hover:text-white hover:bg-surface-700 transition-colors"
             title="Opens print dialog — choose 'Save as PDF'">
             <Download size={11} /> Print / Save PDF
           </button>
@@ -453,7 +453,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
             <div className="space-y-5">
               <SectionHeader icon={GitBranch} label="Plot Threads" accent="#f87171" subtitle="A plot, B plot, C plot — each storyline tracked independently." />
               {f.plot_threads.map(t => (
-                <div key={t.id} className="rounded-2xl border border-surface-700/60 overflow-hidden">
+                <div key={t.id} className="rounded-xl border border-surface-700/60 overflow-hidden">
                   <div className="flex items-center gap-3 px-4 py-3" style={{ background: `${t.color}15`, borderBottom: `1px solid ${t.color}28` }}>
                     <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: t.color }} />
                     {canEdit
@@ -462,7 +462,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                     {canEdit && (
                       <div className="flex gap-1 ml-auto items-center">
                         {THREAD_COLORS.map(c => (
-                          <button key={c} onClick={() => updateThread(t.id, 'color', c)} className="w-3.5 h-3.5 rounded-full border-2 transition-all" style={{ background: c, borderColor: t.color === c ? 'white' : 'transparent' }} />
+                          <button key={c} onClick={() => updateThread(t.id, 'color', c)} className="w-3.5 h-3.5 rounded-full border-2 transition-colors" style={{ background: c, borderColor: t.color === c ? 'white' : 'transparent' }} />
                         ))}
                         <button onClick={() => removeThread(t.id)} className="ml-2 text-surface-500 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
                       </div>
@@ -479,7 +479,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 </div>
               ))}
               {canEdit && (
-                <button onClick={addThread} className="w-full py-3.5 rounded-2xl border border-dashed border-surface-700 text-surface-500 hover:border-red-500/40 hover:text-red-400 text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                <button onClick={addThread} className="w-full py-3.5 rounded-xl border border-dashed border-surface-700 text-surface-500 hover:border-red-500/40 hover:text-red-400 text-sm font-semibold transition-colors flex items-center justify-center gap-2">
                   <Plus size={14} /> Add Plot Thread
                 </button>
               )}
@@ -528,7 +528,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 })}
               </div>
               {canEdit && (
-                <button onClick={addEvent} className="w-full py-3.5 rounded-2xl border border-dashed border-surface-700 text-surface-500 hover:border-teal-500/40 hover:text-teal-400 text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                <button onClick={addEvent} className="w-full py-3.5 rounded-xl border border-dashed border-surface-700 text-surface-500 hover:border-teal-500/40 hover:text-teal-400 text-sm font-semibold transition-colors flex items-center justify-center gap-2">
                   <Plus size={14} /> Add Timeline Event
                 </button>
               )}
@@ -545,7 +545,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
             <div className="space-y-4">
               <SectionHeader icon={Users} label="Characters" accent="#34d399" subtitle="Arcs, motivations, fears, and flaws for every major player." />
               {f.character_arcs.map(c => (
-                <div key={c.id} className="bg-surface-800/40 border border-surface-700/50 rounded-2xl overflow-hidden">
+                <div key={c.id} className="bg-surface-800/40 border border-surface-700/50 rounded-xl overflow-hidden">
                   <div className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none" onClick={() => toggleArc(c.id)}>
                     <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs font-black text-emerald-400">{(c.name || '?')[0].toUpperCase()}</span>
@@ -581,7 +581,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 </div>
               ))}
               {canEdit && (
-                <button onClick={addArc} className="w-full py-3.5 rounded-2xl border border-dashed border-surface-700 text-surface-500 hover:border-emerald-500/40 hover:text-emerald-400 text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                <button onClick={addArc} className="w-full py-3.5 rounded-xl border border-dashed border-surface-700 text-surface-500 hover:border-emerald-500/40 hover:text-emerald-400 text-sm font-semibold transition-colors flex items-center justify-center gap-2">
                   <Plus size={14} /> Add Character
                 </button>
               )}
@@ -598,7 +598,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
             <div className="space-y-4">
               <SectionHeader icon={Tv} label="Episodes" accent="#818cf8" subtitle="Episode-by-episode breakdown for series and episodic projects." />
               {f.episode_breakdown.map((ep, idx) => (
-                <div key={ep.id} className="bg-surface-800/40 border border-surface-700/50 rounded-2xl overflow-hidden">
+                <div key={ep.id} className="bg-surface-800/40 border border-surface-700/50 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-700/40" style={{ background: '#818cf812' }}>
                     <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">Episode {idx + 1}</span>
                     {canEdit && <button onClick={() => removeEpisode(ep.id)} className="text-surface-600 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>}
@@ -611,7 +611,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 </div>
               ))}
               {canEdit && (
-                <button onClick={addEpisode} className="w-full py-3.5 rounded-2xl border border-dashed border-surface-700 text-surface-500 hover:border-indigo-500/40 hover:text-indigo-400 text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                <button onClick={addEpisode} className="w-full py-3.5 rounded-xl border border-dashed border-surface-700 text-surface-500 hover:border-indigo-500/40 hover:text-indigo-400 text-sm font-semibold transition-colors flex items-center justify-center gap-2">
                   <Plus size={14} /> Add Episode
                 </button>
               )}
@@ -649,7 +649,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
             <div className="space-y-5">
               <SectionHeader icon={Layers} label="Custom Sections" accent="#f472b6" subtitle="Add any additional sections your series bible needs." />
               {f.custom_sections.map((cs, idx) => (
-                <div key={cs.id} className="bg-surface-800/40 border border-surface-700/50 rounded-2xl overflow-hidden">
+                <div key={cs.id} className="bg-surface-800/40 border border-surface-700/50 rounded-xl overflow-hidden">
                   <div className="flex items-center gap-2 px-4 py-2.5 border-b border-surface-700/40" style={{ background: '#f472b612' }}>
                     <span className="text-[10px] font-black text-pink-400 uppercase tracking-widest mr-1">#{idx + 1}</span>
                     {canEdit
@@ -665,7 +665,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 </div>
               ))}
               {canEdit && (
-                <button onClick={addCustom} className="w-full py-3.5 rounded-2xl border border-dashed border-surface-700 text-surface-500 hover:border-pink-500/40 hover:text-pink-400 text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                <button onClick={addCustom} className="w-full py-3.5 rounded-xl border border-dashed border-surface-700 text-surface-500 hover:border-pink-500/40 hover:text-pink-400 text-sm font-semibold transition-colors flex items-center justify-center gap-2">
                   <Plus size={14} /> Add Custom Section
                 </button>
               )}

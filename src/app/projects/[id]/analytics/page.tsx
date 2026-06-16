@@ -155,7 +155,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
 
     setElementTypeCounts(typeCounts);
 
-    // ── Character dialogue stats ─────────────────────────────
+    // Character dialogue stats
     const sortedElements = [...elements].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     const charWordMap = new Map<string, { wordCount: number; lines: number }>();
     let currentSpeaker: string | null = null;
@@ -415,7 +415,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                       <span className="text-surface-400">{item.value}/{item.max}</span>
                     </div>
                     <div className="h-2.5 bg-surface-800 rounded-full overflow-hidden">
-                      <div className={`h-full ${item.color} rounded-full transition-all duration-500`}
+                      <div className={`h-full ${item.color} rounded-full transition-[width] duration-500`}
                         style={{ width: `${item.max > 0 ? (item.value / item.max) * 100 : 0}%` }} />
                     </div>
                   </div>
@@ -531,7 +531,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                       <div key={c.name}>
                         <div className="flex items-center justify-between text-xs mb-1">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-4 h-4 rounded-sm shrink-0" style={{ backgroundColor: color, opacity: 0.7 }} />
+                            <span className="w-4 h-4 rounded-md shrink-0" style={{ backgroundColor: color, opacity: 0.7 }} />
                             <span className="text-surface-200 font-medium truncate">{c.name}</span>
                           </div>
                           <div className="flex items-center gap-3 shrink-0 ml-2 text-surface-400">
@@ -542,7 +542,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                         </div>
                         <div className="h-1.5 bg-surface-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full rounded-full transition-all"
+                            className="h-full rounded-full transition-[width]"
                             style={{ width: `${(c.wordCount / maxWords) * 100}%`, backgroundColor: color }}
                           />
                         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useId } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -15,9 +15,7 @@ import type {
 } from '@/lib/types';
 import type { MindmapData } from '@/components/ArcMindmap';
 
-// ============================================================
 // Course Creation / Edit — /community/courses/create
-// ============================================================
 
 type Step = 'meta' | 'build';
 type DraftLesson = {
@@ -32,7 +30,7 @@ type DraftSection = { id: string; title: string; lessons: DraftLesson[] };
 
 function uid() { return Math.random().toString(36).slice(2); }
 
-// ── Lesson content form ────────────────────────────────────────
+// Lesson content form
 function TextForm({ value, onChange }: { value: LessonContentText; onChange: (v: LessonContentText) => void }) {
   return (
     <div className="space-y-3">
@@ -151,7 +149,7 @@ function QuizForm({ value, onChange }: { value: LessonContentQuiz; onChange: (v:
                 <button
                   onClick={() => markCorrect(q.id, opt.id)}
                   className={cn(
-                    'w-4 h-4 rounded-full border-2 shrink-0 transition-all',
+                    'w-4 h-4 rounded-full border-2 shrink-0 transition-colors',
                     opt.is_correct ? 'border-emerald-500 bg-emerald-500' : 'border-white/20 hover:border-white/40',
                   )}
                 />
@@ -182,7 +180,7 @@ function QuizForm({ value, onChange }: { value: LessonContentQuiz; onChange: (v:
         </div>
       ))}
       <button onClick={addQuestion}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/20 text-sm text-white/50 hover:text-white/80 hover:border-white/40 transition-all w-full justify-center">
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/20 text-sm text-white/50 hover:text-white/80 hover:border-white/40 transition-colors w-full justify-center">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
         Add Question
       </button>
@@ -280,7 +278,7 @@ function ArcEditorForm({ value, onChange }: { value: LessonContentArcEditor; onC
       </label>
       <div>
         <p className="text-xs text-white/50 mb-2">Arc canvas — build the example/template here</p>
-        <div className="rounded-2xl overflow-hidden border border-white/[0.08]" style={{ height: '400px' }}>
+        <div className="rounded-xl overflow-hidden border border-white/[0.08]" style={{ height: '400px' }}>
           <ArcMindmap
             projectId={`course-create-${uid()}`}
             initialData={(value.arc_data as MindmapData | null) ?? null}
@@ -354,7 +352,7 @@ function ExampleForm({ value, onChange }: { value: LessonContentExample; onChang
   );
 }
 
-// ── Default content per type ───────────────────────────────────
+// Default content per type
 function defaultContent(type: LessonType): Record<string, unknown> {
   switch (type) {
     case 'text':          return { markdown: '' } satisfies LessonContentText;
@@ -407,7 +405,7 @@ export default function CreateCoursePage() {
     }
   }, [user]);
 
-  // ── Section helpers ────────────────────────────────────────
+  // Section helpers
   const addSection = () => setSections(s => [...s, { id: uid(), title: 'New Section', lessons: [] }]);
   const updateSection = (id: string, patch: Partial<DraftSection>) =>
     setSections(s => s.map(sec => sec.id === id ? { ...sec, ...patch } : sec));
@@ -440,7 +438,7 @@ export default function CreateCoursePage() {
     setEditingLesson(null);
   };
 
-  // ── Save course to DB ──────────────────────────────────────
+  // Save course to DB
   const handleSave = async (status: 'draft' | 'published') => {
     if (!user || !title.trim()) return;
     setSaving(true);
@@ -514,7 +512,7 @@ export default function CreateCoursePage() {
             {(['meta','build'] as Step[]).map((s, i) => (
               <button key={s} onClick={() => step === 'build' || s === 'meta' ? setStep(s) : undefined}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
                   step === s ? 'bg-[#FF5F1F] text-white' : 'text-white/40 hover:text-white/60',
                 )}>
                 <span className="w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[9px]">{i+1}</span>
@@ -527,7 +525,7 @@ export default function CreateCoursePage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         {step === 'meta' ? (
-          // ── Step 1: Course metadata ────────────────────────
+          // Step 1: Course metadata
           <div className="max-w-2xl space-y-6">
             <div>
               <h2 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
@@ -622,7 +620,7 @@ export default function CreateCoursePage() {
             </div>
           </div>
         ) : (
-          // ── Step 2: Section + Lesson builder ──────────────
+          // Step 2: Section + Lesson builder
           <div className="space-y-6">
             <div className="flex items-end justify-between">
               <div>
@@ -642,7 +640,7 @@ export default function CreateCoursePage() {
             </div>
 
             {sections.map((sec, si) => (
-              <div key={sec.id} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+              <div key={sec.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
                 {/* Section header */}
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] bg-white/[0.03]">
                   <span className="w-6 h-6 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-xs font-bold flex items-center justify-center shrink-0">
@@ -659,7 +657,7 @@ export default function CreateCoursePage() {
 
                 {/* Lessons */}
                 <div className="divide-y divide-white/[0.04]">
-                  {sec.lessons.map((lesson, li) => (
+                  {sec.lessons.map((lesson) => (
                     <div key={lesson.id} className="flex items-center gap-3 px-5 py-3">
                       <span className="text-sm">{LESSON_TYPE_OPTIONS.find(t => t.value === lesson.lesson_type)?.icon}</span>
                       <div className="flex-1 min-w-0">
@@ -679,7 +677,7 @@ export default function CreateCoursePage() {
                 {/* Add lesson button */}
                 <div className="p-3">
                   <button onClick={() => addLesson(sec.id)}
-                    className="flex items-center gap-1.5 w-full justify-center px-4 py-2.5 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 rounded-xl transition-all">
+                    className="flex items-center gap-1.5 w-full justify-center px-4 py-2.5 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 transition-colors">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                     Add Lesson
                   </button>
@@ -688,7 +686,7 @@ export default function CreateCoursePage() {
             ))}
 
             <button onClick={addSection}
-              className="flex items-center gap-2 w-full justify-center px-6 py-4 text-sm text-white/40 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 rounded-2xl transition-all">
+              className="flex items-center gap-2 w-full justify-center px-6 py-4 text-sm text-white/40 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
               Add Section
             </button>
@@ -696,10 +694,10 @@ export default function CreateCoursePage() {
         )}
       </div>
 
-      {/* ─── Lesson Editor Modal ─── */}
+      {/* Lesson Editor Modal */}
       {editingLesson && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
-          <div className="w-full sm:max-w-2xl bg-[#0E0E1C] rounded-t-3xl sm:rounded-2xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
+          <div className="w-full sm:max-w-2xl bg-[#0E0E1C] rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-[#0E0E1C] z-10">
               <h3 className="text-sm font-bold text-white">Edit Lesson</h3>
               <button onClick={() => setEditingLesson(null)} className="text-white/40 hover:text-white transition-colors">
@@ -746,7 +744,7 @@ export default function CreateCoursePage() {
                     <button key={opt.value}
                       onClick={() => setEditingLesson(el => el ? { ...el, lesson: { ...el.lesson, lesson_type: opt.value, content: defaultContent(opt.value) } } : null)}
                       className={cn(
-                        'flex items-start gap-2.5 p-3 rounded-xl border text-left transition-all',
+                        'flex items-start gap-2.5 p-3 rounded-xl border text-left transition-colors',
                         editingLesson.lesson.lesson_type === opt.value
                           ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
                           : 'border-white/[0.08] bg-white/[0.03] hover:border-white/20',

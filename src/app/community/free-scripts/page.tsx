@@ -2,23 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
-import { formatDate, timeAgo } from '@/lib/utils';
+import { timeAgo } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { CommunityPost, CommunityCategory } from '@/lib/types';
 
 type EnrichedPost = CommunityPost & { _productionCount?: number };
 
-// ============================================================
 // Free-to-Use Scripts — library of openly-licensed scripts
-// ============================================================
 
 export default function FreeScriptsPage() {
   const { user } = useAuth();
-  const router = useRouter();
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -90,13 +86,6 @@ export default function FreeScriptsPage() {
     setPosts(rawPosts);
     setCategories(catsRes.data || []);
     setLoading(false);
-  };
-
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    await supabase.auth.signOut();
-    router.refresh();
   };
 
   // Filter & sort
@@ -218,7 +207,7 @@ export default function FreeScriptsPage() {
                   <Link
                     key={post.id}
                     href={`/community/post/${post.slug}`}
-                    className="block hover:opacity-80 transition-all overflow-hidden"
+                    className="block hover:opacity-80 transition-opacity overflow-hidden"
                     style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                   >
                     {/* Cover image */}

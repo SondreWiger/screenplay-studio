@@ -12,7 +12,7 @@ import { X, MessageSquare, ChevronUp, User, Star } from 'lucide-react';
 
 const ORANGE = '#FF5F1F';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 interface Testimonial {
   id: string;
@@ -33,7 +33,7 @@ interface Comment {
   created_at: string;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 function StarRow({ rating, size = 14 }: { rating: number | null; size?: number }) {
   const r = rating ?? 0;
@@ -52,7 +52,7 @@ function StarRow({ rating, size = 14 }: { rating: number | null; size?: number }
   );
 }
 
-// ─── Detail modal ─────────────────────────────────────────────────────────────
+// Detail modal
 
 function TestimonialModal({
   t,
@@ -162,7 +162,7 @@ function TestimonialModal({
             <button
               onClick={handleVote}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 text-sm font-bold border transition-all',
+                'flex items-center gap-2 px-4 py-2 text-sm font-bold border transition-colors',
                 voted
                   ? 'text-white'
                   : 'border-white/10 text-white/30 hover:text-white hover:border-white/30'
@@ -236,7 +236,6 @@ function TestimonialModal({
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function TestimonialsPage() {
   // useAuth() initializes the auth store — without this call, user stays null forever
@@ -383,7 +382,7 @@ export default function TestimonialsPage() {
                       <Star size={9} fill={ORANGE} stroke={ORANGE} />
                       <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
                         <div
-                          className="h-full rounded-full transition-all duration-500"
+                          className="h-full rounded-full transition-[width] duration-500"
                           style={{ width: `${pct}%`, background: ORANGE }}
                         />
                       </div>
@@ -407,7 +406,7 @@ export default function TestimonialsPage() {
         <button
           onClick={() => setFilterStar(null)}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all',
+            'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors',
             filterStar === null
               ? 'text-white'
               : 'text-white/30 hover:text-white/60'
@@ -424,7 +423,7 @@ export default function TestimonialsPage() {
               key={s}
               onClick={() => setFilterStar(filterStar === s ? null : s)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all',
+                'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors',
                 filterStar === s
                   ? 'text-white'
                   : 'text-white/30 hover:text-white/60'
@@ -493,7 +492,7 @@ export default function TestimonialsPage() {
                   >
                     {/* Orange accent bar */}
                     <div
-                      className="absolute left-0 top-0 bottom-0 w-[2px] origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-250"
+                      className="absolute left-0 top-0 bottom-0 w-[2px] origin-top scale-y-0 transition-transform duration-250"
                       style={{ background: ORANGE }}
                     />
 

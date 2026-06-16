@@ -1,8 +1,6 @@
 import type { Profile, CompanyPlan, CompanyRole, ScriptElement } from './base';
 
-// ============================================================
 // Company Types
-// ============================================================
 
 export interface Company {
   id: string;
@@ -130,9 +128,7 @@ export interface CompanyBlogComment {
   author?: Profile;
 }
 
-// ============================================================
 // Organization System Types
-// ============================================================
 
 export interface OrgChannel {
   id: string;

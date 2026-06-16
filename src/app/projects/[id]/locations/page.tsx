@@ -71,7 +71,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
     else if (h.startsWith('EXT.')) locationType = 'EXT';
     else if (h.startsWith('INT.')) locationType = 'INT';
 
-    let rest = h.replace(/^(INT\.\/EXT\.|INT\/EXT|I\/E\.|INT\.|EXT\.)\s*/i, '').trim();
+    const rest = h.replace(/^(INT\.\/EXT\.|INT\/EXT|I\/E\.|INT\.|EXT\.)\s*/i, '').trim();
     const dashParts = rest.split(/\s+-\s+/);
     const locationName = dashParts[0]?.trim() || '';
     return { locationType, locationName };
@@ -318,7 +318,6 @@ function LocationEditor({ isOpen, onClose, location, projectId, userId, onSaved,
     permits_required: false, permit_notes: '', parking_info: '', power_available: true,
     sound_notes: '', lighting_notes: '', cost_per_day: '', is_confirmed: false, tags: [] as string[],
   });
-  const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('details');
 

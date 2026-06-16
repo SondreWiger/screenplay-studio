@@ -7,10 +7,9 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn, timeAgo } from '@/lib/utils';
 import {
-  ChevronUp, ArrowLeft, Bug, Lightbulb, MessageSquare,
-  Bell, BellOff, Tag, CheckCircle2, Clock, Hammer, BookMarked,
-  XCircle, AlertTriangle, Star, Monitor, Globe, User, Link2,
-  CircleDot, Flag,
+  ChevronUp, ArrowLeft, MessageSquare,
+  Bell, BellOff, CheckCircle2, Monitor, Globe, User, Link2,
+  Flag,
 } from 'lucide-react';
 import { toast } from '@/components/ui';
 import { SiteVersion } from '@/components/SiteVersion';
@@ -378,7 +377,7 @@ export default function FeedbackItemPage() {
                     <button
                       onClick={handleComment}
                       disabled={commentSubmitting || !commentText.trim()}
-                      className="px-4 py-2 rounded-lg text-sm font-bold text-white transition-all disabled:opacity-40"
+                      className="px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-40"
                       style={{ background: '#FF5F1F' }}
                     >
                       {commentSubmitting ? 'Posting…' : 'Post Comment'}
@@ -404,7 +403,7 @@ export default function FeedbackItemPage() {
               <button
                 onClick={handleVote}
                 className={cn(
-                  'w-full flex flex-col items-center justify-center py-4 px-4 rounded-xl border-2 font-black transition-all duration-150 text-3xl mb-2',
+                  'w-full flex flex-col items-center justify-center py-4 px-4 rounded-xl border-2 font-black transition-colors duration-150 text-3xl mb-2',
                   voted
                     ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
                     : 'border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-500 hover:text-white'
@@ -420,7 +419,7 @@ export default function FeedbackItemPage() {
             <button
               onClick={handleSubscribe}
               className={cn(
-                'w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-sm font-semibold transition-all',
+                'w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-sm font-semibold transition-colors',
                 subscribed
                   ? 'border-surface-600 bg-surface-800 text-surface-300 hover:border-surface-500'
                   : 'border-surface-700 bg-surface-900 text-surface-400 hover:text-white hover:border-surface-600'

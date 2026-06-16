@@ -3,11 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, LoadingPage, Input, Modal, toast, ToastContainer } from '@/components/ui';
+import { Button, Card, LoadingPage, Input, Modal, toast, ToastContainer } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { StageEnsembleMember, StageEnsembleGroup, STAGE_ENSEMBLE_GROUPS } from '@/lib/types';
+import type { StageEnsembleMember, StageEnsembleGroup } from '@/lib/types';
 import { STAGE_ENSEMBLE_GROUPS as GROUPS } from '@/lib/types';
 
 const GROUP_COLORS: Record<StageEnsembleGroup, string> = {
@@ -35,7 +34,6 @@ const emptyForm = (): Partial<StageEnsembleMember> => ({
 
 export default function EnsemblePage() {
   const params  = useParams<{ id: string }>();
-  const { user } = useAuth();
   const { currentProject } = useProjectStore();
   const [members, setMembers] = useState<StageEnsembleMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,8 +43,6 @@ export default function EnsemblePage() {
   const [form, setForm] = useState<Partial<StageEnsembleMember>>(emptyForm());
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const isOwner = currentProject?.created_by === user?.id;
 
   const fetchMembers = useCallback(async () => {
     const supabase = createClient();

@@ -2,10 +2,8 @@
 
 import type { ScriptElementType } from '@/lib/types';
 
-// ============================================================
 // Screenplay Renderer — renders structured script elements
 // as a properly formatted screenplay.
-// ============================================================
 
 export interface ScreenplayElement {
   element_type: ScriptElementType;

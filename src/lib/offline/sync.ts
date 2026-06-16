@@ -20,7 +20,7 @@ import {
   type Row,
 } from './db';
 
-// ── Tiny uuid helper (no dep) ─────────────────────────────────────────────
+// Tiny uuid helper (no dep)
 
 function newId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -30,14 +30,14 @@ function newId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-// ── Online check ──────────────────────────────────────────────────────────
+// Online check
 
 function isOnline(): boolean {
   if (typeof navigator === 'undefined') return true;
   return navigator.onLine;
 }
 
-// ── Background refresh helper ─────────────────────────────────────────────
+// Background refresh helper
 
 /**
  * Silently fetches fresh data from Supabase in the background
@@ -56,7 +56,7 @@ async function backgroundRefresh(
   }
 }
 
-// ── Projects ──────────────────────────────────────────────────────────────
+// Projects
 
 export async function getProjects(): Promise<Row[]> {
   const cached = await getCachedProjects();
@@ -94,7 +94,7 @@ export async function getProject(id: string): Promise<Row | undefined> {
   return cached;
 }
 
-// ── Generic project-scoped reader ─────────────────────────────────────────
+// Generic project-scoped reader
 
 export async function getProjectRows(
   store: DataStoreName,
@@ -116,7 +116,7 @@ export async function getProjectRows(
   return cached;
 }
 
-// ── Script elements ───────────────────────────────────────────────────────
+// Script elements
 
 export async function getScriptElements(scriptId: string): Promise<Row[]> {
   const cached = await getCachedByScript(scriptId);
@@ -133,7 +133,7 @@ export async function getScriptElements(scriptId: string): Promise<Row[]> {
   return cached;
 }
 
-// ── Trigger immediate sync (without importing queue to avoid circular dep) ───
+// Trigger immediate sync (without importing queue to avoid circular dep)
 
 function triggerImmediateSync() {
   if (typeof window !== 'undefined' && navigator.onLine) {
@@ -141,7 +141,7 @@ function triggerImmediateSync() {
   }
 }
 
-// ── Offline-first write ───────────────────────────────────────────────────
+// Offline-first write
 
 /**
  * Write a row locally and queue a remote sync.

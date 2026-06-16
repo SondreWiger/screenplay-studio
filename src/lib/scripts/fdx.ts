@@ -8,9 +8,7 @@
 
 import type { ScriptElement, ScriptElementType, TitlePageData } from '@/lib/types';
 
-// ============================================================
 // FDX Element Type Mapping
-// ============================================================
 
 const FDX_TO_ELEMENT: Record<string, ScriptElementType> = {
   'Scene Heading': 'scene_heading',
@@ -70,9 +68,7 @@ const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   sequence_end: 'Action',
 };
 
-// ============================================================
 // FDX Import
-// ============================================================
 
 export interface FDXImportResult {
   titlePage: TitlePageData;
@@ -99,7 +95,7 @@ export function parseFDX(xmlString: string): FDXImportResult {
   const root = doc.documentElement;
   const fdxVersion = root.getAttribute('Version') || undefined;
 
-  // --- Title Page ---
+  // Title Page
   const titlePage: TitlePageData = {};
   const titlePageNode = doc.querySelector('TitlePage');
   if (titlePageNode) {
@@ -178,7 +174,7 @@ export function parseFDX(xmlString: string): FDXImportResult {
     if (creditEl?.textContent && !titlePage.credit) titlePage.credit = creditEl.textContent;
   }
 
-  // --- Script Elements ---
+  // Script Elements
   const elements: Partial<ScriptElement>[] = [];
   const paragraphs = doc.querySelectorAll('Content > Paragraph');
   let sortOrder = 0;
@@ -232,9 +228,7 @@ export function parseFDX(xmlString: string): FDXImportResult {
   };
 }
 
-// ============================================================
 // FDX Export
-// ============================================================
 
 export interface FDXExportOptions {
   titlePage?: TitlePageData;
@@ -252,7 +246,7 @@ export function generateFDX(options: FDXExportOptions): string {
   lines.push('<?xml version="1.0" encoding="UTF-8" standalone="no"?>');
   lines.push('<FinalDraft DocumentType="Script" Template="No" Version="5">');
 
-  // --- Title Page ---
+  // Title Page
   if (titlePage && (titlePage.title || titlePage.author)) {
     lines.push('  <TitlePage>');
 
@@ -305,7 +299,7 @@ export function generateFDX(options: FDXExportOptions): string {
     lines.push('  </TitlePage>');
   }
 
-  // --- Script Content ---
+  // Script Content
   lines.push('  <Content>');
 
   for (const el of elements) {
@@ -331,9 +325,7 @@ export function generateFDX(options: FDXExportOptions): string {
   return lines.join('\n');
 }
 
-// ============================================================
 // Helpers
-// ============================================================
 
 function getTextFromParagraph(para: Element): string {
   const texts: string[] = [];

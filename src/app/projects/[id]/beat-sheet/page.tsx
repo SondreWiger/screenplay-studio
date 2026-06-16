@@ -3,17 +3,15 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Card, Button, Badge, toast, Modal, Input, Progress } from '@/components/ui';
+import { Button, Badge, toast, Modal, Input, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-// ============================================================
 // Beat Sheet — Story structure planning tool
 // Supports Save the Cat (15 beats), Three-Act, Hero's Journey
 // Plus custom frameworks stored in localStorage
 // Stored in projects.content_metadata.beat_sheets.{scope}
 // Scope: 'project' | 'ep_{scriptId}' | 'season_{n}'
 // Also handles legacy: content_metadata.beat_sheet (migrated)
-// ============================================================
 
 type FrameworkKey = 'save_the_cat' | 'three_act' | 'hero_journey' | `custom_${string}`;
 
@@ -40,7 +38,7 @@ interface SceneRef {
   scene_heading: string | null;
 }
 
-// ── Built-in framework definitions ────────────────────────────
+// Built-in framework definitions
 
 const SAVE_THE_CAT: Beat[] = [
   { id: 'opening_image',   label: 'Opening Image',      description: 'A snapshot of the hero\'s flawed world before the journey begins.',                        pageHint: 'p. 1',      pagePercent: 1,   color: '#6366f1', notes: '', scenes: [] },
@@ -93,7 +91,7 @@ const BUILTIN_FRAMEWORKS: Record<string, { label: string; beats: Beat[] }> = {
   hero_journey:  { label: "Hero's Journey",   beats: HERO_JOURNEY },
 };
 
-// ── Custom framework persistence ──────────────────────────────
+// Custom framework persistence
 const CUSTOM_FRAMEWORKS_KEY = 'screenplay-studio-custom-frameworks';
 
 interface CustomFrameworkDef {
@@ -125,7 +123,7 @@ function generateBeatId(): string {
   return `beat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-// ── Episodic scope types ──────────────────────────────────────
+// Episodic scope types
 
 interface EpisodeItem { id: string; title: string; season: number | null; }
 
@@ -191,7 +189,6 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
   const [loading, setLoading]  = useState(true);
   const [projectScenes, setProjectScenes] = useState<SceneRef[]>([]);
   const [beatLinkedScenes, setBeatLinkedScenes] = useState<Record<string, string[]>>({});
-  const [scenePicker, setScenePicker] = useState<string | null>(null);
   const [beatCompleted, setBeatCompleted] = useState<Record<string, boolean>>({});
 
   // Custom framework state
@@ -367,7 +364,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     return scope;
   })();
 
-  // ── Custom framework builder helpers ────────────────────────
+  // Custom framework builder helpers
 
   const openCustomBuilder = () => {
     setCustomBuilderName('');
@@ -441,7 +438,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     toast.success('Custom framework deleted');
   };
 
-  // ── Drag-to-reorder in custom builder ──────────────────────
+  // Drag-to-reorder in custom builder
 
   const handleBuilderDragStart = (idx: number) => {
     setDraggedBeatIdx(idx);
@@ -463,7 +460,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     setDraggedBeatIdx(null);
   };
 
-  // ── Drag-to-reorder main beats ─────────────────────────────
+  // Drag-to-reorder main beats
   const [draggedMainBeatIdx, setDraggedMainBeatIdx] = useState<number | null>(null);
   const [mainBeatOrder, setMainBeatOrder] = useState<string[] | null>(null);
 
@@ -506,7 +503,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     setDraggedMainBeatIdx(null);
   };
 
-  // ── Export as text ──────────────────────────────────────────
+  // Export as text
 
   const exportAsText = () => {
     const lines: string[] = [];
@@ -532,7 +529,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     });
   };
 
-  // ── Timeline segment click → scroll to beat ────────────────
+  // Timeline segment click → scroll to beat
 
   const scrollToBeat = (beatId: string) => {
     const el = beatRefs.current[beatId];
@@ -542,7 +539,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // ── Compute timeline segments ──────────────────────────────
+  // Compute timeline segments
 
   const timelineSegments = useMemo(() => {
     const sorted = [...orderedBeats].sort((a, b) => a.pagePercent - b.pagePercent);
@@ -717,7 +714,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
           {timelineSegments.map(({ beat, start, width, startPage, endPage }) => (
             <div
               key={beat.id}
-              className="absolute top-0 h-full rounded-md cursor-pointer transition-all duration-150 flex items-center justify-center text-[10px] font-semibold text-white/80 hover:text-white hover:brightness-110"
+              className="absolute top-0 h-full rounded-md cursor-pointer transition-colors duration-150 flex items-center justify-center text-[10px] font-semibold text-white/80 hover:text-white hover:brightness-110"
               style={{
                 left: `${start}%`,
                 width: `${width}%`,
@@ -763,7 +760,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                 onDragOver={(e) => handleMainDragOver(e, idx)}
                 onDragEnd={handleMainDragEnd}
                 className={cn(
-                  'rounded-xl border transition-all duration-150',
+                  'rounded-xl border transition-colors duration-150',
                   isActive
                     ? 'border-[#FF5F1F]/50 bg-surface-800/80'
                     : hasNote
@@ -793,7 +790,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                         setBeatCompleted((prev) => ({ ...prev, [beat.id]: !prev[beat.id] }));
                       }}
                       className={cn(
-                        'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0',
+                        'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0',
                         isCompleted
                           ? 'bg-green-500 border-green-500 text-white'
                           : 'border-surface-600 hover:border-surface-400 text-transparent',
@@ -824,7 +821,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                     </div>
                     <p className="text-xs text-surface-400">{beat.description}</p>
                     {hasNote && !isActive && (
-                      <p className="text-xs text-surface-300 mt-1.5 italic line-clamp-2">"{beatNotes[beat.id]}"</p>
+                      <p className="text-xs text-surface-300 mt-1.5 italic line-clamp-2">&quot;{beatNotes[beat.id]}&quot;</p>
                     )}
                     {/* Linked scene chips (collapsed) */}
                     {!isActive && (beatLinkedScenes[beat.id]?.length ?? 0) > 0 && (

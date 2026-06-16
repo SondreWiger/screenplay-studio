@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -15,11 +15,9 @@ import type {
 } from '@/lib/types';
 import type { MindmapData } from '@/components/ArcMindmap';
 
-// ============================================================
 // Course Viewer / Player — /community/courses/[id]
-// ============================================================
 
-// ── Simple Markdown → HTML renderer (no deps) ─────────────────
+// Simple Markdown → HTML renderer (no deps)
 function renderMarkdown(md: string): string {
   return md
     .replace(/^### (.+)$/gm, '<h3 class="text-base font-bold text-white mt-5 mb-2">$1</h3>')
@@ -35,7 +33,7 @@ function renderMarkdown(md: string): string {
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-[#FF5F1F] hover:underline" target="_blank" rel="noopener">$1</a>');
 }
 
-// ── Lesson type renders ────────────────────────────────────────
+// Lesson type renders
 
 function TextLesson({ content }: { content: LessonContentText }) {
   return (
@@ -62,7 +60,7 @@ function VideoLesson({ content }: { content: LessonContentVideo }) {
 
   return (
     <div className="space-y-4">
-      <div className="relative w-full rounded-2xl overflow-hidden bg-black border border-white/10" style={{ paddingTop: '56.25%' }}>
+      <div className="relative w-full rounded-xl overflow-hidden bg-black border border-white/10" style={{ paddingTop: '56.25%' }}>
         <iframe
           src={getEmbedUrl()}
           className="absolute inset-0 w-full h-full"
@@ -117,7 +115,7 @@ function QuizLesson({
     return (
       <div className="space-y-6">
         <div className={cn(
-          'flex items-center justify-between p-5 rounded-2xl border',
+          'flex items-center justify-between p-5 rounded-xl border',
           score === 100 ? 'bg-emerald-500/10 border-emerald-500/30' :
           score >= 70  ? 'bg-amber-500/10 border-amber-500/30' :
                          'bg-red-500/10 border-red-500/30',
@@ -148,7 +146,7 @@ function QuizLesson({
     <div className="space-y-6">
       {submitted && score !== null ? (
         <div className={cn(
-          'flex items-center justify-between p-5 rounded-2xl border',
+          'flex items-center justify-between p-5 rounded-xl border',
           score === 100 ? 'bg-emerald-500/10 border-emerald-500/30' :
           score >= 70  ? 'bg-amber-500/10 border-amber-500/30' :
                          'bg-red-500/10 border-red-500/30',
@@ -184,7 +182,7 @@ function QuizLesson({
           onClick={handleSubmit}
           disabled={!allAnswered}
           className={cn(
-            'w-full py-3 rounded-xl text-sm font-semibold transition-all',
+            'w-full py-3 rounded-xl text-sm font-semibold transition-colors',
             allAnswered
               ? 'bg-[#FF5F1F] text-white hover:bg-[#E54E15]'
               : 'bg-white/5 text-white/30 cursor-not-allowed',
@@ -201,7 +199,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
   q: QuizQuestion; idx: number; answer?: string; submitted: boolean; onSelect: (id: string) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
+    <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-5">
       <div className="flex items-start gap-3 mb-4">
         <span className="w-6 h-6 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
           {idx + 1}
@@ -218,7 +216,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
               key={opt.id}
               onClick={() => onSelect(opt.id)}
               className={cn(
-                'w-full text-left px-4 py-3 rounded-xl text-sm transition-all border',
+                'w-full text-left px-4 py-3 rounded-xl text-sm transition-colors border',
                 !showResult && !isSelected && 'border-white/10 text-white/60 hover:border-white/30 hover:text-white bg-white/[0.03]',
                 !showResult && isSelected  && 'border-[#FF5F1F]/40 text-white bg-[#FF5F1F]/10',
                 showResult && isCorrect    && 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10',
@@ -228,7 +226,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
             >
               <div className="flex items-center gap-3">
                 <span className={cn(
-                  'w-4 h-4 rounded-full border-2 shrink-0 transition-all',
+                  'w-4 h-4 rounded-full border-2 shrink-0 transition-colors',
                   !showResult && isSelected ? 'border-[#FF5F1F] bg-[#FF5F1F]' : 'border-white/20',
                   showResult && isCorrect ? 'border-emerald-500 bg-emerald-500' : '',
                   showResult && !isCorrect && isSelected ? 'border-red-500 bg-red-500' : '',
@@ -277,7 +275,7 @@ function ScriptEditorLesson({
       </div>
 
       {/* Mini screenplay editor */}
-      <div className="rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0A0A14]">
+      <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0A14]">
         {/* Editor header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06] bg-white/[0.03]">
           <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Screenplay Editor</span>
@@ -369,8 +367,6 @@ function ArcEditorLesson({
   onComplete: () => void;
   existingCompletion?: boolean;
 }) {
-  const [userData, setUserData] = useState<MindmapData | null>(null);
-
   return (
     <div className="space-y-4">
       {/* Instructions */}
@@ -385,12 +381,12 @@ function ArcEditorLesson({
       </div>
 
       {/* Arc mindmap */}
-      <div className="rounded-2xl overflow-hidden border border-white/[0.08]" style={{ height: '480px' }}>
+      <div className="rounded-xl overflow-hidden border border-white/[0.08]" style={{ height: '480px' }}>
         <ArcMindmap
           projectId={`course-lesson-${Math.random()}`}
           initialData={content.arc_data as MindmapData | null}
           canEdit={!content.locked}
-          onSave={data => setUserData(data)}
+          onSave={() => { /* mindmap auto-saves */ }}
         />
       </div>
 
@@ -413,7 +409,7 @@ function ExampleLesson({ content }: { content: LessonContentExample }) {
       {content.description && (
         <p className="text-sm text-white/60 leading-relaxed">{content.description}</p>
       )}
-      <div className="rounded-2xl overflow-hidden border border-white/[0.08] bg-[#080810]">
+      <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#080810]">
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06] bg-white/[0.03]">
           <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
             {content.language === 'fountain' ? 'Screenplay Example' : content.language}
@@ -468,7 +464,7 @@ function FountainLine({ text, lang }: { text: string; lang: string }) {
   return <span>{text}</span>;
 }
 
-// ── Progress sidebar ───────────────────────────────────────────
+// Progress sidebar
 function ProgressSidebar({
   sections,
   completedIds,
@@ -497,7 +493,7 @@ function ProgressSidebar({
               <span className="text-white/60">{enrollment.progress_percent}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-[#FF5F1F] rounded-full transition-all" style={{ width: `${enrollment.progress_percent}%` }} />
+              <div className="h-full bg-[#FF5F1F] rounded-full transition-[width]" style={{ width: `${enrollment.progress_percent}%` }} />
             </div>
           </div>
         )}
@@ -579,7 +575,7 @@ const LESSON_TYPE_ICON: Record<string, string> = {
   example:       '💡',
 };
 
-// ── Main page ──────────────────────────────────────────────────
+// Main page
 export default function CourseViewerPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -730,7 +726,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
     <div className="flex h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#070710', color: '#fff' }}>
       {/* ─── Sidebar ─── */}
       <div className={cn(
-        'flex-shrink-0 border-r border-white/[0.07] transition-all duration-200 overflow-hidden',
+        'flex-shrink-0 border-r border-white/[0.07] transition-[width] duration-200 overflow-hidden',
         sidebarOpen ? 'w-72' : 'w-0',
       )} style={{ background: 'rgba(7,7,16,0.97)' }}>
         {sidebarOpen && (
@@ -833,7 +829,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
                 <button
                   onClick={() => setActiveLessonId(allLessons[activeIdx - 1]?.id ?? null)}
                   disabled={activeIdx === 0}
-                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
                   Previous
@@ -845,7 +841,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
                     <button
                       onClick={() => markComplete()}
                       disabled={completing}
-                      className="px-5 py-2.5 text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl transition-all disabled:opacity-50"
+                      className="px-5 py-2.5 text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl transition-colors disabled:opacity-50"
                     >
                       {completing ? 'Saving...' : 'Mark Complete'}
                     </button>
@@ -854,7 +850,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
                   {activeIdx < allLessons.length - 1 && (
                     <button
                       onClick={() => setActiveLessonId(allLessons[activeIdx + 1]?.id ?? null)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-[#FF5F1F]/10 hover:bg-[#FF5F1F]/20 text-[#FF5F1F] rounded-xl transition-all border border-[#FF5F1F]/20"
+                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-[#FF5F1F]/10 hover:bg-[#FF5F1F]/20 text-[#FF5F1F] rounded-xl transition-colors border border-[#FF5F1F]/20"
                     >
                       Next
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
@@ -867,7 +863,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
               <div className="text-5xl mb-4">🎓</div>
               <h3 className="text-lg font-bold text-white mb-2">All lessons completed!</h3>
-              <p className="text-sm text-white/50 max-w-sm">You've worked through every lesson in this course.</p>
+              <p className="text-sm text-white/50 max-w-sm">You&apos;ve worked through every lesson in this course.</p>
             </div>
           )}
         </div>
@@ -876,7 +872,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
       {/* ─── Rating modal ─── */}
       {showRating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-[#0D0D1A] rounded-2xl border border-[#FF5F1F]/20 p-8 text-center shadow-2xl">
+          <div className="w-full max-w-sm bg-[#0D0D1A] rounded-xl border border-[#FF5F1F]/20 p-8 text-center shadow-2xl">
             <div className="text-4xl mb-3">🎉</div>
             <h3 className="text-xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Complete!</h3>
             <p className="text-sm text-white/50 mb-2">You earned <span className="text-[#FF5F1F] font-bold">+{course.xp_reward} XP</span></p>
@@ -884,7 +880,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
             <div className="flex items-center justify-center gap-2 mb-6">
               {[1,2,3,4,5].map(r => (
                 <button key={r} onClick={() => handleRate(r)}
-                  className={cn('w-10 h-10 text-2xl transition-all hover:scale-110', r <= (userRating ?? 0) ? '' : 'opacity-30')}>
+                  className={cn('w-10 h-10 text-2xl transition-opacity', r <= (userRating ?? 0) ? '' : 'opacity-30')}>
                   ★
                 </button>
               ))}

@@ -38,6 +38,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [locations, setLocations] = useState<Loc[]>([]);
+  const [charNameMap, setCharNameMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
   const [showEditor, setShowEditor] = useState(false);
@@ -50,6 +51,19 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
 
   useEffect(() => { fetchData(); }, [params.id]);
 
+  // Realtime: keep schedule/scenes/characters in sync
+  useEffect(() => {
+    if (!params.id) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`schedule-${params.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scenes' }, () => { fetchData(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'characters' }, () => { fetchData(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'production_schedule' }, () => { fetchData(); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [params.id]);
+
   // Role awareness
   const { members, currentProject } = useProjectStore();
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
@@ -59,10 +73,11 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   const fetchData = async () => {
     try {
       const supabase = createClient();
-      const [evRes, scRes, loRes] = await Promise.all([
+      const [evRes, scRes, loRes, chRes] = await Promise.all([
         supabase.from('production_schedule').select('*').eq('project_id', params.id).order('start_time'),
         supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
         supabase.from('locations').select('*').eq('project_id', params.id).order('name'),
+        supabase.from('characters').select('id,name').eq('project_id', params.id),
       ]);
       if (evRes.error) console.error('Schedule fetch error:', evRes.error.message);
       if (scRes.error) console.error('Scenes fetch error:', scRes.error.message);
@@ -70,6 +85,9 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
       setEvents(evRes.data || []);
       setScenes(scRes.data || []);
       setLocations(loRes.data || []);
+      const map: Record<string, string> = {};
+      for (const c of chRes.data || []) map[c.id] = c.name;
+      setCharNameMap(map);
     } catch (err) {
       console.error('Unexpected error:', err);
     } finally {
@@ -232,6 +250,11 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                         {ev.wrap_time && <span>Wrap: {ev.wrap_time}</span>}
                         {scene && <span>Sc. {scene.scene_number}</span>}
                         {loc && <span>{loc.name}</span>}
+                        {scene && scene.cast_ids.length > 0 && (
+                          <span className="text-[10px] text-surface-500 truncate max-w-[180px]">
+                            {scene.cast_ids.map((cid: string) => charNameMap[cid]).filter(Boolean).join(', ')}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

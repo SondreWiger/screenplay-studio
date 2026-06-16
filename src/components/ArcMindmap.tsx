@@ -31,9 +31,7 @@ import { toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Script } from '@/lib/types';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Types
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type NodeType = 'episode' | 'arc' | 'character' | 'theme' | 'event' | 'note';
 export type EdgeType = 'story-arc' | 'subplot' | 'character-link' | 'conflict' | 'cause-effect';
@@ -67,9 +65,7 @@ export interface MindmapData {
   version: 1;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Constants
-// ─────────────────────────────────────────────────────────────────────────────
 
 const NODE_COLORS: Record<NodeType, string> = {
   episode:   '#7c3aed',   // violet-700
@@ -122,9 +118,7 @@ const MAX_ZOOM = 3;
 function nodeW(n: MapNode) { return n.width ?? NODE_W; }
 function nodeH(n: MapNode) { return n.height ?? NODE_H; }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Helpers
-// ─────────────────────────────────────────────────────────────────────────────
 
 function uid() {
   return crypto.randomUUID();
@@ -213,9 +207,7 @@ function bestPorts(from: MapNode, to: MapNode) {
   return best;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Sub-components
-// ─────────────────────────────────────────────────────────────────────────────
 
 function NodeCard({
   node,
@@ -322,9 +314,7 @@ function NodeCard({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Main Component
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface Props {
   projectId: string;
@@ -345,7 +335,7 @@ export function ArcMindmap({
   const svgRef     = useRef<SVGSVGElement>(null);
   const saveTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Canvas transform ─────────────────────────────────────────────────────
+  // Canvas transform
   const [panX, setPanX]   = useState(0);
   const [panY, setPanY]   = useState(0);
   const [zoom, setZoom]   = useState(1);
@@ -354,16 +344,16 @@ export function ArcMindmap({
     [panX, panY, zoom],
   );
 
-  // ── Map data ─────────────────────────────────────────────────────────────
+  // Map data
   const [nodes, setNodes] = useState<MapNode[]>([]);
   const [edges, setEdges] = useState<MapEdge[]>([]);
   const [dirty, setDirty] = useState(false);
 
-  // ── Selection ────────────────────────────────────────────────────────────
+  // Selection
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
-  // ── Drag state ───────────────────────────────────────────────────────────
+  // Drag state
   const dragging = useRef<{
     nodeId: string;
     startX: number; startY: number;
@@ -374,14 +364,14 @@ export function ArcMindmap({
     origPanX: number; origPanY: number;
   } | null>(null);
 
-  // ── Resize state ─────────────────────────────────────────────────────────
+  // Resize state
   const resizing = useRef<{
     nodeId: string;
     startX: number; startY: number;
     origW: number; origH: number;
   } | null>(null);
 
-  // ── Edge draw state ──────────────────────────────────────────────────────
+  // Edge draw state
   const [drawingEdge, setDrawingEdge] = useState<{
     fromNodeId: string;
     curX: number; curY: number;
@@ -389,7 +379,7 @@ export function ArcMindmap({
   const [hoverNodeId, setHoverNodeId] = useState<string | null>(null);
   const pendingEdgeType = useRef<EdgeType>('story-arc');
 
-  // ── Waypoint drag state ───────────────────────────────────────────────────
+  // Waypoint drag state
   const draggingWaypoint = useRef<{
     edgeId: string; idx: number;
     startX: number; startY: number;
@@ -398,13 +388,11 @@ export function ArcMindmap({
   // Track which edge is hovered so we can show its waypoints
   const [hoverEdgeId, setHoverEdgeId] = useState<string | null>(null);
 
-  // ── Sidebar ──────────────────────────────────────────────────────────────
+  // Sidebar
   const [newEdgeType, setNewEdgeType] = useState<EdgeType>('story-arc');
   const [saving, setSaving] = useState(false);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Init / load
-  // ─────────────────────────────────────────────────────────────────────────
 
   useLayoutEffect(() => {
     // Position episodes in a row at top of canvas
@@ -438,9 +426,7 @@ export function ArcMindmap({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Persistence
-  // ─────────────────────────────────────────────────────────────────────────
 
   const saveMap = useCallback(async (nodeList: MapNode[], edgeList: MapEdge[]) => {
     setSaving(true);
@@ -484,7 +470,7 @@ export function ArcMindmap({
 
   const markDirty = useCallback(() => setDirty(true), []);
 
-  // ── Undo / Redo ───────────────────────────────────────────────────────────
+  // Undo / Redo
   const [arcUndoStack, setArcUndoStack] = useState<Array<{ nodes: MapNode[]; edges: MapEdge[] }>>([]);
   const [arcRedoStack, setArcRedoStack] = useState<Array<{ nodes: MapNode[]; edges: MapEdge[] }>>([]);
   const nodesRef = useRef<MapNode[]>([]);
@@ -500,9 +486,7 @@ export function ArcMindmap({
     setArcRedoStack([]);
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Nodes CRUD
-  // ─────────────────────────────────────────────────────────────────────────
 
   const addNode = useCallback((type: NodeType, x?: number, y?: number) => {
     pushArcHistory();
@@ -537,9 +521,7 @@ export function ArcMindmap({
     markDirty();
   }, [selectedNodeId, markDirty, pushArcHistory]);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Edges CRUD
-  // ─────────────────────────────────────────────────────────────────────────
 
   const addEdge = useCallback((fromId: string, toId: string) => {
     if (fromId === toId) return;
@@ -603,9 +585,7 @@ export function ArcMindmap({
     markDirty();
   }, [markDirty]);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Zoom to fit
-  // ─────────────────────────────────────────────────────────────────────────
 
   const zoomToFit = useCallback(() => {
     if (nodes.length === 0) return;
@@ -635,9 +615,7 @@ export function ArcMindmap({
     }
   }, [nodes, zoomToFit]);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Mouse handlers
-  // ─────────────────────────────────────────────────────────────────────────
 
   const onNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
     if (!canEdit) return;
@@ -765,9 +743,7 @@ export function ArcMindmap({
     setZoom((z) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z * delta)));
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Keyboard shortcuts
-  // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -817,16 +793,12 @@ export function ArcMindmap({
     return () => window.removeEventListener('keydown', handler);
   }, [selectedNodeId, selectedEdgeId, deleteNode, deleteEdge, nodes, edges, saveMap, markDirty]);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Derived: selected items
-  // ─────────────────────────────────────────────────────────────────────────
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
   const selectedEdge = edges.find((e) => e.id === selectedEdgeId) ?? null;
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Edge midpoint label click area
-  // ─────────────────────────────────────────────────────────────────────────
 
   const edgeMidpoint = useCallback((edge: MapEdge) => {
     const fromNode = nodes.find((n) => n.id === edge.from);
@@ -842,13 +814,10 @@ export function ArcMindmap({
     return { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
   }, [nodes]);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Render
-  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex h-full w-full bg-[#0d0d14] overflow-hidden select-none relative">
-      {/* ── Left palette panel ─────────────────────────────────────────── */}
       <aside className="w-14 flex flex-col items-center py-4 gap-2 border-r border-white/5 bg-black/30 z-10 shrink-0">
         <div className="mb-2">
           <div className="w-2 h-2 rounded-full bg-[#FF5F1F] mx-auto" />
@@ -860,8 +829,8 @@ export function ArcMindmap({
             title={`Add ${NODE_LABEL[t]}`}
             onClick={() => addNode(t)}
             className={cn(
-              'group w-10 h-10 rounded-xl flex items-center justify-center transition-all',
-              'border border-white/5 hover:border-white/20 hover:scale-110',
+              'group w-10 h-10 rounded-xl flex items-center justify-center transition-colors',
+              'border border-white/5 hover:border-white/20',
             )}
             style={{ background: NODE_COLORS[t] + '33' }}
           >
@@ -888,7 +857,6 @@ export function ArcMindmap({
         </button>
       </aside>
 
-      {/* ── Canvas ─────────────────────────────────────────────────────── */}
       <div
         ref={canvasRef}
         className="flex-1 relative overflow-hidden"
@@ -914,7 +882,6 @@ export function ArcMindmap({
           className="absolute inset-0 pointer-events-none"
           style={{ transform, transformOrigin: '0 0', willChange: 'transform' }}
         >
-          {/* ── SVG edges layer ── */}
           <svg
             ref={svgRef}
             className="absolute inset-0 overflow-visible pointer-events-none"
@@ -1064,7 +1031,6 @@ export function ArcMindmap({
             })()}
           </svg>
 
-          {/* ── Nodes layer (pointer events re-enabled per-node) ── */}
           {nodes.map((node) => (
             <div key={node.id} style={{ pointerEvents: canEdit ? 'all' : 'none' }}>
               <NodeCard
@@ -1098,7 +1064,6 @@ export function ArcMindmap({
         )}
       </div>
 
-      {/* ── Right properties panel ─────────────────────────────────────── */}
       <aside className="w-64 shrink-0 border-l border-white/5 bg-black/30 flex flex-col overflow-y-auto z-10">
         {/* Toolbar / header */}
         <div className="p-3 border-b border-white/5 flex items-center justify-between gap-2">
@@ -1146,7 +1111,7 @@ export function ArcMindmap({
               onClick={() => saveMap(nodes, edges)}
               disabled={!dirty || saving}
               className={cn(
-                'px-2.5 py-1 text-[11px] font-medium rounded-lg transition-all',
+                'px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors',
                 dirty && !saving
                   ? 'bg-[#E54E15] text-white hover:bg-[#FF5F1F]'
                   : 'bg-white/5 text-white/30 cursor-default',
@@ -1241,9 +1206,7 @@ export function ArcMindmap({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Properties panels
-// ─────────────────────────────────────────────────────────────────────────────
 
 function PropertiesPanel({
   node,
@@ -1301,8 +1264,8 @@ function PropertiesPanel({
                 <button
                   key={c}
                   className={cn(
-                    'w-6 h-6 rounded-md border-2 transition-all',
-                    node.color === c ? 'border-white scale-110' : 'border-transparent hover:scale-105',
+                    'w-6 h-6 rounded-md border-2 transition-colors',
+                    node.color === c ? 'border-white scale-110' : 'border-transparent',
                   )}
                   style={{ background: c }}
                   onClick={() => updateNode(node.id, 'color', c)}

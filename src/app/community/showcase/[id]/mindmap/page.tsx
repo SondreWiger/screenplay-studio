@@ -6,9 +6,7 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Project, Profile } from '@/lib/types';
 
-// ============================================================
 // Deep Dive — Read-Only Mind Map Viewer
-// ============================================================
 
 interface MindMapNode {
   id: string;

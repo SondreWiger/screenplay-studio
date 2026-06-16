@@ -10,15 +10,13 @@ import type {
 } from '@/lib/types';
 import { BROADCAST_WIRE_PRIORITY_OPTIONS } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Wire Desk — Real wire feed ingestion, management, and browse
-// ────────────────────────────────────────────────────────────
 
 export default function WireDeskPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const projectId = params.id;
 
-  // ─── State ─────────────────────────────────────────────
+  // State
   const [loading, setLoading] = useState(true);
   const [feeds, setFeeds] = useState<BroadcastWireFeed[]>([]);
   const [wireStories, setWireStories] = useState<BroadcastWireStory[]>([]);
@@ -41,7 +39,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
     category: '', poll_interval_seconds: 300,
   });
 
-  // ─── Data Fetching ─────────────────────────────────────
+  // Data Fetching
 
   const fetchFeeds = useCallback(async () => {
     const supabase = createClient();
@@ -55,7 +53,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
 
   const fetchWireStories = useCallback(async () => {
     const supabase = createClient();
-    let query = supabase
+    const query = supabase
       .from('broadcast_wire_stories')
       .select('*')
       .eq('project_id', projectId)
@@ -87,7 +85,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(channel); };
   }, [projectId, fetchWireStories]);
 
-  // ─── Feed Management ───────────────────────────────────
+  // Feed Management
 
   const handleAddFeed = async () => {
     if (!newFeed.name || !newFeed.feed_url) { toast.error('Name and URL are required'); return; }
@@ -123,7 +121,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
     fetchFeeds();
   };
 
-  // ─── Poll a Feed (calls our real API route) ────────────
+  // Poll a Feed (calls our real API route)
 
   const handlePollFeed = async (feedId: string) => {
     setPollingFeedId(feedId);
@@ -166,7 +164,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // ─── Pull to Story ─────────────────────────────────────
+  // Pull to Story
 
   const handlePullToStory = async (wireStory: BroadcastWireStory) => {
     const supabase = createClient();
@@ -210,7 +208,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
     fetchWireStories();
   };
 
-  // ─── Filtered Stories ──────────────────────────────────
+  // Filtered Stories
 
   const filteredStories = wireStories.filter(s => {
     if (filter.feed_id !== 'all' && s.feed_id !== filter.feed_id) return false;
@@ -223,7 +221,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
     return true;
   });
 
-  // ─── Render ────────────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 

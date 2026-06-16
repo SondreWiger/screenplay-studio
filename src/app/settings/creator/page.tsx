@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Input, LoadingPage, toast } from '@/components/ui';
 
-// ── Types ─────────────────────────────────────────────────────
+// Types
 interface CreatorProfile {
   id: string;
   ref_code: string;
@@ -30,7 +30,6 @@ interface CreatorStats {
   payouts: { amount: number; period_start: string; period_end: string; status: string }[];
 }
 
-// ── Stat card ─────────────────────────────────────────────────
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
@@ -41,7 +40,6 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────
 export default function CreatorSettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();

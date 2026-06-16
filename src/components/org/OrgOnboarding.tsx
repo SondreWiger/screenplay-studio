@@ -179,7 +179,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                 <div
                   key={s}
                   className={cn(
-                    'w-2 h-2 rounded-full transition-all duration-300',
+                    'w-2 h-2 rounded-full transition-colors duration-300',
                     i <= stepIndex ? 'bg-[#FF5F1F] scale-100' : 'bg-surface-700 scale-75'
                   )}
                 />
@@ -189,19 +189,19 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
           </div>
           <div className="h-0.5 bg-surface-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] transition-all duration-500 ease-out rounded-full"
+              className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] transition-[width] duration-500 ease-out rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         {/* Step Content */}
-        <div className="bg-surface-900/80 backdrop-blur-sm rounded-2xl border border-surface-800 overflow-hidden">
+        <div className="bg-surface-900/80 backdrop-blur-sm rounded-xl border border-surface-800 overflow-hidden">
           {/* ─── BASICS ─── */}
           {step === 'basics' && (
             <div className="p-8">
               <div className="text-center mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E54E15] to-[#FF5F1F] flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#E54E15] to-[#FF5F1F] flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
@@ -268,7 +268,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     key={opt.value}
                     onClick={() => setData(prev => ({ ...prev, size: opt.value }))}
                     className={cn(
-                      'w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 text-left group',
+                      'w-full flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 text-left group',
                       data.size === opt.value
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 ring-1 ring-[#FF5F1F]/20'
                         : 'border-surface-800 hover:border-surface-700 hover:bg-surface-800/50'
@@ -281,7 +281,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     </div>
                     <span className="text-xs text-surface-500 shrink-0">{opt.range}</span>
                     <div className={cn(
-                      'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all',
+                      'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors',
                       data.size === opt.value
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]'
                         : 'border-surface-600'
@@ -312,7 +312,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     key={opt.value}
                     onClick={() => setData(prev => ({ ...prev, style: opt.value }))}
                     className={cn(
-                      'w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 text-left',
+                      'w-full flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 text-left',
                       data.style === opt.value
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 ring-1 ring-[#FF5F1F]/20'
                         : 'border-surface-800 hover:border-surface-700 hover:bg-surface-800/50'
@@ -324,7 +324,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                       <p className="text-xs text-surface-400">{opt.desc}</p>
                     </div>
                     <div className={cn(
-                      'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all',
+                      'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors',
                       data.style === opt.value
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]'
                         : 'border-surface-600'
@@ -349,8 +349,8 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                         key={color}
                         onClick={() => setData(prev => ({ ...prev, brandColor: color }))}
                         className={cn(
-                          'w-8 h-8 rounded-lg transition-all',
-                          data.brandColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-surface-900 scale-110' : 'hover:scale-105'
+                          'w-8 h-8 rounded-lg transition-colors',
+                          data.brandColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-surface-900 scale-110' : ''
                         )}
                         style={{ backgroundColor: color }}
                       />
@@ -384,7 +384,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                       key={feat.key}
                       onClick={() => toggleFeature(feat.key)}
                       className={cn(
-                        'flex items-start gap-3 p-4 rounded-xl border transition-all duration-200 text-left relative',
+                        'flex items-start gap-3 p-4 rounded-xl border transition-colors duration-200 text-left relative',
                         isSelected
                           ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 ring-1 ring-[#FF5F1F]/20'
                           : 'border-surface-800 hover:border-surface-700 hover:bg-surface-800/50'
@@ -401,7 +401,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                         <p className="text-[11px] text-surface-400 leading-relaxed">{feat.desc}</p>
                       </div>
                       <div className={cn(
-                        'w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all',
+                        'w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors',
                         isSelected
                           ? 'border-[#FF5F1F] bg-[#FF5F1F]'
                           : 'border-surface-600'

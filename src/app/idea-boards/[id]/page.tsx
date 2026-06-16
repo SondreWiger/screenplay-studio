@@ -9,7 +9,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { Button, Input, Modal, LoadingPage, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-// ── Types ────────────────────────────────────────────────────
+// Types
 
 type NodeType = 'heading' | 'text' | 'checklist' | 'divider' | 'project_link';
 
@@ -56,7 +56,7 @@ type Member = {
 
 type Project = { id: string; title: string };
 
-// ── Constants ────────────────────────────────────────────────
+// Constants
 
 const BOARD_COLORS = [
   '#6366f1', '#3b82f6', '#10b981', '#f59e0b',
@@ -64,28 +64,12 @@ const BOARD_COLORS = [
 ];
 const BOARD_EMOJIS = ['💡', '🎬', '📝', '🎭', '🌟', '🔥', '🎯', '🧠', '✨', '🎨', '📖', '🚀'];
 
-// ── Helpers ──────────────────────────────────────────────────
-
-function useDebounce<T>(value: T, delay: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
-}
-
-function getNodeText(node: IdeaNode): string {
-  if (node.type === 'divider') return '';
-  if (node.type === 'project_link') return (node.content.project_title as string) || '';
-  return (node.content.text as string) || '';
-}
+// Helpers
 
 function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ── Page ─────────────────────────────────────────────────────
 
 export default function BoardPage({ params }: { params: { id: string } }) {
   const { user, loading: authLoading } = useAuth();
@@ -220,7 +204,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
     setIsEditor(mine || mem?.role === 'editor');
   }, [board, user, members]);
 
-  // ── Node CRUD ─────────────────────────────────────────────
+  // Node CRUD
 
   const addNode = async (type: NodeType, afterIndex?: number) => {
     if (!isEditor || !user) return;
@@ -290,7 +274,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
     }).sort((x, y) => x.sort_order - y.sort_order));
   };
 
-  // ── Board mutation ────────────────────────────────────────
+  // Board mutation
 
   const saveTitle = async () => {
     if (!board || !titleDraft.trim()) return;
@@ -318,7 +302,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
     fetchBoard();
   };
 
-  // ── Invite ────────────────────────────────────────────────
+  // Invite
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
@@ -407,7 +391,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowMembers(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-surface-400 hover:text-white border border-surface-700 hover:border-surface-600 rounded-lg transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-surface-400 hover:text-white border border-surface-700 hover:border-surface-600 rounded-lg transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -417,7 +401,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
             {isOwner && (
               <button
                 onClick={() => setShowSettings(true)}
-                className="p-2 text-surface-400 hover:text-white border border-surface-700 hover:border-surface-600 rounded-lg transition-all"
+                className="p-2 text-surface-400 hover:text-white border border-surface-700 hover:border-surface-600 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -508,7 +492,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
               {isEditor && (
                 <button
                   onClick={() => setShowCreateSub(true)}
-                  className="text-[10px] font-mono uppercase tracking-widest text-surface-600 hover:text-white border border-surface-800 hover:border-surface-600 px-2 py-1 rounded-lg transition-all"
+                  className="text-[10px] font-mono uppercase tracking-widest text-surface-600 hover:text-white border border-surface-800 hover:border-surface-600 px-2 py-1 rounded-lg transition-colors"
                 >
                   + New
                 </button>
@@ -520,7 +504,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
                   <Link
                     key={child.id}
                     href={`/idea-boards/${child.id}`}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-surface-800 hover:border-surface-700 transition-all"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-surface-800 hover:border-surface-700 transition-colors"
                     style={{ background: '#0d0d1a' }}
                   >
                     <div
@@ -587,7 +571,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
                 <button
                   key={type}
                   onClick={() => addNode(type)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-surface-400 hover:text-white bg-surface-900 hover:bg-surface-800 border border-surface-700 hover:border-surface-600 rounded-lg transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-surface-400 hover:text-white bg-surface-900 hover:bg-surface-800 border border-surface-700 hover:border-surface-600 rounded-lg transition-colors"
                 >
                   <span className="font-mono text-surface-500">{icon}</span>
                   {label}
@@ -598,7 +582,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
         )}
 
         {sortedNodes.length === 0 && isEditor && (
-          <div className="py-16 text-center border border-dashed border-surface-800 rounded-2xl">
+          <div className="py-16 text-center border border-dashed border-surface-800 rounded-xl">
             <div className="text-4xl mb-3">✏️</div>
             <p className="text-surface-400 text-sm mb-1">Start typing your ideas</p>
             <p className="text-surface-600 text-xs">Use the blocks above to add headings, notes, checklists, and more</p>
@@ -702,7 +686,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
             <div className="flex flex-wrap gap-2">
               {BOARD_EMOJIS.map(e => (
                 <button key={e} onClick={() => setSettingsEmoji(e)}
-                  className={cn('w-9 h-9 rounded-lg text-xl flex items-center justify-center transition-all',
+                  className={cn('w-9 h-9 rounded-lg text-xl flex items-center justify-center transition-colors',
                     settingsEmoji === e ? 'bg-surface-700 ring-2 ring-white/30 scale-110' : 'bg-surface-800 hover:bg-surface-700')}>
                   {e}
                 </button>
@@ -715,8 +699,8 @@ export default function BoardPage({ params }: { params: { id: string } }) {
             <div className="flex flex-wrap gap-2">
               {BOARD_COLORS.map(c => (
                 <button key={c} onClick={() => setSettingsColor(c)}
-                  className={cn('w-7 h-7 rounded-full transition-all',
-                    settingsColor === c ? 'ring-2 ring-offset-2 ring-offset-surface-900 ring-white scale-110' : 'hover:scale-105')}
+                  className={cn('w-7 h-7 rounded-full transition-colors',
+                    settingsColor === c ? 'ring-2 ring-offset-2 ring-offset-surface-900 ring-white scale-110' : '')}
                   style={{ background: c }} />
               ))}
             </div>
@@ -775,7 +759,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
             <div className="flex flex-wrap gap-2">
               {BOARD_EMOJIS.map(e => (
                 <button key={e} onClick={() => setSubEmoji(e)}
-                  className={cn('w-9 h-9 rounded-lg text-xl flex items-center justify-center transition-all',
+                  className={cn('w-9 h-9 rounded-lg text-xl flex items-center justify-center transition-colors',
                     subEmoji === e ? 'bg-surface-700 ring-2 ring-white/30 scale-110' : 'bg-surface-800 hover:bg-surface-700')}>
                   {e}
                 </button>
@@ -788,8 +772,8 @@ export default function BoardPage({ params }: { params: { id: string } }) {
             <div className="flex flex-wrap gap-2">
               {BOARD_COLORS.map(c => (
                 <button key={c} onClick={() => setSubColor(c)}
-                  className={cn('w-7 h-7 rounded-full transition-all',
-                    subColor === c ? 'ring-2 ring-offset-2 ring-offset-surface-900 ring-white scale-110' : 'hover:scale-105')}
+                  className={cn('w-7 h-7 rounded-full transition-colors',
+                    subColor === c ? 'ring-2 ring-offset-2 ring-offset-surface-900 ring-white scale-110' : '')}
                   style={{ background: c }} />
               ))}
             </div>
@@ -806,7 +790,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ── Node block component ─────────────────────────────────────
+// Node block component
 
 function NodeBlock({
   node, idx, total, allNodes, isEditor, projects,
@@ -925,7 +909,7 @@ function NodeBlock({
     }
   };
 
-  // ── Divider ──────────────────────────────────────────────
+  // Divider
 
   if (node.type === 'divider') {
     // If next node is a heading followed by checklists, show a progress bar
@@ -953,7 +937,7 @@ function NodeBlock({
         ) : (
           <div className="flex-1 h-1 rounded-full bg-surface-800 overflow-hidden" title={`${pct}% complete`}>
             <div
-              className="h-full rounded-full transition-all duration-500"
+              className="h-full rounded-full transition-[width] duration-500"
               style={{
                 width: `${pct}%`,
                 background: pct === 100 ? '#10b981' : 'linear-gradient(90deg, #10b981, #34d399)',
@@ -976,7 +960,7 @@ function NodeBlock({
     );
   }
 
-  // ── Project link ─────────────────────────────────────────
+  // Project link
 
   if (node.type === 'project_link') {
     const hasPick = node.content.project_id || projectPickerNodeId === node.id;
@@ -995,7 +979,7 @@ function NodeBlock({
                   onClick={() => { onUpdateContent(node.id, { project_id: p.id, project_title: p.title }); setProjectPickerNodeId(null); }}
                   className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-800 transition-colors"
                 >
-                  <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: '#6366f1' }} />
+                  <div className="w-2.5 h-2.5 rounded-md shrink-0" style={{ background: '#6366f1' }} />
                   <span className="text-sm text-white">{p.title}</span>
                 </button>
               ))}
@@ -1004,11 +988,11 @@ function NodeBlock({
             <button onClick={() => setProjectPickerNodeId(null)} className="mt-2 text-xs text-surface-500 hover:text-white transition-colors">Cancel</button>
           </div>
         ) : (
-          <div className={cn('flex items-center gap-3 px-4 py-3 rounded-xl border transition-all',
+          <div className={cn('flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors',
             node.content.project_id ? 'border-surface-700 bg-surface-900 hover:border-surface-600' : 'border-dashed border-surface-700 bg-surface-900/50')}>
             {node.content.project_id ? (
               <>
-                <div className="w-3 h-3 rounded-sm shrink-0" style={{ background: '#6366f1' }} />
+                <div className="w-3 h-3 rounded-md shrink-0" style={{ background: '#6366f1' }} />
                 <Link href={`/projects/${node.content.project_id}`} className="text-sm font-medium text-white hover:underline flex-1 truncate">
                   {node.content.project_title as string}
                 </Link>
@@ -1037,7 +1021,7 @@ function NodeBlock({
     );
   }
 
-  // ── Checklist ────────────────────────────────────────────
+  // Checklist
 
   if (node.type === 'checklist') {
     return (
@@ -1048,7 +1032,7 @@ function NodeBlock({
       >
         <button
           onClick={() => isEditor && onUpdateContent(node.id, { ...node.content, html: htmlRef.current, text: editorRef.current?.innerText ?? '', checked: !node.content.checked })}
-          className={cn('mt-2 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-all',
+          className={cn('mt-2 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors',
             (node.content.checked as boolean) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-surface-600 hover:border-surface-400')}
         >
           {(node.content.checked as boolean) && (
@@ -1083,7 +1067,7 @@ function NodeBlock({
     );
   }
 
-  // ── Heading / Text ───────────────────────────────────────
+  // Heading / Text
 
   const isHeading = node.type === 'heading';
 
@@ -1117,7 +1101,7 @@ function NodeBlock({
   );
 }
 
-// ── Format bar ───────────────────────────────────────────────
+// Format bar
 
 function FormatBar() {
   const fmt = (cmd: string) => { document.execCommand(cmd, false); };
@@ -1142,7 +1126,7 @@ function FormatBar() {
   );
 }
 
-// ── Node controls ────────────────────────────────────────────
+// Node controls
 
 function NodeControls({
   idx, total, nodeId, onMove, onDelete, onAddAfter, addMenuOpen, setAddMenuOpen,

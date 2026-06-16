@@ -2,15 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
+import { Button, Card, Badge, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
 
-// ============================================================
 // Advanced Export — Pro feature
 // Branded PDF/DOCX/HTML/Fountain export with watermark & cover
-// ============================================================
 
 type ExportFormat = 'pdf' | 'docx' | 'fountain' | 'html' | 'fdx';
 
@@ -78,8 +75,7 @@ const REVISION_COLORS = [
 ];
 
 export default function ExportPage({ params }: { params: { id: string } }) {
-  const { user } = useAuth();
-  const { isPro, hasAdvancedExports } = useProFeatures();
+  const { isPro } = useProFeatures();
   const { currentProject } = useProjectStore();
   const [scripts, setScripts] = useState<any[]>([]);
   const [selectedScript, setSelectedScript] = useState<string>('');
@@ -87,10 +83,8 @@ export default function ExportPage({ params }: { params: { id: string } }) {
   const [config, setConfig] = useState<ExportConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   const [batchFormats, setBatchFormats] = useState<ExportFormat[]>(['pdf']);
-  const [exportHistory, setExportHistory] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -221,7 +215,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
         }
       }
       toast(`Exported ${formats.length} file${formats.length > 1 ? 's' : ''}`, 'success');
-    } catch (err) {
+    } catch {
       toast('Export failed', 'error');
     }
     setExporting(false);
@@ -312,7 +306,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                           updateConfig('format', f.id);
                         }
                       }}
-                      className={`p-3 rounded-lg border text-center transition-all ${
+                      className={`p-3 rounded-lg border text-center transition-colors ${
                         isActive
                           ? 'bg-[#FF5F1F]/10 border-[#FF5F1F] text-[#FF5F1F]'
                           : 'bg-surface-800/50 border-surface-700 text-surface-400 hover:border-surface-600'
@@ -497,7 +491,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     <button
                       key={c.value}
                       onClick={() => updateConfig('revisionColor', c.value)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-all ${
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-colors ${
                         config.revisionColor === c.value
                           ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                           : 'border-surface-700 hover:border-surface-600'
@@ -584,7 +578,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ── Screenplay HTML builder (shared between PDF & HTML export) ──
+// Screenplay HTML builder (shared between PDF & HTML export)
 
 function generateScreenplayHTML(data: any): string {
   const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, projectType } = data;
@@ -629,7 +623,7 @@ function generateScreenplayHTML(data: any): string {
     const text = el.text || '';
 
     if (isAudioDrama) {
-      // ── Audio Drama rendering ──────────────────────────────
+      // Audio Drama rendering
       if (type === 'scene_heading' || type === 'heading' || type === 'setting') {
         sceneNum++;
         const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
@@ -653,7 +647,7 @@ function generateScreenplayHTML(data: any): string {
         bodyParts.push(`<p class="action">${esc(text)}</p>`);
       }
     } else if (isStagePlay) {
-      // ── Stage Play rendering ───────────────────────────────
+      // Stage Play rendering
       if (type === 'scene_heading' || type === 'heading') {
         sceneNum++;
         const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
@@ -682,7 +676,7 @@ function generateScreenplayHTML(data: any): string {
         bodyParts.push(`<p class="action">${esc(text)}</p>`);
       }
     } else {
-      // ── Standard Screenplay rendering ─────────────────────
+      // Standard Screenplay rendering
       if (type === 'scene_heading' || type === 'heading') {
         sceneNum++;
         const num = cfg.sceneNumbers ? `<span class="scene-num">${sceneNum}</span>` : '';
@@ -707,7 +701,7 @@ function generateScreenplayHTML(data: any): string {
 
   const accentColor = primaryColor || '#3B82F6';
 
-  // ─── Format-specific CSS ─────────────────────────────────────────────────
+  // Format-specific CSS
   const audioDramaCSS = isAudioDrama ? `
     .ad-character{text-transform:uppercase;font-weight:bold;margin-top:14px;margin-bottom:0;}
     .narrator{text-transform:uppercase;font-weight:bold;margin-top:14px;font-style:italic;color:#444;}
@@ -769,7 +763,7 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ── Generate downloadable export blob ──
+// Generate downloadable export blob
 
 function generateExport(data: any): Blob {
   const { content, format, config: cfg } = data;

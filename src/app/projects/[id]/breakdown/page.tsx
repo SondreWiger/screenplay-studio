@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useProjectStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import { SkeletonList } from '@/components/ui';
 
@@ -78,8 +77,6 @@ const INT_EXT_COLORS: Record<string, string> = {
 };
 
 export default function BreakdownPage({ params }: { params: { id: string } }) {
-  const { currentProject } = useProjectStore();
-
   const [scenes, setScenes]         = useState<Scene[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [locations, setLocations]   = useState<Location[]>([]);
@@ -90,7 +87,6 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
   const [expanded, setExpanded]     = useState<Set<string>>(new Set());
   // Script-derived cast data: charName(upper) → scene IDs they speak in
   const [scriptCharToScenes, setScriptCharToScenes] = useState<Map<string, string[]>>(new Map());
-  const [sceneIdToScriptChars, setSceneIdToScriptChars] = useState<Map<string, string[]>>(new Map());
   // Estimated page counts from script element density (heading → elem count)
   const [headingElemCount, setHeadingElemCount] = useState<Map<string, number>>(new Map());
 
@@ -118,7 +114,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
       setCharacters((charRes.data as Character[]) ?? []);
       setLocations((locRes.data as Location[]) ?? []);
 
-      // ── Fetch & parse script elements ─────────────────────
+      // Fetch & parse script elements
       const scriptsRes = await supabase.from('scripts').select('id').eq('project_id', params.id);
       const scriptIds = ((scriptsRes.data as { id: string }[] | null) ?? []).map((s) => s.id);
 
@@ -167,8 +163,6 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
         }
       }
       setScriptCharToScenes(charToScenes);
-      setSceneIdToScriptChars(sceneToChars);
-      // ──────────────────────────────────────────────────────
 
       setLoading(false);
     };
@@ -223,7 +217,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
   }, [displayScenes, groupBy]);
 
   const toggleExpand = (id: string) =>
-    setExpanded((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setExpanded((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
   const castNames = (ids: string[]) => (ids ?? []).map((id) => charById[id] ?? id).filter(Boolean);
 
@@ -460,9 +454,9 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
           <div className="space-y-3">
             {hasScript && (
               <p className="text-[11px] text-surface-500 px-1 mb-1">
-                <span className="inline-block w-2 h-2 rounded-sm bg-indigo-500/60 mr-1.5 align-middle" />
+                <span className="inline-block w-2 h-2 rounded-md bg-indigo-500/60 mr-1.5 align-middle" />
                 Script-detected &nbsp;·&nbsp;
-                <span className="inline-block w-2 h-2 rounded-sm bg-[#FF5F1F]/60 mr-1.5 align-middle" />
+                <span className="inline-block w-2 h-2 rounded-md bg-[#FF5F1F]/60 mr-1.5 align-middle" />
                 Manually assigned
               </p>
             )}
@@ -490,7 +484,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                     <span className="text-xs text-surface-400 font-mono">{total} scene{total !== 1 ? 's' : ''}</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {allScenes.map((s, i) => {
+                    {allScenes.map((s) => {
                       const fromScript = entry.scriptSceneIds.has(s.id);
                       const fromManual = entry.manualSceneIds.has(s.id);
                       return (

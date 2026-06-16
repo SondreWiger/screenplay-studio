@@ -40,7 +40,7 @@ export function getDefaultOtherIcons(
   if (isTvProduction) return new Set();
 
   switch (intent) {
-    // ── Writer — wants to write, not plan a full production ───────
+    // Writer — wants to write, not plan a full production
     case 'writer':
       return new Set([
         // Heavy production tools
@@ -71,7 +71,7 @@ export function getDefaultOtherIcons(
         'presskit',
       ]);
 
-    // ── Producer / Filmmaker — wants production tools front-and-centre
+    // Producer / Filmmaker
     case 'producer':
       return new Set([
         // Pure writing development tools that aren't production-facing
@@ -90,7 +90,7 @@ export function getDefaultOtherIcons(
         'thumbnails',
       ]);
 
-    // ── Writer & Producer — virtually nothing hidden by default ───
+    // Writer & Producer — virtually nothing hidden by default
     case 'both':
       return new Set([
         // Only truly niche tools go to Other for power users
@@ -101,7 +101,7 @@ export function getDefaultOtherIcons(
         'invoice',
       ]);
 
-    // ── Content Creator — focus on content pipeline ───────────────
+    // Content Creator — focus on content pipeline
     case 'content_creator':
       return isContentCreator
         ? new Set([
@@ -134,7 +134,7 @@ export function getDefaultOtherIcons(
             'thumbnails',
           ]);
 
-    // ── Student — keep it focused on the writing craft ───────────
+    // Student — keep it focused on the writing craft
     case 'student':
       return new Set([
         // Full production management is overkill for students
@@ -167,7 +167,7 @@ export function getDefaultOtherIcons(
   }
 }
 
-// ── localStorage helpers ─────────────────────────────────────────
+// localStorage helpers
 
 const LS_KEY = (userId: string, projectId: string) =>
   `ss_sidebar_other_${userId}_${projectId}`;

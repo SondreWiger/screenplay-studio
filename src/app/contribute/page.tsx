@@ -7,7 +7,7 @@ import { useOpenSource } from '@/hooks/useSiteSettings';
 
 const ORANGE = '#FF5F1F';
 
-// ── Shared UI primitives (same as landing / about) ─────────
+// Shared UI primitives (same as landing / about)
 function Rule() {
   return (
     <div className="max-w-screen-lg mx-auto px-6">
@@ -33,7 +33,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Scroll-reveal hook ─────────────────────────────────────
+// Scroll-reveal hook
 function useReveal(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -50,7 +50,7 @@ function useReveal(threshold = 0.15) {
   return { ref, visible };
 }
 
-// ── Animated number counter ────────────────────────────────
+// Animated number counter
 function Counter({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [value, setValue] = useState(0);
   const { ref, visible } = useReveal(0.3);
@@ -68,7 +68,7 @@ function Counter({ target, suffix = '' }: { target: number; suffix?: string }) {
   return <span ref={ref}>{value}{suffix}</span>;
 }
 
-// ── Reveal wrapper ─────────────────────────────────────────
+// Reveal wrapper
 function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const { ref, visible } = useReveal();
   return (
@@ -86,7 +86,7 @@ function Reveal({ children, delay = 0, className = '' }: { children: React.React
   );
 }
 
-// ── Code block ─────────────────────────────────────────────
+// Code block
 function Code({ children, label }: { children: string; label?: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
@@ -95,7 +95,7 @@ function Code({ children, label }: { children: string; label?: string }) {
     setTimeout(() => setCopied(false), 1800);
   };
   return (
-    <div className="group relative rounded-sm overflow-hidden" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="group relative rounded-md overflow-hidden" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>
       {label && (
         <div className="flex items-center justify-between px-4 py-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
           <Label>{label}</Label>
@@ -115,7 +115,7 @@ function Code({ children, label }: { children: string; label?: string }) {
   );
 }
 
-// ── Data ───────────────────────────────────────────────────
+// Data
 
 const CONTRIBUTION_TYPES = [
   {
@@ -304,7 +304,6 @@ const MARQUEE_ITEMS = [
   'GOOD FIRST ISSUES', 'FILM & TV', 'PLAYWRIGHT', 'VERCEL', 'REALTIME',
 ];
 
-// ── Page ────────────────────────────────────────────────────
 export default function ContributePage() {
   const { enabled: ossEnabled, loading: ossLoading } = useOpenSource();
   const [expandedRule, setExpandedRule] = useState<string | null>(null);
@@ -343,7 +342,7 @@ export default function ContributePage() {
         <div className="max-w-screen-lg mx-auto px-6 h-12 flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-2.5">
             <div
-              className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0 transition-transform duration-150 group-hover:scale-95"
+              className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0 transition-transform duration-150"
               style={{ background: ORANGE }}
             >
               SS
@@ -435,14 +434,14 @@ export default function ContributePage() {
                 href="https://github.com/SondreWiger/screenplay-studio"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 px-7 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-150 hover:-translate-y-0.5"
+                className="group inline-flex items-center gap-2.5 px-7 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-transform duration-150 hover:-translate-y-0.5"
                 style={{ background: ORANGE, boxShadow: `0 8px 40px ${ORANGE}28` }}
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
                 </svg>
                 View on GitHub
-                <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+                <span className="transition-transform duration-150">→</span>
               </a>
               <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center">
@@ -526,7 +525,7 @@ export default function ContributePage() {
                   >
                     {/* left accent on hover */}
                     <div
-                      className="absolute left-0 top-0 bottom-0 w-[2px] origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-300"
+                      className="absolute left-0 top-0 bottom-0 w-[2px] origin-top scale-y-0 transition-transform duration-300"
                       style={{ background: ORANGE }}
                     />
 
@@ -542,7 +541,7 @@ export default function ContributePage() {
                       </h3>
                       {ct.good_first && (
                         <span
-                          className="shrink-0 text-[8px] font-black uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-sm"
+                          className="shrink-0 text-[8px] font-black uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-md"
                           style={{ background: `${ORANGE}20`, color: ORANGE, border: `1px solid ${ORANGE}30` }}
                         >
                           Good First
@@ -640,7 +639,7 @@ export default function ContributePage() {
             {OPEN_ISSUES.map((issue, i) => (
               <Reveal key={issue.label} delay={i * 50}>
                 <div
-                  className="group relative p-5 rounded-sm transition-all duration-200 hover:border-white/15 cursor-default overflow-hidden"
+                  className="group relative p-5 rounded-md transition-colors duration-200 hover:border-white/15 cursor-default overflow-hidden"
                   style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
                 >
                   {/* animated gradient sweep on hover */}
@@ -653,13 +652,13 @@ export default function ContributePage() {
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2.5">
                       <span
-                        className="text-[8px] font-black uppercase tracking-[0.12em] px-1.5 py-0.5 rounded-sm border"
+                        className="text-[8px] font-black uppercase tracking-[0.12em] px-1.5 py-0.5 rounded-md border"
                         style={PRIORITY_STYLE[issue.priority]}
                       >
                         {issue.priority}
                       </span>
                       <span
-                        className="text-[8px] font-bold uppercase tracking-[0.12em] px-1.5 py-0.5 rounded-sm border"
+                        className="text-[8px] font-bold uppercase tracking-[0.12em] px-1.5 py-0.5 rounded-md border"
                         style={TYPE_STYLE[issue.type]}
                       >
                         {issue.type}
@@ -685,7 +684,7 @@ export default function ContributePage() {
                 className="group shrink-0 inline-flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-white transition-all duration-150 hover:-translate-y-px border border-white/10 hover:border-white/20"
               >
                 All GitHub Issues
-                <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+                <span className="transition-transform duration-150">→</span>
               </a>
             </div>
           </Reveal>
@@ -801,7 +800,7 @@ export default function ContributePage() {
             ].map((item, i) => (
               <Reveal key={item.title} delay={i * 80}>
                 <div
-                  className="group p-6 rounded-sm transition-all duration-200 hover:border-white/15"
+                  className="group p-6 rounded-md transition-colors duration-200 hover:border-white/15"
                   style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
                 >
                   <span className="text-3xl mb-4 block">{item.icon}</span>
@@ -860,7 +859,7 @@ export default function ContributePage() {
             ].map((t, i) => (
               <Reveal key={t.name} delay={i * 30}>
                 <div
-                  className="group p-4 rounded-sm transition-all duration-200 hover:bg-white/[0.04] cursor-default"
+                  className="group p-4 rounded-md transition-colors duration-200 hover:bg-white/[0.04] cursor-default"
                   style={{ border: '1px solid rgba(255,255,255,0.07)' }}
                 >
                   <p className="text-xs font-black text-white/70 group-hover:text-white transition-colors mb-0.5">{t.name}</p>
@@ -929,7 +928,7 @@ export default function ContributePage() {
                     style={{ background: '#000', color: '#fff' }}
                   >
                     Fork on GitHub
-                    <span className="transition-transform duration-150 group-hover:translate-x-1">→</span>
+                    <span className="transition-transform duration-150">→</span>
                   </a>
                   <a
                     href="https://github.com/SondreWiger/screenplay-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22"
@@ -938,7 +937,7 @@ export default function ContributePage() {
                     className="group inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-black/50 hover:text-black transition-colors"
                   >
                     Browse Good First Issues
-                    <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+                    <span className="transition-transform duration-150">→</span>
                   </a>
                   <span className="text-[9px] font-mono text-black/30 tracking-wider">
                     ALL SKILL LEVELS · ALL TIMEZONES

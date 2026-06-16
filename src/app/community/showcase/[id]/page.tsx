@@ -11,9 +11,7 @@ import { toast } from '@/components/ui';
 import { PRODUCTION_ROLES, LANGUAGE_OPTIONS } from '@/lib/types';
 import type { Project, Profile, ProjectMember, Character, ExternalCredit, ShowcaseComment, ShowcaseReview } from '@/lib/types';
 
-// ============================================================
 // Showcase Detail — IMDB-style project page
-// ============================================================
 
 type ShowcaseProject = Project & {
   author?: Profile;
@@ -67,7 +65,7 @@ function StarRating({ rating, max = 5, size = 'sm', interactive = false, onChang
             key={i}
             type="button"
             disabled={!interactive}
-            className={`${interactive ? 'cursor-pointer hover:scale-110' : 'cursor-default'} transition-transform`}
+            className={`${interactive ? 'cursor-pointer' : 'cursor-default'} transition-transform`}
             onMouseEnter={() => interactive && setHoverRating(starVal)}
             onMouseLeave={() => interactive && setHoverRating(0)}
             onClick={() => interactive && onChange?.(starVal)}
@@ -446,7 +444,7 @@ export default function ShowcaseDetailPage() {
                   rel="noopener noreferrer"
                   className="absolute inset-0 bg-black/40 flex items-center justify-center group"
                 >
-                  <div className="w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center shadow-2xl shadow-amber-500/30 group-hover:scale-110 transition-transform">
+                  <div className="w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center shadow-2xl shadow-amber-500/30 transition-transform">
                     <svg className="w-8 h-8 text-black ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                   </div>
                 </a>
@@ -739,9 +737,9 @@ export default function ShowcaseDetailPage() {
                     <button
                       key={idx}
                       onClick={() => setLightboxPhoto(photo)}
-                      className="text-left aspect-video bg-surface-900/[0.03] border border-white/[0.06] rounded-lg overflow-hidden hover:border-amber-500/30 transition-all group relative"
+                      className="text-left aspect-video bg-surface-900/[0.03] border border-white/[0.06] rounded-lg overflow-hidden hover:border-amber-500/30 transition-colors group relative"
                     >
-                      <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      <img src={photo.url} alt={photo.caption || `Set photo ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-500" loading="lazy" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       {(photo.caption || photo.scene) && (
                         <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -891,7 +889,7 @@ export default function ShowcaseDetailPage() {
                           <span className="text-xs text-white/40 w-3 text-right">{star}</span>
                           <svg className="w-3 h-3 text-amber-400/60" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
                           <div className="flex-1 h-2 bg-surface-900/[0.06] rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-400/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                            <div className="h-full bg-amber-400/60 rounded-full transition-[width]" style={{ width: `${pct}%` }} />
                           </div>
                           <span className="text-xs text-white/50 w-5">{count}</span>
                         </div>
@@ -1178,7 +1176,7 @@ export default function ShowcaseDetailPage() {
                   {project.showcase_script && (
                     <Link
                       href={`/community/showcase/${params.id}/script`}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-colors group"
                     >
                       <svg className="w-5 h-5 text-amber-400/60 group-hover:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                       <div>
@@ -1191,7 +1189,7 @@ export default function ShowcaseDetailPage() {
                   {project.showcase_mindmap && (
                     <Link
                       href={`/community/showcase/${params.id}/mindmap`}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-colors group"
                     >
                       <svg className="w-5 h-5 text-purple-400/60 group-hover:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                       <div>
@@ -1204,7 +1202,7 @@ export default function ShowcaseDetailPage() {
                   {project.showcase_moodboard && (
                     <Link
                       href={`/community/showcase/${params.id}/moodboard`}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-all group"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-white/80 bg-surface-900/[0.04] hover:bg-surface-900/[0.08] border border-white/[0.08] hover:border-amber-500/30 rounded-lg transition-colors group"
                     >
                       <svg className="w-5 h-5 text-pink-400/60 group-hover:text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                       <div>
@@ -1290,11 +1288,11 @@ export default function ShowcaseDetailPage() {
                   <Link
                     key={p.id}
                     href={`/community/showcase/${p.id}`}
-                    className="group rounded-xl bg-surface-900/[0.03] border border-white/[0.06] overflow-hidden hover:border-amber-500/30 transition-all"
+                    className="group rounded-xl bg-surface-900/[0.03] border border-white/[0.06] overflow-hidden hover:border-amber-500/30 transition-colors"
                   >
                     <div className="aspect-video relative bg-black overflow-hidden">
                       {thumb ? (
-                        <img src={thumb} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        <img src={thumb} alt={p.title} className="w-full h-full object-cover transition-transform duration-500" loading="lazy" />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-neutral-800 flex items-center justify-center">
                           <svg className="w-8 h-8 text-white/10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>

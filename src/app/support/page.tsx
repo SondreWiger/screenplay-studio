@@ -10,9 +10,7 @@ import { timeAgo } from '@/lib/utils';
 import { TICKET_CATEGORY_OPTIONS } from '@/lib/types';
 import type { SupportTicket, TicketMessage, TicketCategory } from '@/lib/types';
 
-// ============================================================
 // Support — Ticket submission & conversation view
-// ============================================================
 
 export default function SupportPageWrapper() {
   return (
@@ -253,7 +251,7 @@ function SupportPage() {
                   <button
                     key={ticket.id}
                     onClick={() => handleSelectTicket(ticket)}
-                    className={`w-full text-left p-3 rounded-xl border transition-all ${
+                    className={`w-full text-left p-3 rounded-xl border transition-colors ${
                       selectedTicket?.id === ticket.id
                         ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10 shadow-sm'
                         : 'border-white/10 bg-surface-900 hover:border-white/15'

@@ -2,16 +2,14 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useProjectStore } from '@/lib/stores';
+import { useAuthStore } from '@/lib/stores';
 import { Button, Badge, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { BroadcastPlayoutItem, BroadcastPlayoutItemType, BroadcastPlayoutItemStatus } from '@/lib/types';
+import type { BroadcastPlayoutItem, BroadcastPlayoutItemType } from '@/lib/types';
 import { BROADCAST_PLAYOUT_ITEM_TYPES, formatBroadcastDuration } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Master Control / Playout — Media playlist sequencing
 // Play, Cue, Next, transport controls, chain-of-events
-// ────────────────────────────────────────────────────────────
 
 export default function MasterControlPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -33,7 +31,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
     loop: false,
   });
 
-  // ─── Live Clock ──────────────────────────────────
+  // Live Clock
   useEffect(() => {
     const iv = setInterval(() => {
       if (clockRef.current) {
@@ -50,7 +48,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
     return () => clearInterval(iv);
   }, [items]);
 
-  // ─── Data Fetching ───────────────────────────────
+  // Data Fetching
   const fetchItems = useCallback(async () => {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -74,7 +72,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchItems]);
 
-  // ─── CRUD ────────────────────────────────────────
+  // CRUD
 
   const handleAddItem = async () => {
     if (!newItem.title) { toast.error('Title is required'); return; }
@@ -103,7 +101,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
     fetchItems();
   };
 
-  // ─── Transport Controls ──────────────────────────
+  // Transport Controls
 
   const playItem = async (item: BroadcastPlayoutItem) => {
     const supabase = createClient();
@@ -165,7 +163,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
     fetchItems();
   };
 
-  // ─── Render ──────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 
@@ -382,7 +380,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                   <div className="space-y-1">
                     <div className="h-2 bg-surface-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-red-600 transition-all rounded-full"
+                        className="h-full bg-red-600 transition-[width] rounded-full"
                         style={{ width: `${Math.min(100, (elapsed / playingItem.duration_seconds) * 100)}%` }}
                       />
                     </div>

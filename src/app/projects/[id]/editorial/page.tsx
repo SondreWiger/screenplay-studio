@@ -3,19 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Modal, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastStory, BroadcastStoryStatus, BroadcastStoryType } from '@/lib/types';
 import {
-  BROADCAST_STORY_STATUS_OPTIONS,
   BROADCAST_STORY_TYPES,
   formatBroadcastDuration,
 } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Editorial Board — Story pitching, assignment & status kanban
 // The morning meeting view: see every story, who owns it, where it is
-// ────────────────────────────────────────────────────────────
 
 const BOARD_COLUMNS: { status: BroadcastStoryStatus; label: string; color: string; bg: string }[] = [
   { status: 'draft',    label: 'Pitched / Draft', color: 'text-surface-400', bg: 'bg-surface-800/50' },
@@ -56,7 +53,7 @@ const DEFAULT_FORM: PitchForm = {
 };
 
 export default function EditorialPage({ params }: { params: { id: string } }) {
-  const { currentProject, members } = useProjectStore();
+  const { members } = useProjectStore();
   const projectId = params.id;
 
   const [stories, setStories] = useState<BroadcastStory[]>([]);
@@ -68,7 +65,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
   const [form, setForm] = useState<PitchForm>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
 
-  // ─── Fetch ─────────────────────────────────────────────
+  // Fetch
 
   const fetchStories = useCallback(async () => {
     const supabase = createClient();
@@ -94,7 +91,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchStories]);
 
-  // ─── Moves & Updates ───────────────────────────────────
+  // Moves & Updates
 
   const moveStory = async (story: BroadcastStory, newStatus: BroadcastStoryStatus) => {
     const supabase = createClient();
@@ -156,14 +153,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
     setShowPitchModal(true);
   };
 
-  const deleteStory = async (id: string) => {
-    if (!confirm('Archive this story?')) return;
-    const supabase = createClient();
-    await supabase.from('broadcast_stories').update({ status: 'archived' }).eq('id', id);
-    fetchStories();
-  };
-
-  // ─── Derived ────────────────────────────────────────────
+  // Derived
 
   const filtered = stories.filter(s => {
     if (filterAssignee !== 'all' && s.assigned_to !== filterAssignee) return false;
@@ -248,7 +238,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
                   return (
                     <div
                       key={story.id}
-                      className="bg-surface-900 border border-surface-800 rounded-lg p-3 cursor-pointer hover:border-surface-600 transition-all group"
+                      className="bg-surface-900 border border-surface-800 rounded-lg p-3 cursor-pointer hover:border-surface-600 transition-colors group"
                       onClick={() => openEdit(story)}
                     >
                       {/* Type badge + priority */}

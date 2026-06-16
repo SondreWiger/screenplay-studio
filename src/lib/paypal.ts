@@ -1,20 +1,17 @@
-// ============================================================
 // PayPal REST API — Server-side helpers
-// ============================================================
 // Uses PayPal Subscriptions API for recurring Pro billing.
 // Env vars:
 //   PAYPAL_CLIENT_ID        — from PayPal Developer dashboard
 //   PAYPAL_CLIENT_SECRET    — from PayPal Developer dashboard
 //   NEXT_PUBLIC_PAYPAL_CLIENT_ID — same ID, exposed to client for JS SDK
 //   PAYPAL_MODE             — 'sandbox' | 'live' (default: sandbox)
-// ============================================================
 
 const PAYPAL_BASE =
   process.env.PAYPAL_MODE === 'live'
     ? 'https://api-m.paypal.com'
     : 'https://api-m.sandbox.paypal.com';
 
-// ── Access Token ────────────────────────────────────────────
+// Access Token
 let cachedToken: { token: string; expires: number } | null = null;
 
 export async function getPayPalAccessToken(): Promise<string> {
@@ -51,7 +48,7 @@ export async function getPayPalAccessToken(): Promise<string> {
   return data.access_token;
 }
 
-// ── Create Order (one-time payment for 1-year Pro) ──────────
+// Create Order (one-time payment for 1-year Pro)
 export async function createPayPalOrder(params: {
   amount: number;
   currency?: string;
@@ -114,7 +111,7 @@ export async function createPayPalOrder(params: {
   return res.json();
 }
 
-// ── Capture Order ───────────────────────────────────────────
+// Capture Order
 export async function capturePayPalOrder(orderId: string) {
   const token = await getPayPalAccessToken();
 
@@ -135,7 +132,7 @@ export async function capturePayPalOrder(orderId: string) {
   return res.json();
 }
 
-// ── Get Order Details ───────────────────────────────────────
+// Get Order Details
 export async function getPayPalOrder(orderId: string) {
   const token = await getPayPalAccessToken();
 
@@ -151,7 +148,7 @@ export async function getPayPalOrder(orderId: string) {
   return res.json();
 }
 
-// ── Verify Webhook Signature ────────────────────────────────
+// Verify Webhook Signature
 export async function verifyWebhookSignature(params: {
   webhookId: string;
   headers: Record<string, string>;

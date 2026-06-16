@@ -7,10 +7,8 @@ import { Button, Card, Badge, Modal, Input, toast } from '@/components/ui';
 import { pickToast, SUBMISSION_ADDED, SUBMISSION_ACCEPTED } from '@/lib/funToasts';
 import { cn } from '@/lib/utils';
 
-// ============================================================
 // Submission Tracker — track where your script has been sent
 // Table: script_submissions (see SQL migration)
-// ============================================================
 
 type RecipientType = 'agent' | 'manager' | 'producer' | 'festival' | 'network' | 'studio' | 'other';
 type SubmissionStatus = 'pending' | 'passed' | 'request' | 'offer' | 'accepted' | 'withdrawn';
@@ -184,7 +182,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
             key={status}
             onClick={() => setFilterStatus(filterStatus === status ? 'all' : status)}
             className={cn(
-              'rounded-lg border p-3 text-center transition-all',
+              'rounded-lg border p-3 text-center transition-colors',
               filterStatus === status ? cfg.color + ' ring-1 ring-inset ring-current/30' : 'bg-surface-800/40 border-surface-700/40 hover:bg-surface-800/70',
             )}
           >
@@ -212,7 +210,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
               <div
                 key={s.id}
                 className={cn(
-                  'group rounded-xl border px-4 py-3 flex items-center gap-3 transition-all',
+                  'group rounded-xl border px-4 py-3 flex items-center gap-3 transition-colors',
                   'border-surface-700/40 bg-surface-800/30 hover:bg-surface-800/50',
                   overdue && 'border-orange-500/30',
                 )}

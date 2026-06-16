@@ -343,8 +343,7 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
                     placeholder="Search by display name..."
                     value={inviteSearch}
                     onChange={(e) => { setInviteSearch(e.target.value); setSelectedInviteUser(null); }}
-                    className="w-full"
-                    small
+                    className="w-full text-xs"
                   />
                   {searchingUsers && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -497,7 +496,7 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[10px] text-surface-500">{group.quote_count ?? 0} quotes</span>
-                    <span className="text-[10px] text-surface-500">{group.member_count ?? 0} members</span>
+                    <span className="text-[10px] text-surface-500">{group.members?.length ?? 0} members</span>
                     {isOwner(group) && (
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full">Owner</span>
                     )}

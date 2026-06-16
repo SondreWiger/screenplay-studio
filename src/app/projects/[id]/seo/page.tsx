@@ -24,9 +24,7 @@ const YOUTUBE_CATEGORIES = [
   { value: 'people', label: 'People & Blogs' },
 ];
 
-// ============================================================
 // SEO Score Calculator - VidIQ-style scoring
-// ============================================================
 interface SEOCheck {
   id: string;
   label: string;
@@ -357,7 +355,7 @@ export default function SEOPage() {
   return (
     <div className="space-y-6 p-6 max-w-4xl mx-auto">
       {/* SEO Score Card */}
-      <div className="bg-gradient-to-br from-surface-900 to-surface-800 border border-surface-700 rounded-2xl p-6 shadow-xl">
+      <div className="bg-gradient-to-br from-surface-900 to-surface-800 border border-surface-700 rounded-xl p-6 shadow-xl">
         <div className="flex items-start justify-between gap-6">
           <div className="flex items-center gap-6">
             {/* Score Circle */}

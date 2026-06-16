@@ -7,13 +7,11 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
 import type {
-  Company, CompanyMember, CompanyTeam, CompanyTeamMember,
+  Company, CompanyMember, CompanyTeam,
   CompanyInvitation, CompanyActivityLog, CompanyRole, Profile, Project
 } from '@/lib/types';
 
-// ============================================================
 // Company Management
-// ============================================================
 
 type CompanyTab = 'overview' | 'members' | 'teams' | 'projects' | 'settings' | 'activity';
 

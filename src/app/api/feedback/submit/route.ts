@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-// ── In-memory rate limiter for anonymous feedback submissions ─────────────────
+// In-memory rate limiter for anonymous feedback submissions
 // 5 submissions per IP per 15 minutes. Resets on server restart (acceptable —
 // this is a soft-spam guard, not a hard security boundary).
 const FEEDBACK_LIMIT = 5;
@@ -29,7 +29,7 @@ function checkFeedbackRateLimit(ip: string): { allowed: boolean; retryAfterSec: 
 }
 
 export async function POST(req: NextRequest) {
-  // ── Rate limit (extra guard for anonymous submissions) ─────────────────────
+  // Rate limit (extra guard for anonymous submissions)
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     || req.headers.get('x-real-ip')
     || 'unknown';

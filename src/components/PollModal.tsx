@@ -3,13 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
-// ============================================================
 // PollModal — Step-by-step questionnaire modal
 //
 // Steps: Intro → Q1 → Q2 → … → Thank You
 // Answers: yes_no, single_select, multi_select, ranking, short_text, long_text
 // Awards 100 XP on completion via /api/polls/[id]
-// ============================================================
 
 export interface PollQuestion {
   id: string;
@@ -148,12 +146,12 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-xl bg-[#111113] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-4rem)]">
+      <div className="relative w-full max-w-xl bg-[#111113] border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-4rem)]">
         {/* Progress bar (only during questions) */}
         {step > 0 && step <= questions.length && (
           <div className="h-0.5 bg-white/5 w-full flex-shrink-0">
             <div
-              className="h-full bg-gradient-to-r from-[#FF5F1F] to-[#f97316] transition-all duration-300"
+              className="h-full bg-gradient-to-r from-[#FF5F1F] to-[#f97316] transition-[width] duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -279,7 +277,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
   );
 }
 
-// ── Question step ─────────────────────────────────────────────
+// Question step
 
 function QuestionStep({
   question, answer, onChange,
@@ -303,7 +301,7 @@ function QuestionStep({
             <button
               key={v}
               onClick={() => onChange(v)}
-              className={`py-4 rounded-xl border-2 text-sm font-semibold transition-all ${
+              className={`py-4 rounded-xl border-2 text-sm font-semibold transition-colors ${
                 answer === v
                   ? 'bg-[#FF5F1F]/20 border-[#FF5F1F] text-white'
                   : 'bg-white/[0.03] border-white/10 text-white/50 hover:border-white/20 hover:text-white'
@@ -322,7 +320,7 @@ function QuestionStep({
             <button
               key={opt}
               onClick={() => onChange(opt)}
-              className={`w-full text-left px-4 py-3 rounded-xl border transition-all text-sm ${
+              className={`w-full text-left px-4 py-3 rounded-xl border transition-colors text-sm ${
                 answer === opt
                   ? 'bg-[#FF5F1F]/20 border-[#FF5F1F] text-white font-medium'
                   : 'bg-white/[0.03] border-white/10 text-white/60 hover:border-white/20 hover:text-white'
@@ -354,7 +352,7 @@ function QuestionStep({
               <button
                 key={opt}
                 onClick={toggle}
-                className={`w-full text-left px-4 py-3 rounded-xl border transition-all text-sm ${
+                className={`w-full text-left px-4 py-3 rounded-xl border transition-colors text-sm ${
                   selected
                     ? 'bg-[#FF5F1F]/20 border-[#FF5F1F] text-white font-medium'
                     : 'bg-white/[0.03] border-white/10 text-white/60 hover:border-white/20 hover:text-white'

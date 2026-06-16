@@ -6,9 +6,7 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Project, Profile, MoodBoardItem, MoodBoardSection } from '@/lib/types';
 
-// ============================================================
 // Deep Dive — Read-Only Moodboard Viewer
-// ============================================================
 
 const BOARD_SECTIONS: { value: MoodBoardSection; label: string; icon: string }[] = [
   { value: 'general', label: 'General', icon: '🎨' },
@@ -173,7 +171,7 @@ export default function DeepDiveMoodboardPage() {
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
-                className="break-inside-avoid bg-surface-900/[0.03] border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-pink-500/30 transition-all group"
+                className="break-inside-avoid bg-surface-900/[0.03] border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-pink-500/30 transition-colors group"
               >
                 {/* Image items */}
                 {item.item_type === 'image' && item.image_url && (
@@ -181,7 +179,7 @@ export default function DeepDiveMoodboardPage() {
                     <img
                       src={item.image_url}
                       alt={item.title || 'Moodboard image'}
-                      className="w-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                      className="w-full object-cover transition-transform duration-500"
                       loading="lazy"
                     />
                   </div>
@@ -245,7 +243,7 @@ export default function DeepDiveMoodboardPage() {
           onClick={() => setSelectedItem(null)}
         >
           <div
-            className="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border border-white/10 rounded-2xl"
+            className="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border border-white/10 rounded-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button

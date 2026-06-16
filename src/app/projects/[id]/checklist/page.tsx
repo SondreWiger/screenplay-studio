@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
-import { Button, Badge, Input, EmptyState, toast } from '@/components/ui';
+import { Button, Badge, Input, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { UploadChecklistItem } from '@/lib/types';
 import { DEFAULT_UPLOAD_CHECKLIST } from '@/lib/types';
@@ -195,7 +195,7 @@ export default function ChecklistPage() {
         <div className="h-3 bg-surface-800 rounded-full overflow-hidden">
           <div
             className={cn(
-              'h-full transition-all duration-500',
+              'h-full transition-[width] duration-500',
               progress === 100 ? 'bg-green-500' : 'bg-[#FF5F1F]'
             )}
             style={{ width: `${progress}%` }}
@@ -259,7 +259,7 @@ export default function ChecklistPage() {
                     onClick={() => canEdit && toggleItem(item)}
                     disabled={!canEdit}
                     className={cn(
-                      'w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-all',
+                      'w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors',
                       item.is_completed
                         ? 'bg-green-500 border-green-500 text-white'
                         : 'border-surface-600 hover:border-surface-500'

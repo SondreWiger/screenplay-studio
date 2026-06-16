@@ -80,7 +80,7 @@ export function QuotePanel({ isOpen, onClose, projectId }: QuotePanelProps) {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const groups = [...new Set(quotes.map(q => q.group_name).filter(Boolean) as string[])];
+  const groups = Array.from(new Set(quotes.map(q => q.group_name).filter(Boolean) as string[]));
   const totalCount = quotes.length;
 
   const handleSubmit = async (data: QuoteInsert) => {

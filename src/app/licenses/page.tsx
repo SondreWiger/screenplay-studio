@@ -14,9 +14,7 @@ export const metadata: Metadata = {
   },
 };
 
-// ============================================================
 // /licenses — Public page explaining content licenses
-// ============================================================
 
 const categories = [
   {

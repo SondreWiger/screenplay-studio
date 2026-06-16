@@ -3,7 +3,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Modal, Button } from '@/components/ui';
 
-// ============================================================
 // useConfirmDialog — Promise-based replacement for window.confirm()
 //
 // Usage:
@@ -13,7 +12,6 @@ import { Modal, Button } from '@/components/ui';
 //   if (!ok) return;
 //
 //   // Render <ConfirmDialog /> somewhere in your JSX
-// ============================================================
 
 interface ConfirmOptions {
   title?: string;

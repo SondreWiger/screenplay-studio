@@ -4,7 +4,6 @@ import { useEffect, useRef, useCallback } from 'react';
 import { toast } from '@/components/ui';
 import { pickToast, WORK_1H, WORK_2H, WORK_3H, WORK_4H, WORK_5H, WORK_12H, WORK_24H } from '@/lib/funToasts';
 
-// ============================================================
 // useWorkTimeTracker
 //
 // Tracks actual working time without being exploitable:
@@ -32,7 +31,6 @@ import { pickToast, WORK_1H, WORK_2H, WORK_3H, WORK_4H, WORK_5H, WORK_12H, WORK_
 //   • Page-hidden tabs stop sending heartbeats immediately.
 //   • keepalive: true is used for the final unmount heartbeat so it
 //     survives the page being closed.
-// ============================================================
 
 const HEARTBEAT_INTERVAL_MS  = 30_000;  // 30 seconds
 const IDLE_THRESHOLD_MS      = 5 * 60 * 1000;  // 5 min = stop heartbeats
@@ -50,7 +48,7 @@ const ACTIVITY_EVENTS = [
   'pointermove',
 ] as const;
 
-// ── session key ──────────────────────────────────────────────
+// session key
 // One key per browser tab: stored in sessionStorage so it's lost
 // when the tab closes, creating a fresh session on next visit.
 function getSessionKey(projectId: string): string {
@@ -68,7 +66,7 @@ function getSessionKey(projectId: string): string {
   }
 }
 
-// ── format helper (exported for display components) ──────────
+// format helper (exported for display components)
 export function formatWorkSeconds(seconds: number): string {
   if (seconds <= 0) return '0 min';
   const h = Math.floor(seconds / 3600);
@@ -78,7 +76,7 @@ export function formatWorkSeconds(seconds: number): string {
   return `${m} min`;
 }
 
-// ── hook options ──────────────────────────────────────────────
+// hook options
 export interface UseWorkTimeTrackerOptions {
   /** The project being worked on */
   projectId: string;
@@ -88,9 +86,7 @@ export interface UseWorkTimeTrackerOptions {
   disabled?: boolean;
 }
 
-// ============================================================
 // Main hook
-// ============================================================
 export function useWorkTimeTracker({
   projectId,
   context = 'general',
@@ -106,7 +102,7 @@ export function useWorkTimeTracker({
   const sessionSecondsRef = useRef<number>(0);  // total active seconds this session
   const firedMilestonesRef = useRef<Set<number>>(new Set()); // hours already toasted
 
-  // ── send a heartbeat ────────────────────────────────────────
+  // send a heartbeat
   const sendHeartbeat = useCallback(
     async (graceSecs: number = 0, keepalive = false) => {
       if (!projectId || !sessionKeyRef.current) return;
@@ -135,12 +131,12 @@ export function useWorkTimeTracker({
     [projectId, context],
   );
 
-  // ── activity handler ────────────────────────────────────────
+  // activity handler
   const recordActivity = useCallback(() => {
     lastActivityRef.current = Date.now();
   }, []);
 
-  // ── main effect ─────────────────────────────────────────────
+  // main effect
   useEffect(() => {
     if (disabled || !projectId) return;
 
@@ -156,7 +152,7 @@ export function useWorkTimeTracker({
       window.addEventListener(ev, recordActivity, { passive: true }),
     );
 
-    // ── heartbeat loop ───────────────────────────────────────
+    // heartbeat loop
     heartbeatTimer.current = setInterval(() => {
       const idleMs = Date.now() - lastActivityRef.current;
 
@@ -190,7 +186,7 @@ export function useWorkTimeTracker({
       // If idle, timer keeps running so we pick back up automatically
     }, HEARTBEAT_INTERVAL_MS);
 
-    // ── visibility-change: thinking-grace logic ──────────────
+    // visibility-change: thinking-grace logic
     const handleVisibility = () => {
       const now = Date.now();
 
@@ -228,7 +224,7 @@ export function useWorkTimeTracker({
     // Initial heartbeat on mount (marks the session start)
     sendHeartbeat(0);
 
-    // ── cleanup ─────────────────────────────────────────────
+    // cleanup
     return () => {
       mountedRef.current = false;
       ACTIVITY_EVENTS.forEach((ev) =>

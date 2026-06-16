@@ -8,7 +8,7 @@ import { Badge, LoadingPage } from '@/components/ui';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import type { StageEnsembleMember, StageProductionTeamMember, ScheduleEvent } from '@/lib/types';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// Types
 interface CrewMember {
   id: string;
   name: string;
@@ -37,7 +37,7 @@ interface StageCue {
   timing_note?: string;
 }
 
-// ── Cue type colours ──────────────────────────────────────────────────────────
+// Cue type colours
 const CUE_COLORS: Record<string, string> = {
   lighting:         '#fbbf24',
   sound:            '#3b82f6',
@@ -62,7 +62,7 @@ const DEPT_COLOR: Record<string, string> = {
   'Team': '#34d399',
 };
 
-// ── Mobile: collapsible section ───────────────────────────────────────────────
+// Mobile: collapsible section
 function MobileSection({
   title, count, color = '#6366f1', children, defaultOpen = true,
 }: {
@@ -93,7 +93,7 @@ function MobileSection({
   );
 }
 
-// ── Shared: contact row (mobile) ──────────────────────────────────────────────
+// Shared: contact row (mobile)
 function ContactRow({ label, sub, email, phone, badge, badgeColor }: {
   label: string; sub?: string; email?: string; phone?: string; badge?: string; badgeColor?: string;
 }) {
@@ -129,7 +129,7 @@ function ContactRow({ label, sub, email, phone, badge, badgeColor }: {
   );
 }
 
-// ── Desktop: person card ──────────────────────────────────────────────────────
+// Desktop: person card
 function DesktopPersonCard({ name, role, email, phone, color }: {
   name: string; role?: string; email?: string; phone?: string; color?: string;
 }) {
@@ -164,7 +164,7 @@ function DesktopPersonCard({ name, role, email, phone, color }: {
   );
 }
 
-// ── Desktop: department panel ─────────────────────────────────────────────────
+// Desktop: department panel
 function DeptPanel({ title, members, color, castMode = false }: {
   title: string;
   members: (CrewMember | CastMember)[];
@@ -211,7 +211,6 @@ function DeptPanel({ title, members, color, castMode = false }: {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 export default function CrewMobileView() {
   const params = useParams<{ id: string }>();
   const { currentProject } = useProjectStore();
@@ -297,7 +296,7 @@ export default function CrewMobileView() {
     ? cast.reduce((acc, m) => { const g = m.group || 'Ensemble'; if (!acc[g]) acc[g] = []; acc[g].push(m); return acc; }, {} as Record<string, CastMember[]>)
     : { Cast: cast };
 
-  // ── Shared header data ────────────────────────────────────────────────────
+  // Shared header data
   const totalPeople = crew.length + cast.length;
   const headerBadges = (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -357,7 +356,7 @@ export default function CrewMobileView() {
 
         {/* Today's schedule */}
         <div className="flex-1 px-4 py-4">
-          <p className="text-[9px] font-mono uppercase tracking-widest text-white/25 mb-3">Today's Schedule</p>
+          <p className="text-[9px] font-mono uppercase tracking-widest text-white/25 mb-3">Today&apos;s Schedule</p>
           {todaysEvents.length === 0 ? (
             <p className="text-[12px] text-white/20 italic">Nothing scheduled today.</p>
           ) : (

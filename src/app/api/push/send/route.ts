@@ -3,7 +3,6 @@ import webpush from 'web-push';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createClient } from '@supabase/supabase-js';
 
-// ---------------------------------------------------------------------------
 // Push notification delivery endpoint
 //
 // Auth — two paths:
@@ -15,7 +14,6 @@ import { createClient } from '@supabase/supabase-js';
 //      Header:  Authorization: Bearer <supabase-access-token>
 //      Body:    { title, body, url }
 //      Enforces: can only deliver to the authenticated user's own subscriptions
-// ---------------------------------------------------------------------------
 
 const VAPID_PUBLIC  = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || '';
@@ -34,7 +32,7 @@ export async function POST(req: NextRequest) {
     let targetIds: string[] = [];
     let body: Record<string, unknown> = {};
 
-    // ── Auth path 1: internal secret ──────────────────────────────────────────
+    // Auth path 1: internal secret
     if (PUSH_API_SECRET && secret === PUSH_API_SECRET) {
       body = await req.json();
       const user_id = body.user_id as string | undefined;
@@ -44,7 +42,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No user_id(s) provided' }, { status: 400 });
       }
 
-    // ── Auth path 2: user session token (push to own devices only) ───────────
+    // Auth path 2: user session token (push to own devices only)
     } else if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.slice(7);
       // Validate the token against Supabase
@@ -64,7 +62,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // ── VAPID check ───────────────────────────────────────────────────────────
+    // VAPID check
     if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
       return NextResponse.json(
         { error: 'VAPID keys not configured. Run: node scripts/generate-vapid-keys.mjs' },
@@ -76,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminSupabaseClient();
 
-    // ── Fetch push subscriptions ──────────────────────────────────────────────
+    // Fetch push subscriptions
     const { data: subscriptions, error } = await supabase
       .from('push_subscriptions')
       .select('id, user_id, endpoint, keys')

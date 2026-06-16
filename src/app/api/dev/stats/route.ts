@@ -15,7 +15,7 @@ async function requireAdmin() {
   return null;
 }
 
-// ── Count LOC recursively in a directory ─────────────────────
+// Count LOC recursively in a directory
 async function countCodeStats(dir: string, exts: string[]): Promise<{ files: number; lines: number; bytes: number }> {
   let files = 0, lines = 0, bytes = 0;
   try {
@@ -46,7 +46,7 @@ export async function GET() {
 
   const supabase = createServerSupabaseClient();
 
-  // ── DB queries in parallel ─────────────────────────────────
+  // DB queries in parallel
   const [
     { count: totalUsers },
     { count: proUsers },
@@ -115,7 +115,7 @@ export async function GET() {
   (projectTypeBreakdown ?? []).forEach((r: any) => { const t = r.project_type || 'unknown'; ptMap[t] = (ptMap[t] ?? 0) + 1; });
   const ptBreakdown = Object.entries(ptMap).map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count);
 
-  // ── Codebase stats ─────────────────────────────────────────
+  // Codebase stats
   const srcDir = path.join(process.cwd(), 'src');
   const codeStats = await countCodeStats(srcDir, ['.ts', '.tsx', '.js', '.jsx', '.css', '.sql']);
   const jsStats = await countCodeStats(srcDir, ['.ts', '.tsx', '.js', '.jsx']);

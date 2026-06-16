@@ -8,11 +8,9 @@ import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, Input, Textarea, Modal, toast, ToastContainer } from '@/components/ui';
 
-// ============================================================
 // Casting — Pro Feature (Film/TV)
 // Connect characters with team members, assign actors,
 // track casting status across the entire project.
-// ============================================================
 
 type Character = {
   id: string;
@@ -105,7 +103,7 @@ export default function CastingPage() {
 
   const supabase = createClient();
 
-  // ── Load data ──────────────────────────────────────────────
+  // Load data
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -183,7 +181,7 @@ export default function CastingPage() {
     loadData();
   }, [hasProAccess, loadData]);
 
-  // ── Derived data ───────────────────────────────────────────
+  // Derived data
   // Build a map of character_id -> scene numbers they appear in.
   // Prefers cast_ids on scenes, but also detects character names in script_elements.
   const sceneCountMap = useMemo(() => {
@@ -272,7 +270,7 @@ export default function CastingPage() {
 
   const selectedChar = useMemo(() => characters.find((c) => c.id === selectedCharId) || null, [characters, selectedCharId]);
 
-  // ── Actions ────────────────────────────────────────────────
+  // Actions
   const openDetail = (char: Character) => {
     setSelectedCharId(char.id);
     setEditActor(char.cast_actor || '');
@@ -330,7 +328,7 @@ export default function CastingPage() {
       );
       toast('Casting cleared', 'success');
       if (selectedCharId === charId) closeDetail();
-    } catch (err) {
+    } catch {
       toast('Failed to clear casting', 'error');
     } finally {
       setSaving(null);
@@ -343,7 +341,7 @@ export default function CastingPage() {
     setShowTeamPicker(false);
   };
 
-  // ── Casting Call actions ───────────────────────────────────
+  // Casting Call actions
   const addQuestion = () => {
     setCastingQuestions(prev => [...prev, { label: '', type: 'text', required: false }]);
   };
@@ -415,7 +413,7 @@ export default function CastingPage() {
     toast('Link copied to clipboard', 'success');
   };
 
-  // ── Role type label ────────────────────────────────────────
+  // Role type label
   const roleLabel = (char: Character) => {
     if (char.is_main) return 'Lead';
     return 'Supporting';
@@ -426,7 +424,7 @@ export default function CastingPage() {
     return 'bg-surface-700 text-surface-300';
   };
 
-  // ── Pro gate ───────────────────────────────────────────────
+  // Pro gate
   if (!hasProAccess) {
     return (
       <div className="p-6 flex items-center justify-center h-full">
@@ -444,7 +442,7 @@ export default function CastingPage() {
 
   if (loading) return <LoadingPage />;
 
-  // ── Render ─────────────────────────────────────────────────
+  // Render
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
       <ToastContainer />
@@ -487,7 +485,7 @@ export default function CastingPage() {
           </div>
           <div className="w-full h-2 bg-surface-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-amber-500 rounded-full transition-all duration-500"
+              className="h-full bg-amber-500 rounded-full transition-[width] duration-500"
               style={{ width: `${(stats.castCount / stats.total) * 100}%` }}
             />
           </div>

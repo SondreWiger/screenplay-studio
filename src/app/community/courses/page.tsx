@@ -5,12 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { cn, timeAgo } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import type { Course, CourseEnrollment, CourseDifficulty } from '@/lib/types';
 
-// ============================================================
 // Community Courses — catalog page
-// ============================================================
 
 const DIFFICULTY_COLOR: Record<CourseDifficulty, { bg: string; text: string; label: string }> = {
   beginner:     { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Beginner' },
@@ -46,7 +44,7 @@ function CourseCard({
 
   return (
     <div className={cn(
-      'group relative flex flex-col rounded-2xl border overflow-hidden transition-all duration-200',
+      'group relative flex flex-col rounded-xl border overflow-hidden transition-colors duration-200',
       'bg-white/[0.04] border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07]',
       done && 'border-emerald-500/30',
     )}>
@@ -78,7 +76,7 @@ function CourseCard({
         {/* Progress bar */}
         {enrollment && !done && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-            <div className="h-full bg-[#FF5F1F] transition-all" style={{ width: `${pct}%` }} />
+            <div className="h-full bg-[#FF5F1F] transition-[width]" style={{ width: `${pct}%` }} />
           </div>
         )}
       </div>
@@ -131,14 +129,14 @@ function CourseCard({
         {enrollment ? (
           <Link
             href={`/community/courses/${course.id}`}
-            className="block text-center py-2 rounded-xl text-xs font-semibold transition-all bg-[#FF5F1F]/10 text-[#FF5F1F] hover:bg-[#FF5F1F]/20"
+            className="block text-center py-2 rounded-xl text-xs font-semibold transition-colors bg-[#FF5F1F]/10 text-[#FF5F1F] hover:bg-[#FF5F1F]/20"
           >
             {done ? 'Review Course' : `Continue — ${pct}%`}
           </Link>
         ) : (
           <button
             onClick={() => onEnroll(course.id)}
-            className="w-full py-2 rounded-xl text-xs font-semibold transition-all bg-white/5 text-white/70 hover:bg-[#FF5F1F]/10 hover:text-[#FF5F1F]"
+            className="w-full py-2 rounded-xl text-xs font-semibold transition-colors bg-white/5 text-white/70 hover:bg-[#FF5F1F]/10 hover:text-[#FF5F1F]"
           >
             Start Course
           </button>
@@ -199,13 +197,6 @@ export default function CoursesPage() {
     }
   };
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    await supabase.auth.signOut();
-    router.refresh();
-  };
-
   const canCreate = user && (userLevel >= 10 || user.role === 'admin' || user.role === 'moderator');
 
   const filtered = courses.filter(c => {
@@ -250,11 +241,11 @@ export default function CoursesPage() {
           {/* User stats */}
           {user && enrolledCount > 0 && (
             <div className="flex items-center gap-4 text-center">
-              <div className="px-5 py-3 bg-white/[0.04] rounded-2xl border border-white/[0.08]">
+              <div className="px-5 py-3 bg-white/[0.04] rounded-xl border border-white/[0.08]">
                 <div className="text-2xl font-black text-white">{enrolledCount}</div>
                 <div className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">Enrolled</div>
               </div>
-              <div className="px-5 py-3 bg-emerald-500/5 rounded-2xl border border-emerald-500/20">
+              <div className="px-5 py-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
                 <div className="text-2xl font-black text-emerald-400">{completedCount}</div>
                 <div className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">Completed</div>
               </div>
@@ -268,7 +259,7 @@ export default function CoursesPage() {
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-xl p-1 border border-white/[0.08]">
             {([['all','All'],['system','Official'],['user','Community'],['enrolled','My Courses']] as const).map(([v,label]) => (
               <button key={v} onClick={() => setFilter(v as any)}
-                className={cn('px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-all',
+                className={cn('px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-colors',
                   filter === v ? 'bg-[#FF5F1F] text-white' : 'text-white/40 hover:text-white/70'
                 )}>
                 {label}
@@ -279,7 +270,7 @@ export default function CoursesPage() {
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-xl p-1 border border-white/[0.08]">
             {([['all','All'],['beginner','Beginner'],['intermediate','Intermediate'],['advanced','Advanced']] as const).map(([v,label]) => (
               <button key={v} onClick={() => setDifficulty(v as any)}
-                className={cn('px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-all',
+                className={cn('px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-colors',
                   difficulty === v ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'
                 )}>
                 {label}
@@ -289,7 +280,7 @@ export default function CoursesPage() {
 
           {canCreate && (
             <Link href="/community/courses/create"
-              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-[10px] font-mono uppercase tracking-wider bg-[#FF5F1F]/10 text-[#FF5F1F] border border-[#FF5F1F]/30 rounded-xl hover:bg-[#FF5F1F]/20 transition-all">
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-[10px] font-mono uppercase tracking-wider bg-[#FF5F1F]/10 text-[#FF5F1F] border border-[#FF5F1F]/30 rounded-xl hover:bg-[#FF5F1F]/20 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Create Course
             </Link>
@@ -298,7 +289,7 @@ export default function CoursesPage() {
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[...Array(6)].map((_,i) => <div key={i} className="h-72 rounded-2xl bg-white/[0.04] animate-pulse" />)}
+            {[...Array(6)].map((_,i) => <div key={i} className="h-72 rounded-xl bg-white/[0.04] animate-pulse" />)}
           </div>
         ) : (
           <div className="space-y-12">
@@ -346,14 +337,14 @@ export default function CoursesPage() {
 
             {/* CTA for eligible non-creators */}
             {user && !canCreate && (
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 text-center">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-8 text-center">
                 <div className="text-3xl mb-3">✍️</div>
                 <h3 className="text-base font-bold text-white mb-1">Want to create a course?</h3>
                 <p className="text-sm text-white/40 max-w-sm mx-auto">
-                  Reach <span className="text-white/70 font-semibold">Level 10</span> to unlock course creation. You're at Level {userLevel}.
+                  Reach <span className="text-white/70 font-semibold">Level 10</span> to unlock course creation. You&apos;re at Level {userLevel}.
                 </p>
                 <div className="mt-4 h-2 max-w-xs mx-auto bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#FF5F1F] rounded-full transition-all" style={{ width: `${Math.min((userLevel / 10) * 100, 100)}%` }} />
+                  <div className="h-full bg-[#FF5F1F] rounded-full transition-[width]" style={{ width: `${Math.min((userLevel / 10) * 100, 100)}%` }} />
                 </div>
                 <p className="text-[11px] text-white/30 mt-2">{userLevel} / 10</p>
               </div>

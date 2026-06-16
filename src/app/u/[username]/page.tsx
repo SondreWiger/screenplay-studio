@@ -14,9 +14,7 @@ import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
 import ActivityGrid from '@/components/activity/ActivityGrid';
 import { fetchUserWorkLogs, calculateStreak, aggregateLogsByDate } from '@/lib/work-tracker';
 
-// ============================================================
 // Public User Profile Page — /u/<username>
-// ============================================================
 
 // Theme presets for profile customisation
 const PROFILE_THEMES: Record<string, { gradient: string; accent: string; accentRgb: string; cardBg: string; textAccent: string }> = {
@@ -193,9 +191,7 @@ export default function UserProfilePage({ params }: { params: { username: string
       .then(({ data }) => setCreatorProfile(data as CreatorProfile | null));
   }, [profile?.id]);
 
-  // ============================================================
   // START DM
-  // ============================================================
 
   const handleStartDm = async () => {
     if (!currentUser || !profile || startingDm) return;
@@ -278,9 +274,7 @@ export default function UserProfilePage({ params }: { params: { username: string
     return Object.entries(profile.social_links).filter(([, url]) => url?.trim());
   }, [profile?.social_links]);
 
-  // ============================================================
   // LOADING / NOT FOUND
-  // ============================================================
 
   if (loading) {
     return (
@@ -350,10 +344,10 @@ export default function UserProfilePage({ params }: { params: { username: string
                 <img
                   src={profile.avatar_url}
                   alt={displayName}
-                  className="w-36 h-36 rounded-2xl border-4 border-[#070710] object-cover shadow-2xl"
+                  className="w-36 h-36 rounded-xl border-4 border-[#070710] object-cover shadow-2xl"
                 />
               ) : (
-                <div className="w-36 h-36 rounded-2xl border-4 border-[#070710] bg-white/10 backdrop-blur-sm flex items-center justify-center text-5xl font-bold text-white/60 shadow-2xl">
+                <div className="w-36 h-36 rounded-xl border-4 border-[#070710] bg-white/10 backdrop-blur-sm flex items-center justify-center text-5xl font-bold text-white/60 shadow-2xl">
                   {displayName[0].toUpperCase()}
                 </div>
               )}
@@ -389,7 +383,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                   {isOwnProfile ? (
                     <Link
                       href="/settings"
-                      className="px-5 py-2.5 text-sm font-medium text-white bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl transition-all"
+                      className="px-5 py-2.5 text-sm font-medium text-white bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl transition-colors"
                     >
                       Edit Profile
                     </Link>
@@ -408,7 +402,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                       {currentUser && (
                         <Link
                           href={`/support?type=user&id=${profile.id}&subject=${encodeURIComponent('Report user: ' + displayName)}`}
-                          className="px-4 py-2.5 text-sm font-medium text-white/50 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/20 rounded-xl transition-all flex items-center gap-2"
+                          className="px-4 py-2.5 text-sm font-medium text-white/50 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/20 rounded-xl transition-colors flex items-center gap-2"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                           Report
@@ -468,7 +462,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                       href={url.startsWith('http') ? url : `https://${url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all capitalize"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-colors capitalize"
                     >
                       <span className="text-sm">{SOCIAL_ICONS[platform] || '🔗'}</span>
                       {platform}
@@ -481,25 +475,25 @@ export default function UserProfilePage({ params }: { params: { username: string
                 <div className="flex flex-wrap gap-2 mt-3">
                   {creatorProfile.social_instagram && (
                     <a href={`https://instagram.com/${creatorProfile.social_instagram}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-colors">
                       <span className="text-sm">📷</span> Instagram
                     </a>
                   )}
                   {creatorProfile.social_twitter && (
                     <a href={`https://x.com/${creatorProfile.social_twitter}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-colors">
                       <span className="text-base leading-none font-bold">𝕏</span> Twitter / X
                     </a>
                   )}
                   {creatorProfile.social_tiktok && (
                     <a href={`https://tiktok.com/@${creatorProfile.social_tiktok}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-colors">
                       <span className="text-sm">🎵</span> TikTok
                     </a>
                   )}
                   {creatorProfile.social_youtube && (
                     <a href={`https://youtube.com/@${creatorProfile.social_youtube}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-all">
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/60 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] rounded-lg transition-colors">
                       <span className="text-sm">▶️</span> YouTube
                     </a>
                   )}
@@ -511,7 +505,7 @@ export default function UserProfilePage({ params }: { params: { username: string
 
         {/* Bio — prominent card */}
         {profile.bio && (
-          <div className={`mb-8 rounded-2xl ${theme.cardBg} border border-white/[0.06] p-6`}>
+          <div className={`mb-8 rounded-xl ${theme.cardBg} border border-white/[0.06] p-6`}>
             <p className="text-sm text-white/70 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
           </div>
         )}
@@ -538,7 +532,7 @@ export default function UserProfilePage({ params }: { params: { username: string
           isOwnProfile ||
           profile?.show_activity_grid !== 'private'
         ) && (
-          <div className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] p-5 mb-8`}>
+          <div className={`rounded-xl ${theme.cardBg} border border-white/[0.06] p-5 mb-8`}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xs font-semibold text-white/30 uppercase tracking-widest">Activity — past year</h2>
               <div className="flex items-center gap-3 text-xs text-white/25">
@@ -571,13 +565,13 @@ export default function UserProfilePage({ params }: { params: { username: string
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {featuredProjects.map((project) => (
-                <div key={project.id} className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-all group`}>
+                <div key={project.id} className={`rounded-xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-colors group`}>
                   <div className={`relative aspect-[16/10] bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <svg className="w-12 h-12 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
                     </div>
                     {(project.poster_url || project.cover_url) && (
-                      <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500" referrerPolicy="no-referrer" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     )}
                   </div>
                   <div className="p-5">
@@ -611,11 +605,11 @@ export default function UserProfilePage({ params }: { params: { username: string
                   <Link
                     key={project.id}
                     href={`/community/showcase/${project.id}`}
-                    className={`flex items-center gap-5 rounded-xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.15] transition-all p-4 group`}
+                    className={`flex items-center gap-5 rounded-xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.15] transition-colors p-4 group`}
                   >
                     <div className="w-28 h-[4.5rem] rounded-lg overflow-hidden shrink-0 bg-white/5">
                       {thumb ? (
-                        <img src={thumb} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                        <img src={thumb} alt={project.title} className="w-full h-full object-cover transition-transform duration-300" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <svg className="w-6 h-6 text-white/10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
@@ -656,7 +650,7 @@ export default function UserProfilePage({ params }: { params: { username: string
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-2 text-sm font-medium rounded-lg transition-all ${
+              className={`px-5 py-2 text-sm font-medium rounded-lg transition-colors ${
                 activeTab === tab.key
                   ? 'bg-white/10 text-white shadow-sm'
                   : 'text-white/40 hover:text-white/60'
@@ -684,7 +678,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                   <Link
                     key={post.id}
                     href={`/community/post/${post.slug}`}
-                    className={`block rounded-xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.15] transition-all p-5 group`}
+                    className={`block rounded-xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.15] transition-colors p-5 group`}
                   >
                     <div className="flex items-start gap-4">
                       <div className="flex flex-col items-center gap-0.5 pt-1 shrink-0">
@@ -709,7 +703,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                       </div>
                       {post.cover_image_url && (
                         <div className="hidden sm:block w-24 h-16 rounded-lg overflow-hidden shrink-0">
-                          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                          <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-full object-cover transition-transform duration-300" loading="lazy" />
                         </div>
                       )}
                     </div>
@@ -731,13 +725,13 @@ export default function UserProfilePage({ params }: { params: { username: string
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {publicProjects.map((project) => (
-                  <div key={project.id} className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-all group`}>
+                  <div key={project.id} className={`rounded-xl ${theme.cardBg} border border-white/[0.06] overflow-hidden hover:border-white/[0.15] transition-colors group`}>
                     <div className={`relative aspect-[16/10] bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <svg className="w-12 h-12 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
                       </div>
                       {(project.poster_url || project.cover_url) && (
-                        <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <img src={project.poster_url || project.cover_url || ''} alt={project.title || 'Project poster'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500" referrerPolicy="no-referrer" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       )}
                     </div>
                     <div className="p-5">
@@ -769,7 +763,7 @@ export default function UserProfilePage({ params }: { params: { username: string
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl">
             {/* Main details */}
             <div className="lg:col-span-2 space-y-6">
-              <div className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] p-6`}>
+              <div className={`rounded-xl ${theme.cardBg} border border-white/[0.06] p-6`}>
                 <h3 className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-5">Details</h3>
                 <dl className="space-y-4">
                   {[
@@ -793,7 +787,7 @@ export default function UserProfilePage({ params }: { params: { username: string
               </div>
 
               {profile.bio && (
-                <div className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] p-6`}>
+                <div className={`rounded-xl ${theme.cardBg} border border-white/[0.06] p-6`}>
                   <h3 className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Bio</h3>
                   <p className="text-sm text-white/60 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
                 </div>
@@ -804,7 +798,7 @@ export default function UserProfilePage({ params }: { params: { username: string
             <div className="space-y-6">
               {/* Social links expanded */}
               {socialEntries.length > 0 && (
-                <div className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] p-6`}>
+                <div className={`rounded-xl ${theme.cardBg} border border-white/[0.06] p-6`}>
                   <h3 className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Links</h3>
                   <div className="space-y-2">
                     {socialEntries.map(([platform, url]) => (
@@ -828,7 +822,7 @@ export default function UserProfilePage({ params }: { params: { username: string
               )}
 
               {/* Quick stats */}
-              <div className={`rounded-2xl ${theme.cardBg} border border-white/[0.06] p-6`}>
+              <div className={`rounded-xl ${theme.cardBg} border border-white/[0.06] p-6`}>
                 <h3 className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">Activity</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -869,10 +863,10 @@ export default function UserProfilePage({ params }: { params: { username: string
                     : 'text-red-400 border-red-500/20 bg-red-500/10';
                   return (
                     <Link key={id} href={`/community/courses/${course.id}`}
-                      className={`block rounded-2xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.18] transition-all overflow-hidden group`}>
+                      className={`block rounded-xl ${theme.cardBg} border border-white/[0.06] hover:border-white/[0.18] transition-colors overflow-hidden group`}>
                       {course.thumbnail_url ? (
                         <div className="aspect-video overflow-hidden">
-                          <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                          <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover transition-transform duration-500" loading="lazy" />
                         </div>
                       ) : (
                         <div className="aspect-video bg-gradient-to-br from-[#FF5F1F]/10 to-[#0E0E1C] flex items-center justify-center">
@@ -900,7 +894,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                             <span className="text-[9px] text-white/50 font-medium">{progress_percent}%</span>
                           </div>
                           <div className="w-full h-1 bg-white/[0.08] rounded-full overflow-hidden">
-                            <div className="h-full rounded-full transition-all" style={{ width: `${progress_percent}%`, background: completed_at ? '#10B981' : '#FF5F1F' }} />
+                            <div className="h-full rounded-full transition-[width]" style={{ width: `${progress_percent}%`, background: completed_at ? '#10B981' : '#FF5F1F' }} />
                           </div>
                         </div>
                       </div>

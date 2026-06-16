@@ -23,7 +23,7 @@ interface BuddyProfile {
   daily_goal_pages: number | null;
 }
 
-// ── ManualLogModal ────────────────────────────────────────────────────────────
+// ManualLogModal
 
 function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () => Promise<void> }) {
   const [pages, setPages] = useState('');
@@ -60,8 +60,8 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-        <h2 className="text-lg font-semibold text-white mb-4">Log today's work</h2>
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6 w-full max-w-sm shadow-2xl">
+        <h2 className="text-lg font-semibold text-white mb-4">Log today&apos;s work</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs text-white/40 uppercase tracking-widest block mb-1">Pages written</label>
@@ -105,7 +105,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
   );
 }
 
-// ── BuddyCard ─────────────────────────────────────────────────────────────────
+// BuddyCard
 
 function BuddyCard({
   buddy,
@@ -202,7 +202,7 @@ function BuddyCard({
   );
 }
 
-// ── GroupCard ────────────────────────────────────────────────────────────────
+// GroupCard
 
 function GroupCard({ group, myRole, onEnter }: { group: AccountabilityGroup; myRole: string; onEnter: () => void }) {
   return (
@@ -229,12 +229,12 @@ function GroupCard({ group, myRole, onEnter }: { group: AccountabilityGroup; myR
   );
 }
 
-// ── GroupModal ────────────────────────────────────────────────────────────────
+// GroupModal
 
-function GroupModal({ group, onClose, onUpdated }: {
+function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
   group: AccountabilityGroup;
   onClose: () => void;
-  onUpdated: () => void;
+  onUpdated?: () => void;
 }) {
   const user = useAuthStore(s => s.user);
   const [members, setMembers] = useState<(AccountabilityGroupMember & { profile: BuddyProfile })[]>([]);
@@ -291,7 +291,7 @@ function GroupModal({ group, onClose, onUpdated }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#181818] border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl">
+      <div className="bg-[#181818] border border-white/10 rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
           <h2 className="text-base font-semibold text-white">{group.name}</h2>
@@ -386,7 +386,7 @@ function GroupModal({ group, onClose, onUpdated }: {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// Main Page
 
 export default function AccountabilityPage() {
   const { user, loading: authLoading } = useAuth();
@@ -394,18 +394,18 @@ export default function AccountabilityPage() {
   const [tab, setTab] = useState<Tab>('stats');
   const [loading, setLoading] = useState(true);
 
-  // ── Stats state ──
+  // Stats state
   const [logs, setLogs] = useState<Array<{ log_date: string; pages_written: number; session_minutes: number }>>([]);
   const [showLogModal, setShowLogModal] = useState(false);
 
-  // ── Buddies state ──
+  // Buddies state
   const [buddies, setBuddies] = useState<AccountabilityBuddy[]>([]);
   const [buddyProfiles, setBuddyProfiles] = useState<Record<string, BuddyProfile>>({});
   const [buddySearch, setBuddySearch] = useState('');
   const [buddyResults, setBuddyResults] = useState<BuddyProfile[]>([]);
   const [sendingRequest, setSendingRequest] = useState(false);
 
-  // ── Groups state ──
+  // Groups state
   const [groups, setGroups] = useState<AccountabilityGroup[]>([]);
   const [myRoles, setMyRoles] = useState<Record<string, string>>({});
   const [openGroup, setOpenGroup] = useState<AccountabilityGroup | null>(null);
@@ -418,7 +418,7 @@ export default function AccountabilityPage() {
   const activityColor = user?.activity_color || '#22c55e';
   const dailyGoal = user?.daily_goal_pages || 1;
 
-  // ── Load data ──────────────────────────────────────────────────────────────
+  // Load data
 
   const loadStats = useCallback(async () => {
     const data = await fetchMyWorkLogs(365);
@@ -479,7 +479,7 @@ export default function AccountabilityPage() {
     Promise.all([loadStats(), loadBuddies(), loadGroups()]).then(() => setLoading(false));
   }, [user, loadStats, loadBuddies, loadGroups]);
 
-  // ── Search buddies ────────────────────────────────────────────────────────
+  // Search buddies
 
   useEffect(() => {
     if (!buddySearch.trim() || buddySearch.trim().length < 2) {
@@ -521,7 +521,7 @@ export default function AccountabilityPage() {
     setSendingRequest(false);
   };
 
-  // ── Groups actions ────────────────────────────────────────────────────────
+  // Groups actions
 
   const createGroup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -551,7 +551,7 @@ export default function AccountabilityPage() {
     if (!inviteCode.trim()) return;
     setJoiningGroup(true);
     const supabase = createClient();
-    const { data, error } = await supabase.rpc('join_accountability_group', { p_invite_code: inviteCode.trim() });
+    const { error } = await supabase.rpc('join_accountability_group', { p_invite_code: inviteCode.trim() });
     if (error) {
       toast.error(error.message.includes('Invalid') ? 'Invalid invite code' : 'Could not join group');
     } else {
@@ -562,7 +562,7 @@ export default function AccountabilityPage() {
     setJoiningGroup(false);
   };
 
-  // ── Derived stats ─────────────────────────────────────────────────────────
+  // Derived stats
 
   const streak = calculateStreak(logs);
   const agg = aggregateLogsByDate(logs);
@@ -621,11 +621,11 @@ export default function AccountabilityPage() {
             {/* Quick summary chips */}
             {!loading && (
               <div className="hidden sm:flex items-center gap-3 shrink-0 mt-2">
-                <div className="text-center px-4 py-2.5 rounded-2xl" style={{ border: '1px solid rgba(255,95,31,0.2)', background: 'rgba(255,95,31,0.06)' }}>
+                <div className="text-center px-4 py-2.5 rounded-xl" style={{ border: '1px solid rgba(255,95,31,0.2)', background: 'rgba(255,95,31,0.06)' }}>
                   <p className="text-2xl font-black" style={{ color: '#FF5F1F', letterSpacing: '-0.02em' }}>{streak}</p>
                   <p className="text-[9px] font-mono uppercase tracking-widest mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>day streak</p>
                 </div>
-                <div className="text-center px-4 py-2.5 rounded-2xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
+                <div className="text-center px-4 py-2.5 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
                   <p className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>{totalPages.toFixed(0)}</p>
                   <p className="text-[9px] font-mono uppercase tracking-widest mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>pages</p>
                 </div>
@@ -646,7 +646,7 @@ export default function AccountabilityPage() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-lg transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-lg transition-colors"
               style={tab === t.key
                 ? { background: '#FF5F1F', color: '#fff' }
                 : { color: 'rgba(255,255,255,0.4)' }}
@@ -679,7 +679,7 @@ export default function AccountabilityPage() {
                   ].map(stat => (
                     <div
                       key={stat.label}
-                      className="relative overflow-hidden rounded-2xl p-5"
+                      className="relative overflow-hidden rounded-xl p-5"
                       style={{
                         background: stat.glow ? 'rgba(255,95,31,0.07)' : 'rgba(255,255,255,0.03)',
                         border: `1px solid ${stat.glow ? 'rgba(255,95,31,0.22)' : 'rgba(255,255,255,0.06)'}`,
@@ -700,7 +700,7 @@ export default function AccountabilityPage() {
                 </div>
 
                 {/* Activity grid */}
-                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                   <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <div>
                       <p className="text-sm font-semibold text-white">Activity — Past Year</p>
@@ -739,7 +739,7 @@ export default function AccountabilityPage() {
 
                 {/* Recent sessions */}
                 {logs.length > 0 && (
-                  <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                     <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <p className="text-sm font-semibold text-white">Recent Sessions</p>
                     </div>
@@ -773,7 +773,7 @@ export default function AccountabilityPage() {
             {tab === 'buddies' && (
               <div className="space-y-6">
                 {/* Search / add */}
-                <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Find a buddy</p>
                   <input
                     value={buddySearch}
@@ -836,7 +836,7 @@ export default function AccountabilityPage() {
                     Your buddies ({buddies.filter(b => b.status === 'accepted').length})
                   </p>
                   {buddies.filter(b => b.status === 'accepted').length === 0 ? (
-                    <div className="rounded-2xl py-16 text-center" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                    <div className="rounded-xl py-16 text-center" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                       <div className="text-4xl mb-3">🤝</div>
                       <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>No buddies yet.</p>
                       <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.2)' }}>Search above to add one.</p>
@@ -886,7 +886,7 @@ export default function AccountabilityPage() {
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   {/* Create */}
-                  <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Create a group</p>
                     <form onSubmit={createGroup} className="space-y-3">
                       <input
@@ -910,7 +910,7 @@ export default function AccountabilityPage() {
                   </div>
 
                   {/* Join by invite */}
-                  <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Join with invite code</p>
                     <p className="text-xs mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.25)' }}>
                       Have a code? Paste it below to join an existing accountability group instantly.

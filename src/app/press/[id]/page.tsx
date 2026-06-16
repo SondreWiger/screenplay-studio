@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Project } from '@/lib/types';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// Types
 interface Creative {
   id: string;
   name: string;
@@ -13,7 +13,7 @@ interface Creative {
   email?: string;
 }
 
-// ── Genre tag ─────────────────────────────────────────────────────────────────
+// Genre tag
 function GenreTag({ label }: { label: string }) {
   return (
     <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border border-neutral-700 text-neutral-300 bg-neutral-800">
@@ -22,7 +22,6 @@ function GenreTag({ label }: { label: string }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 export default function PressKitPage({ params }: { params: { id: string } }) {
   const [project, setProject] = useState<Project | null>(null);
   const [creatives, setCreatives] = useState<Creative[]>([]);
@@ -122,7 +121,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // ── Loading ─────────────────────────────────────────────────
+  // Loading
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -131,25 +130,25 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // ── Not found ───────────────────────────────────────────────
+  // Not found
   if (notFound || !project) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center text-3xl mb-2">🎬</div>
+        <div className="w-16 h-16 rounded-xl bg-neutral-900 flex items-center justify-center text-3xl mb-2">🎬</div>
         <h1 className="text-xl font-bold text-white">Press kit not found</h1>
         <p className="text-neutral-500 max-w-xs">This press kit is either unavailable or the link has expired.</p>
       </div>
     );
   }
 
-  // ── Password gate ───────────────────────────────────────────
+  // Password gate
   if (project.press_kit_password && !unlocked) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-sm">
           {/* Project name hint */}
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-2xl mx-auto mb-4">🔒</div>
+            <div className="w-14 h-14 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-2xl mx-auto mb-4">🔒</div>
             <h1 className="text-xl font-bold text-white">{project.title}</h1>
             <p className="text-sm text-neutral-500 mt-1">This press kit is password protected</p>
           </div>
@@ -160,7 +159,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
               onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
               placeholder="Enter password"
               autoFocus
-              className={`w-full px-4 py-3 bg-neutral-900 border rounded-xl text-white placeholder-neutral-600 text-sm outline-none focus:ring-2 transition-all ${passwordError ? 'border-red-500 focus:ring-red-500/30' : 'border-neutral-800 focus:ring-white/10 focus:border-neutral-600'}`}
+              className={`w-full px-4 py-3 bg-neutral-900 border rounded-xl text-white placeholder-neutral-600 text-sm outline-none focus:ring-2 transition-colors ${passwordError ? 'border-red-500 focus:ring-red-500/30' : 'border-neutral-800 focus:ring-white/10 focus:border-neutral-600'}`}
             />
             {passwordError && (
               <p className="text-xs text-red-400 pl-1">Incorrect password. Try again.</p>
@@ -177,7 +176,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // ── Press Kit Content ───────────────────────────────────────
+  // Press Kit Content
   const hasCoverImage = project.cover_url || project.poster_url;
   const format = project.format;
   const genres: string[] = project.genre || [];
@@ -213,7 +212,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
 
       {/* ── Hero image ──────────────────────────────── */}
       {hasCoverImage && (
-        <div className="mb-8 rounded-2xl overflow-hidden aspect-video bg-neutral-900 border border-neutral-800">
+        <div className="mb-8 rounded-xl overflow-hidden aspect-video bg-neutral-900 border border-neutral-800">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={project.poster_url || project.cover_url || ''}
@@ -244,7 +243,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
 
       {/* ── Logline ─────────────────────────────────── */}
       {project.logline && (
-        <div className="mb-6 p-5 rounded-2xl bg-neutral-900 border border-neutral-800">
+        <div className="mb-6 p-5 rounded-xl bg-neutral-900 border border-neutral-800">
           <p className="text-[11px] text-neutral-600 uppercase tracking-widest mb-2">Logline</p>
           <p className="text-white text-base leading-relaxed font-medium">{project.logline}</p>
         </div>

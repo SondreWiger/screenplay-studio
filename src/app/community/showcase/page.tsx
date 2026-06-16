@@ -9,9 +9,7 @@ import { timeAgo } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { Project } from '@/lib/types';
 
-// ============================================================
 // Finished Projects — IMDB-style gallery of showcased productions
-// ============================================================
 
 type ShowcasedProject = Project & {
   author?: {
@@ -22,16 +20,6 @@ type ShowcasedProject = Project & {
   };
   team?: { user_id: string; production_role: string; profile: { full_name: string | null; avatar_url: string | null; username: string | null } }[];
 };
-
-function getEmbedUrl(url: string): string | null {
-  // YouTube — various formats
-  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  if (ytMatch) return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
-  // Vimeo
-  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?dnt=1`;
-  return null;
-}
 
 function getThumbnail(url: string): string | null {
   const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -231,7 +219,7 @@ export default function ShowcasePage() {
                 <Link
                   key={project.id}
                   href={`/community/showcase/${project.id}`}
-                  className="group overflow-hidden hover:opacity-90 transition-all duration-300"
+                  className="group overflow-hidden hover:opacity-90 transition-opacity duration-300"
                   style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                 >
                   {/* Thumbnail */}
@@ -244,7 +232,7 @@ export default function ShowcasePage() {
                       <img
                         src={thumb || project.cover_url || project.poster_url || ''}
                         alt={project.title}
-                        className={`absolute inset-0 w-full h-full ${(project.poster_url && !thumb && !project.cover_url) ? 'object-contain bg-neutral-900' : 'object-cover'} group-hover:scale-105 transition-transform duration-500`}
+                        className={`absolute inset-0 w-full h-full ${(project.poster_url && !thumb && !project.cover_url) ? 'object-contain bg-neutral-900' : 'object-cover'} transition-transform duration-500`}
                         referrerPolicy="no-referrer"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />

@@ -9,7 +9,6 @@ import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Selec
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
 import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
 import { sendTicketReplyEmailAction } from '@/lib/email-actions';
-import { BadgeDisplay } from '@/components/BadgeDisplay';
 
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
@@ -308,7 +307,7 @@ export default function AdminPage() {
         supabase.from('support_tickets').select('status, category'),
       ]);
 
-      // ── Words (platform-wide via service role API) ──────────────────
+      // Words (platform-wide via service role API)
       let totalWords = 0;
       try {
         const res = await fetch('/api/admin/stats');
@@ -318,7 +317,7 @@ export default function AdminPage() {
         }
       } catch { /* fallback to 0 */ }
 
-      // ── 30-day trend buckets ──────────────────────────────────────────
+      // 30-day trend buckets
       const bucketByDay = (rows: { created_at: string }[]) => {
         const map: Record<string, number> = {};
         const now = new Date();
@@ -336,7 +335,7 @@ export default function AdminPage() {
       const signupsByDay   = bucketByDay(recentSignupsRes.data || []);
       const projectsByDay  = bucketByDay(recentProjectsCreatedRes.data || []);
 
-      // ── Breakdowns ────────────────────────────────────────────────────
+      // Breakdowns
       const groupBy = (rows: any[], key: string) => {
         const map: Record<string, number> = {};
         for (const r of rows) {
@@ -799,7 +798,7 @@ export default function AdminPage() {
             key={tab.key}
             onClick={() => { setActiveTab(tab.key); }}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200',
+              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200',
               activeTab === tab.key
                 ? 'bg-[#E54E15]/12 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/25 shadow-sm'
                 : 'text-surface-400 hover:text-white hover:bg-surface-800/50'
@@ -930,11 +929,9 @@ export default function AdminPage() {
   );
 }
 
-// ============================================================
 // Overview Tab
-// ============================================================
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// helpers
 
 /** Pure-SVG sparkline (no deps). values = array of numbers. */
 function Sparkline({
@@ -975,7 +972,7 @@ function BarRow({ label, count, max, color }: { label: string; count: number; ma
     <div className="flex items-center gap-3">
       <span className="text-xs text-surface-400 w-28 shrink-0 truncate capitalize">{label.replace(/_/g, ' ')}</span>
       <div className="flex-1 h-2 bg-surface-800 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+        <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: color }} />
       </div>
       <span className="text-xs font-semibold text-white w-8 text-right shrink-0">{count}</span>
     </div>
@@ -993,7 +990,7 @@ function KpiCard({ label, value, sub, color, icon, trend }: {
 }) {
   return (
     <div className={`rounded-xl border border-surface-800 bg-gradient-to-br p-4 flex flex-col gap-2 ${color} relative overflow-hidden group hover:border-surface-700/80 transition-colors`}>
-      <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform" />
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full -translate-y-1/2 translate-x-1/2 transition-transform" />
       <div className="flex items-center justify-between">
         <span className="text-surface-400">{icon}</span>
         {trend !== undefined && trend !== null && (
@@ -1014,7 +1011,6 @@ function KpiCard({ label, value, sub, color, icon, trend }: {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 function OverviewTab({ stats }: { stats: PlatformStats }) {
   const [liveActiveUsers, setLiveActiveUsers] = useState({
@@ -1090,7 +1086,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           label="Total Users"
           value={stats.totalUsers}
           sub={`+${newSignups30} in last 30 days`}
-          color="from-blue-500/20 to-blue-900/5"
+          color="from-surface-500/20 to-surface-900/5"
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
           trend={compStats?.growth?.signupGrowth}
         />
@@ -1126,7 +1122,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           label="Projects"
           value={stats.totalProjects}
           sub={`+${newProj30} in last 30 days`}
-          color="from-violet-500/20 to-violet-900/5"
+          color="from-surface-500/20 to-surface-900/5"
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>}
           trend={compStats?.growth?.projectGrowth}
         />
@@ -1209,7 +1205,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                       {w.count}
                     </div>
                     <div
-                      className="w-full rounded-t-sm transition-all duration-300 hover:opacity-80"
+                      className="w-full rounded-t-sm transition-opacity duration-300 hover:opacity-80"
                       style={{ height: `${Math.max(h, 2)}%`, background: '#3b82f6' }}
                     />
                     <span className="text-[8px] text-surface-600">{w.date.slice(5)}</span>
@@ -1231,7 +1227,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                       {w.count}
                     </div>
                     <div
-                      className="w-full rounded-t-sm transition-all duration-300 hover:opacity-80"
+                      className="w-full rounded-t-sm transition-opacity duration-300 hover:opacity-80"
                       style={{ height: `${Math.max(h, 2)}%`, background: '#7c3aed' }}
                     />
                     <span className="text-[8px] text-surface-600">{w.date.slice(5)}</span>
@@ -1257,7 +1253,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                     {h.count}
                   </div>
                   <div
-                    className="w-full rounded-t-sm transition-all duration-200"
+                    className="w-full rounded-t-sm transition-[height] duration-200"
                     style={{ height: `${Math.max(pct, 1)}%`, background: `oklch(0.6 0.15 ${h.hour * 15})` }}
                   />
                   <span className="text-[7px] text-surface-600">{h.hour}h</span>
@@ -1380,7 +1376,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
             </div>
             <div className="h-1.5 bg-surface-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                className="h-full bg-amber-500 rounded-full transition-[width] duration-500"
                 style={{ width: `${stats.totalTickets > 0 ? (stats.openTickets / stats.totalTickets) * 100 : 0}%` }}
               />
             </div>
@@ -1468,9 +1464,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
   );
 }
 
-// ============================================================
 // Users Tab
-// ============================================================
 
 function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }: {
   users: UserRow[];
@@ -1693,7 +1687,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
           <button
             onClick={() => setDmAllOpen(true)}
             title={`Send DM to ${search ? 'filtered' : 'all'} users`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all duration-150 bg-[#FF5F1F]/10 border-[#FF5F1F]/30 text-[#FF5F1F] hover:bg-[#FF5F1F]/20 hover:border-[#FF5F1F]/50"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors duration-150 bg-[#FF5F1F]/10 border-[#FF5F1F]/30 text-[#FF5F1F] hover:bg-[#FF5F1F]/20 hover:border-[#FF5F1F]/50"
           >
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -1704,7 +1698,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
             onClick={handleCopyEmails}
             title={`Copy ${users.length} email${users.length !== 1 ? 's' : ''} to clipboard`}
             className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all duration-150',
+              'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors duration-150',
               copied
                 ? 'bg-green-500/15 border-green-500/40 text-green-400'
                 : 'bg-surface-800 border-surface-700 text-surface-300 hover:text-white hover:border-surface-600',
@@ -1917,9 +1911,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
   );
 }
 
-// ============================================================
 // Projects Tab
-// ============================================================
 
 function ProjectsTab({ projects, search, onSearchChange }: {
   projects: any[];
@@ -1936,7 +1928,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
     }
 
     const supabase = createClient();
-    const [scripts, elements, chars, locs, scenes, shots, ideas, budget, schedule] = await Promise.all([
+    const [scripts, , chars, locs, scenes, shots, ideas, budget, schedule] = await Promise.all([
       supabase.from('scripts').select('id, title, version', { count: 'exact' }).eq('project_id', projectId),
       supabase.from('script_elements').select('content').eq('script_id', projectId), // This needs script IDs
       supabase.from('characters').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
@@ -2065,9 +2057,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
   );
 }
 
-// ============================================================
 // System Tab
-// ============================================================
 
 function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats, siteVersion, onUpdateVersion, opensourceEnabled, onToggleOpensource, proGatingEnabled, onToggleProGating, creatorProgramEnabled, onToggleCreatorProgram, creatorPayoutEnabled, onToggleCreatorPayout }: {
   rebootStatus: string | null;
@@ -2121,7 +2111,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
         </div>
         <button
           onClick={() => onToggleOpensource(!opensourceEnabled)}
-          className={`relative w-12 h-6 rounded-full transition-all ${
+          className={`relative w-12 h-6 rounded-full transition-colors ${
             opensourceEnabled ? 'bg-emerald-500' : 'bg-surface-700'
           }`}
         >
@@ -2159,7 +2149,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
         </div>
         <button
           onClick={() => onToggleProGating(!proGatingEnabled)}
-          className={`relative w-12 h-6 rounded-full transition-all ${
+          className={`relative w-12 h-6 rounded-full transition-colors ${
             proGatingEnabled ? 'bg-surface-700' : 'bg-[#FF5F1F]'
           }`}
         >
@@ -2197,7 +2187,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
         </div>
         <button
           onClick={() => onToggleCreatorProgram(!creatorProgramEnabled)}
-          className={`relative w-12 h-6 rounded-full transition-all ${
+          className={`relative w-12 h-6 rounded-full transition-colors ${
             creatorProgramEnabled ? 'bg-[#FF5F1F]' : 'bg-surface-700'
           }`}
         >
@@ -2235,7 +2225,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
         </div>
         <button
           onClick={() => onToggleCreatorPayout(!creatorPayoutEnabled)}
-          className={`relative w-12 h-6 rounded-full transition-all ${
+          className={`relative w-12 h-6 rounded-full transition-colors ${
             creatorPayoutEnabled ? 'bg-emerald-500' : 'bg-surface-700'
           }`}
         >
@@ -2393,9 +2383,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
   );
 }
 
-// ============================================================
 // Edit User Modal
-// ============================================================
 
 function EditUserModal({ user, onClose, onSave }: {
   user: UserRow;
@@ -2474,9 +2462,7 @@ function EditUserModal({ user, onClose, onSave }: {
   );
 }
 
-// ============================================================
 // Blog Tab
-// ============================================================
 
 function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggleCommentHidden, onDeleteComment }: {
   posts: BlogPost[];
@@ -2515,7 +2501,7 @@ function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggl
             key={t}
             onClick={() => setView(t)}
             className={cn(
-              'px-4 py-1.5 rounded-md text-sm font-medium transition-all capitalize',
+              'px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize',
               view === t ? 'bg-surface-700 text-white shadow-sm' : 'text-surface-400 hover:text-white'
             )}
           >
@@ -2608,9 +2594,7 @@ function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggl
   );
 }
 
-// ============================================================
 // Community Tab
-// ============================================================
 
 function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onSaveCategory, onDeleteCategory, onSaveTheme, onDeleteTheme, onCreateChallenge }: {
   posts: CommunityPost[];
@@ -2753,7 +2737,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
             key={t.k}
             onClick={() => setView(t.k as any)}
             className={cn(
-              'px-4 py-1.5 rounded-md text-sm font-medium transition-all',
+              'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
               view === t.k ? 'bg-surface-700 text-white shadow-sm' : 'text-surface-400 hover:text-white'
             )}
           >
@@ -2985,9 +2969,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
   );
 }
 
-// ============================================================
 // Blog Post Editor Modal
-// ============================================================
 
 function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
   post: BlogPost | null;
@@ -3184,9 +3166,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
   );
 }
 
-// ============================================================
 // Tickets Tab — manage support tickets
-// ============================================================
 
 const STATUS_COLORS: Record<string, string> = {
   open: 'text-green-400 bg-green-500/10 border-green-500/20',
@@ -3260,7 +3240,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                 key={ticket.id}
                 onClick={() => onSelectTicket(ticket.id)}
                 className={cn(
-                  'w-full text-left p-4 rounded-xl border transition-all',
+                  'w-full text-left p-4 rounded-xl border transition-colors',
                   selectedTicketId === ticket.id
                     ? 'border-[#FF5F1F]/30 bg-[#FF5F1F]/5'
                     : 'border-surface-800 bg-surface-900 hover:border-surface-700'
@@ -3403,7 +3383,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
   );
 }
 
-// ── Contributors Tab ──────────────────────────────────────────────────────────
+// Contributors Tab
 const CONTRIBUTOR_AREA_OPTIONS = ['Code', 'Design', 'Docs', 'Testing', 'Community', 'Translation'];
 
 function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
@@ -3553,7 +3533,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                     key={a}
                     onClick={() => setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a])}
                     className={cn(
-                      'px-3 py-1 text-[11px] font-medium rounded-full border transition-all',
+                      'px-3 py-1 text-[11px] font-medium rounded-full border transition-colors',
                       areas.includes(a)
                         ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-[#FF5F1F]/30'
                         : 'bg-surface-900 text-surface-400 border-surface-700 hover:border-surface-500'
@@ -3648,7 +3628,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                     onClick={() => onToggleFeatured(c.id, !c.is_featured)}
                     title={c.is_featured ? 'Remove featured' : 'Mark as featured'}
                     className={cn(
-                      'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all',
+                      'px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors',
                       c.is_featured
                         ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/25 hover:bg-yellow-500/8'
                         : 'bg-surface-900 text-surface-500 border-surface-700 hover:border-surface-500 hover:text-white'
@@ -3660,7 +3640,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                   <button
                     onClick={() => onRemove(c.id)}
                     title="Remove contributor"
-                    className="p-1.5 rounded-lg text-surface-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    className="p-1.5 rounded-lg text-surface-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -3676,7 +3656,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
   );
 }
 
-// ─── Badges Admin Tab ──────────────────────────────────────────────────────────
+// Badges Admin Tab
 function BadgesAdminTab() {
   const supabase = createClient();
   const [badges, setBadges] = useState<BadgeType[]>([]);
@@ -3936,7 +3916,7 @@ function CoursesAdminTab() {
         <div className="flex items-center gap-1.5 bg-surface-900 border border-surface-800 rounded-xl p-1">
           {(['pending','published','rejected','all'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-colors ${
                 filter === f ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white'
               }`}>{f}</button>
           ))}
@@ -3985,9 +3965,7 @@ function CoursesAdminTab() {
   );
 }
 
-// ============================================================
 // Creators Tab
-// ============================================================
 function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolean; payoutEnabled: boolean }) {
   const supabase = createClient();
 
@@ -4158,7 +4136,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                         <span className="font-mono text-xs text-[#FF5F1F]">/ref/{c.ref_code}</span>
                       </div>
                       {c.application_note && (
-                        <p className="text-xs text-surface-400 mt-1 italic">"{c.application_note}"</p>
+                        <p className="text-xs text-surface-400 mt-1 italic">&quot;{c.application_note}&quot;</p>
                       )}
                       <div className="flex gap-3 mt-1 flex-wrap">
                         {c.social_instagram && <span className="text-xs text-surface-500">IG: @{c.social_instagram}</span>}
@@ -4183,7 +4161,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                       </>
                     )}
                     {filterStatus === 'rejected' && c.rejected_reason && (
-                      <span className="text-xs text-surface-500 italic max-w-xs truncate">"{c.rejected_reason}"</span>
+                      <span className="text-xs text-surface-500 italic max-w-xs truncate">&quot;{c.rejected_reason}&quot;</span>
                     )}
                   </div>
                 </div>

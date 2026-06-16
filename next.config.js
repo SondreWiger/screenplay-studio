@@ -3,10 +3,10 @@ const nextConfig = {
   swcMinify: true,
   compress: true,
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // ── Strip console.* in production builds ─────────────────
@@ -27,6 +27,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'framerusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.pinimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.pinimg.com',
       },
     ],
     // Serve modern formats first

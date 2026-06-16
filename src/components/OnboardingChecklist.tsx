@@ -253,7 +253,7 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
   const allDone = remaining.length === 0;
 
   return (
-    <div className="rounded-xl border border-surface-700/60 bg-surface-900/40 overflow-hidden transition-all duration-300">
+    <div className="rounded-xl border border-surface-700/60 bg-surface-900/40 overflow-hidden transition-colors duration-300">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800/50">
         <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
       {/* Progress bar */}
       <div className="w-full h-0.5 bg-surface-800">
         <div
-          className="h-full bg-gradient-to-r from-[#FF5F1F] to-[#FF8F5F] transition-all duration-500"
+          className="h-full bg-gradient-to-r from-[#FF5F1F] to-[#FF8F5F] transition-[width] duration-500"
           style={{ width: `${(completedCount / CHECKLIST.length) * 100}%` }}
         />
       </div>

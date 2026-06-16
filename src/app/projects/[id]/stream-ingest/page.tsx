@@ -9,10 +9,8 @@ import type { BroadcastStreamIngest, BroadcastIngestProtocol, BroadcastIngestSta
 // BroadcastIngestStatus used for statusColor helper
 import { BROADCAST_INGEST_PROTOCOL_OPTIONS } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Stream Ingest — RTMP/SRT/WHIP ingest management
 // Receive streams from OBS, Wirecast, vMix, hardware encoders
-// ────────────────────────────────────────────────────────────
 
 export default function StreamIngestPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -32,7 +30,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
     auto_source: true,
   });
 
-  // ─── Data Fetching ───────────────────────────────
+  // Data Fetching
   const fetchIngests = useCallback(async () => {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -56,7 +54,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchIngests]);
 
-  // ─── CRUD ────────────────────────────────────────
+  // CRUD
 
   const defaultIngestUrl = (protocol: BroadcastIngestProtocol) => {
     const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
@@ -104,7 +102,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  // ─── Status helpers ──────────────────────────────
+  // Status helpers
 
   const statusColor = (status: BroadcastIngestStatus) => {
     switch (status) {
@@ -122,7 +120,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
     return `${kbps} kbps`;
   };
 
-  // ─── Render ──────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 

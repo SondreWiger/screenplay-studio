@@ -3,14 +3,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
-import { Card, Button, LoadingSpinner, toast } from '@/components/ui';
+import { Card, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-// ============================================================
 // Continuity Sheet
 // Per-scene × per-character grid tracking costume, hair,
 // makeup, props, wounds, and free notes for script supervisors.
-// ============================================================
 
 interface ContinuityEntry {
   id: string;
@@ -129,7 +127,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
-  // ── Shared: character selector tabs ─────────────────────────
+  // Shared: character selector tabs
   const CharacterTabs = () => (
     <div className="flex flex-wrap gap-2 mb-5">
       {characters.map((c) => {

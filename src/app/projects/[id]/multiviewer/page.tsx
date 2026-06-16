@@ -7,10 +7,8 @@ import { Button, Badge, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastSource, BroadcastSwitcherState } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Multiviewer — Monitoring wall with tally lights
 // Grid of source tiles, UMD labels, audio meters, clock
-// ────────────────────────────────────────────────────────────
 
 type GridLayout = '2x2' | '3x3' | '4x4' | '1+5' | '2+4';
 
@@ -26,7 +24,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
   const clockRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLDivElement>(null);
 
-  // ─── Live Clock ──────────────────────────────────
+  // Live Clock
   useEffect(() => {
     const iv = setInterval(() => {
       const now = new Date();
@@ -44,7 +42,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
     return () => clearInterval(iv);
   }, []);
 
-  // ─── Data Fetching ───────────────────────────────
+  // Data Fetching
   const fetchSources = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
@@ -82,7 +80,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchSources, fetchSwitcherState]);
 
-  // ─── Helpers ─────────────────────────────────────
+  // Helpers
 
   const getGridClass = () => {
     switch (layout) {
@@ -125,7 +123,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
     return Math.random() * 20;
   };
 
-  // ─── Render ──────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full bg-black"><LoadingSpinner /></div>;
 
@@ -182,7 +180,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
             <div
               key={src.id}
               className={cn(
-                'relative border-2 rounded overflow-hidden transition-all',
+                'relative border-2 rounded overflow-hidden transition-colors',
                 getTallyBorder(tally),
                 getTallyBg(tally),
                 isLargeInSpecial && layout === '1+5' && 'col-span-2 row-span-2',
@@ -269,7 +267,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
   );
 }
 
-// ─── Audio Meter Component ─────────────────────────────────
+// Audio Meter Component
 
 function AudioMeter({ level }: { level: number }) {
   const segments = 10;
@@ -285,7 +283,7 @@ function AudioMeter({ level }: { level: number }) {
           <div
             key={i}
             className={cn(
-              'w-2 h-1 rounded-[1px] transition-all duration-75',
+              'w-2 h-1 rounded-[1px] transition-colors duration-75',
               isActive
                 ? isRed ? 'bg-red-500' : isYellow ? 'bg-yellow-500' : 'bg-green-500'
                 : 'bg-surface-800'

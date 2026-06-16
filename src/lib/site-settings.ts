@@ -1,10 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// ============================================================
 // Site-settings utilities — server-side (no cookies needed)
 // The site_settings table has a public-read RLS policy so
 // the anon key is sufficient.
-// ============================================================
 
 /** Lightweight non-cookie anon client — safe for server components */
 function makeAnonClient() {

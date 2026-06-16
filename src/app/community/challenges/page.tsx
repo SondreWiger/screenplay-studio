@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
-import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil } from '@/lib/utils';
+import { formatDate, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil } from '@/lib/utils';
 import type { CommunityChallenge } from '@/lib/types';
 
 export default function ChallengesPage() {
   const { user } = useAuth();
-  const router = useRouter();
   const [challenges, setChallenges] = useState<CommunityChallenge[]>([]);
   const [activeChallenge, setActiveChallenge] = useState<CommunityChallenge | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +22,7 @@ export default function ChallengesPage() {
     const supabase = createClient();
 
     // Ensure a weekly challenge exists
-    const { data: ensured } = await supabase.rpc('ensure_weekly_challenge');
+    await supabase.rpc('ensure_weekly_challenge');
 
     // Fetch all challenges
     const { data } = await supabase
@@ -42,13 +40,6 @@ export default function ChallengesPage() {
     setActiveChallenge(active || null);
     setChallenges(all);
     setLoading(false);
-  };
-
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    await supabase.auth.signOut();
-    router.refresh();
   };
 
   const pastChallenges = challenges.filter((c) => getChallengePhase(c) === 'completed');
@@ -145,7 +136,7 @@ export default function ChallengesPage() {
                     <Link
                       key={c.id}
                       href={`/community/challenges/${c.id}`}
-                      className="block hover:opacity-80 transition-all p-5"
+                      className="block hover:opacity-80 transition-opacity p-5"
                       style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                     >
                       <div className="flex items-center justify-between mb-2">

@@ -12,7 +12,7 @@ const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || 
 const SYSTEM_UID = '00000000-0000-0000-0000-000000000000';
 const APPEAL_EMAIL = process.env.APPEAL_EMAIL || 'support@screenplaystudio.app';
 
-// ── Send a SYSTEM DM to a user ──────────────────────────────
+// Send a SYSTEM DM to a user
 async function sendSystemDM(supabase: ReturnType<typeof createAdminSupabaseClient>, userId: string, message: string) {
   // Find existing system→user conversation
   const { data: systemConvos } = await supabase
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminSupabaseClient();
 
   switch (action) {
-    // ── Update flag status ──────────────────────────────────
+    // Update flag status
     case 'update_flag': {
       const { flag_id, status, review_notes, action_taken } = body;
       if (!flag_id || !status) {
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // ── Preserve evidence for a flag ────────────────────────
+    // Preserve evidence for a flag
     case 'preserve_evidence': {
       const { flag_id, content_type, content_id, full_content, author_id } = body;
       if (!flag_id || !content_type || !content_id || !full_content || !author_id) {
@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // ── Warn a user ─────────────────────────────────────────
+    // Warn a user
     case 'warn_user': {
       const { user_id, reason, flag_id } = body;
       if (!user_id || !reason) {
@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // ── Suspend a user ──────────────────────────────────────
+    // Suspend a user
     case 'suspend_user': {
       const { user_id, reason, duration_days, flag_id } = body;
       if (!user_id || !reason) {
@@ -280,7 +280,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // ── Ban a user permanently ──────────────────────────────
+    // Ban a user permanently
     case 'ban_user': {
       const { user_id, reason, flag_id } = body;
       if (!user_id || !reason) {
@@ -349,7 +349,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // ── DM a user (create conversation + send message) ──────
+    // DM a user (create conversation + send message)
     case 'dm_user': {
       const { user_id, message } = body;
       if (!user_id || !message) {
@@ -428,7 +428,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, conversation_id: conversationId });
     }
 
-    // ── Delete flagged content ──────────────────────────────
+    // Delete flagged content
     case 'delete_content': {
       const { flag_id, content_type, content_id } = body;
       if (!content_type || !content_id) {
@@ -500,7 +500,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // ── Unban / Pardon a user ────────────────────────────────
+    // Unban / Pardon a user
     case 'unban_user': {
       const { user_id, reason } = body;
       if (!user_id) {
@@ -551,7 +551,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // ── Unsuspend a user ─────────────────────────────────────
+    // Unsuspend a user
     case 'unsuspend_user': {
       const { user_id, reason } = body;
       if (!user_id) {

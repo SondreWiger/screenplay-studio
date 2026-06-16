@@ -5,6 +5,7 @@ import { isOpenSourceEnabled } from '@/lib/site-settings';
 
 export async function generateMetadata(): Promise<Metadata> {
   const oss = await isOpenSourceEnabled();
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
   const desc = oss
     ? 'Why we built an open-source screenwriting suite — and where we want to take it.'
     : 'Why we built Screenplay Studio — and where we want to take it.';
@@ -12,11 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'About — Screenplay Studio',
     description: desc,
     openGraph: {
+      type: 'website',
+      siteName: 'Screenplay Studio',
       title: 'About Screenplay Studio',
       description: desc,
       images: [
         {
-          url: `/api/og?title=About+Screenplay+Studio&subtitle=${encodeURIComponent(desc)}`,
+          url: `${SITE_URL}/api/og?title=${encodeURIComponent('About Screenplay Studio')}&subtitle=${encodeURIComponent(desc)}`,
           width: 1200,
           height: 630,
           alt: 'About Screenplay Studio',
@@ -27,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: 'About Screenplay Studio',
       description: desc,
-      images: [`/api/og?title=About+Screenplay+Studio&subtitle=${encodeURIComponent(desc)}`],
+      images: [`${SITE_URL}/api/og?title=${encodeURIComponent('About Screenplay Studio')}&subtitle=${encodeURIComponent(desc)}`],
     },
   };
 }

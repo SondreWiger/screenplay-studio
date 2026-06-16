@@ -1,8 +1,6 @@
 import type { Profile, ScriptElement, SceneLocationType, SceneTime, IdeaCategory, IdeaStatus, BudgetCategory, CommentType, ScheduleEventType, ShotType, ShotMovement, RevisionColor } from './base';
 
-// ============================================================
 // Development Tools Types
-// ============================================================
 
 export type SceneStatus = 'first_draft' | 'revised' | 'locked' | 'cut';
 export type NotesRoundStatus = 'open' | 'in_progress' | 'closed';

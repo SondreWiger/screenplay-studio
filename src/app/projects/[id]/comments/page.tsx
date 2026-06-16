@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Input, Textarea, EmptyState, LoadingSpinner, Avatar } from '@/components/ui';
+import { Button, Card, Badge, Textarea, EmptyState, LoadingSpinner, Avatar, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
-import { sendNotification, notifyProjectMembers } from '@/lib/notifications';
+import { notifyProjectMembers } from '@/lib/notifications';
 import { sendNotificationEmailAction } from '@/lib/email-actions';
 import type { Comment, Profile, CommentType, ScriptElement } from '@/lib/types';
 import { ELEMENT_LABELS } from '@/lib/types';
@@ -29,8 +29,6 @@ function CommentThread({ comment, allComments, depth, canEdit, userId, projectId
   const [collapsed, setCollapsed] = useState(false);
 
   const replies = allComments.filter(c => c.parent_id === comment.id);
-  const maxIndent = 6;
-  const indent = Math.min(depth, maxIndent);
 
   const handleSubmitReply = async () => {
     if (!replyContent.trim()) return;
@@ -221,7 +219,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
       created_by: user.id,
     });
     if (error) {
-      alert('Failed to post: ' + error.message);
+      toast.error('Failed to post: ' + error.message);
     } else {
       // Notify project members
       notifyProjectMembers({

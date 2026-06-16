@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useProjectStore, useScriptStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { ScriptElement, SceneStatus } from '@/lib/types';
+import type { Scene, SceneStatus } from '@/lib/types';
 
-// ── Scene status helpers ──────────────────────────────────────
+// Scene status helpers
 const SCENE_STATUS_LABELS: Record<SceneStatus, string> = {
   first_draft: 'Draft',
   revised: 'Revised',
@@ -24,10 +24,11 @@ const SCENE_STATUS_COLORS: Record<SceneStatus, string> = {
 
 const SCENE_STATUS_CYCLE: SceneStatus[] = ['first_draft', 'revised', 'locked', 'cut'];
 
-// ── Scene heading parser ──────────────────────────────────────
+// Scene display model (merged from scenes + script_elements + characters)
 interface ParsedScene {
   id: string;
-  raw: string;
+  sceneId: string;       // scenes.id (for scene-level writes like synopsis)
+  heading: string;
   intExt: string;
   location: string;
   time: string;
@@ -35,113 +36,104 @@ interface ParsedScene {
   sortOrder: number;
   status: SceneStatus;
   characters: string[];
-  synopsis: string;        // editable one-liner description
-}
-
-function parseSceneHeading(content: string): { intExt: string; location: string; time: string } {
-  // Match: INT. LOCATION - TIME or EXT./INT.EXT. etc.
-  const upper = content.toUpperCase().trim();
-  const prefixMatch = upper.match(/^(INT\.|EXT\.|INT\.\/EXT\.|EXT\.\/INT\.|I\/E\.|INT\/EXT\.?)\s*/);
-  const intExt = prefixMatch ? prefixMatch[1].replace(/\.$/, '') : '';
-  const rest = prefixMatch ? upper.slice(prefixMatch[0].length) : upper;
-  const dashIdx = rest.lastIndexOf(' - ');
-  const location = dashIdx >= 0 ? rest.slice(0, dashIdx).trim() : rest.trim();
-  const time = dashIdx >= 0 ? rest.slice(dashIdx + 3).trim() : '';
-  return { intExt, location, time };
-}
-
-function buildScenes(elements: ScriptElement[]): ParsedScene[] {
-  const scenes: ParsedScene[] = [];
-  let sceneIdx = 0;
-
-  for (let i = 0; i < elements.length; i++) {
-    const el = elements[i];
-    if (el.element_type !== 'scene_heading') continue;
-    sceneIdx++;
-
-    // Collect characters between this scene_heading and the next one
-    const chars: string[] = [];
-    for (let j = i + 1; j < elements.length; j++) {
-      if (elements[j].element_type === 'scene_heading') break;
-      if (elements[j].element_type === 'character') {
-        const name = elements[j].content.trim().toUpperCase().replace(/\s*\(.*?\)\s*$/, '').trim();
-        if (name && !chars.includes(name)) chars.push(name);
-      }
-    }
-
-    const { intExt, location, time } = parseSceneHeading(el.content);
-    scenes.push({
-      id: el.id,
-      raw: el.content,
-      intExt,
-      location,
-      time,
-      sceneNumber: el.scene_number,
-      sortOrder: el.sort_order,
-      status: (el.scene_status as SceneStatus) || 'first_draft',
-      characters: chars,
-      synopsis: (el.metadata as Record<string, string>)?.synopsis || '',
-    });
-  }
-
-  return scenes;
+  synopsis: string;
 }
 
 export default function OneLinerPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { currentProject, members } = useProjectStore();
-  const { currentScript, scripts, fetchScripts } = useScriptStore();
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
 
-  const [elements, setElements] = useState<ScriptElement[]>([]);
+  const [scenes, setScenes] = useState<ParsedScene[]>([]);
   const [loading, setLoading] = useState(true);
-  // Tracks whether initial scripts-fetch attempt is done (prevents flash of "No script found")
-  const [scriptsChecked, setScriptsChecked] = useState(scripts.length > 0);
-  const [synopses, setSynopses] = useState<Record<string, string>>({});
-
-  // Ensure scripts are loaded when navigating here directly
-  useEffect(() => {
-    const init = async () => {
-      if (!scripts || scripts.length === 0) {
-        await fetchScripts(params.id);
-      }
-      setScriptsChecked(true);
-    };
-    init();
-  }, [params.id]);
+  const [scriptTitle, setScriptTitle] = useState('');
+  const [hasScript, setHasScript] = useState(true);
   const [editingSynopsis, setEditingSynopsis] = useState<string | null>(null);
   const [synopsisValue, setSynopsisValue] = useState('');
   const [savingSynopsis, setSavingSynopsis] = useState<string | null>(null);
-  const [printMode, setPrintMode] = useState(false);
   const [showCut, setShowCut] = useState(true);
 
-  const activeScript = currentScript ?? scripts?.[0] ?? null;
-
-  const loadElements = useCallback(async () => {
-    if (!activeScript) { setLoading(false); return; }
+  useEffect(() => {
     const supabase = createClient();
-    const { data } = await supabase
-      .from('script_elements')
-      .select('*')
-      .eq('script_id', activeScript.id)
-      .order('sort_order', { ascending: true });
-    setElements(data || []);
-    // Seed synopses from metadata
-    const synMap: Record<string, string> = {};
-    for (const el of data || []) {
-      if (el.element_type === 'scene_heading' && el.metadata?.synopsis) {
-        synMap[el.id] = el.metadata.synopsis as string;
+    supabase.from('scripts').select('title,is_active').eq('project_id', params.id).order('version', { ascending: false }).limit(1).then(({ data }) => {
+      if (data?.length) {
+        setScriptTitle(data[0].title || '');
+        setHasScript(true);
+      } else {
+        setHasScript(false);
+        setLoading(false);
       }
+    });
+  }, [params.id]);
+
+  const loadScenes = useCallback(async () => {
+    const supabase = createClient();
+    try {
+      const { data: scriptsRes } = await supabase
+        .from('scripts').select('id').eq('project_id', params.id).limit(1);
+      const scriptId = scriptsRes?.[0]?.id;
+      if (!scriptId) { setLoading(false); return; }
+
+      const [scenesRes, charsRes, statusRes] = await Promise.all([
+        supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
+        supabase.from('characters').select('id,name').eq('project_id', params.id),
+        supabase.from('script_elements')
+          .select('id,scene_status')
+          .eq('script_id', scriptId)
+          .eq('element_type', 'scene_heading'),
+      ]);
+
+      const statusMap: Record<string, SceneStatus> = {};
+      for (const el of statusRes.data || []) {
+        statusMap[el.id] = (el.scene_status as SceneStatus) || 'first_draft';
+      }
+
+      const charNameMap: Record<string, string> = {};
+      for (const c of charsRes.data || []) {
+        charNameMap[c.id] = c.name;
+      }
+
+      const parsed: ParsedScene[] = (scenesRes.data || []).map((s: Scene) => ({
+        id: s.script_element_id || s.id,
+        sceneId: s.id,
+        heading: s.scene_heading || '',
+        intExt: s.location_type || '',
+        location: s.location_name || '',
+        time: s.time_of_day || '',
+        sceneNumber: s.scene_number,
+        sortOrder: s.sort_order,
+        status: (s.script_element_id ? statusMap[s.script_element_id] : undefined) || 'first_draft',
+        characters: (s.cast_ids || []).map((cid: string) => charNameMap[cid]).filter(Boolean),
+        synopsis: s.synopsis || '',
+      }));
+
+      setScenes(parsed);
+    } catch (err) {
+      console.error('Failed to load scenes:', err);
+    } finally {
+      setLoading(false);
     }
-    setSynopses(synMap);
-    setLoading(false);
-  }, [activeScript?.id]);
+  }, [params.id]);
 
-  useEffect(() => { loadElements(); }, [loadElements]);
+  useEffect(() => { loadScenes(); }, [loadScenes]);
 
-  const scenes = useMemo(() => buildScenes(elements).map(s => ({ ...s, synopsis: synopses[s.id] ?? s.synopsis })), [elements, synopses]);
+  // Realtime: stay in sync when scenes/characters change
+  useEffect(() => {
+    if (!params.id) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`one-liner-${params.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scenes' },
+        () => { loadScenes(); }
+      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'characters' },
+        () => { loadScenes(); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [params.id, loadScenes]);
 
   const visibleScenes = showCut ? scenes : scenes.filter(s => s.status !== 'cut');
 
@@ -149,25 +141,22 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
     if (!canEdit) return;
     const next = SCENE_STATUS_CYCLE[(SCENE_STATUS_CYCLE.indexOf(scene.status) + 1) % SCENE_STATUS_CYCLE.length];
     const supabase = createClient();
-    await supabase.from('script_elements').update({ scene_status: next }).eq('id', scene.id);
-    setElements(prev => prev.map(e => e.id === scene.id ? { ...e, scene_status: next } : e));
+    const sourceId = scene.id;
+    await supabase.from('script_elements').update({ scene_status: next }).eq('id', sourceId);
+    setScenes(prev => prev.map(s => s.id === scene.id ? { ...s, status: next } : s));
   };
 
   const startEditSynopsis = (scene: ParsedScene) => {
     if (!canEdit) return;
-    setEditingSynopsis(scene.id);
+    setEditingSynopsis(scene.sceneId);
     setSynopsisValue(scene.synopsis);
   };
 
   const saveSynopsis = async (sceneId: string) => {
     setSavingSynopsis(sceneId);
     const supabase = createClient();
-    const el = elements.find(e => e.id === sceneId);
-    if (!el) { setSavingSynopsis(null); return; }
-    const meta = { ...(el.metadata || {}), synopsis: synopsisValue.trim() };
-    await supabase.from('script_elements').update({ metadata: meta }).eq('id', sceneId);
-    setSynopses(prev => ({ ...prev, [sceneId]: synopsisValue.trim() }));
-    setElements(prev => prev.map(e => e.id === sceneId ? { ...e, metadata: meta } : e));
+    await supabase.from('scenes').update({ synopsis: synopsisValue.trim() }).eq('id', sceneId);
+    setScenes(prev => prev.map(s => s.sceneId === sceneId ? { ...s, synopsis: synopsisValue.trim() } : s));
     setEditingSynopsis(null);
     setSavingSynopsis(null);
   };
@@ -182,7 +171,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
   const handlePrint = () => {
     const printScenes = showCut ? scenes : scenes.filter(s => s.status !== 'cut');
     const projectTitle = currentProject?.title || 'Untitled';
-    const scriptTitle = activeScript?.title || '';
+    const st = scriptTitle || '';
     const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
     const statusLabel: Record<SceneStatus, string> = {
@@ -195,7 +184,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
     const rows = printScenes.map((scene, idx) => {
       const sceneNum = scene.sceneNumber || String(idx + 1);
       const intExt = scene.intExt || '';
-      const location = scene.location || scene.raw;
+      const location = scene.location || scene.heading;
       const time = scene.time || '';
       const synopsis = scene.synopsis || '';
       const chars = scene.characters.join(', ');
@@ -273,7 +262,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
   <div class="doc-header">
     <div>
       <h1>${projectTitle}</h1>
-      <div class="sub">One-liner / Scene List &mdash; ${scriptTitle}</div>
+      <div class="sub">One-liner / Scene List &mdash; ${st}</div>
     </div>
     <div class="meta">
       <div>${dateStr}</div>
@@ -316,16 +305,16 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
     }
   };
 
-  if (loading || !scriptsChecked) return (
+  if (loading) return (
     <div className="flex-1 flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
-  if (!activeScript) return (
+  if (!hasScript) return (
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
           <svg className="w-8 h-8 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
         </div>
         <p className="text-surface-400 font-medium">No script found</p>
@@ -341,7 +330,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
         <div>
           <h1 className="text-lg font-bold text-white">One-liner</h1>
           <p className="text-sm text-surface-400 mt-0.5">
-            {scenes.length} scene{scenes.length !== 1 ? 's' : ''} · {activeScript.title}
+            {scenes.length} scene{scenes.length !== 1 ? 's' : ''} · {scriptTitle || 'Untitled'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -377,7 +366,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
         {scenes.length === 0 ? (
           <div className="flex items-center justify-center flex-1 py-24">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
               </div>
               <p className="text-surface-400 font-medium">No scene headings found</p>
@@ -425,7 +414,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
 
                   {/* Location */}
                   <td className="px-3 py-2.5">
-                    <span className="font-medium text-white text-sm">{scene.location || scene.raw}</span>
+                    <span className="font-medium text-white text-sm">{scene.location || scene.heading}</span>
                   </td>
 
                   {/* Time of day */}
@@ -489,7 +478,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
                   <td className="px-3 py-2.5 no-print">
                     <button
                       onClick={() => handleCycleStatus(scene)}
-                      className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium transition-all hover:opacity-80', SCENE_STATUS_COLORS[scene.status])}
+                      className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium transition-opacity hover:opacity-80', SCENE_STATUS_COLORS[scene.status])}
                       title="Click to cycle status"
                       disabled={!canEdit}
                     >

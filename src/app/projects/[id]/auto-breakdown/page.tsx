@@ -93,48 +93,42 @@ function scanScript(elements: ScriptElement[]): BreakdownItem[] {
     }
 
     if (el.element_type === 'action' || el.element_type === 'scene_heading' || el.element_type === 'note') {
-      const propMatches = content.matchAll(PROP_CONTEXT);
-      for (const m of propMatches) {
+      for (const m of Array.from(content.matchAll(PROP_CONTEXT))) {
         const noun = m[2]?.trim();
         if (noun && noun.length > 1 && noun === noun.toUpperCase()) {
           addItem(noun, 'props', el);
         }
       }
 
-      const vehicleMatches = content.matchAll(VEHICLE_KEYWORDS);
-      for (const m of vehicleMatches) {
+      for (const m of Array.from(content.matchAll(VEHICLE_KEYWORDS))) {
         const v = m[1]?.trim();
         if (v && v.length > 1) {
           addItem(v.charAt(0).toUpperCase() + v.slice(1).toLowerCase(), 'vehicles', el);
         }
       }
 
-      const costumeMatches = content.matchAll(COSTUME_KEYWORDS);
-      for (const m of costumeMatches) {
+      for (const m of Array.from(content.matchAll(COSTUME_KEYWORDS))) {
         const c = m[1]?.trim();
         if (c && c.length > 1) {
           addItem(c.charAt(0).toUpperCase() + c.slice(1).toLowerCase(), 'costumes', el);
         }
       }
 
-      const sfxMatches = content.matchAll(SFX_KEYWORDS);
-      for (const m of sfxMatches) {
+      for (const m of Array.from(content.matchAll(SFX_KEYWORDS))) {
         const s = m[1]?.trim();
         if (s && s.length > 1) {
           addItem(s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(), 'sfx', el);
         }
       }
 
-      const musicMatches = content.matchAll(MUSIC_KEYWORDS);
-      for (const m of musicMatches) {
+      for (const m of Array.from(content.matchAll(MUSIC_KEYWORDS))) {
         const mu = m[1]?.trim();
         if (mu && mu.length > 1) {
           addItem(mu.charAt(0).toUpperCase() + mu.slice(1).toLowerCase(), 'music', el);
         }
       }
 
-      const weatherMatches = content.matchAll(WEATHER_KEYWORDS_ACTION);
-      for (const m of weatherMatches) {
+      for (const m of Array.from(content.matchAll(WEATHER_KEYWORDS_ACTION))) {
         const w = m[1]?.trim();
         if (w && w.length > 2) {
           addItem(w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(), 'weather', el);
@@ -143,8 +137,7 @@ function scanScript(elements: ScriptElement[]): BreakdownItem[] {
     }
 
     if (el.element_type === 'dialogue') {
-      const sfxMatches = content.matchAll(SFX_KEYWORDS);
-      for (const m of sfxMatches) {
+      for (const m of Array.from(content.matchAll(SFX_KEYWORDS))) {
         const s = m[1]?.trim();
         if (s && s.length > 1) {
           addItem(s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(), 'sfx', el);
@@ -224,7 +217,7 @@ export default function AutoBreakdownPage() {
         name: item.name,
         category: item.category,
         count: item.elements.length,
-        scenes: [...new Set(item.elements.map((e) => e.sceneNumber).filter(Boolean))],
+        scenes: Array.from(new Set(item.elements.map((e) => e.sceneNumber).filter(Boolean))),
       })),
     };
 
@@ -325,7 +318,7 @@ export default function AutoBreakdownPage() {
                   key={cat}
                   onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
                   className={cn(
-                    'rounded-xl border p-3 text-left transition-all',
+                    'rounded-xl border p-3 text-left transition-colors',
                     selectedCategory === cat
                       ? `${meta.bg} border-current ${meta.color}`
                       : 'border-surface-800 bg-surface-900/60 hover:bg-surface-800/60'

@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { AppHeader } from '@/components/AppHeader';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const NAV_ITEMS = [
   { href: '/settings?tab=profile', label: 'Profile', param: 'profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -140,7 +141,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           </aside>
 
           <main className="flex-1 min-w-0 pb-16">
-            {children}
+            <ErrorBoundary>{children}</ErrorBoundary>
           </main>
         </div>
       </div>

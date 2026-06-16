@@ -1,6 +1,4 @@
-// ============================================================
 // Screenplay Studio - TypeScript Types
-// ============================================================
 
 export type UserRole = 'owner' | 'admin' | 'writer' | 'editor' | 'viewer';
 export type ProjectStatus = 'development' | 'pre_production' | 'production' | 'post_production' | 'completed' | 'archived';
@@ -81,9 +79,7 @@ export const LANGUAGE_OPTIONS = [
   { value: 'other', label: 'Other' },
 ];
 
-// ============================================================
 // Database Row Types
-// ============================================================
 
 export interface Profile {
   id: string;
@@ -104,6 +100,8 @@ export interface Profile {
   theme_preference: string;
   company_id: string | null;
   is_pro: boolean;
+  is_studio: boolean;
+  studio_since: string | null;
   pro_since: string | null;
   created_at: string;
   updated_at: string;
@@ -144,7 +142,7 @@ export interface Profile {
   last_flagged_at?: string | null;
 }
 
-// ── Work Tracking ──────────────────────────────────────────────────────────
+// Work Tracking
 
 export interface WorkLog {
   id: string;
@@ -171,7 +169,7 @@ export interface WorkLogInput {
   isManual?: boolean;
 }
 
-// ── Accountability Buddies ─────────────────────────────────────────────────
+// Accountability Buddies
 
 export interface AccountabilityBuddy {
   id: string;
@@ -186,7 +184,7 @@ export interface AccountabilityBuddy {
   addressee?: Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url' | 'activity_color' | 'daily_goal_pages'>;
 }
 
-// ── Accountability Groups ──────────────────────────────────────────────────
+// Accountability Groups
 
 export interface AccountabilityGroup {
   id: string;
@@ -223,7 +221,7 @@ export interface AccountabilityFeedPost {
   author?: Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url'>;
 }
 
-// ── Gamification ─────────────────────────────────────────────
+// Gamification
 
 export type XPEventType =
   | 'words_written'
@@ -287,7 +285,7 @@ export interface XPEvent {
   created_at: string;
 }
 
-// ── Pro Subscription Types ──────────────────────────────────
+// Pro Subscription Types
 export type SubscriptionPlan = 'pro' | 'project_pro' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'trialing';
 export type BillingCycle = 'yearly' | 'monthly' | 'one_time';
@@ -435,21 +433,38 @@ export const PRO_LIMITS = {
     storage_bytes: 50 * 1024 * 1024 * 1024,       // 50 GB — generous free tier
     max_team_size: Infinity,                       // No limits — DaVinci model
     max_projects: Infinity,                        // No limits — DaVinci model
-    max_export_formats: ['pdf', 'fdx', 'json'],
-    version_history: false,
-    external_shares: false,
-    client_review: false,
-    analytics_dashboard: false,
-    custom_branding: false,
+    max_export_formats: ['pdf', 'fdx', 'json', 'html', 'docx', 'fountain'],
+    version_history: true,
+    external_shares: true,
+    client_review: true,
+    analytics_dashboard: true,
+    custom_branding: true,
     priority_support: false,
     api_access: false,
-    advanced_scheduling: false,
-    watermarked_exports: false,
-    bulk_export: false,
-    advanced_exports: false,
+    advanced_scheduling: true,
+    watermarked_exports: true,
+    bulk_export: true,
+    advanced_exports: true,
   },
   pro: {
     storage_bytes: 200 * 1024 * 1024 * 1024,      // 200 GB
+    max_team_size: Infinity,
+    max_projects: Infinity,
+    max_export_formats: ['pdf', 'fdx', 'json', 'html', 'docx', 'fountain'],
+    version_history: true,
+    external_shares: true,
+    client_review: true,
+    analytics_dashboard: true,
+    custom_branding: true,
+    priority_support: true,
+    api_access: true,
+    advanced_scheduling: true,
+    watermarked_exports: true,
+    bulk_export: true,
+    advanced_exports: true,
+  },
+  studio: {
+    storage_bytes: Infinity,                       // Unlimited
     max_team_size: Infinity,
     max_projects: Infinity,
     max_export_formats: ['pdf', 'fdx', 'json', 'html', 'docx', 'fountain'],
@@ -471,6 +486,8 @@ export const PRO_PRICING = {
   yearly: { amount: 200, currency: 'USD', per_month: 16.67 },
   team_yearly: { amount: 160, currency: 'USD', per_month: 13.33, discount: 20 },
   project_lifetime: { amount: 100, currency: 'USD' },
+  studio_monthly: { amount: 50, currency: 'USD', per_month: 50 },
+  studio_yearly: { amount: 480, currency: 'USD', per_month: 40 },
 } as const;
 
 export interface Project {

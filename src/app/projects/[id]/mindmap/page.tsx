@@ -8,9 +8,7 @@ import { cn } from '@/lib/utils';
 import type { Character, MindMapNode, MindMapEdge, MindMapEdgeStyle, MindMapArrowType, MindMapNodeShape } from '@/lib/types';
 import Link from 'next/link';
 
-// ============================================================
 // CONSTANTS & HELPERS
-// ============================================================
 
 const NODE_COLORS = [
   '#dd574e', '#e8863a', '#eab308', '#22c55e', '#06b6d4',
@@ -57,9 +55,7 @@ function getEdgePoints(source: MindMapNode, target: MindMapNode) {
   return { x1: sc.x, y1: sc.y, x2: tc.x, y2: tc.y };
 }
 
-// ============================================================
 // MAIN PAGE COMPONENT
-// ============================================================
 
 export default function MindMapPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -103,9 +99,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
   // Tool mode
   const [tool, setTool] = useState<'select' | 'connect' | 'add'>('select');
 
-  // ============================================================
   // FETCH DATA
-  // ============================================================
 
   useEffect(() => {
     fetchAll();
@@ -129,9 +123,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // ============================================================
   // SVG COORDINATE CONVERSION
-  // ============================================================
 
   const screenToSVG = useCallback((clientX: number, clientY: number) => {
     if (!svgRef.current || !containerRef.current) return { x: 0, y: 0 };
@@ -141,9 +133,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     return { x, y };
   }, [viewBox]);
 
-  // ============================================================
   // ZOOM
-  // ============================================================
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
@@ -158,9 +148,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     });
   }, [screenToSVG]);
 
-  // ============================================================
   // PAN
-  // ============================================================
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button === 1 || (e.button === 0 && e.altKey) || (tool === 'select' && e.target === svgRef.current)) {
@@ -242,9 +230,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     }
   }, [isPanning, resizingNode, draggingNode, nodes]);
 
-  // ============================================================
   // NODE INTERACTIONS
-  // ============================================================
 
   const handleNodeMouseDown = useCallback((e: React.MouseEvent, node: MindMapNode) => {
     e.stopPropagation();
@@ -321,9 +307,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     setSelectedEdge(null);
   }, [tool, connectingFrom, canEdit, screenToSVG, nodes.length]);
 
-  // ============================================================
   // CRUD OPERATIONS
-  // ============================================================
 
   const createNode = async (data: Partial<MindMapNode>) => {
     const supabase = createClient();
@@ -444,9 +428,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     if (selectedEdge?.id === id) setSelectedEdge(null);
   };
 
-  // ============================================================
   // IMPORT CHARACTERS
-  // ============================================================
 
   const importCharacters = async () => {
     const existingCharIds = new Set(nodes.filter((n) => n.character_id).map((n) => n.character_id));
@@ -570,9 +552,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     setShowImportModal(false);
   };
 
-  // ============================================================
   // ZOOM CONTROLS
-  // ============================================================
 
   const zoomIn = () => {
     setViewBox((vb) => ({
@@ -605,9 +585,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     setViewBox({ x: minX, y: minY, w: maxX - minX, h: maxY - minY });
   };
 
-  // ============================================================
   // SAVE NODE EDITOR
-  // ============================================================
 
   const saveNodeEdit = async () => {
     if (!editNode.id) return;
@@ -638,9 +616,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     setShowEdgeEditor(false);
   };
 
-  // ============================================================
   // RENDER
-  // ============================================================
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
@@ -730,7 +706,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
         {nodes.length === 0 && !loading && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
             <div className="text-center pointer-events-auto">
-              <div className="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/>
                   <circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/>
@@ -1072,7 +1048,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
                   key={c}
                   onClick={() => updateNode(selectedNode.id, { color: c })}
                   className={cn(
-                    'w-5 h-5 rounded-full transition-transform hover:scale-125',
+                    'w-5 h-5 rounded-full transition-transform',
                     selectedNode.color === c && 'ring-2 ring-white ring-offset-1 ring-offset-surface-900'
                   )}
                   style={{ backgroundColor: c }}
@@ -1195,7 +1171,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
                     key={c}
                     onClick={() => { updateEdge(selectedEdge.id, { color: c }); setSelectedEdge((prev) => prev ? { ...prev, color: c } : null); }}
                     className={cn(
-                      'w-5 h-5 rounded-full transition-transform hover:scale-125',
+                      'w-5 h-5 rounded-full transition-transform',
                       selectedEdge.color === c && 'ring-2 ring-white ring-offset-1 ring-offset-surface-900'
                     )}
                     style={{ backgroundColor: c }}

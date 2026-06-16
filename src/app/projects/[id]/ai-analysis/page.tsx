@@ -8,10 +8,8 @@ import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingPage, EmptyState } from '@/components/ui';
 
-// ============================================================
 // Script Analysis — Pro Feature
 // Real computational analysis of actual script content
-// ============================================================
 
 type ScriptElement = {
   id: string;
@@ -50,7 +48,7 @@ type Character = {
   cast_actor: string | null;
 };
 
-// ---- Analysis result types ----
+// Analysis result types
 
 type OverviewStats = {
   totalWords: number;
@@ -120,7 +118,7 @@ type FullAnalysis = {
   contentIssues: ScriptIssue[];
 };
 
-// ---- Utility helpers ----
+// Utility helpers
 
 function wc(text: string | null | undefined): number {
   if (!text) return 0;
@@ -139,7 +137,7 @@ function computeAnalysis(
   characters: Character[],
   shots: Shot[]
 ): FullAnalysis {
-  // ---- Overview ----
+  // Overview
   let totalWords = 0;
   let dialogueWords = 0;
   let actionWords = 0;
@@ -169,7 +167,7 @@ function computeAnalysis(
     dialogueRatio: totalWords > 0 ? dialogueWords / totalWords : 0,
   };
 
-  // ---- Character Dialogue Analysis ----
+  // Character Dialogue Analysis
   // Derive character names positionally: a 'character' element's content is the name,
   // and subsequent 'dialogue'/'parenthetical' elements belong to that character.
   const charMap = new Map<string, { wordCount: number; lineCount: number; scenes: Set<string>; firstSort: number }>();
@@ -216,7 +214,7 @@ function computeAnalysis(
     }))
     .sort((a, b) => b.wordCount - a.wordCount);
 
-  // ---- Scene Analysis ----
+  // Scene Analysis
   // Group elements by scene_number (which exists on script_elements)
   const sceneElementMap = new Map<string, ScriptElement[]>();
   let currentScene: string | null = null;
@@ -266,7 +264,7 @@ function computeAnalysis(
     };
   }).sort((a, b) => a.sceneNumber - b.sceneNumber);
 
-  // ---- INT/EXT Ratio ----
+  // INT/EXT Ratio
   let interior = 0, exterior = 0, intExt = 0;
   for (const s of scenes) {
     if (s.location_type === 'INT') interior++;
@@ -274,7 +272,7 @@ function computeAnalysis(
     else if (s.location_type === 'INT/EXT') intExt++;
   }
 
-  // ---- Day/Night Ratio ----
+  // Day/Night Ratio
   let day = 0, night = 0, otherTime = 0;
   for (const s of scenes) {
     const tod = (s.time_of_day || '').toUpperCase();
@@ -283,7 +281,7 @@ function computeAnalysis(
     else otherTime++;
   }
 
-  // ---- Pacing Buckets ----
+  // Pacing Buckets
   const shortScenes: string[] = [], mediumScenes: string[] = [], longScenes: string[] = [];
   for (const sa of sceneAnalyses) {
     if (sa.pageCount < 1) shortScenes.push(sa.heading);
@@ -297,7 +295,7 @@ function computeAnalysis(
     { label: 'Long (3+ pages)', count: longScenes.length, scenes: longScenes },
   ];
 
-  // ---- Location Frequencies ----
+  // Location Frequencies
   const locMap = new Map<string, number>();
   for (const s of scenes) {
     const loc = extractLocation(s.scene_heading);
@@ -307,7 +305,7 @@ function computeAnalysis(
     .map(([location, count]) => ({ location, count }))
     .sort((a, b) => b.count - a.count);
 
-  // ---- Production Stats ----
+  // Production Stats
   const scenesCompleted = scenes.filter(s => s.is_completed).length;
   const shotsCompleted = shots.filter(s => s.is_completed).length;
   const castCoverage = characters.filter(c => c.cast_actor).length;
@@ -334,7 +332,7 @@ function computeAnalysis(
   };
 }
 
-// ── Content-Aware Issue Scanner ────────────────────────────
+// Content-Aware Issue Scanner
 // Scans actual script element text for specific writing issues.
 
 function scanContentIssues(elements: ScriptElement[]): ScriptIssue[] {
@@ -419,7 +417,6 @@ function scanContentIssues(elements: ScriptElement[]): ScriptIssue[] {
     if (el.element_type === 'character' && i + 1 < elements.length) {
       const next = elements[i + 1];
       if (next.element_type === 'parenthetical') {
-        const charName = content.replace(/\s*\(.*\)\s*$/, '').trim();
         const parentheticalContent = (next.content || '').toLowerCase();
         const tellingAdverbs = ['angrily', 'sadly', 'happily', 'excitedly', 'quietly', 'loudly', 'slowly', 'quickly', 'sarcastically'];
         const foundAdverb = tellingAdverbs.find(adv => parentheticalContent.includes(adv));
@@ -475,7 +472,7 @@ function scanContentIssues(elements: ScriptElement[]): ScriptIssue[] {
     .slice(0, 50);
 }
 
-// ---- Visualization components ----
+// Visualization components
 
 function HorizontalBar({ value, max, label, sublabel, color = 'bg-amber-500' }: {
   value: number; max: number; label: string; sublabel?: string; color?: string;
@@ -488,7 +485,7 @@ function HorizontalBar({ value, max, label, sublabel, color = 'bg-amber-500' }: 
         <span className="text-surface-400 shrink-0">{sublabel ?? value}</span>
       </div>
       <div className="h-2 bg-surface-800 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full transition-[width] duration-500 ${color}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -531,7 +528,7 @@ function ProgressRing({ value, max, label, color }: { value: number; max: number
   );
 }
 
-// ---- Tab types ----
+// Tab types
 type Tab = 'overview' | 'feedback' | 'issues' | 'dialogue' | 'scenes' | 'pacing' | 'characters' | 'production';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
@@ -545,9 +542,7 @@ const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'production', label: 'Production', icon: '🎯' },
 ];
 
-// ============================================================
 // Main page component
-// ============================================================
 
 export default function AIAnalysisPage() {
   const params = useParams();
@@ -610,7 +605,7 @@ export default function AIAnalysisPage() {
     loadAnalysis();
   }, [hasProAccess, loadAnalysis]);
 
-  // ---- Pro gate ----
+  // Pro gate
   if (!hasProAccess) {
     return (
       <div className="p-6 flex items-center justify-center h-full">
@@ -705,8 +700,8 @@ export default function AIAnalysisPage() {
                   <span className="text-blue-400">Action — {overview.actionWords.toLocaleString()} words ({overview.totalWords > 0 ? Math.round((overview.actionWords / overview.totalWords) * 100) : 0}%)</span>
                 </div>
                 <div className="h-4 bg-surface-800 rounded-full overflow-hidden flex">
-                  <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${overview.dialogueRatio * 100}%` }} />
-                  <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${overview.totalWords > 0 ? (overview.actionWords / overview.totalWords) * 100 : 0}%` }} />
+                  <div className="h-full bg-amber-500 transition-[width] duration-500" style={{ width: `${overview.dialogueRatio * 100}%` }} />
+                  <div className="h-full bg-blue-500 transition-[width] duration-500" style={{ width: `${overview.totalWords > 0 ? (overview.actionWords / overview.totalWords) * 100 : 0}%` }} />
                 </div>
               </div>
             </div>
@@ -1193,7 +1188,7 @@ export default function AIAnalysisPage() {
                   <span className="text-xs text-surface-500 w-8 text-right shrink-0">#{s.sceneNumber}</span>
                   <div className="flex-1 h-3 bg-surface-800 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${
+                      className={`h-full rounded-full transition-[width] ${
                         s.dialogueDensity > 0.7 ? 'bg-amber-500' : s.dialogueDensity > 0.4 ? 'bg-amber-500/60' : 'bg-blue-500/60'
                       }`}
                       style={{ width: `${s.dialogueDensity * 100}%` }}
@@ -1219,7 +1214,7 @@ export default function AIAnalysisPage() {
                 return (
                   <div
                     key={s.id}
-                    className="flex-1 min-w-[4px] rounded-t transition-all hover:opacity-80 group relative"
+                    className="flex-1 min-w-[4px] rounded-t transition-[opacity] hover:opacity-80 group relative"
                     style={{
                       height: `${Math.max(heightPct, 2)}%`,
                       backgroundColor: s.dialogueDensity > 0.6 ? '#f59e0b' : s.dialogueDensity > 0.3 ? '#6366f1' : '#3b82f6',
@@ -1332,7 +1327,7 @@ export default function AIAnalysisPage() {
                     return (
                       <div
                         key={cd.name}
-                        className={`h-full ${colors[i % colors.length]} transition-all`}
+                        className={`h-full ${colors[i % colors.length]} transition-[width]`}
                         style={{ width: `${pct}%` }}
                         title={`${cd.name}: ${Math.round(pct)}%`}
                       />
@@ -1353,7 +1348,7 @@ export default function AIAnalysisPage() {
                 return (
                   <div
                     key={s.id}
-                    className="flex-1 min-w-[4px] bg-amber-500/70 rounded-t hover:bg-amber-500 transition-all"
+                    className="flex-1 min-w-[4px] bg-amber-500/70 rounded-t hover:bg-amber-500 transition-colors"
                     style={{ height: `${Math.max(heightPct, 3)}%` }}
                     title={`Scene #${s.sceneNumber}: ${s.speakingCharacters} speakers`}
                   />
@@ -1409,7 +1404,7 @@ export default function AIAnalysisPage() {
                 </div>
                 <div className="h-3 bg-surface-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-green-500 rounded-full transition-all duration-500"
+                    className="h-full bg-green-500 rounded-full transition-[width] duration-500"
                     style={{ width: `${productionStats.scenesTotal > 0 ? (productionStats.scenesCompleted / productionStats.scenesTotal) * 100 : 0}%` }}
                   />
                 </div>
@@ -1421,7 +1416,7 @@ export default function AIAnalysisPage() {
                 </div>
                 <div className="h-3 bg-surface-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                    className="h-full bg-blue-500 rounded-full transition-[width] duration-500"
                     style={{ width: `${productionStats.shotsTotal > 0 ? (productionStats.shotsCompleted / productionStats.shotsTotal) * 100 : 0}%` }}
                   />
                 </div>
@@ -1433,7 +1428,7 @@ export default function AIAnalysisPage() {
                 </div>
                 <div className="h-3 bg-surface-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    className="h-full bg-amber-500 rounded-full transition-[width] duration-500"
                     style={{ width: `${productionStats.castTotal > 0 ? (productionStats.castCoverage / productionStats.castTotal) * 100 : 0}%` }}
                   />
                 </div>

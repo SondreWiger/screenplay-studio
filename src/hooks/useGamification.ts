@@ -10,7 +10,6 @@ import {
 } from '@/lib/gamification';
 import type { UserGamification, UserBadge, XPEventType } from '@/lib/types';
 
-// ============================================================
 // useGamification
 //
 // Provides:
@@ -19,7 +18,6 @@ import type { UserGamification, UserBadge, XPEventType } from '@/lib/types';
 //  - awardXP()  — fires an XP event via API
 //  - session multiplier (live, updated every 60 s)
 //  - level-up detection (triggers brief celebration)
-// ============================================================
 
 export interface LevelUpEvent {
   newLevel: number;
@@ -35,7 +33,7 @@ export function useGamification() {
   const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
   const prevLevelRef = useRef<number>(1);
 
-  // ── Load state ──────────────────────────────────────────────
+  // Load state
   const load = useCallback(async () => {
     if (!user) { setLoading(false); return; }
     const supabase = createClient();
@@ -55,7 +53,7 @@ export function useGamification() {
 
   useEffect(() => { load(); }, [load]);
 
-  // ── Live multiplier refresh (every 60 s) ────────────────────
+  // Live multiplier refresh (every 60 s)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     // Start session on first mount
@@ -71,7 +69,7 @@ export function useGamification() {
     return () => clearInterval(id);
   }, []);
 
-  // ── Award XP ────────────────────────────────────────────────
+  // Award XP
   const awardXP = useCallback(async (
     eventType: XPEventType,
     overrideMultiplier?: number,
@@ -115,10 +113,10 @@ export function useGamification() {
     }
   }, [user]);
 
-  // ── Dismiss level-up event ──────────────────────────────────
+  // Dismiss level-up event
   const dismissLevelUp = useCallback(() => setLevelUpEvent(null), []);
 
-  // ── Opt-in / opt-out ────────────────────────────────────────
+  // Opt-in / opt-out
   const setGamificationEnabled = useCallback(async (enabled: boolean) => {
     if (!user) return;
     const supabase = createClient();
@@ -135,7 +133,7 @@ export function useGamification() {
     setGamif((prev) => prev ? { ...prev, popup_shown: true } : prev);
   }, [user]);
 
-  // ── Derived ─────────────────────────────────────────────────
+  // Derived
   const levelInfo = gamif ? getLevelInfo(gamif.xp_total) : null;
   const enabled   = gamif?.gamification_enabled ?? null;
   const hours     = getSessionHours();

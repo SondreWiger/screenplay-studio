@@ -5,3 +5,10 @@ node_modules/
 .env.local
 .env*.local
 out/
+.DS_Store
+*.log
+coverage/
+dist/
+build/
+*.tsbuildinfo
+ScreenPlayStudio/

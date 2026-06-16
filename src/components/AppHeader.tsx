@@ -11,11 +11,9 @@ import { Avatar } from '@/components/ui';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { createClient } from '@/lib/supabase/client';
 
-// ============================================================
 // AppHeader — Shared navigation header for all top-level pages
 // Provides consistent navigation across dashboard, settings,
 // company, pro, billing, blog, community, and other pages.
-// ============================================================
 
 type AppHeaderProps = {
   /** Optional right-side content (e.g., action buttons) */
@@ -74,7 +72,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
     return (
       <header className="sticky top-0 z-40" style={{ background: '#070710', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
-          <Link href={backHref || '/dashboard'} className="flex items-center gap-2 text-white/40 hover:text-white transition-all group">
+          <Link href={backHref || '/dashboard'} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             <span className="text-sm font-medium">{backLabel || 'Back'}</span>
           </Link>
@@ -120,7 +118,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    'relative px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest transition-all duration-150',
+                    'relative px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest transition-colors duration-150',
                     active
                       ? 'text-white'
                       : 'text-white/40 hover:text-white/70'
@@ -147,7 +145,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           {/* Messages */}
           <Link
             href="/messages"
-            className="p-2 text-white/30 hover:text-white hover:bg-white/5 transition-all"
+            className="p-2 text-white/30 hover:text-white hover:bg-white/5 transition-colors"
             title="Messages"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -161,7 +159,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           <div ref={profileRef} className="relative ml-1">
             <button
               onClick={() => setProfileOpen((v) => !v)}
-              className="shrink-0 rounded-full transition-all duration-200 hover:scale-105"
+              className="shrink-0 rounded-full transition-shadow duration-200"
               style={profileOpen ? { boxShadow: '0 0 0 2px #FF5F1F, 0 0 16px rgba(255,95,31,0.3)' } : { boxShadow: '0 0 0 2px rgba(255,255,255,0.08)' }}
               aria-label="Open profile menu"
             >
@@ -197,7 +195,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                       key={item.href}
                       href={item.href}
                       onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-white/50 hover:text-white hover:bg-white/5 transition-all group"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-white/50 hover:text-white hover:bg-white/5 transition-colors group"
                     >
                       <svg className="w-4 h-4 text-white/30 group-hover:text-[#FF5F1F] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">{item.icon}</svg>
                       {item.label}
@@ -218,7 +216,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                       <p className="text-xs font-black text-[#FF5F1F]" style={{ letterSpacing: '-0.02em' }}>UPGRADE TO PRO</p>
                       <p className="text-[10px] font-mono text-white/40">Unlock all features</p>
                     </div>
-                    <svg className="w-3.5 h-3.5 text-white/30 group-hover:text-[#FF5F1F] ml-auto transition-all group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    <svg className="w-3.5 h-3.5 text-white/30 group-hover:text-[#FF5F1F] ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </Link>
                 </div>
 
@@ -226,7 +224,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                 <div className="py-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                   <button
                     onClick={handleSignOut}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-surface-400 hover:text-red-400 hover:bg-red-500/5 transition-all"
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-surface-400 hover:text-red-400 hover:bg-red-500/5 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
                     Sign out

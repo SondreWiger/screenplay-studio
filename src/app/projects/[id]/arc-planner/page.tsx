@@ -13,14 +13,12 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { LoadingSpinner, toast } from '@/components/ui';
+import { LoadingSpinner } from '@/components/ui';
 import { ArcMindmap, type MindmapData, type MapNode } from '@/components/ArcMindmap';
 import type { Script } from '@/lib/types';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Default act-structure seed for non-episodic scripts
 // Creates a horizontal waterfall of act/event nodes across the canvas
-// ─────────────────────────────────────────────────────────────────────────────
 
 function seedActStructure(): MindmapData {
   const acts: Array<{ type: MapNode['type']; label: string; body: string; color: string; x: number; y: number }> = [
@@ -46,7 +44,6 @@ function seedActStructure(): MindmapData {
   return { nodes, edges: [], version: 1 };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function ArcPlannerPage({ params }: { params: { id: string } }) {
   const { user }           = useAuthStore();
@@ -65,7 +62,7 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
   const [arcData,  setArcData]    = useState<MindmapData | null>(null);
   const [loading,  setLoading]    = useState(true);
 
-  // ── Load episodes + saved arc map ──────────────────────────────────────
+  // Load episodes + saved arc map
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -107,7 +104,6 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
 
   useEffect(() => { load(); }, [load]);
 
-  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="h-[calc(100dvh-3rem)] md:h-[100dvh] flex flex-col bg-[#0d0d14]">

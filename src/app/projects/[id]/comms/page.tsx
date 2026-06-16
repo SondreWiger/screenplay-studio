@@ -8,10 +8,8 @@ import { cn } from '@/lib/utils';
 import type { BroadcastCommsChannel } from '@/lib/types';
 import { BROADCAST_COMMS_CHANNEL_TYPES } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Comms / Intercom — Production communication channels
 // Party lines, IFB channels, ISO talkback, GPIO triggers
-// ────────────────────────────────────────────────────────────
 
 export default function CommsPage({ params }: { params: { id: string } }) {
   const projectId = params.id;
@@ -28,7 +26,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
   const [newType, setNewType] = useState<string>('party_line');
   const [newDesc, setNewDesc] = useState('');
 
-  // ─── Data Fetching ───────────────────────────────
+  // Data Fetching
   const fetchChannels = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
@@ -54,7 +52,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchChannels]);
 
-  // ─── Actions ─────────────────────────────────────
+  // Actions
 
   const handleCreate = async () => {
     if (!newName.trim() || !user) return;
@@ -118,7 +116,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
     fetchChannels();
   };
 
-  // ─── Render ──────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 
@@ -173,7 +171,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                       <div
                         key={channel.id}
                         className={cn(
-                          'relative rounded-lg border-2 p-4 transition-all',
+                          'relative rounded-lg border-2 p-4 transition-colors',
                           isTalking ? 'border-red-500 bg-red-950/30 shadow-lg shadow-red-500/10' :
                           isListening ? 'border-green-500/50 bg-green-950/20' :
                           'border-surface-700 bg-surface-900/50',

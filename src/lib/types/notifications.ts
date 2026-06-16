@@ -1,9 +1,7 @@
 import type { Profile, Project, ProjectMember, Script } from './base';
 import type { Character } from './development';
 
-// ============================================================
 // Notification Types
-// ============================================================
 
 export type NotificationType =
   | 'community_comment'
@@ -29,9 +27,7 @@ export type NotificationType =
   | 'collaborator_added'
   | 'poll_published';
 
-// ============================================================
 // Poll / Survey Types
-// ============================================================
 
 export type PollStatus = 'draft' | 'review' | 'published' | 'closed';
 export type PollQuestionType = 'yes_no' | 'single_select' | 'multi_select' | 'ranking' | 'short_text' | 'long_text';
@@ -83,9 +79,7 @@ export interface PollAnswer {
   created_at: string;
 }
 
-// ============================================================
 // Mind Map Types
-// ============================================================
 
 export type MindMapNodeShape = 'rounded' | 'circle' | 'diamond' | 'rectangle';
 export type MindMapEdgeStyle = 'solid' | 'dashed' | 'dotted';
@@ -133,9 +127,7 @@ export interface MindMapEdge {
   updated_at: string;
 }
 
-// ============================================================
 // Direct Message Types
-// ============================================================
 
 export type ConversationType = 'direct' | 'group';
 export type MessageType = 'text' | 'image' | 'file' | 'system';
@@ -182,9 +174,7 @@ export interface DirectMessage {
   reply_to?: DirectMessage;
 }
 
-// ============================================================
 // Project Channel Types
-// ============================================================
 
 export interface ProjectChannel {
   id: string;
@@ -214,9 +204,7 @@ export interface ChannelMessage {
   sender?: Profile;
 }
 
-// ============================================================
 // Mood Board Types
-// ============================================================
 
 export type MoodBoardItemType = 'image' | 'text' | 'color' | 'link' | 'note';
 export type MoodBoardSection = 'general' | 'characters' | 'locations' | 'atmosphere' | 'costumes' | 'props';
@@ -273,9 +261,7 @@ export interface Notification {
   actor?: Profile;
 }
 
-// ============================================================
 // UI Types
-// ============================================================
 
 export interface NavItem {
   label: string;

@@ -3,13 +3,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, toast } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 
-// ============================================================
 // Invoice Generator
 // Reads work_sessions for this project, generates printable
 // invoice with per-day breakdown. No new DB table required.
-// ============================================================
 
 interface WorkSession {
   id: string;
@@ -34,11 +32,6 @@ interface InvoiceSettings {
   notes: string;
 }
 
-function fmtHours(secs: number) {
-  const h = secs / 3600;
-  return h.toFixed(2);
-}
-
 function fmtMoney(amount: number, currency: string) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
@@ -49,13 +42,10 @@ function fmtDate(iso: string) {
 
 export default function InvoicePage({ params }: { params: { id: string } }) {
   const { user }                   = useAuthStore();
-  const { currentProject, members } = useProjectStore();
-  const currentUserRole            = members.find((m) => m.user_id === user?.id)?.role
-    || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
-  const canEdit                    = currentUserRole !== 'viewer';
+  const { currentProject } = useProjectStore();
 
   const [sessions, setSessions]    = useState<WorkSession[]>([]);
-  const [loading, setLoading]      = useState(true);
+  const [, setLoading]      = useState(true);
   const [settings, setSettings]    = useState<InvoiceSettings>({
     freelancerName: '',
     freelancerEmail: '',

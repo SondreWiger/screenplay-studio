@@ -5,9 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import type { Company, CompanyMember, Project, Profile, CompanyBlogPost } from '@/lib/types';
 
-// ============================================================
 // Company Public Page — /<slug>
-// ============================================================
 
 export default function CompanyPublicPage({ params }: { params: { slug: string } }) {
   const [company, setCompany] = useState<Company | null>(null);
@@ -111,9 +109,9 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative max-w-5xl mx-auto px-6 py-20 text-center">
           {company.logo_url ? (
-            <img src={company.logo_url} alt={company.name} className="w-20 h-20 rounded-2xl mx-auto mb-4 shadow-lg object-cover" loading="lazy" />
+            <img src={company.logo_url} alt={company.name} className="w-20 h-20 rounded-xl mx-auto mb-4 shadow-lg object-cover" loading="lazy" />
           ) : (
-            <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl font-black text-white bg-white/20 backdrop-blur">
+            <div className="w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-3xl font-black text-white bg-white/20 backdrop-blur">
               {company.name[0]}
             </div>
           )}
@@ -209,7 +207,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                 <Link key={post.id} href={`/company/${company.slug}/blog/${post.slug}`}
                   className="block overflow-hidden hover:opacity-80 transition-opacity group" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
                   {post.cover_image_url ? (
-                    <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    <img src={post.cover_image_url} alt={post.title || 'Blog post cover'} className="w-full h-40 object-cover transition-transform duration-300" loading="lazy" />
                   ) : (
                     <div className="w-full h-40 flex items-center justify-center" style={{ backgroundColor: company.brand_color + '10' }}>
                       <svg className="w-8 h-8 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">

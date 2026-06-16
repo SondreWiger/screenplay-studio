@@ -6,13 +6,12 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { AppHeader } from '@/components/AppHeader';
 import { useNotifications } from '@/hooks/useNotifications';
 import type {
   Company, CompanyMember, CompanyTeam,
   CompanyInvitation, CompanyActivityLog, CompanyRole, Profile, Project,
-  CompanyBlogPost, CompanyBlogComment
+  CompanyBlogPost
 } from '@/lib/types';
 import { OrgPipeline } from '@/components/org/OrgPipeline';
 import { OrgChannels } from '@/components/org/OrgChannels';
@@ -368,7 +367,7 @@ export default function CompanyDashboard() {
     return (
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="max-w-md w-full px-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
           </div>
           <h1 className="text-2xl font-black text-white mb-2">No Company Yet</h1>
@@ -971,7 +970,7 @@ export default function CompanyDashboard() {
               <div className="space-y-4">
                 <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-4 text-center">
                   <p className="text-sm text-green-400 font-medium mb-1">Invitation sent!</p>
-                  <p className="text-xs text-surface-400">If the recipient doesn't have an account yet, share this link directly:</p>
+                  <p className="text-xs text-surface-400">If the recipient doesn&apos;t have an account yet, share this link directly:</p>
                 </div>
                 <div className="flex gap-2">
                   <input readOnly value={lastInviteLink} className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-surface-300 outline-none" />
@@ -982,7 +981,7 @@ export default function CompanyDashboard() {
                     Copy
                   </button>
                 </div>
-                <p className="text-[10px] text-surface-500 text-center">Link expires in 7 days. They'll also see a banner on their dashboard if they're registered.</p>
+                <p className="text-[10px] text-surface-500 text-center">Link expires in 7 days. They&apos;ll also see a banner on their dashboard if they&apos;re registered.</p>
                 <div className="flex justify-between items-center pt-2">
                   <button onClick={() => setLastInviteLink('')} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">Invite another</button>
                   <Button variant="ghost" onClick={() => { setShowInviteModal(false); setLastInviteLink(''); }}>Done</Button>

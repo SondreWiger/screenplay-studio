@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Input, Modal, Badge, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Input, Modal, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { ProjectDocument, ProjectFolder, DocumentType, DocumentComment } from '@/lib/types';
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_TYPE_ICONS } from '@/lib/types';
@@ -39,7 +39,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   const localEditPendingRef = useRef(false);
   const [remoteEditors, setRemoteEditors] = useState<{ userId: string; docId: string; name: string }[]>([]);
 
-  // ── Versioned Story Editing ────────────────────────────────────
   const [showVersionPanel, setShowVersionPanel] = useState(false);
   const [showVersionPreview, setShowVersionPreview] = useState(false);
   const [versionConfig, setVersionConfig] = useState<VersionConfig>(DEFAULT_VERSION_CONFIG);
@@ -80,7 +79,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [docParam, loading, documents.length]);
 
-  // ── Realtime subscriptions for collaborative editing ──
   useEffect(() => {
     if (!params.id || !user) return;
 
@@ -314,7 +312,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     setDocuments(documents.filter((d) => d.folder_id !== folderId));
   };
 
-  // ─── Fetch comments for current doc ──────────────────────────────
   const fetchComments = useCallback(async (docId: string) => {
     const supabase = createClient();
     const { data } = await supabase
@@ -378,7 +375,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     });
   }, [currentDoc, handleContentChange]);
 
-  // ─── Add a comment ───────────────────────────────────────────────
   const handleAddComment = async () => {
     if (!commentText.trim() || !currentDoc || !user) return;
     setAddingComment(true);
@@ -403,7 +399,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     setAddingComment(false);
   };
 
-  // ─── Resolve / delete comment ─────────────────────────────────────
   const handleResolveComment = async (commentId: string) => {
     const supabase = createClient();
     await supabase.from('document_comments').update({ is_resolved: true }).eq('id', commentId);
@@ -415,7 +410,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     setComments(prev => prev.filter(c => c.id !== commentId));
   };
 
-  // ─── Track text selection in editor ──────────────────────────────
   const handleEditorSelect = () => {
     const ta = editorRef.current;
     if (!ta) return;
@@ -424,7 +418,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     setSelectionOffset(sel.length > 0 ? ta.selectionStart : null);
   };
 
-  // ─── @mention detection in comment textarea ───────────────────────
   const handleCommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     setCommentText(val);
@@ -522,7 +515,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     [currentDoc?.content],
   );
 
-  // ─── Comments state ──────────────────────────────────────────────
   const [comments, setComments] = useState<DocumentComment[]>([]);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -615,7 +607,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <span className="truncate flex-1">{folder.name}</span>
                 {canEdit && (
                   <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-all">
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-opacity">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 )}
@@ -645,7 +637,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 </div>
                 {canEdit && (
                   <button onClick={(e) => { e.stopPropagation(); handleDeleteDoc(doc.id); }}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-all shrink-0">
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-opacity shrink-0">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 )}
@@ -786,7 +778,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
             <div className="flex flex-1 overflow-hidden">
               {/* Main editor */}
               <div className="flex-1 overflow-y-auto bg-surface-900/30">
-                <div className="max-w-3xl mx-auto my-8 bg-surface-950 rounded-sm shadow-2xl min-h-[600px] relative">
+                <div className="max-w-3xl mx-auto my-8 bg-surface-950 rounded-md shadow-2xl min-h-[600px] relative">
                   {selectedText && canEdit && (
                     <div className="absolute top-2 right-2 z-10">
                       <button
@@ -994,10 +986,6 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
   );
 }
 
-// ============================================================
-// New Document Modal
-// ============================================================
-
 function NewDocumentModal({ isOpen, onClose, onCreate }: {
   isOpen: boolean; onClose: () => void; onCreate: (title: string, docType: DocumentType) => void;
 }) {
@@ -1045,10 +1033,6 @@ function NewDocumentModal({ isOpen, onClose, onCreate }: {
     </Modal>
   );
 }
-
-// ============================================================
-// New Folder Modal
-// ============================================================
 
 function NewFolderModal({ isOpen, onClose, onCreate }: {
   isOpen: boolean; onClose: () => void; onCreate: (name: string) => void;

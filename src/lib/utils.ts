@@ -145,7 +145,7 @@ export function timeUntil(date: string | Date): string {
   return `${mins}m`;
 }
 
-// ── Security Utilities ──────────────────────────────────────
+// Security Utilities
 
 /** Escape HTML entities to prevent XSS in user-generated content */
 export function escapeHtml(text: string): string {

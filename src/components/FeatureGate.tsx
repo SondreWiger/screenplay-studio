@@ -2,7 +2,6 @@
 
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
-// ============================================================
 // FeatureGate — Conditionally renders children based on
 // whether the current user has access to a feature flag.
 //
@@ -14,7 +13,6 @@ import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 //   <FeatureGate feature="community" fallback={<LockedBanner />}>
 //     <CommunityFeed />
 //   </FeatureGate>
-// ============================================================
 
 /**
  * Maps sidebar icon keys (used in the project layout nav) to feature flag keys
@@ -37,9 +35,8 @@ export const ICON_TO_FLAG: Record<string, string> = {
   mindmap: 'mindmap',
   documents: 'documents',
   script: 'script_editor',
-  episodes: 'script_editor',  // Episodes page is part of the script editor feature
-  'arc-planner': 'script_editor',  // Arc planner is part of the episodic writing workflow
-  // Pro tools
+  episodes: 'script_editor',
+  'arc-planner': 'script_editor',
   analytics: 'pro_analytics',
   export: 'pro_export',
   ai: 'pro_ai_analysis',
@@ -48,6 +45,42 @@ export const ICON_TO_FLAG: Record<string, string> = {
   revisions: 'pro_revisions',
   reports: 'pro_reports',
   casting: 'pro_casting',
+  // Studio tier features
+  portfolio: 'studio_portfolio',
+  accounting: 'studio_accounting',
+  rights: 'studio_rights',
+  distribution: 'studio_distribution',
+  'crew-portal': 'studio_crew_portal',
+  departments: 'studio_departments',
+  compliance: 'studio_compliance',
+  integrations: 'studio_integrations',
+  sso: 'studio_sso',
+  security: 'studio_security',
+  'script-supervising': 'studio_script_supervising',
+  'vfx-tracking': 'studio_vfx_tracking',
+  'music-sound': 'studio_music_sound',
+  talent: 'studio_talent_mgmt',
+  scouting: 'studio_location_scouting',
+  vendors: 'studio_vendor_mgmt',
+  stunts: 'studio_stunts_safety',
+  greenlight: 'studio_greenlight',
+  festival: 'studio_festival',
+  'tax-incentives': 'studio_tax_incentives',
+  multilang: 'studio_multilang',
+  archival: 'studio_archival',
+  'broadcast-compliance': 'studio_broadcast_compliance',
+  'post-production': 'studio_post_production',
+  marketing: 'studio_marketing',
+  legal: 'studio_legal',
+  crowdfunding: 'studio_crowdfunding',
+  'box-office': 'studio_box_office',
+  travel: 'studio_travel',
+  catering: 'studio_catering',
+  sustainability: 'studio_sustainability',
+  extras: 'studio_extras',
+  equipment: 'studio_equipment',
+  wrap: 'studio_wrap',
+  newsletter: 'studio_newsletter',
 };
 
 /** Resolve an icon key (or direct flag key) to the canonical feature_flags.key */
@@ -80,12 +113,12 @@ export function FeatureGate({ feature, fallback = null, children }: FeatureGateP
  * Returns a function that checks whether a feature (by icon key or flag key) is accessible.
  */
 export function useFeatureAccess() {
-  const { hasAccess, loading, flags } = useFeatureFlags();
+  const { hasAccess, loading, flags, isPro, isStudio } = useFeatureFlags();
 
   const canUse = (iconOrFlag: string): boolean => {
     if (loading) return true; // optimistic while loading
     return hasAccess(resolveFlag(iconOrFlag));
   };
 
-  return { canUse, loading, flags };
+  return { canUse, loading, flags, isPro, isStudio };
 }

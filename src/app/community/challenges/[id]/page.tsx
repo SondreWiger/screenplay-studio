@@ -2,24 +2,21 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
-import { ScriptContentViewer, ScreenplayRenderer } from '@/components/ScreenplayRenderer';
+import { ScriptContentViewer } from '@/components/ScreenplayRenderer';
 import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
-import { formatDate, formatDateTime, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil, timeAgo, cn } from '@/lib/utils';
+import { formatDateTime, getChallengePhase, getPhaseLabel, timeUntil, timeAgo, cn } from '@/lib/utils';
 import { toast } from '@/components/ui';
-import type { CommunityChallenge, ChallengeSubmission, Profile, Project } from '@/lib/types';
+import type { CommunityChallenge, ChallengeSubmission, Project } from '@/lib/types';
 
-// ============================================================
 // Individual Challenge — phase-aware detail page
-// ============================================================
 
 export default function ChallengeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const router = useRouter();
 
   const [challenge, setChallenge] = useState<CommunityChallenge | null>(null);
   const [submissions, setSubmissions] = useState<ChallengeSubmission[]>([]);
@@ -227,13 +224,6 @@ export default function ChallengeDetailPage() {
     setVoting(null);
   };
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    await supabase.auth.signOut();
-    router.refresh();
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#070710] flex items-center justify-center">
@@ -264,7 +254,7 @@ export default function ChallengeDetailPage() {
         </Link>
 
         {/* Challenge Header */}
-        <div className="rounded-2xl text-white p-8 mb-8" style={{ background: 'linear-gradient(135deg, rgba(255,95,31,0.12) 0%, rgba(255,255,255,0.04) 100%)', border: '1px solid rgba(255,95,31,0.2)' }}>
+        <div className="rounded-xl text-white p-8 mb-8" style={{ background: 'linear-gradient(135deg, rgba(255,95,31,0.12) 0%, rgba(255,255,255,0.04) 100%)', border: '1px solid rgba(255,95,31,0.2)' }}>
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -322,9 +312,7 @@ export default function ChallengeDetailPage() {
           )}
         </div>
 
-        {/* =========================================================
-            SUBMISSIONS PHASE — show submit form
-        ========================================================= */}
+        {/* SUBMISSIONS PHASE — show submit form */}
         {phase === 'submissions' && (
           <section className="mb-10">
             {mySubmission ? (
@@ -394,7 +382,7 @@ export default function ChallengeDetailPage() {
                                 key={project.id}
                                 onClick={() => loadProjectScript(project)}
                                 className={cn(
-                                  'text-left rounded-lg border p-3 transition-all',
+                                  'text-left rounded-lg border p-3 transition-colors',
                                   selectedProject?.id === project.id
                                     ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]'
                                     : 'border-white/10 hover:border-white/15 hover:bg-surface-900'
@@ -526,9 +514,7 @@ export default function ChallengeDetailPage() {
           </section>
         )}
 
-        {/* =========================================================
-            VOTING PHASE — show submissions with vote buttons
-        ========================================================= */}
+        {/* VOTING PHASE — show submissions with vote buttons */}
         {phase === 'voting' && (
           <section className="mb-10">
             <div className="flex items-center justify-between mb-6">
@@ -558,7 +544,7 @@ export default function ChallengeDetailPage() {
                 const isMyVote = myVote === sub.id;
                 const isOwn = user && sub.author_id === user.id;
                 return (
-                  <div key={sub.id} className={`rounded-xl border bg-surface-900 p-6 transition-all ${isMyVote ? 'border-[#FF5F1F]/40 ring-2 ring-[#FF5F1F]/20' : 'border-white/10'}`}>
+                  <div key={sub.id} className={`rounded-xl border bg-surface-900 p-6 transition-colors ${isMyVote ? 'border-[#FF5F1F]/40 ring-2 ring-[#FF5F1F]/20' : 'border-white/10'}`}>
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div>
                         <h3 className="text-base font-semibold text-white">{sub.title}</h3>
@@ -609,9 +595,7 @@ export default function ChallengeDetailPage() {
           </section>
         )}
 
-        {/* =========================================================
-            REVEAL PENDING — waiting for Sunday 12:00
-        ========================================================= */}
+        {/* REVEAL PENDING — waiting for Sunday 12:00 */}
         {phase === 'reveal_pending' && (
           <section className="mb-10 text-center py-16">
             <div className="text-5xl mb-4">⏳</div>
@@ -623,9 +607,7 @@ export default function ChallengeDetailPage() {
           </section>
         )}
 
-        {/* =========================================================
-            COMPLETED — show ranked results
-        ========================================================= */}
+        {/* COMPLETED — show ranked results */}
         {phase === 'completed' && (
           <section className="mb-10">
             <h2 className="text-lg font-bold text-white mb-6">Results</h2>
@@ -643,7 +625,7 @@ export default function ChallengeDetailPage() {
                   return (
                     <div
                       key={sub.id}
-                      className={`rounded-xl border p-5 transition-all ${
+                      className={`rounded-xl border p-5 transition-colors ${
                         isWinner
                           ? 'border-amber-400/40 bg-gradient-to-r from-amber-400/10 to-[#FF5F1F]/08 ring-1 ring-amber-400/20'
                           : isTop3
@@ -703,9 +685,7 @@ export default function ChallengeDetailPage() {
           </section>
         )}
 
-        {/* =========================================================
-            UPCOMING — just show info, no submissions yet
-        ========================================================= */}
+        {/* UPCOMING — just show info, no submissions yet */}
         {phase === 'upcoming' && (
           <section className="mb-10 text-center py-16">
             <div className="text-5xl mb-4">🚀</div>

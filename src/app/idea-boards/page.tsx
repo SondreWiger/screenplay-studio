@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AppHeader } from '@/components/AppHeader';
-import { Button, Input, Modal, LoadingPage, toast, Badge } from '@/components/ui';
+import { Button, Input, Modal, LoadingPage, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-// ── Types ────────────────────────────────────────────────────
+// Types
 
 type Board = {
   id: string;
@@ -41,7 +41,6 @@ const BOARD_COLORS = [
 ];
 const BOARD_EMOJIS = ['💡', '🎬', '📝', '🎭', '🌟', '🔥', '🎯', '🧠', '✨', '🎨', '📖', '🚀'];
 
-// ── Page ─────────────────────────────────────────────────────
 
 export default function IdeaBoardsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -157,7 +156,7 @@ export default function IdeaBoardsPage() {
             <button
               onClick={() => setShowArchived(v => !v)}
               className={cn(
-                'px-3 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-lg border',
+                'px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors rounded-lg border',
                 showArchived
                   ? 'border-surface-600 text-white bg-surface-800'
                   : 'border-surface-700 text-surface-500 hover:text-white hover:border-surface-600'
@@ -261,7 +260,7 @@ export default function IdeaBoardsPage() {
                   key={e}
                   onClick={() => setNewEmoji(e)}
                   className={cn(
-                    'w-9 h-9 rounded-lg text-xl flex items-center justify-center transition-all',
+                    'w-9 h-9 rounded-lg text-xl flex items-center justify-center transition-colors',
                     newEmoji === e
                       ? 'bg-surface-700 ring-2 ring-white/30 scale-110'
                       : 'bg-surface-800 hover:bg-surface-700'
@@ -282,8 +281,8 @@ export default function IdeaBoardsPage() {
                   key={c}
                   onClick={() => setNewColor(c)}
                   className={cn(
-                    'w-7 h-7 rounded-full transition-all',
-                    newColor === c ? 'ring-2 ring-offset-2 ring-offset-surface-900 ring-white scale-110' : 'hover:scale-105'
+                    'w-7 h-7 rounded-full transition-colors',
+                    newColor === c ? 'ring-2 ring-offset-2 ring-offset-surface-900 ring-white scale-110' : ''
                   )}
                   style={{ background: c }}
                 />
@@ -338,7 +337,7 @@ export default function IdeaBoardsPage() {
   );
 }
 
-// ── Board card ───────────────────────────────────────────────
+// Board card
 
 function BoardCard({
   board,
@@ -355,7 +354,7 @@ function BoardCard({
     <div className="group relative">
       <Link
         href={`/idea-boards/${board.id}`}
-        className="block rounded-2xl border border-surface-800 hover:border-surface-700 transition-all duration-200 overflow-hidden"
+        className="block rounded-xl border border-surface-800 hover:border-surface-700 transition-colors duration-200 overflow-hidden"
         style={{ background: '#0d0d1a' }}
       >
         {/* Color bar */}
@@ -414,7 +413,7 @@ function BoardCard({
           <div className="relative">
             <button
               onClick={e => { e.preventDefault(); setMenuOpen(v => !v); }}
-              className="p-1.5 rounded-lg bg-surface-900/80 hover:bg-surface-800 border border-surface-700 text-surface-400 hover:text-white transition-all"
+              className="p-1.5 rounded-lg bg-surface-900/80 hover:bg-surface-800 border border-surface-700 text-surface-400 hover:text-white transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01" />

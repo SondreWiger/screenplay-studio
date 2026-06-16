@@ -1,9 +1,7 @@
 'use client';
 
-// ============================================================
 // LevelUpCelebration — a non-intrusive corner popup
 // Auto-dismisses after 5 seconds
-// ============================================================
 
 import { useEffect, useState } from 'react';
 import { getLevelTitle } from '@/lib/gamification';
@@ -31,7 +29,7 @@ export function LevelUpCelebration({ level, unlocks, onDismiss }: Props) {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-[9999] w-72 rounded-2xl border border-[#FF5F1F]/30 bg-[#0D0D1A] shadow-2xl transition-all duration-400 ${
+      className={`fixed bottom-6 right-6 z-[9999] w-72 rounded-xl border border-[#FF5F1F]/30 bg-[#0D0D1A] shadow-2xl transition-all duration-400 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ boxShadow: '0 0 32px rgba(255,95,31,0.2)' }}

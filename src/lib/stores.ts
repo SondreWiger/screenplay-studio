@@ -8,9 +8,7 @@ import type {
   Profile, ProjectMember, UserPresence, Notification
 } from '@/lib/types';
 
-// ============================================================
 // Auth Store
-// ============================================================
 
 interface AuthState {
   user: Profile | null;
@@ -37,9 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 }));
 
-// ============================================================
 // Project Store
-// ============================================================
 
 interface ProjectState {
   projects: Project[];
@@ -108,9 +104,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   },
 }));
 
-// ============================================================
 // Script Store
-// ============================================================
 
 interface ScriptState {
   scripts: Script[];
@@ -140,7 +134,7 @@ interface ScriptState {
   reorderElements: (elements: ScriptElement[]) => Promise<void>;
 }
 
-// ── Sync a full snapshot of elements to Supabase ────────────────────────────
+// Sync a full snapshot of elements to Supabase
 async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
   const supabase = createClient();
   const { data: rows } = await supabase
@@ -311,9 +305,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 }));
 
-// ============================================================
 // Presence Store (Real-time collaboration)
-// ============================================================
 
 interface PresenceState {
   onlineUsers: UserPresence[];
@@ -325,9 +317,7 @@ export const usePresenceStore = create<PresenceState>((set) => ({
   setOnlineUsers: (users) => set({ onlineUsers: users }),
 }));
 
-// ============================================================
 // Notification Store
-// ============================================================
 
 interface NotificationState {
   notifications: Notification[];

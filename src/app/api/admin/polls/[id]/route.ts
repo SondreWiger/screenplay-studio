@@ -54,7 +54,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       if (q._delete && q.id) {
         await ctx.supabase.from('poll_questions').delete().eq('id', q.id);
       } else if (q.id) {
-        const { _delete: _d, ...fields } = q;
+        const fields = { ...q };
+        delete fields._delete;
         await ctx.supabase.from('poll_questions')
           .update({ ...fields, updated_at: new Date().toISOString() })
           .eq('id', q.id);

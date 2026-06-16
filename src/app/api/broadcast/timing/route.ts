@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
-// ────────────────────────────────────────────────────────────
 // Broadcast Timing Engine API
-// ────────────────────────────────────────────────────────────
 // GET  /api/broadcast/timing?rundown_id=...
 //      → Returns back-times, over/under, show state
 //
@@ -15,9 +13,8 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 // This route calls server-side PostgreSQL functions for
 // back-timing and over/under calculations — the database
 // is the source of truth, not the client.
-// ────────────────────────────────────────────────────────────
 
-// ─── GET: Timing state for a rundown ───────────────────────
+// GET: Timing state for a rundown
 
 export async function GET(request: NextRequest) {
   const supabase = createServerSupabaseClient();
@@ -52,11 +49,11 @@ export async function GET(request: NextRequest) {
   }
 
   // Call server-side back-timing function
-  const { data: backTimes, error: btError } = await supabase
+  const { data: backTimes } = await supabase
     .rpc('broadcast_calculate_back_times', { p_rundown_id: rundownId });
 
   // Call server-side over/under function
-  const { data: overUnder, error: ouError } = await supabase
+  const { data: overUnder } = await supabase
     .rpc('broadcast_rundown_over_under', { p_rundown_id: rundownId });
 
   // Get all items for current state
@@ -103,7 +100,7 @@ export async function GET(request: NextRequest) {
   });
 }
 
-// ─── POST: Timing actions ──────────────────────────────────
+// POST: Timing actions
 
 export async function POST(request: NextRequest) {
   try {
@@ -148,7 +145,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     switch (action) {
-      // ─── Show lifecycle ────────────────────────────────
+      // Show lifecycle
       case 'start_show': {
         // Mark rundown as live, record actual start
         const { error } = await supabase
@@ -212,7 +209,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true, action: 'show_ended', time: now });
       }
 
-      // ─── Item lifecycle ────────────────────────────────
+      // Item lifecycle
       case 'take_item': {
         if (!item_id) return NextResponse.json({ error: 'item_id required' }, { status: 400 });
 

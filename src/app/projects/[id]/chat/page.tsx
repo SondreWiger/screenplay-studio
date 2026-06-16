@@ -1,19 +1,17 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Input, Modal, Avatar, Badge, LoadingSpinner, toast } from '@/components/ui';
-import { cn, timeAgo, formatTime } from '@/lib/utils';
-import type { ProjectChannel, ChannelMessage, ProjectMember, UserRole, ProductionRole } from '@/lib/types';
+import { Button, Input, Modal, Avatar, LoadingSpinner, toast } from '@/components/ui';
+import { cn, formatTime } from '@/lib/utils';
+import type { ProjectChannel, ChannelMessage, UserRole } from '@/lib/types';
 import { FormattedChatText } from '@/components/FormattedChatText';
 import { automodCheck } from '@/lib/automod';
 import { PRODUCTION_ROLES } from '@/lib/types';
 
-// ============================================================
 // Role → colour mapping for chat name display
-// ============================================================
 
 const ROLE_COLORS: Record<UserRole, string> = {
   owner: 'text-amber-400',
@@ -88,9 +86,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     return PRODUCTION_ROLES.find((r) => r.value === m.production_role)?.label || null;
   };
 
-  // ============================================================
   // FETCH CHANNELS
-  // ============================================================
 
   useEffect(() => {
     if (user && projectId) fetchChannels();
@@ -151,9 +147,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     }
   };
 
-  // ============================================================
   // SELECT CHANNEL & LOAD MESSAGES
-  // ============================================================
 
   const selectChannel = async (channel: ProjectChannel) => {
     setSelectedChannel(channel);
@@ -178,9 +172,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     }
   };
 
-  // ============================================================
   // REALTIME
-  // ============================================================
 
   useEffect(() => {
     if (!selectedChannel) return;
@@ -224,9 +216,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     };
   }, [selectedChannel?.id]);
 
-  // ============================================================
   // SEND MESSAGE
-  // ============================================================
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChannel || sending) return;
@@ -272,9 +262,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     }
   };
 
-  // ============================================================
   // CREATE CHANNEL
-  // ============================================================
 
   const createChannel = async () => {
     if (!channelName.trim() || creatingChannel) return;
@@ -297,7 +285,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
         .single();
 
       if (error) {
-        if (error.code === '23505') alert('A channel with that name already exists.');
+        if (error.code === '23505') { toast.error('A channel with that name already exists.'); }
         else throw error;
         return;
       }
@@ -322,9 +310,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     }
   };
 
-  // ============================================================
   // EDIT CHANNEL
-  // ============================================================
 
   const openEditChannel = () => {
     if (!selectedChannel) return;
@@ -376,9 +362,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
     }
   };
 
-  // ============================================================
   // RENDER
-  // ============================================================
 
   return (
     <div className="h-[calc(100vh-3rem)] md:h-screen flex flex-col bg-surface-950">
@@ -506,7 +490,6 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                   </div>
                 ) : (
                   messages.map((msg, idx) => {
-                    const isOwn = msg.sender_id === user?.id;
                     const isSystem = msg.message_type === 'system';
                     const prevMsg = messages[idx - 1];
                     const showHeader =

@@ -111,7 +111,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
             <span className="text-lg font-bold text-blue-400">{shots.length > 0 ? Math.round(completedShots / shots.length * 100) : 0}%</span>
           </div>
           <div className="h-2 rounded-full bg-surface-800 overflow-hidden">
-            <div className="h-full rounded-full bg-blue-500 transition-all duration-500" style={{ width: `${shots.length > 0 ? completedShots / shots.length * 100 : 0}%` }} />
+            <div className="h-full rounded-full bg-blue-500 transition-[width] duration-500" style={{ width: `${shots.length > 0 ? completedShots / shots.length * 100 : 0}%` }} />
           </div>
         </div>
         <div className="bg-surface-900 rounded-xl p-3">
@@ -120,7 +120,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
             <span className="text-lg font-bold text-green-400">{scenes.length > 0 ? Math.round(completedScenes / scenes.length * 100) : 0}%</span>
           </div>
           <div className="h-2 rounded-full bg-surface-800 overflow-hidden">
-            <div className="h-full rounded-full bg-green-500 transition-all duration-500" style={{ width: `${scenes.length > 0 ? completedScenes / scenes.length * 100 : 0}%` }} />
+            <div className="h-full rounded-full bg-green-500 transition-[width] duration-500" style={{ width: `${scenes.length > 0 ? completedScenes / scenes.length * 100 : 0}%` }} />
           </div>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                   <div
                     key={shot.id}
                     className={cn(
-                      'rounded-xl border p-3 transition-all',
+                      'rounded-xl border p-3 transition-colors',
                       shot.is_completed
                         ? 'bg-green-500/5 border-green-500/20 opacity-60'
                         : 'bg-surface-900 border-surface-800'
@@ -256,7 +256,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                   <div
                     key={scene.id}
                     className={cn(
-                      'rounded-xl border p-3 transition-all',
+                      'rounded-xl border p-3 transition-colors',
                       scene.is_completed
                         ? 'bg-green-500/5 border-green-500/20 opacity-60'
                         : 'bg-surface-900 border-surface-800'
@@ -297,7 +297,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                         {sceneShots.length > 0 && (
                           <div className="flex items-center gap-2 mt-1.5">
                             <div className="flex-1 h-1.5 rounded-full bg-surface-800 overflow-hidden">
-                              <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${sceneShotsComplete / sceneShots.length * 100}%` }} />
+                              <div className="h-full rounded-full bg-blue-500 transition-[width]" style={{ width: `${sceneShotsComplete / sceneShots.length * 100}%` }} />
                             </div>
                             <span className="text-[10px] text-surface-500 shrink-0">{sceneShotsComplete}/{sceneShots.length} shots</span>
                           </div>

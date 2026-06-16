@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 
-// ============================================================
 // Rate Limiting Utility
 //
 // Hybrid approach:
 //  1. In-memory bucket for hot-path burst protection (fast)
 //  2. Supabase-backed persistence for cross-instance coordination
 //     (used only for critical endpoints)
-// ============================================================
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -21,7 +19,7 @@ interface RateEntry {
   resetAt: number;
 }
 
-// ── In-memory store (cleaned periodically) ───────────────────
+// In-memory store (cleaned periodically)
 const store = new Map<string, RateEntry>();
 let lastCleanup = Date.now();
 
@@ -34,7 +32,7 @@ function cleanup(): void {
   });
 }
 
-// ── Check rate limit (in-memory) ────────────────────────────
+// Check rate limit (in-memory)
 export function checkRateLimit(
   key: string,
   maxRequests: number,
@@ -58,13 +56,13 @@ export function checkRateLimit(
   return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt, retryAfter: 0 };
 }
 
-// ── Build a rate-limit key from request context ─────────────
+// Build a rate-limit key from request context
 export function rateLimitKey(ip: string, path: string, userId?: string): string {
   const prefix = userId ? `user:${userId}` : `ip:${ip}`;
   return `${prefix}:${path}`;
 }
 
-// ── Apply rate limit to a NextResponse ───────────────────────
+// Apply rate limit to a NextResponse
 export function addRateLimitHeaders(
   response: NextResponse,
   result: RateLimitResult,
@@ -76,14 +74,14 @@ export function addRateLimitHeaders(
   return response;
 }
 
-// ── Extract client IP from request ──────────────────────────
+// Extract client IP from request
 export function getClientIp(req: Request): string {
   return (req.headers as Headers).get('x-forwarded-for')?.split(',')[0]?.trim()
     || (req.headers as Headers).get('x-real-ip')
     || 'unknown';
 }
 
-// ── Supabase-backed rate limit (persistent, cross-instance) ──
+// Supabase-backed rate limit (persistent, cross-instance)
 // Uses the already-existing check_rate_limit DB function.
 // This is slower but works across serverless restarts.
 export async function checkRateLimitPersistent(

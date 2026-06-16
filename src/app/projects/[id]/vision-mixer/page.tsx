@@ -10,10 +10,8 @@ import type {
 } from '@/lib/types';
 import { BROADCAST_TRANSITION_TYPES } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // Vision Mixer — Live Production Switcher
 // Program/Preview bus, transitions, keyers, DSK, FTB
-// ────────────────────────────────────────────────────────────
 
 export default function VisionMixerPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -26,7 +24,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
   const [tBarPosition, setTBarPosition] = useState(0); // 0..100
   const clockRef = useRef<HTMLDivElement>(null);
 
-  // ─── Live Clock ──────────────────────────────────────
+  // Live Clock
   useEffect(() => {
     const iv = setInterval(() => {
       if (clockRef.current) {
@@ -39,7 +37,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
     return () => clearInterval(iv);
   }, []);
 
-  // ─── Data Fetching ───────────────────────────────────
+  // Data Fetching
   const fetchSources = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
@@ -93,7 +91,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchSwitcherState, fetchSources]);
 
-  // ─── Switcher Actions ────────────────────────────────
+  // Switcher Actions
 
   const updateSwitcher = async (updates: Partial<BroadcastSwitcherState>) => {
     if (!switcherState) return;
@@ -194,7 +192,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
     });
   };
 
-  // ─── Helpers ─────────────────────────────────────────
+  // Helpers
 
   const getSourceName = (id: string | null) => {
     if (!id) return '—';
@@ -207,7 +205,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
     return s?.short_name || s?.name?.substring(0, 6) || '?';
   };
 
-  // ─── Render ──────────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 
@@ -216,7 +214,6 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)] md:h-screen bg-black text-white select-none">
-      {/* ── Top Bar: Status ──────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2 bg-surface-950 border-b border-surface-800">
         <div className="flex items-center gap-4">
           <h1 className="text-sm font-bold uppercase tracking-wider text-surface-300">Vision Mixer</h1>
@@ -237,7 +234,6 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      {/* ── Main Content ─────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Preview/Program Monitors */}
         <div className="grid grid-cols-2 gap-1 p-2 flex-shrink-0" style={{ height: '40%' }}>
@@ -302,7 +298,6 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
           </div>
         </div>
 
-        {/* ── Source Buses ─────────────────────────────── */}
         <div className="flex-1 overflow-y-auto p-2 space-y-3">
           {/* Program Bus */}
           <div className="space-y-1">
@@ -316,7 +311,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                   key={`pgm-${src.id}`}
                   onClick={() => setProgram(src.id)}
                   className={cn(
-                    'px-3 py-2 text-xs font-bold rounded transition-all duration-100 min-w-[80px] text-center uppercase',
+                    'px-3 py-2 text-xs font-bold rounded transition-colors duration-100 min-w-[80px] text-center uppercase',
                     switcherState?.program_source_id === src.id
                       ? 'bg-red-600 text-white ring-2 ring-red-400 shadow-lg shadow-red-600/30'
                       : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
@@ -346,7 +341,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                   key={`pvw-${src.id}`}
                   onClick={() => setPreview(src.id)}
                   className={cn(
-                    'px-3 py-2 text-xs font-bold rounded transition-all duration-100 min-w-[80px] text-center uppercase',
+                    'px-3 py-2 text-xs font-bold rounded transition-colors duration-100 min-w-[80px] text-center uppercase',
                     switcherState?.preview_source_id === src.id
                       ? 'bg-green-600 text-white ring-2 ring-green-400 shadow-lg shadow-green-600/30'
                       : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
@@ -358,7 +353,6 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
             </div>
           </div>
 
-          {/* ── Transition Controls ───────────────────── */}
           <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-start">
             {/* Transition Type */}
             <div className="space-y-2">
@@ -405,7 +399,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
               {/* T-Bar */}
               <div className="relative w-8 h-32 bg-surface-800 rounded-full overflow-hidden">
                 <div
-                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-600 to-amber-400 transition-all duration-75 rounded-full"
+                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-600 to-amber-400 transition-[height] duration-75 rounded-full"
                   style={{ height: `${tBarPosition}%` }}
                 />
                 <input
@@ -488,7 +482,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
               <button
                 onClick={executeFTB}
                 className={cn(
-                  'w-full py-3 text-xs font-black uppercase rounded transition-all',
+                  'w-full py-3 text-xs font-black uppercase rounded transition-colors',
                   switcherState?.ftb_active
                     ? 'bg-red-700 text-white ring-2 ring-red-400 animate-pulse'
                     : 'bg-surface-800 text-surface-400 hover:bg-red-900 hover:text-red-300'
@@ -511,7 +505,6 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
             </div>
           </div>
 
-          {/* ── Source Tally Overview ──────────────────── */}
           {sources.length > 0 && (
             <div className="space-y-1 pb-4">
               <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider px-1">Source Tally</div>
@@ -520,7 +513,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                   <div
                     key={`tally-${src.id}`}
                     className={cn(
-                      'text-center py-2 rounded text-[10px] font-bold transition-all',
+                      'text-center py-2 rounded text-[10px] font-bold transition-colors',
                       src.id === switcherState?.program_source_id
                         ? 'bg-red-600 text-white ring-1 ring-red-400'
                         : src.id === switcherState?.preview_source_id

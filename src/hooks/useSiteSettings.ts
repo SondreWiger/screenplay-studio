@@ -3,11 +3,9 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-// ============================================================
 // Client-side site settings hook
 // Reads the site_settings table (public read policy) and
 // provides reactive access to individual setting values.
-// ============================================================
 
 // Module-level cache so all components share one fetch
 let settingsCache: Record<string, string> | null = null;

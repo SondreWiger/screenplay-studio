@@ -2,9 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-// ============================================================
 // Typed events that can be broadcast across windows/tabs
-// ============================================================
 export type BroadcastEvent =
   | { type: 'navigate'; payload: { href: string; label?: string } }
   | { type: 'scene-select'; payload: { sceneId: string; sceneTitle?: string } }

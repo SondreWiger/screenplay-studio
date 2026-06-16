@@ -7,11 +7,9 @@ import { Card, Button, Input, Textarea, LoadingSpinner, toast } from '@/componen
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
-// ============================================================
 // Safety Plan
 // Risk assessment items per scene — categories, risk levels,
 // mitigation notes, responsible parties, and clearance sign-off.
-// ============================================================
 
 type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 type Category =
@@ -138,7 +136,7 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
-  // ─── Edit form ────────────────────────────────────────────────
+  // Edit form
   if (view === 'edit') return (
     <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
@@ -174,7 +172,7 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
             {(['low', 'medium', 'high', 'critical'] as RiskLevel[]).map((r) => (
               <button key={r}
                 onClick={() => setForm({ ...form, risk_level: r })}
-                className={cn('px-4 py-2 rounded-lg border font-bold text-sm capitalize transition-all',
+                className={cn('px-4 py-2 rounded-lg border font-bold text-sm capitalize transition-colors',
                   form.risk_level === r ? RISK_META[r].color : 'border-surface-700 text-surface-500 hover:border-surface-600')}>
                 {r}
               </button>
@@ -216,7 +214,7 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
     </div>
   );
 
-  // ─── List view ────────────────────────────────────────────────
+  // List view
   const RISK_ORDER: RiskLevel[] = ['critical', 'high', 'medium', 'low'];
   const counts = RISK_ORDER.reduce((acc, r) => ({ ...acc, [r]: items.filter((i) => i.risk_level === r).length }), {} as Record<RiskLevel, number>);
   const cleared = items.filter((i) => i.is_cleared).length;
@@ -236,7 +234,7 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
       {items.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-5">
           {RISK_ORDER.map((r) => (
-            <Card key={r} className={cn('p-3 text-center cursor-pointer border-2 transition-all',
+            <Card key={r} className={cn('p-3 text-center cursor-pointer border-2 transition-colors',
               filterRisk === r ? 'border-orange-500/50' : 'border-transparent hover:border-surface-600')}
               onClick={() => setFilterRisk(filterRisk === r ? 'all' : r)}>
               <p className={cn('text-xl font-black', RISK_META[r].color.split(' ')[1])}>{counts[r]}</p>
@@ -267,7 +265,7 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   <button onClick={() => canEdit && toggleCleared(item)}
-                    className={cn('w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all',
+                    className={cn('w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors',
                       item.is_cleared ? 'border-green-500 bg-green-500/20' : 'border-surface-600 hover:border-green-500/50')}>
                     {item.is_cleared && <svg className="w-2.5 h-2.5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
                   </button>

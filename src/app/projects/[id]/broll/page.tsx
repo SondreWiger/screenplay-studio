@@ -151,7 +151,7 @@ export default function BRollPage() {
             key={status}
             onClick={() => setFilter(filter === status ? 'all' : status)}
             className={cn(
-              'bg-surface-900 border rounded-xl p-4 text-center transition-all',
+              'bg-surface-900 border rounded-xl p-4 text-center transition-colors',
               filter === status ? 'border-[#FF5F1F]' : 'border-surface-800 hover:border-surface-700'
             )}
           >
@@ -322,8 +322,8 @@ export default function BRollPage() {
       )}
 
       {/* Tips */}
-      <div className="bg-gradient-to-r from-purple-500/10 to-brand-500/10 border border-purple-500/20 rounded-xl p-4">
-        <h3 className="font-semibold text-white text-sm mb-2">📽️ B-Roll Best Practices</h3>
+      <div className="bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+        <h3 className="font-semibold text-white text-sm mb-2">B-Roll Best Practices</h3>
         <ul className="text-xs text-surface-400 space-y-1">
           <li>• Shoot more than you think you&apos;ll need — variety is key</li>
           <li>• Get multiple angles of the same subject when recording</li>

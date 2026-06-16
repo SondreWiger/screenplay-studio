@@ -178,7 +178,7 @@ export default function ProductionTeamPage() {
                     </div>
                     <button
                       onClick={e => { e.stopPropagation(); handleDelete(m.id); }}
-                      className="opacity-0 group-hover/card:opacity-100 text-surface-600 hover:text-red-400 transition-all p-0.5 flex-shrink-0"
+                      className="opacity-0 group-hover/card:opacity-100 text-surface-600 hover:text-red-400 transition-opacity p-0.5 flex-shrink-0"
                       title="Remove"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

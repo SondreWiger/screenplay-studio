@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { verifyWebhookSignature } from '@/lib/paypal';
 
-// ============================================================
 // POST /api/paypal/webhook
 // Handles PayPal webhook events (payment disputes, refunds, etc.)
-// ============================================================
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,7 +37,7 @@ export async function POST(req: NextRequest) {
     const admin = createAdminSupabaseClient();
 
     switch (eventType) {
-      // ── Payment captured (redundant with capture-order, but good for reliability)
+      // Payment captured
       case 'PAYMENT.CAPTURE.COMPLETED': {
         const orderId = resource?.supplementary_data?.related_ids?.order_id;
         if (orderId) {
@@ -51,7 +49,7 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // ── Payment refunded
+      // Payment refunded
       case 'PAYMENT.CAPTURE.REFUNDED':
       case 'PAYMENT.CAPTURE.REVERSED': {
         const orderId = resource?.supplementary_data?.related_ids?.order_id;
@@ -78,7 +76,7 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // ── Dispute opened
+      // Dispute opened
       case 'CUSTOMER.DISPUTE.CREATED': {
         console.warn('PayPal dispute created:', resource?.dispute_id);
         // Log for manual review

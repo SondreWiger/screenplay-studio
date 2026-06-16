@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Badge, Input, Textarea, LoadingSpinner, Select, toast } from '@/components/ui';
-import { cn, timeAgo, formatDate } from '@/lib/utils';
+import { Button, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
+import { cn, timeAgo } from '@/lib/utils';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 type FType   = 'bug_report' | 'feature_request' | 'testimonial' | 'other';
 type FStatus = 'open' | 'in_progress' | 'planned' | 'resolved' | 'wont_fix' | 'intended' | 'duplicate' | 'pending_review';
@@ -66,7 +66,7 @@ interface SimilarLink {
   similar?: { id: string; title: string; type: FType; status: FStatus } | null;
 }
 
-// ─── Metadata helpers ─────────────────────────────────────────────────────────
+// Metadata helpers
 
 const STATUS_META: Record<FStatus, { label: string; color: string }> = {
   open:           { label: 'Open',           color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
@@ -102,7 +102,7 @@ const COMMENT_TYPE_META: Record<CommentType, { label: string; color: string; ico
   duplicate_link: { label: 'Duplicate Link', color: 'text-yellow-400',   icon: '🔗' },
 };
 
-// ─── Panel component (right drawer) ───────────────────────────────────────────
+// Panel component (right drawer)
 
 function AdminNoteEditor({ item, onSaved }: { item: FeedbackItem; onSaved: (note: string) => void }) {
   const [note, setNote] = useState(item.admin_note ?? '');
@@ -237,7 +237,7 @@ function SimilarSearch({
   );
 }
 
-// ─── Detail drawer ─────────────────────────────────────────────────────────────
+// Detail drawer
 
 function DetailDrawer({
   item: initialItem,
@@ -605,7 +605,6 @@ function DetailDrawer({
   );
 }
 
-// ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AdminFeedbackPage() {
   const { user, loading: authLoading } = useAuth();
@@ -701,35 +700,35 @@ export default function AdminFeedbackPage() {
             { href: '/admin?tab=community', label: 'Community', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
           ] as { href: string; label: string; icon: React.ReactNode }[]).map(item => (
             <Link key={item.href} href={item.href}
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
+              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
               {item.icon}{item.label}
             </Link>
           ))}
 
           <div className="mt-4 pt-4 border-t border-surface-800">
             <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider font-medium">Tools</p>
-            <Link href="/admin/legal" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
+            <Link href="/admin/legal" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
               Legal Blog
             </Link>
-            <Link href="/admin/security" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
+            <Link href="/admin/security" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               Security
             </Link>
-            <Link href="/admin/reports" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
+            <Link href="/admin/reports" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>
               Reports
             </Link>
-            <Link href="/admin/features" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
+            <Link href="/admin/features" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
               Feature Flags
             </Link>
-            <Link href="/admin/changelog" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-all duration-200">
+            <Link href="/admin/changelog" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
               Changelog
             </Link>
             <Link href="/admin/feedback"
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-[#E54E15]/10 text-[#FF5F1F] transition-all duration-200">
+              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-[#E54E15]/10 text-[#FF5F1F] transition-colors duration-200">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 4v-4z" /></svg>
               Feedback
             </Link>

@@ -3,7 +3,7 @@
 // NRCS · Rundowns · Wire · Sources · Graphics · As-Run
 // ════════════════════════════════════════════════════════════
 
-// ─── Story ─────────────────────────────────────────────────
+// Story
 
 export type BroadcastStoryStatus =
   | 'draft' | 'working' | 'ready' | 'approved'
@@ -75,7 +75,7 @@ export const BROADCAST_STORY_TYPES: { value: BroadcastStoryType; label: string; 
   { value: 'other',     label: 'Other',          abbr: 'OTH' },
 ];
 
-// ─── Rundown ───────────────────────────────────────────────
+// Rundown
 
 export type BroadcastRundownStatus =
   | 'planning' | 'rehearsal' | 'pre_show' | 'live' | 'completed' | 'archived';
@@ -109,7 +109,7 @@ export const BROADCAST_RUNDOWN_STATUS_OPTIONS: { value: BroadcastRundownStatus; 
   { value: 'archived',  label: 'Archived',  color: 'bg-surface-700' },
 ];
 
-// ─── Rundown Item ──────────────────────────────────────────
+// Rundown Item
 
 export type BroadcastRundownItemType =
   | 'anchor_read' | 'vo' | 'sot' | 'vosot' | 'pkg' | 'live_shot'
@@ -207,7 +207,7 @@ export const BROADCAST_ITEM_STATUS_OPTIONS: { value: BroadcastRundownItemStatus;
   { value: 'skipped',  label: 'Skipped' },
 ];
 
-// ─── Wire Feeds ────────────────────────────────────────────
+// Wire Feeds
 
 export type BroadcastWireFeedType = 'rss' | 'atom' | 'json_api';
 
@@ -254,7 +254,7 @@ export const BROADCAST_WIRE_PRIORITY_OPTIONS: { value: BroadcastWirePriority; la
   { value: 'deferred', label: 'Deferred', color: 'bg-surface-700' },
 ];
 
-// ─── Sources ───────────────────────────────────────────────
+// Sources
 
 export type BroadcastSourceType =
   | 'camera' | 'robocam' | 'jib' | 'crane'
@@ -291,7 +291,7 @@ export interface BroadcastSource {
   updated_at: string;
 }
 
-// ─── MOS Devices ───────────────────────────────────────────
+// MOS Devices
 
 export type BroadcastMosDeviceType =
   | 'graphics' | 'video_server' | 'prompter' | 'audio' | 'playout' | 'router' | 'other';
@@ -317,7 +317,7 @@ export interface BroadcastMosDevice {
   updated_at: string;
 }
 
-// ─── Graphics / CG ────────────────────────────────────────
+// Graphics / CG
 
 export type BroadcastGraphicsTemplateType =
   | 'lower_third' | 'full_screen' | 'ots' | 'locator' | 'ticker'
@@ -366,7 +366,7 @@ export interface BroadcastGraphicsCue {
   updated_at: string;
 }
 
-// ─── As-Run Log ────────────────────────────────────────────
+// As-Run Log
 
 export type BroadcastAsRunEventType =
   | 'segment_start' | 'segment_end'
@@ -395,7 +395,7 @@ export interface BroadcastAsRunLogEntry {
   created_at: string;
 }
 
-// ─── Timing Marks ──────────────────────────────────────────
+// Timing Marks
 
 export type BroadcastTimingMarkType =
   | 'item_start' | 'item_end' | 'show_start' | 'show_end' | 'marker';
@@ -413,7 +413,7 @@ export interface BroadcastTimingMark {
   created_at: string;
 }
 
-// ─── Timing Engine Helpers (client-side) ───────────────────
+// Timing Engine Helpers (client-side)
 
 /** Format seconds → "MM:SS" or "H:MM:SS" */
 export function formatBroadcastDuration(seconds: number): string {
@@ -459,7 +459,7 @@ export function calculateBackTimes(
   return result;
 }
 
-// ─── Stream Ingest ─────────────────────────────────────────
+// Stream Ingest
 
 export type BroadcastIngestProtocol = 'rtmp' | 'srt' | 'whip' | 'rtsp' | 'ndi' | 'hls_pull';
 export type BroadcastIngestStatus = 'idle' | 'connecting' | 'live' | 'error' | 'stopped';
@@ -499,7 +499,7 @@ export const BROADCAST_INGEST_PROTOCOL_OPTIONS: { value: BroadcastIngestProtocol
   { value: 'hls_pull', label: 'HLS Pull',  description: 'Pull an HLS stream from a remote URL' },
 ];
 
-// ─── Stream Output ─────────────────────────────────────────
+// Stream Output
 
 export type BroadcastOutputPlatform =
   | 'youtube' | 'twitch' | 'facebook' | 'tiktok' | 'instagram'
@@ -543,7 +543,7 @@ export const BROADCAST_OUTPUT_PLATFORMS: { value: BroadcastOutputPlatform; label
   { value: 'ndi_out',    label: 'NDI Output',     icon: '📡', color: '#22c55e' },
 ];
 
-// ─── Switcher State ────────────────────────────────────────
+// Switcher State
 
 export type BroadcastTransitionType =
   | 'cut' | 'mix' | 'dip' | 'wipe_h' | 'wipe_v' | 'wipe_circle' | 'stinger' | 'fade';
@@ -590,7 +590,7 @@ export const BROADCAST_TRANSITION_TYPES: { value: BroadcastTransitionType; label
   { value: 'fade',         label: 'Fade',          icon: '🌑' },
 ];
 
-// ─── Comms / Intercom ──────────────────────────────────────
+// Comms / Intercom
 
 export type BroadcastCommsChannelType =
   | 'party_line' | 'ifb' | 'program_audio' | 'iso' | 'playout' | 'stage_manager';
@@ -625,7 +625,7 @@ export const BROADCAST_COMMS_CHANNEL_TYPES: { value: BroadcastCommsChannelType; 
   { value: 'stage_manager', label: 'Stage Manager',  description: 'Floor/stage management channel' },
 ];
 
-// ─── Playout / Master Control ──────────────────────────────
+// Playout / Master Control
 
 export type BroadcastPlayoutItemType =
   | 'clip' | 'live' | 'graphics' | 'break' | 'bug'

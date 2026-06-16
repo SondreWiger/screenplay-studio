@@ -8,9 +8,7 @@
 
 import type { ScriptElement } from './types';
 
-// ---------------------------------------------------------------------------
 // Page size definitions
-// ---------------------------------------------------------------------------
 
 export type PageSizeName = 'letter' | 'a4';
 
@@ -84,9 +82,7 @@ export const PAGE_CONFIGS: Record<PageSizeName, PageConfig> = {
   },
 };
 
-// ---------------------------------------------------------------------------
 // Element type rules
-// ---------------------------------------------------------------------------
 
 /**
  * Element types that must never be the last element on a page.
@@ -99,9 +95,7 @@ export const ORPHAN_TYPES = new Set<string>([
   'parenthetical',
 ]);
 
-// ---------------------------------------------------------------------------
 // Line estimation
-// ---------------------------------------------------------------------------
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '');
@@ -137,9 +131,7 @@ export function estimateLines(el: ScriptElement, cfg: PageConfig): number {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Result types
-// ---------------------------------------------------------------------------
 
 /** A single hard page as emitted by the paginator */
 export interface PaginatedPage {
@@ -166,9 +158,7 @@ export interface PaginatorOptions {
   contd?: boolean;
 }
 
-// ---------------------------------------------------------------------------
 // Core paginator
-// ---------------------------------------------------------------------------
 
 /**
  * Paginate a flat list of ScriptElements into hard pages.

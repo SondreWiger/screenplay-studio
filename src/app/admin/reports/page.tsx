@@ -5,12 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Badge, Modal, Input, Textarea, Select, Avatar } from '@/components/ui';
+import { Button, Card, Badge, Modal, Textarea, Select, Avatar } from '@/components/ui';
 import { cn, formatDate, timeAgo } from '@/lib/utils';
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// Constants
 
-const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 const isStaff = (role?: string) => role === 'moderator' || role === 'admin';
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
@@ -71,7 +70,7 @@ const MOD_ACTION_OPTIONS: { value: string; label: string }[] = [
   { value: 'ban_user', label: 'Ban User (Permanent)' },
 ];
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// Types
 
 interface ContentReport {
   id: string;
@@ -109,7 +108,6 @@ interface QuickStats {
 
 type ActiveTab = 'queue' | 'history';
 
-// ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function ReportsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -136,7 +134,7 @@ export default function ReportsPage() {
   // Mod history
   const [modActions, setModActions] = useState<ModAction[]>([]);
 
-  // ── Auth Guard ─────────────────────────────────────────────
+  // Auth Guard
 
   useEffect(() => {
     if (authLoading) return;
@@ -147,7 +145,7 @@ export default function ReportsPage() {
     loadAll();
   }, [user, authLoading]);
 
-  // ── Data Loading ───────────────────────────────────────────
+  // Data Loading
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -216,7 +214,7 @@ export default function ReportsPage() {
     loadReports();
   }, [statusFilter, reasonFilter, typeFilter]);
 
-  // ── Review Modal ───────────────────────────────────────────
+  // Review Modal
 
   const openReview = async (report: ContentReport) => {
     setReviewReport(report);
@@ -403,14 +401,14 @@ export default function ReportsPage() {
     loadStats();
   };
 
-  // ── Helpers ────────────────────────────────────────────────
+  // Helpers
 
   const userName = (p?: { display_name: string | null; full_name: string | null; email: string } | null) => {
     if (!p) return 'Unknown';
     return p.display_name || p.full_name || p.email;
   };
 
-  // ── Render ─────────────────────────────────────────────────
+  // Render
 
   if (authLoading || loading) {
     return (

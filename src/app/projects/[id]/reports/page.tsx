@@ -625,7 +625,7 @@ export default function ReportsPage() {
     };
   }, [scenes, shots, budgetItems, locations, characters, members, scheduleEvents, currentProject]);
 
-  // ── Master generate dispatcher ─────────────────────────────
+  // Master generate dispatcher
 
   const generateReport = useCallback(async (type: ReportType) => {
     setGenerating(true);
@@ -716,7 +716,7 @@ export default function ReportsPage() {
           <button
             key={rt.type}
             onClick={() => { setSelectedType(rt.type); setViewingReport(null); }}
-            className={`p-5 rounded-xl border text-left transition-all hover:shadow-lg ${
+            className={`p-5 rounded-xl border text-left transition-colors hover:shadow-lg ${
               selectedType === rt.type
                 ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 shadow-brand-500/10'
                 : 'border-surface-800 bg-surface-900 hover:border-surface-700'
@@ -772,7 +772,7 @@ export default function ReportsPage() {
                       <button
                         key={ev.id}
                         onClick={() => setSelectedEventId(ev.id)}
-                        className={`p-3 rounded-lg border text-left text-xs transition-all ${
+                        className={`p-3 rounded-lg border text-left text-xs transition-colors ${
                           selectedEventId === ev.id
                             ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                             : 'border-surface-800 bg-surface-950 hover:border-surface-700'

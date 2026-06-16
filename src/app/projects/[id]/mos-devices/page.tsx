@@ -7,10 +7,8 @@ import { Button, Badge, Input, Modal, LoadingSpinner, toast } from '@/components
 import { cn } from '@/lib/utils';
 import type { BroadcastMosDevice, BroadcastMosDeviceType, BroadcastMosConnectionStatus } from '@/lib/types';
 
-// ────────────────────────────────────────────────────────────
 // MOS Devices — MOS protocol device registry and monitoring
 // Graphics servers, video servers, prompters, routers, etc.
-// ────────────────────────────────────────────────────────────
 
 const DEVICE_TYPES: { value: BroadcastMosDeviceType; label: string; icon: string }[] = [
   { value: 'graphics', label: 'Graphics / CG', icon: '🎨' },
@@ -47,7 +45,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
   const [newUpperPort, setNewUpperPort] = useState('10540');
   const [newLowerPort, setNewLowerPort] = useState('10541');
 
-  // ─── Data Fetching ───────────────────────────────
+  // Data Fetching
   const fetchDevices = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
@@ -73,7 +71,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
     return () => { supabase.removeChannel(ch); };
   }, [projectId, fetchDevices]);
 
-  // ─── Actions ─────────────────────────────────────
+  // Actions
 
   const handleCreate = async () => {
     if (!newName.trim() || !newMosId.trim() || !newHost.trim() || !user) return;
@@ -139,7 +137,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
     fetchDevices();
   };
 
-  // ─── Render ──────────────────────────────────────
+  // Render
 
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 

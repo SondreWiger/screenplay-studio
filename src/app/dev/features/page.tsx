@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 const MotionDiv = dynamic(() => import('framer-motion').then(m => m.motion.div), { ssr: false });
 const LayoutGroup = dynamic(() => import('framer-motion').then(m => m.LayoutGroup), { ssr: false });
 
-// ── Complete feature catalogue ─────────────────────────────────────────────
+// Complete feature catalogue
 
 type Category =
   | 'Writing'
@@ -34,7 +34,7 @@ interface Feature {
 
 
 const FEATURES: Feature[] = [
-  // ── Writing ──────────────────────────────────────────────────
+  // Writing
   {
     id: 'script-editor',
     icon: '✍️',
@@ -107,7 +107,7 @@ const FEATURES: Feature[] = [
     description: 'Lock individual scenes to prevent accidental edits during production. Locked scenes display a clear visual indicator.',
     bullets: ['Per-scene locking', 'Admin-only unlock', 'Visual indicators', 'Audit trail'],
   },
-  // ── Story ──────────────────────────────────────────────────
+  // Story
   {
     id: 'beat-sheet',
     icon: '🥁',
@@ -181,7 +181,7 @@ const FEATURES: Feature[] = [
     description: 'Generate a one-liner breakdown from your script automatically — lists every scene with location, day/night, and cast.',
     bullets: ['Auto-generated', 'PDF export', 'Filterable', 'Scene notes'],
   },
-  // ── Characters ──────────────────────────────────────────────
+  // Characters
   {
     id: 'character-profiles',
     icon: '🧑‍🎨',
@@ -228,7 +228,7 @@ const FEATURES: Feature[] = [
     bullets: ['Look-book builder', 'Costume refs', 'Shareable', 'Notes per image'],
     new: true,
   },
-  // ── Production ──────────────────────────────────────────────
+  // Production
   {
     id: 'breakdown',
     icon: '📑',
@@ -347,7 +347,7 @@ const FEATURES: Feature[] = [
     description: 'Auto-generate a polished press kit from your project data — synopsis, bios, photography, and technical specs.',
     bullets: ['Auto-generated', 'Photo management', 'Technical specs', 'Shareable link'],
   },
-  // ── Broadcast ──────────────────────────────────────────────
+  // Broadcast
   {
     id: 'rundown',
     icon: '📻',
@@ -425,7 +425,7 @@ const FEATURES: Feature[] = [
     bullets: ['RSS ingest', 'Auto-populate', 'Story tagging', 'Archive'],
     pro: true,
   },
-  // ── Collaboration ──────────────────────────────────────────────
+  // Collaboration
   {
     id: 'realtime-collab',
     icon: '⚡',
@@ -481,7 +481,7 @@ const FEATURES: Feature[] = [
     description: 'Leave inline comments on specific script lines or document paragraphs. Thread replies and resolve when done.',
     bullets: ['Inline anchoring', 'Threaded replies', 'Resolve flow', 'Notification on reply'],
   },
-  // ── Community ──────────────────────────────────────────────
+  // Community
   {
     id: 'community-forum',
     icon: '🌐',
@@ -536,7 +536,7 @@ const FEATURES: Feature[] = [
     description: 'Full blog platform for companies and power users. Publish articles, tutorials, and behind-the-scenes content.',
     bullets: ['Rich text editor', 'Cover images', 'SEO metadata', 'Comments'],
   },
-  // ── Analytics ──────────────────────────────────────────────
+  // Analytics
   {
     id: 'analytics',
     icon: '📈',
@@ -567,7 +567,7 @@ const FEATURES: Feature[] = [
     description: 'Structured notes rounds per draft. Record who gave notes, on which pages, and mark as addressed.',
     bullets: ['Per-draft rounds', 'Page references', 'Address tracking', 'Collaborator notes'],
   },
-  // ── Platform ──────────────────────────────────────────────
+  // Platform
   {
     id: 'xp-gamification',
     icon: '🎮',
@@ -654,7 +654,7 @@ const FEATURES: Feature[] = [
 
 const ALL_CATEGORIES = ['All', ...Array.from(new Set(FEATURES.map(f => f.category)))] as (Category | 'All')[];
 
-// ── Feature card ───────────────────────────────────────────────────────────
+// Feature card
 function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expanded: boolean; onExpand: (id: string | null) => void }) {
   return (
     <MotionDiv
@@ -673,7 +673,7 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
     >
       {/* Orange left accent bar */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-0.5 origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-200 z-10"
+        className="absolute left-0 top-0 bottom-0 w-0.5 origin-top scale-y-0 transition-transform duration-200 z-10"
         style={{ background: '#FF5F1F' }}
       />
 
@@ -725,7 +725,6 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
   );
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
 export default function DevFeaturesPage() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All');
@@ -751,7 +750,7 @@ export default function DevFeaturesPage() {
             key={cat}
             onClick={() => setActiveCategory(cat)}
             className={cn(
-              'px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] transition-all border',
+              'px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] transition-colors border',
               activeCategory === cat
                 ? 'border-white/20 text-white bg-white/[0.06]'
                 : 'border-white/[0.07] text-white/30 hover:text-white/60 hover:border-white/15'

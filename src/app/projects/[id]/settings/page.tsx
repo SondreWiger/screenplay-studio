@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/lib/types';
@@ -122,12 +122,23 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const handleSave = async () => {
     setSaving(true);
     const supabase = createClient();
-    await supabase.from('projects').update({
+    const { error } = await supabase.from('projects').update({
       title: form.title, logline: form.logline, synopsis: form.synopsis,
       genre: form.genre, format: form.format, status: form.status,
       language: language || null,
     }).eq('id', params.id);
     setSaving(false);
+    if (error) {
+      toast.error('Failed to save settings');
+      return;
+    }
+    // Sync Zustand store so sidebar/dashboard update immediately
+    const updatedProject = { ...project, ...form, language: language || null } as Project;
+    useProjectStore.getState().setCurrentProject(updatedProject);
+    useProjectStore.setState((state) => ({
+      projects: state.projects.map((p) => p.id === params.id ? { ...p, ...form, language: language || null } : p),
+    }));
+    setProject(updatedProject);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -294,7 +305,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               <button
                 key={opt.value}
                 onClick={() => setPageSize(opt.value)}
-                className={`flex-1 p-3 rounded-lg border-2 text-left transition-all ${
+                className={`flex-1 p-3 rounded-lg border-2 text-left transition-colors ${
                   pageSize === opt.value
                     ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
                     : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
@@ -317,7 +328,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
           <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
             <button
               onClick={() => setProjectAccentColor(null)}
-              className={`h-10 rounded-lg border-2 transition-all text-xs font-medium ${
+              className={`h-10 rounded-lg border-2 transition-colors text-xs font-medium ${
                 !projectAccentColor
                   ? 'border-white bg-surface-800 text-white'
                   : 'border-surface-700 bg-surface-900 text-surface-400 hover:border-surface-600'
@@ -343,10 +354,10 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                 key={c.key}
                 onClick={() => setProjectAccentColor(c.key)}
                 title={c.label}
-                className={`relative h-10 rounded-lg border-2 transition-all ${
+                className={`relative h-10 rounded-lg border-2 transition-colors ${
                   projectAccentColor === c.key
                     ? 'border-white scale-105 ring-2 ring-white/20'
-                    : 'border-transparent hover:scale-105'
+                    : 'border-transparent'
                 }`}
                 style={{ backgroundColor: c.color }}
               >
@@ -411,7 +422,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                     const prev = projectSidebarTabs || {};
                     setProjectSidebarTabs({ ...prev, [tab.key]: !isOn });
                   }}
-                  className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 ${
+                  className={`p-2 rounded-lg border text-left transition-colors flex items-center justify-between gap-2 ${
                     isOn
                       ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
                       : 'border-surface-700 bg-surface-900/50'

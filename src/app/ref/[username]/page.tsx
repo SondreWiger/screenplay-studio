@@ -177,7 +177,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
                   borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.07)' : 'none',
                 }}
               >
-                <div className="absolute left-0 top-0 bottom-0 w-0.5 origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-200" style={{ background: ORANGE }} />
+                <div className="absolute left-0 top-0 bottom-0 w-0.5 origin-top scale-y-0 transition-transform duration-200" style={{ background: ORANGE }} />
                 <div className="flex items-start gap-4">
                   <span className="text-[10px] font-black font-mono shrink-0 pt-0.5 opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: ORANGE }}>{f.n}</span>
                   <div>

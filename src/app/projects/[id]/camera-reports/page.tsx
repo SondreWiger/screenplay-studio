@@ -7,10 +7,8 @@ import { Card, Button, Input, Textarea, LoadingSpinner, toast } from '@/componen
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
-// ============================================================
 // Camera & Sound Reports
 // Daily roll-based reports for camera and sound departments.
-// ============================================================
 
 type ReportType = 'camera' | 'sound';
 
@@ -152,7 +150,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
 
   if (loading) return <LoadingSpinner className="py-32" />;
 
-  // ─── Edit form ───────────────────────────────────────────────
+  // Edit form
   if (view === 'edit') return (
     <div className="p-4 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -233,7 +231,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
                   <td className="px-2 py-2 text-center">
                     <button
                       onClick={() => updateCamTake(i, 'circle', !t.circle)}
-                      className={cn('w-7 h-7 rounded-full border-2 flex items-center justify-center mx-auto transition-all',
+                      className={cn('w-7 h-7 rounded-full border-2 flex items-center justify-center mx-auto transition-colors',
                         t.circle ? 'border-orange-500 bg-orange-500/20 text-orange-400' : 'border-surface-600 hover:border-orange-500/50 text-transparent')}>
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
                     </button>
@@ -284,7 +282,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
                   <td className="px-3 py-2 text-center">
                     <button
                       onClick={() => updateSndTake(i, 'wild_track', !t.wild_track)}
-                      className={cn('w-7 h-7 rounded-full border-2 flex items-center justify-center mx-auto transition-all',
+                      className={cn('w-7 h-7 rounded-full border-2 flex items-center justify-center mx-auto transition-colors',
                         t.wild_track ? 'border-purple-500 bg-purple-500/20 text-purple-400' : 'border-surface-600 hover:border-purple-500/50 text-transparent')}>
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
                     </button>
@@ -314,7 +312,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
     </div>
   );
 
-  // ─── List view ───────────────────────────────────────────────
+  // List view
   const cameraReports = reports.filter((r) => r.report_type === 'camera');
   const soundReports = reports.filter((r) => r.report_type === 'sound');
 
@@ -337,7 +335,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
       <div className="flex gap-1 p-1 bg-surface-800/60 rounded-xl mb-5 w-fit">
         {(['camera', 'sound'] as ReportType[]).map((t) => (
           <button key={t} onClick={() => setActiveTab(t)}
-            className={cn('px-4 py-1.5 rounded-lg text-sm font-medium transition-all',
+            className={cn('px-4 py-1.5 rounded-lg text-sm font-medium transition-colors',
               activeTab === t ? 'bg-surface-700 text-white' : 'text-surface-500 hover:text-surface-300')}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
             <span className={cn('ml-1.5 text-[11px]', activeTab === t ? 'text-orange-400' : 'text-surface-600')}>

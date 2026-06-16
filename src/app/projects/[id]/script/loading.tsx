@@ -40,7 +40,7 @@ export default function ScriptEditorLoading() {
         <div className="flex-1 overflow-hidden p-8 md:p-16">
           <div className="max-w-[8.5in] mx-auto space-y-6">
             {/* Page skeleton */}
-            <div className="bg-white rounded-sm shadow-lg p-[1in] min-h-[11in]">
+            <div className="bg-white rounded-md shadow-lg p-[1in] min-h-[11in]">
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="mb-4" style={{ paddingLeft: i % 3 === 0 ? '0' : i % 3 === 1 ? '35%' : '15%', width: i % 3 === 2 ? '50%' : '100%' }}>
                   <div className="h-4 rounded bg-gray-200" style={{ width: `${50 + Math.random() * 40}%` }} />

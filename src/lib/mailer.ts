@@ -45,6 +45,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<EmailResult>
       subject: options.subject,
       text: options.text,
       html: options.html,
+      // @ts-expect-error — Resend SDK uses snake_case for this field
       reply_to: options.replyTo?.email,
       tags: options.tags?.map((t) => ({ name: t, value: t })),
     });
@@ -156,7 +157,7 @@ export async function sendProjectInviteEmail(
   });
 }
 
-// ── Template functions ───────────────────────────────────────
+// Template functions
 
 export async function sendBlogPostEmail(
   to: EmailRecipient,

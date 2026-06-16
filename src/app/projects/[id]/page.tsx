@@ -19,7 +19,7 @@ interface ActivityItem {
   color: string;
 }
 
-// ── Inline sparkline (no deps) ───────────────────────────────
+// Inline sparkline (no deps)
 function MiniSparkline({ values, color = '#6366f1' }: { values: number[]; color?: string }) {
   if (values.length < 2) return null;
   const max = Math.max(...values, 1);
@@ -48,7 +48,7 @@ function MiniSparkline({ values, color = '#6366f1' }: { values: number[]; color?
   );
 }
 
-// ── WorkTimeCard ─────────────────────────────────────────────
+// WorkTimeCard
 interface WorkTimeData {
   my_total_seconds: number;
   team_total_seconds: number;
@@ -277,7 +277,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         activityItems.push({ id: 'idea-' + i.id, type: 'idea', label: i.title, detail: 'Idea updated', timestamp: i.updated_at, icon: 'idea', color: '#a855f7' });
       });
 
-      // ── Second batch: docs with editor, comments, stage data ───────────
+      // Second batch: docs with editor, comments, stage data
       const [docsData, commentsData, ensembleData, cuesData] = await Promise.all([
         supabase
           .from('project_documents')
@@ -435,7 +435,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
       {/* ── Welcome Card ──────────────────────────────── */}
       {showWelcomeCard && (
-        <div className="relative mb-8 p-6 rounded-2xl border border-[#FF5F1F]/20 bg-gradient-to-br from-[#FF5F1F]/5 to-surface-900/50">
+        <div className="relative mb-8 p-6 rounded-xl border border-[#FF5F1F]/20 bg-gradient-to-br from-[#FF5F1F]/5 to-surface-900/50">
           <button
             onClick={() => {
               setIsWelcomeDismissed(true);
@@ -460,8 +460,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Link href={`/projects/${params.id}/script`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
@@ -470,8 +470,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               </div>
             </Link>
             <Link href={`/projects/${params.id}/characters`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -480,8 +480,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               </div>
             </Link>
             <Link href={`/projects/${params.id}/locations`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -491,8 +491,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               </div>
             </Link>
             <Link href={`/projects/${params.id}/moodboard`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-all duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform group-hover:scale-110">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -545,7 +545,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
             <div className="card-row group hover:cursor-pointer">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-black transition-transform group-hover:scale-110"
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-black transition-transform"
                 style={{ background: stat.color + '18', color: stat.color }}
               >
                 {typeof stat.value === 'number' ? stat.value : <span className="text-xs">{stat.value}</span>}
@@ -619,10 +619,10 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
                   const routeMap = { Script: 'script', Character: 'characters', Scene: 'scenes', Shot: 'shots', Location: 'locations', Idea: 'ideas', Document: 'documents', Comment: 'comments', Ensemble: 'ensemble' } as Record<string, string>;
                   return (
                     <Link key={item.id} href={`/projects/${params.id}/${routeMap[item.type] || ''}`}
-                      className="flex items-start gap-3 group rounded-lg transition-all duration-150 hover:bg-white/[0.03] -mx-2 px-2 py-1.5"
+                      className="flex items-start gap-3 group rounded-lg transition-colors duration-150 hover:bg-white/[0.03] -mx-2 px-2 py-1.5"
                     >
                       <div
-                        className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center z-10 ring-2 ring-surface-950 transition-all duration-150 group-hover:scale-110 group-hover:ring-[#FF5F1F]/30"
+                        className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center z-10 ring-2 ring-surface-950 transition-colors duration-150 group-hover:ring-[#FF5F1F]/30"
                         style={{ backgroundColor: item.color + '20' }}
                       >
                         {typeIcon ? (
@@ -710,18 +710,18 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
             <p className="section-title">Audio Drama Tools</p>
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { href: 'sound-design', label: 'Sound Design', sub: 'SFX · Music · Ambience', color: '#7c3aed', from: 'from-violet-500/10', to: 'to-purple-500/10', border: 'border-violet-500/20',
+                { href: 'sound-design', label: 'Sound Design', sub: 'SFX · Music · Ambience', color: '#7c3aed', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
                   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg> },
-                { href: 'voice-cast',   label: 'Voice Cast',   sub: `${stats.characters} characters`, color: '#ec4899', from: 'from-pink-500/10', to: 'to-rose-500/10', border: 'border-pink-500/20',
+                { href: 'voice-cast',   label: 'Voice Cast',   sub: `${stats.characters} characters`, color: '#ec4899', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
                   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg> },
-                { href: 'arc-planner', label: 'Arc Planner',   sub: 'Story structure',      color: '#60a5fa', from: 'from-blue-500/10', to: 'to-indigo-500/10', border: 'border-blue-500/20',
+                { href: 'arc-planner', label: 'Arc Planner',   sub: 'Story structure',      color: '#60a5fa', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
                   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
-                { href: 'mindmap',     label: 'Mind Map',      sub: 'Character web',        color: '#f97316', from: 'from-orange-500/10', to: 'to-red-500/10', border: 'border-orange-500/20',
+                { href: 'mindmap',     label: 'Mind Map',      sub: 'Character web',        color: '#f97316', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
                   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
               ].map((tool) => (
                 <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
                   <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border)}>
-                    <div className="mb-2.5 transition-transform group-hover:scale-110" style={{ color: tool.color }}>{tool.icon}</div>
+                    <div className="mb-2.5 transition-transform" style={{ color: tool.color }}>{tool.icon}</div>
                     <p className="text-sm font-bold text-white">{tool.label}</p>
                     <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
                   </div>
@@ -734,14 +734,14 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
             <p className="section-title">Creative Tools</p>
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { href: 'mindmap',   label: 'Mind Map',    sub: 'Character web',       color: '#f97316', from: 'from-orange-500/10', to: 'to-red-500/10',    border: 'border-orange-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
-                { href: 'moodboard', label: 'Mood Board',  sub: 'Visual references',   color: '#a855f7', from: 'from-purple-500/10', to: 'to-pink-500/10',   border: 'border-purple-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg> },
-                { href: 'corkboard', label: 'Corkboard',   sub: `${stats.scenes} scenes`,  color: '#fbbf24', from: 'from-yellow-500/10', to: 'to-amber-500/10',  border: 'border-yellow-500/20', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
-                { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure',    color: '#60a5fa', from: 'from-blue-500/10',   to: 'to-indigo-500/10', border: 'border-blue-500/20',   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
+                { href: 'mindmap',   label: 'Mind Map',    sub: 'Character web',       color: '#f97316', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
+                { href: 'moodboard', label: 'Mood Board',  sub: 'Visual references',   color: '#a855f7', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg> },
+                { href: 'corkboard', label: 'Corkboard',   sub: `${stats.scenes} scenes`,  color: '#fbbf24', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
+                { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure',    color: '#60a5fa', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
               ].map((tool) => (
                 <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
                   <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border, `hover:${tool.border.replace('20', '40')}`)}>
-                    <div className="mb-2.5 transition-transform group-hover:scale-110" style={{ color: tool.color }}>{tool.icon}</div>
+                    <div className="mb-2.5 transition-transform" style={{ color: tool.color }}>{tool.icon}</div>
                     <p className="text-sm font-bold text-white">{tool.label}</p>
                     <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
                   </div>

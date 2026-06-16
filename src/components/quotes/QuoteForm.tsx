@@ -24,7 +24,7 @@ export function QuoteForm({ initial, groups, sharedGroups, onSubmit, onCancel }:
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const effectiveGroups = [...new Set([...groups, ...(initial?.group_name && !groups.includes(initial.group_name) ? [initial.group_name] : [])])];
+  const effectiveGroups = Array.from(new Set([...groups, ...(initial?.group_name && !groups.includes(initial.group_name) ? [initial.group_name] : [])]));
 
   useEffect(() => {
     if (newGroup) {
@@ -114,7 +114,7 @@ export function QuoteForm({ initial, groups, sharedGroups, onSubmit, onCancel }:
               setGroupId(e.target.value);
               if (e.target.value) setGroupName('');
             }}
-            className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all"
+            className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors"
           >
             <option value="">No shared group</option>
             {sharedGroups.map((g) => (
@@ -141,7 +141,7 @@ export function QuoteForm({ initial, groups, sharedGroups, onSubmit, onCancel }:
               setGroupName(e.target.value);
               if (e.target.value !== '__new__') setNewGroup('');
             }}
-            className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all"
+            className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors"
           >
             <option value="">No tag</option>
             {effectiveGroups.map((g) => (

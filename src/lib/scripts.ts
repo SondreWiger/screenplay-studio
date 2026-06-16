@@ -5,9 +5,7 @@
 
 import type { ScriptElement, ScriptElementType, TitlePageData } from './types';
 
-// ============================================================
 // Types used by parsers/generators
-// ============================================================
 interface ParseResult {
   titlePage: Partial<TitlePageData>;
   elements: Partial<ScriptElement>[];
@@ -24,9 +22,7 @@ interface GenerateFountainOptions {
   elements: ScriptElement[];
 }
 
-// ============================================================
 // XML Helpers
-// ============================================================
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -68,9 +64,7 @@ function getAttr(tag: string, attr: string): string {
   return match ? match[1] : '';
 }
 
-// ============================================================
 // FDX (Final Draft) Parser
-// ============================================================
 
 const FDX_TYPE_MAP: Record<string, ScriptElementType> = {
   'Scene Heading': 'scene_heading',
@@ -135,7 +129,7 @@ export function parseFDX(xml: string): ParseResult {
 
     // Extract text content from <Text> tags
     const textParts = getAllTagContents(inner, 'Text');
-    let content = textParts.map(t => unescapeXml(t.replace(/<[^>]*>/g, ''))).join('').trim();
+    const content = textParts.map(t => unescapeXml(t.replace(/<[^>]*>/g, ''))).join('').trim();
 
     if (!content && elementType !== 'action') continue;
 
@@ -165,9 +159,7 @@ export function parseFDX(xml: string): ParseResult {
   return { titlePage, elements };
 }
 
-// ============================================================
 // FDX (Final Draft) Generator
-// ============================================================
 
 const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   scene_heading: 'Scene Heading',
@@ -270,9 +262,7 @@ export function generateFDX({ titlePage, elements, scriptTitle }: GenerateFDXOpt
   return xml;
 }
 
-// ============================================================
 // Fountain Parser
-// ============================================================
 
 export function parseFountain(text: string): ParseResult {
   const titlePage: Partial<TitlePageData> = {};
@@ -469,9 +459,7 @@ function assignTitlePageField(tp: Partial<TitlePageData>, key: string, value: st
   }
 }
 
-// ============================================================
 // Fountain Generator
-// ============================================================
 
 export function generateFountain({ titlePage, elements }: GenerateFountainOptions): string {
   let output = '';

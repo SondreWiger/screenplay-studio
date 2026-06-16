@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Button, Input } from '@/components/ui';
 
 function friendlyResetError(msg: string): string {
   const m = msg.toLowerCase();

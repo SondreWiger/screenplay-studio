@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Button, Input } from '@/components/ui';
 import { validatePassword } from '@/lib/security';
 import { sendWelcomeEmailAction } from '@/lib/email-actions';
 
@@ -48,10 +47,6 @@ function RegisterForm() {
       try { localStorage.setItem('creator_ref', ref); } catch { /* ssr */ }
     }
   }, [searchParams]);
-
-  // Derived from React state for the strength indicator only.
-  // Validation on submit uses the DOM value to handle autofill.
-  const passwordStrength = validatePassword(password);
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

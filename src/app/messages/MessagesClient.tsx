@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { Button, Card, Modal, Input, Avatar, Badge, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Modal, Input, Avatar, Badge, LoadingSpinner } from '@/components/ui';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
 import { notifyConversationMembers } from '@/lib/notifications';
 import { automodCheck } from '@/lib/automod';
@@ -51,9 +51,7 @@ export default function MessagesClient() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // ============================================================
   // FETCH CONVERSATIONS
-  // ============================================================
 
   useEffect(() => {
     if (user) fetchConversations();
@@ -150,9 +148,7 @@ export default function MessagesClient() {
     }
   };
 
-  // ============================================================
   // SELECT CONVERSATION
-  // ============================================================
 
   const selectConvo = async (conv: Conversation) => {
     setSelectedConvo(conv);
@@ -199,9 +195,7 @@ export default function MessagesClient() {
     }
   };
 
-  // ============================================================
   // REALTIME SUBSCRIPTION
-  // ============================================================
 
   useEffect(() => {
     if (!selectedConvo) return;
@@ -247,9 +241,7 @@ export default function MessagesClient() {
     return () => { supabase.removeChannel(channel); };
   }, [selectedConvo?.id]);
 
-  // ============================================================
   // SEND MESSAGE
-  // ============================================================
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConvo || sending) return;
@@ -316,9 +308,7 @@ export default function MessagesClient() {
     }
   };
 
-  // ============================================================
   // SEARCH USERS
-  // ============================================================
 
   useEffect(() => {
     if (searchUsers.length < 2) {
@@ -347,9 +337,7 @@ export default function MessagesClient() {
     return () => clearTimeout(timeout);
   }, [searchUsers]);
 
-  // ============================================================
   // CREATE CONVERSATION
-  // ============================================================
 
   const createConversation = async () => {
     if (selectedUsers.length === 0) return;
@@ -418,9 +406,7 @@ export default function MessagesClient() {
     selectConvo(enrichedConv);
   };
 
-  // ============================================================
   // ADD MEMBERS TO EXISTING CONVERSATION
-  // ============================================================
 
   // Search for add-members modal (debounced)
   useEffect(() => {
@@ -530,9 +516,7 @@ export default function MessagesClient() {
     }
   };
 
-  // ============================================================
   // HELPERS
-  // ============================================================
 
   const getConvoName = (conv: Conversation): string => {
     if (conv.name) return conv.name;
@@ -558,9 +542,7 @@ export default function MessagesClient() {
     }
   };
 
-  // ============================================================
   // RENDER
-  // ============================================================
 
   if (authLoading) return <LoadingSpinner className="py-32" />;
 
@@ -598,7 +580,7 @@ export default function MessagesClient() {
           ) : conversations.length === 0 ? (
             <div className="flex-1 flex items-center justify-center p-6 text-center">
               <div>
-                <div className="w-14 h-14 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-3">
+                <div className="w-14 h-14 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-3">
                   <svg className="w-7 h-7 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
@@ -777,7 +759,7 @@ export default function MessagesClient() {
                             </div>
                           )}
                           <div className={cn(
-                            'px-3 py-2 rounded-2xl text-sm break-words',
+                            'px-3 py-2 rounded-xl text-sm break-words',
                             isOwn
                               ? 'bg-[#FF5F1F]/20 text-white rounded-tr-md'
                               : 'bg-surface-800 text-surface-200 rounded-tl-md'

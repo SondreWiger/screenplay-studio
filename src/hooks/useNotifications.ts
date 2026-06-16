@@ -6,10 +6,8 @@ import { useNotificationStore } from '@/lib/stores';
 import { triggerSelfPush } from '@/lib/notifications';
 import type { Notification, NotificationType } from '@/lib/types';
 
-// ---------------------------------------------------------------------------
 // Notification types that get sound + tab-title treatment.
 // Upvotes and low-priority events are intentionally excluded to avoid noise.
-// ---------------------------------------------------------------------------
 const HIGH_PRIORITY_TYPES = new Set([
   'direct_message',
   'mention',
@@ -20,10 +18,8 @@ const HIGH_PRIORITY_TYPES = new Set([
   'ticket_reply',
 ] as NotificationType[]);
 
-// ---------------------------------------------------------------------------
 // Web Audio — subtle two-tone ping, no audio file required.
 // Only fires when the page is not focused.
-// ---------------------------------------------------------------------------
 function playNotificationSound() {
   if (typeof window === 'undefined') return;
   if (document.hasFocus()) return; // don't beep if user is looking at the page
@@ -57,9 +53,7 @@ function playNotificationSound() {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Tab title badge
-// ---------------------------------------------------------------------------
 const ORIGINAL_TITLE_REF = { value: '' };
 
 function setTabBadge(count: number) {
@@ -75,9 +69,7 @@ function setTabBadge(count: number) {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Browser (OS-level) notification
-// ---------------------------------------------------------------------------
 function requestBrowserPermission(): Promise<boolean> {
   if (typeof window === 'undefined' || !('Notification' in window)) return Promise.resolve(false);
   if (Notification.permission === 'granted') return Promise.resolve(true);
@@ -117,20 +109,18 @@ function showBrowserNotification(notification: Notification) {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Main hook
-// ---------------------------------------------------------------------------
 export function useNotifications(userId: string | undefined) {
   const { fetchNotifications, addNotification, unreadCount } = useNotificationStore();
   const subscribed = useRef(false);
   const permissionRequested = useRef(false);
 
-  // ── Tab title: keep in sync with unreadCount ───────────────────────────────
+  // Tab title: keep in sync with unreadCount
   useEffect(() => {
     setTabBadge(unreadCount);
   }, [unreadCount]);
 
-  // ── Restore clean title when tab gains focus ───────────────────────────────
+  // Restore clean title when tab gains focus
   useEffect(() => {
     const onFocus = () => {
       // Don't clear the badge on focus — only clear when user marks all read.
@@ -140,7 +130,7 @@ export function useNotifications(userId: string | undefined) {
     return () => window.removeEventListener('focus', onFocus);
   }, []);
 
-  // ── Permission request (once, with delay to avoid annoying on first load) ──
+  // Permission request (once, with delay to avoid annoying on first load)
   useEffect(() => {
     if (!userId || permissionRequested.current) return;
     permissionRequested.current = true;
@@ -148,7 +138,7 @@ export function useNotifications(userId: string | undefined) {
     return () => clearTimeout(timer);
   }, [userId]);
 
-  // ── Realtime subscription ──────────────────────────────────────────────────
+  // Realtime subscription
   useEffect(() => {
     if (!userId) return;
 

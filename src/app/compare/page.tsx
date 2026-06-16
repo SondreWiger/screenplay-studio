@@ -1,15 +1,19 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
+
 export const metadata: Metadata = {
   title: 'Compare — Screenplay Studio',
   description: 'How Screenplay Studio stacks up against Final Draft, WriterDuet, and Arc Studio. Free, open-source, and built for the full production lifecycle.',
   openGraph: {
+    type: 'website',
+    siteName: 'Screenplay Studio',
     title: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
     description: 'Side-by-side comparison of screenwriting software. See how the free, open-source option compares to $250 industry standards.',
     images: [
       {
-        url: '/api/og?title=Compare&subtitle=Screenplay+Studio+vs+Final+Draft,+WriterDuet+%26+Arc+Studio',
+        url: `${SITE_URL}/api/og?title=${encodeURIComponent('Compare')}&subtitle=${encodeURIComponent('Screenplay Studio vs Final Draft, WriterDuet & Arc Studio')}`,
         width: 1200,
         height: 630,
         alt: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
@@ -20,7 +24,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
     description: 'Side-by-side comparison of screenwriting software. See how the free, open-source option compares to $250 industry standards.',
-    images: ['/api/og?title=Compare&subtitle=Screenplay+Studio+vs+Final+Draft,+WriterDuet+%26+Arc+Studio'],
+    images: [`${SITE_URL}/api/og?title=${encodeURIComponent('Compare')}&subtitle=${encodeURIComponent('Screenplay Studio vs Final Draft, WriterDuet & Arc Studio')}`],
   },
 };
 

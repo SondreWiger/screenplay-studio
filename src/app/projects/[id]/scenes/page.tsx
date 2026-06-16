@@ -20,7 +20,7 @@ function parseSceneHeading(heading: string) {
   else if (h.startsWith('EXT.')) locationType = 'EXT';
   else if (h.startsWith('INT.')) locationType = 'INT';
 
-  let rest = h.replace(/^(INT\.\/EXT\.|INT\/EXT|I\/E\.|INT\.|EXT\.)\s*/i, '').trim();
+  const rest = h.replace(/^(INT\.\/EXT\.|INT\/EXT|I\/E\.|INT\.|EXT\.)\s*/i, '').trim();
   const dashParts = rest.split(/\s+-\s+/);
   locationName = dashParts[0]?.trim() || '';
   if (dashParts.length > 1) {
@@ -220,7 +220,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
                   onClick={(e) => toggleCompleted(e, scene)}
                   title={scene.is_completed ? 'Mark incomplete' : 'Mark done'}
                   className={cn(
-                    'w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 transition-all focus:outline-none',
+                    'w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 transition-colors focus:outline-none',
                     scene.is_completed ? 'bg-green-500/30 text-green-400 ring-1 ring-green-500/50' : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
                   )}
                 >
@@ -460,9 +460,7 @@ function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, cha
   );
 }
 
-// ============================================================
 // IMPORT FROM SCRIPT MODAL
-// ============================================================
 
 function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingScenes, onImported }: {
   isOpen: boolean; onClose: () => void; projectId: string; userId: string;

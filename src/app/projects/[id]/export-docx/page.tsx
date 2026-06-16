@@ -111,7 +111,7 @@ function buildDocxDocument(
   dateStr: string,
   elements: { element_type: string; content: string; scene_number?: string | null }[]
 ) {
-  const { Document, Paragraph, TextRun, AlignmentType, HeadingLevel, PageNumber, Footer, Header } = docx;
+  const { Document, Paragraph, TextRun, AlignmentType, PageNumber, Footer, Header } = docx;
 
   const titlePageChildren = [
     new Paragraph({ spacing: { before: 4000 }, children: [] }),
@@ -250,7 +250,7 @@ function buildDocxDocument(
 function ExportDocxPageInner({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const { currentProject, fetchProject } = useProjectStore();
-  const { scripts, currentScript, elements, fetchScripts, fetchElements } = useScriptStore();
+  const { currentScript, elements, fetchScripts, fetchElements } = useScriptStore();
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [author, setAuthor] = useState('');
@@ -386,7 +386,7 @@ function ExportDocxPageInner({ params }: { params: { id: string } }) {
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
                       placeholder="Your name"
-                      className="w-full bg-surface-800/80 border border-surface-700/80 rounded-lg px-3 py-2.5 text-sm text-white font-medium placeholder:text-surface-600 focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 transition-all"
+                      className="w-full bg-surface-800/80 border border-surface-700/80 rounded-lg px-3 py-2.5 text-sm text-white font-medium placeholder:text-surface-600 focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 transition-colors"
                     />
                   </div>
 

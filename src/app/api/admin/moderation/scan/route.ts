@@ -97,7 +97,7 @@ async function verifyAdmin(req: NextRequest): Promise<string | null> {
   return null;
 }
 
-// ─── POST /api/admin/moderation/scan ──────────────────────────
+// POST /api/admin/moderation/scan
 // Trigger: Admin clicks "Scan Platform" button
 // Scans all content tables for CSAM terms, flags matches,
 // and preserves evidence.
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminSupabaseClient();
   const flags: ScanResult[] = [];
 
-  // ── 1. Scan script elements ────────────────────────────────
+  // 1. Scan script elements
   const { data: elements } = await supabase
     .from('script_elements')
     .select('id, content, script_id, created_by')
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 2. Scan ideas ──────────────────────────────────────────
+  // 2. Scan ideas
   const { data: ideas } = await supabase
     .from('ideas')
     .select('id, title, description, project_id, created_by')
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 3. Scan documents ──────────────────────────────────────
+  // 3. Scan documents
   const { data: docs } = await supabase
     .from('project_documents')
     .select('id, title, content, project_id, created_by')
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 4. Scan scenes ─────────────────────────────────────────
+  // 4. Scan scenes
   const { data: scenes } = await supabase
     .from('scenes')
     .select('id, scene_heading, synopsis, project_id')
@@ -222,7 +222,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 5. Scan characters ─────────────────────────────────────
+  // 5. Scan characters
   const { data: characters } = await supabase
     .from('characters')
     .select('id, name, description, backstory, project_id')
@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 6. Scan channel messages (project chat) ────────────────
+  // 6. Scan channel messages (project chat)
   const { data: channelMsgs } = await supabase
     .from('channel_messages')
     .select('id, content, sender_id, channel_id')
@@ -284,7 +284,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 7. Scan direct messages (DMs) ──────────────────────────
+  // 7. Scan direct messages (DMs)
   const { data: dms } = await supabase
     .from('direct_messages')
     .select('id, content, sender_id, conversation_id')
@@ -308,7 +308,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Store all flags ────────────────────────────────────────
+  // Store all flags
   let newFlagsCount = 0;
   for (const flag of flags) {
     // Check if this content_id is already flagged (avoid duplicates)
@@ -400,7 +400,7 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// ─── GET /api/admin/moderation/scan ───────────────────────────
+// GET /api/admin/moderation/scan
 // Retrieve current flags and stats
 export async function GET(req: NextRequest) {
   const adminId = await verifyAdmin(req);

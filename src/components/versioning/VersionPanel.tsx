@@ -151,7 +151,7 @@ function VersionRow({
 
       {mode === 'document' && onInsertSyntax && (
         <button onClick={onInsertSyntax} title="Wrap selection with this version"
-          className="shrink-0 opacity-0 group-hover/row:opacity-100 text-surface-500 hover:text-white transition-all">
+          className="shrink-0 opacity-0 group-hover/row:opacity-100 text-surface-500 hover:text-white transition-opacity">
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
@@ -164,7 +164,7 @@ function VersionRow({
           onBlur={() => setConfirming(false)}
           title={confirming ? 'Click again to confirm' : `Delete "${displayName}"`}
           className={cn(
-            'shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-all',
+            'shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
             confirming
               ? 'opacity-100 bg-red-500/20 text-red-400 hover:bg-red-500/30'
               : 'opacity-0 group-hover/row:opacity-100 text-surface-600 hover:text-red-400',

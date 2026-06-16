@@ -101,7 +101,7 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
           const pc = PRIORITY_CONFIG[ann.priority] || PRIORITY_CONFIG.normal;
           return (
             <Card key={ann.id}
-              className={cn('p-5 transition-all', !isRead && 'ring-1 ring-[#FF5F1F]/30 bg-[#FF5F1F]/5')}
+              className={cn('p-5 transition-colors', !isRead && 'ring-1 ring-[#FF5F1F]/30 bg-[#FF5F1F]/5')}
               onClick={() => markRead(ann.id)}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">

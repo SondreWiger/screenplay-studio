@@ -1,16 +1,14 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
-// ---------------------------------------------------------------------------
 // POST /api/user/data-export
 // GDPR-compliant full data export — returns all user data as downloadable JSON.
-// ---------------------------------------------------------------------------
 
 export async function POST() {
   try {
     const supabase = createServerSupabaseClient();
 
-    // ---- Authenticate ----
+    // Authenticate
     const {
       data: { user },
       error: authErr,
@@ -22,7 +20,7 @@ export async function POST() {
 
     const uid = user.id;
 
-    // ---- Gather all user data in parallel ----
+    // Gather all user data in parallel
     const [
       profileRes,
       projectsRes,
@@ -75,7 +73,7 @@ export async function POST() {
       security_events: securityEventsRes.data || [],
     };
 
-    // ---- Record the export request ----
+    // Record the export request
     await supabase.from('data_export_requests').insert({
       user_id: uid,
       status: 'completed',
@@ -83,7 +81,7 @@ export async function POST() {
       format: 'json',
     });
 
-    // ---- Audit log entry ----
+    // Audit log entry
     await supabase.from('audit_log').insert({
       user_id: uid,
       action: 'data_export',
@@ -92,7 +90,7 @@ export async function POST() {
       metadata: { format: 'json' },
     });
 
-    // ---- Return as downloadable JSON ----
+    // Return as downloadable JSON
     const jsonString = JSON.stringify(exportData, null, 2);
 
     return new NextResponse(jsonString, {
