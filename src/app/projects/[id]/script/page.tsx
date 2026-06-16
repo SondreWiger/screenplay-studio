@@ -292,7 +292,7 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
   }
 }
 
-function getElementClass(type: ScriptElementType, isAudioDrama = false): string {
+function getElementClass(type: ScriptElementType, isAudioDrama = false, isComic = false): string {
   // Audio drama gets dedicated classes for proper radio-script formatting
   if (isAudioDrama) {
     switch (type) {
@@ -312,7 +312,7 @@ function getElementClass(type: ScriptElementType, isAudioDrama = false): string 
     case 'sequence': return 'sp-sequence';
     case 'sequence_end': return 'sp-sequence-end';
     case 'action': return 'sp-action';
-    case 'character': return 'sp-character';
+    case 'character': return isComic ? 'sp-comic-character' : 'sp-character';
     case 'dialogue': return 'sp-dialogue';
     case 'parenthetical': return 'sp-parenthetical';
     case 'transition': return 'sp-transition';
@@ -963,6 +963,24 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       if (el.element_type === 'scene_heading') {
         autoIndex++;
         map[el.id] = el.scene_number || String(autoIndex);
+      }
+    }
+    return map;
+  }, [elements]);
+
+  // Comic: map comic_page IDs → page number, comic_panel IDs → panel number (within current page)
+  const comicNumberMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    let pageNum = 0;
+    let panelNum = 0;
+    for (const el of elements) {
+      if (el.element_type === 'comic_page') {
+        pageNum++;
+        panelNum = 0;
+        map[el.id] = `P${pageNum}`;
+      } else if (el.element_type === 'comic_panel') {
+        panelNum++;
+        map[el.id] = `${pageNum}.${panelNum}`;
       }
     }
     return map;
@@ -1696,6 +1714,27 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 )}
               </div>
             </>
+          ) : isComic ? (
+            <>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Pages & Panels</p>
+              <div className="space-y-0.5">
+                {elements.filter(e => e.element_type === 'comic_page' || e.element_type === 'comic_panel').map((el) => (
+                  <button key={el.id} onClick={() => {
+                    document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }} className={cn('w-full text-left px-2 py-1.5 rounded text-xs hover:bg-surface-900/5 transition-colors',
+                    el.element_type === 'comic_page' ? 'text-rose-400 font-medium' : 'text-surface-400 hover:text-white'
+                  )}>
+                    <span className={cn('mr-1 font-mono font-bold', el.element_type === 'comic_page' ? 'text-rose-500' : 'text-surface-600')}>
+                      {comicNumberMap[el.id]}
+                    </span>
+                    <span className="truncate">{el.content || (el.element_type === 'comic_page' ? 'Untitled Page' : 'Untitled Panel')}</span>
+                  </button>
+                ))}
+                {elements.filter(e => e.element_type === 'comic_page' || e.element_type === 'comic_panel').length === 0 && (
+                  <p className="text-xs text-surface-600 px-2 py-1">No pages yet. Add a Page element to start.</p>
+                )}
+              </div>
+            </>
           ) : (
             <>
               <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Scenes ({sceneHeadings.length})</p>
@@ -1728,28 +1767,62 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
           )}
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div><p className="text-lg font-bold text-white">{totalPages}</p><p className="text-[10px] text-surface-500">Pages</p></div>
-            <div><p className="text-lg font-bold text-white">{elements.length}</p><p className="text-[10px] text-surface-500">Elements</p></div>
-            <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[10px] text-surface-500">Words</p></div>
+            {isComic ? (
+              <>
+                <div><p className="text-lg font-bold text-white">{elements.filter(e => e.element_type === 'comic_page').length}</p><p className="text-[10px] text-surface-500">Pages</p></div>
+                <div><p className="text-lg font-bold text-white">{elements.filter(e => e.element_type === 'comic_panel').length}</p><p className="text-[10px] text-surface-500">Panels</p></div>
+                <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[10px] text-surface-500">Words</p></div>
+              </>
+            ) : (
+              <>
+                <div><p className="text-lg font-bold text-white">{totalPages}</p><p className="text-[10px] text-surface-500">Pages</p></div>
+                <div><p className="text-lg font-bold text-white">{elements.length}</p><p className="text-[10px] text-surface-500">Elements</p></div>
+                <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[10px] text-surface-500">Words</p></div>
+              </>
+            )}
           </div>
           {/* Estimated screen time */}
           <div className="mt-3 pt-3 border-t border-surface-800">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-surface-500 uppercase tracking-wider">Est. Screen Time</span>
-              <span className="text-sm font-semibold text-white">
-                {totalPages >= 60
-                  ? `${Math.floor(totalPages / 60)}h ${totalPages % 60}m`
-                  : `${totalPages} min`
-                }
-              </span>
-            </div>
-            <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
-              <div
-                className="h-1.5 rounded-full bg-[#FF5F1F] transition-[width] duration-500"
-                style={{ width: `${Math.min(100, (totalPages / 120) * 100)}%` }}
-              />
-            </div>
-            <p className="text-[9px] text-surface-600 mt-1">~1 min/page &middot; {totalPages} pages &middot; {wordCount.toLocaleString()} words</p>
+            {isComic ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-surface-500 uppercase tracking-wider">Est. Reading Time</span>
+                  <span className="text-sm font-semibold text-white">
+                    {(() => {
+                      const panels = elements.filter(e => e.element_type === 'comic_panel').length;
+                      const mins = Math.ceil(panels / 3);
+                      return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
+                    })()}
+                  </span>
+                </div>
+                <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full bg-rose-500 transition-[width] duration-500"
+                    style={{ width: `${Math.min(100, (elements.filter(e => e.element_type === 'comic_panel').length / 90) * 100)}%` }}
+                  />
+                </div>
+                <p className="text-[9px] text-surface-600 mt-1">~3 panels/min &middot; {elements.filter(e => e.element_type === 'comic_panel').length} panels &middot; {wordCount.toLocaleString()} words</p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-surface-500 uppercase tracking-wider">Est. Screen Time</span>
+                  <span className="text-sm font-semibold text-white">
+                    {totalPages >= 60
+                      ? `${Math.floor(totalPages / 60)}h ${totalPages % 60}m`
+                      : `${totalPages} min`
+                    }
+                  </span>
+                </div>
+                <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full bg-[#FF5F1F] transition-[width] duration-500"
+                    style={{ width: `${Math.min(100, (totalPages / 120) * 100)}%` }}
+                  />
+                </div>
+                <p className="text-[9px] text-surface-600 mt-1">~1 min/page &middot; {totalPages} pages &middot; {wordCount.toLocaleString()} words</p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -2416,6 +2489,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                             displaySettings={displaySettings}
                             characterColorMap={characterColorMap}
                             sceneNumberMap={sceneNumberMap}
+                            comicNumberMap={comicNumberMap}
                             commentCount={commentCountMap[element.id] || 0}
                             onComment={openCommentPanel}
                             onSequenceSettings={setSequenceColorModalId}
@@ -2645,7 +2719,10 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
           {/* Status bar */}
           <div className="flex items-center justify-between px-3 py-1 border-t border-surface-800/50 text-[10px] text-surface-500">
-            <span>{totalPages} pgs · {elements.filter(e => e.element_type === 'scene_heading').length} scenes · {wordCount.toLocaleString()} words</span>
+            <span>{isComic
+              ? `${elements.filter(e => e.element_type === 'comic_page').length} pages · ${elements.filter(e => e.element_type === 'comic_panel').length} panels · ${wordCount.toLocaleString()} words`
+              : `${totalPages} pgs · ${elements.filter(e => e.element_type === 'scene_heading').length} scenes · ${wordCount.toLocaleString()} words`
+            }</span>
             <span className="flex items-center gap-1.5">
               {saving ? (
                 <><span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />Saving</>
@@ -2663,23 +2740,38 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div className="absolute bottom-0 left-0 right-0 bg-surface-900 rounded-t-2xl max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800">
-              <h3 className="text-sm font-bold text-white">Jump to Scene</h3>
+              <h3 className="text-sm font-bold text-white">{isComic ? 'Jump to Page/Panel' : 'Jump to Scene'}</h3>
               <button onClick={() => setShowSceneJump(false)} className="p-1 text-surface-500 hover:text-white">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
-              {elements.filter(e => e.element_type === 'scene_heading').map((el, i) => (
-                <button key={el.id} onClick={() => {
-                  document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  setShowSceneJump(false);
-                }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:bg-surface-800 active:bg-surface-700 transition-colors flex items-center gap-2 min-h-[44px]">
-                  <span className="text-[#FF5F1F] font-mono text-xs font-bold">{sceneNumberMap[el.id] ?? i + 1}</span>
-                  <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || 'Untitled Scene' }} />
-                </button>
-              ))}
-              {elements.filter(e => e.element_type === 'scene_heading').length === 0 && (
-                <p className="text-sm text-surface-500 text-center py-8">No scenes yet</p>
+              {isComic ? (
+                elements.filter(e => e.element_type === 'comic_page' || e.element_type === 'comic_panel').map((el) => (
+                  <button key={el.id} onClick={() => {
+                    document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setShowSceneJump(false);
+                  }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:bg-surface-800 active:bg-surface-700 transition-colors flex items-center gap-2 min-h-[44px]">
+                    <span className={cn('font-mono text-xs font-bold', el.element_type === 'comic_page' ? 'text-rose-400' : 'text-surface-500')}>
+                      {comicNumberMap[el.id]}
+                    </span>
+                    <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || (el.element_type === 'comic_page' ? 'Untitled Page' : 'Untitled Panel') }} />
+                  </button>
+                ))
+              ) : (
+                elements.filter(e => e.element_type === 'scene_heading').map((el, i) => (
+                  <button key={el.id} onClick={() => {
+                    document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setShowSceneJump(false);
+                  }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:bg-surface-800 active:bg-surface-700 transition-colors flex items-center gap-2 min-h-[44px]">
+                    <span className="text-[#FF5F1F] font-mono text-xs font-bold">{sceneNumberMap[el.id] ?? i + 1}</span>
+                    <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || 'Untitled Scene' }} />
+                  </button>
+                ))
+              )}
+              {((isComic && elements.filter(e => e.element_type === 'comic_page' || e.element_type === 'comic_panel').length === 0) ||
+                (!isComic && elements.filter(e => e.element_type === 'scene_heading').length === 0)) && (
+                <p className="text-sm text-surface-500 text-center py-8">{isComic ? 'No pages or panels yet' : 'No scenes yet'}</p>
               )}
             </div>
           </div>
@@ -2687,7 +2779,10 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       )}
 
       {/* ── Mobile Scene Jump FAB ─────────────────────────────── */}
-      {elements.some(e => e.element_type === 'scene_heading') && (
+      {(isComic
+        ? elements.some(e => e.element_type === 'comic_page' || e.element_type === 'comic_panel')
+        : elements.some(e => e.element_type === 'scene_heading')
+      ) && (
         <button onClick={() => setShowSceneJump(true)}
           className="lg:hidden fixed bottom-[100px] right-4 z-30 p-3 bg-surface-800/90 backdrop-blur text-white rounded-full shadow-lg border border-surface-700/50 min-h-[44px] min-w-[44px] flex items-center justify-center">
           <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.2 2.5 0 00-2.5-2.5H14" /></svg>
@@ -3346,6 +3441,7 @@ interface LineEditorProps {
   displaySettings: DisplaySettings;
   characterColorMap: Record<string, number>;
   sceneNumberMap: Record<string, string>;
+  comicNumberMap: Record<string, string>;
   commentCount: number;
   onComment: (elementId: string) => void;
   onSequenceSettings: (id: string) => void;
@@ -3375,6 +3471,7 @@ const LineEditor = memo(function LineEditor({
   displaySettings,
   characterColorMap,
   sceneNumberMap,
+  comicNumberMap,
   commentCount,
   onComment,
   onSequenceSettings,
@@ -3453,8 +3550,8 @@ const LineEditor = memo(function LineEditor({
     const text = divRef.current.textContent || '';
     localContentRef.current = html;
 
-    // Auto-detect type from content (use plain text)
-    if (!skipAutoDetectRef.current) {
+    // Auto-detect type from content (use plain text) — skip in comic mode
+    if (!skipAutoDetectRef.current && !isComic) {
       const trimmed = text.trimStart().toUpperCase();
       if (element.element_type !== 'scene_heading' && /^(INT\.|EXT\.|INT\.\/EXT\.|I\/E\.)/.test(trimmed)) {
         useScriptStore.getState().updateElement(elementId, { element_type: 'scene_heading' });
@@ -3995,6 +4092,17 @@ const LineEditor = memo(function LineEditor({
             </span>
           </div>
         )}
+        {/* Comic page/panel number badge */}
+        {isComic && comicNumberMap[element.id] && (
+          <div className="absolute -left-10 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <span className={cn('text-[10px] font-bold tabular-nums',
+              element.element_type === 'comic_page' ? 'text-rose-400' : 'text-surface-500',
+              darkMode ? '' : ''
+            )}>
+              {comicNumberMap[element.id]}
+            </span>
+          </div>
+        )}
         {/* Collaborator labels */}
         {collaborators.length > 0 && (
           <div className="absolute -top-4 left-0 flex gap-1 z-10">
@@ -4148,7 +4256,7 @@ const LineEditor = memo(function LineEditor({
           contentEditable={canEdit}
           suppressContentEditableWarning
           spellCheck
-          className={cn('sp-element', getElementClass(element.element_type, isAudioDrama))}
+          className={cn('sp-element', getElementClass(element.element_type, isAudioDrama, isComic))}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           onKeyUp={handleKeyUp}
@@ -4248,6 +4356,8 @@ const LineEditor = memo(function LineEditor({
     && prev.canEdit === next.canEdit
     && prev.displaySettings === next.displaySettings
     && prev.characterColorMap === next.characterColorMap
+    && prev.sceneNumberMap === next.sceneNumberMap
+    && prev.comicNumberMap === next.comicNumberMap
     && prev.commentCount === next.commentCount
     && prev.isContentCreator === next.isContentCreator
     && prev.isAudioDrama === next.isAudioDrama

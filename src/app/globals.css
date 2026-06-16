@@ -578,6 +578,20 @@
     border-left-color: #f472b6;
   }
 
+  /* Character name in comic — uppercase, bold, indented, with a rose left bar */
+  .sp-comic-character {
+    @apply uppercase font-semibold;
+    margin-left: 0.5in;
+    padding: 8pt 0 2pt;
+    border-left: 3px solid #e11d48; /* rose-600 */
+    padding-left: 10pt;
+    letter-spacing: 0.04em;
+  }
+  .sp-dark .sp-comic-character {
+    color: #fda4af; /* rose-300 */
+    border-left-color: #f43f5e;
+  }
+
   /* SFX — bold, uppercase, centered, with a dynamic color */
   .sp-comic-sfx {
     @apply font-bold uppercase;
