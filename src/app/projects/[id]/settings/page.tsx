@@ -9,6 +9,7 @@ import type { Project } from '@/lib/types';
 import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS, SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ThemePreview } from '@/components/ThemePreview';
 
 const STATUSES = [
   { value: 'development', label: 'Development', color: 'bg-yellow-500' },
@@ -36,6 +37,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
 
   // Project customization
   const [projectAccentColor, setProjectAccentColor] = useState<string | null>(null);
+  const [uiTheme, setUiTheme] = useState<'default' | 'soft'>(user?.ui_theme === 'soft' ? 'soft' : 'default');
   const [projectSidebarTabs, setProjectSidebarTabs] = useState<Record<string, boolean> | null>(null);
   const [pageSize, setPageSize] = useState<'letter' | 'a4'>('letter');
   const [savingCustom, setSavingCustom] = useState(false);
@@ -378,6 +380,61 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
                 )}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* UI Theme */}
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-surface-300 mb-3">Editor Style</h3>
+          <div className="grid grid-cols-2 gap-3 max-w-md">
+            <button
+              onClick={() => {
+                setUiTheme('default');
+                document.documentElement.removeAttribute('data-theme');
+                const supabase = createClient();
+                supabase.from('profiles').update({ ui_theme: 'default' }).eq('id', user!.id);
+                useAuthStore.getState().setUser({ ...user!, ui_theme: 'default' });
+              }}
+              className={`text-left rounded-xl transition-all duration-200 ${
+                uiTheme === 'default'
+                  ? 'ring-2 ring-[var(--brand-500)] shadow-lg shadow-[var(--brand-500)]/10'
+                  : 'ring-1 ring-surface-700 hover:ring-surface-500'
+              }`}
+            >
+              <ThemePreview theme="default" accentColor={projectAccentColor || user?.accent_color || 'brand'} />
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-xs font-bold text-white">Default</span>
+                {uiTheme === 'default' && (
+                  <div className="w-4 h-4 rounded-full bg-[var(--brand-500)] flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                )}
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setUiTheme('soft');
+                document.documentElement.setAttribute('data-theme', 'soft');
+                const supabase = createClient();
+                supabase.from('profiles').update({ ui_theme: 'soft' }).eq('id', user!.id);
+                useAuthStore.getState().setUser({ ...user!, ui_theme: 'soft' });
+              }}
+              className={`text-left rounded-xl transition-all duration-200 ${
+                uiTheme === 'soft'
+                  ? 'ring-2 ring-[var(--brand-500)] shadow-lg shadow-[var(--brand-500)]/10'
+                  : 'ring-1 ring-surface-700 hover:ring-surface-500'
+              }`}
+            >
+              <ThemePreview theme="soft" accentColor={projectAccentColor || user?.accent_color || 'brand'} />
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-xs font-bold text-white">Soft Pastels</span>
+                {uiTheme === 'soft' && (
+                  <div className="w-4 h-4 rounded-full bg-[var(--brand-500)] flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                )}
+              </div>
+            </button>
           </div>
         </div>
 

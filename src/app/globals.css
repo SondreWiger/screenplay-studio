@@ -86,6 +86,99 @@
     --brand-900: 19 78 74; --brand-950: 4 47 46;
   }
 
+  /* ── Soft / Pastel theme ─────────────────────────────────── */
+  /* Overrides accent colours with muted pastel equivalents */
+  [data-theme="soft"] {
+    --brand-50: 250 244 240;
+    --brand-100: 245 235 228;
+    --brand-200: 238 220 210;
+    --brand-300: 225 195 178;
+    --brand-400: 210 170 150;
+    --brand-500: 195 148 128;
+    --brand-600: 175 128 112;
+    --brand-700: 155 110 98;
+    --brand-800: 135 95 85;
+    --brand-900: 115 80 72;
+    --brand-950: 75 50 45;
+  }
+  [data-theme="soft"][data-accent="blue"] {
+    --brand-50: 238 244 252; --brand-100: 222 235 252; --brand-200: 200 222 248;
+    --brand-300: 170 200 242; --brand-400: 142 180 235; --brand-500: 118 160 228;
+    --brand-600: 98 142 218; --brand-700: 82 125 205; --brand-800: 68 110 188;
+    --brand-900: 58 98 168; --brand-950: 38 65 120;
+  }
+  [data-theme="soft"][data-accent="green"] {
+    --brand-50: 238 250 244; --brand-100: 218 248 234; --brand-200: 192 240 218;
+    --brand-300: 160 230 198; --brand-400: 128 218 180; --brand-500: 100 205 162;
+    --brand-600: 80 188 145; --brand-700: 65 168 128; --brand-800: 52 148 112;
+    --brand-900: 42 128 96; --brand-950: 28 85 65;
+  }
+  [data-theme="soft"][data-accent="purple"] {
+    --brand-50: 244 242 252; --brand-100: 236 232 250; --brand-200: 222 216 246;
+    --brand-300: 200 190 238; --brand-400: 178 165 230; --brand-500: 158 142 220;
+    --brand-600: 140 122 208; --brand-700: 124 105 195; --brand-800: 108 90 178;
+    --brand-900: 92 78 158; --brand-950: 60 50 110;
+  }
+  [data-theme="soft"][data-accent="pink"] {
+    --brand-50: 252 242 248; --brand-100: 250 234 244; --brand-200: 246 218 236;
+    --brand-300: 240 198 224; --brand-400: 232 178 212; --brand-500: 222 158 200;
+    --brand-600: 210 138 186; --brand-700: 195 120 170; --brand-800: 175 104 152;
+    --brand-900: 155 90 134; --brand-950: 100 55 85;
+  }
+  [data-theme="soft"][data-accent="orange"] {
+    --brand-50: 252 244 240; --brand-100: 248 234 224; --brand-200: 242 218 204;
+    --brand-300: 234 200 180; --brand-400: 225 182 158; --brand-500: 215 165 140;
+    --brand-600: 202 148 124; --brand-700: 188 132 110; --brand-800: 170 118 98;
+    --brand-900: 148 104 86; --brand-950: 100 68 55;
+  }
+  [data-theme="soft"][data-accent="cyan"] {
+    --brand-50: 238 252 254; --brand-100: 220 248 252; --brand-200: 196 242 248;
+    --brand-300: 165 234 242; --brand-400: 135 224 235; --brand-500: 110 212 226;
+    --brand-600: 90 198 215; --brand-700: 72 182 200; --brand-800: 58 165 185;
+    --brand-900: 48 148 168; --brand-950: 32 105 120;
+  }
+  [data-theme="soft"][data-accent="amber"] {
+    --brand-50: 252 248 238; --brand-100: 250 242 222; --brand-200: 246 232 198;
+    --brand-300: 240 218 168; --brand-400: 234 206 140; --brand-500: 226 192 115;
+    --brand-600: 215 178 95; --brand-700: 200 162 78; --brand-800: 182 148 65;
+    --brand-900: 160 132 55; --brand-950: 110 88 35;
+  }
+  [data-theme="soft"][data-accent="lime"] {
+    --brand-50: 248 252 238; --brand-100: 240 250 222; --brand-200: 228 244 200;
+    --brand-300: 212 236 172; --brand-400: 198 228 148; --brand-500: 182 218 126;
+    --brand-600: 165 205 108; --brand-700: 148 190 92; --brand-800: 132 175 78;
+    --brand-900: 115 158 66; --brand-950: 78 115 42;
+  }
+  [data-theme="soft"][data-accent="rose"] {
+    --brand-50: 252 242 244; --brand-100: 250 232 234; --brand-200: 246 216 222;
+    --brand-300: 240 196 206; --brand-400: 234 178 194; --brand-500: 226 160 180;
+    --brand-600: 215 142 166; --brand-700: 200 125 150; --brand-800: 182 110 135;
+    --brand-900: 162 98 120; --brand-950: 110 65 80;
+  }
+  [data-theme="soft"][data-accent="indigo"] {
+    --brand-50: 240 242 252; --brand-100: 228 234 250; --brand-200: 210 218 246;
+    --brand-300: 188 198 240; --brand-400: 168 180 232; --brand-500: 148 162 224;
+    --brand-600: 130 145 212; --brand-700: 115 130 198; --brand-800: 100 116 182;
+    --brand-900: 88 104 165; --brand-950: 60 72 120;
+  }
+  [data-theme="soft"][data-accent="teal"] {
+    --brand-50: 242 252 250; --brand-100: 222 250 244; --brand-200: 198 244 234;
+    --brand-300: 168 236 222; --brand-400: 140 226 210; --brand-500: 115 215 198;
+    --brand-600: 95 200 185; --brand-700: 78 185 170; --brand-800: 64 168 155;
+    --brand-900: 52 150 140; --brand-950: 35 105 98;
+  }
+
+  [data-theme="soft"] body {
+    background-color: #0d0d18;
+  }
+  [data-theme="soft"] * {
+    border-color: #1a1a2e;
+  }
+  /* Soften glows and shadows on accent elements */
+  [data-theme="soft"] .shadow-brand-500\/\*, [data-theme="soft"] .shadow-\[var\(--brand-500\)\]\/\* {
+    --tw-shadow: 0 0 12px 0 rgba(var(--brand-500), 0.08);
+  }
+
   * {
     @apply border-surface-800;
   }

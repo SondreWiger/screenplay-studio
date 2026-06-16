@@ -7,15 +7,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
 import { Button, LoadingPage, Input, toast } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
+import { ThemePreview } from '@/components/ThemePreview';
 import type { UsageIntent, ScriptType } from '@/lib/types';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 const STEP_LABELS = [
   'Welcome',
   'Your Role',
   'Format',
+  'Style',
   'Workspace',
   'Rewards',
   'Team',
@@ -26,6 +28,7 @@ const STEP_ICONS = [
   '🎯',
   '📝',
   '🎨',
+  '⚙️',
   '🏆',
   '🤝',
 ];
@@ -99,6 +102,7 @@ export default function OnboardingPage() {
   const [wantsCompany, setWantsCompany] = useState(false);
   const [companyName, setCompanyName] = useState('');
   const [gamificationChoice, setGamificationChoice] = useState<boolean | null>(null);
+  const [uiTheme, setUiTheme] = useState<'default' | 'soft'>('default');
 
   const applyIntentDefaults = (intent: UsageIntent) => {
     setUsageIntent(intent);
@@ -138,6 +142,7 @@ export default function OnboardingPage() {
       preferred_script_type: scriptType,
       display_name: displayName.trim() || user.full_name || null,
       country: country.trim() || null,
+      ui_theme: uiTheme,
     }).eq('id', user.id);
 
     if (!error) {
@@ -151,6 +156,7 @@ export default function OnboardingPage() {
         show_accountability: showAccountability,
         preferred_script_type: scriptType,
         display_name: displayName.trim() || user.full_name || null,
+        ui_theme: uiTheme,
       });
     }
 
@@ -383,6 +389,64 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-6">
               <div className="text-center">
+                <div className="text-4xl mb-3">✨</div>
+                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">Pick your style</h2>
+                <p className="text-surface-400 text-sm max-w-md mx-auto">
+                  Choose how the editor looks. You can change this later in settings.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+                <button
+                  onClick={() => setUiTheme('default')}
+                  className={`text-left rounded-xl transition-all duration-200 ${
+                    uiTheme === 'default'
+                      ? 'ring-2 ring-[var(--brand-500)] shadow-lg shadow-[var(--brand-500)]/10'
+                      : 'ring-1 ring-surface-700 hover:ring-surface-500'
+                  }`}
+                >
+                  <ThemePreview theme="default" accentColor="brand" />
+                  <div className="px-4 py-3 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-white">Default</h3>
+                      <p className="text-[11px] text-surface-500">Bold, vibrant colours</p>
+                    </div>
+                    {uiTheme === 'default' && (
+                      <div className="w-5 h-5 rounded-full bg-[var(--brand-500)] flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setUiTheme('soft')}
+                  className={`text-left rounded-xl transition-all duration-200 ${
+                    uiTheme === 'soft'
+                      ? 'ring-2 ring-[var(--brand-500)] shadow-lg shadow-[var(--brand-500)]/10'
+                      : 'ring-1 ring-surface-700 hover:ring-surface-500'
+                  }`}
+                >
+                  <ThemePreview theme="soft" accentColor="brand" />
+                  <div className="px-4 py-3 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-white">Soft Pastels</h3>
+                      <p className="text-[11px] text-surface-500">Muted, easy on the eyes</p>
+                    </div>
+                    {uiTheme === 'soft' && (
+                      <div className="w-5 h-5 rounded-full bg-[var(--brand-500)] flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-6">
+              <div className="text-center">
                 <div className="text-4xl mb-3">🎨</div>
                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">Customize your workspace</h2>
                 <p className="text-surface-400 text-sm">Toggle features on or off. Hidden items are always one click away under &quot;More Tools&quot;.</p>
@@ -435,7 +499,7 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">🏆</div>
@@ -515,7 +579,7 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {step === 5 && (
+          {step === 6 && (
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">🤝</div>
@@ -581,7 +645,7 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {step === 5 && (
+          {step === 6 && (
             <div className="max-w-sm mx-auto pt-2">
               <div className="rounded-xl border border-surface-700/50 bg-surface-900/30 overflow-hidden">
                 <div className="px-4 py-3 border-b border-surface-800/50">

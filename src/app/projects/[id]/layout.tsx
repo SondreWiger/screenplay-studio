@@ -205,6 +205,15 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     return () => { document.documentElement.removeAttribute('data-accent'); };
   }, [effectiveAccent]);
 
+  // Apply UI theme (soft pastels)
+  useEffect(() => {
+    const theme = user?.ui_theme || null;
+    if (theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    return () => { document.documentElement.removeAttribute('data-theme'); };
+  }, [user?.ui_theme]);
+
   // ⌘+B toggle sidebar
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -100,6 +100,7 @@ export interface Profile {
   show_accountability?: boolean;
   preferred_script_type: ScriptType;
   theme_preference: string;
+  ui_theme?: 'default' | 'soft' | null;
   company_id: string | null;
   is_pro: boolean;
   is_studio: boolean;

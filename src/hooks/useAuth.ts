@@ -89,6 +89,10 @@ export function useAuth() {
           if (typeof document !== 'undefined' && (profile as Profile).accent_color) {
             document.documentElement.setAttribute('data-accent', (profile as Profile).accent_color!);
           }
+          // Apply UI theme (soft pastels)
+          if (typeof document !== 'undefined' && (profile as Profile).ui_theme) {
+            document.documentElement.setAttribute('data-theme', (profile as Profile).ui_theme!);
+          }
         } else {
           // Profile missing — create minimal one from auth data
           const meta = authUser.user_metadata || {};
