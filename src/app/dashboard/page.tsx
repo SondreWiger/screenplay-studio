@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
@@ -12,9 +11,11 @@ import { pickToast, NEW_PROJECT } from '@/lib/funToasts';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import dynamic from 'next/dynamic';
 import { GamificationOptIn } from '@/components/GamificationOptIn';
 import { LevelUpCelebration } from '@/components/LevelUpCelebration';
+import { startTour, getTourState, endTour } from '@/lib/tourState';
 
 const GuidedTour = dynamic(() => import('@/components/GuidedTour').then(m => ({ default: m.GuidedTour })), { ssr: false });
 const OnboardingChecklist = dynamic(() => import('@/components/OnboardingChecklist').then(m => ({ default: m.OnboardingChecklist })), { ssr: false });
@@ -22,18 +23,20 @@ import { useGamification } from '@/hooks/useGamification';
 import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { useNotifications } from '@/hooks/useNotifications';
-import { formatDate, timeAgo, cn } from '@/lib/utils';
+import { timeAgo, cn } from '@/lib/utils';
 import { useRecentProjects } from '@/hooks/useRecentProjects';
-import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder } from '@/lib/types';
-import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, PROJECT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
+import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder, UsageIntent } from '@/lib/types';
+import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<LoadingPage />}>
-      <DashboardContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingPage />}>
+        <DashboardContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
@@ -80,17 +83,32 @@ function DashboardContent() {
   // Gamification — opt-in popup + level-up celebration
   const { levelUpEvent, dismissLevelUp } = useGamification();
 
-  // Guided tour (triggered after onboarding via ?tour=1 query param)
+  // Guided tour (triggered after onboarding via ?tour=1 query param, or resumed from sessionStorage)
   const searchParams = useSearchParams();
   const [showTour, setShowTour] = useState(false);
+  const [tourIntent, setTourIntent] = useState<UsageIntent>('writer');
+  const [tourProjectId, setTourProjectId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check for ?tour=1 (fresh start from onboarding)
     if (searchParams.get('tour') === '1') {
+      const intent = (user?.usage_intent as UsageIntent) ?? 'writer';
+      const pid = projects[0]?.id ?? null;
+      startTour(intent, pid);
+      setTourIntent(intent);
+      setTourProjectId(pid);
       setShowTour(true);
-      // Clean up URL
       window.history.replaceState({}, '', '/dashboard');
+      return;
     }
-  }, [searchParams]);
+    // Check for active tour in sessionStorage (resuming from another page)
+    const saved = getTourState();
+    if (saved?.active) {
+      setTourIntent(saved.intent);
+      setTourProjectId(saved.projectId);
+      setShowTour(true);
+    }
+  }, [searchParams, user?.usage_intent, projects]);
 
   const palette = useCommandPalette();
 
@@ -235,7 +253,7 @@ function DashboardContent() {
       if (data && Array.isArray(data)) {
         setPendingInvitations(data);
       }
-    } catch (err) {
+    } catch {
       // Silently fail — not critical
     }
   };
@@ -313,7 +331,7 @@ function DashboardContent() {
     const newIsCollapsed = !collapsedFolders.has(id);
     setCollapsedFolders(prev => {
       const next = new Set(prev);
-      newIsCollapsed ? next.add(id) : next.delete(id);
+      if (newIsCollapsed) next.add(id); else next.delete(id);
       return next;
     });
     const supabase = createClient();
@@ -570,7 +588,7 @@ function DashboardContent() {
         {lastProject && (
           <button
             onClick={() => router.push(`/projects/${lastProject.id}/script`)}
-            className="w-full mb-8 group rounded-xl border border-surface-800 bg-gradient-to-r from-surface-900 to-surface-900/50 hover:border-[#FF5F1F]/40 p-5 text-left transition-all hover:shadow-lg hover:shadow-brand-500/5"
+            className="w-full mb-8 group rounded-xl border border-surface-800 bg-gradient-to-r from-surface-900 to-surface-900/50 hover:border-[#FF5F1F]/40 p-5 text-left transition-colors hover:shadow-lg hover:shadow-brand-500/5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -638,12 +656,12 @@ function DashboardContent() {
                 <Link
                   key={rp.id}
                   href={`/projects/${rp.id}`}
-                  className="flex-shrink-0 group flex items-center gap-2.5 bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 hover:border-surface-600 rounded-xl px-3 py-2.5 transition-all"
+                  className="flex-shrink-0 group flex items-center gap-2.5 bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 hover:border-surface-600 rounded-xl px-3 py-2.5 transition-colors"
                 >
                   <div className="relative w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center shrink-0 overflow-hidden">
                     <span className="text-sm font-bold text-surface-400">{(rp.title || '?')[0].toUpperCase()}</span>
                     {rp.cover_url && (
-                      <Image src={rp.cover_url} alt="" fill sizes="120px" className="rounded-lg object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      <img src={rp.cover_url} alt="" loading="lazy" className="absolute inset-0 w-full h-full rounded-lg object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget).style.display = 'none'; }} />
                     )}
                   </div>
                   <div className="min-w-0">
@@ -737,7 +755,7 @@ function DashboardContent() {
               return (
                 <div
                   key={folder.id}
-                  className={cn('mb-6 rounded-xl transition-all duration-150', isDragOver && 'ring-2 ring-offset-2 ring-offset-[#070710]')}
+                  className={cn('mb-6 rounded-xl transition-colors duration-150', isDragOver && 'ring-2 ring-offset-2 ring-offset-[#070710]')}
                   style={isDragOver && folder.color ? { '--tw-ring-color': folder.color } as React.CSSProperties : undefined}
                   onDragOver={e => {
                     e.preventDefault();
@@ -759,11 +777,11 @@ function DashboardContent() {
                 >
                   {/* Folder-reorder drop indicator */}
                   {isFolderDragOver && (
-                    <div className="mb-2 h-0.5 rounded-full bg-[#FF5F1F]/70 transition-all" />
+                    <div className="mb-2 h-0.5 rounded-full bg-[#FF5F1F]/70 transition-[width]" />
                   )}
                   {/* Drop zone highlight bar (for projects) */}
                   {isDragOver && !isFolderDragOver && (
-                    <div className="mb-2 rounded-lg border-2 border-dashed py-2 px-4 text-xs font-semibold text-center transition-all" style={{ borderColor: folder.color, color: folder.color, backgroundColor: folder.color + '15' }}>
+                    <div className="mb-2 rounded-lg border-2 border-dashed py-2 px-4 text-xs font-semibold text-center transition-colors" style={{ borderColor: folder.color, color: folder.color, backgroundColor: folder.color + '15' }}>
                       Drop into {folder.name}
                     </div>
                   )}
@@ -779,7 +797,7 @@ function DashboardContent() {
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a1 1 0 000 2h6a1 1 0 100-2H7zM7 8a1 1 0 000 2h6a1 1 0 100-2H7zM7 14a1 1 0 000 2h6a1 1 0 100-2H7z"/></svg>
                     </div>
                     {/* Colour swatch */}
-                    <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: folder.color }} />
+                    <span className="w-3 h-3 rounded-md flex-shrink-0" style={{ backgroundColor: folder.color }} />
                     {/* Emoji */}
                     {folder.emoji && <span className="text-sm">{folder.emoji}</span>}
                     {/* Name / rename */}
@@ -872,7 +890,7 @@ function DashboardContent() {
                             onDrop={e => { e.preventDefault(); const pid = e.dataTransfer.getData('projectId'); if (pid) moveToFolder(pid, child.id); setDragOverTarget(null); setDraggingProjectId(null); }}
                           >
                             <div className="flex items-center gap-2 mb-2 group/child">
-                              <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: child.color }} />
+                              <span className="w-2.5 h-2.5 rounded-md flex-shrink-0" style={{ backgroundColor: child.color }} />
                               {child.emoji && <span className="text-xs">{child.emoji}</span>}
                               {isRenamingChild ? (
                                 <input
@@ -930,7 +948,7 @@ function DashboardContent() {
               if (unfiled.length === 0 && folders.length > 0 && !isDragOver) return null;
               return (
                 <div
-                  className={cn('mt-2 rounded-xl transition-all duration-150', isDragOver && 'ring-2 ring-surface-600 ring-offset-2 ring-offset-[#070710]')}
+                  className={cn('mt-2 rounded-xl transition-colors duration-150', isDragOver && 'ring-2 ring-surface-600 ring-offset-2 ring-offset-[#070710]')}
                   onDragOver={e => { e.preventDefault(); setDragOverTarget('unfiled'); }}
                   onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverTarget(null); }}
                   onDrop={e => {
@@ -1028,7 +1046,7 @@ function DashboardContent() {
                   <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
                 </div>
                 {project.cover_url && (
-                  <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={project.cover_url} alt={project.title || 'Project cover'} loading="lazy" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget).style.display = 'none'; }} />
                 )}
                           <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
                           <div className="absolute top-2.5 left-2.5">
@@ -1107,9 +1125,9 @@ function DashboardContent() {
       {/* Guided Tour */}
       {showTour && (
         <GuidedTour
-          onComplete={() => setShowTour(false)}
-          usageIntent={user?.usage_intent ?? 'writer'}
-          projectId={projects[0]?.id ?? null}
+          onComplete={() => { endTour(); setShowTour(false); }}
+          usageIntent={tourIntent}
+          projectId={tourProjectId}
         />
       )}
 
@@ -1144,20 +1162,20 @@ function ProjectCard({
   if (viewMode === 'list') {
     return (
       <div
-        className={cn('relative group transition-all duration-150', isDragging && 'opacity-40 cursor-grabbing')}
+        className={cn('relative group transition-colors duration-150', isDragging && 'opacity-40 cursor-grabbing')}
         draggable
         onDragStart={e => { e.dataTransfer.setData('projectId', project.id); e.dataTransfer.effectAllowed = 'move'; setDraggingProjectId(project.id); }}
         onDragEnd={() => setDraggingProjectId(null)}
       >
         <Link href={`/projects/${project.id}`}>
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-surface-800 bg-surface-900/50 hover:border-surface-700 hover:bg-surface-800/50 transition-all group">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-surface-800 bg-surface-900/50 hover:border-surface-700 hover:bg-surface-800/50 transition-colors group">
             {/* Thumbnail */}
             <div className="relative w-10 h-10 rounded-lg bg-surface-800 overflow-hidden flex-shrink-0">
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-lg font-bold text-surface-600">{project.title[0]}</span>
               </div>
               {project.cover_url && (
-                <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <img src={project.cover_url} alt={project.title || 'Project cover'} loading="lazy" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget).style.display = 'none'; }} />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -1188,7 +1206,7 @@ function ProjectCard({
           <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10" onClick={e => e.preventDefault()}>
             <button
               onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveMenuProjectId(isMenuOpen ? null : project.id); }}
-              className="opacity-0 group-hover:opacity-100 p-1 rounded bg-black/60 text-white hover:bg-black/80 transition-all"
+              className="opacity-0 group-hover:opacity-100 p-1 rounded bg-black/60 text-white hover:bg-black/80 transition-colors"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
             </button>
@@ -1205,7 +1223,7 @@ function ProjectCard({
                   )}
                   {folders.map(f => (
                     <button key={f.id} onClick={() => moveToFolder(project.id, f.id)} className={cn('flex items-center gap-2 w-full px-3 py-1.5 hover:bg-surface-800 transition-colors', project.folder_id === f.id ? 'text-white' : 'text-surface-300 hover:text-white')}>
-                      <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: f.color }} />
+                      <span className="w-2.5 h-2.5 rounded-md flex-shrink-0" style={{ backgroundColor: f.color }} />
                       {f.emoji && <span>{f.emoji}</span>}
                       <span className="truncate">{f.name}</span>
                       {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-[#FF5F1F] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
@@ -1222,7 +1240,7 @@ function ProjectCard({
 
   return (
     <div
-      className={cn('relative group transition-all duration-150', isDragging && 'opacity-40 scale-95 cursor-grabbing')}
+      className={cn('relative group transition-colors duration-150', isDragging && 'opacity-40 scale-95 cursor-grabbing')}
       draggable
       onDragStart={e => {
         e.dataTransfer.setData('projectId', project.id);
@@ -1238,7 +1256,7 @@ function ProjectCard({
               <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
             </div>
             {project.cover_url && (
-              <Image src={project.cover_url} alt={project.title || 'Project cover'} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={project.cover_url} alt={project.title || 'Project cover'} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget).style.display = 'none'; }} />
             )}
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute top-2.5 right-2.5">
@@ -1296,7 +1314,7 @@ function ProjectCard({
           <button
             onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveMenuProjectId(isMenuOpen ? null : project.id); }}
             className={cn(
-              'p-1 rounded text-[10px] transition-all',
+              'p-1 rounded text-[10px] transition-colors',
               currentFolder ? 'opacity-0 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-100',
               'bg-black/60 text-white hover:bg-black/80',
             )}
@@ -1322,7 +1340,7 @@ function ProjectCard({
                     onClick={() => moveToFolder(project.id, f.id)}
                     className={cn('flex items-center gap-2 w-full px-3 py-1.5 hover:bg-surface-800 transition-colors', project.folder_id === f.id ? 'text-white' : 'text-surface-300 hover:text-white')}
                   >
-                    <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: f.color }} />
+                    <span className="w-2.5 h-2.5 rounded-md flex-shrink-0" style={{ backgroundColor: f.color }} />
                     {f.emoji && <span>{f.emoji}</span>}
                     <span className="truncate">{f.name}</span>
                     {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-[#FF5F1F] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
@@ -1476,7 +1494,7 @@ function NewProjectModal({
                     key={t.id}
                     type="button"
                     onClick={() => applyTemplate(t)}
-                    className="flex items-center gap-2 px-3 py-2 bg-surface-800 hover:bg-surface-700 border border-surface-700 hover:border-[#FF5F1F]/40 rounded-lg text-left transition-all"
+                    className="flex items-center gap-2 px-3 py-2 bg-surface-800 hover:bg-surface-700 border border-surface-700 hover:border-[#FF5F1F]/40 rounded-lg text-left transition-colors"
                   >
                     <span className="text-sm font-bold text-surface-400">T</span>
                     <div className="min-w-0">
@@ -1501,7 +1519,7 @@ function NewProjectModal({
                 setProjectType('tv_production');
                 setScriptType('screenplay');
               }}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
+              className={`text-left p-4 rounded-xl border-2 transition-colors ${
                 projectType === 'tv_production'
                   ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
                   : 'border-surface-700 bg-surface-800/50 hover:border-amber-500/30 hover:bg-surface-800'
@@ -1529,7 +1547,7 @@ function NewProjectModal({
                   else if (opt.value === 'episodic') setFormat('series');
                   else setFormat('feature');
                 }}
-                className={`text-left p-4 rounded-xl border-2 transition-all ${
+                className={`text-left p-4 rounded-xl border-2 transition-colors ${
                   scriptType === opt.value && projectType !== 'tv_production'
                     ? opt.value === 'podcast'
                       ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/30'
@@ -1591,7 +1609,7 @@ function NewProjectModal({
                 <button
                   type="button"
                   onClick={() => setSelectedCompanyId(null)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                     selectedCompanyId === null
                       ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
                       : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
@@ -1605,7 +1623,7 @@ function NewProjectModal({
                     key={m.company_id}
                     type="button"
                     onClick={() => setSelectedCompanyId(m.company_id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                       selectedCompanyId === m.company_id
                         ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
                         : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
@@ -1675,7 +1693,7 @@ function NewProjectModal({
                       key={g}
                       type="button"
                       onClick={() => toggleGenre(g)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                         genre.includes(g)
                           ? 'bg-[#E54E15] text-white'
                           : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
@@ -1700,7 +1718,7 @@ function NewProjectModal({
                       key={opt.value}
                       type="button"
                       onClick={() => setFormat(opt.value)}
-                      className={`text-left p-3.5 rounded-xl border-2 transition-all ${
+                      className={`text-left p-3.5 rounded-xl border-2 transition-colors ${
                         format === opt.value
                           ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/30'
                           : 'border-surface-700 bg-surface-800/50 hover:border-surface-600'
@@ -1720,7 +1738,7 @@ function NewProjectModal({
                       key={g}
                       type="button"
                       onClick={() => toggleGenre(g)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                         genre.includes(g)
                           ? 'bg-violet-600 text-white'
                           : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
@@ -1797,8 +1815,8 @@ function NewProjectModal({
           )}
 
           {isAudioDrama && (
-            <div className="bg-gradient-to-br from-violet-500/5 to-surface-800/50 rounded-xl p-4 border border-violet-500/20">
-              <p className="text-sm text-violet-300 mb-3 font-semibold">Your audio drama workspace includes:</p>
+            <div className="bg-surface-800/50 rounded-xl p-4 border border-surface-700">
+              <p className="text-sm text-surface-300 mb-3 font-semibold">Your audio drama workspace includes:</p>
               <ul className="text-xs text-surface-400 space-y-1.5">
                 <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> Script editor in STARC audio drama format</li>
                 <li className="flex items-center gap-2"><span className="text-violet-400">✓</span> SFX, MUSIC &amp; AMBIENCE cue lines baked-in</li>

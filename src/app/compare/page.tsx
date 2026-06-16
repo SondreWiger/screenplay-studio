@@ -7,10 +7,20 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
     description: 'Side-by-side comparison of screenwriting software. See how the free, open-source option compares to $250 industry standards.',
+    images: [
+      {
+        url: '/api/og?title=Compare&subtitle=Screenplay+Studio+vs+Final+Draft,+WriterDuet+%26+Arc+Studio',
+        width: 1200,
+        height: 630,
+        alt: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
+      },
+    ],
   },
   twitter: {
+    card: 'summary_large_image',
     title: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
     description: 'Side-by-side comparison of screenwriting software. See how the free, open-source option compares to $250 industry standards.',
+    images: ['/api/og?title=Compare&subtitle=Screenplay+Studio+vs+Final+Draft,+WriterDuet+%26+Arc+Studio'],
   },
 };
 
@@ -211,7 +221,7 @@ export default function ComparePage() {
                 </tr>
               </thead>
               <tbody>
-                {FEATURE_TABLE.map((row, i) => (
+                {FEATURE_TABLE.map((row) => (
                   <tr key={row.feature} className="border-b" style={{ borderColor: 'rgba(255,255,255,0.03)' }}>
                     <td className="py-3 pr-4 text-white/60 font-medium whitespace-nowrap">{row.feature}</td>
                     <td className="py-3 px-4" style={{ color: ORANGE }}>
@@ -361,7 +371,7 @@ export default function ComparePage() {
             </Link>
             <Link
               href="/blog/complete-platform-guide-every-feature"
-              className="px-6 py-3 text-sm font-semibold text-white/50 hover:text-white transition-colors border border-white/10 hover:border-white/20 rounded-sm"
+              className="px-6 py-3 text-sm font-semibold text-white/50 hover:text-white transition-colors border border-white/10 hover:border-white/20 rounded-md"
             >
               Read the Full Feature Guide →
             </Link>

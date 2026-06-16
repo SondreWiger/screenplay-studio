@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { setTourStep, endTour, getTourState } from '@/lib/tourState';
+import { toast } from '@/components/ui';
 import type { UsageIntent } from '@/lib/types';
 
-// ============================================================
 // GuidedTour — persona-aware interactive walkthrough
 //
 // Shown after onboarding. Steps are tailored to the user's
@@ -14,7 +16,6 @@ import type { UsageIntent } from '@/lib/types';
 //
 // Each step: eyebrow  /  illustrated icon  /  title  /  description
 //            numbered how-to tips  /  "Try it →" CTA
-// ============================================================
 
 interface TourStep {
   type?: 'info' | 'spotlight';
@@ -27,6 +28,7 @@ interface TourStep {
   primaryLabel: string;
   primaryHref?: string;
   accentColor?: string;
+  createProject?: boolean;
 }
 
 function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
@@ -41,9 +43,27 @@ function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
     accentColor: '#FF5F1F',
   };
 
-  // ── WRITER ─────────────────────────────────────────────────────
+  const createProjectStep: TourStep = {
+    type: 'info',
+    eyebrow: 'First things first',
+    icon: <FeatureIcon color="#FF5F1F" d="M12 4v16m8-8H4" />,
+    title: 'Create your first project',
+    description: 'Every great script starts with a project. Give it a title and we\'ll set up your workspace.',
+    tips: [
+      'You can always change the title, format, and genre later',
+      'The project is where all your scripts, notes, and production tools live',
+    ],
+    primaryLabel: 'Create project →',
+    createProject: true,
+    accentColor: '#FF5F1F',
+  };
+
+  const maybeCreate = !projectId ? [createProjectStep] : [];
+
+  // WRITER
   if (intent === 'writer') return [
     welcome,
+    ...maybeCreate,
     {
       type: 'info',
       eyebrow: 'Step 1 of 5  •  Writing',
@@ -127,9 +147,10 @@ function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
     },
   ];
 
-  // ── PRODUCER ───────────────────────────────────────────────────
+  // PRODUCER
   if (intent === 'producer') return [
     welcome,
+    ...maybeCreate,
     {
       type: 'info',
       eyebrow: 'Step 1 of 5  •  Breakdown',
@@ -214,9 +235,10 @@ function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
     },
   ];
 
-  // ── CONTENT CREATOR ────────────────────────────────────────────
+  // CONTENT CREATOR
   if (intent === 'content_creator') return [
     welcome,
+    ...maybeCreate,
     {
       type: 'info',
       eyebrow: 'Step 1 of 5  •  Writing',
@@ -299,9 +321,10 @@ function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
     },
   ];
 
-  // ── STUDENT ────────────────────────────────────────────────────
+  // STUDENT
   if (intent === 'student') return [
     welcome,
+    ...maybeCreate,
     {
       type: 'info',
       eyebrow: 'Step 1 of 5  •  Craft',
@@ -385,9 +408,10 @@ function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
     },
   ];
 
-  // ── BOTH (Writer & Producer) ───────────────────────────────────
+  // BOTH (Writer & Producer)
   return [
     welcome,
+    ...maybeCreate,
     {
       type: 'info',
       eyebrow: 'Step 1 of 5  •  Overview',
@@ -472,12 +496,12 @@ function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
   ];
 }
 
-// ── Illustration helpers ─────────────────────────────────────────────────────
+// Illustration helpers
 
 function FeatureIcon({ color, d }: { color: string; d: string }) {
   return (
     <div
-      className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto"
+      className="w-20 h-20 rounded-xl flex items-center justify-center mx-auto"
       style={{
         background: `linear-gradient(135deg, ${color}30, ${color}18)`,
         border: `1px solid ${color}40`,
@@ -507,7 +531,7 @@ function WelcomeIllustration() {
   );
 }
 
-// ── Spotlight overlay ────────────────────────────────────────────────────────
+// Spotlight overlay
 
 function SpotlightOverlay({ targetId, children }: { targetId: string; children: React.ReactNode }) {
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -552,7 +576,7 @@ function SpotlightOverlay({ targetId, children }: { targetId: string; children: 
   );
 }
 
-// ── Main component ───────────────────────────────────────────────────────────
+// Main component
 
 export interface GuidedTourProps {
   onComplete: () => void;
@@ -560,23 +584,33 @@ export interface GuidedTourProps {
   projectId?: string | null;
 }
 
-export function GuidedTour({ onComplete, usageIntent = 'writer', projectId = null }: GuidedTourProps) {
+export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: initialProjectId = null }: GuidedTourProps) {
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(() => {
+    // Resume from sessionStorage if available
+    const saved = getTourState();
+    return saved?.active ? saved.step : 0;
+  });
   const [phase, setPhase] = useState<'idle' | 'exit' | 'enter'>('idle');
+  const [projectId, setProjectId] = useState<string | null>(initialProjectId);
+  const [newProjectTitle, setNewProjectTitle] = useState('');
+  const [creatingProject, setCreatingProject] = useState(false);
 
   const steps = buildSteps(usageIntent, projectId);
   const current = steps[Math.min(step, steps.length - 1)];
 
   const handleFinish = useCallback(() => {
+    endTour();
     setPhase('exit');
     setTimeout(onComplete, 280);
   }, [onComplete]);
 
   const handlePrimary = useCallback(() => {
     if (current.primaryHref) {
+      // Save tour state so it resumes on the destination page
+      setTourStep(step + 1);
       setPhase('exit');
-      setTimeout(() => { onComplete(); router.push(current.primaryHref!); }, 250);
+      setTimeout(() => { router.push(current.primaryHref!); }, 250);
     } else if (step < steps.length - 1) {
       setPhase('enter');
       setTimeout(() => { setStep(s => s + 1); setPhase('idle'); }, 180);
@@ -590,6 +624,38 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId = nul
     setPhase('enter');
     setTimeout(() => { setStep(s => s - 1); setPhase('idle'); }, 180);
   }, [step]);
+
+  const handleCreateProject = useCallback(async () => {
+    if (!newProjectTitle.trim()) return;
+    setCreatingProject(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast.error('Not authenticated'); return; }
+
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({
+          title: newProjectTitle.trim(),
+          created_by: user.id,
+          script_type: 'screenplay',
+          format: 'feature',
+        })
+        .select()
+        .single();
+
+      if (error) { toast.error('Failed to create project'); return; }
+
+      setProjectId(data.id);
+      setNewProjectTitle('');
+      toast.success('Project created!');
+      // Advance to next step
+      setPhase('enter');
+      setTimeout(() => { setStep(s => s + 1); setPhase('idle'); }, 180);
+    } finally {
+      setCreatingProject(false);
+    }
+  }, [newProjectTitle]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -616,8 +682,8 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId = nul
       {/* Card */}
       <div
         className={cn(
-          'relative z-[101] w-full max-w-xl mx-4 bg-surface-900 border border-surface-700/60 rounded-2xl shadow-2xl overflow-hidden',
-          'transition-all duration-[280ms]',
+          'relative z-[101] w-full max-w-xl mx-4 bg-surface-900 border border-surface-700/60 rounded-xl shadow-2xl overflow-hidden',
+          'transition-opacity duration-[280ms]',
           isTransitioning ? 'scale-[0.96] opacity-0' : 'scale-100 opacity-100',
         )}
         style={{ boxShadow: `0 0 80px ${accent}1e` }}
@@ -625,7 +691,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId = nul
         {/* Progress bar */}
         <div className="h-1 bg-surface-800/80">
           <div
-            className="h-full transition-all duration-500"
+            className="h-full transition-[width] duration-500"
             style={{ width: `${((step + 1) / steps.length) * 100}%`, background: accent }}
           />
         </div>
@@ -663,6 +729,21 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId = nul
               ))}
             </ul>
           )}
+
+          {/* Inline project creation form */}
+          {current.createProject && (
+            <div className="mt-6 border-t border-surface-800 pt-5">
+              <input
+                type="text"
+                value={newProjectTitle}
+                onChange={e => setNewProjectTitle(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && newProjectTitle.trim()) handleCreateProject(); }}
+                placeholder="My first screenplay"
+                autoFocus
+                className="w-full px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm placeholder:text-surface-500 focus:outline-none focus:border-surface-500"
+              />
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -673,7 +754,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId = nul
               <button
                 key={i}
                 onClick={() => { setPhase('enter'); setTimeout(() => { setStep(i); setPhase('idle'); }, 180); }}
-                className="rounded-full transition-all duration-300"
+                className="rounded-full transition-colors duration-300"
                 style={{
                   height: '8px',
                   width: i === step ? '20px' : '8px',
@@ -696,17 +777,28 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId = nul
             ) : (
               <Button variant="ghost" size="sm" onClick={handleBack}>Back</Button>
             )}
-            <button
-              onClick={handlePrimary}
-              className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95"
-              style={{ background: accent }}
-            >
-              {current.primaryHref
-                ? current.primaryLabel
-                : step < steps.length - 1
-                  ? 'Next →'
-                  : current.primaryLabel}
-            </button>
+            {current.createProject ? (
+              <button
+                onClick={handleCreateProject}
+                disabled={!newProjectTitle.trim() || creatingProject}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: accent }}
+              >
+                {creatingProject ? 'Creating...' : current.primaryLabel}
+              </button>
+            ) : (
+              <button
+                onClick={handlePrimary}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95"
+                style={{ background: accent }}
+              >
+                {current.primaryHref
+                  ? current.primaryLabel
+                  : step < steps.length - 1
+                    ? 'Next →'
+                    : current.primaryLabel}
+              </button>
+            )}
           </div>
         </div>
       </div>

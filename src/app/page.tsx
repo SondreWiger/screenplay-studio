@@ -10,6 +10,20 @@ export const metadata: Metadata = {
     title: 'Screenplay Studio — Free screenwriting software',
     description: 'Write screenplays, plan productions, and collaborate with your team. Script editor, scene breakdowns, shot lists, scheduling, budget tracking, and more.',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun',
+    images: [
+      {
+        url: '/api/og?title=Screenplay+Studio&subtitle=Write,+plan,+and+collaborate+on+screenplays',
+        width: 1200,
+        height: 630,
+        alt: 'Screenplay Studio — Free screenwriting software',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Screenplay Studio — Free screenwriting software',
+    description: 'Write screenplays, plan productions, and collaborate with your team. Script editor, scene breakdowns, shot lists, scheduling, budget tracking, and more.',
+    images: ['/api/og?title=Screenplay+Studio&subtitle=Write,+plan,+and+collaborate+on+screenplays'],
   },
 };
 
@@ -174,7 +188,7 @@ export default async function LandingPage() {
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-2.5">
           <div
-            className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0 transition-transform duration-150 group-hover:scale-95"
+            className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0 transition-transform duration-150"
             style={{ background: ORANGE }}
           >
             SS
@@ -196,7 +210,7 @@ export default async function LandingPage() {
               {label}
               {/* underline slides in from left on hover */}
               <span
-                className="absolute bottom-1.5 left-3.5 right-3.5 h-px origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                className="absolute bottom-1.5 left-3.5 right-3.5 h-px origin-left scale-x-0 transition-transform duration-200"
                 style={{ background: 'rgba(255,255,255,0.18)' }}
               />
             </Link>
@@ -209,7 +223,7 @@ export default async function LandingPage() {
               style={{ background: ORANGE }}
             >
               Dashboard
-              <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+              <span className="transition-transform duration-150">→</span>
             </Link>
           ) : (
             <>
@@ -219,7 +233,7 @@ export default async function LandingPage() {
               >
                 Sign In
                 <span
-                  className="absolute bottom-1.5 left-3.5 right-3.5 h-px origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                  className="absolute bottom-1.5 left-3.5 right-3.5 h-px origin-left scale-x-0 transition-transform duration-200"
                   style={{ background: 'rgba(255,255,255,0.18)' }}
                 />
               </Link>
@@ -229,7 +243,7 @@ export default async function LandingPage() {
                 style={{ background: ORANGE }}
               >
                 Start Free
-                <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+                <span className="transition-transform duration-150">→</span>
               </Link>
             </>
           )}
@@ -309,7 +323,7 @@ export default async function LandingPage() {
                 style={{ background: ORANGE, boxShadow: `0 8px 40px ${ORANGE}28` }}
               >
                 {isLoggedIn ? 'Open Dashboard' : 'Start Writing — Free'}
-                <span className="transition-transform duration-150 group-hover:translate-x-1">→</span>
+                <span className="transition-transform duration-150">→</span>
               </Link>
               <Label>No credit card required</Label>
             </div>
@@ -338,7 +352,7 @@ export default async function LandingPage() {
                     />
                   )}
                   <span
-                    className="font-black tracking-tight text-white leading-none transition-transform duration-200 group-hover:scale-[1.04] origin-left inline-block"
+                    className="font-black tracking-tight text-white leading-none transition-transform duration-200 origin-left inline-block"
                     style={{ fontSize: 'clamp(1.8rem, 4vw, 3.25rem)' }}
                   >
                     {s.num}
@@ -372,7 +386,7 @@ export default async function LandingPage() {
               <span
                 key={t}
                 className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/30 border
-                  transition-all duration-150 cursor-default
+                  transition-colors duration-150 cursor-default
                   hover:text-[#FF5F1F] hover:border-[rgba(255,95,31,0.35)] hover:bg-[rgba(255,95,31,0.05)]"
                 style={{ borderColor: 'rgba(255,255,255,0.08)' }}
               >
@@ -449,7 +463,7 @@ export default async function LandingPage() {
                 >
                   {/* left accent bar slides in on hover */}
                   <div
-                    className="absolute left-0 top-0 bottom-0 w-[2px] origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-250"
+                    className="absolute left-0 top-0 bottom-0 w-[2px] origin-top scale-y-0 transition-transform duration-250"
                     style={{ background: ORANGE }}
                   />
                   <div className="flex items-start gap-4">
@@ -522,7 +536,7 @@ export default async function LandingPage() {
                   style={{ background: '#000', color: '#fff' }}
                 >
                   {isLoggedIn ? 'Open Dashboard' : 'Create Free Account'}
-                  <span className="transition-transform duration-150 group-hover:translate-x-1">→</span>
+                  <span className="transition-transform duration-150">→</span>
                 </Link>
                 {!isLoggedIn && (
                   <span className="text-[9px] font-mono text-black/30 tracking-wider">
@@ -562,7 +576,7 @@ export default async function LandingPage() {
               >
                 <span>♥</span>
                 Support on Ko-fi
-                <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+                <span className="transition-transform duration-150">→</span>
               </a>
             </div>
           </div>

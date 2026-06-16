@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useState, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -10,7 +9,8 @@ import { useProFeatures } from '@/hooks/useProFeatures';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { useProjectStore, usePresenceStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
-import { Avatar, Badge, LoadingPage, KeyboardShortcuts, Modal, Input, Textarea, Button, toast } from '@/components/ui';
+import { useCrossToolSync } from '@/hooks/useCrossToolSync';
+import { Avatar, LoadingPage, KeyboardShortcuts, Modal, Input, Textarea, Button, toast } from '@/components/ui';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { useRecentProjects } from '@/hooks/useRecentProjects';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -18,18 +18,21 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ShortcutPicker } from '@/components/sidebar/ShortcutPicker';
-import { cn, getInitials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { PAGE_LABELS, getPageSection } from '@/lib/pageLabels';
 import { getNavCategories, type NavItem, type NavCategory } from '@/lib/navCategories';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
-import type { Project, ProjectMember, Profile, UserRole, UserPresence, SidebarSection } from '@/lib/types';
+import type { UserRole, UserPresence, SidebarSection } from '@/lib/types';
 import { useSidebarLayout } from '@/hooks/useSidebarLayout';
 import { usePreMiD } from '@/hooks/usePreMiD';
 import { getDefaultOtherIcons, loadOtherIcons, saveOtherIcons } from '@/lib/sidebarDefaults';
 import dynamic from 'next/dynamic';
+import { getTourState, endTour } from '@/lib/tourState';
+import type { UsageIntent } from '@/lib/types';
 const SidebarCustomiser = dynamic(() => import('@/components/SidebarCustomiser'), { ssr: false });
 const PopoutButton = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutButton })), { ssr: false });
 const PopoutBar = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutBar })), { ssr: false });
+const GuidedTour = dynamic(() => import('@/components/GuidedTour').then(m => ({ default: m.GuidedTour })), { ssr: false });
 
 
 
@@ -41,7 +44,7 @@ export default function ProjectLayout({
   params: { id: string };
 }) {
   const { user, loading: authLoading } = useAuth();
-  const { isPro } = useProFeatures();
+  const { isStudio } = useProFeatures();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,6 +52,7 @@ export default function ProjectLayout({
   const { currentProject, setCurrentProject, members, setMembers } = useProjectStore();
   const { onlineUsers } = usePresenceStore();
   const { updatePresence } = useRealtime(params.id);
+  useCrossToolSync(params.id);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -59,14 +63,26 @@ export default function ProjectLayout({
   const [templateDesc, setTemplateDesc] = useState('');
   const [templatePublic, setTemplatePublic] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
-// Determine if the user has Pro access so we don't collapse Pro sections they paid for
-const hasProAccess = isPro || currentProject?.pro_enabled === true;
+// Determine if the user has Studio access so we don't collapse Studio sections
 const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const defaults = ['Collaboration'];
-  if (!hasProAccess) defaults.push('Pro');
+  if (!isStudio) defaults.push('Studio');
   return new Set(defaults);
 });
   const [showCustomiser, setShowCustomiser] = useState(false);
+  // Guided tour — resume from sessionStorage if active
+  const [showTour, setShowTour] = useState(false);
+  const [tourIntent, setTourIntent] = useState<UsageIntent>('writer');
+  const [tourProjectId, setTourProjectId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = getTourState();
+    if (saved?.active) {
+      setTourIntent(saved.intent);
+      setTourProjectId(saved.projectId);
+      setShowTour(true);
+    }
+  }, []);
   // "Other Tools" folder — persona-aware demotion of less-relevant sidebar items
   const [otherIcons, setOtherIcons] = useState<Set<string>>(new Set());
   const [otherExpanded, setOtherExpanded] = useState(false);
@@ -83,7 +99,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // ── Quick Access shortcuts (personal, localStorage) ───────────────
+  // Quick Access shortcuts (personal, localStorage)
   type Shortcut = { id: string; type: 'script' | 'document'; title: string };
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [showShortcutPicker, setShowShortcutPicker] = useState(false);
@@ -130,7 +146,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     });
   };
 
-  const palette = useCommandPalette();
+  useCommandPalette();
   const { recordView } = useRecentProjects();
 
   const handleSaveTemplate = async () => {
@@ -213,7 +229,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     }
   }, [pathname]);
 
-  // ── Initialise Other Tools from localStorage (or smart defaults) ──
+  // Initialise Other Tools from localStorage (or smart defaults)
   useEffect(() => {
     if (!user || !currentProject) return;
     const saved = loadOtherIcons(user.id, params.id);
@@ -229,7 +245,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     }
   }, [user?.id, currentProject?.id, params.id]);
 
-  // ── Browser tab title ──────────────────────────────────────────────
+  // Browser tab title
   useEffect(() => {
     if (!currentProject) return;
     const pageKey = getPageSection(pathname, params.id);
@@ -237,9 +253,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     document.title = `${pageLabel} — ${currentProject.title} — Screenplay Studio`;
     return () => { document.title = 'Screenplay Studio'; };
   }, [pathname, currentProject?.title, params.id]);
-  // ─────────────────────────────────────────────────────────────────
 
-  // ── Discord Rich Presence via PreMiD ──────────────────────────────
+  // Discord Rich Presence via PreMiD
   const currentPageSlug = getPageSection(pathname, params.id);
   const currentToolLabel = PAGE_LABELS[currentPageSlug] ?? 'Overview';
   usePreMiD({
@@ -247,7 +262,6 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     currentTool: currentToolLabel,
     active: !!currentProject,
   });
-  // ─────────────────────────────────────────────────────────────────
 
   const fetchProjectData = async () => {
     try {
@@ -302,7 +316,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   if (authLoading || (!user && loading)) return <LoadingPage />;
   if (!currentProject) return null;
 
-  // ── Popout Mode ─────────────────────────────────────────────────────
+  // Popout Mode
   // When ?popout=1 is present, render a chrome-free shell for second screens
   if (isPopout) {
     const currentPageKey = pathname.split('/').pop() || 'overview';
@@ -341,7 +355,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     isTvProduction, isAudioDrama, isStagePlay, isContentCreator, isEpisodic, isViewer,
   });
 
-  // ── Sidebar Layout Customisation helpers ────────────────────────
+  // Sidebar Layout Customisation helpers
   const navToSections = (cats: NavCategory[]): SidebarSection[] =>
     cats.map(cat => ({
       id: cat.id || (cat.category ? cat.category.toLowerCase().replace(/[\s/]+/g, '-') : 'root'),
@@ -370,8 +384,6 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
   // All sections including hidden items — for the customiser panel so
   // users can re-show items they previously hid
-  const allNavSections = applyLayout(navToSections(navCategories));
-
   const isItemVisible = (item: NavItem) => {
     // Check sidebar tab preferences (overview and settings always visible)
     if (effectiveSidebarTabs && item.icon !== 'overview' && item.icon !== 'settings') {
@@ -381,8 +393,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     if (item.icon !== 'overview' && item.icon !== 'settings') {
       if (!canUseFeature(item.icon)) return false;
     }
-    // Pro items: visible only to Pro subscribers or per-project Pro
-    if (item.pro) return isPro || currentProject?.pro_enabled === true;
+    // Studio items: visible only to Studio subscribers
+    if (item.studio) return isStudio;
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
@@ -392,8 +404,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   // Flat lists for backward compat
   const allItems = effectiveNavCategories.flatMap(c => c.items);
   const visibleItems = allItems.filter(isItemVisible);
-  // Never show Pro items in "More Tools" for free users — DaVinci model: Pro is invisible, not locked
-  const hiddenItems = allItems.filter(i => !i.always && !i.pro && !isItemVisible(i));
+  const hiddenItems = allItems.filter(i => !i.always && !i.studio && !isItemVisible(i));
 
   // Only pass to the customiser items that CAN currently appear (pass feature/permission gates).
   // This prevents users from configuring items they'd never actually see.
@@ -422,7 +433,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
         <div className="relative flex items-center gap-3">
           <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="shrink-0 group">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black text-white transition-all duration-200 group-hover:scale-105"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black text-white transition-[box-shadow] duration-200"
               style={{
                 background: isTvProduction
                   ? 'linear-gradient(135deg, #d97706, #92400e)'
@@ -542,7 +553,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             <div className="mt-1">
               <button
                 onClick={() => setOtherExpanded(v => !v)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-all text-[10px] font-semibold uppercase tracking-wider group"
+                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-colors text-[10px] font-semibold uppercase tracking-wider group"
               >
                 <svg className={cn('w-3 h-3 transition-transform duration-200 shrink-0', otherExpanded && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -596,7 +607,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           <div className="mt-2">
             <button
               onClick={() => setShowMoreTools(!showMoreTools)}
-              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-all text-[10px] font-semibold uppercase tracking-wider"
+              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-colors text-[10px] font-semibold uppercase tracking-wider"
             >
               <svg className={cn('w-3 h-3 transition-transform duration-200', showMoreTools && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -678,7 +689,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                     </Link>
                     <button
                       onClick={() => saveShortcuts(shortcuts.filter((s) => s.id !== sc.id))}
-                      className="mr-0.5 p-1 rounded opacity-0 group-hover/sc:opacity-100 text-surface-600 hover:text-red-400 transition-all shrink-0"
+                      className="mr-0.5 p-1 rounded opacity-0 group-hover/sc:opacity-100 text-surface-600 hover:text-red-400 transition-opacity shrink-0"
                       title="Unpin"
                     >
                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -722,12 +733,12 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           {!sidebarCollapsed && (
             <div className="flex items-center gap-1">
               <OfflineIndicator />
-              <Link href="/messages" className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all" title="Messages">
+              <Link href="/messages" className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors" title="Messages">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
               </Link>
               <button
                 onClick={() => { setTemplateName(currentProject?.title || ''); setShowSaveTemplate(true); }}
-                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all"
+                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors"
                 title="Save as template"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
@@ -739,7 +750,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
               />
               <button
                 onClick={() => setShowCustomiser(true)}
-                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all"
+                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors"
                 title="Customise sidebar"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -751,7 +762,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             aria-label={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             title={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             className={cn(
-              'flex items-center justify-center p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-all',
+              'flex items-center justify-center p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors',
               sidebarCollapsed && 'w-full'
             )}
           >
@@ -788,7 +799,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
         <div className="flex items-center justify-between px-3 py-2.5">
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/8 transition-all"
+            className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/8 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
@@ -831,7 +842,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'hidden md:flex flex-col transition-all duration-300',
+          'hidden md:flex flex-col transition-[width] duration-300',
           sidebarCollapsed ? 'w-14' : 'w-60'
         )}
         style={{ background: '#0a0a16', borderRight: '1px solid rgb(var(--brand-900) / 0.35)' }}
@@ -900,6 +911,15 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           </div>
         </div>
       </Modal>
+
+      {/* Guided Tour — resumed from sessionStorage */}
+      {showTour && (
+        <GuidedTour
+          onComplete={() => { endTour(); setShowTour(false); }}
+          usageIntent={tourIntent}
+          projectId={tourProjectId}
+        />
+      )}
     </div>
   );
 }

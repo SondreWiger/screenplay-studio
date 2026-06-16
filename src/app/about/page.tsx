@@ -14,10 +14,20 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: 'About Screenplay Studio',
       description: desc,
+      images: [
+        {
+          url: `/api/og?title=About+Screenplay+Studio&subtitle=${encodeURIComponent(desc)}`,
+          width: 1200,
+          height: 630,
+          alt: 'About Screenplay Studio',
+        },
+      ],
     },
     twitter: {
+      card: 'summary_large_image',
       title: 'About Screenplay Studio',
       description: desc,
+      images: [`/api/og?title=About+Screenplay+Studio&subtitle=${encodeURIComponent(desc)}`],
     },
   };
 }
@@ -129,7 +139,7 @@ export default async function AboutPage() {
               </h2>
               <div className="space-y-4 text-sm sm:text-base text-white/50 leading-relaxed">
                 <p>
-                  The standard setup in 2024: Final Draft or Celtx at $100+/yr for formatting. A separate Google Sheet for the schedule. Another one for the budget. Notion for character bibles. Your inbox handling feedback rounds. Screenplay Studio puts all of it in one place — not because "all-in-one" is a marketing phrase, but because that fragmented setup genuinely wastes time that should go into the work.
+                  The standard setup in 2024: Final Draft or Celtx at $100+/yr for formatting. A separate Google Sheet for the schedule. Another one for the budget. Notion for character bibles. Your inbox handling feedback rounds. Screenplay Studio puts all of it in one place — not because &quot;all-in-one&quot; is a marketing phrase, but because that fragmented setup genuinely wastes time that should go into the work.
                 </p>
                 <p>
                   We built Screenplay Studio because that should not be the default. A student in Oslo writing their first short film deserves the same toolset as a production company in Los Angeles. Format should not determine access.
@@ -277,7 +287,7 @@ export default async function AboutPage() {
             </Link>
             <Link
               href="/community"
-              className="px-6 py-3 text-sm font-semibold text-white/50 hover:text-white transition-colors border border-white/10 hover:border-white/20 rounded-sm"
+              className="px-6 py-3 text-sm font-semibold text-white/50 hover:text-white transition-colors border border-white/10 hover:border-white/20 rounded-md"
             >
               Join the Community →
             </Link>
