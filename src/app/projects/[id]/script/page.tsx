@@ -2312,16 +2312,17 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <p className="text-sm mb-2">
-                  {isAudioDrama ? 'Start writing your audio drama' : isContentCreator ? 'Start writing your script' : 'Start writing your screenplay'}
+                  {isAudioDrama ? 'Start writing your audio drama' : isContentCreator ? 'Start writing your script' : isComic ? 'Start writing your comic' : 'Start writing your screenplay'}
                 </p>
                 <p className="text-xs opacity-60 mb-6">Press Enter to add lines. Tab to change element type.</p>
                 <button onClick={() => handleToolbarAdd(
                   isAudioDrama && audioElementCycle.length > 0 ? audioElementCycle[0]
                   : isContentCreator ? 'chapter_marker'
+                  : isComic ? 'comic_page'
                   : 'scene_heading'
                 )}
                   className={cn('px-4 py-2 rounded text-sm', darkMode ? 'bg-surface-700 hover:bg-surface-600 text-white' : 'bg-surface-800 hover:bg-gray-200 text-white/60')}>
-                  + Add {isAudioDrama && audioElementCycle.length > 0 ? ELEMENT_LABELS[audioElementCycle[0]] : isContentCreator ? 'Chapter' : 'Scene Heading'}
+                  + Add {isAudioDrama && audioElementCycle.length > 0 ? ELEMENT_LABELS[audioElementCycle[0]] : isContentCreator ? 'Chapter' : isComic ? 'Page' : 'Scene Heading'}
                 </button>
               </div>
             </div>
@@ -2420,9 +2421,11 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                             isContentCreator={isContentCreator}
                             isAudioDrama={isAudioDrama}
                             isStagePlay={isStagePlay}
+                            isComic={isComic}
                             audioFormat={resolvedAudioFormat}
                             audioElementCycle={audioElementCycle}
                             stagePlayElementCycle={STAGEPLAY_ELEMENT_CYCLE}
+                            comicElementCycle={COMIC_ELEMENT_CYCLE}
                           />
                         </div>
                       );
@@ -3348,9 +3351,11 @@ interface LineEditorProps {
   isContentCreator: boolean;
   isAudioDrama: boolean;
   isStagePlay: boolean;
+  isComic: boolean;
   audioFormat: string;
   audioElementCycle: ScriptElementType[];
   stagePlayElementCycle: ScriptElementType[];
+  comicElementCycle: ScriptElementType[];
 }
 
 const LineEditor = memo(function LineEditor({
@@ -3375,9 +3380,11 @@ const LineEditor = memo(function LineEditor({
   isContentCreator,
   isAudioDrama,
   isStagePlay,
+  isComic,
   audioFormat,
   audioElementCycle,
   stagePlayElementCycle,
+  comicElementCycle,
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector — stable reference prevents re-renders
   const selectElement = useCallback(
@@ -3577,6 +3584,7 @@ const LineEditor = memo(function LineEditor({
     isAudioDrama ? audioElementCycle
     : isContentCreator ? YOUTUBE_ELEMENT_CYCLE
     : isStagePlay ? stagePlayElementCycle
+    : isComic ? comicElementCycle
     : ELEMENT_CYCLE;
 
   const commitPickerType = (idx: number) => {
@@ -4076,7 +4084,7 @@ const LineEditor = memo(function LineEditor({
 
         {showTypeMenu && (
           <div className="absolute -left-24 top-6 z-[9999] rounded-xl py-1.5" style={{ minWidth: 150, backgroundColor: '#252542', border: '1px solid rgba(255,255,255,0.13)', boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)' }}>
-            {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : ELEMENT_CYCLE).map((type) => (
+            {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : isComic ? comicElementCycle : ELEMENT_CYCLE).map((type) => (
               <button key={type} onClick={() => {
                 useScriptStore.getState().updateElement(elementId, { element_type: type });
                 setShowTypeMenu(false);
@@ -4149,7 +4157,7 @@ const LineEditor = memo(function LineEditor({
                 <p className="text-[10px] text-surface-500 uppercase tracking-wider">Change type</p>
               </div>
               <div className="p-1.5 max-h-[50vh] overflow-y-auto">
-                {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : ELEMENT_CYCLE).map((type) => (
+                {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : isComic ? comicElementCycle : ELEMENT_CYCLE).map((type) => (
                   <button key={type} onClick={() => {
                     haptic();
                     useScriptStore.getState().updateElement(elementId, { element_type: type });
@@ -4200,8 +4208,10 @@ const LineEditor = memo(function LineEditor({
     && prev.commentCount === next.commentCount
     && prev.isContentCreator === next.isContentCreator
     && prev.isAudioDrama === next.isAudioDrama
+    && prev.isComic === next.isComic
     && prev.audioFormat === next.audioFormat
-    && prev.audioElementCycle === next.audioElementCycle;
+    && prev.audioElementCycle === next.audioElementCycle
+    && prev.comicElementCycle === next.comicElementCycle;
   // Note: element content changes are handled by the Zustand selector
   // inside the component, not through props. onFocused and onComment
   // are intentionally excluded — they're stable parent callbacks.
