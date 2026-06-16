@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Terms of Service — Screenplay Studio',
+  title: 'Terms of Service ,  Screenplay Studio',
   description: 'Terms of Service for Screenplay Studio. Read our comprehensive terms governing the use of our screenwriting platform.',
 };
 
@@ -207,7 +207,7 @@ export default function TermsOfServicePage() {
             <li>Full ownership and data portability rights for all content.</li>
           </ul>
           <p>
-            We will not retroactively impose limitations on existing free tier functionality without providing at least ninety (90) days&apos; notice and a migration path for affected users. The free tier is not a trial — it is a permanent offering.
+            We will not retroactively impose limitations on existing free tier functionality without providing at least ninety (90) days&apos; notice and a migration path for affected users. The free tier is not a trial ,  it is a permanent offering.
           </p>
 
           {/* 8. Acceptable Conduct */}
@@ -369,8 +369,8 @@ export default function TermsOfServicePage() {
           <h2 id="kill-switch" className="scroll-mt-24">17b. Open-Source Kill Switch</h2>
           <p>
             Screenplay Studio is developed and maintained by Northem Development as a solo development effort.
-            The open-source kill switch is a commitment that if the project can no longer be maintained &mdash;
-            whether due to personal circumstances, financial constraints, or any other reason &mdash; the full
+            The open-source kill switch is a commitment that if the project can no longer be maintained , 
+            whether due to personal circumstances, financial constraints, or any other reason ,  the full
             codebase will be released publicly so that users can continue running the software on their own
             infrastructure.
           </p>
@@ -538,7 +538,7 @@ export default function TermsOfServicePage() {
             <p className="mt-3 text-surface-500">
               Screenplay Studio is a product of{' '}
               <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 transition-colors">Northem Development</a>
-              {' '}&mdash; made with ♥ in Norway.
+              {' '},  made with ♥ in Norway.
             </p>
             <div className="mt-4 flex gap-4">
               <Link href="/legal/privacy" className="text-red-400 hover:text-red-300 transition-colors">Privacy Policy</Link>

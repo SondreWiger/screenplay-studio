@@ -54,7 +54,7 @@ const legalPages = [
   {
     title: 'Open-Source Kill Switch',
     href: '/legal/opensource-killswitch',
-    description: 'What happens if the project can no longer be maintained — open-sourcing, self-hosting, and data portability.',
+    description: 'What happens if the project can no longer be maintained ,  open-sourcing, self-hosting, and data portability.',
   },
 ];
 

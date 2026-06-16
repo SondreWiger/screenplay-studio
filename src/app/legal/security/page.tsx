@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Security Policy — Screenplay Studio',
+  title: 'Security Policy ,  Screenplay Studio',
   description: 'Learn about our infrastructure security, encryption, access controls, vulnerability disclosure program, and compliance measures at Screenplay Studio.',
 };
 
@@ -323,13 +323,13 @@ export default function SecurityPage() {
           </p>
           <ul className="text-surface-300 space-y-1">
             <li>
-              <strong className="text-white">GDPR</strong> (General Data Protection Regulation) — We comply with
+              <strong className="text-white">GDPR</strong> (General Data Protection Regulation) ,  We comply with
               all GDPR requirements for EU users, including data subject rights, lawful processing bases, and
               cross-border transfer safeguards. See our{' '}
               <Link href="/legal/data-processing" className="text-red-400 hover:text-red-300">Data Processing Agreement</Link> for details.
             </li>
             <li>
-              <strong className="text-white">CCPA</strong> (California Consumer Privacy Act) — California residents
+              <strong className="text-white">CCPA</strong> (California Consumer Privacy Act) ,  California residents
               have additional rights under the CCPA, including the right to know what personal information is collected,
               the right to delete, and the right to opt out of the sale of personal information. We do not sell personal
               information. See our <Link href="/legal/privacy" className="text-red-400 hover:text-red-300">Privacy Policy</Link> for

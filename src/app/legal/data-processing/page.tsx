@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Data Processing Agreement — Screenplay Studio',
+  title: 'Data Processing Agreement ,  Screenplay Studio',
   description: 'Data Processing Agreement (DPA) for Screenplay Studio, outlining GDPR-compliant data handling, sub-processors, security measures, and data subject rights.',
 };
 
@@ -58,7 +58,7 @@ export default function DataProcessingPage() {
                   <td className="py-3 pr-4 font-medium text-white">Controller</td>
                   <td className="py-3">
                     The user or entity that determines the purposes and means of the processing of personal data.
-                    In most cases, this is you — the Screenplay Studio user.
+                    In most cases, this is you ,  the Screenplay Studio user.
                   </td>
                 </tr>
                 <tr className="border-b border-surface-800">
@@ -154,12 +154,12 @@ export default function DataProcessingPage() {
             including:
           </p>
           <ul className="text-surface-300 space-y-1">
-            <li><strong className="text-white">Right of access</strong> — We provide data export tools in your account settings</li>
-            <li><strong className="text-white">Right to rectification</strong> — You can update your data at any time through your profile</li>
-            <li><strong className="text-white">Right to erasure</strong> — Account and content deletion is available in settings</li>
-            <li><strong className="text-white">Right to restrict processing</strong> — Contact us to restrict specific processing activities</li>
-            <li><strong className="text-white">Right to data portability</strong> — Export your data in standard formats (JSON, PDF, Fountain)</li>
-            <li><strong className="text-white">Right to object</strong> — You may object to specific processing; we will cease unless we have compelling legitimate grounds</li>
+            <li><strong className="text-white">Right of access</strong> ,  We provide data export tools in your account settings</li>
+            <li><strong className="text-white">Right to rectification</strong> ,  You can update your data at any time through your profile</li>
+            <li><strong className="text-white">Right to erasure</strong> ,  Account and content deletion is available in settings</li>
+            <li><strong className="text-white">Right to restrict processing</strong> ,  Contact us to restrict specific processing activities</li>
+            <li><strong className="text-white">Right to data portability</strong> ,  Export your data in standard formats (JSON, PDF, Fountain)</li>
+            <li><strong className="text-white">Right to object</strong> ,  You may object to specific processing; we will cease unless we have compelling legitimate grounds</li>
           </ul>
           <p className="text-surface-300">
             We will respond to data subject requests within 30 days. For complex requests, this may be extended by an

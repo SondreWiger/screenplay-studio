@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Open-Source Kill Switch — Screenplay Studio',
-  description: 'What happens to Screenplay Studio if the project can no longer be maintained — open-sourcing, self-hosting, and data portability guarantees.',
+  title: 'Open-Source Kill Switch ,  Screenplay Studio',
+  description: 'What happens to Screenplay Studio if the project can no longer be maintained ,  open-sourcing, self-hosting, and data portability guarantees.',
 };
 
 export default function OpensourceKillswitchPage() {
@@ -37,8 +37,8 @@ export default function OpensourceKillswitchPage() {
           <p>
             Screenplay Studio is developed and maintained by Northem Development, currently as a solo
             development effort. The open-source kill switch is a commitment that if the project can no
-            longer be maintained — whether due to personal circumstances, financial constraints, or any
-            other reason — the full codebase will be released publicly so that users can continue running
+            longer be maintained ,  whether due to personal circumstances, financial constraints, or any
+            other reason ,  the full codebase will be released publicly so that users can continue running
             the software on their own infrastructure.
           </p>
           <p>
@@ -124,7 +124,7 @@ export default function OpensourceKillswitchPage() {
           </ul>
           <p>
             The code will be published on GitHub and mirrored to at least one additional platform to
-            ensure redundancy. The license will permit free use, modification, and distribution —
+            ensure redundancy. The license will permit free use, modification, and distribution , 
             ensuring the community can maintain and improve the software independently.
           </p>
 

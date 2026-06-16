@@ -220,7 +220,7 @@ export default function DMCAPage() {
               Screenplay Studio operates as a service provider under the safe harbor provisions of the DMCA (17 U.S.C. § 512). We do not monitor or review all content uploaded by users prior to its publication. We rely on copyright holders to notify us of alleged infringement.
             </p>
             <p className="text-surface-300">
-              Upon receiving a valid DMCA takedown notice, we will act expeditiously to remove or disable access to the allegedly infringing material. We do not make legal determinations about the validity of copyright claims — we follow the statutory procedures outlined in the DMCA.
+              Upon receiving a valid DMCA takedown notice, we will act expeditiously to remove or disable access to the allegedly infringing material. We do not make legal determinations about the validity of copyright claims ,  we follow the statutory procedures outlined in the DMCA.
             </p>
           </section>
 

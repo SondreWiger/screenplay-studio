@@ -170,10 +170,10 @@ export default function CookiePolicyPage() {
             </p>
             <ul className="list-disc list-inside text-surface-300 space-y-2">
               <li>
-                <strong className="text-white">Supabase</strong> &mdash; Authentication and backend services. Their cookies are essential for login functionality.
+                <strong className="text-white">Supabase</strong> ,  Authentication and backend services. Their cookies are essential for login functionality.
               </li>
               <li>
-                <strong className="text-white">Vercel</strong> &mdash; Hosting and anonymized analytics. Used to measure site performance and usage patterns.
+                <strong className="text-white">Vercel</strong> ,  Hosting and anonymized analytics. Used to measure site performance and usage patterns.
               </li>
             </ul>
             <p className="text-surface-300 mt-4">

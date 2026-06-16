@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Community Guidelines — Screenplay Studio',
+  title: 'Community Guidelines ,  Screenplay Studio',
   description: 'Rules and guidelines for participating in the Screenplay Studio community.',
 };
 
@@ -57,7 +57,7 @@ export default function CommunityGuidelinesPage() {
               { icon: '🤝', title: 'Be Respectful', desc: 'Treat every member with dignity. Disagreements are fine; personal attacks are not. Critique the work, not the person.' },
               { icon: '🔒', title: 'Protect Original Work', desc: 'Respect intellectual property. Only share work you own or have permission to share. Give proper credit.' },
               { icon: '🌍', title: 'Be Inclusive', desc: 'Our community is global. Be mindful of cultural differences and ensure everyone feels welcome regardless of their background.' },
-              { icon: '💡', title: 'Contribute Positively', desc: 'Every interaction should add value — whether it\'s encouragement, constructive criticism, a shared resource, or simply a kind word.' },
+              { icon: '💡', title: 'Contribute Positively', desc: 'Every interaction should add value ,  whether it\'s encouragement, constructive criticism, a shared resource, or simply a kind word.' },
               { icon: '🛡️', title: 'Keep Everyone Safe', desc: 'If you see something concerning, report it. We all share the responsibility of maintaining a safe community.' },
             ].map((p) => (
               <div key={p.title} className="bg-surface-900 rounded-lg p-4 border border-surface-800">
@@ -71,7 +71,7 @@ export default function CommunityGuidelinesPage() {
         {/* ── Posting Guidelines ──────────────────────────── */}
         <section id="posting-guidelines">
           <h2 className="text-lg font-semibold text-white mb-4">2. Posting Guidelines</h2>
-          <p className="text-sm text-surface-300 mb-4">When sharing content in the community — posts, scripts, discussions, or resources:</p>
+          <p className="text-sm text-surface-300 mb-4">When sharing content in the community ,  posts, scripts, discussions, or resources:</p>
           <div className="space-y-4">
             <div className="flex gap-3 items-start">
               <span className="text-green-400 text-sm mt-0.5 shrink-0">✓ Do:</span>
@@ -109,7 +109,7 @@ export default function CommunityGuidelinesPage() {
           </p>
           <div className="space-y-3">
             {[
-              { title: 'Be Constructive', desc: 'Point out what works well and what could be improved. "This doesn\'t work" is not helpful; "The dialogue in Act 2 feels expository — maybe show the conflict through action instead?" is.' },
+              { title: 'Be Constructive', desc: 'Point out what works well and what could be improved. "This doesn\'t work" is not helpful; "The dialogue in Act 2 feels expository ,  maybe show the conflict through action instead?" is.' },
               { title: 'Be Specific', desc: 'Reference particular scenes, pages, or lines when giving feedback. Vague praise or criticism doesn\'t help the writer grow.' },
               { title: 'Be Kind', desc: 'Remember there\'s a person behind every script. Sharing creative work requires vulnerability. Treat others\' work as you\'d want yours treated.' },
               { title: 'Stay On Topic', desc: 'Keep comments relevant to the work or discussion. Off-topic conversations can derail productive feedback sessions.' },
@@ -145,11 +145,11 @@ export default function CommunityGuidelinesPage() {
           <ul className="list-disc pl-6 space-y-2 text-sm text-surface-300">
             <li>Submit only <strong className="text-white">original work</strong> created specifically for the challenge</li>
             <li>Follow the specific rules, themes, and constraints of each challenge</li>
-            <li>Submit before the deadline — late submissions may not be accepted</li>
+            <li>Submit before the deadline ,  late submissions may not be accepted</li>
             <li>Vote fairly and honestly based on the quality of the work, not personal relationships</li>
-            <li>Accept results gracefully — not every entry wins, and that&apos;s okay</li>
+            <li>Accept results gracefully ,  not every entry wins, and that&apos;s okay</li>
             <li>Don&apos;t manipulate votes through fake accounts or coordinated voting</li>
-            <li>Provide feedback on other entries — challenges are about learning as much as winning</li>
+            <li>Provide feedback on other entries ,  challenges are about learning as much as winning</li>
             <li>AI-assisted entries must be clearly disclosed as such</li>
           </ul>
         </section>
@@ -160,9 +160,9 @@ export default function CommunityGuidelinesPage() {
           <p className="text-sm text-surface-300 mb-4">Our direct messaging feature is for genuine connection between community members:</p>
           <ul className="list-disc pl-6 space-y-2 text-sm text-surface-300">
             <li>Only message people who have DMs enabled and are open to contact</li>
-            <li>Introduce yourself before asking for favors — cold pitches without context are unwelcome</li>
+            <li>Introduce yourself before asking for favors ,  cold pitches without context are unwelcome</li>
             <li>Don&apos;t send unsolicited promotional content, scripts for coverage, or requests for free work</li>
-            <li>Respect boundaries — if someone doesn&apos;t respond or asks you to stop, do so immediately</li>
+            <li>Respect boundaries ,  if someone doesn&apos;t respond or asks you to stop, do so immediately</li>
             <li>No harassment, threats, or inappropriate content in private messages</li>
             <li>Report abusive messages using the report feature and block the offending user</li>
             <li>DM abuse may result in messaging restrictions or account suspension</li>
@@ -180,7 +180,7 @@ export default function CommunityGuidelinesPage() {
             <li>Do not upload copyrighted scripts from produced films, TV shows, or other writers</li>
             <li>Understand that once shared publicly, others may read and comment on your work</li>
             <li>You can unpublish or remove your shared scripts at any time</li>
-            <li>Public scripts are protected from AI scraping — see our <Link href="/legal/security" className="text-red-400 hover:text-red-300">Security Policy</Link></li>
+            <li>Public scripts are protected from AI scraping ,  see our <Link href="/legal/security" className="text-red-400 hover:text-red-300">Security Policy</Link></li>
           </ul>
         </section>
 
@@ -193,7 +193,7 @@ export default function CommunityGuidelinesPage() {
               <li>Hate speech, slurs, or content that promotes discrimination based on race, ethnicity, gender, sexual orientation, religion, disability, or any other characteristic</li>
               <li>Threats of violence, promotion of terrorism, or content inciting harm to any individual or group</li>
               <li>Sexually explicit content, pornographic material, or content sexualizing minors in any form</li>
-              <li>Doxxing — sharing personal, private, or identifying information about others without consent</li>
+              <li>Doxxing ,  sharing personal, private, or identifying information about others without consent</li>
               <li>Misinformation or content deliberately designed to deceive or manipulate others</li>
               <li>Content that infringes on copyrights, trademarks, or other intellectual property rights</li>
               <li>Malicious links, phishing attempts, or content intended to compromise users&apos; security</li>
@@ -244,8 +244,8 @@ export default function CommunityGuidelinesPage() {
           <p className="text-sm text-surface-300 mb-4">If you encounter content or behavior that violates these guidelines:</p>
           <ul className="list-disc pl-6 space-y-2 text-sm text-surface-300">
             <li>Use the <strong className="text-white">Report</strong> button available on posts, comments, and user profiles</li>
-            <li>Include as much context as possible — screenshots, links, and descriptions help us investigate</li>
-            <li>Reports are <strong className="text-white">confidential</strong> — we will not reveal your identity to the person being reported</li>
+            <li>Include as much context as possible ,  screenshots, links, and descriptions help us investigate</li>
+            <li>Reports are <strong className="text-white">confidential</strong> ,  we will not reveal your identity to the person being reported</li>
             <li>We review all reports within 48 hours and take action as appropriate</li>
             <li>False or malicious reports may result in action against the reporter</li>
             <li>For urgent safety concerns, email us directly at{' '}
@@ -293,7 +293,7 @@ export default function CommunityGuidelinesPage() {
             </div>
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-white mb-2">🤖 Automated Detection</h3>
-              <p className="text-xs text-surface-400">We use automated tools to detect spam, harassment patterns, and prohibited content — but human moderators make all final decisions.</p>
+              <p className="text-xs text-surface-400">We use automated tools to detect spam, harassment patterns, and prohibited content ,  but human moderators make all final decisions.</p>
             </div>
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-white mb-2">📊 Transparency Reports</h3>

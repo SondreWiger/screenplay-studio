@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Content Policy — Screenplay Studio',
+  title: 'Content Policy ,  Screenplay Studio',
   description: 'Understand what content is allowed on Screenplay Studio, including creative works, community guidelines, prohibited content, and our moderation approach.',
 };
 
@@ -61,7 +61,7 @@ export default function ContentPolicyPage() {
           <ul className="text-surface-300 space-y-1">
             <li>
               <strong className="text-white">Mature themes are allowed</strong> in screenplays and creative
-              works, including violence, strong language, substance use, and adult situations — when handled
+              works, including violence, strong language, substance use, and adult situations ,  when handled
               with artistic intent and purpose.
             </li>
             <li>
@@ -82,7 +82,7 @@ export default function ContentPolicyPage() {
           <h2 className="text-2xl font-semibold text-white">3. Prohibited Content</h2>
           <p className="text-surface-300">
             The following content is <strong className="text-white">strictly prohibited</strong> on Screenplay
-            Studio — in both private and public contexts. Violations may result in immediate account termination
+            Studio ,  in both private and public contexts. Violations may result in immediate account termination
             and reporting to the appropriate authorities.
           </p>
           <div className="rounded-lg bg-red-950/30 border border-red-900/50 p-6 mt-4">
@@ -226,7 +226,7 @@ export default function ContentPolicyPage() {
               and may be subject to takedown requests from rights holders
             </li>
             <li>
-              Adaptations of public domain works are permitted — see our{' '}
+              Adaptations of public domain works are permitted ,  see our{' '}
               <Link href="/legal/copyright" className="text-red-400 hover:text-red-300">Copyright &amp; IP Policy</Link> for details
             </li>
             <li>
@@ -286,7 +286,7 @@ export default function ContentPolicyPage() {
             </li>
             <li>
               <strong className="text-white">Intent:</strong> Is the content designed to harm, exploit, or
-              harass — or is it a good-faith creative effort?
+              harass ,  or is it a good-faith creative effort?
             </li>
             <li>
               <strong className="text-white">Audience:</strong> Is the content appropriately gated with
@@ -294,7 +294,7 @@ export default function ContentPolicyPage() {
             </li>
           </ul>
           <p className="text-surface-300">
-            When in doubt, we err on the side of creative expression — particularly for private content.
+            When in doubt, we err on the side of creative expression ,  particularly for private content.
             For public content, we may request that you add content warnings or adjust sharing settings rather
             than removing the content outright.
           </p>

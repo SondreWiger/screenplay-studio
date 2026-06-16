@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Copyright & IP Policy — Screenplay Studio',
+  title: 'Copyright & IP Policy ,  Screenplay Studio',
   description: 'Learn about content ownership, intellectual property rights, and how we handle your creative works at Screenplay Studio.',
 };
 
@@ -37,7 +37,7 @@ export default function CopyrightPage() {
             <li>Any other creative content you produce using our tools</li>
           </ul>
           <p className="text-surface-300">
-            We do not claim any ownership rights over your creative content. Your scripts are yours — before, during,
+            We do not claim any ownership rights over your creative content. Your scripts are yours ,  before, during,
             and after using Screenplay Studio.
           </p>
         </section>
@@ -58,7 +58,7 @@ export default function CopyrightPage() {
           <p className="text-surface-300">
             This license is limited strictly to what is technically necessary to run the service. We will
             <strong className="text-white"> never</strong> use your content for training AI models, marketing
-            purposes, or any use beyond providing you with our service — unless you explicitly opt in.
+            purposes, or any use beyond providing you with our service ,  unless you explicitly opt in.
           </p>
         </section>
 
@@ -124,7 +124,7 @@ export default function CopyrightPage() {
               to read and view your shared content on the platform.
             </li>
             <li>
-              This license is <strong className="text-white">revocable</strong> — you can remove your content
+              This license is <strong className="text-white">revocable</strong> ,  you can remove your content
               from the Showcase or Community at any time by changing your sharing settings.
             </li>
             <li>

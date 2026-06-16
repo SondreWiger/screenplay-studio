@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Creator Affiliate Terms — Screenplay Studio',
+  title: 'Creator Affiliate Terms ,  Screenplay Studio',
   description:
     'Terms and conditions for participating in the Screenplay Studio Creator Affiliate Program, including referral tracking, proportional payouts, and eligibility requirements.',
 };
@@ -51,7 +51,7 @@ export default function CreatorTermsPage() {
             </p>
             <ul className="text-surface-300 space-y-2">
               <li>Each new account can only be attributed to one creator (the most recent referral link visited).</li>
-              <li>Self-referrals are not counted — you cannot earn credit for your own signup.</li>
+              <li>Self-referrals are not counted ,  you cannot earn credit for your own signup.</li>
               <li>We do not use third-party cookies or cross-site tracking for attribution.</li>
               <li>Attribution data is retained for the purpose of computing the monthly payout batch only.</li>
             </ul>

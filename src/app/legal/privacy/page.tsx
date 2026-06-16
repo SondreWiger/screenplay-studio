@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Privacy Policy — Screenplay Studio',
+  title: 'Privacy Policy ,  Screenplay Studio',
   description: 'Privacy Policy for Screenplay Studio. Learn how we collect, use, and protect your personal data in compliance with GDPR and applicable data protection laws.',
 };
 
@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Privacy</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Privacy Policy</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: March 18, 2026</p>
-          <p className="text-xs text-surface-600 mt-1">Previous version: February 22, 2026 &mdash; <a href="mailto:dpo@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
+          <p className="text-xs text-surface-600 mt-1">Previous version: February 22, 2026 ,  <a href="mailto:dpo@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
         </div>
 
         {/* Table of Contents */}
@@ -70,33 +70,33 @@ export default function PrivacyPolicyPage() {
           <h3>2.1 Account Data</h3>
           <p>Data provided during account registration and management:</p>
           <ul>
-            <li><strong>Email address</strong> — used for authentication, account recovery, and communications.</li>
-            <li><strong>Display name / username</strong> — used for identification within the Service.</li>
-            <li><strong>Password hash</strong> — securely hashed using industry-standard algorithms (bcrypt/argon2). We never store passwords in plain text and cannot access your actual password.</li>
-            <li><strong>Authentication provider data</strong> — if you sign in via a third-party provider (e.g., Google, GitHub), we receive your name, email, and profile picture URL from that provider.</li>
+            <li><strong>Email address</strong> ,  used for authentication, account recovery, and communications.</li>
+            <li><strong>Display name / username</strong> ,  used for identification within the Service.</li>
+            <li><strong>Password hash</strong> ,  securely hashed using industry-standard algorithms (bcrypt/argon2). We never store passwords in plain text and cannot access your actual password.</li>
+            <li><strong>Authentication provider data</strong> ,  if you sign in via a third-party provider (e.g., Google, GitHub), we receive your name, email, and profile picture URL from that provider.</li>
           </ul>
 
           <h3>2.2 Profile Data</h3>
           <p>Optional information you choose to add to your public profile:</p>
           <ul>
-            <li><strong>Biography / about text</strong> — your self-description visible on your profile.</li>
-            <li><strong>Avatar / profile picture</strong> — uploaded image or Gravatar.</li>
-            <li><strong>External links</strong> — links to your website, IMDb, social media, or portfolio.</li>
-            <li><strong>Location</strong> — optional self-reported location (city, country).</li>
-            <li><strong>Professional role / title</strong> — e.g., screenwriter, director, producer.</li>
+            <li><strong>Biography / about text</strong> ,  your self-description visible on your profile.</li>
+            <li><strong>Avatar / profile picture</strong> ,  uploaded image or Gravatar.</li>
+            <li><strong>External links</strong> ,  links to your website, IMDb, social media, or portfolio.</li>
+            <li><strong>Location</strong> ,  optional self-reported location (city, country).</li>
+            <li><strong>Professional role / title</strong> ,  e.g., screenwriter, director, producer.</li>
           </ul>
 
           <h3>2.3 Project &amp; Creative Data</h3>
           <p>Content you create, upload, or store within the Service:</p>
           <ul>
-            <li><strong>Screenplays and scripts</strong> — full text of your scripts, including dialogue, action lines, scene headings, and all formatting elements.</li>
-            <li><strong>Scenes and scene metadata</strong> — scene breakdowns, scene numbers, locations, times of day, and scene notes.</li>
-            <li><strong>Characters</strong> — character names, descriptions, backstories, relationships, and arcs.</li>
-            <li><strong>Storyboard shots</strong> — shot descriptions, camera angles, visual references, and annotations.</li>
-            <li><strong>Budgets</strong> — production budget items, estimates, and financial planning data.</li>
-            <li><strong>Schedules</strong> — shooting schedules, production calendars, and timeline data.</li>
-            <li><strong>Project metadata</strong> — project titles, loglines, genres, tags, creation dates, and modification history.</li>
-            <li><strong>Comments and annotations</strong> — notes, feedback, and comments within projects.</li>
+            <li><strong>Screenplays and scripts</strong> ,  full text of your scripts, including dialogue, action lines, scene headings, and all formatting elements.</li>
+            <li><strong>Scenes and scene metadata</strong> ,  scene breakdowns, scene numbers, locations, times of day, and scene notes.</li>
+            <li><strong>Characters</strong> ,  character names, descriptions, backstories, relationships, and arcs.</li>
+            <li><strong>Storyboard shots</strong> ,  shot descriptions, camera angles, visual references, and annotations.</li>
+            <li><strong>Budgets</strong> ,  production budget items, estimates, and financial planning data.</li>
+            <li><strong>Schedules</strong> ,  shooting schedules, production calendars, and timeline data.</li>
+            <li><strong>Project metadata</strong> ,  project titles, loglines, genres, tags, creation dates, and modification history.</li>
+            <li><strong>Comments and annotations</strong> ,  notes, feedback, and comments within projects.</li>
           </ul>
           <p className="font-semibold text-white">
             Important: You retain 100% ownership of all creative content. We never access your creative content for any purpose other than providing the Service to you. See Section 7 (AI &amp; Machine Learning Policy) for our commitment regarding AI.
@@ -105,43 +105,43 @@ export default function PrivacyPolicyPage() {
           <h3>2.4 Usage Data</h3>
           <p>Data automatically collected about how you interact with the Service:</p>
           <ul>
-            <li><strong>Page views and navigation</strong> — which pages and features you visit.</li>
-            <li><strong>Feature usage</strong> — which tools and features you use, frequency, and duration.</li>
-            <li><strong>Session duration</strong> — how long you use the Service per session.</li>
-            <li><strong>Referral source</strong> — how you arrived at the Service (e.g., search engine, direct link).</li>
-            <li><strong>Interaction events</strong> — clicks, scrolls, and UI interactions (anonymized and aggregated).</li>
+            <li><strong>Page views and navigation</strong> ,  which pages and features you visit.</li>
+            <li><strong>Feature usage</strong> ,  which tools and features you use, frequency, and duration.</li>
+            <li><strong>Session duration</strong> ,  how long you use the Service per session.</li>
+            <li><strong>Referral source</strong> ,  how you arrived at the Service (e.g., search engine, direct link).</li>
+            <li><strong>Interaction events</strong> ,  clicks, scrolls, and UI interactions (anonymized and aggregated).</li>
           </ul>
 
           <h3>2.5 Technical Data</h3>
           <p>Data automatically collected from your device and connection:</p>
           <ul>
-            <li><strong>IP address</strong> — used for security, fraud prevention, and approximate geolocation.</li>
-            <li><strong>Browser type and version</strong> — e.g., Chrome 120, Firefox 121, Safari 17.</li>
-            <li><strong>Device type and operating system</strong> — e.g., desktop/macOS, mobile/iOS.</li>
-            <li><strong>Screen resolution</strong> — used for responsive design optimization.</li>
-            <li><strong>Language and timezone</strong> — browser language preference and timezone setting.</li>
-            <li><strong>User agent string</strong> — technical browser identification string.</li>
+            <li><strong>IP address</strong> ,  used for security, fraud prevention, and approximate geolocation.</li>
+            <li><strong>Browser type and version</strong> ,  e.g., Chrome 120, Firefox 121, Safari 17.</li>
+            <li><strong>Device type and operating system</strong> ,  e.g., desktop/macOS, mobile/iOS.</li>
+            <li><strong>Screen resolution</strong> ,  used for responsive design optimization.</li>
+            <li><strong>Language and timezone</strong> ,  browser language preference and timezone setting.</li>
+            <li><strong>User agent string</strong> ,  technical browser identification string.</li>
           </ul>
 
           <h3>2.6 Communication Data</h3>
           <p>Data arising from your communications with us and other users:</p>
           <ul>
-            <li><strong>Support requests</strong> — messages, tickets, and attachments sent to our support team.</li>
-            <li><strong>Direct messages</strong> — messages sent to other users through the Service&apos;s messaging features.</li>
-            <li><strong>Community posts</strong> — content posted in community forums, showcase comments, and discussion threads.</li>
-            <li><strong>@Mentions</strong> — when another user mentions you by username in a community comment or post, we record the mention (your user ID, the post ID, the comment ID, and the mentioning user&apos;s ID) solely to deliver a notification to you. Mention records are deleted when the originating post or comment is deleted.</li>
-            <li><strong>Collaborator credits</strong> — when a post author credits you as a collaborator on their community post, we store the association (your user ID and the post ID) to display your collaborator credit. You may remove yourself as a collaborator at any time.</li>
-            <li><strong>Feedback and surveys</strong> — responses to feedback requests or surveys.</li>
+            <li><strong>Support requests</strong> ,  messages, tickets, and attachments sent to our support team.</li>
+            <li><strong>Direct messages</strong> ,  messages sent to other users through the Service&apos;s messaging features.</li>
+            <li><strong>Community posts</strong> ,  content posted in community forums, showcase comments, and discussion threads.</li>
+            <li><strong>@Mentions</strong> ,  when another user mentions you by username in a community comment or post, we record the mention (your user ID, the post ID, the comment ID, and the mentioning user&apos;s ID) solely to deliver a notification to you. Mention records are deleted when the originating post or comment is deleted.</li>
+            <li><strong>Collaborator credits</strong> ,  when a post author credits you as a collaborator on their community post, we store the association (your user ID and the post ID) to display your collaborator credit. You may remove yourself as a collaborator at any time.</li>
+            <li><strong>Feedback and surveys</strong> ,  responses to feedback requests or surveys.</li>
           </ul>
 
           <h3>2.7 Payment Data</h3>
           <p>Data related to paid subscriptions and transactions:</p>
           <ul>
-            <li><strong>PayPal email address</strong> — the email associated with your PayPal account used for payment.</li>
-            <li><strong>Transaction IDs</strong> — PayPal transaction reference numbers for record-keeping.</li>
-            <li><strong>Subscription plan and status</strong> — which plan you subscribe to and whether it is active, cancelled, or expired.</li>
-            <li><strong>Billing dates</strong> — subscription start date, renewal date, and cancellation date.</li>
-            <li><strong>Transaction amounts</strong> — payment amounts and currency.</li>
+            <li><strong>PayPal email address</strong> ,  the email associated with your PayPal account used for payment.</li>
+            <li><strong>Transaction IDs</strong> ,  PayPal transaction reference numbers for record-keeping.</li>
+            <li><strong>Subscription plan and status</strong> ,  which plan you subscribe to and whether it is active, cancelled, or expired.</li>
+            <li><strong>Billing dates</strong> ,  subscription start date, renewal date, and cancellation date.</li>
+            <li><strong>Transaction amounts</strong> ,  payment amounts and currency.</li>
           </ul>
           <p className="font-semibold text-white">
             We never collect, store, or have access to your credit card numbers, debit card numbers, bank account numbers, or other direct financial instrument data. All payment processing is handled entirely by PayPal.
@@ -207,7 +207,7 @@ export default function PrivacyPolicyPage() {
             <li><strong>Account Management:</strong> Creating, authenticating, and maintaining your user account, including password recovery and two-factor authentication.</li>
             <li><strong>Service Delivery:</strong> Providing core Service functionality, including script editing, formatting, project management, and storage.</li>
             <li><strong>Collaboration:</strong> Enabling real-time and asynchronous collaboration between users you invite to your projects, including notifications, presence indicators, and change tracking.</li>
-            <li><strong>Community Features:</strong> Operating community showcase pages, forums, messaging, user profiles, and social features — including sending @mention notifications when you are tagged in a comment, and displaying collaborator credits on posts where you have been credited by the post author.</li>
+            <li><strong>Community Features:</strong> Operating community showcase pages, forums, messaging, user profiles, and social features ,  including sending @mention notifications when you are tagged in a comment, and displaying collaborator credits on posts where you have been credited by the post author.</li>
             <li><strong>Payment Processing:</strong> Processing subscription purchases, renewals, cancellations, and refunds through PayPal.</li>
             <li><strong>Customer Support:</strong> Responding to support requests, troubleshooting issues, and providing technical assistance.</li>
             <li><strong>Service Improvement:</strong> Analysing anonymized and aggregated usage data to identify bugs, improve features, optimize performance, and develop new functionality.</li>
@@ -564,7 +564,7 @@ export default function PrivacyPolicyPage() {
             <li>Page URL visited</li>
             <li>HTTP referrer (the page you came from)</li>
             <li>Browser and operating system (user-agent string)</li>
-            <li>Country-level geographic region (derived from IP address — IP is not stored)</li>
+            <li>Country-level geographic region (derived from IP address ,  IP is not stored)</li>
             <li>Device type (desktop, mobile, tablet)</li>
           </ul>
           <p>
@@ -624,11 +624,11 @@ export default function PrivacyPolicyPage() {
             Our Service may use automated processes for:
           </p>
           <ul>
-            <li>Spam detection in community features — flagging potentially spam content for human review.</li>
-            <li>Rate limiting and abuse prevention — automatically throttling requests that exceed normal usage patterns. IP addresses that exceed rate limits receive a temporary block (typically 60 seconds); no permanent record of blocked IPs is retained beyond the active window.</li>
-            <li>Basic personalization — displaying recently used features or projects.</li>
-            <li>@mention detection — when a comment or post is submitted, our system parses the text for <code>@username</code> patterns to identify mentioned users and generate notifications. This is a rule-based string-matching process with no AI or machine learning. No content analysis beyond username extraction is performed.</li>
-            <li>Bot and scraper detection — automated analysis of request patterns, user agent strings, and request frequency to identify and block AI training crawlers and abusive scrapers. No personal data is stored as a result of this process beyond what is already captured in standard server request logs.</li>
+            <li>Spam detection in community features ,  flagging potentially spam content for human review.</li>
+            <li>Rate limiting and abuse prevention ,  automatically throttling requests that exceed normal usage patterns. IP addresses that exceed rate limits receive a temporary block (typically 60 seconds); no permanent record of blocked IPs is retained beyond the active window.</li>
+            <li>Basic personalization ,  displaying recently used features or projects.</li>
+            <li>@mention detection ,  when a comment or post is submitted, our system parses the text for <code>@username</code> patterns to identify mentioned users and generate notifications. This is a rule-based string-matching process with no AI or machine learning. No content analysis beyond username extraction is performed.</li>
+            <li>Bot and scraper detection ,  automated analysis of request patterns, user agent strings, and request frequency to identify and block AI training crawlers and abusive scrapers. No personal data is stored as a result of this process beyond what is already captured in standard server request logs.</li>
           </ul>
           <p>
             None of these automated processes make decisions that have legal or similarly significant effects on you. Moderation actions affecting your account are always subject to human review.
@@ -682,7 +682,7 @@ export default function PrivacyPolicyPage() {
             <p className="mt-3 text-surface-500">
               Screenplay Studio is a product of{' '}
               <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 transition-colors">Northem Development</a>
-              {' '}&mdash; made with ♥ in Norway.
+              {' '},  made with ♥ in Norway.
             </p>
             <div className="mt-4 flex gap-4">
               <Link href="/legal/terms" className="text-red-400 hover:text-red-300 transition-colors">Terms of Service</Link>
