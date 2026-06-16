@@ -409,7 +409,7 @@ function DashboardContent() {
             </div>
             <h1 className="text-sm sm:text-base font-black text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
               Blog
             </Link>
