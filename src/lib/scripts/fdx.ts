@@ -66,6 +66,13 @@ const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   act: 'New Act',
   sequence: 'New Act',
   sequence_end: 'Action',
+  // Comic / Graphic Novel elements → nearest FDX equivalent
+  comic_page: 'Scene Heading',
+  comic_panel: 'Scene Heading',
+  comic_panel_description: 'Action',
+  comic_dialogue: 'Dialogue',
+  comic_sfx: 'Action',
+  comic_caption: 'Action',
 };
 
 // FDX Import

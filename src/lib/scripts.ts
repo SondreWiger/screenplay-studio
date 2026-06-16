@@ -201,6 +201,13 @@ const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   act: 'New Act',
   sequence: 'New Act',
   sequence_end: 'Action',
+  // Comic / Graphic Novel elements → nearest FDX equivalent
+  comic_page: 'Scene Heading',
+  comic_panel: 'Scene Heading',
+  comic_panel_description: 'Action',
+  comic_dialogue: 'Dialogue',
+  comic_sfx: 'Action',
+  comic_caption: 'Action',
 };
 
 export function generateFDX({ titlePage, elements, scriptTitle }: GenerateFDXOptions): string {
@@ -277,7 +284,7 @@ export function parseFountain(text: string): ParseResult {
   let inTitlePage = false;
 
   // Check for title page (starts with "Title:", "Credit:", "Author:", etc.)
-  if (lines.length > 0 && /^(Title|Credit|Author|Source|Draft date|Contact|Copyright|Notes)\s*:/i.test(lines[0])) {
+  if (lines.length > 0 && /^(Title|Credit|Author|Source|Draft date|Contact|Copyright|Notes|License)\s*:/i.test(lines[0])) {
     inTitlePage = true;
     while (lineIndex < lines.length) {
       const line = lines[lineIndex];
@@ -289,7 +296,7 @@ export function parseFountain(text: string): ParseResult {
       lineIndex++;
       // If we hit a blank line followed by a non-key line, we're done
       if (line.trim() === '') {
-        if (lineIndex < lines.length && !/^\s/.test(lines[lineIndex]) && !/^(Title|Credit|Author|Source|Draft date|Contact|Copyright|Notes)\s*:/i.test(lines[lineIndex])) {
+        if (lineIndex < lines.length && !/^\s/.test(lines[lineIndex]) && !/^(Title|Credit|Author|Source|Draft date|Contact|Copyright|Notes|License)\s*:/i.test(lines[lineIndex])) {
           break;
         }
       }
@@ -301,7 +308,7 @@ export function parseFountain(text: string): ParseResult {
     let currentKey = '';
     let currentValue = '';
     for (const line of titlePageLines) {
-      const kvMatch = line.match(/^(Title|Credit|Author|Source|Draft date|Contact|Copyright|Notes)\s*:\s*(.*)/i);
+      const kvMatch = line.match(/^(Title|Credit|Author|Source|Draft date|Contact|Copyright|Notes|License)\s*:\s*(.*)/i);
       if (kvMatch) {
         if (currentKey) {
           assignTitlePageField(titlePage, currentKey, currentValue.trim());
@@ -321,6 +328,7 @@ export function parseFountain(text: string): ParseResult {
   // Parse body
   let sortOrder = 0;
   let sceneNumber = 0;
+  let inComicPanel = false; // Track if we're inside a comic panel (for panel descriptions)
 
   while (lineIndex < lines.length) {
     const line = lines[lineIndex];
@@ -335,6 +343,30 @@ export function parseFountain(text: string): ParseResult {
     // Page break
     if (trimmed === '===') {
       elements.push({ element_type: 'page_break', content: '', sort_order: sortOrder++ });
+      lineIndex++;
+      continue;
+    }
+
+    // Fountain comic: /* comments */ — skip entirely
+    if (trimmed.startsWith('/*') && trimmed.endsWith('*/')) {
+      lineIndex++;
+      continue;
+    }
+
+    // Fountain comic: **PAGE 1** (bold text) → comic_page
+    const pageCountMatch = trimmed.match(/^\*\*\s*PAGE\s+(\d+)\s*\*\*$/i);
+    if (pageCountMatch) {
+      elements.push({ element_type: 'comic_page', content: `PAGE ${pageCountMatch[1]}`, sort_order: sortOrder++ });
+      inComicPanel = false; // Reset panel context on new page
+      lineIndex++;
+      continue;
+    }
+
+    // Fountain comic: _PANEL 1_ (italic text) → comic_panel
+    const panelMatch = trimmed.match(/^_\s*PANEL\s+(\d+)\s*_$/i);
+    if (panelMatch) {
+      elements.push({ element_type: 'comic_panel', content: `Panel ${panelMatch[1]}`, sort_order: sortOrder++ });
+      inComicPanel = true; // Enter comic panel context
       lineIndex++;
       continue;
     }
@@ -438,8 +470,12 @@ export function parseFountain(text: string): ParseResult {
       continue;
     }
 
-    // Action (default)
-    elements.push({ element_type: 'action', content: trimmed, sort_order: sortOrder++ });
+    // Action (default) — in comic context, non-character text after a panel header is a panel description
+    if (inComicPanel && !isCharLine) {
+      elements.push({ element_type: 'comic_panel_description', content: trimmed, sort_order: sortOrder++ });
+    } else {
+      elements.push({ element_type: 'action', content: trimmed, sort_order: sortOrder++ });
+    }
     lineIndex++;
   }
 
@@ -456,6 +492,7 @@ function assignTitlePageField(tp: Partial<TitlePageData>, key: string, value: st
     case 'contact': tp.contact = value; break;
     case 'copyright': tp.copyright = value; break;
     case 'notes': tp.notes = value; break;
+    case 'license': tp.copyright = value; break; // Map license to copyright field
   }
 }
 
@@ -562,6 +599,26 @@ export function generateFountain({ titlePage, elements }: GenerateFountainOption
         break;
       case 'chapter_marker':
         output += '\n# ' + content + '\n\n';
+        break;
+
+      // Comic / Graphic Novel elements — Fountain comic format
+      case 'comic_page':
+        output += '\n===\n\n**' + content + '**\n\n';
+        break;
+      case 'comic_panel':
+        output += '\n_' + content + '_\n\n';
+        break;
+      case 'comic_panel_description':
+        output += '\n' + content + '\n';
+        break;
+      case 'comic_dialogue':
+        output += '\n' + content + '\n';
+        break;
+      case 'comic_sfx':
+        output += '\n' + content + '\n';
+        break;
+      case 'comic_caption':
+        output += '\n' + content + '\n';
         break;
 
       default:

@@ -15,7 +15,9 @@ export type ScriptElementType =
   // Audio Drama elements (BBC Scene, US Radio, STARC Standard)
   | 'sfx_cue' | 'music_cue' | 'ambience_cue' | 'act_break' | 'announcer' | 'sound_cue'
   // Musical Theatre / Stage Play elements
-  | 'song_title' | 'lyric' | 'dance_direction' | 'musical_cue' | 'lighting_cue' | 'set_direction';
+  | 'song_title' | 'lyric' | 'dance_direction' | 'musical_cue' | 'lighting_cue' | 'set_direction'
+  // Comic / Graphic Novel elements
+  | 'comic_page' | 'comic_panel' | 'comic_panel_description' | 'comic_dialogue' | 'comic_sfx' | 'comic_caption';
 export type SceneTime = string; // Accepts any time-of-day value from scripts (DAY, NIGHT, MAGIC HOUR, etc.)
 export type SceneLocationType = 'INT' | 'EXT' | 'INT_EXT' | 'EXT_INT';
 export type RevisionColor = 'white' | 'blue' | 'pink' | 'yellow' | 'green' | 'goldenrod' | 'buff' | 'salmon' | 'cherry' | 'tan';

@@ -103,6 +103,13 @@ export const ELEMENT_LABELS: Record<ScriptElementType, string> = {
   musical_cue: 'Musical Cue',
   lighting_cue: 'Lighting Cue',
   set_direction: 'Set Direction',
+  // Comic / Graphic Novel elements
+  comic_page: 'Page',
+  comic_panel: 'Panel',
+  comic_panel_description: 'Panel Description',
+  comic_dialogue: 'Dialogue',
+  comic_sfx: 'SFX',
+  comic_caption: 'Caption',
 };
 
 export const ELEMENT_SHORTCUTS: Record<string, ScriptElementType> = {

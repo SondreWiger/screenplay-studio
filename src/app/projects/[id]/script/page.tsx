@@ -134,6 +134,11 @@ const STAGEPLAY_ELEMENT_CYCLE: ScriptElementType[] = [
   'song_title', 'lyric', 'dance_direction', 'musical_cue', 'lighting_cue', 'set_direction',
 ];
 
+// Comic / Graphic Novel element cycle
+const COMIC_ELEMENT_CYCLE: ScriptElementType[] = [
+  'comic_page', 'comic_panel', 'comic_panel_description', 'character', 'comic_dialogue', 'comic_sfx', 'comic_caption',
+];
+
 // Preset palette for sequence blocks shown in the minimap
 const SEQUENCE_COLORS = [
   '#6366f1', '#ec4899', '#f59e0b', '#10b981',
@@ -273,6 +278,13 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
     case 'musical_cue':     return 'action';
     case 'lighting_cue':    return 'action';
     case 'set_direction':   return 'action';
+    // Comic / Graphic Novel elements
+    case 'comic_page':              return 'comic_panel';
+    case 'comic_panel':             return 'comic_panel_description';
+    case 'comic_panel_description': return 'character';
+    case 'comic_dialogue':          return 'character'; // Enter after dialogue → next character
+    case 'comic_sfx':               return 'comic_panel_description';
+    case 'comic_caption':           return 'comic_panel_description';
     default: return 'action';
   }
 }
@@ -324,6 +336,13 @@ function getElementClass(type: ScriptElementType, isAudioDrama = false): string 
     case 'musical_cue':     return 'sp-music-cue';
     case 'lighting_cue':    return 'sp-sfx-cue';
     case 'set_direction':   return 'sp-action';
+    // Comic / Graphic Novel elements
+    case 'comic_page':             return 'sp-comic-page';
+    case 'comic_panel':            return 'sp-comic-panel';
+    case 'comic_panel_description': return 'sp-comic-panel-desc';
+    case 'comic_dialogue':         return 'sp-comic-dialogue';
+    case 'comic_sfx':              return 'sp-comic-sfx';
+    case 'comic_caption':          return 'sp-comic-caption';
     default: return '';
   }
 }
@@ -384,6 +403,13 @@ function getElementPlaceholder(type: ScriptElementType, isYouTube = false): stri
     case 'musical_cue':     return 'MUSIC: [Musical cue or theme]';
     case 'lighting_cue':    return 'LIGHTS: [Lighting state or transition]';
     case 'set_direction':   return '(Set or scenic direction)';
+    // Comic / Graphic Novel elements
+    case 'comic_page':             return 'PAGE 1';
+    case 'comic_panel':            return 'Panel 1';
+    case 'comic_panel_description': return 'Panel description — what the artist draws...';
+    case 'comic_dialogue':         return 'Character dialogue...';
+    case 'comic_sfx':              return 'SFX: ¡BOOM!';
+    case 'comic_caption':          return 'Caption / narration box...';
     default: return '';
   }
 }
@@ -532,6 +558,11 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
            currentProject?.script_type === 'stageplay';
   }, [currentProject?.project_type, currentProject?.script_type]);
 
+  // Detect Comic / Graphic Novel project
+  const isComic = useMemo(() => {
+    return currentProject?.script_type === 'comic';
+  }, [currentProject?.script_type]);
+
   const resolvedAudioFormat = useMemo(() => {
     if (!isAudioDrama) return '';
     return ['bbc_radio', 'us_radio', 'starc_standard'].includes(audioFormat)
@@ -547,6 +578,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const elementCycle = isContentCreator ? YOUTUBE_ELEMENT_CYCLE
     : isAudioDrama ? audioElementCycle
     : isStagePlay ? STAGEPLAY_ELEMENT_CYCLE
+    : isComic ? COMIC_ELEMENT_CYCLE
     : ELEMENT_CYCLE;
 
   // Inline comments

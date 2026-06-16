@@ -135,6 +135,49 @@ export function ScreenplayRenderer({ elements, className }: { elements: Screenpl
               </div>
             );
 
+          // Comic / Graphic Novel elements
+          case 'comic_page':
+            return (
+              <div key={i} className="mt-8 mb-2 text-left font-bold uppercase tracking-wider text-rose-700 text-sm border-b-2 border-rose-600 pb-2">
+                {el.content}
+              </div>
+            );
+
+          case 'comic_panel':
+            return (
+              <div key={i} className="mt-6 mb-1 text-xs font-bold uppercase tracking-wider text-rose-600 border-l-3 border-rose-600 pl-2.5 py-1">
+                {el.content}
+              </div>
+            );
+
+          case 'comic_panel_description':
+            return (
+              <div key={i} className="my-1 pl-3.5 text-stone-700 leading-relaxed max-w-[65ch]">
+                {el.content}
+              </div>
+            );
+
+          case 'comic_dialogue':
+            return (
+              <div key={i} className="my-0.5 ml-[1.5in] mr-[0.5in] pl-2.5 border-l-3 border-pink-400 leading-relaxed">
+                {el.content}
+              </div>
+            );
+
+          case 'comic_sfx':
+            return (
+              <div key={i} className="my-2 text-center font-bold uppercase tracking-widest text-amber-600 text-sm">
+                {el.content}
+              </div>
+            );
+
+          case 'comic_caption':
+            return (
+              <div key={i} className="my-2 px-3 py-2 bg-indigo-50 border-l-3 border-indigo-500 text-indigo-800 italic text-[11px] rounded-sm">
+                {el.content}
+              </div>
+            );
+
           default:
             return el.content ? (
               <div key={i} className="my-1">{el.content}</div>
