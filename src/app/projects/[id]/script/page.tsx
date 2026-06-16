@@ -281,10 +281,13 @@ function getNextElementType(current: ScriptElementType): ScriptElementType {
     // Comic / Graphic Novel elements
     case 'comic_page':              return 'comic_panel';
     case 'comic_panel':             return 'comic_panel_description';
-    case 'comic_panel_description': return 'character';
-    case 'comic_dialogue':          return 'character'; // Enter after dialogue → next character
+    case 'comic_panel_description': return 'comic_panel_description'; // multi-paragraph descriptions
+    case 'comic_dialogue':          return 'character'; // next speaker
     case 'comic_sfx':               return 'comic_panel_description';
     case 'comic_caption':           return 'comic_panel_description';
+    // In comic context, character flows to comic_dialogue (handled by isComic check in handleKeyDown)
+    case 'character':               return 'dialogue';
+    case 'dialogue':                return 'character';
     default: return 'action';
   }
 }
@@ -3633,22 +3636,62 @@ const LineEditor = memo(function LineEditor({
       const els = store.elements;
       const idx = els.findIndex((el) => el.id === elementId);
 
-      // Empty character → escape to action (instead of creating another character)
+      // Empty character → escape to panel description (comic) or action (screenplay)
       if (element.element_type === 'character') {
         const text = divRef.current?.textContent?.trim() ?? '';
         if (text === '') {
-          store.updateElement(elementId, { element_type: 'action' });
+          store.updateElement(elementId, { element_type: isComic ? 'comic_panel_description' : 'action' });
           return;
         }
+      }
+
+      // Empty panel description in comic → advance to character (start dialogue)
+      if (isComic && element.element_type === 'comic_panel_description') {
+        const text = divRef.current?.textContent?.trim() ?? '';
+        if (text === '') {
+          // Empty description with no content → go to character
+          const currentOrder2 = idx >= 0 ? els[idx].sort_order : 0;
+          const nextOrder2 = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder2 + 2;
+          const newOrder2 = (currentOrder2 + nextOrder2) / 2;
+          store.addElement({
+            script_id: store.currentScript.id,
+            element_type: 'character',
+            content: '',
+            sort_order: newOrder2,
+            created_by: auth.user.id,
+            last_edited_by: auth.user.id,
+          }).then((newEl) => { if (newEl) focusElement(newEl.id, 'start'); });
+          return;
+        }
+        // Has content → create another panel description (multi-paragraph)
+        const currentOrder3 = idx >= 0 ? els[idx].sort_order : 0;
+        const nextOrder3 = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder3 + 2;
+        const newOrder3 = (currentOrder3 + nextOrder3) / 2;
+        store.addElement({
+          script_id: store.currentScript.id,
+          element_type: 'comic_panel_description',
+          content: '',
+          sort_order: newOrder3,
+          created_by: auth.user.id,
+          last_edited_by: auth.user.id,
+        }).then((newEl) => { if (newEl) focusElement(newEl.id, 'start'); });
+        return;
       }
 
       // Place new element between current and next
       const currentOrder = idx >= 0 ? els[idx].sort_order : 0;
       const nextOrder = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder + 2;
       const newOrder = (currentOrder + nextOrder) / 2;
-      const nextType = isAudioDrama
-        ? getAudioNextElementType(element.element_type, audioFormat)
-        : getNextElementType(element.element_type);
+
+      // Comic: character → comic_dialogue; otherwise use getNextElementType
+      let nextType: ScriptElementType;
+      if (isComic && element.element_type === 'character') {
+        nextType = 'comic_dialogue';
+      } else if (isAudioDrama) {
+        nextType = getAudioNextElementType(element.element_type, audioFormat);
+      } else {
+        nextType = getNextElementType(element.element_type);
+      }
 
       store.addElement({
         script_id: store.currentScript.id,
