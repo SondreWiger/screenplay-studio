@@ -53,7 +53,9 @@ BEGIN
   CREATE TYPE public.script_element_type AS ENUM (
     'scene_heading', 'action', 'character', 'dialogue', 'parenthetical',
     'transition', 'shot', 'note', 'page_break', 'title_page',
-    'centered', 'lyrics', 'synopsis', 'section'
+    'centered', 'lyrics', 'synopsis', 'section',
+    'comic_page', 'comic_panel', 'comic_panel_description',
+    'comic_dialogue', 'comic_sfx', 'comic_caption'
   );
 EXCEPTION
   WHEN duplicate_object THEN NULL;

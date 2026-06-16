@@ -40,7 +40,9 @@ CREATE TYPE project_status AS ENUM ('development', 'pre_production', 'production
 CREATE TYPE script_element_type AS ENUM (
   'scene_heading', 'action', 'character', 'dialogue', 'parenthetical',
   'transition', 'shot', 'note', 'page_break', 'title_page',
-  'centered', 'lyrics', 'synopsis', 'section'
+  'centered', 'lyrics', 'synopsis', 'section',
+  'comic_page', 'comic_panel', 'comic_panel_description',
+  'comic_dialogue', 'comic_sfx', 'comic_caption'
 );
 CREATE TYPE scene_time AS ENUM ('DAY', 'NIGHT', 'DAWN', 'DUSK', 'MORNING', 'AFTERNOON', 'EVENING', 'CONTINUOUS', 'LATER', 'MOMENTS_LATER');
 CREATE TYPE scene_location_type AS ENUM ('INT', 'EXT', 'INT_EXT', 'EXT_INT');

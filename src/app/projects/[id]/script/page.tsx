@@ -1722,9 +1722,9 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   <button key={el.id} onClick={() => {
                     document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }} className={cn('w-full text-left px-2 py-1.5 rounded text-xs hover:bg-surface-900/5 transition-colors',
-                    el.element_type === 'comic_page' ? 'text-rose-400 font-medium' : 'text-surface-400 hover:text-white'
+                    el.element_type === 'comic_page' ? 'text-white font-medium' : 'text-surface-400 hover:text-white'
                   )}>
-                    <span className={cn('mr-1 font-mono font-bold', el.element_type === 'comic_page' ? 'text-rose-500' : 'text-surface-600')}>
+                    <span className="mr-1 font-mono font-bold text-surface-500">
                       {comicNumberMap[el.id]}
                     </span>
                     <span className="truncate">{el.content || (el.element_type === 'comic_page' ? 'Untitled Page' : 'Untitled Panel')}</span>
@@ -1797,7 +1797,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 </div>
                 <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
                   <div
-                    className="h-1.5 rounded-full bg-rose-500 transition-[width] duration-500"
+                    className="h-1.5 rounded-full bg-white/60 transition-[width] duration-500"
                     style={{ width: `${Math.min(100, (elements.filter(e => e.element_type === 'comic_panel').length / 90) * 100)}%` }}
                   />
                 </div>
@@ -2752,7 +2752,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     setShowSceneJump(false);
                   }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:bg-surface-800 active:bg-surface-700 transition-colors flex items-center gap-2 min-h-[44px]">
-                    <span className={cn('font-mono text-xs font-bold', el.element_type === 'comic_page' ? 'text-rose-400' : 'text-surface-500')}>
+                    <span className="font-mono text-xs font-bold text-surface-500">
                       {comicNumberMap[el.id]}
                     </span>
                     <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || (el.element_type === 'comic_page' ? 'Untitled Page' : 'Untitled Panel') }} />
@@ -4095,10 +4095,7 @@ const LineEditor = memo(function LineEditor({
         {/* Comic page/panel number badge */}
         {isComic && comicNumberMap[element.id] && (
           <div className="absolute -left-10 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <span className={cn('text-[10px] font-bold tabular-nums',
-              element.element_type === 'comic_page' ? 'text-rose-400' : 'text-surface-500',
-              darkMode ? '' : ''
-            )}>
+            <span className="text-[10px] font-bold tabular-nums text-surface-500">
               {comicNumberMap[element.id]}
             </span>
           </div>
