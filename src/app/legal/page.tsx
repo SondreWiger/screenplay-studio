@@ -54,7 +54,7 @@ const legalPages = [
   {
     title: 'Open-Source Kill Switch',
     href: '/legal/opensource-killswitch',
-    description: 'How we use feature flags to disable features platform-wide, and your rights.',
+    description: 'What happens if the project can no longer be maintained — open-sourcing, self-hosting, and data portability.',
   },
 ];
 

@@ -368,24 +368,26 @@ export default function TermsOfServicePage() {
           {/* 17b. Open-Source Kill Switch */}
           <h2 id="kill-switch" className="scroll-mt-24">17b. Open-Source Kill Switch</h2>
           <p>
-            Screenplay Studio operates an open-source kill switch &mdash; a platform-level feature flag system that
-            allows us to instantly disable specific features across the entire platform without a code deployment.
-            This mechanism is used as a safety tool to protect users, maintain platform integrity, and respond to
-            urgent situations such as security vulnerabilities or legal requirements.
+            Screenplay Studio is developed and maintained by Northem Development as a solo development effort.
+            The open-source kill switch is a commitment that if the project can no longer be maintained &mdash;
+            whether due to personal circumstances, financial constraints, or any other reason &mdash; the full
+            codebase will be released publicly so that users can continue running the software on their own
+            infrastructure.
           </p>
           <p>
-            Activating the kill switch for a feature does not delete, modify, or restrict access to any of your
-            content. Your screenplays, scripts, and all creative works remain fully accessible and intact. The
-            kill switch affects only the availability of the feature itself, not your data or account.
+            If the kill switch is activated, all registered users will receive a minimum 30-day advance warning
+            via email. During the warning period, users will have full access to all features and data export
+            functionality. The complete source code will be published under an open-source license on GitHub
+            and mirrored to at least one additional platform.
           </p>
           <p>
-            We are committed to transparency in how the kill switch is used. All activations are logged, and
-            significant activations will be accompanied by public notice explaining the reason and expected
-            resolution timeline. Features disabled via the kill switch will be restored as soon as the
-            underlying issue is resolved.
+            Your data remains yours. You can export all content in Fountain, Final Draft, PDF, or JSON format
+            at any time. After the shutdown date, any data remaining on the hosted platform will be permanently
+            deleted. User data will never be sold or transferred to a third party for commercial purposes.
           </p>
           <p>
-            For full details on how the kill switch operates, what it controls, and your rights, see our{' '}
+            For full details on the kill switch activation process, self-hosting instructions, and data
+            handling, see our{' '}
             <Link href="/legal/opensource-killswitch" className="text-red-400 hover:text-red-300 transition-colors">Open-Source Kill Switch Policy</Link>.
           </p>
 

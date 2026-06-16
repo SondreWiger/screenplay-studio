@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Open-Source Kill Switch — Screenplay Studio',
-  description: 'Our open-source kill switch policy: how we use feature flags to disable platform features, your rights, and transparency commitments.',
+  description: 'What happens to Screenplay Studio if the project can no longer be maintained — open-sourcing, self-hosting, and data portability guarantees.',
 };
 
 export default function OpensourceKillswitchPage() {
@@ -10,7 +10,7 @@ export default function OpensourceKillswitchPage() {
     <div>
       <div className="max-w-4xl">
         <div className="mb-10">
-          <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Platform Safety</p>
+          <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Project Continuity</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Open-Source Kill Switch</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: February 22, 2026</p>
         </div>
@@ -21,11 +21,12 @@ export default function OpensourceKillswitchPage() {
           <ol className="list-decimal list-inside space-y-1.5 text-surface-400 text-[13px] columns-1 sm:columns-2 gap-8">
             <li><a href="#what" className="hover:text-red-400 transition-colors">What Is the Open-Source Kill Switch</a></li>
             <li><a href="#why" className="hover:text-red-400 transition-colors">Why It Exists</a></li>
-            <li><a href="#scope" className="hover:text-red-400 transition-colors">What It Controls</a></li>
-            <li><a href="#how" className="hover:text-red-400 transition-colors">How It Works</a></li>
-            <li><a href="#your-rights" className="hover:text-red-400 transition-colors">Your Rights</a></li>
-            <li><a href="#transparency" className="hover:text-red-400 transition-colors">Transparency Commitments</a></li>
-            <li><a href="#limitations" className="hover:text-red-400 transition-colors">Limitations</a></li>
+            <li><a href="#trigger" className="hover:text-red-400 transition-colors">When It Activates</a></li>
+            <li><a href="#warning" className="hover:text-red-400 transition-colors">30-Day Warning Period</a></li>
+            <li><a href="#code-release" className="hover:text-red-400 transition-colors">Codebase Release</a></li>
+            <li><a href="#self-hosting" className="hover:text-red-400 transition-colors">Self-Hosting</a></li>
+            <li><a href="#data" className="hover:text-red-400 transition-colors">What Happens to Your Data</a></li>
+            <li><a href="#continuity" className="hover:text-red-400 transition-colors">Community Continuity</a></li>
             <li><a href="#contact" className="hover:text-red-400 transition-colors">Contact</a></li>
           </ol>
         </nav>
@@ -34,224 +35,183 @@ export default function OpensourceKillswitchPage() {
           {/* 1. What Is the Open-Source Kill Switch */}
           <h2 id="what" className="scroll-mt-24">1. What Is the Open-Source Kill Switch</h2>
           <p>
-            Screenplay Studio includes an open-source kill switch &mdash; a platform-level control that allows us to
-            instantly disable specific features across the entire platform without requiring a code deployment or
-            server restart. This mechanism is built on our feature flags system and is governed by strict internal
-            policies.
+            Screenplay Studio is developed and maintained by Northem Development, currently as a solo
+            development effort. The open-source kill switch is a commitment that if the project can no
+            longer be maintained — whether due to personal circumstances, financial constraints, or any
+            other reason — the full codebase will be released publicly so that users can continue running
+            the software on their own infrastructure.
           </p>
           <p>
-            The kill switch is designed as a safety tool, not a censorship mechanism. It exists to protect users,
-            maintain platform integrity, and respond to urgent situations such as security vulnerabilities, legal
-            requirements, or misbehaving features.
+            This is not an internal feature toggle. This is a guarantee that the software will never die
+            with its maintainer. If I can&apos;t keep going, you keep going.
           </p>
 
           {/* 2. Why It Exists */}
           <h2 id="why" className="scroll-mt-24">2. Why It Exists</h2>
           <p>
-            The open-source kill switch serves several important purposes:
+            Solo-maintained open-source projects carry a fundamental risk: what happens when the single
+            maintainer can no longer maintain it? The open-source kill switch addresses this directly:
           </p>
           <ul>
             <li>
-              <strong className="text-white">User safety:</strong> If a feature is discovered to have a security
-              vulnerability or is being exploited in a way that threatens user data or privacy, we can disable it
-              immediately while a fix is developed.
+              <strong className="text-white">Project survival:</strong> Your screenplays, scripts, and
+              production data should not become inaccessible because one person can no longer work on the
+              project.
             </li>
             <li>
-              <strong className="text-white">Platform stability:</strong> If a feature is causing unexpected
-              performance degradation, data corruption, or service instability, the kill switch allows us to
-              isolate the problem without taking down the entire platform.
+              <strong className="text-white">User trust:</strong> You are investing time and creative work
+              into this platform. You deserve a guarantee that your tools won&apos;t vanish.
             </li>
             <li>
-              <strong className="text-white">Legal compliance:</strong> If a feature is found to conflict with
-              applicable laws, regulations, or court orders in a specific jurisdiction, we can disable it to
-              maintain compliance while we evaluate next steps.
+              <strong className="text-white">Community empowerment:</strong> The open-source community can
+              fork, improve, and maintain the project independently if the original maintainer steps away.
             </li>
             <li>
-              <strong className="text-white">Rollback capability:</strong> When deploying new features, the kill
-              switch provides a safety net. If a newly released feature causes unexpected issues, we can disable
-              it instantly rather than rolling back an entire deployment.
-            </li>
-            <li>
-              <strong className="text-white">Community protection:</strong> If a feature is being used in violation
-              of our <Link href="/legal/community-guidelines" className="text-red-400 hover:text-red-300 transition-colors">Community Guidelines</Link> or{' '}
-              <Link href="/legal/acceptable-use" className="text-red-400 hover:text-red-300 transition-colors">Acceptable Use Policy</Link> at
-              scale, the kill switch allows us to address the issue while preserving access to all other features.
+              <strong className="text-white">No vendor lock-in:</strong> Unlike proprietary software where
+              discontinuation means total loss, open-source ensures the software lives on regardless of
+              the company&apos;s fate.
             </li>
           </ul>
 
-          {/* 3. What It Controls */}
-          <h2 id="scope" className="scroll-mt-24">3. What It Controls</h2>
+          {/* 3. When It Activates */}
+          <h2 id="trigger" className="scroll-mt-24">3. When It Activates</h2>
           <p>
-            The kill switch operates through our feature flags system. Each feature on the platform is associated
-            with a feature flag that has one of four tiers:
+            The open-source kill switch is triggered when the project maintainer determines that the
+            project can no longer be actively maintained. This includes, but is not limited to:
           </p>
-          <div className="overflow-x-auto not-prose">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-surface-800">
-                  <th className="text-left py-2 pr-4 text-white">Tier</th>
-                  <th className="text-left py-2 pr-4 text-white">Access</th>
-                  <th className="text-left py-2 text-white">Description</th>
-                </tr>
-              </thead>
-              <tbody className="text-surface-300">
-                <tr className="border-b border-surface-800">
-                  <td className="py-2 pr-4 font-medium text-white">Released</td>
-                  <td className="py-2 pr-4">All users</td>
-                  <td className="py-2">Feature is fully available to everyone</td>
-                </tr>
-                <tr className="border-b border-surface-800">
-                  <td className="py-2 pr-4 font-medium text-white">Beta</td>
-                  <td className="py-2 pr-4">Selected users</td>
-                  <td className="py-2">Feature is in beta testing with a subset of users</td>
-                </tr>
-                <tr className="border-b border-surface-800">
-                  <td className="py-2 pr-4 font-medium text-white">Alpha</td>
-                  <td className="py-2 pr-4">Internal only</td>
-                  <td className="py-2">Feature is in early development, not publicly accessible</td>
-                </tr>
-                <tr>
-                  <td className="py-2 pr-4 font-medium text-white">Disabled</td>
-                  <td className="py-2 pr-4">No one</td>
-                  <td className="py-2">Feature is completely off &mdash; this is the kill switch state</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <ul>
+            <li>The maintainer is unable to continue development due to personal health, life circumstances, or other obligations.</li>
+            <li>Northem Development ceases operations or is dissolved.</li>
+            <li>The project has been inactive for an extended period with no reasonable prospect of resumption.</li>
+            <li>The maintainer voluntarily decides to step away from the project.</li>
+          </ul>
           <p>
-            When the kill switch is activated for a feature, its tier is set to <strong className="text-white">Disabled</strong>.
-            This immediately hides all UI elements associated with that feature from every user on the platform.
-            No server redeployment is required &mdash; the change takes effect within seconds as client applications
-            refresh their feature flag state.
+            The determination of whether the kill switch should be activated is at the sole discretion
+            of the project maintainer. The goal is to ensure continuity for users, not to create
+            bureaucratic hurdles.
           </p>
 
-          {/* 4. How It Works */}
-          <h2 id="how" className="scroll-mt-24">4. How It Works</h2>
+          {/* 4. 30-Day Warning Period */}
+          <h2 id="warning" className="scroll-mt-24">4. 30-Day Warning Period</h2>
           <p>
-            The kill switch operates through a database-driven feature flag system. Here is the technical flow:
+            Before the kill switch is activated, users will receive a <strong className="text-white">minimum
+            30-day advance warning</strong>. During this period:
           </p>
-          <ol>
-            <li>
-              <strong className="text-white">Flag storage:</strong> Feature flags are stored in a PostgreSQL
-              database table (<code className="text-surface-300 bg-surface-900 px-1.5 py-0.5 rounded text-sm">feature_flags</code>)
-              with tier-based access control.
-            </li>
-            <li>
-              <strong className="text-white">Admin action:</strong> An authorized administrator navigates to the
-              admin panel at <code className="text-surface-300 bg-surface-900 px-1.5 py-0.5 rounded text-sm">/admin/features</code> and
-              changes a feature&apos;s tier to &quot;Disabled.&quot;
-            </li>
-            <li>
-              <strong className="text-white">Database update:</strong> The tier change is written to the database
-              with Row Level Security (RLS) ensuring only admin users can modify feature flags.
-            </li>
-            <li>
-              <strong className="text-white">Client propagation:</strong> Client applications fetch feature flags
-              from the database and cache them for up to 60 seconds. Within this window, all clients will see
-              the feature as disabled.
-            </li>
-            <li>
-              <strong className="text-white">UI update:</strong> The client-side feature gate component
-              (<code className="text-surface-300 bg-surface-900 px-1.5 py-0.5 rounded text-sm">FeatureGate</code>)
-              checks the flag tier and returns <code className="text-surface-300 bg-surface-900 px-1.5 py-0.5 rounded text-sm">false</code> for
-              disabled features, causing the associated UI to be hidden.
-            </li>
-          </ol>
-
-          {/* 5. Your Rights */}
-          <h2 id="your-rights" className="scroll-mt-24">5. Your Rights</h2>
+          <ul>
+            <li>All registered users will be notified via email to the address associated with their account.</li>
+            <li>A prominent notice will be displayed on the platform.</li>
+            <li>The warning will clearly state the expected shutdown date and provide instructions for data export.</li>
+            <li>Users will have full access to all features during the warning period to export their content.</li>
+          </ul>
           <p>
-            The open-source kill switch is designed with user rights in mind:
+            This 30-day period is a minimum. The actual warning period may be longer depending on the
+            circumstances. The intent is to give users ample time to export their data and prepare for
+            self-hosting or migration.
+          </p>
+
+          {/* 5. Codebase Release */}
+          <h2 id="code-release" className="scroll-mt-24">5. Codebase Release</h2>
+          <p>
+            Upon activation of the kill switch, the complete source code of Screenplay Studio will be
+            made publicly available under an <strong className="text-white">open-source license</strong>.
+            This includes:
+          </p>
+          <ul>
+            <li>The full application source code (frontend, backend, and all supporting services).</li>
+            <li>Database schemas and migration files.</li>
+            <li>Configuration files and deployment guides.</li>
+            <li>Documentation for self-hosting and setup.</li>
+          </ul>
+          <p>
+            The code will be published on GitHub and mirrored to at least one additional platform to
+            ensure redundancy. The license will permit free use, modification, and distribution —
+            ensuring the community can maintain and improve the software independently.
+          </p>
+
+          {/* 6. Self-Hosting */}
+          <h2 id="self-hosting" className="scroll-mt-24">6. Self-Hosting</h2>
+          <p>
+            Screenplay Studio is designed to be self-hostable. After the kill switch activates, users
+            with the technical capability to do so can:
+          </p>
+          <ul>
+            <li>Deploy their own instance of the platform on their own infrastructure.</li>
+            <li>Maintain their own data and user accounts independently.</li>
+            <li>Modify and customise the software to suit their needs.</li>
+            <li>Contribute improvements back to the community fork.</li>
+          </ul>
+          <p>
+            Self-hosting requires technical knowledge including Node.js, PostgreSQL, and Supabase
+            (or a compatible alternative). The release will include documentation to assist with setup,
+            but self-hosted instances are not supported by Northem Development after the project
+            transitions to community maintenance.
+          </p>
+          <p>
+            For users without the technical capability to self-host, the 30-day warning period provides
+            sufficient time to export all content in standard formats (Fountain, Final Draft, PDF, JSON)
+            for use in other tools.
+          </p>
+
+          {/* 7. What Happens to Your Data */}
+          <h2 id="data" className="scroll-mt-24">7. What Happens to Your Data</h2>
+          <p>
+            Your data remains yours. Here is exactly what happens:
           </p>
           <ul>
             <li>
-              <strong className="text-white">No content deletion:</strong> Disabling a feature does not delete,
-              modify, or restrict access to any of your content. Your screenplays, scripts, and all creative
-              works remain fully accessible and intact.
+              <strong className="text-white">During the warning period:</strong> Full access to all data
+              and export functionality. Export your screenplays, scripts, and project data at any time
+              in Fountain, Final Draft (.fdx), PDF, or JSON format.
             </li>
             <li>
-              <strong className="text-white">No account impact:</strong> Activating the kill switch does not
-              affect your account status, subscription, or access to other features on the platform.
+              <strong className="text-white">At shutdown:</strong> The hosted platform at
+              screenplaystudio.fun will cease operation. All data remaining on the hosted platform after
+              the shutdown date will be permanently deleted in accordance with our data retention policies
+              and <Link href="/legal/privacy" className="text-red-400 hover:text-red-300 transition-colors">Privacy Policy</Link>.
             </li>
             <li>
-              <strong className="text-white">Data portability preserved:</strong> Your ability to export your
-              content is never affected by the kill switch. Export functionality operates independently of
-              individual feature flags.
+              <strong className="text-white">Self-hosted instances:</strong> Users who deploy their own
+              instance before shutdown retain full control of their data on their own infrastructure.
+              The codebase release enables this transition.
             </li>
             <li>
-              <strong className="text-white">Notification:</strong> When a feature is disabled due to the kill
-              switch, we will provide notice through appropriate channels, including email notifications for
-              features that materially affect your workflow, and in-app messaging where feasible.
-            </li>
-            <li>
-              <strong className="text-white">Restoration:</strong> Features disabled via the kill switch will be
-              restored as soon as the underlying issue is resolved. There is no indefinite suspension of features
-              through this mechanism.
+              <strong className="text-white">No data selling:</strong> In the event of project shutdown,
+              user data will never be sold, transferred to a third party for commercial purposes, or
+              used for any purpose other than facilitating the transition to community maintenance.
             </li>
           </ul>
 
-          {/* 6. Transparency Commitments */}
-          <h2 id="transparency" className="scroll-mt-24">6. Transparency Commitments</h2>
+          {/* 8. Community Continuity */}
+          <h2 id="continuity" className="scroll-mt-24">8. Community Continuity</h2>
           <p>
-            We are committed to transparency in how we use the kill switch:
+            The open-source kill switch is designed to enable seamless community takeover:
           </p>
           <ul>
             <li>
-              <strong className="text-white">Public changelog:</strong> All feature flag changes are logged and
-              documented in our platform changelog. Significant kill switch activations will be accompanied by
-              a post explaining the reason and expected resolution timeline.
+              <strong className="text-white">Fork and maintain:</strong> Any community member or
+              organisation can fork the released codebase and continue maintaining it as a separate project.
             </li>
             <li>
-              <strong className="text-white">No hidden deprecation:</strong> The kill switch will never be used
-              to permanently remove a feature without going through our standard
-              <Link href="/legal/terms" className="text-red-400 hover:text-red-300 transition-colors">Terms of Service</Link> change
-              process, including the required 30-day advance notice for material changes.
+              <strong className="text-white">Community governance:</strong> The community is free to
+              establish its own governance model, contribution guidelines, and release processes for the
+              forked project.
             </li>
             <li>
-              <strong className="text-white">Audit trail:</strong> All kill switch activations are logged with
-              timestamps, the administrator who performed the action, and the reason for activation. These
-              logs are retained for audit purposes.
+              <strong className="text-white">No orphaned users:</strong> Because the code is open-source,
+              there is no scenario where users are left without options. The software exists independently
+              of any single maintainer or company.
             </li>
             <li>
-              <strong className="text-white">Annual reporting:</strong> We will publish an annual transparency
-              report summarizing how many times the kill switch was activated, for which features, and the
-              general categories of reasons (security, stability, compliance, etc.).
+              <strong className="text-white">Existing contributions:</strong> All community contributions
+              made to the project remain available under the open-source license, ensuring no work is lost.
             </li>
           </ul>
 
-          {/* 7. Limitations */}
-          <h2 id="limitations" className="scroll-mt-24">7. Limitations</h2>
+          {/* 9. Contact */}
+          <h2 id="contact" className="scroll-mt-24">9. Contact</h2>
           <p>
-            The kill switch has inherent limitations that are important to understand:
-          </p>
-          <ul>
-            <li>
-              <strong className="text-white">Client-side caching:</strong> Because feature flags are cached on
-              the client for up to 60 seconds, there may be a brief window (up to one minute) after activation
-              where some users still see the feature before their cache refreshes.
-            </li>
-            <li>
-              <strong className="text-white">API access:</strong> If you access Screenplay Studio data through
-              our API, feature flag changes may not immediately affect API behavior. API-level access controls
-              operate independently of the feature flag system.
-            </li>
-            <li>
-              <strong className="text-white">Third-party integrations:</strong> Features that integrate with
-              third-party services may have partial functionality even when the kill switch is activated, if
-              the third-party service continues to operate independently.
-            </li>
-            <li>
-              <strong className="text-white">Not a substitute for deployment:</strong> The kill switch is designed
-              for emergency response. For planned feature deprecations, we follow our standard deprecation
-              process with appropriate notice periods as outlined in our Terms of Service.
-            </li>
-          </ul>
-
-          {/* 8. Contact */}
-          <h2 id="contact" className="scroll-mt-24">8. Contact</h2>
-          <p>
-            If you have questions about the open-source kill switch, how it has been used, or its impact
-            on your access to the platform, please contact us:
+            If you have questions about the open-source kill switch, the project&apos;s continuity plans,
+            or how to prepare for self-hosting, please contact us:
           </p>
           <div className="rounded-lg bg-surface-900 border border-surface-800 p-4 not-prose text-surface-300">
             <p><strong className="text-white">Northem Development</strong></p>
@@ -271,13 +231,13 @@ export default function OpensourceKillswitchPage() {
                 <Link href="/legal/terms" className="text-red-400 hover:text-red-300">Terms of Service</Link>
               </li>
               <li>
-                <Link href="/legal/security" className="text-red-400 hover:text-red-300">Security Policy</Link>
-              </li>
-              <li>
                 <Link href="/legal/privacy" className="text-red-400 hover:text-red-300">Privacy Policy</Link>
               </li>
               <li>
-                <Link href="/legal/acceptable-use" className="text-red-400 hover:text-red-300">Acceptable Use Policy</Link>
+                <Link href="/legal/copyright" className="text-red-400 hover:text-red-300">Copyright Policy</Link>
+              </li>
+              <li>
+                <Link href="/legal/data-processing" className="text-red-400 hover:text-red-300">Data Processing</Link>
               </li>
             </ul>
           </section>
