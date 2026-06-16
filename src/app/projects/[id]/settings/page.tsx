@@ -6,7 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/lib/types';
-import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS } from '@/lib/types';
+import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS, SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -125,6 +125,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
     const { error } = await supabase.from('projects').update({
       title: form.title, logline: form.logline, synopsis: form.synopsis,
       genre: form.genre, format: form.format, status: form.status,
+      script_type: form.script_type,
       language: language || null,
     }).eq('id', params.id);
     setSaving(false);
@@ -169,6 +170,13 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
           <Textarea label="Synopsis" value={form.synopsis || ''} onChange={(e) => setForm({ ...form, synopsis: e.target.value })} rows={5}
             placeholder="A detailed summary of the story..." />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <div>
+              <label className="block text-sm font-medium text-surface-300 mb-1.5">Script Type</label>
+              <select value={form.script_type || 'screenplay'} onChange={(e) => setForm({ ...form, script_type: e.target.value })}
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
+                {SCRIPT_TYPE_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1.5">Genre</label>
               <select value={form.genre || ''} onChange={(e) => setForm({ ...form, genre: e.target.value })}
