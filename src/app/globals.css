@@ -174,6 +174,15 @@
   [data-theme="soft"] * {
     border-color: #1a1a2e;
   }
+  /* Global colour softening: desaturate + brighten every neon/vibrant colour */
+  [data-theme="soft"] html {
+    filter: saturate(0.45) brightness(1.15);
+    transition: filter 0.3s ease;
+  }
+  /* Keep toasts/modals inside portals readable (they render outside html hierarchy) */
+  [data-theme="soft"] [data-radix-portal] {
+    filter: none;
+  }
   /* Soften glows and shadows on accent elements */
   [data-theme="soft"] .shadow-brand-500\/\*, [data-theme="soft"] .shadow-\[var\(--brand-500\)\]\/\* {
     --tw-shadow: 0 0 12px 0 rgba(var(--brand-500), 0.08);
