@@ -86,7 +86,7 @@ interface ContributorRow {
   added_by: string | null;
 }
 
-type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'tickets' | 'system' | 'contributors' | 'badges' | 'courses' | 'creators';
+type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'tickets' | 'system' | 'contributors' | 'badges' | 'courses' | 'creators' | 'translations';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -780,6 +780,10 @@ export default function AdminPage() {
       key: 'creators' as Tab, label: 'Creators',
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
     },
+    {
+      key: 'translations' as Tab, label: 'Translations',
+      icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>,
+    },
   ];
   // Mods only see tickets + community; full admins see everything
   const tabs = isFull ? allTabs : allTabs.filter((t) => MOD_TABS.includes(t.key));
@@ -906,6 +910,9 @@ export default function AdminPage() {
           payoutEnabled={creatorPayoutEnabled}
         />
       )}
+      {activeTab === 'translations' && (
+        <TranslationsAdminTab />
+      )}
 
       {/* Edit User Modal */}
       {editingUser && (
@@ -974,7 +981,162 @@ function BarRow({ label, count, max, color }: { label: string; count: number; ma
       <div className="flex-1 h-2 bg-surface-800 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: color }} />
       </div>
-      <span className="text-xs font-semibold text-white w-8 text-right shrink-0">{count}</span>
+      <span className="text-xs text-surface-400 w-12 text-right">{count}</span>
+    </div>
+  );
+}
+
+function TranslationsAdminTab() {
+  const [languages, setLanguages] = useState<{ id: string; code: string; name: string; native_name: string; status: string; added_by: string }[]>([]);
+  const [pendingLanguages, setPendingLanguages] = useState<any[]>([]);
+  const [stats, setStats] = useState({ total_keys: 0, total_suggestions: 0, total_votes: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const supabase = createClient();
+
+    const { data: langs } = await supabase
+      .from('translation_languages')
+      .select('*')
+      .order('name');
+
+    setLanguages(langs || []);
+
+    const { data: pending } = await supabase
+      .from('translation_languages')
+      .select('*, added_by_profile:profiles!added_by(display_name, email)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    setPendingLanguages(pending || []);
+
+    const [keysRes, suggestionsRes, votesRes] = await Promise.all([
+      supabase.from('translation_keys').select('*', { count: 'exact', head: true }),
+      supabase.from('translation_suggestions').select('*', { count: 'exact', head: true }),
+      supabase.from('translation_votes').select('*', { count: 'exact', head: true }),
+    ]);
+
+    setStats({
+      total_keys: keysRes.count || 0,
+      total_suggestions: suggestionsRes.count || 0,
+      total_votes: votesRes.count || 0,
+    });
+
+    setLoading(false);
+  };
+
+  const approveLanguage = async (id: string) => {
+    const supabase = createClient();
+    await supabase.from('translation_languages').update({ status: 'approved' }).eq('id', id);
+    toast.success('Language approved');
+    loadData();
+  };
+
+  const rejectLanguage = async (id: string) => {
+    const supabase = createClient();
+    await supabase.from('translation_languages').update({ status: 'rejected' }).eq('id', id);
+    toast.success('Language rejected');
+    loadData();
+  };
+
+  const deleteSuggestion = async (id: string) => {
+    const supabase = createClient();
+    await supabase.from('translation_suggestions').delete().eq('id', id);
+    toast.success('Suggestion deleted');
+    loadData();
+  };
+
+  if (loading) return <div className="text-center py-16 text-surface-500">Loading...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-white mb-1">Translator Hub</h2>
+        <p className="text-sm text-surface-400">Manage languages, review pending requests, and moderate suggestions.</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Languages', value: languages.filter(l => l.status === 'approved').length },
+          { label: 'Keys', value: stats.total_keys },
+          { label: 'Suggestions', value: stats.total_suggestions },
+          { label: 'Votes', value: stats.total_votes },
+        ].map(s => (
+          <div key={s.label} className="rounded-lg border border-surface-800 bg-surface-900/50 p-4">
+            <p className="text-2xl font-black text-white">{s.value}</p>
+            <p className="text-xs text-surface-500">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Pending language requests */}
+      {pendingLanguages.length > 0 && (
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+          <h3 className="text-sm font-semibold text-amber-400 mb-3">Pending Language Requests ({pendingLanguages.length})</h3>
+          <div className="space-y-2">
+            {pendingLanguages.map((lang) => (
+              <div key={lang.id} className="flex items-center justify-between p-3 rounded-lg bg-surface-900/50 border border-surface-800">
+                <div>
+                  <p className="text-sm font-medium text-white">{lang.name} <span className="text-surface-500">({lang.native_name})</span></p>
+                  <p className="text-[10px] text-surface-500">Code: {lang.code} — Requested by {lang.added_by_profile?.display_name || lang.added_by_profile?.email || 'Unknown'}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => approveLanguage(lang.id)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors">Approve</button>
+                  <button onClick={() => rejectLanguage(lang.id)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors">Reject</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All languages */}
+      <div className="rounded-lg border border-surface-800 bg-surface-900/50 p-4">
+        <h3 className="text-sm font-semibold text-white mb-3">All Languages</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-surface-800">
+                <th className="text-left py-2 text-xs font-medium text-surface-500">Language</th>
+                <th className="text-left py-2 text-xs font-medium text-surface-500">Code</th>
+                <th className="text-left py-2 text-xs font-medium text-surface-500">Status</th>
+                <th className="text-left py-2 text-xs font-medium text-surface-500">Added By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {languages.map((lang) => (
+                <tr key={lang.id} className="border-b border-surface-800/50">
+                  <td className="py-2 text-white">{lang.name} <span className="text-surface-500">({lang.native_name})</span></td>
+                  <td className="py-2 font-mono text-surface-400">{lang.code}</td>
+                  <td className="py-2">
+                    <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                      lang.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                      lang.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                      'bg-red-500/10 text-red-400 border border-red-500/20'
+                    }`}>{lang.status}</span>
+                  </td>
+                  <td className="py-2 text-surface-400 text-xs">{lang.added_by}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Quick links */}
+      <div className="flex gap-3">
+        <Link href="/translations">
+          <Button size="sm" variant="secondary">Open Translator Hub</Button>
+        </Link>
+        <Link href="/legal/translation-guidelines">
+          <Button size="sm" variant="ghost">View Guidelines</Button>
+        </Link>
+      </div>
     </div>
   );
 }

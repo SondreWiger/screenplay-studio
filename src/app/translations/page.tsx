@@ -84,20 +84,45 @@ export default function TranslationsPage() {
     setQuizAnswers([]);
     setQuizResult(null);
     setQuizCooldown(false);
-    setShowQuizModal(true);
 
     const res = await fetch(`/api/translations/quiz?language=${lang.code}`);
     if (res.ok) {
       const data = await res.json();
       if (data.cooldown) {
         setQuizCooldown(true);
-      } else {
+        setShowQuizModal(true);
+      } else if (data.questions.length > 0) {
         setQuizQuestions(data.questions);
         setQuizAnswers(new Array(data.questions.length).fill(-1));
+        setShowQuizModal(true);
+      } else {
+        await submitLanguageDirect(lang.code);
       }
     } else {
-      toast.error('No quiz available for this language yet');
+      await submitLanguageDirect(lang.code);
+    }
+  };
+
+  const submitLanguageDirect = async (langCode: string) => {
+    const res = await fetch('/api/translations/languages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: newLang.code || langCode,
+        name: newLang.name,
+        native_name: newLang.native_name,
+      }),
+    });
+
+    if (res.ok) {
+      toast.success('Language added! You can start translating.');
+      setShowAddLanguageModal(false);
       setShowQuizModal(false);
+      setNewLang({ code: '', name: '', native_name: '' });
+      fetchData();
+    } else {
+      const data = await res.json();
+      toast.error(data.error || 'Failed to add language');
     }
   };
 
