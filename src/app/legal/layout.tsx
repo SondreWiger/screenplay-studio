@@ -20,6 +20,7 @@ const LEGAL_NAV = [
   { href: '/legal/opensource-killswitch', label: 'Open-Source Kill Switch' },
   { href: '/legal/blog', label: 'Legal Updates' },
   { href: '/legal/creator-terms', label: 'Creator Affiliate Terms' },
+  { href: '/legal/translation-guidelines', label: 'Translation Guidelines' },
 ];
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
