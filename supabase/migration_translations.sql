@@ -135,6 +135,7 @@ END $$;
 -- For each key+language, the suggestion with the highest net votes
 -- Requires 2+ net votes to be active, UNLESS the author is an admin
 
+DROP VIEW IF EXISTS translation_winners;
 CREATE OR REPLACE VIEW translation_winners AS
 WITH vote_counts AS (
   SELECT
