@@ -277,36 +277,51 @@ export default function LanguageTranslationPage() {
                     )}
 
                     {/* Suggest translation */}
-                    {agreed && (
-                      <div className="mt-3 pt-3 border-t border-surface-800/60">
-                        {editingKey === k.id ? (
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={editText}
-                              onChange={(e) => setEditText(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && submitSuggestion(k.id)}
-                              placeholder="Enter your translation..."
-                              className="flex-1 px-3 py-2 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-[#FF5F1F]/70 focus:outline-none"
-                              autoFocus
-                            />
-                            <Button size="sm" onClick={() => submitSuggestion(k.id)} loading={submitting} disabled={!editText.trim()}>
-                              Submit
-                            </Button>
-                            <Button size="sm" variant="ghost" onClick={() => { setEditingKey(null); setEditText(''); }}>
-                              Cancel
-                            </Button>
+                    {agreed && (() => {
+                      const userSuggestion = k.suggestions.find(s => s.user_id === user?.id);
+                      if (userSuggestion) {
+                        return (
+                          <div className="mt-3 pt-3 border-t border-surface-800/60">
+                            <p className="text-xs text-surface-500">
+                              Your suggestion: <span className="text-white">{userSuggestion.translated_text}</span>
+                              <span className="ml-2 text-[10px] font-mono text-surface-600">
+                                {userSuggestion.net_votes > 0 ? '+' : ''}{userSuggestion.net_votes} votes
+                              </span>
+                            </p>
                           </div>
-                        ) : (
-                          <button
-                            onClick={() => { setEditingKey(k.id); setEditText(k.winner?.translated_text || ''); }}
-                            className="text-xs text-[#FF5F1F] hover:text-[#FF5F1F]/80 transition-colors font-medium"
-                          >
-                            + Suggest Translation
-                          </button>
-                        )}
-                      </div>
-                    )}
+                        );
+                      }
+                      return (
+                        <div className="mt-3 pt-3 border-t border-surface-800/60">
+                          {editingKey === k.id ? (
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && submitSuggestion(k.id)}
+                                placeholder="Enter your translation..."
+                                className="flex-1 px-3 py-2 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-[#FF5F1F]/70 focus:outline-none"
+                                autoFocus
+                              />
+                              <Button size="sm" onClick={() => submitSuggestion(k.id)} loading={submitting} disabled={!editText.trim()}>
+                                Submit
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => { setEditingKey(null); setEditText(''); }}>
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => { setEditingKey(k.id); setEditText(k.winner?.translated_text || ''); }}
+                              className="text-xs text-[#FF5F1F] hover:text-[#FF5F1F]/80 transition-colors font-medium"
+                            >
+                              + Suggest Translation
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </Card>
                 ))}
               </div>

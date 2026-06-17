@@ -47,17 +47,10 @@ export async function POST(request: Request) {
     .single();
 
   if (existing) {
-    const { data, error } = await supabase
-      .from('translation_suggestions')
-      .update({ translated_text, status: 'pending' })
-      .eq('id', existing.id)
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ suggestion: data });
+    return NextResponse.json(
+      { error: 'You have already suggested a translation for this key in this language' },
+      { status: 409 }
+    );
   }
 
   const { data, error } = await supabase
