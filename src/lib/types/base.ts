@@ -143,6 +143,8 @@ export interface Profile {
   moderation_status?: string;
   moderation_notes?: string | null;
   last_flagged_at?: string | null;
+  // Translation
+  preferred_language?: string | null;
 }
 
 // Work Tracking

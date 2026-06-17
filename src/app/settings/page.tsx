@@ -202,7 +202,7 @@ function PreMiDCard() {
 
 
 
-type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security' | 'gamification' | 'accountability';
+type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
 
 function GamificationSettingsTab() {
   const { user } = useAuth();
@@ -386,6 +386,186 @@ function GamificationSettingsTab() {
             </div>
           ))}
         </div>
+      </Card>
+    </div>
+  );
+}
+
+function TranslationsSettingsTab() {
+  const { user } = useAuth();
+  const [languages, setLanguages] = useState<{ id: string; code: string; name: string; native_name: string }[]>([]);
+  const [progress, setProgress] = useState<Record<string, number>>({});
+  const [totalKeys, setTotalKeys] = useState(0);
+  const [preferredLang, setPreferredLang] = useState<string>(user?.preferred_language || '');
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newLang, setNewLang] = useState({ code: '', name: '', native_name: '' });
+
+  useEffect(() => {
+    const load = async () => {
+      const res = await fetch('/api/translations/languages');
+      if (res.ok) {
+        const data = await res.json();
+        setLanguages(data.languages);
+        setProgress(data.progress);
+        setTotalKeys(data.total_keys);
+      }
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (user) setPreferredLang(user.preferred_language || '');
+  }, [user]);
+
+  const saveLanguage = async (code: string) => {
+    if (!user) return;
+    setSaving(true);
+    const supabase = createClient();
+    const val = code || null;
+    await supabase.from('profiles').update({ preferred_language: val }).eq('id', user.id);
+    useAuthStore.getState().setUser?.({ ...user, preferred_language: val } as Profile);
+    setPreferredLang(code);
+    setSaving(false);
+    toast.success('Language preference saved');
+  };
+
+  const submitNewLang = async () => {
+    if (!newLang.code || !newLang.name || !newLang.native_name) return;
+    const res = await fetch('/api/translations/languages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newLang),
+    });
+    if (res.ok) {
+      toast.success('Language submitted! Take the fluency quiz at /translations');
+      setShowAddModal(false);
+      setNewLang({ code: '', name: '', native_name: '' });
+    } else {
+      const data = await res.json();
+      toast.error(data.error || 'Failed to add language');
+    }
+  };
+
+  if (loading) return <div className="text-center py-16 text-surface-500">Loading languages...</div>;
+
+  return (
+    <div className="space-y-6 max-w-xl">
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-white mb-2">Language</h2>
+        <p className="text-sm text-surface-400 mb-6">Choose your preferred display language. Progress shows how complete each translation is.</p>
+
+        <div className="space-y-2">
+          <button
+            onClick={() => saveLanguage('')}
+            className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
+              !preferredLang ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5' : 'border-surface-700 hover:border-surface-600'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">🇬🇧</span>
+              <div>
+                <p className="text-sm font-medium text-white">English</p>
+                <p className="text-[10px] text-surface-500">Default language</p>
+              </div>
+            </div>
+            {!preferredLang && (
+              <svg className="w-4 h-4 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+            )}
+          </button>
+
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => saveLanguage(lang.code)}
+              disabled={saving}
+              className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
+                preferredLang === lang.code ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5' : 'border-surface-700 hover:border-surface-600'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">🌐</span>
+                <div>
+                  <p className="text-sm font-medium text-white">{lang.name} <span className="text-surface-500">({lang.native_name})</span></p>
+                  <p className="text-[10px] text-surface-500">{progress[lang.code] || 0}% translated</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-1.5 bg-surface-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] rounded-full"
+                    style={{ width: `${progress[lang.code] || 0}%` }}
+                  />
+                </div>
+                {preferredLang === lang.code && (
+                  <svg className="w-4 h-4 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Add Your Language</h2>
+            <p className="text-sm text-surface-400">Don&apos;t see your language? Add it and take a quick fluency quiz.</p>
+          </div>
+          <Link href="/translations">
+            <Button size="sm" variant="secondary">Translator Hub</Button>
+          </Link>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <Input
+            label="Code"
+            placeholder="e.g. no"
+            value={newLang.code}
+            onChange={(e) => setNewLang({ ...newLang, code: e.target.value.toLowerCase().slice(0, 10) })}
+          />
+          <Input
+            label="Name"
+            placeholder="e.g. Norwegian"
+            value={newLang.name}
+            onChange={(e) => setNewLang({ ...newLang, name: e.target.value })}
+          />
+        </div>
+        <div className="mt-3">
+          <Input
+            label="Native Name"
+            placeholder="e.g. Norsk"
+            value={newLang.native_name}
+            onChange={(e) => setNewLang({ ...newLang, native_name: e.target.value })}
+          />
+        </div>
+        <Button
+          className="mt-4"
+          size="sm"
+            onClick={submitNewLang}
+          disabled={!newLang.code || !newLang.name || !newLang.native_name}
+        >
+          Submit Language Request
+        </Button>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-white mb-2">Translation Stats</h2>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <p className="text-2xl font-black text-white">{languages.length}</p>
+            <p className="text-xs text-surface-500">Languages</p>
+          </div>
+          <div>
+            <p className="text-2xl font-black text-white">{totalKeys}</p>
+            <p className="text-xs text-surface-500">Translation Keys</p>
+          </div>
+        </div>
+        <p className="text-[11px] text-surface-500 mt-4">
+          Translations need at least 2 community upvotes to become active. Admin translations are instant.
+        </p>
       </Card>
     </div>
   );
@@ -1369,6 +1549,11 @@ export default function UserSettingsPage() {
         {/* Gamification Tab */}
         {tab === 'gamification' && (
           <GamificationSettingsTab />
+        )}
+
+        {/* Translations Tab */}
+        {tab === 'translations' && (
+          <TranslationsSettingsTab />
         )}
 
         {/* Accountability Tab */}

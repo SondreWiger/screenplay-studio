@@ -124,8 +124,16 @@ CREATE TABLE IF NOT EXISTS language_quiz_attempts (
 CREATE INDEX IF NOT EXISTS idx_language_quiz_attempts_user_id ON language_quiz_attempts(user_id);
 CREATE INDEX IF NOT EXISTS idx_language_quiz_attempts_language ON language_quiz_attempts(language_code);
 
+-- ── Profile: preferred_language ────────────────────────────────
+
+DO $$ BEGIN
+  ALTER TABLE profiles ADD COLUMN IF NOT EXISTS preferred_language text;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
 -- ── View: translation_winners ─────────────────────────────────
 -- For each key+language, the suggestion with the highest net votes
+-- Requires 2+ net votes to be active, UNLESS the author is an admin
 
 CREATE OR REPLACE VIEW translation_winners AS
 WITH vote_counts AS (
@@ -137,14 +145,16 @@ WITH vote_counts AS (
     s.user_id,
     s.status,
     s.created_at,
+    p.role AS author_role,
     COALESCE(SUM(CASE WHEN v.vote = 'up' THEN 1 ELSE 0 END), 0) AS upvotes,
     COALESCE(SUM(CASE WHEN v.vote = 'down' THEN 1 ELSE 0 END), 0) AS downvotes,
     COALESCE(SUM(CASE WHEN v.vote = 'up' THEN 1 ELSE 0 END), 0)
       - COALESCE(SUM(CASE WHEN v.vote = 'down' THEN 1 ELSE 0 END), 0) AS net_votes
   FROM translation_suggestions s
   LEFT JOIN translation_votes v ON v.suggestion_id = s.id
+  LEFT JOIN profiles p ON p.id = s.user_id
   WHERE s.status IN ('pending', 'approved')
-  GROUP BY s.id, s.key_id, s.language, s.translated_text, s.user_id, s.status, s.created_at
+  GROUP BY s.id, s.key_id, s.language, s.translated_text, s.user_id, s.status, s.created_at, p.role
 ),
 ranked AS (
   SELECT
@@ -154,6 +164,7 @@ ranked AS (
       ORDER BY net_votes DESC, created_at ASC
     ) AS rn
   FROM vote_counts
+  WHERE net_votes >= 2 OR author_role = 'admin'
 )
 SELECT
   rk.*,
