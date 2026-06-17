@@ -2,9 +2,11 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslation } from '@/components/TranslationProvider';
 
 function SuspendedContent() {
   const params = useSearchParams();
+  const { t } = useTranslation();
   const reason = params?.get('reason') || 'Your account has been temporarily suspended.';
   const expires = params?.get('expires');
   const expiresDate = expires ? new Date(expires) : null;
@@ -23,17 +25,17 @@ function SuspendedContent() {
         </div>
 
         <h1 className="text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
-          Account Suspended
+          {t('suspended.title')}
         </h1>
 
         <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl px-6 py-4 mb-4">
-          <p className="text-sm text-orange-300 font-medium mb-1">Reason</p>
+          <p className="text-sm text-orange-300 font-medium mb-1">{t('suspended.reason')}</p>
           <p className="text-sm text-white/70">{reason}</p>
         </div>
 
         {expiresDate && (
           <div className="bg-surface-900/50 border border-surface-800 rounded-xl px-6 py-4 mb-6">
-            <p className="text-sm text-surface-400 mb-1">Suspension ends</p>
+            <p className="text-sm text-surface-400 mb-1">{t('suspended.expires')}</p>
             <p className="text-lg text-white font-bold font-mono">
               {expiresDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>

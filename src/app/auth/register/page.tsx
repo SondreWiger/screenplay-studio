@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { validatePassword } from '@/lib/security';
 import { sendWelcomeEmailAction } from '@/lib/email-actions';
+import { useTranslation } from '@/components/TranslationProvider';
 
 // Map raw Supabase/auth error messages to user-friendly ones
 function friendlyAuthError(msg: string): string {
@@ -31,6 +32,7 @@ function friendlyAuthError(msg: string): string {
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -181,21 +183,21 @@ function RegisterForm() {
           </div>
           <div className="flex items-center gap-2.5 mb-4 justify-center">
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
-            <span className="ss-label">Verify Email</span>
+            <span className="ss-label">{t('auth.verify_email')}</span>
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
-          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>CHECK YOUR EMAIL</h1>
+          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>{t('auth.check_email')}</h1>
           <p className="text-sm text-white/35 mb-8 leading-relaxed">
-            We sent a verification link to{' '}
+            {t('auth.verification_sent')}{' '}
             <span className="text-white font-mono">{successEmail}</span>.
-            Click it to activate your account.
+            {t('auth.click_to_activate')}
           </p>
           <Link
             href="/auth/login"
             className="text-[11px] font-mono uppercase tracking-widest transition-opacity hover:opacity-60"
             style={{ color: '#FF5F1F' }}
           >
-            Back to sign in
+            {t('auth.back_to_signin')}
           </Link>
         </div>
       </div>
@@ -241,9 +243,9 @@ function RegisterForm() {
               <span className="ss-label">New Account</span>
             </div>
             <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
-              CREATE ACCOUNT
+              {t('auth.create_account')}
             </h1>
-            <p className="mt-1 text-sm text-white/30">Free. No card. Takes about ten seconds.</p>
+            <p className="mt-1 text-sm text-white/30">{t('auth.free_no_card')}</p>
           </div>
 
           <form onSubmit={handleRegister} noValidate className="space-y-5">
@@ -275,7 +277,7 @@ function RegisterForm() {
             )}
 
             <div>
-              <label className="ss-input-label">Full Name</label>
+              <label className="ss-input-label">{t('auth.full_name')}</label>
               <input
                 className="ss-input w-full"
                 type="text"
@@ -289,7 +291,7 @@ function RegisterForm() {
             </div>
 
             <div>
-              <label className="ss-input-label">Email</label>
+              <label className="ss-input-label">{t('auth.email')}</label>
               <input
                 className="ss-input w-full"
                 type="email"
@@ -303,7 +305,7 @@ function RegisterForm() {
             </div>
 
             <div>
-              <label className="ss-input-label">Password</label>
+              <label className="ss-input-label">{t('auth.password')}</label>
               <input
                 className="ss-input w-full"
                 type="password"
@@ -317,11 +319,11 @@ function RegisterForm() {
               {password.length > 0 && (
                 <div className="mt-3 space-y-1.5">
                   {[
-                    { label: '8+ characters', met: password.length >= 8 },
-                    { label: 'Uppercase letter', met: /[A-Z]/.test(password) },
-                    { label: 'Lowercase letter', met: /[a-z]/.test(password) },
-                    { label: 'Number', met: /\d/.test(password) },
-                    { label: 'Special character', met: /[^A-Za-z0-9]/.test(password) },
+                    { label: t('auth.password_rule_length'), met: password.length >= 8 },
+                    { label: t('auth.password_rule_upper'), met: /[A-Z]/.test(password) },
+                    { label: t('auth.password_rule_lower'), met: /[a-z]/.test(password) },
+                    { label: t('auth.password_rule_number'), met: /\d/.test(password) },
+                    { label: t('auth.password_rule_special'), met: /[^A-Za-z0-9]/.test(password) },
                   ].map((rule) => (
                     <div key={rule.label} className="flex items-center gap-2">
                       <div
@@ -349,10 +351,7 @@ function RegisterForm() {
                 style={{ accentColor: '#FF5F1F' }}
               />
               <span className="text-[11px] font-mono text-white/30 leading-relaxed">
-                I agree to the{' '}
-                <Link href="/legal/terms" className="text-white/50 hover:text-white underline transition-colors" target="_blank">Terms of Service</Link>
-                {' '}and{' '}
-                <Link href="/legal/privacy" className="text-white/50 hover:text-white underline transition-colors" target="_blank">Privacy Policy</Link>
+                {t('auth.agree_terms')}
               </span>
             </label>
 
@@ -361,7 +360,7 @@ function RegisterForm() {
               className="ss-btn-orange w-full"
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? t('auth.creating_account') : t('auth.create_account')}
             </button>
           </form>
 
@@ -370,9 +369,8 @@ function RegisterForm() {
             style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
           >
             <p className="text-[11px] font-mono text-white/25 uppercase tracking-widest">
-              Have an account?{' '}
               <Link href="/auth/login" className="hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
-                Sign in
+                {t('auth.has_account')}
               </Link>
             </p>
           </div>

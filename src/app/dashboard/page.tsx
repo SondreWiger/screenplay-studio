@@ -25,6 +25,7 @@ import { useFeatureAccess } from '@/components/FeatureGate';
 import { useNotifications } from '@/hooks/useNotifications';
 import { timeAgo, cn } from '@/lib/utils';
 import { useRecentProjects } from '@/hooks/useRecentProjects';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder, UsageIntent } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
 
@@ -43,6 +44,7 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const { canUse: canUseFeature } = useFeatureAccess();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -294,7 +296,7 @@ function DashboardContent() {
   };
 
   const deleteFolder = async (id: string) => {
-    if (!confirm('Delete this folder? Projects inside will be unfiled.')) return;
+    if (!confirm(t('dashboard.delete_folder'))) return;
     const supabase = createClient();
     // Deleting the folder row triggers ON DELETE SET NULL in user_project_folder_assignments,
     // so assignments are automatically cleared — no need to touch projects directly.
@@ -554,14 +556,14 @@ function DashboardContent() {
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="ss-label">Dashboard</span>
+              <span className="ss-label">{t('dashboard.title')}</span>
             </div>
             <h2 className="text-2xl font-black text-white flex items-center gap-2 flex-wrap" style={{ letterSpacing: '-0.03em' }}>
-              WELCOME BACK{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
+              {t('dashboard.welcome_back')}{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
               {user?.is_pro && <span className="text-xs px-2 py-0.5 font-black uppercase tracking-wider" style={{ background: 'rgba(255,95,31,0.12)', color: '#FF5F1F', border: '1px solid rgba(255,95,31,0.2)' }}>Pro</span>}
               <StreakBadge />
             </h2>
-            <p className="mt-1 text-sm text-white/30">Your film projects and recent work</p>
+            <p className="mt-1 text-sm text-white/30">{t('dashboard.your_projects')}</p>
           </div>
           {/* Inline Stats */}
           {(() => {
@@ -569,10 +571,10 @@ function DashboardContent() {
             return (
               <div className="flex flex-wrap items-center gap-3 sm:gap-6">
                 {[
-                  { label: 'Projects', value: allP.length },
-                  { label: 'In Dev', value: allP.filter(p => p.status === 'development').length },
-                  { label: 'In Prod', value: allP.filter(p => p.status === 'production').length },
-                  { label: 'Done', value: allP.filter(p => p.status === 'completed').length },
+                  { label: t('dashboard.projects'), value: allP.length },
+                  { label: t('dashboard.in_dev'), value: allP.filter(p => p.status === 'development').length },
+                  { label: t('dashboard.in_prod'), value: allP.filter(p => p.status === 'production').length },
+                  { label: t('dashboard.done'), value: allP.filter(p => p.status === 'completed').length },
                 ].map((s) => (
                   <div key={s.label} className="text-center">
                     <p className="text-xl font-black text-white ss-stat-num">{s.value}</p>
@@ -596,12 +598,12 @@ function DashboardContent() {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </div>
                 <div>
-                  <p className="text-xs text-surface-400">Continue Writing</p>
+                  <p className="text-xs text-surface-400">{t('dashboard.continue_writing')}</p>
                   <p className="text-sm font-semibold text-white">{lastProject.title}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-surface-500">
-                <span>Last edited {timeAgo(lastProject.updated_at)}</span>
+                <span>{t('dashboard.last_edited')} {timeAgo(lastProject.updated_at)}</span>
                 <svg className="w-4 h-4 text-surface-600 group-hover:text-[#FF5F1F] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </div>
             </div>
@@ -622,7 +624,7 @@ function DashboardContent() {
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search projects..."
+              placeholder={t('dashboard.search_projects')}
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-700 bg-surface-900 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none transition-colors"
             />
           </div>
@@ -648,8 +650,8 @@ function DashboardContent() {
         {recentProjects.length >= 2 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider">Recently Viewed</h3>
-              <button onClick={clearRecent} className="text-[10px] text-surface-600 hover:text-surface-400 transition-colors">Clear</button>
+              <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider">{t('dashboard.recently_viewed')}</h3>
+              <button onClick={clearRecent} className="text-[10px] text-surface-600 hover:text-surface-400 transition-colors">{t('dashboard.clear')}</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
               {recentProjects.map(rp => (
@@ -677,7 +679,7 @@ function DashboardContent() {
         {/* My Projects — Folder-organised */}
         <div className="mb-4 flex items-center gap-2">
           <svg className="w-5 h-5 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-          <h3 className="text-lg font-semibold text-white">My Projects</h3>
+          <h3 className="text-lg font-semibold text-white">{t('dashboard.my_projects')}</h3>
           <span className="text-xs text-surface-500">({filteredProjects.length}{searchQuery || filterStatus !== 'all' ? ` of ${projects.length}` : ''})</span>
           <div className="ml-auto flex items-center gap-3">
             {/* Grid / List toggle */}
@@ -704,7 +706,7 @@ function DashboardContent() {
                   value={newFolderName}
                   onChange={e => setNewFolderName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setShowNewFolderInput(false); setNewFolderName(''); } }}
-                  placeholder="Folder name…"
+                  placeholder={t('dashboard.folder_name')}
                   className="w-36 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
                 />
                 <button onClick={createFolder} className="px-2 py-1 text-xs bg-[#FF5F1F] text-white rounded hover:bg-[#E54E15]">Add</button>
@@ -713,7 +715,7 @@ function DashboardContent() {
             ) : (
               <button onClick={() => setShowNewFolderInput(true)} className="flex items-center gap-1.5 text-xs text-surface-500 hover:text-surface-300 transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                New Folder
+                {t('dashboard.new_folder')}
               </button>
             )}
           </div>
@@ -721,8 +723,8 @@ function DashboardContent() {
 
         {filteredProjects.length === 0 && (searchQuery || filterStatus !== 'all') ? (
           <div className="text-center py-12 text-surface-500 text-sm mb-8">
-            No projects match your filters.{' '}
-            <button onClick={() => { setSearchQuery(''); setFilterStatus('all'); }} className="text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors">Clear filters</button>
+            {t('dashboard.no_match')}{' '}
+            <button onClick={() => { setSearchQuery(''); setFilterStatus('all'); }} className="text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors">{t('dashboard.clear_filters')}</button>
           </div>
         ) : projects.length === 0 ? (
           <EmptyState
@@ -731,14 +733,14 @@ function DashboardContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2M9 12h6m-6 4h4" />
               </svg>
             }
-            title="No projects yet"
-            description="Create your first screenplay project to get started"
+            title={t('dashboard.no_projects')}
+            description={t('dashboard.create_first')}
             action={
               <Button onClick={() => setShowNewProject(true)}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Create First Project
+                {t('dashboard.create_first_project')}
               </Button>
             }
           />
@@ -962,7 +964,7 @@ function DashboardContent() {
                   {folders.length > 0 && (
                     <div className={cn('flex items-center gap-2 mb-3 text-sm font-semibold transition-colors', isDragOver ? 'text-white' : 'text-surface-500')}>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
-                      Unfiled
+                      {t('dashboard.unfiled')}
                       <span className="text-[10px] text-surface-700">({unfiled.length})</span>
                       {isDragOver && <span className="text-xs text-surface-400 ml-1">← drop to unfile</span>}
                     </div>
@@ -1154,6 +1156,7 @@ function ProjectCard({
   setDraggingProjectId: (id: string | null) => void;
   viewMode?: 'grid' | 'list';
 }) {
+  const { t } = useTranslation();
   const isMenuOpen = moveMenuProjectId === project.id;
   const isDragging = draggingProjectId === project.id;
   const currentFolder = folders.find(f => f.id === project.folder_id);
@@ -1214,11 +1217,11 @@ function ProjectCard({
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setMoveMenuProjectId(null)} />
                 <div className="absolute right-0 top-6 z-50 w-44 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 text-xs">
-                  <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">Move to folder</div>
+                  <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">{t('dashboard.move_to_folder')}</div>
                   {project.folder_id && (
                     <button onClick={() => moveToFolder(project.id, null)} className="flex items-center gap-2 w-full px-3 py-1.5 text-surface-400 hover:bg-surface-800 hover:text-white">
                       <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                      Remove from folder
+                      {t('dashboard.remove_from_folder')}
                     </button>
                   )}
                   {folders.map(f => (
@@ -1318,7 +1321,7 @@ function ProjectCard({
               currentFolder ? 'opacity-0 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-100',
               'bg-black/60 text-white hover:bg-black/80',
             )}
-            title="Move to folder"
+            title={t('dashboard.move_to_folder')}
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
           </button>
@@ -1327,11 +1330,11 @@ function ProjectCard({
             <>
               <div className="fixed inset-0 z-40" onClick={() => setMoveMenuProjectId(null)} />
               <div className="absolute top-6 left-0 z-50 w-44 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 text-xs">
-                <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">Move to folder</div>
+                <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">{t('dashboard.move_to_folder')}</div>
                 {project.folder_id && (
                   <button onClick={() => moveToFolder(project.id, null)} className="flex items-center gap-2 w-full px-3 py-1.5 text-surface-400 hover:bg-surface-800 hover:text-white">
                     <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    Remove from folder
+                    {t('dashboard.remove_from_folder')}
                   </button>
                 )}
                 {folders.map(f => (
@@ -1370,6 +1373,7 @@ function NewProjectModal({
 }) {
   const { user: currentUser } = useAuthStore();
   const router = useRouter();
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [logline, setLogline] = useState('');
   const [format, setFormat] = useState('feature');
@@ -1468,7 +1472,7 @@ function NewProjectModal({
       }
     } catch (err) {
       console.error('Unexpected error creating project:', err);
-      setError('Failed to create project. Please try again.');
+      setError(t('new_project.failed'));
     } finally {
       setLoading(false);
     }
@@ -1481,13 +1485,13 @@ function NewProjectModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={step === 0 ? 'What are you creating?' : 'Project Details'} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={step === 0 ? t('new_project.title') : t('new_project.details')} size="lg">
       {step === 0 ? (
         <div className="space-y-6">
           {/* Templates — shown if user has any */}
           {templates.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">Start from template</p>
+              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">{t('new_project.from_template')}</p>
               <div className="flex flex-wrap gap-2">
                 {templates.map(t => (
                   <button
@@ -1508,7 +1512,7 @@ function NewProjectModal({
             </div>
           )}
 
-          <p className="text-sm text-surface-400">Choose the type of project you want to create.</p>
+          <p className="text-sm text-surface-400">{t('new_project.choose_type')}</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
 
@@ -1604,7 +1608,7 @@ function NewProjectModal({
           {/* Company / Personal selector */}
           {creatableCompanies.length > 0 && (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-surface-300">Create for</label>
+              <label className="block text-sm font-medium text-surface-300">{t('new_project.create_for')}</label>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -1616,7 +1620,7 @@ function NewProjectModal({
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                  Personal
+                  {t('new_project.personal')}
                 </button>
                 {creatableCompanies.map((m) => (
                   <button
@@ -1647,7 +1651,7 @@ function NewProjectModal({
           )}
 
           <Input
-            label={isTvProduction ? 'Production Name' : isContentCreator ? 'Video Title' : isAudioOrPodcast ? 'Audio Drama Title' : 'Project Title'}
+            label={t('new_project.project_title')}
             placeholder={isTvProduction ? 'Dagsrevyen 24. desember' : isContentCreator ? 'How I Make $10k/Month as a Creator' : isAudioOrPodcast ? 'Dark Waters: Episode 1' : 'The Midnight Hour'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -1656,7 +1660,7 @@ function NewProjectModal({
           />
 
           <Textarea
-            label={isTvProduction ? 'Production Description' : isContentCreator ? 'Video Concept' : isAudioOrPodcast ? 'Episode Premise' : 'Logline'}
+            label={isTvProduction ? 'Production Description' : isContentCreator ? 'Video Concept' : isAudioOrPodcast ? 'Episode Premise' : t('project.logline')}
             placeholder={isTvProduction 
               ? 'Live broadcast from Studio 1, 45 minutes, 3-camera setup...'
               : isContentCreator 
@@ -1686,7 +1690,7 @@ function NewProjectModal({
               )}
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-surface-300">Genre</label>
+                <label className="block text-sm font-medium text-surface-300">{t('new_project.genre')}</label>
                 <div className="flex flex-wrap gap-2">
                   {GENRE_OPTIONS.map((g) => (
                     <button
@@ -1731,7 +1735,7 @@ function NewProjectModal({
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-surface-300">Genre</label>
+                <label className="block text-sm font-medium text-surface-300">{t('new_project.genre')}</label>
                 <div className="flex flex-wrap gap-2">
                   {GENRE_OPTIONS.map((g) => (
                     <button
@@ -1837,7 +1841,7 @@ function NewProjectModal({
               Cancel
             </Button>
             <Button type="submit" loading={loading}>
-              Create Project
+              {t('new_project.create')}
             </Button>
           </div>
         </form>

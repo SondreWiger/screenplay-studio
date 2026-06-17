@@ -10,6 +10,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { Icon } from '@/components/ui/icons';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { PRO_PRICING } from '@/lib/types';
+import { useTranslation } from '@/components/TranslationProvider';
 
 // Pro Upgrade — Pricing & Checkout
 
@@ -78,6 +79,7 @@ const PRO_FEATURES = [
 
 export default function ProUpgradePage() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const { isPro } = useProFeatures();
   const router = useRouter();
   const { canUse: canUseFeature, loading: flagsLoading } = useFeatureAccess();
@@ -167,7 +169,7 @@ export default function ProUpgradePage() {
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <Link href="/settings/billing">
-              <Button variant="secondary">Manage Subscription</Button>
+              <Button variant="secondary">{t('pro.manage')}</Button>
             </Link>
             <Link href="/pro/team">
               <Button>Buy Team Licenses</Button>

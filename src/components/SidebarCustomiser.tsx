@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { SidebarSection, SidebarNavItem } from '@/lib/types';
 import type { SaveScope } from '@/hooks/useSidebarLayout';
 
@@ -22,6 +23,7 @@ function move<T>(arr: T[], from: number, to: number): T[] {
 }
 
 export default function SidebarCustomiser({ sections: initialSections, onClose, onSave, onReset, isAdmin, activeScope }: Props) {
+  const { t } = useTranslation();
   const [sections, setSections] = useState<SidebarSection[]>(
     // Deep clone to avoid mutating props
     initialSections.map(s => ({ ...s, items: s.items.map(i => ({ ...i })) }))
@@ -330,7 +332,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                   className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-[#FF5F1F]/60"
                   autoFocus
                 />
-                <button onClick={addSection} className="text-xs px-2.5 py-1.5 rounded-lg bg-[#FF5F1F] text-white hover:bg-orange-500 transition-colors shrink-0">Add</button>
+                <button onClick={addSection} className="text-xs px-2.5 py-1.5 rounded-lg bg-[#FF5F1F] text-white hover:bg-orange-500 transition-colors shrink-0">{t('common.add')}</button>
                 <button onClick={() => { setShowNewSection(false); setNewSectionName(''); }} className="text-surface-500 hover:text-white text-xs transition-colors">✕</button>
               </div>
             ) : (

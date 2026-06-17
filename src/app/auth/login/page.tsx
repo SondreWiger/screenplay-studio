@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslation } from '@/components/TranslationProvider';
 
 function friendlyAuthError(msg: string): string {
   const m = msg.toLowerCase();
@@ -36,6 +37,7 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const [loading, setLoading] = useState(false);
   // Show errors from URL params (e.g. expired magic-link → callback redirects here with ?error=...)
@@ -173,7 +175,7 @@ function LoginForm() {
               <span className="ss-label">Authentication</span>
             </div>
             <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
-              WELCOME BACK
+              {t('auth.welcome_back')}
             </h1>
           </div>
 
@@ -192,7 +194,7 @@ function LoginForm() {
             )}
 
             <div>
-              <label className="ss-input-label">Email</label>
+              <label className="ss-input-label">{t('auth.email')}</label>
               <input
                 ref={emailRef}
                 className="ss-input w-full"
@@ -204,7 +206,7 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="ss-input-label">Password</label>
+              <label className="ss-input-label">{t('auth.password')}</label>
               <input
                 ref={passwordRef}
                 className="ss-input w-full"
@@ -220,7 +222,7 @@ function LoginForm() {
                 href="/auth/forgot-password"
                 className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors"
               >
-                Forgot password?
+                {t('auth.forgot_password')}
               </Link>
             </div>
 
@@ -230,7 +232,7 @@ function LoginForm() {
               onClick={handleButtonClick}
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('auth.signing_in') : t('auth.login')}
             </button>
           </form>
 
@@ -239,9 +241,8 @@ function LoginForm() {
             style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
           >
             <p className="text-[11px] font-mono text-white/25 uppercase tracking-widest">
-              No account?{' '}
               <Link href="/auth/register" className="hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
-                Create one
+                {t('auth.no_account')}
               </Link>
             </p>
           </div>

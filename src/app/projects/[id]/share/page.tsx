@@ -6,17 +6,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import type { ProjectShareLink } from '@/lib/types';
+import { useTranslation } from '@/components/TranslationProvider';
 
 // Constants
 
-const PERM_ITEMS: { key: keyof PermMap; label: string; icon: string }[] = [
-  { key: 'can_view_script',     label: 'Script',      icon: '📄' },
-  { key: 'can_view_characters', label: 'Characters',  icon: '👤' },
-  { key: 'can_view_scenes',     label: 'Scenes',      icon: '🎬' },
-  { key: 'can_view_schedule',   label: 'Schedule',    icon: '📅' },
-  { key: 'can_view_documents',  label: 'Documents',   icon: '📁' },
-  { key: 'can_view_notes',      label: 'View notes',  icon: '📝' },
-  { key: 'can_edit_notes',      label: 'Write notes', icon: '✏️'  },
+const PERM_ITEMS: { key: keyof PermMap; labelKey: string; icon: string }[] = [
+  { key: 'can_view_script',     labelKey: 'share.perm_script',      icon: '📄' },
+  { key: 'can_view_characters', labelKey: 'share.perm_characters',  icon: '👤' },
+  { key: 'can_view_scenes',     labelKey: 'share.perm_scenes',      icon: '🎬' },
+  { key: 'can_view_schedule',   labelKey: 'share.perm_schedule',    icon: '📅' },
+  { key: 'can_view_documents',  labelKey: 'share.perm_documents',   icon: '📁' },
+  { key: 'can_view_notes',      labelKey: 'share.perm_view_notes',  icon: '📝' },
+  { key: 'can_edit_notes',      labelKey: 'share.perm_write_notes', icon: '✏️'  },
 ];
 
 type PermMap = Pick<
@@ -74,6 +75,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
   const projectId = params.id;
   const { user } = useAuth();
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
+  const { t } = useTranslation();
 
   const [links, setLinks]                   = useState<ProjectShareLink[]>([]);
   const [loading, setLoading]               = useState(true);
@@ -165,9 +167,9 @@ export default function SharePage({ params }: { params: { id: string } }) {
       {/* Top bar */}
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
         <div>
-          <h1 className="text-base font-semibold text-white tracking-tight">Share</h1>
+          <h1 className="text-base font-semibold text-white tracking-tight">{t('share.title')}</h1>
           <p className="text-xs text-gray-500 mt-0.5">
-            Shareable links for{' '}
+            {t('share.links_for')}{' '}
             <span className="text-gray-400">{project?.title ?? 'this project'}</span>
           </p>
         </div>
@@ -178,7 +180,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          New link
+          {t('share.new_link')}
         </button>
       </div>
 
@@ -257,7 +259,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
           />
           <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-sm bg-[#111113] border-l border-white/10 shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
-              <h2 className="text-sm font-semibold text-white">New share link</h2>
+              <h2 className="text-sm font-semibold text-white">{t('share.new_link')}</h2>
               <button
                 onClick={() => setDrawerOpen(false)}
                 className="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 hover:text-white hover:bg-white/8 transition-colors"
@@ -269,11 +271,11 @@ export default function SharePage({ params }: { params: { id: string } }) {
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-              <Field label="Link name">
+              <Field label={t('share.link_name')}>
                 <input
                   autoFocus
                   type="text"
-                  placeholder="e.g. Director cut, Client draft…"
+                  placeholder={t('share.link_placeholder')}
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   onKeyDown={(e) => e.key === 'Enter' && createLink()}
@@ -281,9 +283,9 @@ export default function SharePage({ params }: { params: { id: string } }) {
                 />
               </Field>
 
-              <Field label="What can they see?">
+              <Field label={t('share.permissions')}>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {PERM_ITEMS.map(({ key, label, icon }) => {
+                  {PERM_ITEMS.map(({ key, labelKey, icon }) => {
                     const checked = form.perms[key];
                     return (
                       <button
@@ -300,7 +302,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
                         )}
                       >
                         <span className="text-base leading-none">{icon}</span>
-                        <span className="text-xs font-medium">{label}</span>
+                        <span className="text-xs font-medium">{t(labelKey)}</span>
                         {checked && (
                           <svg
                             className="w-3 h-3 ml-auto text-indigo-400 flex-shrink-0"
@@ -319,7 +321,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
 
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm text-gray-200 font-medium">Invite link</p>
+                  <p className="text-sm text-gray-200 font-medium">{t('share.invite_link')}</p>
                   <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
                     Recipient signs in or creates an account and automatically joins the project
                   </p>
@@ -331,7 +333,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
               </div>
 
               {form.is_invite && (
-                <Field label="Join as">
+                <Field label={t('share.invite_role')}>
                   <div className="flex gap-2">
                     {(['viewer', 'commenter', 'editor'] as const).map((role) => (
                       <button
@@ -345,7 +347,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
                             : 'bg-white/4 border-white/8 text-gray-400 hover:text-gray-200 hover:border-white/15',
                         )}
                       >
-                        {role}
+                        {t(`share.role_${role}`)}
                       </button>
                     ))}
                   </div>
@@ -390,7 +392,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
                 {saving && (
                   <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
                 )}
-                {saving ? 'Creating…' : 'Create link'}
+                {saving ? 'Creating…' : t('share.create_link')}
               </button>
             </div>
           </aside>
@@ -403,6 +405,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
 // Sub-components
 
 function EmptyState({ onNew }: { onNew: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center pt-16 pb-8 text-center px-4">
       <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
@@ -416,7 +419,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
           />
         </svg>
       </div>
-      <p className="text-sm font-medium text-gray-300">No share links yet</p>
+      <p className="text-sm font-medium text-gray-300">{t('share.no_links')}</p>
       <p className="text-xs text-gray-600 mt-1.5 max-w-[240px] leading-relaxed">
         Create a link to share scripts, characters, or other content — no login needed for recipients.
       </p>
@@ -467,6 +470,7 @@ function LinkRow({
   link, copied, regenerating, deleting,
   onCopy, onRegenerate, onDelete, inactive = false,
 }: LinkRowProps) {
+  const { t } = useTranslation();
   const origin    = getOrigin();
   const url       = `${origin}/share/${link.token}`;
   const perms     = PERM_ITEMS.filter(({ key }) => link[key as keyof ProjectShareLink]);
@@ -569,13 +573,13 @@ function LinkRow({
           {perms.length === 0 ? (
             <span className="text-[11px] text-gray-600 italic">No content access</span>
           ) : (
-            perms.map(({ label, icon }) => (
+            perms.map(({ labelKey, icon }) => (
               <span
-                key={label}
+                key={labelKey}
                 className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full"
               >
                 <span className="text-[10px]">{icon}</span>
-                {label}
+                {t(labelKey)}
               </span>
             ))
           )}

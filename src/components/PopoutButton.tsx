@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useBroadcastSync } from '@/hooks/useBroadcastSync';
+import { useTranslation } from '@/components/TranslationProvider';
 
 // PopoutButton
 // Renders a small icon button that opens the current page in a
@@ -57,6 +58,7 @@ interface PopoutBarProps {
 }
 
 export function PopoutBar({ projectId, projectTitle, pageLabel }: PopoutBarProps) {
+  const { t } = useTranslation();
   const [synced, setSynced] = useState(false);
   const [peerCount, setPeerCount] = useState(0);
 
@@ -127,7 +129,7 @@ export function PopoutBar({ projectId, projectTitle, pageLabel }: PopoutBarProps
         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
-        <span>Close</span>
+        <span>{t('common.close')}</span>
       </button>
     </div>
   );

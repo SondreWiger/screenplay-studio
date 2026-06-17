@@ -10,13 +10,14 @@ import { sendProjectInviteEmailAction } from '@/lib/email-actions';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { ProjectMember, Profile, UserRole, UserPresence, ProductionRole, ExternalCredit, Character } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
+import { useTranslation } from '@/components/TranslationProvider';
 
-const ROLES: { value: UserRole; label: string; description: string }[] = [
-  { value: 'owner', label: 'Owner', description: 'Full access, can delete project' },
-  { value: 'admin', label: 'Admin', description: 'Manage members, edit everything' },
-  { value: 'writer', label: 'Writer', description: 'Edit scripts, characters, scenes' },
-  { value: 'editor', label: 'Editor', description: 'Edit content, no admin access' },
-  { value: 'viewer', label: 'Viewer', description: 'Read-only access' },
+const ROLES: { value: UserRole; labelKey: string; descKey: string }[] = [
+  { value: 'owner', labelKey: 'team.role_owner', descKey: 'team.desc_owner' },
+  { value: 'admin', labelKey: 'team.role_admin', descKey: 'team.desc_admin' },
+  { value: 'writer', labelKey: 'team.role_writer', descKey: 'team.desc_writer' },
+  { value: 'editor', labelKey: 'team.role_editor', descKey: 'team.desc_editor' },
+  { value: 'viewer', labelKey: 'team.role_viewer', descKey: 'team.desc_viewer' },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
@@ -44,6 +45,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { onlineUsers } = usePresenceStore();
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const { t } = useTranslation();
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,7 +80,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
   };
 
   const handleRemove = async (memberId: string) => {
-    const ok = await confirm({ message: 'Remove this team member?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
+    const ok = await confirm({ message: t('team.remove_confirm'), variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     try {
       const supabase = createClient();
       const { error: delError } = await supabase.from('project_members').delete().eq('id', memberId);
@@ -158,7 +160,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">Team</h1>
+          <h1 className="text-2xl font-black text-white">{t('team.title')}</h1>
           <p className="text-sm text-surface-400 mt-1">
             {members.length} member{members.length !== 1 ? 's' : ''}
             {onlineUsers.length > 0 && (
@@ -169,7 +171,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         {canManage && (
           <Button onClick={() => setShowInvite(true)}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-            Invite Member
+            {t('team.invite')}
           </Button>
         )}
       </div>
@@ -187,7 +189,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           return (
             <Card key={r.value} className={cn('p-3 text-center', ROLE_BG[r.value])}>
               <p className={cn('text-2xl font-black', ROLE_COLORS[r.value])}>{count}</p>
-              <p className="text-[11px] text-surface-400 mt-0.5">{r.label}{count !== 1 ? 's' : ''}</p>
+              <p className="text-[11px] text-surface-400 mt-0.5">{t(r.labelKey)}{count !== 1 ? 's' : ''}</p>
             </Card>
           );
         })}
@@ -198,7 +200,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         <div className="mb-8">
           <h2 className="text-sm font-medium text-surface-400 mb-3 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            Active Now
+            {t('team.active_now')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {onlineUsers.map((presence) => {
@@ -233,7 +235,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
       )}
 
       {/* Members list */}
-      <h2 className="text-sm font-medium text-surface-400 mb-3">All Members</h2>
+      <h2 className="text-sm font-medium text-surface-400 mb-3">{t('team.all_members')}</h2>
       <div className="space-y-2">
         {members.map((member) => {
           const name = member.profile?.full_name || member.profile?.email || 'Unknown';
@@ -253,7 +255,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-medium text-white">{name}</h3>
-                    {isCurrentUser && <Badge size="sm" variant="info">You</Badge>}
+                    {isCurrentUser && <Badge size="sm" variant="info">{t('team.you')}</Badge>}
                     {online && <Badge size="sm" variant="success">Online</Badge>}
                   </div>
                   <p className="text-xs text-surface-400">{email}</p>
@@ -272,7 +274,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                     {member.job_title && (
                       <span className="text-[11px] text-surface-500">{'\u00B7'} {member.job_title}</span>
                     )}
-                    <span className="text-[11px] text-surface-600">Joined {formatDate(member.joined_at)}</span>
+                    <span className="text-[11px] text-surface-600">{t('team.joined')} {formatDate(member.joined_at)}</span>
                     {online && pageLabel && (
                       <span className="text-[11px] text-green-400">{'\u00B7'} Viewing {pageLabel}</span>
                     )}
@@ -284,10 +286,10 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                       onClick={() => setEditingMember(member)}
                       className={cn('px-3 py-1.5 rounded-lg text-xs font-medium border border-surface-700 hover:bg-surface-900/5 transition-colors', ROLE_COLORS[member.role])}
                     >
-                      {role?.label}
+                      {role ? t(role.labelKey) : member.role}
                     </button>
                   ) : (
-                    <span className={cn('text-xs font-medium px-3 py-1.5', ROLE_COLORS[member.role])}>{role?.label}</span>
+                    <span className={cn('text-xs font-medium px-3 py-1.5', ROLE_COLORS[member.role])}>{role ? t(role.labelKey) : member.role}</span>
                   )}
                   {canManage && !isCurrentUser && member.role !== 'owner' && (
                     <button onClick={() => handleRemove(member.id)}
@@ -320,8 +322,8 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                         : 'border-surface-700 hover:border-surface-600 hover:bg-surface-900/[0.02]'
                     )}>
                     <div>
-                      <p className={cn('text-sm font-medium', ROLE_COLORS[role.value])}>{role.label}</p>
-                      <p className="text-xs text-surface-500">{role.description}</p>
+                      <p className={cn('text-sm font-medium', ROLE_COLORS[role.value])}>{t(role.labelKey)}</p>
+                      <p className="text-xs text-surface-500">{t(role.descKey)}</p>
                     </div>
                     {editingMember.role === role.value && <span className="text-[#FF5F1F]">{'\u2713'}</span>}
                   </button>
@@ -499,6 +501,7 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
   const [role, setRole] = useState<UserRole>('editor');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => { setEmail(''); setRole('editor'); setError(''); }, [isOpen]);
 
@@ -571,8 +574,8 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
                   role === r.value ? 'border-[#FF5F1F]/50 bg-[#E54E15]/10' : 'border-surface-700 hover:border-surface-600'
                 )}>
                 <div>
-                  <p className={cn('text-sm font-medium', ROLE_COLORS[r.value])}>{r.label}</p>
-                  <p className="text-xs text-surface-500">{r.description}</p>
+                  <p className={cn('text-sm font-medium', ROLE_COLORS[r.value])}>{t(r.labelKey)}</p>
+                  <p className="text-xs text-surface-500">{t(r.descKey)}</p>
                 </div>
                 {role === r.value && <span className="text-[#FF5F1F]">{'\u2713'}</span>}
               </button>

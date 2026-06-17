@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/components/TranslationProvider';
 import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, timeUntil } from '@/lib/utils';
 import type { CommunityPost, CommunityCategory, CommunityChallenge, SubCommunity } from '@/lib/types';
 
 export default function CommunityPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   type FeaturedCourse = { id: string; title: string; difficulty: string; xp_reward: number; enrollment_count: number };
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
@@ -113,7 +115,7 @@ export default function CommunityPage() {
   const handleDeletePost = async (e: React.MouseEvent, postId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm('Delete this post? This cannot be undone.')) return;
+    if (!confirm(t('community.delete_post'))) return;
     const supabase = createClient();
     const { error } = await supabase.from('community_posts').delete().eq('id', postId);
     if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
@@ -157,7 +159,7 @@ export default function CommunityPage() {
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold uppercase tracking-wider text-white/70">Weekly Challenge</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/70">{t('community.weekly_challenge')}</span>
                   <span className="px-2 py-0.5 text-[10px] font-semibold bg-surface-900/20 rounded-full">{getPhaseLabel(phase)}</span>
                 </div>
                 <h2 className="text-lg font-bold">{activeChallenge.title.replace('Weekly Challenge: ', '')}</h2>
@@ -168,13 +170,13 @@ export default function CommunityPage() {
                   {phase === 'submissions' && <><span className="text-white font-semibold">{timeUntil(activeChallenge.submissions_close_at)}</span> to submit</>}
                   {phase === 'voting' && <><span className="text-white font-semibold">{timeUntil(activeChallenge.voting_close_at)}</span> to vote</>}
                   {phase === 'upcoming' && <>Starts {formatDate(activeChallenge.starts_at)}</>}
-                  <div className="mt-0.5">{activeChallenge.submission_count} submissions</div>
+                  <div className="mt-0.5">{activeChallenge.submission_count} {t('community.submissions')}</div>
                 </div>
                 <Link
                   href={`/community/challenges/${activeChallenge.id}`}
                   className="px-4 py-2 text-sm font-medium bg-surface-900 text-[#E54E15] hover:bg-surface-900/90 rounded-lg transition-colors"
                 >
-                  {phase === 'submissions' ? 'Submit' : 'View'}
+                  {phase === 'submissions' ? t('community.submit') : t('community.view')}
                 </Link>
               </div>
             </div>
@@ -188,17 +190,17 @@ export default function CommunityPage() {
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="ss-label">Community</span>
+              <span className="ss-label">{t('community.title')}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>COMMUNITY SCRIPTS</h1>
-            <p className="text-white/50 text-sm mt-1">Discover, share, and collaborate on screenplays</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>{t('community.scripts')}</h1>
+            <p className="text-white/50 text-sm mt-1">{t('community.discover')}</p>
             {user && (
               <div className="flex items-center gap-1 mt-3 p-0.5 rounded-lg w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
                 {(['all', 'yours'] as const).map(m => (
                   <button key={m} onClick={() => setFeedMode(m)}
                     className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md transition-colors"
                     style={feedMode === m ? { background: '#FF5F1F', color: '#fff' } : { color: 'rgba(255,255,255,0.45)' }}>
-                    {m === 'all' ? 'All Posts' : 'Your Feed'}
+                    {m === 'all' ? t('community.all_posts') : t('community.your_feed')}
                   </button>
                 ))}
               </div>
@@ -216,7 +218,7 @@ export default function CommunityPage() {
                   background: sortBy === s ? 'rgba(255,95,31,0.08)' : 'transparent',
                 }}
               >
-                {s}
+                {t(`community.${s}`)}
               </button>
             ))}
           </div>
@@ -225,7 +227,7 @@ export default function CommunityPage() {
         <div className="flex gap-8">
           {/* Sidebar — categories */}
           <aside className="hidden lg:block w-56 shrink-0">
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Categories</h3>
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">{t('community.categories')}</h3>
             <div className="space-y-1">
               <button
                 onClick={() => setSelectedCategory(null)}
@@ -233,7 +235,7 @@ export default function CommunityPage() {
                   !selectedCategory ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium' : 'text-white/60 hover:bg-surface-800'
                 }`}
               >
-                All Scripts
+                {t('community.all_scripts')}
               </button>
               {categories.map((cat) => (
                 <button
@@ -252,13 +254,13 @@ export default function CommunityPage() {
             {/* Quick links */}
             <div className="mt-8 pt-6 border-t border-white/10">
               <Link href="/community/showcase" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
-                Finished Projects
+                {t('community.finished')}
               </Link>
               <Link href="/community/challenges" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
-                Writing Challenges
+                {t('community.challenges')}
               </Link>
               <Link href="/community/free-scripts" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
-                Free-to-Use Scripts
+                {t('community.free_scripts')}
               </Link>
             </div>
 
@@ -267,8 +269,8 @@ export default function CommunityPage() {
             {joinedCommunities.length > 0 && (
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Your Communities</p>
-                  <Link href="/community/c" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">Browse →</Link>
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.your_communities')}</p>
+                  <Link href="/community/c" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">{t('community.browse')}</Link>
                 </div>
                 <div className="space-y-1">
                   {joinedCommunities.slice(0, 8).map(c => (
@@ -285,7 +287,7 @@ export default function CommunityPage() {
             {featuredCourses.length > 0 && (
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Courses</p>
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.courses')}</p>
                   <Link href="/community/courses" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">All →</Link>
                 </div>
                 <div className="space-y-2">
@@ -299,7 +301,7 @@ export default function CommunityPage() {
                           <span className={`text-[9px] font-semibold uppercase tracking-wide ${diffColor}`}>{c.difficulty}</span>
                           <span className="text-[9px] text-white/25">·</span>
                           <span className="text-[9px] text-[#FF5F1F]">{c.xp_reward} XP</span>
-                          {c.enrollment_count > 0 && <span className="text-[9px] text-white/25 ml-auto">{c.enrollment_count} enrolled</span>}
+                          {c.enrollment_count > 0 && <span className="text-[9px] text-white/25 ml-auto">{c.enrollment_count} {t('community.enrolled')}</span>}
                         </div>
                       </Link>
                     );
@@ -318,11 +320,11 @@ export default function CommunityPage() {
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-5xl mb-4 font-bold text-white/20">S</div>
-                <p className="text-lg font-semibold text-white/70 mb-2">No scripts shared yet</p>
-                <p className="text-sm text-white/40 mb-6">Be the first to share your work with the community!</p>
+                <p className="text-lg font-semibold text-white/70 mb-2">{t('community.no_posts')}</p>
+                <p className="text-sm text-white/40 mb-6">{t('community.be_first')}</p>
                 {user && (
                   <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors">
-                    Share Your Script
+                    {t('community.share_script')}
                   </Link>
                 )}
               </div>
@@ -416,13 +418,13 @@ export default function CommunityPage() {
                         {/* Permission badges */}
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {post.allow_free_use && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-green-400 bg-green-500/15 rounded-full">Free to Use</span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold text-green-400 bg-green-500/15 rounded-full">{t('community.free_to_use')}</span>
                           )}
                           {post.allow_distros && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-blue-400 bg-blue-500/15 rounded-full">Distros Allowed</span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold text-blue-400 bg-blue-500/15 rounded-full">{t('community.distros_allowed')}</span>
                           )}
                           {post.allow_edits && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-400 bg-purple-500/15 rounded-full">Open to Edits</span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-400 bg-purple-500/15 rounded-full">{t('community.open_to_edits')}</span>
                           )}
                           {/* Mod delete */}
                           {user && (user.id === post.author_id || isMod) && (

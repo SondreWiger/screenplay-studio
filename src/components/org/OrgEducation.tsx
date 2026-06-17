@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Card, Input, Textarea, Modal, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { OrgClass, OrgClassAssignment, OrgClassSubmission, OrgPeerReview } from '@/lib/types';
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 type Tab = 'classes' | 'assignments' | 'submissions';
 
 export function OrgEducation({ companyId, userId, canManage }: Props) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('classes');
   const [classes, setClasses] = useState<OrgClass[]>([]);
   const [assignments, setAssignments] = useState<OrgClassAssignment[]>([]);
@@ -347,6 +349,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
 
 // Inline submit component
 function SubmitWorkInline({ assignmentId, onSubmit }: { assignmentId: string; onSubmit: (id: string, content: string) => void }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState('');
   if (!open) return <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>Submit Work</Button>;
@@ -355,7 +358,7 @@ function SubmitWorkInline({ assignmentId, onSubmit }: { assignmentId: string; on
       <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Your submission..." rows={2} className="text-xs min-w-[200px]" />
       <div className="flex flex-col gap-1">
         <Button size="sm" onClick={() => { onSubmit(assignmentId, content); setOpen(false); setContent(''); }} disabled={!content.trim()}>Send</Button>
-        <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+        <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
       </div>
     </div>
   );
@@ -363,6 +366,7 @@ function SubmitWorkInline({ assignmentId, onSubmit }: { assignmentId: string; on
 
 // Inline grading component
 function GradeInline({ maxPoints, onGrade }: { maxPoints: number; onGrade: (grade: number, feedback: string) => void }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [grade, setGrade] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -371,7 +375,7 @@ function GradeInline({ maxPoints, onGrade }: { maxPoints: number; onGrade: (grad
     <div className="flex gap-2 items-end">
       <Input value={grade} onChange={e => setGrade(e.target.value)} type="number" placeholder={`/ ${maxPoints}`} className="w-20 text-xs" />
       <Input value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Feedback..." className="flex-1 text-xs" />
-      <Button size="sm" onClick={() => { onGrade(parseInt(grade) || 0, feedback); setOpen(false); }} disabled={!grade}>Save</Button>
+      <Button size="sm" onClick={() => { onGrade(parseInt(grade) || 0, feedback); setOpen(false); }} disabled={!grade}>{t('common.save')}</Button>
     </div>
   );
 }

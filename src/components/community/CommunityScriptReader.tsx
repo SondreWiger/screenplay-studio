@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { parseScreenplayElements } from '@/components/ScreenplayRenderer';
 import { estimateLines, PAGE_CONFIGS } from '@/lib/screenplay-paginator';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { Profile } from '@/lib/types';
 
 // Community Script Reader — Info Panel + Full-screen Modal
@@ -375,6 +376,7 @@ interface ReaderModalProps {
 }
 
 function CommunityScriptReaderModal({ content, title, postId, user, onClose }: ReaderModalProps) {
+  const { t } = useTranslation();
   const elements = useMemo(() => parseScreenplayElements(content), [content]);
   const paragraphs = useMemo(() => {
     if (elements) return null;
@@ -584,7 +586,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              <span className="hidden sm:inline text-xs">Close</span>
+              <span className="hidden sm:inline text-xs">{t('common.close')}</span>
             </button>
             <div className="w-px h-5 bg-white/10" />
             <div className="min-w-0">

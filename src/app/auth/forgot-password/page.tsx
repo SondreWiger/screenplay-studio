@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslation } from '@/components/TranslationProvider';
 
 function friendlyResetError(msg: string): string {
   const m = msg.toLowerCase();
@@ -19,6 +20,7 @@ function friendlyResetError(msg: string): string {
 }
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -86,17 +88,17 @@ export default function ForgotPasswordPage() {
           </div>
           <div className="flex items-center gap-2.5 mb-4 justify-center">
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
-            <span className="ss-label">Reset Link Sent</span>
+            <span className="ss-label">{t('auth.reset_link_sent')}</span>
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
-          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>CHECK YOUR EMAIL</h1>
+          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>{t('auth.check_email')}</h1>
           <p className="text-sm text-white/35 mb-8 leading-relaxed">
-            If an account exists for{' '}
+            {t('auth.reset_check_inbox')}{' '}
             <span className="text-white font-mono">{sentEmail}</span>,
-            we sent a password reset link. Check your inbox and spam folder.
+            {t('auth.reset_check_spam')}
           </p>
           <Link href="/auth/login" className="text-[11px] font-mono uppercase tracking-widest hover:opacity-60 transition-opacity" style={{ color: '#FF5F1F' }}>
-            Back to sign in
+            {t('auth.back_to_signin')}
           </Link>
         </div>
       </div>
@@ -132,11 +134,11 @@ export default function ForgotPasswordPage() {
           <div className="mb-8 pb-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="ss-label">Password Reset</span>
+              <span className="ss-label">{t('auth.password_reset')}</span>
             </div>
-            <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>RESET PASSWORD</h1>
+            <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>{t('auth.password_reset')}</h1>
             <p className="mt-1 text-sm text-white/30">
-              Enter your email and we&apos;ll send you a reset link.
+              {t('auth.reset_instruction')}
             </p>
           </div>
 
@@ -155,7 +157,7 @@ export default function ForgotPasswordPage() {
             )}
 
             <div>
-              <label className="ss-input-label">Email</label>
+              <label className="ss-input-label">{t('auth.email')}</label>
               <input
                 className="ss-input w-full"
                 type="email"
@@ -168,15 +170,14 @@ export default function ForgotPasswordPage() {
             </div>
 
             <button type="submit" className="ss-btn-orange w-full" disabled={loading}>
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? t('auth.sending') : t('auth.send_reset_link')}
             </button>
           </form>
 
           <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <p className="text-[11px] font-mono text-white/25 uppercase tracking-widest">
-              Remember it?{' '}
               <Link href="/auth/login" className="hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
-                Sign in
+                {t('auth.remember_it')}
               </Link>
             </p>
           </div>

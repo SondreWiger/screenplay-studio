@@ -7,6 +7,7 @@ import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { setTourStep, endTour, pauseTour, getTourState } from '@/lib/tourState';
 import { toast } from '@/components/ui';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { UsageIntent } from '@/lib/types';
 
 // GuidedTour — persona-aware interactive walkthrough
@@ -31,13 +32,13 @@ interface TourStep {
   createProject?: boolean;
 }
 
-function buildSteps(intent: UsageIntent, projectId: string | null): TourStep[] {
+function buildSteps(intent: UsageIntent, projectId: string | null, t: (key: string) => string): TourStep[] {
   const link = (path: string) => projectId ? `/projects/${projectId}/${path}` : '/dashboard';
 
   const welcome: TourStep = {
     type: 'info',
     icon: <WelcomeIllustration />,
-    title: 'Welcome to Screenplay Studio',
+    title: t('onboarding.welcome'),
     description: "We've set up your workspace based on your answers. Here's a quick look at the features that matter most for YOUR workflow — tailored just for you.",
     primaryLabel: "Let's go →",
     accentColor: '#FF5F1F',
@@ -586,6 +587,7 @@ export interface GuidedTourProps {
 
 export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: initialProjectId = null }: GuidedTourProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [step, setStep] = useState(() => {
     // Resume from sessionStorage if available
     const saved = getTourState();
@@ -596,7 +598,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: init
   const [newProjectTitle, setNewProjectTitle] = useState('');
   const [creatingProject, setCreatingProject] = useState(false);
 
-  const steps = buildSteps(usageIntent, projectId);
+  const steps = buildSteps(usageIntent, projectId, t);
   const current = steps[Math.min(step, steps.length - 1)];
 
   const handleFinish = useCallback(() => {
@@ -776,7 +778,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: init
                 Skip tour
               </button>
             ) : (
-              <Button variant="ghost" size="sm" onClick={handleBack}>Back</Button>
+              <Button variant="ghost" size="sm" onClick={handleBack}>{t('common.back')}</Button>
             )}
             {current.createProject ? (
               <button

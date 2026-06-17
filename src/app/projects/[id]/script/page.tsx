@@ -108,6 +108,7 @@ interface CollabCursor {
 }
 import type { ScriptElement, ScriptElementType, Script, ScriptDraft, Comment, CommentType, Profile, UserPresence, TitlePageData } from '@/lib/types';
 import { ELEMENT_LABELS, REVISION_COLOR_HEX } from '@/lib/types';
+import { useTranslation } from '@/components/TranslationProvider';
 
 // Constants
 
@@ -469,6 +470,7 @@ function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
 
 export default function ScriptEditorPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const scripts = useScriptStore((s) => s.scripts);
   const currentScript = useScriptStore((s) => s.currentScript);
   const elements = useScriptStore((s) => s.elements);
@@ -1905,7 +1907,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
 
           {/* Center: Navigation & Comments */}
-          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Search (Cmd+F)">
+          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title={`${t('script.search')} (Cmd+F)`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
           <button
@@ -1927,7 +1929,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <div className="w-px h-4 bg-surface-800 mx-1" />
 
           {/* Right: Export & Tools */}
-          <button onClick={handleExportPDF} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150" title="Export PDF (Cmd+P)">
+          <button onClick={handleExportPDF} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150" title={`${t('script.export_pdf')} (Cmd+P)`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
           </button>
           {/* Import / Export dropdown */}
@@ -2053,7 +2055,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               )}
             </div>
           )}
-          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-colors duration-150" title="Save Draft Snapshot">
+          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-colors duration-150" title={t('script.draft_snapshot')}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
           </button>
           <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded-md transition-colors duration-150', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
@@ -2403,7 +2405,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   : 'scene_heading'
                 )}
                   className={cn('px-4 py-2 rounded text-sm', darkMode ? 'bg-surface-700 hover:bg-surface-600 text-white' : 'bg-surface-800 hover:bg-gray-200 text-white/60')}>
-                  + Add {isAudioDrama && audioElementCycle.length > 0 ? ELEMENT_LABELS[audioElementCycle[0]] : isContentCreator ? 'Chapter' : isComic ? 'Page' : 'Scene Heading'}
+                  + Add {isAudioDrama && audioElementCycle.length > 0 ? ELEMENT_LABELS[audioElementCycle[0]] : isContentCreator ? 'Chapter' : isComic ? 'Page' : t('script.scene_heading')}
                 </button>
               </div>
             </div>
@@ -2555,7 +2557,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     darkMode ? 'text-surface-400 hover:text-white hover:bg-surface-700' : 'text-gray-400 hover:text-white/60 hover:bg-surface-800'
                   )}>
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                    Add Element
+                    {t('script.add_element')}
                   </button>
                 </div>
               )}
@@ -2918,7 +2920,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       })()}
 
       {/* Save Draft Modal */}
-      <Modal isOpen={showSaveDraftModal} onClose={() => setShowSaveDraftModal(false)} title="Save Draft Snapshot" size="sm">
+      <Modal isOpen={showSaveDraftModal} onClose={() => setShowSaveDraftModal(false)} title={t('script.draft_snapshot')} size="sm">
         <div className="space-y-4">
           <Input
             label="Draft Name"

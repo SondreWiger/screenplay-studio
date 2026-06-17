@@ -9,10 +9,12 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Character } from '@/lib/types';
+import { useTranslation } from '@/components/TranslationProvider';
 
 export default function CharactersPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { members, currentProject } = useProjectStore();
+  const { t } = useTranslation();
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
@@ -70,7 +72,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
 
   const handleDelete = async (id: string) => {
     if (!canEdit) return;
-    const ok = await confirm({ message: 'Delete this character?', variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
+    const ok = await confirm({ message: t('characters.delete_confirm'), variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
     await supabase.from('characters').delete().eq('id', id);
     setCharacters(characters.filter((c) => c.id !== id));
@@ -156,7 +158,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">Characters</h1>
+          <h1 className="text-2xl font-black text-white">{t('characters.title')}</h1>
           <p className="text-sm text-surface-400 mt-1">
             {characters.length} characters in this project
             {characters.filter(needsSetup).length > 0 && (
@@ -197,13 +199,13 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
         {([
-          { key: 'all', label: 'All' },
+          { key: 'all', label: t('characters.filter_all') },
           { key: 'all_leads', label: 'Leads' },
-          { key: 'protagonist', label: 'Protagonist' },
-          { key: 'antagonist', label: 'Antagonist' },
-          { key: 'main', label: 'Main Cast' },
-          { key: 'supporting', label: 'Supporting' },
-          { key: 'minor', label: 'Minor' },
+          { key: 'protagonist', label: t('characters.filter_protagonist') },
+          { key: 'antagonist', label: t('characters.filter_antagonist') },
+          { key: 'main', label: t('characters.filter_main') },
+          { key: 'supporting', label: t('characters.filter_supporting') },
+          { key: 'minor', label: t('characters.filter_minor') },
           { key: 'needs_setup', label: `Setup (${characters.filter(needsSetup).length})` },
         ] as { key: string; label: string }[]).map((f) => (
           <button

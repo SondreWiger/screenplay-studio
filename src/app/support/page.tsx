@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { SiteVersion } from '@/components/SiteVersion';
 import { timeAgo } from '@/lib/utils';
 import { TICKET_CATEGORY_OPTIONS } from '@/lib/types';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { SupportTicket, TicketMessage, TicketCategory } from '@/lib/types';
 
 // Support — Ticket submission & conversation view
@@ -40,6 +41,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 function SupportPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
@@ -215,7 +217,7 @@ function SupportPage() {
           <div className="flex items-center gap-4">
             <Link href="/" className="text-lg font-bold text-white">Screenplay Studio</Link>
             <span className="text-white/20">/</span>
-            <h1 className="text-lg font-semibold text-white/70">Support</h1>
+            <h1 className="text-lg font-semibold text-white/70">{t('support.title')}</h1>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="text-sm text-white/40 hover:text-white transition-colors">Dashboard</Link>

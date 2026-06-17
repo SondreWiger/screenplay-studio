@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/components/TranslationProvider';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
@@ -448,11 +449,12 @@ export function LoadingSpinner({ className }: { className?: string }) {
 }
 
 export function LoadingPage() {
+  const { t } = useTranslation();
   return (
     <div className="flex h-screen items-center justify-center bg-surface-950">
       <div className="text-center">
         <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-surface-700 border-t-[#FF5F1F]" />
-        <p className="mt-4 text-sm text-surface-400">Loading...</p>
+        <p className="mt-4 text-sm text-surface-400">{t('common.loading')}</p>
       </div>
     </div>
   );
@@ -643,8 +645,8 @@ const defaultGroups: ShortcutGroup[] = [
   {
     title: 'Navigation',
     shortcuts: [
-      { keys: ['⌘', 'K'], description: 'Quick search / command palette' },
-      { keys: ['⌘', '/'], description: 'Show keyboard shortcuts' },
+      { keys: ['⌘', 'K'], description: 'shortcuts.search' },
+      { keys: ['⌘', '/'], description: 'shortcuts.show' },
     ],
   },
   {
@@ -661,13 +663,14 @@ const defaultGroups: ShortcutGroup[] = [
   {
     title: 'General',
     shortcuts: [
-      { keys: ['Esc'], description: 'Close modal / cancel' },
-      { keys: ['⌘', 'N'], description: 'New project (dashboard)' },
+      { keys: ['Esc'], description: 'shortcuts.close' },
+      { keys: ['⌘', 'N'], description: 'shortcuts.new_project' },
     ],
   },
 ];
 
 export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: KeyboardShortcutsProps) {
+  const { t } = useTranslation();
   React.useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -682,7 +685,7 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
       <div className="bg-surface-900 border border-surface-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[70vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <span className="text-surface-400">⌨️</span> Keyboard Shortcuts
+            <span className="text-surface-400">⌨️</span> {t('shortcuts.title')}
           </h3>
           <button onClick={onClose} className="text-surface-500 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -695,7 +698,7 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
               <div className="space-y-1.5">
                 {group.shortcuts.map((sc, i) => (
                   <div key={i} className="flex items-center justify-between py-1.5">
-                    <span className="text-sm text-surface-300">{sc.description}</span>
+                    <span className="text-sm text-surface-300">{t(sc.description)}</span>
                     <div className="flex items-center gap-1">
                       {sc.keys.map((key, ki) => (
                         <React.Fragment key={ki}>
@@ -806,7 +809,9 @@ interface SearchInputProps {
   autoFocus?: boolean;
 }
 
-export function SearchInput({ value, onChange, placeholder = 'Search...', className, autoFocus }: SearchInputProps) {
+export function SearchInput({ value, onChange, placeholder, className, autoFocus }: SearchInputProps) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t('common.search');
   return (
     <div className={cn('relative', className)}>
       <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -816,7 +821,7 @@ export function SearchInput({ value, onChange, placeholder = 'Search...', classN
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         autoFocus={autoFocus}
         className={cn(
           'w-full rounded-lg border bg-surface-900/80 pl-10 pr-8 py-2.5 text-sm text-white font-medium',
@@ -1009,9 +1014,12 @@ interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog({
-  isOpen, title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel',
+  isOpen, title, message, confirmLabel, cancelLabel,
   variant = 'primary', onConfirm, onCancel, loading,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
+  if (confirmLabel === undefined) confirmLabel = t('common.confirm');
+  if (cancelLabel === undefined) cancelLabel = t('common.cancel');
   React.useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };

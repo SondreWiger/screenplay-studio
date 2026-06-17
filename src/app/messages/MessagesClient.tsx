@@ -11,11 +11,13 @@ import { cn, timeAgo, formatTime } from '@/lib/utils';
 import { notifyConversationMembers } from '@/lib/notifications';
 import { automodCheck } from '@/lib/automod';
 import Link from 'next/link';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { Conversation, ConversationMember, DirectMessage, Profile } from '@/lib/types';
 import { FormattedChatText } from '@/components/FormattedChatText';
 
 export default function MessagesClient() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   useNotifications(user?.id);
   const isAdmin = user?.id === 'f0e0c4a4-0833-4c64-b012-15829c087c77' || user?.role === 'admin';
@@ -554,13 +556,13 @@ export default function MessagesClient() {
           <Link href="/dashboard" className="text-surface-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           </Link>
-          <h1 className="text-lg font-bold text-white">Messages</h1>
+          <h1 className="text-lg font-bold text-white">{t('messages.title')}</h1>
           <Badge variant="default">{conversations.length}</Badge>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={() => setShowNewConvo(true)}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            New Message
+            {t('messages.new_message')}
           </Button>
           <NotificationBell />
         </div>
@@ -721,7 +723,7 @@ export default function MessagesClient() {
                 ) : messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-center">
                     <div>
-                      <p className="text-surface-500">No messages yet</p>
+                      <p className="text-surface-500">{t('messages.no_messages')}</p>
                       <p className="text-surface-600 text-sm mt-1">Say hello!</p>
                     </div>
                   </div>

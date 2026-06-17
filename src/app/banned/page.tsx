@@ -2,9 +2,11 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslation } from '@/components/TranslationProvider';
 
 function BannedContent() {
   const params = useSearchParams();
+  const { t } = useTranslation();
   const reason = params?.get('reason') || 'Your account has been permanently banned.';
   const isIpBan = params?.get('ip') === '1';
 
@@ -22,11 +24,11 @@ function BannedContent() {
         </div>
 
         <h1 className="text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
-          {isIpBan ? 'Access Denied' : 'You Are Banned'}
+          {isIpBan ? 'Access Denied' : t('banned.title')}
         </h1>
 
         <div className="bg-red-500/5 border border-red-500/20 rounded-xl px-6 py-4 mb-6">
-          <p className="text-sm text-red-300 font-medium mb-1">Reason</p>
+          <p className="text-sm text-red-300 font-medium mb-1">{t('banned.reason')}</p>
           <p className="text-sm text-white/70">{reason}</p>
         </div>
 

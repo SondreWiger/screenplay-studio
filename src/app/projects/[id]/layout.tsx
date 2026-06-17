@@ -26,6 +26,7 @@ import type { UserRole, UserPresence, SidebarSection } from '@/lib/types';
 import { useSidebarLayout } from '@/hooks/useSidebarLayout';
 import { usePreMiD } from '@/hooks/usePreMiD';
 import { getDefaultOtherIcons, loadOtherIcons, saveOtherIcons } from '@/lib/sidebarDefaults';
+import { useTranslation } from '@/components/TranslationProvider';
 import dynamic from 'next/dynamic';
 import { getTourState, endTour } from '@/lib/tourState';
 import type { UsageIntent } from '@/lib/types';
@@ -186,6 +187,70 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   };
 
   useNotifications(user?.id);
+  const { t } = useTranslation();
+
+  // Sidebar label translation helper
+  const sidebarLabelMap: Record<string, string> = {
+    'Overview': 'sidebar.overview',
+    'Script': 'sidebar.script',
+    'Episodes': 'sidebar.episodes',
+    'Arc Planner': 'sidebar.arc_planner',
+    'Beat Sheet': 'sidebar.beat_sheet',
+    'Notes Rounds': 'sidebar.notes_rounds',
+    'Ideas': 'sidebar.ideas',
+    'Documents': 'sidebar.documents',
+    'Characters': 'sidebar.characters',
+    'Locations': 'sidebar.locations',
+    'Scenes': 'sidebar.scenes',
+    'Schedule': 'sidebar.schedule',
+    'Budget': 'sidebar.budget',
+    'Breakdown': 'sidebar.breakdown',
+    'Call Sheet': 'sidebar.call_sheet',
+    'War Room': 'sidebar.war_room',
+    'On Set': 'sidebar.on_set',
+    'Day Pack': 'sidebar.day_pack',
+    'Continuity': 'sidebar.continuity',
+    'Table Read': 'sidebar.table_read',
+    'Camera Reports': 'sidebar.camera_reports',
+    'Corkboard': 'sidebar.corkboard',
+    'Shot List': 'sidebar.shot_list',
+    'Mood Board': 'sidebar.mood_board',
+    'Storyboard': 'sidebar.storyboard',
+    'Mind Map': 'sidebar.mind_map',
+    'Crew View': 'sidebar.crew_view',
+    'Gear': 'sidebar.gear',
+    'Chat': 'sidebar.chat',
+    'Comments': 'sidebar.comments',
+    'Team': 'sidebar.team',
+    'Casting': 'sidebar.casting',
+    'Export': 'sidebar.export',
+    'Share': 'sidebar.share',
+    'Submissions': 'sidebar.submissions',
+    'Press Kit': 'sidebar.press_kit',
+    'Custom Branding': 'sidebar.branding',
+    'Analytics': 'sidebar.analytics',
+    'Reports': 'sidebar.reports',
+    'Treatment': 'sidebar.treatment',
+    'Script Coverage': 'sidebar.coverage',
+    'Script Analysis': 'sidebar.analysis',
+    'Revisions': 'sidebar.revisions',
+    'Showcase': 'sidebar.showcase',
+    'Settings': 'sidebar.settings',
+    'Write': 'sidebar.write',
+    'Plan': 'sidebar.plan',
+    'Creative': 'sidebar.creative',
+    'Finish': 'sidebar.finish',
+    'Studio': 'sidebar.studio',
+  };
+  const sidebarT = (label: string) => {
+    const key = sidebarLabelMap[label];
+    return key ? t(key) : label;
+  };
+  const sidebarCatT = (label: string) => {
+    if (label === 'On Set') return t('sidebar.on_set_cat');
+    if (label === 'Team') return t('sidebar.team_cat');
+    return sidebarT(label);
+  };
 
   // Merge user + project accent color (project overrides user)
   const effectiveAccent = currentProject?.accent_color || user?.accent_color || 'brand';
@@ -518,7 +583,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                     'text-[9px] font-black uppercase tracking-[0.2em] transition-colors',
                     hasActivePage ? 'text-[#FF5F1F]' : 'text-surface-600 group-hover:text-surface-400'
                   )}>
-                    {cat.category}
+                    {sidebarCatT(cat.category)}
                   </span>
                   <svg
                     className={cn(
@@ -552,7 +617,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                         title={!mobile && sidebarCollapsed ? item.label : undefined}
                       >
                         {icons[item.icon]}
-                        {(mobile || !sidebarCollapsed) && <span>{item.label}</span>}
+                        {(mobile || !sidebarCollapsed) && <span>{sidebarT(item.label)}</span>}
                       </Link>
                     );
                   })}
@@ -594,7 +659,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                           title={item.label}
                         >
                           {icons[item.icon]}
-                          <span>{item.label}</span>
+                          <span>{sidebarT(item.label)}</span>
                         </Link>
                         <button
                           onClick={() => {
@@ -642,7 +707,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   title={item.label}
                 >
                   {icons[item.icon]}
-                  <span>{item.label}</span>
+                  <span>{sidebarT(item.label)}</span>
                 </Link>
               );
             })}

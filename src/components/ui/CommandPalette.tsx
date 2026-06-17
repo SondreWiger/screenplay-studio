@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import { getRecentProjects } from '@/hooks/useRecentProjects';
+import { useTranslation } from '@/components/TranslationProvider';
 
 // Types
 type ResultGroup =
@@ -84,6 +85,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 function CommandPaletteModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -392,11 +394,11 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
               )}
               <p className="px-4 pb-2 text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Quick navigation</p>
               {([
-                { label: 'Dashboard',       sublabel: 'Your projects',                path: '/dashboard',       icon: '🏠' },
+                { label: t('nav.dashboard'),       sublabel: 'Your projects',                path: '/dashboard',       icon: '🏠' },
                 { label: 'Accountability',  sublabel: 'Streaks, buddies & groups',    path: '/accountability',  icon: '🎯' },
                 { label: 'Idea Boards',     sublabel: 'Brainstorm & capture ideas',   path: '/idea-boards',     icon: '💡' },
-                { label: 'Community',       sublabel: 'Posts & discussions',          path: '/community',       icon: '💬' },
-                { label: 'Settings',        sublabel: 'Profile, preferences & more',  path: '/settings',        icon: '⚙️' },
+                { label: t('nav.community'),       sublabel: 'Posts & discussions',          path: '/community',       icon: '💬' },
+                { label: t('nav.settings'),        sublabel: 'Profile, preferences & more',  path: '/settings',        icon: '⚙️' },
               ] as { label: string; sublabel: string; path: string; icon: string }[]).map((item, i) => (
                 <button
                   key={item.path}

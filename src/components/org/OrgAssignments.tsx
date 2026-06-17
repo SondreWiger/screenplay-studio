@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Card, Input, Textarea, Modal, toast, Badge } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { OrgScriptAssignment, ScriptAssignmentStatus, Profile, Project } from '@/lib/types';
 
 interface Props {
@@ -23,6 +24,7 @@ const STATUS_CONFIG: Record<ScriptAssignmentStatus, { label: string; color: stri
 };
 
 export function OrgAssignments({ companyId, userId, canManage }: Props) {
+  const { t } = useTranslation();
   const [assignments, setAssignments] = useState<(OrgScriptAssignment & { assignee_profile?: Profile; project_ref?: { title: string } })[]>([]);
   const [members, setMembers] = useState<{ user_id: string; profile?: { id: string; full_name: string; avatar_url: string } | { id: string; full_name: string; avatar_url: string }[] }[]>([]);
   const [projects, setProjects] = useState<{ id: string; title: string }[]>([]);
@@ -144,7 +146,7 @@ export function OrgAssignments({ companyId, userId, canManage }: Props) {
                   <Button size="sm" variant="ghost" onClick={() => updateStatus(a.id, 'in_progress')}>Start</Button>
                 )}
                 {a.assigned_to === userId && a.status === 'in_progress' && (
-                  <Button size="sm" onClick={() => updateStatus(a.id, 'submitted')}>Submit</Button>
+                  <Button size="sm" onClick={() => updateStatus(a.id, 'submitted')}>{t('common.submit')}</Button>
                 )}
                 {a.assigned_to === userId && a.status === 'revision_requested' && (
                   <Button size="sm" onClick={() => updateStatus(a.id, 'submitted')}>Resubmit</Button>

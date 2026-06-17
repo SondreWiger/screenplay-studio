@@ -10,6 +10,7 @@ import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS, SCRIPT_TYPE_OPTIONS } 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ThemePreview } from '@/components/ThemePreview';
+import { useTranslation } from '@/components/TranslationProvider';
 
 const STATUSES = [
   { value: 'development', label: 'Development', color: 'bg-yellow-500' },
@@ -23,6 +24,7 @@ const STATUSES = [
 export default function SettingsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const router = useRouter();
+  const { t } = useTranslation();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -160,14 +162,14 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-3xl">
-      <h1 className="text-xl sm:text-2xl font-black text-white mb-4 md:mb-8">Project Settings</h1>
+      <h1 className="text-xl sm:text-2xl font-black text-white mb-4 md:mb-8">{t('project.settings')}</h1>
 
       {/* General settings */}
       <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <h2 className="text-lg font-semibold text-white mb-6">General</h2>
         <div className="space-y-4">
-          <Input label="Project Title" value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <Textarea label="Logline" value={form.logline || ''} onChange={(e) => setForm({ ...form, logline: e.target.value })} rows={2}
+          <Input label={t('new_project.project_title')} value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <Textarea label={t('project.logline')} value={form.logline || ''} onChange={(e) => setForm({ ...form, logline: e.target.value })} rows={2}
             placeholder="A one-sentence summary of your story..." />
           <Textarea label="Synopsis" value={form.synopsis || ''} onChange={(e) => setForm({ ...form, synopsis: e.target.value })} rows={5}
             placeholder="A detailed summary of the story..." />
@@ -180,7 +182,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-surface-300 mb-1.5">Genre</label>
+              <label className="block text-sm font-medium text-surface-300 mb-1.5">{t('project.genre')}</label>
               <select value={form.genre || ''} onChange={(e) => setForm({ ...form, genre: e.target.value })}
                 className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
                 <option value="">Select genre</option>
@@ -188,7 +190,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-surface-300 mb-1.5">Format</label>
+              <label className="block text-sm font-medium text-surface-300 mb-1.5">{t('project.format')}</label>
               <select value={form.format || ''} onChange={(e) => setForm({ ...form, format: e.target.value })}
                 className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
                 <option value="">Select format</option>
@@ -196,10 +198,10 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-surface-300 mb-1.5">Status</label>
+              <label className="block text-sm font-medium text-surface-300 mb-1.5">{t('project.status')}</label>
               <select value={form.status || 'development'} onChange={(e) => setForm({ ...form, status: e.target.value })}
                 className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white">
-                {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                {STATUSES.map((s) => <option key={s.value} value={s.value}>{t(`project.status_${s.value}`)}</option>)}
               </select>
             </div>
           </div>
@@ -215,9 +217,9 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
         </div>
         <div className="flex items-center gap-3 mt-6 pt-6 border-t border-surface-800">
           <Button onClick={handleSave} loading={saving}>
-            {saved ? '✓ Saved' : 'Save Changes'}
+            {saved ? t('project.saved') : t('project.save')}
           </Button>
-          {saved && <span className="text-sm text-green-400">Changes saved successfully</span>}
+          {saved && <span className="text-sm text-green-400">{t('project.saved')}</span>}
         </div>
       </Card>
 
@@ -639,7 +641,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
         <p className="text-sm text-surface-400 mb-4">
           Deleting this project is permanent. All scripts, characters, locations, scenes, and production data will be lost forever.
         </p>
-        <Button variant="danger" onClick={handleDelete}>Delete Project</Button>
+        <Button variant="danger" onClick={handleDelete}>{t('project.delete')}</Button>
       </Card>
     </div>
   );

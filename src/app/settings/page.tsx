@@ -209,6 +209,7 @@ type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security
 
 function GamificationSettingsTab() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { gamif, badges, enabled, levelInfo, multiplier, setGamificationEnabled, reload } = useGamification();
   const [savingBadge, setSavingBadge] = useState(false);
 
@@ -244,10 +245,10 @@ function GamificationSettingsTab() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              Gamification
+              {t('settings.gamification_title')}
             </h2>
             <p className="text-sm text-surface-400 mt-0.5">
-              Show your XP, level, and badges across the platform.
+              {t('settings.gamification_desc')}
               {!enabled && ' XP is still collected silently when off.'}
             </p>
           </div>
@@ -272,7 +273,7 @@ function GamificationSettingsTab() {
       {/* XP & Level overview */}
       {enabled && levelInfo && (
         <Card className="p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-white">Your Progress</h3>
+          <h3 className="text-sm font-semibold text-white">{t('settings.your_progress')}</h3>
           <XPBar
             xpTotal={gamif.xp_total}
             level={gamif.level}
@@ -283,9 +284,9 @@ function GamificationSettingsTab() {
           />
           <div className="grid grid-cols-3 gap-3 mt-2">
             {[
-              { label: 'Total XP', value: gamif.xp_total.toLocaleString() },
-              { label: 'Level', value: String(gamif.level) },
-              { label: 'Login Streak', value: `${gamif.login_streak} days` },
+              { label: t('settings.total_xp'), value: gamif.xp_total.toLocaleString() },
+              { label: t('settings.level'), value: String(gamif.level) },
+              { label: t('settings.login_streak'), value: `${gamif.login_streak} days` },
             ].map(({ label, value }) => (
               <div key={label} className="p-3 rounded-xl bg-surface-800/50 border border-surface-700 text-center">
                 <p className="text-xs text-surface-400 mb-1">{label}</p>
@@ -299,7 +300,7 @@ function GamificationSettingsTab() {
       {/* Badges */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-white">Your Badges</h3>
+          <h3 className="text-sm font-semibold text-white">{t('settings.your_badges')}</h3>
           {displayBadges.length > 0 && (
             <div className="flex items-center gap-1">
               <span className="text-[10px] text-surface-400 mr-1">Displayed:</span>
@@ -309,7 +310,7 @@ function GamificationSettingsTab() {
         </div>
 
         {ownedBadges.length === 0 ? (
-          <p className="text-sm text-surface-500 text-center py-4">No badges yet — keep writing!</p>
+          <p className="text-sm text-surface-500 text-center py-4">{t('settings.no_badges')}</p>
         ) : (
           <div className="space-y-2">
             {ownedBadges.map((ub: typeof badges[number]) => {
@@ -833,10 +834,10 @@ export default function UserSettingsPage() {
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">{t('settings.your_profile')}</h2>
               <div className="space-y-4">
-                <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" />
-                <Input label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="How you appear to others" />
+                <Input label={t('settings.full_name')} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" />
+                <Input label={t('settings.display_name')} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="How you appear to others" />
                 <div>
-                  <label className="block text-sm font-medium text-surface-300 mb-1.5">Username</label>
+                  <label className="block text-sm font-medium text-surface-300 mb-1.5">{t('settings.username')}</label>
                   <div className="flex items-center gap-0">
                     <span className="px-3 py-2.5 rounded-l-lg border border-r-0 border-surface-700 bg-surface-800 text-xs text-surface-500">@</span>
                     <input
@@ -849,9 +850,9 @@ export default function UserSettingsPage() {
                   </div>
                   <p className="text-[10px] text-surface-500 mt-1">Your public profile will be at /u/{username || 'username'}</p>
                 </div>
-                <Input label="Headline" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Screenwriter, Director, Producer..." />
-                <Textarea label="Bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
-                <Input label="Avatar URL" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://..." />
+                <Input label={t('settings.headline')} value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Screenwriter, Director, Producer..." />
+                <Textarea label={t('settings.bio')} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
+                <Input label={t('settings.avatar_url')} value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://..." />
               </div>
             </Card>
 
@@ -860,14 +861,14 @@ export default function UserSettingsPage() {
               <h2 className="text-lg font-semibold text-white mb-2">{t('settings.public_profile')}</h2>
               <p className="text-sm text-surface-400 mb-6">{t('settings.customise_profile')}</p>
               <div className="space-y-4">
-                <Input label="Banner Image URL" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} placeholder="https://... (hero image for your profile)" />
-                <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Los Angeles, CA" />
-                <Input label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yoursite.com" />
+                <Input label={t('settings.banner_image')} value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} placeholder="https://... (hero image for your profile)" />
+                <Input label={t('settings.location')} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Los Angeles, CA" />
+                <Input label={t('settings.website')} value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yoursite.com" />
               </div>
 
               {/* Profile Theme */}
               <div className="mt-6">
-                <label className="block text-sm font-medium text-surface-300 mb-3">Profile Theme</label>
+                <label className="block text-sm font-medium text-surface-300 mb-3">{t('settings.profile_theme')}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { key: 'default', label: 'Default', gradient: 'from-stone-900 to-stone-800' },
@@ -934,10 +935,10 @@ export default function UserSettingsPage() {
               <p className="text-sm text-surface-400 mb-6">{t('settings.privacy_desc')}</p>
               <div className="space-y-3">
                 {[
-                  { label: 'Show email on profile', desc: 'Let visitors see your email address', value: showEmail, set: setShowEmail },
-                  { label: 'Show projects', desc: 'Display your projects on your public profile', value: showProjects, set: setShowProjects },
-                  { label: 'Show activity', desc: 'Display recent activity and stats', value: showActivity, set: setShowActivity },
-                  { label: 'Allow direct messages', desc: 'Let people message you from your profile', value: allowDms, set: setAllowDms },
+                  { label: t('settings.show_email'), desc: 'Let visitors see your email address', value: showEmail, set: setShowEmail },
+                  { label: t('settings.show_projects'), desc: 'Display your projects on your public profile', value: showProjects, set: setShowProjects },
+                  { label: t('settings.show_activity'), desc: 'Display recent activity and stats', value: showActivity, set: setShowActivity },
+                  { label: t('settings.allow_dms'), desc: 'Let people message you from your profile', value: allowDms, set: setAllowDms },
                 ].map((toggle) => (
                   <button
                     key={toggle.label}
@@ -962,11 +963,11 @@ export default function UserSettingsPage() {
               <p className="text-sm text-surface-400 mb-6">{t('settings.email_notifications_desc')}</p>
               <div className="space-y-3">
                 {[
-                  { label: 'Project invitations', desc: 'When someone invites you to a project', value: emailProjectInvites, set: setEmailProjectInvites },
-                  { label: 'Mentions & comments', desc: 'When someone mentions you or replies to your comments', value: emailMentions, set: setEmailMentions },
-                  { label: 'Direct messages', desc: 'When someone sends you a direct message', value: emailDirectMessages, set: setEmailDirectMessages },
-                  { label: 'Support ticket replies', desc: 'When our team replies to your support ticket', value: emailTicketReplies, set: setEmailTicketReplies },
-                  { label: 'Weekly digest', desc: 'Summary of your writing activity and project updates', value: emailWeeklyDigest, set: setEmailWeeklyDigest },
+                  { label: t('settings.notif_invitations'), desc: 'When someone invites you to a project', value: emailProjectInvites, set: setEmailProjectInvites },
+                  { label: t('settings.notif_mentions'), desc: 'When someone mentions you or replies to your comments', value: emailMentions, set: setEmailMentions },
+                  { label: t('settings.notif_dms'), desc: 'When someone sends you a direct message', value: emailDirectMessages, set: setEmailDirectMessages },
+                  { label: t('settings.notif_support'), desc: 'When our team replies to your support ticket', value: emailTicketReplies, set: setEmailTicketReplies },
+                  { label: t('settings.notif_digest'), desc: 'Summary of your writing activity and project updates', value: emailWeeklyDigest, set: setEmailWeeklyDigest },
                 ].map((toggle) => (
                   <button
                     key={toggle.label}
@@ -989,7 +990,7 @@ export default function UserSettingsPage() {
               <h2 className="text-lg font-semibold text-white mb-4">{t('settings.account_info')}</h2>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-surface-500">Email</p>
+                  <p className="text-surface-500">{t('auth.email')}</p>
                   <p className="text-surface-300 mt-1">{user.email}</p>
                 </div>
                 <div>
@@ -1019,13 +1020,13 @@ export default function UserSettingsPage() {
           <><div className="space-y-6">
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">{t('settings.how_use')}</h2>
-              <p className="text-sm text-surface-400 mb-6">This adjusts your default workspace layout.</p>
+              <p className="text-sm text-surface-400 mb-6">{t('settings.adjusts_layout')}</p>
               <div className="grid grid-cols-2 gap-3">
                 {([
-                  { value: 'writer' as UsageIntent, label: 'Writer', icon: 'edit' },
-                  { value: 'producer' as UsageIntent, label: 'Producer', icon: 'camera' },
-                  { value: 'both' as UsageIntent, label: 'Both', icon: 'film' },
-                  { value: 'student' as UsageIntent, label: 'Student', icon: 'book' },
+                  { value: 'writer' as UsageIntent, label: t('settings.intent_writer'), icon: 'edit' },
+                  { value: 'producer' as UsageIntent, label: t('settings.intent_producer'), icon: 'camera' },
+                  { value: 'both' as UsageIntent, label: t('settings.intent_both'), icon: 'film' },
+                  { value: 'student' as UsageIntent, label: t('settings.intent_student'), icon: 'book' },
                 ]).map((opt) => (
                   <button
                     key={opt.value}
@@ -1050,10 +1051,10 @@ export default function UserSettingsPage() {
               </p>
               <div className="space-y-3">
                 {[
-                  { key: 'community' as const, label: 'Community Hub', desc: 'Share scripts, get feedback, join challenges', icon: 'globe', value: showCommunity, set: setShowCommunity },
-                  { key: 'production' as const, label: 'Production Tools', desc: 'Locations, shots, schedule, budget', icon: 'film', value: showProductionTools, set: setShowProductionTools },
-                  { key: 'collab' as const, label: 'Collaboration', desc: 'Team members, real-time editing', icon: 'users', value: showCollaboration, set: setShowCollaboration },
-                  { key: 'accountability' as const, label: 'Writing Accountability', desc: 'Streaks, buddies, groups, activity grid', icon: 'activity', value: showAccountability, set: setShowAccountability },
+                  { key: 'community' as const, label: t('settings.feat_community'), desc: t('settings.feat_community_desc'), icon: 'globe', value: showCommunity, set: setShowCommunity },
+                  { key: 'production' as const, label: t('settings.feat_production'), desc: t('settings.feat_production_desc'), icon: 'film', value: showProductionTools, set: setShowProductionTools },
+                  { key: 'collab' as const, label: t('settings.feat_collaboration'), desc: t('settings.feat_collaboration_desc'), icon: 'users', value: showCollaboration, set: setShowCollaboration },
+                  { key: 'accountability' as const, label: t('settings.feat_accountability'), desc: t('settings.feat_accountability_desc'), icon: 'activity', value: showAccountability, set: setShowAccountability },
                 ].map((feat) => (
                   <button
                     key={feat.key}
@@ -1076,8 +1077,8 @@ export default function UserSettingsPage() {
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">Default Script Type</h2>
-              <p className="text-sm text-surface-400 mb-4">Pre-selected when you create new projects.</p>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.default_script_type')}</h2>
+              <p className="text-sm text-surface-400 mb-4">{t('settings.script_type_desc')}</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {SCRIPT_TYPE_OPTIONS.map((opt) => (
                   <button
@@ -1098,8 +1099,8 @@ export default function UserSettingsPage() {
 
             {/* Accent Color */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">Accent Color</h2>
-              <p className="text-sm text-surface-400 mb-4">Personalize the interface with your preferred color.</p>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.accent_color')}</h2>
+              <p className="text-sm text-surface-400 mb-4">{t('settings.accent_desc')}</p>
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                 {[
                   { key: 'brand', color: '#dd574e', label: 'Red (Default)' },
@@ -1141,8 +1142,8 @@ export default function UserSettingsPage() {
 
             {/* Editor Style */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">Editor Style</h2>
-              <p className="text-sm text-surface-400 mb-4">Choose how the script editor looks across all your projects.</p>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.editor_style')}</h2>
+              <p className="text-sm text-surface-400 mb-4">{t('settings.editor_desc')}</p>
               <div className="grid grid-cols-2 gap-4 max-w-md">
                 <button
                   onClick={() => setUiTheme('default')}
@@ -1186,7 +1187,7 @@ export default function UserSettingsPage() {
 
             {/* Sidebar Tabs */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">Project Sidebar Tabs</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.sidebar_tabs')}</h2>
               <p className="text-sm text-surface-400 mb-4">Choose which tabs appear by default across your projects. You can also override per-project in project settings.</p>
               <div className="space-y-4">
                 <div>
@@ -1253,7 +1254,7 @@ export default function UserSettingsPage() {
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-surface-500 mt-3">You can also customize per-project in project settings.</p>
+              <p className="text-xs text-surface-500 mt-3">{t('settings.sidebar_desc')}</p>
             </Card>
 
             {/* Guided Tour */}
@@ -1414,9 +1415,9 @@ export default function UserSettingsPage() {
           <div className="space-y-6">
             {/* GDPR Data Export */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">Export Your Data</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.export_data')}</h2>
               <p className="text-sm text-surface-400 mb-4">
-                Download all your personal data in a machine-readable format (JSON).
+                {t('settings.export_desc')}
                 This includes your profile, projects, scripts, characters, messages, and all other data
                 associated with your account. This is your right under GDPR Article 20.
               </p>
@@ -1437,7 +1438,7 @@ export default function UserSettingsPage() {
                   toast.error('Failed to export data. Please try again.');
                 }
               }}>
-                Download My Data
+                {t('settings.download_data')}
               </Button>
             </Card>
 
@@ -1465,9 +1466,9 @@ export default function UserSettingsPage() {
 
             {/* Delete Account */}
             <Card className="p-6 border-red-500/20">
-              <h2 className="text-lg font-semibold text-red-400 mb-2">Delete Account</h2>
+              <h2 className="text-lg font-semibold text-red-400 mb-2">{t('settings.delete_account')}</h2>
               <p className="text-sm text-surface-400 mb-4">
-                Permanently delete your account and all associated data. This action is <strong className="text-red-300">immediate and irreversible</strong>.
+                {t('settings.delete_desc')}
               </p>
               <Button variant="danger" onClick={async () => {
                 if (!confirm('Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.')) return;
@@ -1481,10 +1482,10 @@ export default function UserSettingsPage() {
                   toast.error(err instanceof Error ? err.message : 'An error occurred. Please try again.');
                 }
               }}>
-                Delete My Account
+                {t('settings.delete_button')}
               </Button>
               <p className="text-[10px] text-surface-600 mt-3">
-                This cannot be undone. All your projects, scripts, comments, and personal data will be permanently removed.
+                {t('settings.delete_warning')}
                 <br />
                 <a href="/legal/privacy" className="text-[#FF5F1F] hover:text-[#FF8F5F]">Read our Privacy Policy</a>
               </p>
@@ -1496,20 +1497,20 @@ export default function UserSettingsPage() {
         {tab === 'security' && (
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-white mb-2">Account Security</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">{t('settings.account_security')}</h3>
               <p className="text-sm text-surface-400 mb-4">
-                View your login history, manage active sessions, and review security events.
+                {t('settings.security_desc')}
               </p>
               <Link href="/settings/security" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors text-sm font-medium">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                Open Security Dashboard
+                {t('settings.open_security')}
               </Link>
             </Card>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Card>
                 <h4 className="text-sm font-semibold text-white mb-1">Password</h4>
-                <p className="text-xs text-surface-400 mb-3">Change your password to keep your account secure.</p>
+                <p className="text-xs text-surface-400 mb-3">{t('settings.change_password')}</p>
                 <Button variant="secondary" size="sm" onClick={async () => {
                   const supabase = createClient();
                   const { data: { user: u } } = await supabase.auth.getUser();
@@ -1518,13 +1519,13 @@ export default function UserSettingsPage() {
                     toast.success('Password reset email sent!');
                   }
                 }}>
-                  Reset Password
+                  {t('settings.reset_password')}
                 </Button>
               </Card>
               <Card>
                 <h4 className="text-sm font-semibold text-white mb-1">Email Verification</h4>
                 <p className="text-xs text-surface-400 mb-3">Your email is used for login and important notifications.</p>
-                <p className="text-xs text-emerald-400">✓ Email verified</p>
+                <p className="text-xs text-emerald-400">✓ {t('settings.email_verified')}</p>
               </Card>
               <Card>
                 <h4 className="text-sm font-semibold text-white mb-1">Data Export</h4>
@@ -1546,7 +1547,7 @@ export default function UserSettingsPage() {
               <Card>
                 <h4 className="text-sm font-semibold text-white mb-1">Legal Agreements</h4>
                 <p className="text-xs text-surface-400 mb-3">Review the terms and policies that govern your use.</p>
-                <Link href="/legal" className="text-xs text-amber-400 hover:text-amber-300">View Legal Center →</Link>
+                <Link href="/legal" className="text-xs text-amber-400 hover:text-amber-300">{t('settings.view_legal')}</Link>
               </Card>
             </div>
           </div>
@@ -1650,7 +1651,7 @@ export default function UserSettingsPage() {
             </Card>
 
             <Button onClick={saveAccountability} disabled={saving}>
-              {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+              {saving ? 'Saving…' : saved ? '✓ Saved' : t('common.save')}
             </Button>
            </div>
          )}

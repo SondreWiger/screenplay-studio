@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Input, EmptyState, LoadingSpinner } from '@/components/ui';
 import { toast } from '@/components/ui';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { QuoteGroup, QuoteGroupMember } from '@/lib/types';
 
 interface GroupManagerProps {
@@ -13,6 +14,7 @@ interface GroupManagerProps {
 }
 
 export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerProps) {
+  const { t } = useTranslation();
   const [groups, setGroups] = useState<QuoteGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState<QuoteGroup | null>(null);
@@ -418,8 +420,8 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-1">
-                <Button variant="ghost" size="sm" type="button" onClick={() => setEditingGroup(null)}>Cancel</Button>
-                <Button variant="primary" size="sm" type="submit" loading={creating}>Save</Button>
+                <Button variant="ghost" size="sm" type="button" onClick={() => setEditingGroup(null)}>{t('common.cancel')}</Button>
+                <Button variant="primary" size="sm" type="submit" loading={creating}>{t('common.save')}</Button>
               </div>
             </form>
           )}
@@ -461,7 +463,7 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <Button variant="ghost" size="sm" type="button" onClick={() => setShowCreate(false)}>Cancel</Button>
+              <Button variant="ghost" size="sm" type="button" onClick={() => setShowCreate(false)}>{t('common.cancel')}</Button>
               <Button variant="primary" size="sm" type="submit" loading={creating}>Create Group</Button>
             </div>
           </form>

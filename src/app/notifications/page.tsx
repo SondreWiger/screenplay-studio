@@ -7,6 +7,7 @@ import { useNotificationStore } from '@/lib/stores';
 import { NotificationRow } from '@/components/notifications/NotificationBell';
 import { Button, Card, LoadingPage } from '@/components/ui';
 import { AppHeader } from '@/components/AppHeader';
+import { useTranslation } from '@/components/TranslationProvider';
 import type { NotificationType } from '@/lib/types';
 
 const FILTER_OPTIONS: { key: 'all' | NotificationType; label: string }[] = [
@@ -28,6 +29,7 @@ const FILTER_OPTIONS: { key: 'all' | NotificationType; label: string }[] = [
 
 export default function NotificationsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const { notifications, unreadCount, loading, markAllAsRead, fetchNotifications } = useNotificationStore();
   const [filter, setFilter] = useState<'all' | NotificationType>('all');
@@ -68,7 +70,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-surface-950">
-      <AppHeader actions={unreadCount > 0 ? <Button variant="ghost" size="sm" onClick={markAllAsRead}>Mark all as read</Button> : undefined} />
+      <AppHeader actions={unreadCount > 0 ? <Button variant="ghost" size="sm" onClick={markAllAsRead}>{t('notifications.mark_all_read')}</Button> : undefined} />
 
       <div className="max-w-3xl mx-auto px-6 py-6">
         {/* Filters */}
@@ -105,7 +107,7 @@ export default function NotificationsPage() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <span className="text-5xl mb-4">🔔</span>
             <h2 className="text-lg font-semibold text-white mb-1">
-              {notifications.length === 0 ? 'No notifications yet' : 'No matching notifications'}
+              {notifications.length === 0 ? t('notifications.no_notifications') : 'No matching notifications'}
             </h2>
             <p className="text-sm text-surface-400 max-w-xs">
               {notifications.length === 0
