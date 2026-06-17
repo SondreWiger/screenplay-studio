@@ -343,7 +343,7 @@ export default function TranslationsPage() {
             label="Language Code (ISO 639-1)"
             placeholder="e.g. no, fr, de, km"
             value={newLang.code}
-            onChange={(e) => setNewLang({ ...newLang, code: e.target.value.toLowerCase().slice(0, 10) })}
+            onChange={(e) => setNewLang({ ...newLang, code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 10) })}
           />
           <Input
             label="Language Name (English)"

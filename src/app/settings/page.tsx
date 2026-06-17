@@ -524,7 +524,7 @@ function TranslationsSettingsTab() {
             label="Code"
             placeholder="e.g. no"
             value={newLang.code}
-            onChange={(e) => setNewLang({ ...newLang, code: e.target.value.toLowerCase().slice(0, 10) })}
+            onChange={(e) => setNewLang({ ...newLang, code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 10) })}
           />
           <Input
             label="Name"

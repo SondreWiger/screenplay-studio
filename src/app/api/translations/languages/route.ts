@@ -82,10 +82,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const normalizedCode = code.toLowerCase().trim();
-  if (!/^[a-z]{2,10}$/.test(normalizedCode)) {
+  const normalizedCode = code.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+  if (!normalizedCode || normalizedCode.length < 2 || normalizedCode.length > 10) {
     return NextResponse.json(
-      { error: 'Language code must be 2-10 lowercase letters' },
+      { error: 'Language code must be 2-10 characters (letters, numbers, or hyphens)' },
       { status: 400 }
     );
   }
