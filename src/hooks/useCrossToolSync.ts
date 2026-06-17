@@ -72,13 +72,14 @@ async function syncCharacterFromScript(
 
   // Count how many lines this character has across the script
   const { data: scriptRes } = await supabase
-    .from('scripts').select('id').eq('project_id', projectId).limit(1);
+    .from('scripts').select('id').eq('project_id', projectId);
   if (!scriptRes?.length) return;
 
+  const scriptIds = scriptRes.map(s => s.id);
   const { count } = await supabase
     .from('script_elements')
     .select('id', { count: 'exact', head: true })
-    .eq('script_id', scriptRes[0].id)
+    .in('script_id', scriptIds)
     .eq('element_type', 'character')
     .eq('is_omitted', false)
     .textSearch('content', name);
@@ -130,9 +131,6 @@ async function syncSceneFromScript(
   const locationName = dashIdx >= 0 ? rest.slice(0, dashIdx).trim() : rest.trim();
   const timeOfDay = dashIdx >= 0 ? rest.slice(dashIdx + 3).trim() : '';
 
-  const { data: scriptRes } = await supabase
-    .from('scripts').select('id').eq('project_id', projectId).limit(1);
-
   const { data: maxOrder } = await supabase
     .from('scenes')
     .select('sort_order')
@@ -142,7 +140,7 @@ async function syncSceneFromScript(
 
   await supabase.from('scenes').insert({
     project_id: projectId,
-    script_id: scriptRes?.[0]?.id ?? null,
+    script_id: element.script_id ?? null,
     script_element_id: element.id,
     scene_number: element.scene_number ?? null,
     scene_heading: content,

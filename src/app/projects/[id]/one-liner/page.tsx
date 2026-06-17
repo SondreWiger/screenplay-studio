@@ -57,7 +57,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from('scripts').select('title,is_active').eq('project_id', params.id).order('version', { ascending: false }).limit(1).then(({ data }) => {
+    supabase.from('scripts').select('title,is_active').eq('project_id', params.id).order('version', { ascending: false }).then(({ data }) => {
       if (data?.length) {
         setScriptTitle(data[0].title || '');
         setHasScript(true);
@@ -72,16 +72,16 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
     const supabase = createClient();
     try {
       const { data: scriptsRes } = await supabase
-        .from('scripts').select('id').eq('project_id', params.id).limit(1);
-      const scriptId = scriptsRes?.[0]?.id;
-      if (!scriptId) { setLoading(false); return; }
+        .from('scripts').select('id').eq('project_id', params.id);
+      const scriptIds = scriptsRes?.map(s => s.id) ?? [];
+      if (scriptIds.length === 0) { setLoading(false); return; }
 
       const [scenesRes, charsRes, statusRes] = await Promise.all([
         supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
         supabase.from('characters').select('id,name').eq('project_id', params.id),
         supabase.from('script_elements')
           .select('id,scene_status')
-          .eq('script_id', scriptId)
+          .in('script_id', scriptIds)
           .eq('element_type', 'scene_heading'),
       ]);
 

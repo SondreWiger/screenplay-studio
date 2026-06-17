@@ -116,12 +116,13 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
 
   const fetchScenes = async () => {
     const supabase = createClient();
-    const { data: scripts } = await supabase.from('scripts').select('id').eq('project_id', params.id).limit(1);
+    const { data: scripts } = await supabase.from('scripts').select('id').eq('project_id', params.id);
     if (!scripts || scripts.length === 0) return;
+    const scriptIds = scripts.map(s => s.id);
     const { data: elements } = await supabase
       .from('script_elements')
       .select('id, content, scene_number')
-      .eq('script_id', scripts[0].id)
+      .in('script_id', scriptIds)
       .eq('element_type', 'scene_heading')
       .eq('is_omitted', false)
       .order('sort_order');

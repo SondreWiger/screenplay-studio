@@ -83,13 +83,14 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
     try {
       const supabase = createClient();
       const { data: scripts } = await supabase
-        .from('scripts').select('id').eq('project_id', params.id).limit(1);
+        .from('scripts').select('id').eq('project_id', params.id);
       if (!scripts || scripts.length === 0) { setSyncing(false); return; }
 
+      const scriptIds = scripts.map(s => s.id);
       const { data: elements } = await supabase
         .from('script_elements')
         .select('content')
-        .eq('script_id', scripts[0].id)
+        .in('script_id', scriptIds)
         .eq('element_type', 'scene_heading')
         .eq('is_omitted', false);
 

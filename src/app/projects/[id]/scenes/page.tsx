@@ -82,13 +82,14 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     try {
       const supabase = createClient();
       const { data: scripts } = await supabase
-        .from('scripts').select('id').eq('project_id', params.id).limit(1);
+        .from('scripts').select('id').eq('project_id', params.id);
       if (!scripts || scripts.length === 0) { setSyncing(false); return; }
 
+      const scriptIds = scripts.map(s => s.id);
       const { data: elements } = await supabase
         .from('script_elements')
         .select('*')
-        .eq('script_id', scripts[0].id)
+        .in('script_id', scriptIds)
         .eq('element_type', 'scene_heading')
         .eq('is_omitted', false)
         .order('sort_order');
@@ -104,7 +105,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
         const parsed = parseSceneHeading(el.content);
         return {
           project_id: params.id,
-          script_id: scripts[0].id,
+          script_id: el.script_id,
           script_element_id: el.id,
           scene_number: el.scene_number || String(scenes.length + i + 1),
           scene_heading: el.content,
@@ -479,13 +480,14 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
     setLoading(true);
     const supabase = createClient();
     const { data: scripts } = await supabase
-      .from('scripts').select('id').eq('project_id', projectId).limit(1);
+      .from('scripts').select('id').eq('project_id', projectId);
     if (!scripts || scripts.length === 0) { setLoading(false); return; }
 
+    const scriptIds = scripts.map(s => s.id);
     const { data: elements } = await supabase
       .from('script_elements')
       .select('*')
-      .eq('script_id', scripts[0].id)
+      .in('script_id', scriptIds)
       .eq('element_type', 'scene_heading')
       .eq('is_omitted', false)
       .order('sort_order');
@@ -514,17 +516,13 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
     setImporting(true);
     const supabase = createClient();
 
-    const { data: scripts } = await supabase
-      .from('scripts').select('id').eq('project_id', projectId).limit(1);
-    const scriptId = scripts?.[0]?.id || null;
-
     const scenesToCreate = Array.from(selected).map((elementId, i) => {
       const el = scriptElements.find(e => e.id === elementId);
       if (!el) return null;
       const parsed = parseSceneHeading(el.content);
       return {
         project_id: projectId,
-        script_id: scriptId,
+        script_id: el.script_id || null,
         script_element_id: elementId,
         scene_number: el.scene_number || String(existingScenes.length + i + 1),
         scene_heading: el.content,

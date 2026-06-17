@@ -192,10 +192,12 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
       setComments(data || []);
 
       // Fetch script elements for inline comment context
+      const scriptIdsRes = await supabase.from('scripts').select('id').eq('project_id', params.id);
+      const scriptIds = scriptIdsRes.data?.map(s => s.id) ?? [];
       const scriptRes = await supabase
         .from('script_elements')
         .select('*')
-        .eq('script_id', (await supabase.from('scripts').select('id').eq('project_id', params.id).limit(1).single()).data?.id || '')
+        .in('script_id', scriptIds)
         .order('sort_order');
       setScriptElements((scriptRes.data as ScriptElement[]) || []);
     } catch (err) {
