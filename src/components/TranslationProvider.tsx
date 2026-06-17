@@ -39,31 +39,39 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const prevLang = useRef<string>('');
 
   const loadTranslations = useCallback(async (language: string) => {
-    if (!language || language === 'en') {
-      setTranslations({});
-      setLang('en');
-      setLoading(false);
-      return;
-    }
-
-    setLang(language);
     const supabase = createClient();
+    setLoading(true);
 
-    const { data: winners } = await supabase
-      .from('translation_winners')
-      .select('key, translated_text, source_text')
-      .eq('language', language);
+    // Always load English source_text as fallback for every key
+    const { data: allKeys } = await supabase
+      .from('translation_keys')
+      .select('key, source_text');
 
-    if (winners) {
-      const map: TranslationMap = {};
-      winners.forEach((w: { key: string; translated_text: string; source_text: string }) => {
-        map[w.key] = { translated: w.translated_text, source: w.source_text };
+    const map: TranslationMap = {};
+    if (allKeys) {
+      allKeys.forEach((k: { key: string; source_text: string }) => {
+        map[k.key] = { translated: k.source_text, source: k.source_text };
       });
-      setTranslations(map);
-    } else {
-      setTranslations({});
     }
 
+    // If a non-English language is selected, overlay its winning translations
+    if (language && language !== 'en') {
+      setLang(language);
+      const { data: winners } = await supabase
+        .from('translation_winners')
+        .select('key, translated_text, source_text')
+        .eq('language', language);
+
+      if (winners) {
+        winners.forEach((w: { key: string; translated_text: string; source_text: string }) => {
+          map[w.key] = { translated: w.translated_text, source: w.source_text };
+        });
+      }
+    } else {
+      setLang('en');
+    }
+
+    setTranslations(map);
     setLoading(false);
   }, []);
 
