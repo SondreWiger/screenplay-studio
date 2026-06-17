@@ -42,37 +42,47 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     const supabase = createClient();
     setLoading(true);
 
-    // Always load English source_text as fallback for every key
-    const { data: allKeys } = await supabase
-      .from('translation_keys')
-      .select('key, source_text');
+    try {
+      // Step 1: Load ALL keys with their English source_text
+      const { data: allKeys, error: keysError } = await supabase
+        .from('translation_keys')
+        .select('key, source_text');
 
-    const map: TranslationMap = {};
-    if (allKeys) {
-      allKeys.forEach((k: { key: string; source_text: string }) => {
-        map[k.key] = { translated: k.source_text, source: k.source_text };
-      });
-    }
+      const map: TranslationMap = {};
 
-    // If a non-English language is selected, overlay its winning translations
-    if (language && language !== 'en') {
-      setLang(language);
-      const { data: winners } = await supabase
-        .from('translation_winners')
-        .select('key, translated_text, source_text')
-        .eq('language', language);
-
-      if (winners) {
-        winners.forEach((w: { key: string; translated_text: string; source_text: string }) => {
-          map[w.key] = { translated: w.translated_text, source: w.source_text };
+      if (keysError) {
+        console.error('[TranslationProvider] Failed to load keys:', keysError);
+      } else if (allKeys) {
+        allKeys.forEach((k: { key: string; source_text: string }) => {
+          map[k.key] = { translated: k.source_text, source: k.source_text };
         });
       }
-    } else {
-      setLang('en');
-    }
 
-    setTranslations(map);
-    setLoading(false);
+      // Step 2: If a non-English language, overlay its winning translations
+      if (language && language !== 'en') {
+        setLang(language);
+        const { data: winners, error: winnersError } = await supabase
+          .from('translation_winners')
+          .select('key, translated_text, source_text')
+          .eq('language', language);
+
+        if (winnersError) {
+          console.error('[TranslationProvider] Failed to load winners:', winnersError);
+        } else if (winners) {
+          winners.forEach((w: { key: string; translated_text: string; source_text: string }) => {
+            map[w.key] = { translated: w.translated_text, source: w.source_text };
+          });
+        }
+      } else {
+        setLang('en');
+      }
+
+      setTranslations(map);
+    } catch (err) {
+      console.error('[TranslationProvider] Error loading translations:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
