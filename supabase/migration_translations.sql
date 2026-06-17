@@ -392,3 +392,48 @@ INSERT INTO translation_keys (key, source_text, context, section) VALUES
   ('settings.theme', 'Theme', 'Settings field', 'settings')
 
 ON CONFLICT (key) DO NOTHING;
+
+-- ── Badge: Translator ─────────────────────────────────────────
+-- Auto-awarded on first translation suggestion
+
+INSERT INTO badges (name, description, emoji, color, is_system)
+VALUES (
+  'Translator',
+  'Contributed a translation to the community',
+  '🌍',
+  '#3B82F6',
+  true
+)
+ON CONFLICT DO NOTHING;
+
+-- Trigger: award Translator badge on first translation suggestion
+
+CREATE OR REPLACE FUNCTION award_translator_badge()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  translator_badge_id uuid;
+BEGIN
+  SELECT id INTO translator_badge_id
+  FROM badges
+  WHERE name = 'Translator' AND is_system = true
+  LIMIT 1;
+
+  IF translator_badge_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  INSERT INTO user_badges (user_id, badge_id, awarded_by, display_slot)
+  SELECT NEW.user_id, translator_badge_id, NULL, 1
+  WHERE NOT EXISTS (
+    SELECT 1 FROM user_badges
+    WHERE user_id = NEW.user_id AND badge_id = translator_badge_id
+  );
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_translation_suggestion_badge ON translation_suggestions;
+CREATE TRIGGER on_translation_suggestion_badge
+  AFTER INSERT ON translation_suggestions
+  FOR EACH ROW EXECUTE FUNCTION award_translator_badge();
