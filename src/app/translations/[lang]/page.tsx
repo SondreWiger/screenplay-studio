@@ -137,7 +137,7 @@ export default function LanguageTranslationPage() {
   if (loading) return <LoadingPage />;
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-surface-500 mb-6">
