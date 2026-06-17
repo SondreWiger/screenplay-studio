@@ -108,9 +108,9 @@ export default function TranslationsPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        code: newLang.code || langCode,
-        name: newLang.name,
-        native_name: newLang.native_name,
+        code: langCode,
+        name: newLang.name || quizLanguage?.name || langCode,
+        native_name: newLang.native_name || quizLanguage?.name || langCode,
       }),
     });
 
@@ -144,7 +144,7 @@ export default function TranslationsPage() {
     setQuizSubmitting(false);
 
     if (data.passed) {
-      toast.success(`Quiz passed! You can now translate to ${quizLanguage.name}.`);
+      await submitLanguageDirect(quizLanguage.code);
     }
   };
 
@@ -232,31 +232,36 @@ export default function TranslationsPage() {
             ) : (
               <div className="space-y-3">
                 {languages.map((lang) => (
-                  <Link key={lang.id} href={`/translations/${lang.code}`}>
-                    <Card className="p-5 hover:border-surface-600 transition-colors cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg font-semibold text-white">{lang.name}</span>
-                            <span className="text-sm text-surface-500">({lang.native_name})</span>
-                            <span className="text-xs font-mono text-surface-600 bg-surface-800 px-2 py-0.5 rounded">{lang.code}</span>
+                  <div key={lang.id}>
+                    <Link href={lang.status === 'approved' ? `/translations/${lang.code}` : '#'}>
+                      <Card className={`p-5 transition-colors ${lang.status === 'approved' ? 'hover:border-surface-600 cursor-pointer' : 'opacity-70'}`}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-lg font-semibold text-white">{lang.name}</span>
+                              <span className="text-sm text-surface-500">({lang.native_name})</span>
+                              <span className="text-xs font-mono text-surface-600 bg-surface-800 px-2 py-0.5 rounded">{lang.code}</span>
+                              {lang.status === 'pending' && (
+                                <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">PENDING ADMIN APPROVAL</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-white">{progress[lang.code] || 0}%</p>
+                              <p className="text-[10px] text-surface-500">translated</p>
+                            </div>
+                            <div className="w-24 h-2 bg-surface-800 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] rounded-full transition-all"
+                                style={{ width: `${progress[lang.code] || 0}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-white">{progress[lang.code] || 0}%</p>
-                            <p className="text-[10px] text-surface-500">translated</p>
-                          </div>
-                          <div className="w-24 h-2 bg-surface-800 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] rounded-full transition-all"
-                              style={{ width: `${progress[lang.code] || 0}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
+                      </Card>
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}

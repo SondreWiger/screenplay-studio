@@ -11,7 +11,7 @@ export async function GET() {
   const { data: languages, error } = await supabase
     .from('translation_languages')
     .select('*')
-    .eq('status', 'approved')
+    .or(`status.eq.approved,added_by.eq.${user.id}`)
     .order('name');
 
   if (error) {
