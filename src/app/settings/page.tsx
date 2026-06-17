@@ -21,6 +21,7 @@ import { useTranslation } from '@/components/TranslationProvider';
 
 function InsiderProgramCard() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [tier, setTier] = useState<InsiderTier>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -89,6 +90,7 @@ function InsiderProgramCard() {
 }
 
 function PreMiDCard() {
+  const { t } = useTranslation();
   const read = (key: string, def: boolean): boolean => {
     if (typeof window === 'undefined') return def;
     const v = localStorage.getItem(key);
@@ -456,8 +458,8 @@ function TranslationsSettingsTab() {
   return (
     <div className="space-y-6 max-w-xl">
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-white mb-2">{t('Language', 'Language')}</h2>
-        <p className="text-sm text-surface-400 mb-6">{t('Choose your preferred display language. Progress shows how complete each translation is.', 'Choose your preferred display language. Progress shows how complete each translation is.')}</p>
+        <h2 className="text-lg font-semibold text-white mb-2">{t('settings.language')}</h2>
+        <p className="text-sm text-surface-400 mb-6">{t('settings.language_desc')}</p>
 
         <div className="space-y-2">
           <button
@@ -513,8 +515,8 @@ function TranslationsSettingsTab() {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className="text-lg font-semibold text-white">{t('Add Your Language', 'Add Your Language')}</h2>
-            <p className="text-sm text-surface-400">{t("Don't see your language? Add it and take a quick fluency quiz.", "Don't see your language? Add it and take a quick fluency quiz.")}</p>
+            <h2 className="text-lg font-semibold text-white">{t('settings.add_language')}</h2>
+            <p className="text-sm text-surface-400">{t('settings.add_language_desc')}</p>
           </div>
           <Link href="/translations">
             <Button size="sm" variant="secondary">Translator Hub</Button>
@@ -554,7 +556,7 @@ function TranslationsSettingsTab() {
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-white mb-2">{t('Translation Stats', 'Translation Stats')}</h2>
+        <h2 className="text-lg font-semibold text-white mb-2">{t('settings.translation_stats')}</h2>
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div>
             <p className="text-2xl font-black text-white">{languages.length}</p>
@@ -828,7 +830,7 @@ export default function UserSettingsPage() {
         {tab === 'profile' && (
           <div className="space-y-6">
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('Your Profile', 'Your Profile')}</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.your_profile')}</h2>
               <div className="space-y-4">
                 <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" />
                 <Input label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="How you appear to others" />
@@ -854,8 +856,8 @@ export default function UserSettingsPage() {
 
             {/* Public Profile Customisation */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('Public Profile', 'Public Profile')}</h2>
-              <p className="text-sm text-surface-400 mb-6">{t('Customise how your profile appears to visitors.', 'Customise how your profile appears to visitors.')}</p>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.public_profile')}</h2>
+              <p className="text-sm text-surface-400 mb-6">{t('settings.customise_profile')}</p>
               <div className="space-y-4">
                 <Input label="Banner Image URL" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} placeholder="https://... (hero image for your profile)" />
                 <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Los Angeles, CA" />
@@ -898,8 +900,8 @@ export default function UserSettingsPage() {
 
             {/* Social Links */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('Social Links', 'Social Links')}</h2>
-              <p className="text-sm text-surface-400 mb-6">{t('Add links to your social profiles. Leave blank to hide.', 'Add links to your social profiles. Leave blank to hide.')}</p>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.social_links')}</h2>
+              <p className="text-sm text-surface-400 mb-6">{t('settings.social_desc')}</p>
               <div className="space-y-3">
                 {[
                   { key: 'twitter', label: 'Twitter / X', placeholder: 'https://x.com/username', abbr: 'X' },
@@ -927,8 +929,8 @@ export default function UserSettingsPage() {
 
             {/* Privacy & Visibility */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('Privacy & Visibility', 'Privacy & Visibility')}</h2>
-              <p className="text-sm text-surface-400 mb-6">{t('Control what others can see on your profile.', 'Control what others can see on your profile.')}</p>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.privacy_visibility')}</h2>
+              <p className="text-sm text-surface-400 mb-6">{t('settings.privacy_desc')}</p>
               <div className="space-y-3">
                 {[
                   { label: 'Show email on profile', desc: 'Let visitors see your email address', value: showEmail, set: setShowEmail },
@@ -955,8 +957,8 @@ export default function UserSettingsPage() {
 
             {/* Email Notifications */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('Email Notifications', 'Email Notifications')}</h2>
-              <p className="text-sm text-surface-400 mb-6">{t('Choose which emails you receive. Transactional emails (security alerts) are always sent.', 'Choose which emails you receive. Transactional emails (security alerts) are always sent.')}</p>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.email_notifications')}</h2>
+              <p className="text-sm text-surface-400 mb-6">{t('settings.email_notifications_desc')}</p>
               <div className="space-y-3">
                 {[
                   { label: 'Project invitations', desc: 'When someone invites you to a project', value: emailProjectInvites, set: setEmailProjectInvites },
@@ -983,7 +985,7 @@ export default function UserSettingsPage() {
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">{t('Account Info', 'Account Info')}</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">{t('settings.account_info')}</h2>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-surface-500">Email</p>
@@ -1004,9 +1006,9 @@ export default function UserSettingsPage() {
 
             <div className="flex items-center gap-3">
               <Button onClick={saveProfile} loading={saving}>
-                {saved ? '✓ Saved' : t('Save Profile', 'Save Profile')}
+                {saved ? t('settings.saved') : t('settings.save_profile')}
               </Button>
-              {saved && <span className="text-sm text-green-400">Changes saved</span>}
+              {saved && <span className="text-sm text-green-400">{t('settings.changes_saved')}</span>}
             </div>
           </div>
         )}
@@ -1015,7 +1017,7 @@ export default function UserSettingsPage() {
         {tab === 'preferences' && (
           <><div className="space-y-6">
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('How do you use Screenplay Studio?', 'How do you use Screenplay Studio?')}</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.how_use')}</h2>
               <p className="text-sm text-surface-400 mb-6">This adjusts your default workspace layout.</p>
               <div className="grid grid-cols-2 gap-3">
                 {([
@@ -1041,7 +1043,7 @@ export default function UserSettingsPage() {
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('Feature Visibility', 'Feature Visibility')}</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.feature_visibility')}</h2>
               <p className="text-sm text-surface-400 mb-6">
                 Hidden features are still accessible under the &quot;More Tools&quot; dropdown in projects.
               </p>
@@ -1273,9 +1275,9 @@ export default function UserSettingsPage() {
 
             <div className="flex items-center gap-3">
               <Button onClick={savePreferences} loading={saving}>
-                {saved ? '✓ Saved' : 'Save Preferences'}
+                {saved ? t('settings.saved') : t('settings.save_preferences')}
               </Button>
-              {saved && <span className="text-sm text-green-400">Preferences saved</span>}
+              {saved && <span className="text-sm text-green-400">{t('settings.changes_saved')}</span>}
             </div>
           </div>
 

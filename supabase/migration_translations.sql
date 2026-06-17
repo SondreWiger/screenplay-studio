@@ -660,6 +660,8 @@ INSERT INTO translation_keys (key, source_text, context, section) VALUES
   ('settings.reset_password', 'Reset Password', 'Settings button', 'settings'),
   ('settings.email_verified', 'Email verified', 'Settings status', 'settings'),
   ('settings.view_legal', 'View Legal Center →', 'Settings link', 'settings'),
+  ('settings.account_info', 'Account Info', 'Settings section', 'settings'),
+  ('settings.save_preferences', 'Save Preferences', 'Settings button', 'settings'),
 
   -- ═══ Sidebar ═══
   ('sidebar.overview', 'Overview', 'Sidebar link', 'sidebar'),

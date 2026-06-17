@@ -27,10 +27,9 @@ export async function GET() {
   const progress: Record<string, number> = {};
   for (const code of langCodes) {
     const { count } = await supabase
-      .from('translation_suggestions')
+      .from('translation_winners')
       .select('*', { count: 'exact', head: true })
-      .eq('language', code)
-      .eq('status', 'pending');
+      .eq('language', code);
 
     progress[code] = totalKeys ? Math.round(((count || 0) / totalKeys) * 100) : 0;
   }
