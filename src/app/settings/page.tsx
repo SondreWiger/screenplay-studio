@@ -396,7 +396,7 @@ function GamificationSettingsTab() {
 
 function TranslationsSettingsTab() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, reload } = useTranslation();
   const [languages, setLanguages] = useState<{ id: string; code: string; name: string; native_name: string }[]>([]);
   const [progress, setProgress] = useState<Record<string, number>>({});
   const [totalKeys, setTotalKeys] = useState(0);
@@ -433,7 +433,8 @@ function TranslationsSettingsTab() {
     useAuthStore.getState().setUser?.({ ...user, preferred_language: val } as Profile);
     setPreferredLang(code);
     setSaving(false);
-    toast.success('Language preference saved');
+    toast.success(t('settings.language_saved', 'Language preference saved'));
+    reload();
   };
 
   const submitNewLang = async () => {

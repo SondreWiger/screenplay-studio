@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -17,12 +17,14 @@ interface TranslationContextType {
   lang: string;
   t: (key: string, fallback?: string) => string;
   loading: boolean;
+  reload: () => void;
 }
 
 const TranslationContext = createContext<TranslationContextType>({
   lang: 'en',
   t: (_key: string, fallback?: string) => fallback || _key,
   loading: true,
+  reload: () => {},
 });
 
 export function useTranslation() {
@@ -34,6 +36,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const [translations, setTranslations] = useState<TranslationMap>({});
   const [lang, setLang] = useState('en');
   const [loading, setLoading] = useState(true);
+  const prevLang = useRef<string>('');
 
   const loadTranslations = useCallback(async (language: string) => {
     if (!language || language === 'en') {
@@ -57,6 +60,8 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
         map[w.key] = { translated: w.translated_text, source: w.source_text };
       });
       setTranslations(map);
+    } else {
+      setTranslations({});
     }
 
     setLoading(false);
@@ -64,6 +69,15 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     const preferred = user?.preferred_language || 'en';
+    if (preferred !== prevLang.current) {
+      prevLang.current = preferred;
+      loadTranslations(preferred);
+    }
+  }, [user?.preferred_language, loadTranslations]);
+
+  const reload = useCallback(() => {
+    const preferred = user?.preferred_language || 'en';
+    prevLang.current = '';
     loadTranslations(preferred);
   }, [user?.preferred_language, loadTranslations]);
 
@@ -74,7 +88,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   }, [translations]);
 
   return (
-    <TranslationContext.Provider value={{ lang, t, loading }}>
+    <TranslationContext.Provider value={{ lang, t, loading, reload }}>
       {children}
     </TranslationContext.Provider>
   );
