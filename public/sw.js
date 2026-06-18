@@ -111,7 +111,7 @@ async function cacheFirst(request) {
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && request.method === 'GET') {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, response.clone());
     }
@@ -125,7 +125,7 @@ async function networkFirst(request) {
 async function networkFirstNavigate(request) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && request.method === 'GET') {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, response.clone());
     }
