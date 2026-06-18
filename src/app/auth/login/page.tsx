@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useRef, useCallback } from 'react';
+import { useState, Suspense, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -40,7 +40,6 @@ function LoginForm() {
   const { t } = useTranslation();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const [loading, setLoading] = useState(false);
-  // Show errors from URL params (e.g. expired magic-link → callback redirects here with ?error=...)
   const urlError = searchParams.get('error');
   const [error, setError] = useState(urlError ? friendlyAuthError(decodeURIComponent(urlError)) : '');
 
@@ -48,46 +47,17 @@ function LoginForm() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  // Debug logging removed for production
-  const log = (..._args: unknown[]) => {};
-
-  // Clear any stale auth cookies on mount
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        log(`Active session found for ${user.email} — redirecting to ${redirect}`);
-        router.replace(redirect);
-      } else {
-        log('No active session — clearing stale cookies');
-        supabase.auth.signOut().catch(() => {});
-      }
-    }).catch((err) => {
-      log(`getUser error: ${err?.message || err} — clearing cookies`);
-      supabase.auth.signOut().catch(() => {});
-    });
-  }, [redirect, router, log]);
-
-  // Use a plain click handler on the button as backup
   const doLogin = useCallback(async () => {
-    // Read values directly from DOM refs — most reliable with autofill
     const emailVal = emailRef.current?.value || '';
     const passVal = passwordRef.current?.value || '';
 
-    log(`Submit — email: "${emailVal}" (${emailVal.length} chars), password: ${'*'.repeat(passVal.length)} (${passVal.length} chars)`);
-
     if (!emailVal || !passVal) {
-      const msg = !emailVal && !passVal 
-        ? 'Both fields are empty — browser autofill may not have filled them'
-        : !emailVal ? 'Email is empty' : 'Password is empty';
-      setError(msg);
-      log(`Validation failed: ${msg}`);
+      setError(!emailVal && !passVal ? 'Both fields are empty' : !emailVal ? 'Email is empty' : 'Password is empty');
       return;
     }
 
     setLoading(true);
     setError('');
-    log('Calling supabase.auth.signInWithPassword...');
 
     try {
       const supabase = createClient();
@@ -97,15 +67,11 @@ function LoginForm() {
       });
 
       if (authError) {
-        log(`Auth error: ${authError.message} (status: ${authError.status})`);
         setError(friendlyAuthError(authError.message));
         setLoading(false);
         return;
       }
 
-      log(`Success! User: ${data?.user?.email} — redirecting to ${redirect}`);
-
-      // Track login attempt (fire-and-forget)
       fetch('/api/auth/track-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -114,25 +80,19 @@ function LoginForm() {
 
       sessionStorage.setItem('ss_session_active', '1');
       router.push(redirect);
-      router.refresh();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown';
-      log(`Exception: ${message}`);
-      setError(`${friendlyAuthError(message)}`);
+      setError(friendlyAuthError(message));
       setLoading(false);
     }
-  }, [redirect, router, log]);
+  }, [redirect, router]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    log('Form onSubmit fired');
     doLogin();
   };
 
   const handleButtonClick = () => {
-    log('Button onClick fired');
-    // Safety net: if form onSubmit doesn't fire (can happen in some mobile browsers),
-    // call doLogin directly.
     if (!loading) doLogin();
   };
 
