@@ -145,7 +145,7 @@ function RegisterForm() {
       }
 
       if (data?.session) {
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
         return;
       }
 

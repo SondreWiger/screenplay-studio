@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, Suspense, useRef, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/components/TranslationProvider';
@@ -35,7 +35,6 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const redirect = searchParams.get('redirect') || '/dashboard';
@@ -79,13 +78,13 @@ function LoginForm() {
       }).catch(() => {});
 
       sessionStorage.setItem('ss_session_active', '1');
-      router.push(redirect);
+      window.location.href = redirect;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown';
       setError(friendlyAuthError(message));
       setLoading(false);
     }
-  }, [redirect, router]);
+  }, [redirect]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -305,22 +305,26 @@ export function useTranslation() {
   return useContext(TranslationContext);
 }
 
+function buildInitialMap(): TranslationMap {
+  const map: TranslationMap = {};
+  for (const [key, sourceText] of Object.entries(EN)) {
+    map[key] = { translated: sourceText, source: sourceText };
+  }
+  return map;
+}
+
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [translations, setTranslations] = useState<TranslationMap>({});
+  const [translations, setTranslations] = useState<TranslationMap>(buildInitialMap);
   const [lang, setLang] = useState('en');
-  const [loading, setLoading] = useState(true);
-  const prevLang = useRef<string>('');
+  const [loading, setLoading] = useState(false);
+  const prevLang = useRef<string>('en');
+  const inited = useRef(false);
 
   const loadTranslations = useCallback(async (language: string) => {
     const supabase = createClient();
-    setLoading(true);
 
-    // Build base map from static English fallbacks
-    const map: TranslationMap = {};
-    for (const [key, sourceText] of Object.entries(EN)) {
-      map[key] = { translated: sourceText, source: sourceText };
-    }
+    const map = buildInitialMap();
 
     // Try loading from DB to get any extra keys and override with source_text
     try {
