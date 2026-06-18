@@ -7,7 +7,7 @@
 //     explicit version bump forces old caches to be purged even if the rest of
 //     the SW logic is identical.
 
-const CACHE_VERSION = 'ss-v5';   // bumped March 2026 — fix external image loading
+const CACHE_VERSION = 'ss-v6';   // bumped June 2026 — fix POST cache.put crash
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE  = `${CACHE_VERSION}-dynamic`;
 
@@ -98,7 +98,7 @@ async function cacheFirst(request) {
   if (cached) return cached;
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && request.method === 'GET') {
       const cache = await caches.open(STATIC_CACHE);
       cache.put(request, response.clone());
     }
