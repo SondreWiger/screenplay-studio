@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useBroadcastSync } from '@/hooks/useBroadcastSync';
 import { useTranslation } from '@/components/TranslationProvider';
 

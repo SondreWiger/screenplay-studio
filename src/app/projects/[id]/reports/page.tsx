@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, LoadingPage, toast, ToastContainer } from '@/components/ui';
+import { Button, Card, LoadingPage, toast, ToastContainer } from '@/components/ui';
 
 type ReportType = 'call_sheet' | 'dood' | 'daily_report' | 'progress' | 'wrap_report';
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, toast } from '@/components/ui';
+import { Button, Modal, toast } from '@/components/ui';
 import { pickToast, SUBMISSION_ADDED, SUBMISSION_ACCEPTED } from '@/lib/funToasts';
 import { cn } from '@/lib/utils';
 

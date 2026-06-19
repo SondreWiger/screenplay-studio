@@ -8,6 +8,7 @@ import { cn, timeAgo } from '@/lib/utils';
 import { notifyProjectMembers } from '@/lib/notifications';
 import { sendNotificationEmailAction } from '@/lib/email-actions';
 import type { Comment, Profile, CommentType, ScriptElement } from '@/lib/types';
+import logger from '@/lib/logger';
 import { ELEMENT_LABELS } from '@/lib/types';
 
 // Recursive comment component for infinite nesting
@@ -256,7 +257,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
                 newContent.trim().slice(0, 200),
                 'View Comment',
                 `/projects/${params.id}/comments`,
-              ).catch(() => {});
+              ).catch((err) => logger.error('Comments', 'Failed to send notification email:', err));
             }
           }
         }

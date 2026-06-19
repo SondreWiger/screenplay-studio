@@ -6,11 +6,11 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Badge, Avatar, LoadingSpinner } from '@/components/ui';
+import { Avatar } from '@/components/ui';
 import { formatDate, timeAgo } from '@/lib/utils';
 import type { Profile, Project, CommunityPost, ProductionRole, UserBadge } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
-import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
+import { BadgeDisplay } from '@/components/BadgeDisplay';
 import ActivityGrid from '@/components/activity/ActivityGrid';
 import { fetchUserWorkLogs, calculateStreak, aggregateLogsByDate } from '@/lib/work-tracker';
 

@@ -278,6 +278,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     full: 'max-w-6xl',
   };
 
+  if (typeof document === 'undefined') return null;
+
   return createPortal(
     <div className="fixed inset-0 z-[9999] overflow-y-auto" ref={modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={title ? 'modal-title' : undefined}>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
@@ -294,6 +296,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
               <h2 id="modal-title" className="text-lg font-black text-white tracking-tight">{title}</h2>
               <button
                 onClick={onClose}
+                aria-label="Close"
                 className="rounded-lg p-1.5 text-surface-400 hover:bg-white/10 hover:text-white transition-colors"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -620,6 +623,7 @@ export function ToastContainer() {
           <p className="text-sm font-medium flex-1">{t.message}</p>
           <button
             onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))}
+            aria-label="Dismiss notification"
             className="text-xs opacity-60 hover:opacity-100 transition-opacity shrink-0"
           >
             ✕
@@ -687,7 +691,7 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <span className="text-surface-400">⌨️</span> {t('shortcuts.title')}
           </h3>
-          <button onClick={onClose} className="text-surface-500 hover:text-white transition-colors">
+          <button onClick={onClose} aria-label="Close shortcuts" className="text-surface-500 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -833,6 +837,7 @@ export function SearchInput({ value, onChange, placeholder, className, autoFocus
       {value && (
         <button
           onClick={() => onChange('')}
+          aria-label="Clear search"
           className="absolute right-2.5 top-1/2 -translate-y-1/2 text-surface-500 hover:text-white transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1014,12 +1019,14 @@ interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog({
-  isOpen, title, message, confirmLabel, cancelLabel,
+  isOpen, title, message,
+  confirmLabel: confirmLabelProp,
+  cancelLabel: cancelLabelProp,
   variant = 'primary', onConfirm, onCancel, loading,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
-  if (confirmLabel === undefined) confirmLabel = t('common.confirm');
-  if (cancelLabel === undefined) cancelLabel = t('common.cancel');
+  const confirmLabel = confirmLabelProp ?? t('common.confirm');
+  const cancelLabel = cancelLabelProp ?? t('common.cancel');
   React.useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };

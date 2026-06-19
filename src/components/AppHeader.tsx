@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { useTranslation } from '@/components/TranslationProvider';
 import { createClient } from '@/lib/supabase/client';
+import logger from '@/lib/logger';
 
 // AppHeader — Shared navigation header for all top-level pages
 // Provides consistent navigation across dashboard, settings,
@@ -49,9 +50,15 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
   }, []);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/auth/login');
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push('/auth/login');
+    } catch (err) {
+      logger.error('AppHeader', 'Sign out failed:', err);
+      // Force redirect even on error
+      router.push('/auth/login');
+    }
   };
 
   // Primary nav — keep lean; secondary links live in the avatar dropdown
@@ -148,7 +155,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           <Link
             href="/messages"
             className="p-2 text-white/30 hover:text-white hover:bg-white/5 transition-colors"
-            title="Messages"
+            aria-label="Messages"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -164,6 +171,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
               className="shrink-0 rounded-full transition-shadow duration-200"
               style={profileOpen ? { boxShadow: '0 0 0 2px #FF5F1F, 0 0 16px rgba(255,95,31,0.3)' } : { boxShadow: '0 0 0 2px rgba(255,255,255,0.08)' }}
               aria-label="Open profile menu"
+              aria-expanded={profileOpen}
             >
               <Avatar src={user?.avatar_url} name={user?.full_name} size="md" />
             </button>
@@ -186,7 +194,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                 </div>
 
                 {/* Menu items */}
-                <div className="py-1.5">
+                <div className="py-1.5" role="menu">
                   {[
                     { href: '/settings', label: t('nav.settings'), icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /> },
                     { href: '/accountability', label: 'Accountability', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z" /> },
@@ -197,6 +205,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                       key={item.href}
                       href={item.href}
                       onClick={() => setProfileOpen(false)}
+                      role="menuitem"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-white/50 hover:text-white hover:bg-white/5 transition-colors group"
                     >
                       <svg className="w-4 h-4 text-white/30 group-hover:text-[#FF5F1F] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">{item.icon}</svg>

@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Scene, Location, Character, SceneLocationType, SceneTime, ScriptElement } from '@/lib/types';
-import { useTranslation } from '@/components/TranslationProvider';
 
 // Parse a scene heading like "INT. COFFEE SHOP - NIGHT" into components
 function parseSceneHeading(heading: string) {

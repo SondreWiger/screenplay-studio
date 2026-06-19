@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Badge, Modal, Input, Select, LoadingSpinner, Avatar, Textarea, toast } from '@/components/ui';
+import { Button, Modal, Input, Select, Avatar, Textarea, toast } from '@/components/ui';
+import logger from '@/lib/logger';
 import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
@@ -3808,7 +3809,7 @@ const LineEditor = memo(function LineEditor({
         if (newEl) {
           focusElement(newEl.id, 'start');
         }
-      }).catch(() => {});
+      }).catch((err) => logger.error('Script', 'Failed to create script element:', err));
       return;
     }
 

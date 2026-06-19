@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, LoadingSpinner, Progress } from '@/components/ui';
+import { Badge, LoadingSpinner, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Shot, Scene } from '@/lib/types';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui';
@@ -536,16 +536,34 @@ function WelcomeIllustration() {
 
 function SpotlightOverlay({ targetId, children }: { targetId: string; children: React.ReactNode }) {
   const [rect, setRect] = useState<DOMRect | null>(null);
-  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const measure = () => {
       const el = document.querySelector<HTMLElement>(`[data-tour-id="${targetId}"]`);
       if (el) setRect(el.getBoundingClientRect());
-      rafRef.current = requestAnimationFrame(measure);
     };
-    rafRef.current = requestAnimationFrame(measure);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+
+    measure();
+
+    let rafId: number | null = null;
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        rafId = requestAnimationFrame(() => {
+          measure();
+          ticking = false;
+        });
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll, { capture: true } as EventListenerOptions);
+      window.removeEventListener('resize', onScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [targetId]);
 
   if (!rect) return <>{children}</>;

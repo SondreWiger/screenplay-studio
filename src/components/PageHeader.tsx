@@ -31,7 +31,7 @@ interface PageHeaderProps {
 
 const ORANGE = '#FF5F1F';
 
-export function PageHeader({
+function PageHeaderInner({
   eyebrow,
   title,
   subtitle,
@@ -95,6 +95,8 @@ export function PageHeader({
     </div>
   );
 }
+
+export const PageHeader = React.memo(PageHeaderInner);
 
 /**
  * SectionHeader — lighter variant for within-page section breaks.

@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useNotificationStore } from '@/lib/stores';
 import { triggerSelfPush } from '@/lib/notifications';
+import logger from '@/lib/logger';
 import type { Notification, NotificationType } from '@/lib/types';
 
 // Notification types that get sound + tab-title treatment.
-// Upvotes and low-priority events are intentionally excluded to avoid noise.
 const HIGH_PRIORITY_TYPES = new Set([
   'direct_message',
   'mention',
@@ -18,15 +18,34 @@ const HIGH_PRIORITY_TYPES = new Set([
   'ticket_reply',
 ] as NotificationType[]);
 
-// Web Audio — subtle two-tone ping, no audio file required.
-// Only fires when the page is not focused.
-function playNotificationSound() {
-  if (typeof window === 'undefined') return;
-  if (document.hasFocus()) return; // don't beep if user is looking at the page
+// Singleton AudioContext — reused across notifications to avoid browser limits
+let sharedAudioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+    if (!AudioCtx) return null;
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+      sharedAudioCtx = new AudioCtx();
+    }
+    // Resume if suspended (browsers require user gesture)
+    if (sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume();
+    }
+    return sharedAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+// Web Audio — subtle two-tone ping, no audio file required.
+function playNotificationSound() {
+  if (typeof window === 'undefined') return;
+  if (document.hasFocus()) return;
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const makeBeep = (freq: number, startTime: number, duration: number, volume = 0.08) => {
@@ -45,9 +64,6 @@ function playNotificationSound() {
     // Two-tone ascending ping: 880 Hz then 1100 Hz
     makeBeep(880,  now,        0.12);
     makeBeep(1100, now + 0.12, 0.12);
-
-    // Auto-close context to free resources
-    setTimeout(() => ctx.close().catch(() => {}), 800);
   } catch {
     // Audio API unavailable or blocked — silent fallback is fine
   }
@@ -120,16 +136,6 @@ export function useNotifications(userId: string | undefined) {
     setTabBadge(unreadCount);
   }, [unreadCount]);
 
-  // Restore clean title when tab gains focus
-  useEffect(() => {
-    const onFocus = () => {
-      // Don't clear the badge on focus — only clear when user marks all read.
-      // This matches Discord/Slack behaviour: badge stays until you read it.
-    };
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, []);
-
   // Permission request (once, with delay to avoid annoying on first load)
   useEffect(() => {
     if (!userId || permissionRequested.current) return;
@@ -138,7 +144,7 @@ export function useNotifications(userId: string | undefined) {
     return () => clearTimeout(timer);
   }, [userId]);
 
-  // Realtime subscription
+  // Realtime subscription — use module-level ref to prevent singleton race
   useEffect(() => {
     if (!userId) return;
 
@@ -159,31 +165,34 @@ export function useNotifications(userId: string | undefined) {
           filter: `user_id=eq.${userId}`,
         },
         async (payload) => {
-          // Fetch the full notification with actor profile joined
-          const { data } = await supabase
-            .from('notifications')
-            .select('*, actor:profiles!notifications_actor_id_fkey(*)')
-            .eq('id', (payload.new as { id: string }).id)
-            .single();
+          try {
+            // Fetch the full notification with actor profile joined
+            const { data } = await supabase
+              .from('notifications')
+              .select('*, actor:profiles!notifications_actor_id_fkey(*)')
+              .eq('id', (payload.new as { id: string }).id)
+              .single();
 
-          if (!data) return;
-          const notif = data as Notification;
-          addNotification(notif);
+            if (!data) return;
+            const notif = data as Notification;
+            addNotification(notif);
 
-          const isHighPriority = HIGH_PRIORITY_TYPES.has(notif.type);
+            const isHighPriority = HIGH_PRIORITY_TYPES.has(notif.type);
 
-          // OS popup (when not focused)
-          showBrowserNotification(notif);
+            // OS popup (when not focused)
+            showBrowserNotification(notif);
 
-          // Sound for high-priority types (when not focused)
-          if (isHighPriority) {
-            playNotificationSound();
-          }
+            // Sound for high-priority types (when not focused)
+            if (isHighPriority) {
+              playNotificationSound();
+            }
 
-          // Push to user's other subscribed devices (e.g., phone while on laptop).
-          // Only for high-priority — avoids push-flooding on every upvote.
-          if (isHighPriority) {
-            triggerSelfPush(notif.title, notif.body || undefined, notif.link || undefined);
+            // Push to user's other subscribed devices
+            if (isHighPriority) {
+              triggerSelfPush(notif.title, notif.body || undefined, notif.link || undefined);
+            }
+          } catch (err) {
+            logger.error('useNotifications', 'Failed to process notification:', err);
           }
         },
       )

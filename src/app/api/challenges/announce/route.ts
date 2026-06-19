@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/client';
-import { getChallengePhase } from '@/lib/utils';
+import { getChallengePhase, formatDateTime } from '@/lib/utils';
 import { sendDiscordWebhook, announceBlogPost, announceBlogPostWithSeries } from '@/lib/discord';
+import { getThemeEmoji, getPhaseEmoji } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,7 +57,7 @@ export async function GET() {
       try {
         // Send Discord notification
         await sendDiscordWebhook({
-          content: getPhaseNotification(phase, challenge.title, getThemeEmoji(challenge)),
+          content: getPhaseNotification(phase, challenge.title, getThemeEmoji(challenge.theme_id)),
           embeds: [
             {
               title: embedTitle,
@@ -71,8 +72,8 @@ export async function GET() {
                 {
                   name: '⏰ Timeline',
                   value: `
-                    **Starts:** ${formatDate(challenge.starts_at)}
-                    **Closes:** ${formatDate(challenge.submissions_close_at)}
+                    **Starts:** ${formatDateTime(challenge.starts_at)}
+                    **Closes:** ${formatDateTime(challenge.submissions_close_at)}
                   `,                  inline: true
                 },
                 {
@@ -176,17 +177,6 @@ export async function GET() {
   }
 }
 
-function getPhaseEmoji(phase: string): string {
-  switch (phase) {
-    case 'upcoming': return '🚀';
-    case 'submissions': return '📝';
-    case 'voting': return '🗳️';
-    case 'completed': return '🏆';
-    case 'reveal_pending': return '⏳';
-    default: return '🎭';
-  }
-}
-
 function getPhaseLabel(phase: string): string {
   switch (phase) {
     case 'upcoming': return '🔥 Upcoming - Submissions Open';
@@ -209,26 +199,6 @@ function getPhaseColor(phase: string): number {
   }
 }
 
-function getThemeEmoji(challenge: any): string {
-  if (!challenge.theme) return '🎭';
-  const theme = challenge.theme.toLowerCase();
-  if (theme.includes('day') || theme.includes('time')) return '⏰';
-  if (theme.includes('stranger') || theme.includes('person')) return '👤';
-  if (theme.includes('wrong') || theme.includes('letter')) return '✉️';
-  if (theme.includes('room') || theme.includes('silent')) return '🏠';
-  if (theme.includes('train') || theme.includes('film')) return '🚂';
-  if (theme.includes('night') || theme.includes('dark')) return '🌙';
-  if (theme.includes('loop') || theme.includes('time')) return '🔄';
-  if (theme.includes('heist') || theme.includes('money')) return '💰';
-  if (theme.includes('contact') || theme.includes('first')) return '📞';
-  if (theme.includes('party') || theme.includes('dinner')) return '🍽️';
-  if (theme.includes('unreliable')) return '🤔';
-  if (theme.includes('chase') || theme.includes('pursuit')) return '🏃';
-  if (theme.includes('backwards')) return '⬅️';
-  if (theme.includes('audition')) return '🎭';
-  return '🎪';
-}
-
 function getPhaseNotification(phase: string, title: string, emoji: string): string {
   switch (phase) {
     case 'upcoming':
@@ -244,9 +214,4 @@ function getPhaseNotification(phase: string, title: string, emoji: string): stri
     default:
       return `🎭 **Challenge Update!** ${emoji} ${title}`;
   }
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }

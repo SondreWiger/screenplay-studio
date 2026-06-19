@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Badge, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
+import { useAuthStore } from '@/lib/stores';
+import { Button, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastStreamIngest, BroadcastIngestProtocol, BroadcastIngestStatus } from '@/lib/types';
 // BroadcastIngestStatus used for statusColor helper

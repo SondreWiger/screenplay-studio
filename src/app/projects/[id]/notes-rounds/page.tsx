@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Badge, Modal, Input, toast } from '@/components/ui';
+import { Button, Modal, Input, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import type { ScriptNotesRound, ScriptNote, NoteCategory, NoteStatus, NotesRoundStatus } from '@/lib/types';
 

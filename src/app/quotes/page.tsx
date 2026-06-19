@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button, SearchInput, EmptyState, LoadingSpinner, toast } from '@/components/ui';
-import { QuoteCard } from '@/components/quotes/QuoteCard';
 import { QuoteForm } from '@/components/quotes/QuoteForm';
 import { GroupManager } from '@/components/quotes/GroupManager';
 import { AppHeader } from '@/components/AppHeader';

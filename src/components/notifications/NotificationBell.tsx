@@ -39,7 +39,7 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
 
 // NOTIFICATION BELL — top-bar icon with badge
 
-export function NotificationBell() {
+export function NotificationBellInner() {
   const { unreadCount } = useNotificationStore();
   const [open, setOpen] = useState(false);
   const [activePollId, setActivePollId] = useState<string | null>(null);
@@ -205,7 +205,7 @@ export function NotificationRow({
       {/* Icon */}
       <div className={`w-9 h-9 rounded-lg ${icon.color} flex items-center justify-center shrink-0 text-sm`}>
         {n.actor?.avatar_url ? (
-          <img src={n.actor.avatar_url} alt="" className="w-9 h-9 rounded-lg object-cover" loading="lazy" />
+          <img src={n.actor.avatar_url} alt={n.actor.full_name || 'User'} className="w-9 h-9 rounded-lg object-cover" loading="lazy" />
         ) : (
           <span className="font-semibold text-[10px] leading-none">{icon.label}</span>
         )}
@@ -370,3 +370,5 @@ function CompanyInviteActions({ notification }: { notification: Notification }) 
     </div>
   );
 }
+
+export const NotificationBell = React.memo(NotificationBellInner);

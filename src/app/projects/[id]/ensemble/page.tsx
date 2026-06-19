@@ -6,8 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingPage, Input, Modal, toast, ToastContainer } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { STAGE_ENSEMBLE_GROUPS } from '@/lib/types';
 import type { StageEnsembleMember, StageEnsembleGroup } from '@/lib/types';
-import { STAGE_ENSEMBLE_GROUPS as GROUPS } from '@/lib/types';
+
+const GROUPS = STAGE_ENSEMBLE_GROUPS;
 
 const GROUP_COLORS: Record<StageEnsembleGroup, string> = {
   'Principal':    'bg-[#FF5F1F]/20 text-[#FF8F5F] border-[#FF5F1F]/30',

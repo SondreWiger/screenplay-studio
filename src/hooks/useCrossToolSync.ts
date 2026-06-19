@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useScriptStore } from '@/lib/stores';
+import { useAuthStore } from '@/lib/stores';
 import type { ScriptElement } from '@/lib/types';
 
 /**

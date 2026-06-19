@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type {
   BroadcastStory, BroadcastStoryStatus, BroadcastStoryType, BroadcastStoryVersion,

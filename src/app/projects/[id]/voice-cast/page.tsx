@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Card, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn, getInitials, randomColor } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Character } from '@/lib/types';

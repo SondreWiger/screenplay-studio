@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import logger from '@/lib/logger';
 
 const ORANGE = '#FF5F1F';
 
@@ -45,7 +46,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ref_code: params.username }),
-    }).catch(() => {});
+    }).catch((err) => logger.error('Ref', 'Failed to track visit:', err));
   }, [creator, tracked, params.username]);
 
   if (notFound) {

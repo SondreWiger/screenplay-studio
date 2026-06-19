@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
+import logger from '@/lib/logger';
 import type {
   Project, Script, ScriptElement, Character, Location,
   Scene, Shot, Idea, BudgetItem, ScheduleEvent, Comment,
@@ -42,10 +43,12 @@ interface ProjectState {
   currentProject: Project | null;
   members: ProjectMember[];
   loading: boolean;
+  error: string | null;
   setProjects: (projects: Project[]) => void;
   setCurrentProject: (project: Project | null) => void;
   setMembers: (members: ProjectMember[]) => void;
   setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
   fetchProjects: () => Promise<void>;
   fetchProject: (id: string) => Promise<void>;
 }
@@ -55,13 +58,15 @@ export const useProjectStore = create<ProjectState>((set) => ({
   currentProject: null,
   members: [],
   loading: true,
+  error: null,
   setProjects: (projects) => set({ projects }),
   setCurrentProject: (project) => set({ currentProject: project }),
   setMembers: (members) => set({ members }),
   setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
   fetchProjects: async () => {
     const supabase = createClient();
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.id) { set({ projects: [], loading: false }); return; }
@@ -80,13 +85,13 @@ export const useProjectStore = create<ProjectState>((set) => ({
         .order('updated_at', { ascending: false });
       set({ projects: data || [], loading: false });
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      set({ projects: [], loading: false });
+      logger.error('ProjectStore', 'Error fetching projects:', err);
+      set({ projects: [], loading: false, error: 'Failed to load projects' });
     }
   },
   fetchProject: async (id: string) => {
     const supabase = createClient();
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
       const [projectRes, membersRes] = await Promise.all([
         supabase.from('projects').select('*').eq('id', id).single(),
@@ -98,8 +103,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
         loading: false,
       });
     } catch (err) {
-      console.error('Error fetching project:', err);
-      set({ currentProject: null, members: [], loading: false });
+      logger.error('ProjectStore', 'Error fetching project:', err);
+      set({ currentProject: null, members: [], loading: false, error: 'Failed to load project' });
     }
   },
 }));
@@ -219,7 +224,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         set({ currentScript: null, elements: [] });
       }
     } catch (err) {
-      console.error('Error fetching scripts:', err);
+      logger.error('ScriptStore', 'Error fetching scripts:', err);
       set({ scripts: [] });
     }
   },
@@ -235,7 +240,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         .order('sort_order', { ascending: true });
       set({ elements: data || [], loading: false });
     } catch (err) {
-      console.error('Error fetching elements:', err);
+      logger.error('ScriptStore', 'Error fetching elements:', err);
       set({ elements: [], loading: false });
     }
   },
@@ -256,7 +261,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       .select()
       .single();
     if (error) {
-      console.error('[addElement] Supabase error:', error.message, error.details, error.hint);
+      logger.error('ScriptStore', '[addElement] Supabase error:', error.message, error.details, error.hint);
     }
     if (data && !error) {
       set({ elements: [...get().elements, data].sort((a, b) => a.sort_order - b.sort_order) });
@@ -291,15 +296,12 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   reorderElements: async (elements) => {
     const supabase = createClient();
     set({ elements, saving: true });
-    const BATCH_SIZE = 50;
+    // Use upsert for efficient batch update instead of N individual queries
     const updates = elements.map((e, i) => ({ id: e.id, sort_order: i }));
+    const BATCH_SIZE = 100;
     for (let i = 0; i < updates.length; i += BATCH_SIZE) {
       const batch = updates.slice(i, i + BATCH_SIZE);
-      await Promise.all(
-        batch.map((u) =>
-          supabase.from('script_elements').update({ sort_order: u.sort_order }).eq('id', u.id)
-        )
-      );
+      await supabase.from('script_elements').upsert(batch, { onConflict: 'id' });
     }
     set({ saving: false });
   },
@@ -359,7 +361,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             data: { url: n.link || '/notifications' },
           });
         }
-      }).catch(() => {});
+      }).catch((err) => console.debug('Service worker notification failed (expected in some contexts):', err));
     }
   },
   fetchNotifications: async () => {

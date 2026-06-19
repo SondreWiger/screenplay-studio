@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import type { ScriptElementType } from '@/lib/types';
 
 // Screenplay Renderer — renders structured script elements
@@ -33,7 +34,7 @@ export function parseScreenplayElements(raw: string | null | undefined): Screenp
 /**
  * Renders screenplay elements in proper screenplay format.
  */
-export function ScreenplayRenderer({ elements, className }: { elements: ScreenplayElement[]; className?: string }) {
+export const ScreenplayRenderer = React.memo(function ScreenplayRenderer({ elements, className }: { elements: ScreenplayElement[]; className?: string }) {
   return (
     <div className={`font-[Courier_Prime,Courier,monospace] text-[12px] leading-[1.6] text-stone-800 ${className || ''}`}>
       {elements.map((el, i) => {
@@ -186,12 +187,12 @@ export function ScreenplayRenderer({ elements, className }: { elements: Screenpl
       })}
     </div>
   );
-}
+});
 
 /**
  * Smart script content viewer — auto-detects structured vs plain text.
  */
-export function ScriptContentViewer({ content, className }: { content: string; className?: string }) {
+export const ScriptContentViewer = React.memo(function ScriptContentViewer({ content, className }: { content: string; className?: string }) {
   const elements = parseScreenplayElements(content);
 
   if (elements) {
@@ -204,4 +205,4 @@ export function ScriptContentViewer({ content, className }: { content: string; c
       {content}
     </pre>
   );
-}
+});

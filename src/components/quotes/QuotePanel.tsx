@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Modal, Button, Input, SearchInput, EmptyState, LoadingSpinner, toast } from '@/components/ui';
+import { Modal, Button, SearchInput, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { QuoteCard } from './QuoteCard';
 import { QuoteForm } from './QuoteForm';
 import { GroupManager } from './GroupManager';

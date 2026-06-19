@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select, toast } from '@/components/ui';
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
-import type { BlogPost, BlogPostSection, CommunityPost, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
+import type { Profile, Project, BlogPost, BlogPostSection, BlogComment, CommunityPost, CommunityPostStatus, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
+import logger from '@/lib/logger';
 import { sendTicketReplyEmailAction } from '@/lib/email-actions';
 
 
@@ -52,9 +53,9 @@ interface PlatformStats {
   countryBreakdown: { country: string; count: number }[];
   episodicProjects: number;
   // Recent
-  recentUsers: any[];
-  recentProjects: any[];
-  projectDetails: any[];
+  recentUsers: Profile[];
+  recentProjects: Project[];
+  projectDetails: Project[];
 }
 
 interface UserRow {
@@ -86,6 +87,85 @@ interface ContributorRow {
   added_by: string | null;
 }
 
+interface ProjectWithCounts {
+  id: string;
+  title: string;
+  logline: string | null;
+  script_type: string | null;
+  format: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  project_members: { count: number }[];
+  scripts: { count: number }[];
+}
+
+interface ProjectStatsDetail {
+  scripts: number;
+  elements: number;
+  words: number;
+  characters: number;
+  locations: number;
+  scenes: number;
+  shots: number;
+  ideas: number;
+  budgetItems: number;
+  totalBudget: number;
+  scheduleEvents: number;
+  scriptList: { id: string; title: string; version: string }[];
+}
+
+interface CompStats {
+  growth: {
+    signupGrowth: number;
+    projectGrowth: number;
+    signups30Day: number;
+    signupsPrev30Day: number;
+    projects30Day: number;
+    projectsPrev30Day: number;
+    proRate: number;
+  };
+  trends: {
+    weeklySignups: { date: string; count: number }[];
+    weeklyProjects: { date: string; count: number }[];
+    hourlySignupPattern: { hour: number; count: number }[];
+  };
+}
+
+interface PendingLanguage {
+  id: string;
+  code: string;
+  name: string;
+  native_name: string;
+  status: string;
+  added_by: string;
+  added_by_profile: { display_name: string | null; email: string } | null;
+}
+
+interface PendingProduction {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+  thumbnail_url: string | null;
+  description: string | null;
+  url: string | null;
+  submitter: { full_name: string | null; avatar_url: string | null; email: string } | null;
+  post: { title: string; slug: string } | null;
+  owner: { full_name: string | null; avatar_url: string | null } | null;
+}
+
+interface PayoutPreviewItem {
+  id: string;
+  signups_count: number;
+  proportion: number;
+  amount: number;
+  creator: {
+    ref_code: string;
+    profile: { full_name: string | null; username: string | null } | null;
+  } | null;
+}
+
 type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'tickets' | 'system' | 'contributors' | 'badges' | 'courses' | 'creators' | 'translations';
 
 export default function AdminPage() {
@@ -94,7 +174,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
   const [rebootStatus, setRebootStatus] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
@@ -102,7 +182,7 @@ export default function AdminPage() {
   const [projectSearch, setProjectSearch] = useState('');
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [editingPost, setEditingPost] = useState<BlogPost | null | 'new'>(null);
-  const [blogComments, setBlogComments] = useState<any[]>([]);
+  const [blogComments, setBlogComments] = useState<(BlogComment & { author: { full_name: string | null; avatar_url: string | null } | null })[]>([]);
   const [siteVersion, setSiteVersion] = useState<string>('');
   const [opensourceEnabled, setOpensourceEnabled] = useState(true);
   const [proGatingEnabled, setProGatingEnabled] = useState(false);
@@ -336,10 +416,10 @@ export default function AdminPage() {
       const projectsByDay  = bucketByDay(recentProjectsCreatedRes.data || []);
 
       // Breakdowns
-      const groupBy = (rows: any[], key: string) => {
+      const groupBy = (rows: Record<string, unknown>[], key: string) => {
         const map: Record<string, number> = {};
         for (const r of rows) {
-          const v = r[key] || 'unknown';
+          const v = String(r[key] || 'unknown');
           map[v] = (map[v] || 0) + 1;
         }
         return Object.entries(map).map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count);
@@ -582,7 +662,7 @@ export default function AdminPage() {
             ownerProfile.display_name || ownerProfile.full_name || '',
             ticket.subject,
             ticket.id,
-          ).catch(() => {});
+          ).catch((err) => logger.error('Admin', 'Failed to send ticket reply email:', err));
         }
       }
     }
@@ -592,7 +672,7 @@ export default function AdminPage() {
     const supabase = createClient();
     const { error } = await supabase.from('support_tickets').update({ status, updated_at: new Date().toISOString() }).eq('id', ticketId);
     if (!error) {
-      setTickets((prev) => prev.map((t) => t.id === ticketId ? { ...t, status: status as any } : t));
+      setTickets((prev) => prev.map((t) => t.id === ticketId ? { ...t, status: status as SupportTicket['status'] } : t));
     }
   };
 
@@ -600,7 +680,7 @@ export default function AdminPage() {
     const supabase = createClient();
     const { error } = await supabase.from('support_tickets').update({ priority, updated_at: new Date().toISOString() }).eq('id', ticketId);
     if (!error) {
-      setTickets((prev) => prev.map((t) => t.id === ticketId ? { ...t, priority: priority as any } : t));
+      setTickets((prev) => prev.map((t) => t.id === ticketId ? { ...t, priority: priority as SupportTicket['priority'] } : t));
     }
   };
 
@@ -649,7 +729,7 @@ export default function AdminPage() {
     await loadCommunityData();
   };
 
-  const handleCreateCustomChallenge = async (data: { title: string; description: string; starts_at: string; submissions_close_at: string; voting_close_at: string; reveal_at: string; prize_title?: string; prize_description?: string }) => {
+  const handleCreateCustomChallenge = async (data: { title: string; description: string; starts_at: string; submissions_close_at: string; voting_close_at: string; reveal_at: string; prize_title?: string | null; prize_description?: string | null }) => {
     const supabase = createClient();
     await supabase.from('community_challenges').insert({ ...data, challenge_type: 'custom', created_by: user!.id });
     await loadCommunityData();
@@ -988,7 +1068,7 @@ function BarRow({ label, count, max, color }: { label: string; count: number; ma
 
 function TranslationsAdminTab() {
   const [languages, setLanguages] = useState<{ id: string; code: string; name: string; native_name: string; status: string; added_by: string }[]>([]);
-  const [pendingLanguages, setPendingLanguages] = useState<any[]>([]);
+  const [pendingLanguages, setPendingLanguages] = useState<PendingLanguage[]>([]);
   const [stats, setStats] = useState({ total_keys: 0, total_suggestions: 0, total_votes: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -1180,7 +1260,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
     activeUsers15Min: stats.activeUsers15Min,
     activeUsers1Hour: stats.activeUsers1Hour,
   });
-  const [compStats, setCompStats] = useState<any>(null);
+  const [compStats, setCompStats] = useState<CompStats | null>(null);
 
   // Live update active users + fetch comprehensive stats
   useEffect(() => {
@@ -1358,8 +1438,8 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
             <h3 className="text-sm font-semibold text-white mb-4">Weekly Signups — Last 12 Weeks</h3>
             <div className="flex items-end gap-1 h-32">
-              {compStats.trends.weeklySignups.map((w: any, i: number) => {
-                const max = Math.max(...compStats.trends.weeklySignups.map((x: any) => x.count), 1);
+              {compStats.trends.weeklySignups.map((w: { date: string; count: number }, i: number) => {
+                const max = Math.max(...compStats.trends.weeklySignups.map((x: { date: string; count: number }) => x.count), 1);
                 const h = (w.count / max) * 100;
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
@@ -1380,8 +1460,8 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
             <h3 className="text-sm font-semibold text-white mb-4">Weekly Projects — Last 12 Weeks</h3>
             <div className="flex items-end gap-1 h-32">
-              {compStats.trends.weeklyProjects.map((w: any, i: number) => {
-                const max = Math.max(...compStats.trends.weeklyProjects.map((x: any) => x.count), 1);
+              {compStats.trends.weeklyProjects.map((w: { date: string; count: number }, i: number) => {
+                const max = Math.max(...compStats.trends.weeklyProjects.map((x: { date: string; count: number }) => x.count), 1);
                 const h = (w.count / max) * 100;
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
@@ -1406,8 +1486,8 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Signup Activity — Hour of Day (UTC)</h3>
           <div className="flex items-end gap-1 h-24">
-            {compStats.trends.hourlySignupPattern.map((h: any) => {
-              const max = Math.max(...compStats.trends.hourlySignupPattern.map((x: any) => x.count), 1);
+            {compStats.trends.hourlySignupPattern.map((h: { hour: number; count: number }) => {
+              const max = Math.max(...compStats.trends.hourlySignupPattern.map((x: { hour: number; count: number }) => x.count), 1);
               const pct = (h.count / max) * 100;
               return (
                 <div key={h.hour} className="flex-1 flex flex-col items-center gap-0.5 group relative">
@@ -1588,7 +1668,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Recent Signups</h3>
           <div className="space-y-3">
-            {stats.recentUsers.map((u: any) => (
+            {stats.recentUsers.map((u: Profile) => (
               <div key={u.id} className="flex items-center gap-3">
                 <Avatar src={u.avatar_url} name={u.full_name || u.email} size="sm" />
                 <div className="min-w-0 flex-1">
@@ -1607,7 +1687,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
         <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
           <h3 className="text-sm font-semibold text-white mb-4">Recent Projects</h3>
           <div className="space-y-3">
-            {stats.recentProjects.map((p: any) => (
+            {stats.recentProjects.map((p: Project) => (
               <div key={p.id} className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-lg bg-[#E54E15] flex items-center justify-center text-xs font-bold text-white shrink-0">
                   {(p.title || '?')[0].toUpperCase()}
@@ -2076,12 +2156,12 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
 // Projects Tab
 
 function ProjectsTab({ projects, search, onSearchChange }: {
-  projects: any[];
+  projects: ProjectWithCounts[];
   search: string;
   onSearchChange: (s: string) => void;
 }) {
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
-  const [projectStats, setProjectStats] = useState<Record<string, any>>({});
+  const [projectStats, setProjectStats] = useState<Record<string, ProjectStatsDetail>>({});
 
   const loadProjectStats = async (projectId: string) => {
     if (projectStats[projectId]) {
@@ -2103,7 +2183,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
     ]);
 
     // Get word count from elements via scripts
-    const scriptIds = (scripts.data || []).map((s: any) => s.id);
+    const scriptIds = (scripts.data || []).map((s: { id: string }) => s.id);
     let wordCount = 0;
     let elementCount = 0;
     if (scriptIds.length > 0) {
@@ -2112,12 +2192,12 @@ function ProjectsTab({ projects, search, onSearchChange }: {
         .select('content', { count: 'exact' })
         .in('script_id', scriptIds);
       elementCount = count || 0;
-      wordCount = (elData || []).reduce((sum: number, el: any) => {
+      wordCount = (elData || []).reduce((sum: number, el: { content: string | null }) => {
         return sum + (el.content || '').trim().split(/\s+/).filter(Boolean).length;
       }, 0);
     }
 
-    const totalBudget = (budget.data || []).reduce((sum: number, b: any) => sum + (b.amount || 0), 0);
+    const totalBudget = (budget.data || []).reduce((sum: number, b: { amount: number | null }) => sum + (b.amount || 0), 0);
 
     setProjectStats({
       ...projectStats,
@@ -2571,17 +2651,17 @@ function EditUserModal({ user, onClose, onSave }: {
         <Input
           label="Full Name"
           value={fullName}
-          onChange={(e: any) => setFullName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
         />
         <Input
           label="Display Name"
           value={displayName}
-          onChange={(e: any) => setDisplayName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisplayName(e.target.value)}
         />
         <Input
           label="Role"
           value={role}
-          onChange={(e: any) => setRole(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRole(e.target.value)}
           placeholder="user / admin / writer / producer"
         />
 
@@ -2615,7 +2695,7 @@ function EditUserModal({ user, onClose, onSave }: {
             role,
             is_pro: isPro,
             pro_since: isPro && !user.is_pro ? new Date().toISOString() : isPro ? user.pro_since : null,
-          } as any)}>
+          })}>
             Save Changes
           </Button>
         </div>
@@ -2628,7 +2708,7 @@ function EditUserModal({ user, onClose, onSave }: {
 
 function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggleCommentHidden, onDeleteComment }: {
   posts: BlogPost[];
-  comments: any[];
+  comments: (BlogComment & { author: { full_name: string | null; avatar_url: string | null } | null })[];
   onNewPost: () => void;
   onEditPost: (post: BlogPost) => void;
   onDeletePost: (id: string) => void;
@@ -2764,17 +2844,17 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
   themes: ChallengeTheme[];
   challenges: CommunityChallenge[];
   onDeletePost: (id: string) => void;
-  onSaveCategory: (cat: any) => void;
+  onSaveCategory: (cat: Partial<CommunityCategory> & { id?: string }) => void;
   onDeleteCategory: (id: string) => void;
-  onSaveTheme: (theme: any) => void;
+  onSaveTheme: (theme: Partial<ChallengeTheme> & { id?: string }) => void;
   onDeleteTheme: (id: string) => void;
-  onCreateChallenge: (data: any) => void;
+  onCreateChallenge: (data: { title: string; description: string; starts_at: string; submissions_close_at: string; voting_close_at: string; reveal_at: string; prize_title?: string | null; prize_description?: string | null }) => void;
 }) {
   const [view, setView] = useState<'posts' | 'categories' | 'themes' | 'challenges' | 'productions'>('posts');
-  const [editingCat, setEditingCat] = useState<any>(null); // CommunityCategory | 'new'
-  const [editingTheme, setEditingTheme] = useState<any>(null);
+  const [editingCat, setEditingCat] = useState<CommunityCategory | 'new' | null>(null);
+  const [editingTheme, setEditingTheme] = useState<ChallengeTheme | 'new' | null>(null);
   const [showNewChallenge, setShowNewChallenge] = useState(false);
-  const [pendingProductions, setPendingProductions] = useState<any[]>([]);
+  const [pendingProductions, setPendingProductions] = useState<PendingProduction[]>([]);
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
 
   // New challenge form
@@ -2811,8 +2891,8 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
 
   const saveCat = () => {
     if (!catName.trim() || !catSlug.trim()) return;
-    const data: any = { name: catName.trim(), slug: catSlug.trim(), icon: catIcon.trim() || null, color: catColor.trim() || null, description: catDesc.trim() || null };
-    if (editingCat !== 'new') data.id = editingCat.id;
+    const data: Partial<CommunityCategory> & { id?: string } = { name: catName.trim(), slug: catSlug.trim(), icon: catIcon.trim() || null, color: catColor.trim() || null, description: catDesc.trim() || null };
+    if (editingCat !== 'new' && editingCat !== null) data.id = editingCat.id;
     onSaveCategory(data);
     setEditingCat(null);
   };
@@ -2828,8 +2908,8 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
 
   const saveTheme = () => {
     if (!thTitle.trim() || !thDesc.trim()) return;
-    const data: any = { title: thTitle.trim(), description: thDesc.trim(), genre_hint: thGenre.trim() || null, constraints: thConstraints.trim() || null, difficulty: 'intermediate' };
-    if (editingTheme !== 'new') { data.id = editingTheme.id; data.is_active = editingTheme.is_active; }
+    const data: Partial<ChallengeTheme> & { id?: string } = { title: thTitle.trim(), description: thDesc.trim(), genre_hint: thGenre.trim() || null, constraints: thConstraints.trim() || null, difficulty: 'intermediate' };
+    if (editingTheme !== 'new' && editingTheme !== null) { data.id = editingTheme.id; data.is_active = editingTheme.is_active; }
     onSaveTheme(data);
     setEditingTheme(null);
   };
@@ -2897,7 +2977,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
         ] as const).map((t) => (
           <button
             key={t.k}
-            onClick={() => setView(t.k as any)}
+            onClick={() => setView(t.k as 'posts' | 'categories' | 'themes' | 'challenges' | 'productions')}
             className={cn(
               'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
               view === t.k ? 'bg-surface-700 text-white shadow-sm' : 'text-surface-400 hover:text-white'
@@ -2922,7 +3002,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
                 </div>
                 <p className="text-sm font-medium text-white truncate">{post.title}</p>
                 <p className="text-xs text-surface-500 mt-0.5">
-                  by {(post.author as any)?.full_name || (post.author as any)?.email || 'Unknown'} · {timeAgo(post.created_at)} · ↑{post.upvote_count} · 💬{post.comment_count}
+                  by {post.author?.full_name || post.author?.email || 'Unknown'} · {timeAgo(post.created_at)} · ↑{post.upvote_count} · 💬{post.comment_count}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -2942,7 +3022,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
             <p className="text-center text-surface-400 text-sm py-12">No productions submitted yet.</p>
           ) : (
             <div className="space-y-3">
-              {pendingProductions.map((prod: any) => (
+              {pendingProductions.map((prod: PendingProduction) => (
                 <div key={prod.id} className="rounded-xl border border-surface-800 bg-surface-900/50 p-4">
                   <div className="flex items-start gap-4">
                     {prod.thumbnail_url && (
@@ -3228,19 +3308,19 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
       <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
         {/* Meta fields */}
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Title" value={title} onChange={(e: any) => setTitle(e.target.value)} placeholder="Post title" />
-          <Input label="Slug" value={slug} onChange={(e: any) => setSlug(e.target.value)} placeholder="url-friendly-slug" />
+          <Input label="Title" value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Post title" />
+          <Input label="Slug" value={slug} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSlug(e.target.value)} placeholder="url-friendly-slug" />
         </div>
-        <Textarea label="Excerpt" value={excerpt} onChange={(e: any) => setExcerpt(e.target.value)} placeholder="Brief description shown in listings..." rows={2} />
+        <Textarea label="Excerpt" value={excerpt} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setExcerpt(e.target.value)} placeholder="Brief description shown in listings..." rows={2} />
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Cover Image URL" value={coverUrl} onChange={(e: any) => setCoverUrl(e.target.value)} placeholder="https://..." />
-          <Input label="Tags (comma-separated)" value={tags} onChange={(e: any) => setTags(e.target.value)} placeholder="update, feature, devlog" />
+          <Input label="Cover Image URL" value={coverUrl} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCoverUrl(e.target.value)} placeholder="https://..." />
+          <Input label="Tags (comma-separated)" value={tags} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value)} placeholder="update, feature, devlog" />
         </div>
         <div className="grid grid-cols-2 gap-4 items-end">
           <Select
             label="Status"
             value={status}
-            onChange={(e: any) => setStatus(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value as CommunityPostStatus)}
             options={[
               { value: 'draft', label: 'Draft' },
               { value: 'published', label: 'Published' },
@@ -3290,7 +3370,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
                 <Input
                   placeholder="Section heading (optional)"
                   value={section.heading}
-                  onChange={(e: any) => updateSection(idx, 'heading', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSection(idx, 'heading', e.target.value)}
                 />
                 <div className="mt-2">
                   <textarea
@@ -4166,7 +4246,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
   const [payoutAmount, setPayoutAmount] = useState('');
   const [payoutPeriodStart, setPayoutPeriodStart] = useState('');
   const [payoutPeriodEnd, setPayoutPeriodEnd] = useState('');
-  const [payoutPreview, setPayoutPreview] = useState<any[]>([]);
+  const [payoutPreview, setPayoutPreview] = useState<PayoutPreviewItem[]>([]);
   const [payoutBatchId, setPayoutBatchId] = useState<string | null>(null);
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [batches, setBatches] = useState<PayoutBatch[]>([]);
@@ -4229,7 +4309,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
       .select('id,creator_id,signups_count,proportion,amount,creator:creator_profiles!creator_payout_items_creator_id_fkey(ref_code,profile:profiles!creator_profiles_user_id_fkey(full_name,username))')
       .eq('batch_id', batch.id)
       .order('amount', { ascending: false });
-    setPayoutPreview(items || []);
+    setPayoutPreview((items as unknown as PayoutPreviewItem[]) || []);
     loadBatches();
     setPayoutLoading(false);
   };
@@ -4393,7 +4473,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-800/50">
-                  {payoutPreview.map((item: any) => (
+                  {payoutPreview.map((item: PayoutPreviewItem) => (
                     <tr key={item.id}>
                       <td className="py-2 text-white">{item.creator?.profile?.full_name || item.creator?.profile?.username || '—'} <span className="text-surface-500 text-xs">/ref/{item.creator?.ref_code}</span></td>
                       <td className="py-2 text-right text-surface-300">{item.signups_count}</td>

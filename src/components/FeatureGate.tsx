@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 // FeatureGate — Conditionally renders children based on
@@ -96,7 +97,7 @@ type FeatureGateProps = {
   children: React.ReactNode;
 };
 
-export function FeatureGate({ feature, fallback = null, children }: FeatureGateProps) {
+function FeatureGateInner({ feature, fallback = null, children }: FeatureGateProps) {
   const { hasAccess, loading } = useFeatureFlags();
   const flagKey = resolveFlag(feature);
 
@@ -107,6 +108,8 @@ export function FeatureGate({ feature, fallback = null, children }: FeatureGateP
 
   return <>{children}</>;
 }
+
+export const FeatureGate = React.memo(FeatureGateInner);
 
 /**
  * Imperative check — useful inside callbacks, array filters, etc.

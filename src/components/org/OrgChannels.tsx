@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Button, Card, Input, Modal, toast } from '@/components/ui';
+import { Button, Input, Modal, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import type { OrgChannel, OrgChannelMessage, OrgChannelMember, Profile } from '@/lib/types';
 

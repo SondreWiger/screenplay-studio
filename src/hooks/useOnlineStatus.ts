@@ -66,11 +66,13 @@ export function useOnlineStatus(): OnlineStatus {
   }, []);
 
   // Poll pending count every 10 s so the badge stays accurate
+  // Only poll when online — IndexedDB reads still work offline but are wasteful
   useEffect(() => {
+    if (!isOnline) return;
     refreshPendingCount();
     const interval = setInterval(refreshPendingCount, 10_000);
     return () => clearInterval(interval);
-  }, [refreshPendingCount]);
+  }, [refreshPendingCount, isOnline]);
 
   return { isOnline, pendingCount, isSyncing, lastSyncedAt, triggerSync };
 }

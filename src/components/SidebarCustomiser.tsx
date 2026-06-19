@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/components/TranslationProvider';
 import type { SidebarSection, SidebarNavItem } from '@/lib/types';

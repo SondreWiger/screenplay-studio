@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, LoadingPage, Modal, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
+import { Button, Card, Badge, LoadingPage, Modal, toast, ToastContainer } from '@/components/ui';
 import { timeAgo } from '@/lib/utils';
 
 // Revisions (Diff Comparison) — Pro Feature

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Button, Input, SearchInput, EmptyState, LoadingSpinner, toast, Select, Textarea } from '@/components/ui';
+import { Button, SearchInput, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { QuoteCard } from '@/components/quotes/QuoteCard';
 import { QuoteForm } from '@/components/quotes/QuoteForm';
 import { createClient } from '@/lib/supabase/client';

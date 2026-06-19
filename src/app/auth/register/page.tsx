@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { validatePassword } from '@/lib/security';
 import { sendWelcomeEmailAction } from '@/lib/email-actions';
+import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
 
 // Map raw Supabase/auth error messages to user-friendly ones
@@ -136,12 +137,12 @@ function RegisterForm() {
               body: JSON.stringify({ ref_code: ref, new_user_id: data.user.id }),
             }).then(() => {
               try { localStorage.removeItem('creator_ref'); } catch { /* ok */ }
-            }).catch(() => {});
+            }).catch((err) => logger.error('Auth', 'Failed to track referral signup:', err));
           }
         } catch { /* ok */ }
 
         // Send welcome email (best-effort, fire-and-forget)
-        sendWelcomeEmailAction(formEmail, formName).catch(() => {});
+        sendWelcomeEmailAction(formEmail, formName).catch((err) => logger.error('Auth', 'Failed to send welcome email:', err));
       }
 
       if (data?.session) {

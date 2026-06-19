@@ -87,6 +87,11 @@ export function useProFeatures(): ProFeatures {
 
   const activateDevBypass = useCallback(async () => {
     if (!user) return;
+    // SECURITY: Only allow dev bypass in development environment
+    if (process.env.NODE_ENV !== 'development') {
+      console.warn('[useProFeatures] activateDevBypass blocked in production');
+      return;
+    }
     const supabase = createClient();
 
     // Create a dev bypass subscription

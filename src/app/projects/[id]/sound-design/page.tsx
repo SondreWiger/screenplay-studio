@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore } from '@/lib/stores';
-import { Card, Button, Badge, LoadingSpinner, toast } from '@/components/ui';
+import { Card, Button, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 

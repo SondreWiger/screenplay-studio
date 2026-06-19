@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Badge, LoadingSpinner } from '@/components/ui';
+
+import { LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastSource, BroadcastSwitcherState } from '@/lib/types';
 

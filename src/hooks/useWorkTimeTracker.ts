@@ -48,6 +48,17 @@ const ACTIVITY_EVENTS = [
   'pointermove',
 ] as const;
 
+// Milestone definitions — defined once, not recreated every 30s
+const MILESTONES: Array<{ at: number; fire: () => void }> = [
+  { at: 1,  fire: () => toast.success(pickToast(WORK_1H))  },
+  { at: 2,  fire: () => toast.success(pickToast(WORK_2H))  },
+  { at: 3,  fire: () => toast.success(pickToast(WORK_3H))  },
+  { at: 4,  fire: () => toast.warning(pickToast(WORK_4H))  },
+  { at: 5,  fire: () => toast.success(pickToast(WORK_5H))  },
+  { at: 12, fire: () => toast.warning(pickToast(WORK_12H)) },
+  { at: 24, fire: () => toast.error(pickToast(WORK_24H))   },
+];
+
 // session key
 // One key per browser tab: stored in sessionStorage so it's lost
 // when the tab closes, creating a fresh session on next visit.
@@ -165,16 +176,6 @@ export function useWorkTimeTracker({
         // Accumulate active seconds and fire milestone toasts
         sessionSecondsRef.current += HEARTBEAT_INTERVAL_MS / 1000;
         const hrs = sessionSecondsRef.current / 3600;
-
-        const MILESTONES: Array<{ at: number; fire: () => void }> = [
-          { at: 1,  fire: () => toast.success(pickToast(WORK_1H))  },
-          { at: 2,  fire: () => toast.success(pickToast(WORK_2H))  },
-          { at: 3,  fire: () => toast.success(pickToast(WORK_3H))  },
-          { at: 4,  fire: () => toast.warning(pickToast(WORK_4H))  },
-          { at: 5,  fire: () => toast.success(pickToast(WORK_5H))  },
-          { at: 12, fire: () => toast.warning(pickToast(WORK_12H)) },
-          { at: 24, fire: () => toast.error(pickToast(WORK_24H))   },
-        ];
 
         for (const milestone of MILESTONES) {
           if (hrs >= milestone.at && !firedMilestonesRef.current.has(milestone.at)) {

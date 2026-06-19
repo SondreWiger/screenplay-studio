@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Badge } from '@/components/ui';
+
 import { cn } from '@/lib/utils';
 import type { Scene, SceneStatus } from '@/lib/types';
 

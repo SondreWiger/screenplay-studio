@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Modal, Input, Badge, LoadingSpinner } from '@/components/ui';
+import { Button, Modal, Input, Badge, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { MoodBoardItem, MoodBoardItemType, MoodBoardSection, MoodBoardConnection } from '@/lib/types';

@@ -1,7 +1,28 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/client';
-import { getChallengePhase } from '@/lib/utils';
+import { getChallengePhase, formatDateTime } from '@/lib/utils';
 import { sendDiscordWebhook, announceChallenge, announceBlogPost, announceBlogPostWithSeries, type DiscordEmbed } from '@/lib/discord';
+import { getThemeEmoji, getPhaseEmoji } from '@/lib/constants';
+import type { ChallengeSubmission } from '@/lib/types/gamification';
+
+interface ChallengeQueryResult {
+  id: string;
+  title: string;
+  description: string;
+  theme_id: string | null;
+  starts_at: string;
+  submissions_close_at: string;
+  voting_close_at: string;
+  reveal_at: string;
+  submission_count: number;
+  prize_title: string | null;
+  prize_description: string | null;
+  status: string;
+  challenge_type: string;
+  week_number: number | null;
+  year: number | null;
+  created_at: string;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +37,7 @@ export async function GET() {
       .select(`
         id,
         title,
+        description,
         theme_id,
         starts_at,
         submissions_close_at,
@@ -165,9 +187,9 @@ export async function GET() {
   }
 }
 
-async function announceChallengeStart(challenge: any): Promise<void> {
+async function announceChallengeStart(challenge: ChallengeQueryResult): Promise<void> {
   const phaseEmoji = getPhaseEmoji('upcoming');
-  const themeEmoji = getThemeEmoji(challenge);
+  const themeEmoji = getThemeEmoji(challenge.theme_id);
 
   await sendDiscordWebhook({
     content: `🔥 **NEW CHALLENGE DROPPED!** ${themeEmoji} **${challenge.title}**\n\n🎭 The theme is set! Get ready to write. The challenge just kicked off! 🎭\n\n🏃 Hurry, submissions close soon! Time to create something special. ✨`,
@@ -179,7 +201,7 @@ async function announceChallengeStart(challenge: any): Promise<void> {
         fields: [
           {
             name: '⏰ Starting Right Now!',
-            value: `The challenge just launched! Get writing! 🎯\\n\\n*Current time:* ${formatDate(new Date().toISOString())}`,            inline: false
+            value: `The challenge just launched! Get writing! 🎯\\n\\n*Current time:* ${formatDateTime(new Date().toISOString())}`,            inline: false
           },
           {
             name: '📝 How to Participate',
@@ -205,8 +227,8 @@ async function announceChallengeStart(challenge: any): Promise<void> {
   });
 }
 
-async function announcePhaseChange(challenge: any, fromPhase: string, toPhase: string): Promise<void> {
-  const themeEmoji = getThemeEmoji(challenge);
+async function announcePhaseChange(challenge: ChallengeQueryResult, fromPhase: string, toPhase: string): Promise<void> {
+  const themeEmoji = getThemeEmoji(challenge.theme_id);
 
   await sendDiscordWebhook({
     content: `⏰ **PHASE CHANGE!** ${themeEmoji} **${challenge.title}**\n\n🚀 Moving from **${getPhaseLabel(fromPhase)}** to **${getPhaseLabel(toPhase)}**!\n\n📋 ${getPhaseChangeMessage(fromPhase, toPhase)}`,
@@ -244,8 +266,8 @@ async function announcePhaseChange(challenge: any, fromPhase: string, toPhase: s
   });
 }
 
-async function announceWinner(challenge: any): Promise<void> {
-  const themeEmoji = getThemeEmoji(challenge);
+async function announceWinner(challenge: ChallengeQueryResult): Promise<void> {
+  const themeEmoji = getThemeEmoji(challenge.theme_id);
   const supabase = createClient();
 
   const { data: submissions } = await supabase
@@ -259,7 +281,7 @@ async function announceWinner(challenge: any): Promise<void> {
       author:profiles!author_id(full_name,avatar_url)
     `)
     .eq('challenge_id', challenge.id)
-    .order('placement', { ascending: true }) as any;
+    .order('placement', { ascending: true }) as { data: (ChallengeSubmission & { author: { full_name: string | null; avatar_url: string | null } })[] | null };
 
   if (!submissions || submissions.length === 0) {
     await sendDiscordWebhook({
@@ -290,7 +312,7 @@ async function announceWinner(challenge: any): Promise<void> {
 
   const embed: DiscordEmbed = {
     title: `🏆 ${challenge.title}`,
-    description: `**Congratulations to the winner!** 🎉\\n\\n${(winner.author as any).full_name || 'Anonymous'} has been crowned champion of this week's challenge! 🎭`,
+    description: `**Congratulations to the winner!** 🎉\\n\\n${winner.author?.full_name || 'Anonymous'} has been crowned champion of this week's challenge! 🎭`,
     color: 0xFFD700,
     fields: [
       {
@@ -298,13 +320,13 @@ async function announceWinner(challenge: any): Promise<void> {
         value: `
           **${winner.title}**
           ${winner.description || 'No description'}
-          ${(winner.author as any)?.full_name ? `\\nBy: ${(winner.author as any).full_name}` : '\\nBy: Anonymous'}
+          ${winner.author?.full_name ? `\\nBy: ${winner.author.full_name}` : '\\nBy: Anonymous'}
           ${winner.vote_count > 0 ? `\nVotes: ${winner.vote_count}` : ''}
         `,        inline: false
       },
       {
         name: '📊 Complete Rankings',
-        value: submissions.map((sub: any, idx: any) => (
+        value: submissions.map((sub: ChallengeSubmission & { author: { full_name: string | null } }, idx: number) => (
           `${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`} ${sub.title}`
         )).join('\\n'),
         inline: false
@@ -324,8 +346,8 @@ async function announceWinner(challenge: any): Promise<void> {
     timestamp: new Date().toISOString(),
   };
 
-  if ((winner.author as any)?.avatar_url) {
-    embed.thumbnail = { url: (winner.author as any).avatar_url };
+  if (winner.author?.avatar_url) {
+    embed.thumbnail = { url: winner.author.avatar_url };
   }
 
   if (runnerUp) {
@@ -333,38 +355,27 @@ async function announceWinner(challenge: any): Promise<void> {
       name: '🥈 2nd Place',
       value: `
         **${runnerUp.title}**
-        ${(runnerUp.author as any)?.full_name ? `By: ${(runnerUp.author as any).full_name}` : 'Anonymous'}
+        ${runnerUp.author?.full_name ? `By: ${runnerUp.author.full_name}` : 'Anonymous'}
         ${runnerUp.vote_count > 0 ? `Votes: ${runnerUp.vote_count}` : ''}
       `,      inline: false
     });
   }
 
   await sendDiscordWebhook({
-    content: `🏆 **WINNER ANNOUNCED!** ${themeEmoji} **${challenge.title}**\\n\\n${(winner.author as any)?.full_name || 'Anonymous'} has won this week's challenge! 🎭\\n\\nCheck the community page for all the details and the full gallery of submissions!`,
+    content: `🏆 **WINNER ANNOUNCED!** ${themeEmoji} **${challenge.title}**\\n\\n${winner.author?.full_name || 'Anonymous'} has won this week's challenge! 🎭\\n\\nCheck the community page for all the details and the full gallery of submissions!`,
     embeds: [embed],
     username: 'Screenplay Studio Bot',
     avatar_url: 'https://screenplay.studio/logo.png',
   });
 }
 
-function getChallengeDescription(challenge: any): string {
+function getChallengeDescription(challenge: ChallengeQueryResult): string {
   let description = challenge.description || '';
   if (challenge.theme_id && !description.includes(challenge.theme_id)) {
     if (description) description += '\n\n';
     description += `**Theme:** ${challenge.theme_id}`;
   }
   return description || 'A weekly writing challenge with a random theme.';
-}
-
-function getPhaseEmoji(phase: string): string {
-  switch (phase) {
-    case 'upcoming': return '🚀';
-    case 'submissions': return '📝';
-    case 'voting': return '🗳️';
-    case 'completed': return '🏆';
-    case 'reveal_pending': return '⏳';
-    default: return '🎭';
-  }
 }
 
 function getPhaseLabel(phase: string): string {
@@ -387,26 +398,6 @@ function getPhaseColor(phase: string): number {
     case 'reveal_pending': return 0xFF8C00;
     default: return 0x808080;
   }
-}
-
-function getThemeEmoji(challenge: any): string {
-  if (!challenge.theme_id) return '🎭';
-  const theme = challenge.theme_id.toLowerCase();
-  if (theme.includes('day') || theme.includes('time')) return '⏰';
-  if (theme.includes('stranger') || theme.includes('person')) return '👤';
-  if (theme.includes('wrong') || theme.includes('letter')) return '✉️';
-  if (theme.includes('room') || theme.includes('silent')) return '🏠';
-  if (theme.includes('train') || theme.includes('film')) return '🚂';
-  if (theme.includes('night') || theme.includes('dark')) return '🌙';
-  if (theme.includes('loop') || theme.includes('time')) return '🔄';
-  if (theme.includes('heist') || theme.includes('money')) return '💰';
-  if (theme.includes('contact') || theme.includes('first')) return '📞';
-  if (theme.includes('party') || theme.includes('dinner')) return '🍽️';
-  if (theme.includes('unreliable')) return '🤔';
-  if (theme.includes('chase') || theme.includes('pursuit')) return '🏃';
-  if (theme.includes('backwards')) return '⬅️';
-  if (theme.includes('audition')) return '🎭';
-  return '🎪';
 }
 
 function getPhaseChangeMessage(fromPhase: string, toPhase: string): string {
@@ -454,20 +445,15 @@ function getPhaseActions(phase: string): string {
   }
 }
 
-function getNextDeadline(challenge: any, phase: string): string {
+function getNextDeadline(challenge: ChallengeQueryResult, phase: string): string {
   switch (phase) {
     case 'submissions':
-      return `Closes: ${formatDate(challenge.submissions_close_at)}`;
+      return `Closes: ${formatDateTime(challenge.submissions_close_at)}`;
     case 'voting':
-      return `Closes: ${formatDate(challenge.voting_close_at)}`;
+      return `Closes: ${formatDateTime(challenge.voting_close_at)}`;
     case 'reveal_pending':
-      return `Reveals: ${formatDate(challenge.reveal_at)}`;
+      return `Reveals: ${formatDateTime(challenge.reveal_at)}`;
     default:
       return 'N/A';
   }
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
+import logger from '@/lib/logger';
 import type { Profile } from '@/lib/types';
 
 // Safety timeout — if auth init takes longer than this, force loading to false
@@ -12,12 +13,13 @@ const AUTH_INIT_TIMEOUT_MS = 8_000;
 // Helper: race a promise against a timeout. Rejects on timeout.
 // Accepts PromiseLike (e.g. Supabase PostgrestBuilder) as well as native Promises.
 function withTimeout<T>(promise: PromiseLike<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
   return Promise.race([
     Promise.resolve(promise),
     new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Timeout: ${label} took longer than ${ms}ms`)), ms)
+      timer = setTimeout(() => reject(new Error(`Timeout: ${label} took longer than ${ms}ms`)), ms)
     ),
-  ]);
+  ]).finally(() => clearTimeout(timer));
 }
 
 export function useAuth() {
@@ -35,7 +37,7 @@ export function useAuth() {
     // This prevents permanent loading screens from hung network requests.
     const safetyTimer = setTimeout(() => {
       if (useAuthStore.getState().loading) {
-        console.warn('[useAuth] Safety timeout reached — forcing loading to false');
+        logger.warn('useAuth', 'Safety timeout reached — forcing loading to false');
         setLoading(false);
       }
     }, AUTH_INIT_TIMEOUT_MS);
@@ -82,7 +84,7 @@ export function useAuth() {
             supabase.from('profiles')
               .update({ last_seen: new Date().toISOString() })
               .eq('id', authUser.id)
-          ).then(() => {}).catch((err) => console.error('Failed to update last_seen:', err));
+          ).then(() => {}).catch((err) => logger.error('useAuth', 'Failed to update last_seen:', err));
 
           setUser(profile as Profile);
           // Apply global accent color from profile
@@ -109,12 +111,12 @@ export function useAuth() {
             email: authUser.email || '',
             full_name: minimalProfile.full_name,
             avatar_url: minimalProfile.avatar_url,
-          })).catch(() => {});
+          })).catch((err) => logger.error('useAuth', 'Failed to create profile:', err));
 
           setUser(minimalProfile);
         }
       } catch (err) {
-        console.error('Auth initialization error:', err);
+        logger.error('useAuth', 'Auth initialization error:', err);
         setUser(null);
       } finally {
         setLoading(false);
@@ -150,7 +152,7 @@ export function useAuth() {
                 supabase.from('profiles')
                   .update({ last_seen: new Date().toISOString() })
                   .eq('id', session.user.id)
-              ).then(() => {}).catch((err) => console.error('Failed to update last_seen:', err));
+              ).then(() => {}).catch((err) => logger.error('useAuth', 'Failed to update last_seen:', err));
 
               setUser(profile as Profile);
               if (typeof document !== 'undefined' && (profile as Profile).accent_color) {
@@ -170,7 +172,7 @@ export function useAuth() {
                 email: session.user.email || '',
                 full_name: newProfile.full_name,
                 avatar_url: newProfile.avatar_url,
-              })).catch(() => {});
+              })).catch((err) => logger.error('useAuth', 'Failed to create profile:', err));
               setUser(newProfile);
             }
           } catch {

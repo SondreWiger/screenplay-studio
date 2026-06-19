@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { usePresenceStore, useAuthStore, useScriptStore } from '@/lib/stores';
+import logger from '@/lib/logger';
 import type { UserPresence, ScriptElement } from '@/lib/types';
 
 export function useRealtime(projectId: string) {
@@ -10,6 +11,9 @@ export function useRealtime(projectId: string) {
   const { setOnlineUsers } = usePresenceStore();
   // Only grab setElements — avoid capturing `elements` in the closure (stale)
   const { setElements } = useScriptStore();
+
+  // Store a ref to the presence channel so updatePresence can reuse it
+  const presenceChannelRef = useRef<ReturnType<typeof createClient.prototype.channel> | null>(null);
 
   useEffect(() => {
     if (!projectId || !user) return;
@@ -88,21 +92,24 @@ export function useRealtime(projectId: string) {
         }
       });
 
+    presenceChannelRef.current = presenceChannel;
+
     return () => {
       supabase.removeChannel(elementsChannel);
       supabase.removeChannel(presenceChannel);
+      presenceChannelRef.current = null;
     };
   }, [projectId, user?.id]);
 
   const updatePresence = useCallback(
     async (page: string, elementId?: string) => {
       if (!user || !projectId) return;
-      const supabase = createClient();
 
-      // Update presence channel (realtime) with the page slug + focused element
-      const presenceChannel = supabase.channel(`presence-${projectId}`);
+      // Reuse the existing channel instead of creating a new one each call
+      if (!presenceChannelRef.current) return;
+
       try {
-        await presenceChannel.track({
+        await presenceChannelRef.current.track({
           user_id: user.id,
           project_id: projectId,
           current_page: page,
@@ -113,9 +120,12 @@ export function useRealtime(projectId: string) {
           avatar_url: user.avatar_url || '',
           focused_element_id: elementId || null,
         });
-      } catch {} // channel may not be joined yet
+      } catch (err) {
+        logger.debug('useRealtime', 'Presence track failed:', err);
+      }
 
       // Also persist to DB
+      const supabase = createClient();
       await supabase.from('user_presence').upsert({
         user_id: user.id,
         project_id: projectId,

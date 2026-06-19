@@ -114,195 +114,195 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
   const runSearch = useCallback(async (q: string) => {
     if (!user?.id) return;
     setLoading(true);
-    const supabase = createClient();
-    const like = `%${q}%`;
+    try {
+      const supabase = createClient();
+      const like = `%${q}%`;
 
-    // Phase 1: Resolve accessible project IDs
-    // Security: build an explicit allowlist from projects the user owns or is
-    // a member of. Every project-scoped query below is filtered to this set.
-    // Supabase RLS also enforces access at the DB level (double protection).
-    const [{ data: owned }, { data: membered }] = await Promise.all([
-      supabase.from('projects').select('id, title').eq('created_by', user.id),
-      supabase.from('project_members')
-        .select('project_id, project:projects!inner(id, title)').eq('user_id', user.id),
-    ]);
+      // Phase 1: Resolve accessible project IDs
+      const [{ data: owned }, { data: membered }] = await Promise.all([
+        supabase.from('projects').select('id, title').eq('created_by', user.id),
+        supabase.from('project_members')
+          .select('project_id, project:projects!inner(id, title)').eq('user_id', user.id),
+      ]);
 
-    const projectMap: Record<string, string> = {};
-    (owned || []).forEach((p: any) => { projectMap[p.id] = p.title || 'Untitled'; });
-    (membered || []).forEach((m: any) => {
-      if (m.project?.id) projectMap[m.project.id] = m.project.title || 'Untitled';
-    });
-    const accessibleIds = Object.keys(projectMap);
-    if (accessibleIds.length === 0) { setResults([]); setLoading(false); return; }
+      const projectMap: Record<string, string> = {};
+      (owned || []).forEach((p: { id: string; title: string | null }) => { projectMap[p.id] = p.title || 'Untitled'; });
+      (membered || []).forEach((m: { project_id?: string; project?: { id: string; title: string | null } | { id: string; title: string | null }[] | null }) => {
+        const proj = Array.isArray(m.project) ? m.project[0] : m.project;
+        if (proj?.id) projectMap[proj.id] = proj.title || 'Untitled';
+      });
+      const accessibleIds = Object.keys(projectMap);
+      if (accessibleIds.length === 0) { setResults([]); setLoading(false); return; }
 
-    // Phase 2: Resolve script IDs + channel IDs
-    // script_elements / channel_messages don't have direct project_id columns.
-    const [{ data: scriptRows }, { data: channelRows }] = await Promise.all([
-      supabase.from('scripts').select('id, project_id, title').in('project_id', accessibleIds),
-      supabase.from('project_channels').select('id, project_id, name').in('project_id', accessibleIds),
-    ]);
+      // Phase 2: Resolve script IDs + channel IDs
+      const [{ data: scriptRows }, { data: channelRows }] = await Promise.all([
+        supabase.from('scripts').select('id, project_id, title').in('project_id', accessibleIds),
+        supabase.from('project_channels').select('id, project_id, name').in('project_id', accessibleIds),
+      ]);
 
-    const scriptIdToProjectId: Record<string, string> = {};
-    const scriptIdToTitle: Record<string, string> = {};
-    (scriptRows || []).forEach((s: any) => {
-      scriptIdToProjectId[s.id] = s.project_id;
-      scriptIdToTitle[s.id] = s.title || 'Untitled Script';
-    });
-    const accessibleScriptIds = Object.keys(scriptIdToProjectId);
+      const scriptIdToProjectId: Record<string, string> = {};
+      const scriptIdToTitle: Record<string, string> = {};
+      (scriptRows || []).forEach((s: { id: string; project_id: string; title: string | null }) => {
+        scriptIdToProjectId[s.id] = s.project_id;
+        scriptIdToTitle[s.id] = s.title || 'Untitled Script';
+      });
+      const accessibleScriptIds = Object.keys(scriptIdToProjectId);
 
-    const channelIdToInfo: Record<string, { project_id: string; name: string }> = {};
-    (channelRows || []).forEach((c: any) => {
-      channelIdToInfo[c.id] = { project_id: c.project_id, name: c.name };
-    });
-    const accessibleChannelIds = Object.keys(channelIdToInfo);
+      const channelIdToInfo: Record<string, { project_id: string; name: string }> = {};
+      (channelRows || []).forEach((c: { id: string; project_id: string; name: string }) => {
+        channelIdToInfo[c.id] = { project_id: c.project_id, name: c.name };
+      });
+      const accessibleChannelIds = Object.keys(channelIdToInfo);
 
-    // Phase 3: Parallel content searches
-    const N = 4;
-    const [
-      prjRes, scrRes, lineRes, chrRes, locRes,
-      scnRes, ideaRes, docRes, chatRes, dmRes, cntRes, stoRes,
-      ensembleRes, stageCueRes,
-    ] = await Promise.all([
-      supabase.from('projects').select('id, title, logline, project_type')
-        .in('id', accessibleIds).ilike('title', like).limit(N),
-      supabase.from('scripts').select('id, title, project_id, script_type')
-        .in('project_id', accessibleIds).ilike('title', like).limit(N),
-      accessibleScriptIds.length > 0
-        ? supabase.from('script_elements')
-            .select('id, content, element_type, sort_order, script_id')
-            .in('script_id', accessibleScriptIds)
-            .not('element_type', 'in', '("page_break","transition")')
-            .eq('is_omitted', false)
-            .ilike('content', like).limit(N)
-        : Promise.resolve({ data: [] }),
-      supabase.from('characters').select('id, name, project_id, role')
-        .in('project_id', accessibleIds).ilike('name', like).limit(N),
-      supabase.from('locations').select('id, name, project_id, location_type')
-        .in('project_id', accessibleIds).ilike('name', like).limit(N),
-      supabase.from('scenes').select('id, scene_heading, project_id, synopsis, scene_number')
-        .in('project_id', accessibleIds)
-        .or(`scene_heading.ilike.${like},synopsis.ilike.${like}`).limit(N),
-      supabase.from('ideas').select('id, title, project_id, category')
-        .in('project_id', accessibleIds).ilike('title', like).limit(N),
-      supabase.from('project_documents').select('id, title, project_id, doc_type')
-        .in('project_id', accessibleIds).ilike('title', like).limit(N),
-      accessibleChannelIds.length > 0
-        ? supabase.from('channel_messages')
-            .select('id, content, channel_id')
-            .in('channel_id', accessibleChannelIds)
-            .eq('is_deleted', false).ilike('content', like).limit(N)
-        : Promise.resolve({ data: [] }),
-      // DMs: RLS enforces conversation_members check at DB level — no extra filter needed
-      supabase.from('direct_messages')
-        .select('id, content, conversation_id')
-        .eq('is_deleted', false).ilike('content', like).limit(N),
-      supabase.from('broadcast_contacts').select('id, name, category, project_id')
-        .in('project_id', accessibleIds).ilike('name', like).limit(N),
-      supabase.from('broadcast_stories').select('id, headline, project_id, story_type')
-        .in('project_id', accessibleIds).ilike('headline', like).limit(N),
-      // Stage play — ensemble members
-      supabase.from('stage_ensemble_members')
-        .select('id, actor_name, character_name, ensemble_group, project_id')
-        .in('project_id', accessibleIds)
-        .or(`actor_name.ilike.${like},character_name.ilike.${like}`).limit(N),
-      // Stage play — cue sheet
-      supabase.from('stage_cues')
-        .select('id, cue_number, description, cue_type, act_number, project_id')
-        .in('project_id', accessibleIds)
-        .or(`cue_number.ilike.${like},description.ilike.${like}`).limit(N),
-    ]);
+      // Phase 3: Parallel content searches
+      const N = 4;
+      const [
+        prjRes, scrRes, lineRes, chrRes, locRes,
+        scnRes, ideaRes, docRes, chatRes, dmRes, cntRes, stoRes,
+        ensembleRes, stageCueRes,
+      ] = await Promise.all([
+        supabase.from('projects').select('id, title, logline, project_type')
+          .in('id', accessibleIds).ilike('title', like).limit(N),
+        supabase.from('scripts').select('id, title, project_id, script_type')
+          .in('project_id', accessibleIds).ilike('title', like).limit(N),
+        accessibleScriptIds.length > 0
+          ? supabase.from('script_elements')
+              .select('id, content, element_type, sort_order, script_id')
+              .in('script_id', accessibleScriptIds)
+              .not('element_type', 'in', '("page_break","transition")')
+              .eq('is_omitted', false)
+              .ilike('content', like).limit(N)
+          : Promise.resolve({ data: [] }),
+        supabase.from('characters').select('id, name, project_id, role')
+          .in('project_id', accessibleIds).ilike('name', like).limit(N),
+        supabase.from('locations').select('id, name, project_id, location_type')
+          .in('project_id', accessibleIds).ilike('name', like).limit(N),
+        supabase.from('scenes').select('id, scene_heading, project_id, synopsis, scene_number')
+          .in('project_id', accessibleIds)
+          .or(`scene_heading.ilike.${like},synopsis.ilike.${like}`).limit(N),
+        supabase.from('ideas').select('id, title, project_id, category')
+          .in('project_id', accessibleIds).ilike('title', like).limit(N),
+        supabase.from('project_documents').select('id, title, project_id, doc_type')
+          .in('project_id', accessibleIds).ilike('title', like).limit(N),
+        accessibleChannelIds.length > 0
+          ? supabase.from('channel_messages')
+              .select('id, content, channel_id')
+              .in('channel_id', accessibleChannelIds)
+              .eq('is_deleted', false).ilike('content', like).limit(N)
+          : Promise.resolve({ data: [] }),
+        supabase.from('direct_messages')
+          .select('id, content, conversation_id')
+          .eq('is_deleted', false).ilike('content', like).limit(N),
+        supabase.from('broadcast_contacts').select('id, name, category, project_id')
+          .in('project_id', accessibleIds).ilike('name', like).limit(N),
+        supabase.from('broadcast_stories').select('id, headline, project_id, story_type')
+          .in('project_id', accessibleIds).ilike('headline', like).limit(N),
+        supabase.from('stage_ensemble_members')
+          .select('id, actor_name, character_name, ensemble_group, project_id')
+          .in('project_id', accessibleIds)
+          .or(`actor_name.ilike.${like},character_name.ilike.${like}`).limit(N),
+        supabase.from('stage_cues')
+          .select('id, cue_number, description, cue_type, act_number, project_id')
+          .in('project_id', accessibleIds)
+          .or(`cue_number.ilike.${like},description.ilike.${like}`).limit(N),
+      ]);
 
-    // Phase 4: Map to SearchResult[]
-    const mapped: SearchResult[] = [];
-    const sn = (s: string, max = 68) => s.length > max ? s.slice(0, max) + '\u2026' : s;
+      // Phase 4: Map to SearchResult[]
+      const mapped: SearchResult[] = [];
+      const sn = (s: string, max = 68) => s.length > max ? s.slice(0, max) + '\u2026' : s;
 
-    for (const p of (prjRes.data || []) as any[])
-      mapped.push({ id: `prj-${p.id}`, label: p.title || 'Untitled',
-        sublabel: p.logline || p.project_type || '', path: `/projects/${p.id}`, group: 'Projects' });
+      for (const p of (prjRes.data || []) as { id: string; title: string | null; logline?: string; project_type?: string }[])
+        mapped.push({ id: `prj-${p.id}`, label: p.title || 'Untitled',
+          sublabel: p.logline || p.project_type || '', path: `/projects/${p.id}`, group: 'Projects' });
 
-    for (const s of (scrRes.data || []) as any[])
-      mapped.push({ id: `scr-${s.id}`, label: s.title || 'Untitled Script',
-        sublabel: projectMap[s.project_id] || '', context: s.script_type || '',
-        path: `/projects/${s.project_id}/script`, group: 'Scripts' });
+      for (const s of (scrRes.data || []) as { id: string; title: string | null; project_id: string; script_type?: string }[])
+        mapped.push({ id: `scr-${s.id}`, label: s.title || 'Untitled Script',
+          sublabel: projectMap[s.project_id] || '', context: s.script_type || '',
+          path: `/projects/${s.project_id}/script`, group: 'Scripts' });
 
-    for (const el of (lineRes.data || []) as any[]) {
-      const projectId = scriptIdToProjectId[el.script_id];
-      if (!projectId) continue;
-      mapped.push({ id: `line-${el.id}`, label: sn(el.content),
-        sublabel: `${scriptIdToTitle[el.script_id] || 'Script'}  ·  ${projectMap[projectId] || ''}`,
-        context: ELEMENT_LABELS[el.element_type] || el.element_type,
-        path: `/projects/${projectId}/script?element=${el.id}`, group: 'Script Lines' });
+      for (const el of (lineRes.data || []) as { id: string; content: string; element_type: string; script_id: string }[]) {
+        const projectId = scriptIdToProjectId[el.script_id];
+        if (!projectId) continue;
+        mapped.push({ id: `line-${el.id}`, label: sn(el.content),
+          sublabel: `${scriptIdToTitle[el.script_id] || 'Script'}  ·  ${projectMap[projectId] || ''}`,
+          context: ELEMENT_LABELS[el.element_type] || el.element_type,
+          path: `/projects/${projectId}/script?element=${el.id}`, group: 'Script Lines' });
+      }
+
+      for (const c of (chrRes.data || []) as { id: string; name: string; project_id: string; role?: string }[])
+        mapped.push({ id: `chr-${c.id}`, label: c.name || 'Unknown',
+          sublabel: projectMap[c.project_id] || '', context: c.role || '',
+          path: `/projects/${c.project_id}/characters`, group: 'Characters' });
+
+      for (const l of (locRes.data || []) as { id: string; name: string; project_id: string; location_type?: string }[])
+        mapped.push({ id: `loc-${l.id}`, label: l.name || 'Unknown',
+          sublabel: projectMap[l.project_id] || '', context: l.location_type || '',
+          path: `/projects/${l.project_id}/locations`, group: 'Locations' });
+
+      for (const s of (scnRes.data || []) as { id: string; scene_heading?: string; project_id: string; synopsis?: string; scene_number?: string }[]) {
+        const heading = s.scene_heading || `Scene ${s.scene_number || ''}`;
+        mapped.push({ id: `scn-${s.id}`, label: heading,
+          sublabel: projectMap[s.project_id] || '',
+          context: s.synopsis ? sn(s.synopsis, 55) : '',
+          path: `/projects/${s.project_id}/scenes`, group: 'Scenes' });
+      }
+
+      for (const i of (ideaRes.data || []) as { id: string; title: string; project_id: string; category?: string }[])
+        mapped.push({ id: `idea-${i.id}`, label: i.title || 'Untitled',
+          sublabel: projectMap[i.project_id] || '', context: i.category || '',
+          path: `/projects/${i.project_id}/ideas`, group: 'Ideas' });
+
+      for (const d of (docRes.data || []) as { id: string; title: string; project_id: string; doc_type?: string }[])
+        mapped.push({ id: `doc-${d.id}`, label: d.title || 'Untitled',
+          sublabel: projectMap[d.project_id] || '',
+          context: (d.doc_type ? DOC_LABELS[d.doc_type] : undefined) || d.doc_type || '',
+          path: `/projects/${d.project_id}/documents`, group: 'Documents' });
+
+      for (const m of (chatRes.data || []) as { id: string; content: string; channel_id: string }[]) {
+        const info = channelIdToInfo[m.channel_id];
+        if (!info) continue;
+        mapped.push({ id: `chat-${m.id}`, label: sn(m.content),
+          sublabel: projectMap[info.project_id] || '', context: `#${info.name}`,
+          path: `/projects/${info.project_id}/chat`, group: 'Chat' });
+      }
+
+      for (const m of (dmRes.data || []) as { id: string; content: string; conversation_id: string }[])
+        mapped.push({ id: `dm-${m.id}`, label: sn(m.content), sublabel: 'Direct Message',
+          path: `/messages?conversation=${m.conversation_id}`, group: 'Messages' });
+
+      for (const c of (cntRes.data || []) as { id: string; name: string; project_id: string; category?: string }[])
+        mapped.push({ id: `cnt-${c.id}`, label: c.name || 'Unknown',
+          sublabel: projectMap[c.project_id] || '', context: c.category || '',
+          path: `/projects/${c.project_id}/contacts`, group: 'Contacts' });
+
+      for (const s of (stoRes.data || []) as { id: string; headline: string; project_id: string; story_type?: string }[])
+        mapped.push({ id: `sto-${s.id}`, label: s.headline || 'Untitled Story',
+          sublabel: projectMap[s.project_id] || '', context: s.story_type || '',
+          path: `/projects/${s.project_id}/stories`, group: 'Stories' });
+
+      for (const m of (ensembleRes.data || []) as { id: string; actor_name: string; character_name?: string; project_id: string; ensemble_group?: string }[]) {
+        const who = m.character_name ? `${m.actor_name} → ${m.character_name}` : m.actor_name;
+        mapped.push({ id: `ens-${m.id}`, label: who,
+          sublabel: projectMap[m.project_id] || '', context: m.ensemble_group || '',
+          path: `/projects/${m.project_id}/ensemble`, group: 'Ensemble' });
+      }
+
+      for (const c of (stageCueRes.data || []) as { id: string; cue_number: string; description?: string; cue_type?: string; act_number?: number; project_id: string }[]) {
+        const actLabel = c.act_number ? `Act ${c.act_number}` : '';
+        mapped.push({ id: `cue-${c.id}`, label: `${c.cue_number}${c.description ? ` — ${sn(c.description, 50)}` : ''}`,
+          sublabel: projectMap[c.project_id] || '',
+          context: [c.cue_type?.toUpperCase(), actLabel].filter(Boolean).join(' · '),
+          path: `/projects/${c.project_id}/cues`, group: 'Stage Cues' });
+      }
+
+      setResults(mapped);
+      setCursor(0);
+    } catch (err) {
+      console.error('[CommandPalette] Search failed:', err);
+      setResults([]);
+    } finally {
+      setLoading(false);
     }
-
-    for (const c of (chrRes.data || []) as any[])
-      mapped.push({ id: `chr-${c.id}`, label: c.name || 'Unknown',
-        sublabel: projectMap[c.project_id] || '', context: c.role || '',
-        path: `/projects/${c.project_id}/characters`, group: 'Characters' });
-
-    for (const l of (locRes.data || []) as any[])
-      mapped.push({ id: `loc-${l.id}`, label: l.name || 'Unknown',
-        sublabel: projectMap[l.project_id] || '', context: l.location_type || '',
-        path: `/projects/${l.project_id}/locations`, group: 'Locations' });
-
-    for (const s of (scnRes.data || []) as any[]) {
-      const heading = s.scene_heading || `Scene ${s.scene_number || ''}`;
-      mapped.push({ id: `scn-${s.id}`, label: heading,
-        sublabel: projectMap[s.project_id] || '',
-        context: s.synopsis ? sn(s.synopsis, 55) : '',
-        path: `/projects/${s.project_id}/scenes`, group: 'Scenes' });
-    }
-
-    for (const i of (ideaRes.data || []) as any[])
-      mapped.push({ id: `idea-${i.id}`, label: i.title || 'Untitled',
-        sublabel: projectMap[i.project_id] || '', context: i.category || '',
-        path: `/projects/${i.project_id}/ideas`, group: 'Ideas' });
-
-    for (const d of (docRes.data || []) as any[])
-      mapped.push({ id: `doc-${d.id}`, label: d.title || 'Untitled',
-        sublabel: projectMap[d.project_id] || '',
-        context: DOC_LABELS[d.doc_type] || d.doc_type || '',
-        path: `/projects/${d.project_id}/documents`, group: 'Documents' });
-
-    for (const m of (chatRes.data || []) as any[]) {
-      const info = channelIdToInfo[m.channel_id];
-      if (!info) continue;
-      mapped.push({ id: `chat-${m.id}`, label: sn(m.content),
-        sublabel: projectMap[info.project_id] || '', context: `#${info.name}`,
-        path: `/projects/${info.project_id}/chat`, group: 'Chat' });
-    }
-
-    for (const m of (dmRes.data || []) as any[])
-      mapped.push({ id: `dm-${m.id}`, label: sn(m.content), sublabel: 'Direct Message',
-        path: `/messages?conversation=${m.conversation_id}`, group: 'Messages' });
-
-    for (const c of (cntRes.data || []) as any[])
-      mapped.push({ id: `cnt-${c.id}`, label: c.name || 'Unknown',
-        sublabel: projectMap[c.project_id] || '', context: c.category || '',
-        path: `/projects/${c.project_id}/contacts`, group: 'Contacts' });
-
-    for (const s of (stoRes.data || []) as any[])
-      mapped.push({ id: `sto-${s.id}`, label: s.headline || 'Untitled Story',
-        sublabel: projectMap[s.project_id] || '', context: s.story_type || '',
-        path: `/projects/${s.project_id}/stories`, group: 'Stories' });
-
-    for (const m of (ensembleRes.data || []) as any[]) {
-      const who = m.character_name ? `${m.actor_name} → ${m.character_name}` : m.actor_name;
-      mapped.push({ id: `ens-${m.id}`, label: who,
-        sublabel: projectMap[m.project_id] || '', context: m.ensemble_group || '',
-        path: `/projects/${m.project_id}/ensemble`, group: 'Ensemble' });
-    }
-
-    for (const c of (stageCueRes.data || []) as any[]) {
-      const actLabel = c.act_number ? `Act ${c.act_number}` : '';
-      mapped.push({ id: `cue-${c.id}`, label: `${c.cue_number}${c.description ? ` — ${sn(c.description, 50)}` : ''}`,
-        sublabel: projectMap[c.project_id] || '',
-        context: [c.cue_type?.toUpperCase(), actLabel].filter(Boolean).join(' · '),
-        path: `/projects/${c.project_id}/cues`, group: 'Stage Cues' });
-    }
-
-    setResults(mapped);
-    setCursor(0);
-    setLoading(false);
   }, [user?.id]);
 
   // Keyboard navigation
@@ -340,6 +340,9 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       <div
         className="w-full max-w-2xl bg-surface-900 border border-surface-700 rounded-xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
       >
         {/* Input */}
         <div className="flex items-center gap-3 px-4 py-3.5 border-b border-surface-800">
@@ -351,6 +354,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search everything — scripts, lines, characters, chat…"
+            aria-label="Search everything"
             className="flex-1 bg-transparent text-sm text-white placeholder-surface-500 outline-none"
           />
           {loading && (
@@ -378,7 +382,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                       className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-white/[0.04] transition-colors group"
                     >
                       {rp.cover_url ? (
-                        <img src={rp.cover_url} alt="" className="w-5 h-5 rounded object-cover shrink-0" loading="lazy" />
+                        <img src={rp.cover_url} alt={rp.title || 'Project cover'} className="w-5 h-5 rounded object-cover shrink-0" loading="lazy" />
                       ) : (
                         <span className="text-base w-5 text-center shrink-0 opacity-60">📁</span>
                       )}

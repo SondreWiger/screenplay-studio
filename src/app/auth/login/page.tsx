@@ -4,6 +4,7 @@ import { useState, Suspense, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
 
 function friendlyAuthError(msg: string): string {
@@ -75,7 +76,7 @@ function LoginForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: 'email', success: true }),
-      }).catch(() => {});
+      }).catch((err) => logger.error('Auth', 'Failed to track login:', err));
 
       sessionStorage.setItem('ss_session_active', '1');
       window.location.href = redirect;

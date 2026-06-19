@@ -19,17 +19,30 @@ interface RateEntry {
   resetAt: number;
 }
 
-// In-memory store (cleaned periodically)
+// In-memory store (cleaned periodically, with max-size eviction)
 const store = new Map<string, RateEntry>();
 let lastCleanup = Date.now();
+const MAX_STORE_SIZE = 10_000;
 
 function cleanup(): void {
   const now = Date.now();
   if (now - lastCleanup < 60_000) return;
   lastCleanup = now;
+
+  // Evict expired entries
   store.forEach((entry, key) => {
     if (entry.resetAt < now) store.delete(key);
   });
+
+  // If still over max size after cleanup, evict oldest entries
+  if (store.size > MAX_STORE_SIZE) {
+    const entries = Array.from(store.entries())
+      .sort((a, b) => a[1].resetAt - b[1].resetAt);
+    const toRemove = entries.slice(0, entries.length - MAX_STORE_SIZE);
+    for (const [key] of toRemove) {
+      store.delete(key);
+    }
+  }
 }
 
 // Check rate limit (in-memory)

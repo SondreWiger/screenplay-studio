@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, Input, Textarea, toast } from '@/components/ui';
+import { Button, Input, Textarea, toast } from '@/components/ui';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
