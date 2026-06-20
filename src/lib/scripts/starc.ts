@@ -80,6 +80,24 @@ function stripAllTags(text: string): string {
 }
 
 /**
+ * Filter out junk content that isn't real screenplay text.
+ * STARC metadata documents contain booleans, UUIDs, numbers, etc.
+ */
+function isJunkContent(text: string): boolean {
+  if (text.length === 0) return true;
+  if (text.length > 500) return false;
+  // Pure booleans
+  if (/^(true|false)$/i.test(text)) return true;
+  // UUIDs
+  if (/^\{?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}?$/i.test(text)) return true;
+  // Pure numbers (scene numbers like "1", "2", etc. are fine if they're short — but bare "0" or "3" etc. without context is junk)
+  if (/^\d{1,3}$/.test(text)) return true;
+  // Single special characters
+  if (/^[#._\-=*]{1,3}$/.test(text)) return true;
+  return false;
+}
+
+/**
  * Decompress gzip data using the browser's DecompressionStream API.
  * Falls back to null if the API isn't available or decompression fails.
  */
@@ -218,21 +236,23 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
     'sfx': 'action',
   };
 
-  // Try to parse as XML-like content with tags
-  // STARC uses custom tags, not standard XML, so we use regex
+  // STARC wraps all content in <tag><v><![CDATA[text]]></v></tag> patterns.
+  // First, strip the inner <v> and <b> wrapper tags to get the actual outer tag content.
+  let processed = content.replace(/<v>([\s\S]*?)<\/v>/gi, '$1');
+  processed = processed.replace(/<b>([\s\S]*?)<\/b>/gi, '$1');
+
+  // Now parse the outer element tags
   const tagPattern = /<([a-z_-]+)>([\s\S]*?)<\/\1>/gi;
   let match: RegExpExecArray | null;
   let lastEnd = 0;
 
-  while ((match = tagPattern.exec(content)) !== null) {
-    // Check element limit
+  while ((match = tagPattern.exec(processed)) !== null) {
     if (elements.length >= MAX_ELEMENTS) break;
 
-    // Process any plain text between tags as action
-    const between = content.slice(lastEnd, match.index).trim();
+    const between = processed.slice(lastEnd, match.index).trim();
     if (between.length > 0) {
       const text = sanitizeText(between);
-      if (text) {
+      if (text && !isJunkContent(text)) {
         elements.push({
           element_type: 'action',
           content: text,
@@ -244,10 +264,16 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
 
     const tagName = match[1].toLowerCase();
     const tagContent = match[2];
-    const elementType = TAG_MAP[tagName] || 'action';
+    const elementType = TAG_MAP[tagName] || null;
+
+    // Skip unknown tags entirely — they're metadata wrappers, not screenplay content
+    if (!elementType) {
+      lastEnd = match.index + match[0].length;
+      continue;
+    }
 
     const text = sanitizeText(tagContent);
-    if (!text) {
+    if (!text || isJunkContent(text)) {
       lastEnd = match.index + match[0].length;
       continue;
     }
@@ -259,7 +285,6 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
       scene_number: null,
     };
 
-    // Track scene numbers
     if (elementType === 'scene_heading') {
       sceneCount++;
       element.scene_number = String(sceneCount);
@@ -270,10 +295,10 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
   }
 
   // Process any trailing text
-  const trailing = content.slice(lastEnd).trim();
+  const trailing = processed.slice(lastEnd).trim();
   if (trailing.length > 0 && elements.length < MAX_ELEMENTS) {
     const text = sanitizeText(trailing);
-    if (text) {
+    if (text && !isJunkContent(text)) {
       elements.push({
         element_type: 'action',
         content: text,
@@ -289,7 +314,7 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
     for (const line of lines) {
       if (elements.length >= MAX_ELEMENTS) break;
       const text = sanitizeText(line);
-      if (text) {
+      if (text && !isJunkContent(text)) {
         elements.push({
           element_type: 'action',
           content: text,
@@ -428,8 +453,13 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
     }
     typeStmt.free();
 
-    // Second pass: parse documents — try ALL types, not just known script types
-    for (const docType of docTypes) {
+    // Only parse document types that contain screenplay content.
+    // Skip metadata: 10000 (project), 30000/30001 (characters), 40000/40001 (locations), 50000 (worlds)
+    const SKIP_TYPES = new Set([10000, 30000, 30001, 40000, 40001, 50000]);
+    const screenplayTypes = docTypes.filter(t => !SKIP_TYPES.has(t));
+
+    // Second pass: parse screenplay documents only
+    for (const docType of screenplayTypes) {
       const docStmt = db.prepare(
         "SELECT type, content FROM documents WHERE type = ? AND content IS NOT NULL"
       );
