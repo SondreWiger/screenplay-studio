@@ -77,24 +77,59 @@ function stripAllTags(text: string): string {
 }
 
 /**
- * Decode a BLOB from the database into a string.
- * Tries UTF-8 decoding first. If the content looks like it might be
- * compressed (starts with gzip magic bytes 0x1f 0x8b), we skip it
- * since we can't decompress in a safe way without additional libs.
- *
- * Returns null if the data can't be decoded as valid UTF-8.
+ * Decompress gzip data using the browser's DecompressionStream API.
+ * Falls back to null if the API isn't available or decompression fails.
  */
-function decodeBlob(blob: Uint8Array | null): string | null {
+async function decompressGzip(data: Uint8Array): Promise<Uint8Array | null> {
+  try {
+    const ds = new DecompressionStream('gzip');
+    const writer = ds.writable.getWriter();
+    const buf = new ArrayBuffer(data.byteLength);
+    new Uint8Array(buf).set(data);
+    writer.write(buf);
+    writer.close();
+    const reader = ds.readable.getReader();
+    const chunks: Uint8Array[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    const totalLength = chunks.reduce((acc, c) => acc + c.length, 0);
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return result;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Decode a BLOB from the database into a string.
+ * Handles gzip-compressed content (common in STARC v3+).
+ * Falls back to plain UTF-8 if not compressed.
+ *
+ * Returns null if the data can't be decoded.
+ */
+async function decodeBlob(blob: Uint8Array | null): Promise<string | null> {
   if (!blob || blob.length === 0) return null;
 
-  // Check for gzip magic — skip compressed content
+  let raw = blob;
+
+  // Check for gzip magic bytes — decompress
   if (blob.length >= 2 && blob[0] === 0x1f && blob[1] === 0x8b) {
-    return null;
+    const decompressed = await decompressGzip(blob);
+    if (!decompressed) return null;
+    raw = decompressed;
   }
 
   try {
     const decoder = new TextDecoder('utf-8', { fatal: true });
-    return decoder.decode(blob);
+    return decoder.decode(raw);
   } catch {
     return null;
   }
@@ -333,7 +368,7 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
       while (charStmt.step()) {
         const row = charStmt.get();
         const blob = row[0] instanceof Uint8Array ? row[0] : null;
-        const text = decodeBlob(blob);
+        const text = await decodeBlob(blob);
         if (text) {
           // Try to extract name from XML content
           const nameMatch = text.match(/<name>([\s\S]*?)<\/name>/i);
@@ -356,7 +391,7 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
       while (locStmt.step()) {
         const row = locStmt.get();
         const blob = row[0] instanceof Uint8Array ? row[0] : null;
-        const text = decodeBlob(blob);
+        const text = await decodeBlob(blob);
         if (text) {
           const nameMatch = text.match(/<name>([\s\S]*?)<\/name>/i);
           if (nameMatch) {
@@ -376,51 +411,59 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
     const titlePage: TitlePageData = {};
     let scriptDocumentType: number | null = null;
 
-    // Query all documents, ordered by type (scripts first)
-    const docStmt = db.prepare(
-      "SELECT type, content FROM documents WHERE content IS NOT NULL AND type > 0 ORDER BY type ASC"
+    // First pass: discover all document types and pick the one with the most content
+    const typeStmt = db.prepare(
+      "SELECT type, COUNT(*) as cnt FROM documents WHERE content IS NOT NULL AND type > 0 GROUP BY type ORDER BY cnt DESC"
     );
-
-    let docCount = 0;
-
-    while (docStmt.step()) {
-      docCount++;
-      const row = docStmt.get();
-      const docType = validateDocType(row[0]);
-      if (docType === null) continue;
-      if (!SCRIPT_DOCUMENT_TYPES.has(docType)) continue;
-
-      const blob = row[1] instanceof Uint8Array ? row[1] : null;
-      const content = decodeBlob(blob);
-      if (!content || content.length < 10) continue;
-
-      // Parse this document's content
-      const elements = parseStarcContent(content);
-
-      if (elements.length > 0) {
-        // If this is the first script document, extract title page info
-        if (!scriptDocumentType) {
-          scriptDocumentType = docType;
-
-          // Try to extract title page from content
-          const titleMatch = content.match(/<title>([\s\S]*?)<\/title>/i);
-          if (titleMatch) {
-            titlePage.title = sanitizeText(titleMatch[1], 500);
-          }
-          const authorMatch = content.match(/<author>([\s\S]*?)<\/author>/i);
-          if (authorMatch) {
-            titlePage.author = sanitizeText(authorMatch[1], 500);
-          }
-          const creditMatch = content.match(/<credit>([\s\S]*?)<\/credit>/i);
-          if (creditMatch) {
-            titlePage.credit = sanitizeText(creditMatch[1], 500);
-          }
-        }
-
-        allElements = allElements.concat(elements);
-      }
+    const docTypes: number[] = [];
+    while (typeStmt.step()) {
+      const row = typeStmt.get();
+      const t = validateDocType(row[0]);
+      if (t !== null) docTypes.push(t);
     }
-    docStmt.free();
+    typeStmt.free();
+
+    // Second pass: parse documents — try ALL types, not just known script types
+    for (const docType of docTypes) {
+      const docStmt = db.prepare(
+        "SELECT type, content FROM documents WHERE type = ? AND content IS NOT NULL"
+      );
+      docStmt.bind([docType]);
+
+      while (docStmt.step()) {
+        const row = docStmt.get();
+        const blob = row[1] instanceof Uint8Array ? row[1] : null;
+        const content = await decodeBlob(blob);
+        if (!content || content.length < 5) continue;
+
+        // Parse this document's content
+        const elements = parseStarcContent(content);
+
+        if (elements.length > 0) {
+          // If this is the first script document with elements, extract title page info
+          if (!scriptDocumentType) {
+            scriptDocumentType = docType;
+
+            // Try to extract title page from content
+            const titleMatch = content.match(/<title>([\s\S]*?)<\/title>/i);
+            if (titleMatch) {
+              titlePage.title = sanitizeText(titleMatch[1], 500);
+            }
+            const authorMatch = content.match(/<author>([\s\S]*?)<\/author>/i);
+            if (authorMatch) {
+              titlePage.author = sanitizeText(authorMatch[1], 500);
+            }
+            const creditMatch = content.match(/<credit>([\s\S]*?)<\/credit>/i);
+            if (creditMatch) {
+              titlePage.credit = sanitizeText(creditMatch[1], 500);
+            }
+          }
+
+          allElements = allElements.concat(elements);
+        }
+      }
+      docStmt.free();
+    }
 
     // Fallback title from filename
     if (!titlePage.title) {
@@ -435,7 +478,7 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
       characters,
       locations,
       metadata: {
-        documentCount: docCount,
+        documentCount: docTypes.length,
         scriptDocumentType,
       },
     };
