@@ -293,7 +293,9 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
   }
 
   // ── Open database in memory (WASM sandbox — no filesystem access) ──
-  const SQL = await initSqlJs();
+  const SQL = await initSqlJs({
+    locateFile: (path: string) => `/sql-wasm.wasm`,
+  });
   let db;
   try {
     db = new SQL.Database(data);
