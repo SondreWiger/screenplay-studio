@@ -247,7 +247,8 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
   processed = processed.replace(/<screenplay>([\s\S]*?)<\/screenplay>/gi, '$1');
 
   // TEMP DEBUG — inspect in browser console: window.__starcDebug
-  const debugInfo: Record<string, unknown> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const debugInfo: any = {
     rawLen: content.length,
     rawFirst500: content.slice(0, 500),
     rawLast500: content.slice(-500),
