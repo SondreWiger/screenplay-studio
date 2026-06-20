@@ -258,6 +258,7 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
     if (between.length > 0) {
       const text = sanitizeText(between);
       if (text && !isJunkContent(text)) {
+        debugInfo.allTagMatches.push(`between:${text.slice(0, 80)}`);
         elements.push({
           element_type: 'action',
           content: text,
@@ -271,17 +272,23 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
     const tagContent = match[2];
     const elementType = TAG_MAP[tagName] || null;
 
+    debugInfo.allTagNames.push(tagName);
+
     // Skip unknown tags entirely — they're metadata wrappers, not screenplay content
     if (!elementType) {
+      debugInfo.skippedTags.push(tagName);
       lastEnd = match.index + match[0].length;
       continue;
     }
 
     const text = sanitizeText(tagContent);
     if (!text || isJunkContent(text)) {
+      debugInfo.junkRejections.push(`${tagName}:${text?.slice(0, 50)}`);
       lastEnd = match.index + match[0].length;
       continue;
     }
+
+    debugInfo.allTagMatches.push(`${tagName}:${text.slice(0, 80)}`);
 
     const element: Partial<ScriptElement> = {
       element_type: elementType,
@@ -328,6 +335,14 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
         });
       }
     }
+  }
+
+  debugInfo.totalElements = elements.length;
+
+  // TEMP DEBUG — store on window for browser console inspection
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__starcDebug = debugInfo;
   }
 
   return elements;
