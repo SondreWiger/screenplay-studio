@@ -71,9 +71,12 @@ export interface StarcImportResult {
  * This also prevents any injected HTML/script from passing through.
  */
 function stripAllTags(text: string): string {
-  // Remove everything that looks like a tag: <...>
-  // Also handle malformed tags, attributes, self-closing, etc.
-  return text.replace(/<[^>]*>/g, '');
+  // First, extract CDATA content: <![CDATA[text]]> → text
+  // STARC wraps all content in <v><![CDATA[...]]></v> patterns
+  let result = text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
+  // Then remove remaining XML tags
+  result = result.replace(/<[^>]*>/g, '');
+  return result;
 }
 
 /**
@@ -364,15 +367,15 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
     const locations: string[] = [];
 
     const charStmt = db.prepare("SELECT content FROM documents WHERE type = ? AND content IS NOT NULL");
-    // Character types: 20101, 20102
-    for (const charType of [20101, 20102]) {
+    // Character types: 30001 (character detail), 30000 (characters index)
+    for (const charType of [30001, 30000]) {
       charStmt.bind([charType]);
       while (charStmt.step()) {
         const row = charStmt.get();
         const blob = row[0] instanceof Uint8Array ? row[0] : null;
         const text = await decodeBlob(blob);
         if (text) {
-          // Try to extract name from XML content
+          // Try to extract name from XML content (handles both CDATA and plain)
           const nameMatch = text.match(/<name>([\s\S]*?)<\/name>/i);
           if (nameMatch) {
             const name = sanitizeText(nameMatch[1], 200);
@@ -386,9 +389,9 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
     }
     charStmt.free();
 
-    // Location types: 20201, 20202
+    // Location types: 40001 (location detail), 40000 (locations index)
     const locStmt = db.prepare("SELECT content FROM documents WHERE type = ? AND content IS NOT NULL");
-    for (const locType of [20201, 20202]) {
+    for (const locType of [40001, 40000]) {
       locStmt.bind([locType]);
       while (locStmt.step()) {
         const row = locStmt.get();
@@ -482,6 +485,27 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
         }
       }
       docStmt.free();
+    }
+
+    // Extract project title from doc type 10000 (project metadata)
+    if (!titlePage.title) {
+      const projStmt = db.prepare(
+        "SELECT content FROM documents WHERE type = ? AND content IS NOT NULL"
+      );
+      projStmt.bind([10000]);
+      if (projStmt.step()) {
+        const row = projStmt.get();
+        const blob = row[0] instanceof Uint8Array ? row[0] : null;
+        const text = await decodeBlob(blob);
+        if (text) {
+          const nameMatch = text.match(/<name>([\s\S]*?)<\/name>/i);
+          if (nameMatch) {
+            const name = sanitizeText(nameMatch[1], 500);
+            if (name) titlePage.title = name;
+          }
+        }
+      }
+      projStmt.free();
     }
 
     // Fallback title from filename
