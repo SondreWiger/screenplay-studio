@@ -277,7 +277,7 @@ export async function updateSession(request: NextRequest) {
       // unsafe-inline is required for Next.js inline styles/scripts; unsafe-eval only in dev for Fast Refresh
       process.env.NODE_ENV === 'development'
         ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.paypal.com https://www.paypalobjects.com"
-        : "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.paypal.com https://www.paypalobjects.com",
+        : "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.paypal.com https://www.paypalobjects.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
