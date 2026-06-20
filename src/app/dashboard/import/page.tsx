@@ -89,9 +89,7 @@ export default function BulkImportPage() {
       try {
         // .starc files are binary SQLite databases — handle separately
         if (fmt === 'starc') {
-          console.warn('[IMPORT] Parsing starc file:', file.name, file.size, 'bytes');
           const parsed = await parseStarcFile(file);
-          console.warn('[IMPORT] Parse result:', parsed.elements.length, 'elements', parsed.characters.length, 'chars', parsed.locations.length, 'locs');
           newFiles.push({
             id: crypto.randomUUID(),
             file,
@@ -227,6 +225,7 @@ export default function BulkImportPage() {
             title: file.title,
             version: 1,
             is_active: true,
+            created_by: user.id,
             title_page_data: file.titlePage || {},
           })
           .select()

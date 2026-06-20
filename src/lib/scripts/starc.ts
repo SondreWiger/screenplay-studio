@@ -313,10 +313,10 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
  * length/count limits on all output.
  */
 export async function parseStarcFile(file: File): Promise<StarcImportResult> {
-  console.warn('[STARC DEBUG] Starting parse of', file.name, 'size:', file.size);
+
   // Dynamic import of sql.js — loaded from node_modules, WASM-based
   const initSqlJs = (await import('sql.js')).default;
-  console.warn('[STARC DEBUG] sql.js loaded');
+
 
   // Read file as ArrayBuffer
   const arrayBuffer = await file.arrayBuffer();
@@ -428,16 +428,6 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
     }
     typeStmt.free();
 
-    // DEBUG: Log all tables and document types found
-    const allTables = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
-    console.warn('[STARC DEBUG] Tables:', allTables.length ? allTables[0].values.map(r => r[0]) : 'none');
-    console.warn('[STARC DEBUG] Document types found:', docTypes);
-
-    // Count total docs
-    const totalDocs = db.exec("SELECT COUNT(*) FROM documents");
-    const totalDocsWithContent = db.exec("SELECT COUNT(*) FROM documents WHERE content IS NOT NULL");
-    console.warn('[STARC DEBUG] Total docs:', totalDocs[0]?.values[0]?.[0], 'With content:', totalDocsWithContent[0]?.values[0]?.[0]);
-
     // Second pass: parse documents — try ALL types, not just known script types
     for (const docType of docTypes) {
       const docStmt = db.prepare(
@@ -448,18 +438,11 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
       while (docStmt.step()) {
         const row = docStmt.get();
         const blob = row[1] instanceof Uint8Array ? row[1] : null;
-        console.warn(`[STARC DEBUG] Doc type=${docType}, blob size=${blob?.length ?? 'null'}, isUint8=${blob instanceof Uint8Array}`);
         const content = await decodeBlob(blob);
-        console.warn(`[STARC DEBUG] Doc type=${docType}, decoded content length=${content?.length ?? 'null'}, preview=${content?.slice(0, 200) ?? 'N/A'}`);
         if (!content || content.length < 5) continue;
 
         // Parse this document's content
         const elements = parseStarcContent(content);
-        console.warn(`[STARC DEBUG] Doc type=${docType}, parsed ${elements.length} elements`);
-
-        if (elements.length === 0 && content.length > 0) {
-          console.warn(`[STARC DEBUG] Content has NO tags. First 500 chars:`, content.slice(0, 500));
-        }
 
         if (elements.length > 0) {
           // If this is the first script document with elements, extract title page info
@@ -512,8 +495,6 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
     if (!titlePage.title) {
       titlePage.title = file.name.replace(/\.starc$/i, '').replace(/[_-]+/g, ' ').trim();
     }
-
-    console.warn(`[STARC DEBUG] RESULT: ${allElements.length} total elements, ${characters.length} characters, ${locations.length} locations, scriptType=${scriptDocumentType}`);
 
     return {
       title: titlePage.title || file.name.replace(/\.starc$/i, ''),
