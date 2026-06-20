@@ -43,28 +43,6 @@ const SQLITE_MAGIC = new Uint8Array([0x53, 0x51, 0x4c, 0x69, 0x74, 0x65, 0x20, 0
  *   104xx   = stage play documents
  *   2xxxx   = character/location/world data
  */
-const KNOWN_DOCUMENT_TYPES = new Set([
-  1,          // project structure
-  10101,      // screenplay (possibly outline)
-  10102,      // screenplay (possibly treatment)
-  10103,      // screenplay (possibly beat sheet)
-  10104,      // screenplay (main script text)
-  10201,      // comic
-  10202,      // comic
-  10203,      // comic
-  10301,      // novel
-  10302,      // novel
-  10303,      // novel
-  10401,      // stage play
-  10402,      // stage play
-  20101,      // character
-  20102,      // character
-  20201,      // location
-  20202,      // location
-  20301,      // world/bible
-  20302,      // world/bible
-]);
-
 /** Document types that represent script/text content (not metadata) */
 const SCRIPT_DOCUMENT_TYPES = new Set([10101, 10102, 10103, 10104, 10201, 10202, 10203, 10301, 10302, 10303, 10401, 10402]);
 
@@ -393,7 +371,7 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
 
     // ── Find and parse script documents ──
     let allElements: Partial<ScriptElement>[] = [];
-    let titlePage: TitlePageData = {};
+    const titlePage: TitlePageData = {};
     let scriptDocumentType: number | null = null;
 
     // Query all documents, ordered by type (scripts first)
