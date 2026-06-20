@@ -246,6 +246,19 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
   // Step 2: Strip container/wrapper tags that would eat inner elements in the regex
   processed = processed.replace(/<screenplay>([\s\S]*?)<\/screenplay>/gi, '$1');
 
+  // TEMP DEBUG — inspect in browser console: window.__starcDebug
+  const debugInfo: Record<string, unknown> = {
+    rawLen: content.length,
+    rawFirst500: content.slice(0, 500),
+    rawLast500: content.slice(-500),
+    processedFirst1000: processed.slice(0, 1000),
+    processedLen: processed.length,
+    allTagMatches: [] as string[],
+    allTagNames: [] as string[],
+    skippedTags: [] as string[],
+    junkRejections: [] as string[],
+  };
+
   // Now parse the outer element tags
   const tagPattern = /<([a-z_-]+)>([\s\S]*?)<\/\1>/gi;
   let match: RegExpExecArray | null;
