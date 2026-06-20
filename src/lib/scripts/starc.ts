@@ -236,10 +236,15 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
     'sfx': 'action',
   };
 
-  // STARC wraps all content in <tag><v><![CDATA[text]]></v></tag> patterns.
-  // First, strip the inner <v> and <b> wrapper tags to get the actual outer tag content.
-  let processed = content.replace(/<v>([\s\S]*?)<\/v>/gi, '$1');
+  // STARC wraps all content in <tag><v><![CDATA[text]]></v></tag> patterns,
+  // and the entire screenplay is wrapped in a <screenplay> container.
+  // Step 1: Extract CDATA text from <v> and <b> wrapper tags (with or without CDATA)
+  let processed = content.replace(/<v><!\[CDATA\[([\s\S]*?)\]\]><\/v>/gi, '$1');
+  processed = processed.replace(/<v>([\s\S]*?)<\/v>/gi, '$1');
+  processed = processed.replace(/<b><!\[CDATA\[([\s\S]*?)\]\]><\/b>/gi, '$1');
   processed = processed.replace(/<b>([\s\S]*?)<\/b>/gi, '$1');
+  // Step 2: Strip container/wrapper tags that would eat inner elements in the regex
+  processed = processed.replace(/<screenplay>([\s\S]*?)<\/screenplay>/gi, '$1');
 
   // Now parse the outer element tags
   const tagPattern = /<([a-z_-]+)>([\s\S]*?)<\/\1>/gi;
