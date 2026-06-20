@@ -245,6 +245,15 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
   processed = processed.replace(/<b>([\s\S]*?)<\/b>/gi, '$1');
   // Step 2: Strip container/wrapper tags that would eat inner elements in the regex
   processed = processed.replace(/<screenplay>([\s\S]*?)<\/screenplay>/gi, '$1');
+  // Strip <scene ...> and </scene> wrappers (may have attributes)
+  processed = processed.replace(/<scene(\s[^>]*)?>/gi, '');
+  processed = processed.replace(/<\/scene>/gi, '');
+  // Strip <content> and </content> wrappers
+  processed = processed.replace(/<content>/gi, '');
+  processed = processed.replace(/<\/content>/gi, '');
+  // Strip <document ...> root wrapper
+  processed = processed.replace(/<document(\s[^>]*)?>/gi, '');
+  processed = processed.replace(/<\/document>/gi, '');
 
   // TEMP DEBUG — inspect in browser console: window.__starcDebug
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
