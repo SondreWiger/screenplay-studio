@@ -492,6 +492,31 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
     const SKIP_TYPES = new Set([10000, 30000, 30001, 40000, 40001, 50000]);
     const screenplayTypes = docTypes.filter(t => !SKIP_TYPES.has(t));
 
+    // TEMP DEBUG — capture ALL documents
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allDocDebug: any[] = [];
+
+    // TEMP DEBUG — store ALL doc types (including skipped) on window
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docSizeMap: Record<number, number> = {};
+    for (const dt of docTypes) {
+      const sizeStmt = db.prepare("SELECT SUM(LENGTH(content)) FROM documents WHERE type = ? AND content IS NOT NULL");
+      sizeStmt.bind([dt]);
+      if (sizeStmt.step()) {
+        const r = sizeStmt.get();
+        docSizeMap[dt] = (r[0] as number) || 0;
+      }
+      sizeStmt.free();
+    }
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__starcAllTypes = docTypes;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__starcScreenplayTypes = screenplayTypes;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__starcDocSizes = docSizeMap;
+    }
+
     // Second pass: parse screenplay documents only
     for (const docType of screenplayTypes) {
       const docStmt = db.prepare(
@@ -504,6 +529,15 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
         const blob = row[1] instanceof Uint8Array ? row[1] : null;
         const content = await decodeBlob(blob);
         if (!content || content.length < 5) continue;
+
+        allDocDebug.push({
+          type: docType,
+          contentLen: content.length,
+          first300: content.slice(0, 300),
+          hasSceneHeading: content.includes('scene_heading') || content.includes('scene-heading'),
+          hasCharacter: content.includes('<character'),
+          hasDialogue: content.includes('<dialogue'),
+        });
 
         // Parse this document's content
         const elements = parseStarcContent(content);
@@ -532,6 +566,12 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
         }
       }
       docStmt.free();
+    }
+
+    // TEMP DEBUG — store all doc info on window
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__starcDocs = allDocDebug;
     }
 
     // Extract project title from doc type 10000 (project metadata)
