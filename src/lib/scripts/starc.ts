@@ -310,8 +310,10 @@ function parseStarcContent(content: string): Partial<ScriptElement>[] {
  * length/count limits on all output.
  */
 export async function parseStarcFile(file: File): Promise<StarcImportResult> {
+  console.log('[STARC DEBUG] Starting parse of', file.name, 'size:', file.size);
   // Dynamic import of sql.js — loaded from node_modules, WASM-based
   const initSqlJs = (await import('sql.js')).default;
+  console.log('[STARC DEBUG] sql.js loaded');
 
   // Read file as ArrayBuffer
   const arrayBuffer = await file.arrayBuffer();
