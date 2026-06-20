@@ -530,10 +530,21 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
         const content = await decodeBlob(blob);
         if (!content || content.length < 5) continue;
 
+        // Show what the content looks like AFTER CDATA stripping
+        let processedPreview = '';
+        try {
+          let p = content.replace(/<v><!\[CDATA\[([\s\S]*?)\]\]><\/v>/gi, '$1');
+          p = p.replace(/<v>([\s\S]*?)<\/v>/gi, '$1');
+          p = p.replace(/<b><!\[CDATA\[([\s\S]*?)\]\]><\/b>/gi, '$1');
+          p = p.replace(/<b>([\s\S]*?)<\/b>/gi, '$1');
+          processedPreview = p.slice(0, 400);
+        } catch { processedPreview = 'error'; }
+
         allDocDebug.push({
           type: docType,
           contentLen: content.length,
           first300: content.slice(0, 300),
+          processedPreview,
           hasSceneHeading: content.includes('scene_heading') || content.includes('scene-heading'),
           hasCharacter: content.includes('<character'),
           hasDialogue: content.includes('<dialogue'),
