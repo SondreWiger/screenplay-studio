@@ -217,22 +217,32 @@ export default function BulkImportPage() {
           continue;
         }
 
-        // 2. Create script
-        const { data: script, error: scriptErr } = await supabase
+        // 2. The DB trigger auto-created a "Draft 1" script — fetch it and update with imported content
+        const { data: script, error: fetchErr } = await supabase
           .from('scripts')
-          .insert({
-            project_id: project.id,
-            title: file.title,
-            version: 1,
-            is_active: true,
-            created_by: user.id,
-            title_page_data: file.titlePage || {},
-          })
-          .select()
+          .select('id')
+          .eq('project_id', project.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
           .single();
 
-        if (scriptErr || !script) {
-          console.error('Failed to create script for', file.name, scriptErr);
+        if (fetchErr || !script) {
+          console.error('Failed to fetch auto-created script for', file.name, fetchErr);
+          setProgress((p) => ({ ...p, done: p.done + 1 }));
+          continue;
+        }
+
+        // Update the trigger-created script with the imported title and content
+        const { error: updateErr } = await supabase
+          .from('scripts')
+          .update({
+            title: file.title,
+            title_page_data: file.titlePage || {},
+          })
+          .eq('id', script.id);
+
+        if (updateErr) {
+          console.error('Failed to update script for', file.name, updateErr);
           setProgress((p) => ({ ...p, done: p.done + 1 }));
           continue;
         }
