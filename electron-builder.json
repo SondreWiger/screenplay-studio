@@ -10,6 +10,12 @@
   "files": [
     "electron/dist/**/*"
   ],
+  "extraResources": [
+    {
+      "from": ".next/standalone",
+      "to": "next-server"
+    }
+  ],
   "artifactName": "ScreenplayStudio-${os}.${ext}",
   "mac": {
     "category": "public.app-category.entertainment",

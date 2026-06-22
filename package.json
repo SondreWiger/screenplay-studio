@@ -16,7 +16,7 @@
     "dev:full": "concurrently \"npm run dev\" \"npm run media-server\"",
     "electron:compile": "tsc -p electron/tsconfig.json",
     "electron:dev": "npm run electron:compile && ELECTRON_DEV_URL=http://localhost:3000 electron .",
-    "electron:build:next": "npm run build && mkdir -p .next/standalone/.next/static && cp -r .next/static/* .next/standalone/.next/static/ 2>/dev/null || true",
+    "electron:build:next": "ELECTRON_BUILD=true next build && rsync -a --exclude='downloads' public/ .next/standalone/public/ && mkdir -p .next/standalone/.next/static && cp -r .next/static/* .next/standalone/.next/static/ 2>/dev/null || true",
     "electron:build": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json",
     "electron:build:mac": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json --mac",
     "electron:build:win": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json --win",

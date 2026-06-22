@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme } from 'electron';
 import * as path from 'path';
 import { setupMenu } from './menu';
+import { startLocalServer, stopLocalServer } from './next-server';
 
 const isDev = !app.isPackaged;
 const isMac = process.platform === 'darwin';
@@ -33,7 +34,18 @@ async function createWindow() {
     show: false,
   });
 
-  const url = isDev ? getDevUrl() : WEB_URL;
+  let url: string;
+  if (isDev) {
+    url = getDevUrl();
+  } else {
+    try {
+      url = await startLocalServer();
+      console.log('Local server started at', url);
+    } catch (err) {
+      console.error('Failed to start local server, falling back to remote:', err);
+      url = WEB_URL;
+    }
+  }
   mainWindow.loadURL(url);
 
   mainWindow.once('ready-to-show', () => {
@@ -159,6 +171,10 @@ if (!gotTheLock) {
 
 app.on('window-all-closed', () => {
   if (!isMac) app.quit();
+});
+
+app.on('before-quit', () => {
+  stopLocalServer();
 });
 
 export { mainWindow };
