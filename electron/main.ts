@@ -5,7 +5,7 @@ import { startLocalServer, stopLocalServer } from './next-server';
 
 const isDev = !app.isPackaged;
 const isMac = process.platform === 'darwin';
-const WEB_URL = 'https://screenplaystudio.fun/auth/login';
+const WEB_URL = 'https://screenplaystudio.fun';
 
 let mainWindow: BrowserWindow | null = null;
 let menuSetup = false;
@@ -29,6 +29,7 @@ async function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
+      partition: 'persist:screenplay',
     },
     backgroundColor: '#070710',
     show: false,
@@ -39,11 +40,12 @@ async function createWindow() {
     url = getDevUrl();
   } else {
     try {
-      url = await startLocalServer();
-      console.log('Local server started at', url);
+      const serverUrl = await startLocalServer();
+      url = `${serverUrl}/dashboard`;
+      console.log('Local server started at', serverUrl);
     } catch (err) {
       console.error('Failed to start local server, falling back to remote:', err);
-      url = WEB_URL;
+      url = `${WEB_URL}/dashboard`;
     }
   }
   mainWindow.loadURL(url);
