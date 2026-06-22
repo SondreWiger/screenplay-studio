@@ -1,0 +1,11 @@
+version: 2.7.7
+files:
+  - url: ScreenplayStudio-mac.dmg
+    sha512: oJdcm++Alm450lVJJ4GsLYaO8k4zXKmZyxsJtQeZS85XrbpRxCv7gGiaf1LF294pK3t13gyFRItq1VG5LjrFzg==
+    size: 104930447
+  - url: ScreenplayStudio-mac.dmg
+    sha512: yUZMdsO05TXRmVjkchukhKbozlh44h+b6C5nl0NW4P7j6N/+uMe1h1cNkGkA5rCfUdf+ZnuZagmxxN9+wY9kDw==
+    size: 97808333
+path: ScreenplayStudio-mac.dmg
+sha512: oJdcm++Alm450lVJJ4GsLYaO8k4zXKmZyxsJtQeZS85XrbpRxCv7gGiaf1LF294pK3t13gyFRItq1VG5LjrFzg==
+releaseDate: '2026-06-22T02:23:12.206Z'
