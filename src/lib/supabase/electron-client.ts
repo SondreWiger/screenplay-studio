@@ -110,6 +110,55 @@ export function clearLocalUser() {
 // ── Stub Supabase client ──────────────────────────────────────
 
 /**
+ * Chainable query builder that always resolves to { data: [], error: null }.
+ * Supports arbitrary method chaining (eq, limit, order, not, gte, in, etc.)
+ * by returning `this` from every method call.
+ */
+class StubQueryBuilder {
+  private _data: unknown;
+  private _single: boolean;
+
+  constructor(data: unknown = [], single = false) {
+    this._data = data;
+    this._single = single;
+  }
+
+  single() { return new StubQueryBuilder(this._data, true); }
+  maybeSingle() { return new StubQueryBuilder(this._data, true); }
+  csv() { return new StubQueryBuilder(this._data, true); }
+
+  // Every other method returns `this` for chaining
+  order() { return this; }
+  limit() { return this; }
+  range() { return this; }
+  eq() { return this; }
+  neq() { return this; }
+  gt() { return this; }
+  gte() { return this; }
+  lt() { return this; }
+  lte() { return this; }
+  like() { return this; }
+  ilike() { return this; }
+  is() { return this; }
+  in() { return this; }
+  contains() { return this; }
+  containedBy() { return this; }
+  overlaps() { return this; }
+  textSearch() { return this; }
+  match() { return this; }
+  not() { return this; }
+  filter() { return this; }
+  select() { return this; }
+  insert() { return this; }
+  update() { return this; }
+  delete() { return this; }
+  upsert() { return this; }
+  then(resolve: (v: { data: unknown; error: null }) => void) {
+    resolve({ data: this._single ? null : this._data, error: null });
+  }
+}
+
+/**
  * Creates a Supabase-compatible client backed by localStorage
  * for use in Electron standalone or browser local mode.
  *
@@ -152,27 +201,7 @@ export function createLocalSupabaseClient(): any {
       }),
     },
     from: (_table: string) => ({
-      select: (_cols?: string) => ({
-        eq: (_col: string, _val: string) => ({
-          single: async () => ({ data: null, error: null }),
-          then: (resolve: (v: { data: unknown[]; error: null }) => void) =>
-            resolve({ data: [], error: null }),
-        }),
-        order: (_col: string, _opts?: { ascending: boolean }) => ({
-          limit: (_n: number) => ({
-            then: (resolve: (v: { data: unknown[]; error: null }) => void) =>
-              resolve({ data: [], error: null }),
-          }),
-        }),
-        or: (_filter: string) => ({
-          order: (_col: string, _opts?: { ascending: boolean }) => ({
-            then: (resolve: (v: { data: unknown[]; error: null }) => void) =>
-              resolve({ data: [], error: null }),
-          }),
-        }),
-        then: (resolve: (v: { data: unknown[]; error: null }) => void) =>
-          resolve({ data: [], error: null }),
-      }),
+      select: (_cols?: string) => new StubQueryBuilder(),
       insert: (row: unknown) => ({
         select: () => ({
           single: async () => ({ data: row, error: null }),
@@ -180,15 +209,9 @@ export function createLocalSupabaseClient(): any {
         then: (resolve: (v: { data: unknown; error: null }) => void) =>
           resolve({ data: row, error: null }),
       }),
-      update: (_data: unknown) => ({
-        eq: async () => ({ data: null, error: null }),
-        in: async () => ({ data: null, error: null }),
-      }),
+      update: (_data: unknown) => new StubQueryBuilder(),
       upsert: async () => ({ data: null, error: null }),
-      delete: () => ({
-        eq: async () => ({ data: null, error: null }),
-        in: async () => ({ data: null, error: null }),
-      }),
+      delete: () => new StubQueryBuilder(),
     }),
     rpc: async () => ({ data: null, error: null }),
     channel: () => ({
