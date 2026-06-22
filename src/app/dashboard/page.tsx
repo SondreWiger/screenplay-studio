@@ -29,7 +29,7 @@ import { useTranslation } from '@/components/TranslationProvider';
 import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder, UsageIntent } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
 import { isElectronMode, isLocalOrElectron } from '@/lib/supabase/electron-client';
-import { putCached } from '@/lib/offline/db';
+import { putCached, getCachedProjects } from '@/lib/offline/db';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
@@ -164,6 +164,12 @@ function DashboardContent() {
   const fetchProjects = async () => {
     if (!user?.id) return;
     try {
+      if (isLocalOrElectron()) {
+        const localProjects = await getCachedProjects();
+        setProjects(localProjects as unknown as Project[]);
+        setLoading(false);
+        return;
+      }
       const supabase = createClient();
 
       // Get project IDs where user is a member (but not creator)
@@ -1394,7 +1400,7 @@ function NewProjectModal({
   const [seasonNumber, setSeasonNumber] = useState('1');
   const [episodeCount, setEpisodeCount] = useState('');
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; description?: string; project_type: string; script_type?: string; genre?: string; format?: string; structure_snapshot?: any }>>([]);
-  const [storageMode, setStorageMode] = useState<'cloud' | 'local'>('cloud');
+  const [storageMode, setStorageMode] = useState<'cloud' | 'local'>(isLocalOrElectron() ? 'local' : 'cloud');
 
   useEffect(() => {
     if (!isOpen || !userId) return;
@@ -1449,7 +1455,7 @@ function NewProjectModal({
       const projectId = crypto.randomUUID();
       const now = new Date().toISOString();
 
-      if (storageMode === 'local' || (isLocalOrElectron() && storageMode === 'local')) {
+      if (storageMode === 'local') {
         // ── Local project: write to IndexedDB ────────────────
         const projectRow: Record<string, unknown> = {
           id: projectId,
