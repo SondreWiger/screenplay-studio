@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { isFeatureEnabled } from '@/lib/feature-flags';
+import { isElectronMode } from '@/lib/supabase/electron-client';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Avatar } from '@/components/ui';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
@@ -62,14 +63,24 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
     }
   };
 
-  // Primary nav — keep lean; secondary links live in the avatar dropdown
+  const isElectron = isElectronMode();
+  const SITE = 'https://screenplaystudio.fun';
+
+  const openExternal = (url: string) => {
+    if (window.electron) {
+      window.electron.openExternal(url);
+    }
+  };
+
+  // Primary nav — hide marketing/community links in Electron
   const navLinks = [
     { href: '/dashboard', label: t('nav.dashboard') },
     { href: '/idea-boards', label: t('nav.ideas'), match: ['/idea-boards'] },
     { href: '/quotes', label: t('nav.quotes'), match: ['/quotes'] },
-    { href: '/blog', label: t('nav.blog'), match: ['/blog'] },
-    ...(canUseFeature('community') && isFeatureEnabled('community') ? [{ href: '/community', label: t('nav.community'), match: ['/community'] }] : []),
+    ...(!isElectron ? [{ href: '/blog', label: t('nav.blog'), match: ['/blog'] }] : []),
+    ...(canUseFeature('community') && isFeatureEnabled('community') && !isElectron ? [{ href: '/community', label: t('nav.community'), match: ['/community'] }] : []),
     ...(user?.show_accountability !== false ? [{ href: '/accountability', label: 'Accountability', match: ['/accountability'] }] : []),
+    ...(isElectron ? [{ href: '#external-docs', label: 'Docs', external: `${SITE}/docs` }] : []),
   ];
 
   const isActive = (link: typeof navLinks[0]) => {
@@ -122,7 +133,18 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           {/* Nav links */}
           <nav className="hidden md:flex items-center gap-0.5">
             {navLinks.map((link) => {
-              const active = isActive(link);
+              const active = !('external' in link) && isActive(link);
+              if ('external' in link) {
+                return (
+                  <button
+                    key={link.href}
+                    onClick={() => openExternal(link.external)}
+                    className="relative px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest transition-colors duration-150 text-white/40 hover:text-white/70"
+                  >
+                    <span className="relative">{link.label}</span>
+                  </button>
+                );
+              }
               return (
                 <Link
                   key={link.href}
@@ -217,7 +239,8 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                   ))}
                 </div>
 
-                {/* Pro upsell */}
+                {/* Pro upsell — hidden in Electron */}
+                {!isElectron && (
                 <div className="mx-3 mb-2"
                   style={{ border: '1px solid rgba(255,95,31,0.3)', background: 'rgba(255,95,31,0.06)' }}
                 >
@@ -233,6 +256,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                     <svg className="w-3.5 h-3.5 text-white/30 group-hover:text-[#FF5F1F] ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </Link>
                 </div>
+                )}
 
                 {/* Sign out */}
                 <div className="py-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>

@@ -4,7 +4,7 @@ import { setupMenu } from './menu';
 
 const isDev = !app.isPackaged;
 const isMac = process.platform === 'darwin';
-const WEB_URL = 'https://screenplaystudio.fun';
+const WEB_URL = 'https://screenplaystudio.fun/auth/login';
 
 let mainWindow: BrowserWindow | null = null;
 let menuSetup = false;
@@ -46,6 +46,19 @@ async function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // Block navigation to public/marketing pages — open in browser instead
+  const PUBLIC_PATHS = ['/blog', '/community', '/legal', '/support', '/about', '/pricing', '/pro', '/testimonials', '/translations', '/download', '/colorbar'];
+  mainWindow.webContents.on('will-navigate', (e, url) => {
+    try {
+      const parsed = new URL(url);
+      const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
+      if (!isLocal && PUBLIC_PATHS.some(p => parsed.pathname.startsWith(p))) {
+        e.preventDefault();
+        shell.openExternal(url);
+      }
+    } catch { /* ignore */ }
   });
 
   mainWindow.webContents.once('did-finish-load', () => {
@@ -111,6 +124,10 @@ function setupIPC() {
   });
 
   ipcMain.handle('electron:is-packaged', () => app.isPackaged);
+
+  ipcMain.handle('electron:open-external', (_event, url: string) => {
+    shell.openExternal(url);
+  });
 }
 
 const gotTheLock = app.requestSingleInstanceLock();

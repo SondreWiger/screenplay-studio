@@ -1,6 +1,7 @@
-import { BrowserWindow, Menu, MenuItemConstructorOptions, app } from 'electron';
+import { BrowserWindow, Menu, MenuItemConstructorOptions, app, shell } from 'electron';
 
 const isMac = process.platform === 'darwin';
+const SITE = 'https://screenplaystudio.fun';
 
 export function setupMenu(window: BrowserWindow) {
   const template: MenuItemConstructorOptions[] = [
@@ -86,6 +87,37 @@ export function setupMenu(window: BrowserWindow) {
               { role: 'front' as const },
             ]
           : []),
+      ],
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'Report a Bug',
+          click: () => shell.openExternal(`${SITE}/support`),
+        },
+        {
+          label: 'Documentation',
+          click: () => shell.openExternal(`${SITE}/docs`),
+        },
+        { type: 'separator' },
+        {
+          label: 'Terms of Service',
+          click: () => shell.openExternal(`${SITE}/legal/terms`),
+        },
+        {
+          label: 'Privacy Policy',
+          click: () => shell.openExternal(`${SITE}/legal/privacy`),
+        },
+        {
+          label: 'Community Guidelines',
+          click: () => shell.openExternal(`${SITE}/legal/community-guidelines`),
+        },
+        { type: 'separator' },
+        {
+          label: 'View on GitHub',
+          click: () => shell.openExternal('https://github.com/SondreWiger/screenplay-studio'),
+        },
       ],
     },
   ];

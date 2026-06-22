@@ -22,6 +22,7 @@ declare global {
       }>;
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<void>;
       isPackaged: () => Promise<boolean>;
+      openExternal: (url: string) => Promise<void>;
     };
   }
 }

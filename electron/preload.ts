@@ -20,6 +20,7 @@ export interface ElectronAPI {
   }>;
   setTheme: (theme: 'light' | 'dark' | 'system') => Promise<void>;
   isPackaged: () => Promise<boolean>;
+  openExternal: (url: string) => Promise<void>;
 }
 
 contextBridge.exposeInMainWorld('electron', {
@@ -39,4 +40,6 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.invoke('electron:set-theme', theme),
   isPackaged: () =>
     ipcRenderer.invoke('electron:is-packaged'),
+  openExternal: (url: string) =>
+    ipcRenderer.invoke('electron:open-external', url),
 } satisfies ElectronAPI);
