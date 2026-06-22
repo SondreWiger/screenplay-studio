@@ -18,6 +18,12 @@ import {
 } from 'lucide-react';
 
 const ORANGE = '#FF5F1F';
+const GITHUB_REPO = 'SondreWiger/screenplay-studio';
+const RELEASE_TAG = 'v1.0.0-electron.1';
+
+function getDownloadUrl(os: string, ext: string): string {
+  return `https://github.com/${GITHUB_REPO}/releases/download/${RELEASE_TAG}/ScreenplayStudio-${os}.${ext}`;
+}
 
 type Platform = 'macos' | 'windows' | 'linux';
 
@@ -191,10 +197,15 @@ export default function DownloadPage() {
               <h2 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.02em' }}>
                 Screenplay Studio for {dl.label}
               </h2>
-              <p className="text-sm text-white/40 leading-relaxed mb-6">
+              <p className="text-xs text-white/40 leading-relaxed mb-4">
                 Native desktop app with full offline support. Save projects to your hard drive,
                 open .screenplay files, and sync when you&apos;re ready.
               </p>
+              {selected === 'macos' && (
+                <p className="text-[11px] text-white/30 leading-relaxed mb-4 border-l-2 pl-3" style={{ borderColor: ORANGE }}>
+                  macOS may show a security warning on first launch. Right-click the app → Open → Open to bypass.
+                </p>
+              )}
               <div className="flex flex-wrap gap-3 text-[10px] text-white/30 mb-8">
                 <span className="flex items-center gap-1"><Check size={12} style={{ color: ORANGE }} /> Free forever</span>
                 <span className="flex items-center gap-1"><Check size={12} style={{ color: ORANGE }} /> No account required</span>
@@ -203,7 +214,7 @@ export default function DownloadPage() {
               </div>
             </div>
             <a
-              href={`/downloads/ScreenplayStudio-${dl.os}.${dl.ext}`}
+              href={getDownloadUrl(dl.os, dl.ext)}
               download
               className="inline-flex items-center justify-center gap-2 h-12 px-8 text-sm font-bold uppercase tracking-[0.12em] text-white transition-all hover:opacity-90"
               style={{ background: ORANGE }}
