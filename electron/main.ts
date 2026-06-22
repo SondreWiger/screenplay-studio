@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, Menu, nativeTheme } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme } from 'electron';
 import * as path from 'path';
+import * as fs from 'fs';
 import { spawn, type ChildProcess } from 'child_process';
 import { setupMenu } from './menu';
 
@@ -20,6 +21,27 @@ function getServerUrl(): string {
   return `http://localhost:${SERVER_PORT}`;
 }
 
+function findServerScript(): string | null {
+  // In packaged app, app.getAppPath() points inside the ASAR.
+  // The standalone server must run from outside the ASAR.
+  // electron-builder extracts asarUnpack files to resources/app.asar.unpacked/
+  const resourcesPath = process.resourcesPath || app.getAppPath();
+
+  // Try unpacked first (for packaged app)
+  const unpacked = path.join(resourcesPath, 'app.asar.unpacked', '.next', 'standalone', 'server.js');
+  if (fs.existsSync(unpacked)) return unpacked;
+
+  // Try inside ASAR (may not work for spawn, but worth a try)
+  const asar = path.join(app.getAppPath(), '.next', 'standalone', 'server.js');
+  if (fs.existsSync(asar)) return asar;
+
+  // Development: relative to project root
+  const dev = path.join(__dirname, '..', '.next', 'standalone', 'server.js');
+  if (fs.existsSync(dev)) return dev;
+
+  return null;
+}
+
 function startServer(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (isDev) {
@@ -27,35 +49,82 @@ function startServer(): Promise<void> {
       return;
     }
 
-    // Next.js standalone output: .next/standalone/server.js
-    const appDir = app.getAppPath();
-    const serverPath = path.join(appDir, '.next', 'standalone', 'server.js');
+    const serverPath = findServerScript();
+    if (!serverPath) {
+      console.error('[electron] server.js not found');
+      resolve();
+      return;
+    }
+
+    console.log(`[electron] starting server from: ${serverPath}`);
 
     serverProcess = spawn(process.execPath, [serverPath], {
       env: { ...process.env, PORT: String(SERVER_PORT), HOSTNAME: 'localhost' },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    let resolved = false;
+
     serverProcess.stdout?.on('data', (data: Buffer) => {
       const msg = data.toString();
       console.log(`[server] ${msg}`);
-      if (msg.includes('Ready') || msg.includes('started') || msg.includes('listening')) {
+      if (!resolved && (msg.includes('Ready') || msg.includes('started') || msg.includes('listening'))) {
+        resolved = true;
         resolve();
       }
     });
 
     serverProcess.stderr?.on('data', (data: Buffer) => {
-      console.error(`[server] ${data.toString()}`);
+      const msg = data.toString();
+      console.error(`[server] ${msg}`);
+      if (!resolved && (msg.includes('Ready') || msg.includes('listening') || msg.includes('started'))) {
+        resolved = true;
+        resolve();
+      }
     });
 
-    serverProcess.on('error', reject);
+    serverProcess.on('error', (err) => {
+      console.error('[server] error:', err);
+      if (!resolved) {
+        resolved = true;
+        resolve(); // Don't block app launch
+      }
+    });
+
     serverProcess.on('exit', (code) => {
       console.log(`[server] exited with code ${code}`);
       serverProcess = null;
     });
 
     // Fallback: resolve after timeout so the app still launches
-    setTimeout(() => resolve(), 5_000);
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        resolve();
+      }
+    }, 10_000);
+  });
+}
+
+function waitForServer(url: string, maxRetries = 30): Promise<void> {
+  return new Promise((resolve) => {
+    let retries = 0;
+    const check = () => {
+      const http = require('http');
+      http.get(url, (res: { statusCode: number }) => {
+        console.log(`[electron] server responded with ${res.statusCode}`);
+        resolve();
+      }).on('error', () => {
+        retries++;
+        if (retries >= maxRetries) {
+          console.log('[electron] server did not respond, proceeding anyway');
+          resolve();
+        } else {
+          setTimeout(check, 500);
+        }
+      });
+    };
+    check();
   });
 }
 
@@ -66,7 +135,7 @@ function stopServer() {
   }
 }
 
-function createWindow() {
+async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -86,6 +155,11 @@ function createWindow() {
   });
 
   const url = isDev ? getDevUrl() : getServerUrl();
+
+  if (!isDev) {
+    await waitForServer(url);
+  }
+
   mainWindow.loadURL(url);
 
   mainWindow.once('ready-to-show', () => {
@@ -171,17 +245,34 @@ function setupIPC() {
   ipcMain.handle('electron:is-packaged', () => app.isPackaged);
 }
 
-app.whenReady().then(async () => {
-  setupIPC();
-  await startServer();
-  createWindow();
+// ── Single instance lock ────────────────────────────────────
+const gotTheLock = app.requestSingleInstanceLock();
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
     }
   });
-});
+
+  app.whenReady().then(async () => {
+    setupIPC();
+    await startServer();
+    await createWindow();
+
+    app.on('activate', () => {
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.focus();
+      } else {
+        createWindow();
+      }
+    });
+  });
+}
 
 app.on('window-all-closed', () => {
   stopServer();

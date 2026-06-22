@@ -18,6 +18,9 @@
     "!src/**/*",
     "!**/*.map"
   ],
+  "asarUnpack": [
+    ".next/standalone/**/*"
+  ],
   "extraResources": [],
   "artifactName": "ScreenplayStudio-${os}.${ext}",
   "mac": {
