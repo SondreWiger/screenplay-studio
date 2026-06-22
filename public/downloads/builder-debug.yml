@@ -3,15 +3,12 @@ x64:
     - '!**/node_modules'
     - '!build{,/**/*}'
     - '!public/downloads{,/**/*}'
-    - electron/**/*
+    - electron/dist/**/*
     - .next/standalone/**/*
     - .next/static/**/*
     - public/**/*
     - '!public/downloads/**/*'
-    - '!node_modules/**/*'
-    - '!.next/**/*'
-    - '!src/**/*'
-    - '!**/*.map'
+    - '!public/downloads/.icon-icns/**/*'
     - package.json
     - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,forge-meta,pdb}'
     - '!**/._*'
@@ -22,29 +19,23 @@ x64:
     - '!.yarnrc.yml'
   nodeModuleFilePatterns:
     - '**/*'
-    - electron/**/*
+    - electron/dist/**/*
     - .next/standalone/**/*
     - .next/static/**/*
     - public/**/*
     - '!public/downloads/**/*'
-    - '!node_modules/**/*'
-    - '!.next/**/*'
-    - '!src/**/*'
-    - '!**/*.map'
+    - '!public/downloads/.icon-icns/**/*'
 arm64:
   firstOrDefaultFilePatterns:
     - '!**/node_modules'
     - '!build{,/**/*}'
     - '!public/downloads{,/**/*}'
-    - electron/**/*
+    - electron/dist/**/*
     - .next/standalone/**/*
     - .next/static/**/*
     - public/**/*
     - '!public/downloads/**/*'
-    - '!node_modules/**/*'
-    - '!.next/**/*'
-    - '!src/**/*'
-    - '!**/*.map'
+    - '!public/downloads/.icon-icns/**/*'
     - package.json
     - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,forge-meta,pdb}'
     - '!**/._*'
@@ -55,12 +46,9 @@ arm64:
     - '!.yarnrc.yml'
   nodeModuleFilePatterns:
     - '**/*'
-    - electron/**/*
+    - electron/dist/**/*
     - .next/standalone/**/*
     - .next/static/**/*
     - public/**/*
     - '!public/downloads/**/*'
-    - '!node_modules/**/*'
-    - '!.next/**/*'
-    - '!src/**/*'
-    - '!**/*.map'
+    - '!public/downloads/.icon-icns/**/*'

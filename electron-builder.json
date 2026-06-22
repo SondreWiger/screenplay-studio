@@ -8,15 +8,12 @@
     "buildResources": "build"
   },
   "files": [
-    "electron/**/*",
+    "electron/dist/**/*",
     ".next/standalone/**/*",
     ".next/static/**/*",
     "public/**/*",
     "!public/downloads/**/*",
-    "!node_modules/**/*",
-    "!.next/**/*",
-    "!src/**/*",
-    "!**/*.map"
+    "!public/downloads/.icon-icns/**/*"
   ],
   "asarUnpack": [
     ".next/standalone/**/*"
