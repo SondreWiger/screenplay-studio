@@ -126,8 +126,9 @@ class StubQueryBuilder {
   single() { return new StubQueryBuilder(this._data, true); }
   maybeSingle() { return new StubQueryBuilder(this._data, true); }
   csv() { return new StubQueryBuilder(this._data, true); }
+  head() { return this; }
 
-  // Every other method returns `this` for chaining
+  // Filter / query methods
   order() { return this; }
   limit() { return this; }
   range() { return this; }
@@ -148,13 +149,32 @@ class StubQueryBuilder {
   match() { return this; }
   not() { return this; }
   filter() { return this; }
+  or() { return this; }
+  and() { return this; }
+
+  // CRUD methods
   select() { return this; }
   insert() { return this; }
   update() { return this; }
   delete() { return this; }
   upsert() { return this; }
+
+  // Resolve
+  returns() { return this; }
   then(resolve: (v: { data: unknown; error: null }) => void) {
     resolve({ data: this._single ? null : this._data, error: null });
+  }
+
+  // Catch-all for any future methods we haven't listed
+  static create(data: unknown = [], single = false): StubQueryBuilder & Record<string, (...args: unknown[]) => StubQueryBuilder> {
+    const qb = new StubQueryBuilder(data, single);
+    return new Proxy(qb, {
+      get(target, prop, receiver) {
+        if (prop in target) return Reflect.get(target, prop, receiver);
+        // Unknown method — return a function that returns the target for chaining
+        return () => receiver;
+      },
+    });
   }
 }
 
@@ -201,7 +221,7 @@ export function createLocalSupabaseClient(): any {
       }),
     },
     from: (_table: string) => ({
-      select: (_cols?: string) => new StubQueryBuilder(),
+      select: (_cols?: string) => StubQueryBuilder.create(),
       insert: (row: unknown) => ({
         select: () => ({
           single: async () => ({ data: row, error: null }),
@@ -209,9 +229,9 @@ export function createLocalSupabaseClient(): any {
         then: (resolve: (v: { data: unknown; error: null }) => void) =>
           resolve({ data: row, error: null }),
       }),
-      update: (_data: unknown) => new StubQueryBuilder(),
+      update: (_data: unknown) => StubQueryBuilder.create(),
       upsert: async () => ({ data: null, error: null }),
-      delete: () => new StubQueryBuilder(),
+      delete: () => StubQueryBuilder.create(),
     }),
     rpc: async () => ({ data: null, error: null }),
     channel: () => ({
