@@ -22,28 +22,24 @@ function getServerUrl(): string {
 }
 
 function findServerScript(): string | null {
-  // In packaged app, app.getAppPath() points inside the ASAR.
-  // The standalone server must run from outside the ASAR.
-  // electron-builder extracts asarUnpack files to resources/app.asar.unpacked/
-  const resourcesPath = process.resourcesPath || app.getAppPath();
+  if (isDev) return null;
 
-  // Try unpacked first (for packaged app)
+  // extraResources copies to Resources/app/
+  const resourcesPath = process.resourcesPath;
+  const candidate = path.join(resourcesPath, 'app', 'server.js');
+  console.log(`[electron] looking for server at: ${candidate}`);
+  if (fs.existsSync(candidate)) return candidate;
+
+  // Fallback: check asarUnpacked
   const unpacked = path.join(resourcesPath, 'app.asar.unpacked', '.next', 'standalone', 'server.js');
   if (fs.existsSync(unpacked)) return unpacked;
 
-  // Try inside ASAR (may not work for spawn, but worth a try)
-  const asar = path.join(app.getAppPath(), '.next', 'standalone', 'server.js');
-  if (fs.existsSync(asar)) return asar;
-
-  // Development: relative to project root
-  const dev = path.join(__dirname, '..', '.next', 'standalone', 'server.js');
-  if (fs.existsSync(dev)) return dev;
-
+  console.error('[electron] server.js not found');
   return null;
 }
 
 function startServer(): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (isDev) {
       resolve();
       return;
@@ -51,14 +47,16 @@ function startServer(): Promise<void> {
 
     const serverPath = findServerScript();
     if (!serverPath) {
-      console.error('[electron] server.js not found');
+      console.error('[electron] No server found, resolving anyway');
       resolve();
       return;
     }
 
-    console.log(`[electron] starting server from: ${serverPath}`);
+    const serverDir = path.dirname(serverPath);
+    console.log(`[electron] starting server from: ${serverDir}`);
 
     serverProcess = spawn(process.execPath, [serverPath], {
+      cwd: serverDir,
       env: { ...process.env, PORT: String(SERVER_PORT), HOSTNAME: 'localhost' },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
@@ -84,11 +82,8 @@ function startServer(): Promise<void> {
     });
 
     serverProcess.on('error', (err) => {
-      console.error('[server] error:', err);
-      if (!resolved) {
-        resolved = true;
-        resolve(); // Don't block app launch
-      }
+      console.error('[server] spawn error:', err);
+      if (!resolved) { resolved = true; resolve(); }
     });
 
     serverProcess.on('exit', (code) => {
@@ -96,13 +91,9 @@ function startServer(): Promise<void> {
       serverProcess = null;
     });
 
-    // Fallback: resolve after timeout so the app still launches
     setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve();
-      }
-    }, 10_000);
+      if (!resolved) { resolved = true; resolve(); }
+    }, 15_000);
   });
 }
 
@@ -111,12 +102,10 @@ function waitForServer(url: string, maxRetries = 30): Promise<void> {
     let retries = 0;
     const check = () => {
       const http = require('http');
-      http.get(url, (res: { statusCode: number }) => {
-        console.log(`[electron] server responded with ${res.statusCode}`);
+      http.get(url, () => {
         resolve();
       }).on('error', () => {
-        retries++;
-        if (retries >= maxRetries) {
+        if (++retries >= maxRetries) {
           console.log('[electron] server did not respond, proceeding anyway');
           resolve();
         } else {
@@ -167,9 +156,7 @@ async function createWindow() {
     mainWindow?.focus();
   });
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  mainWindow.on('closed', () => { mainWindow = null; });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -177,8 +164,8 @@ async function createWindow() {
   });
 
   mainWindow.webContents.once('did-finish-load', () => {
-    if (!menuSetup) {
-      setupMenu(mainWindow!);
+    if (!menuSetup && mainWindow) {
+      setupMenu(mainWindow);
       menuSetup = true;
     }
     if (!updaterSetup && !isDev) {
@@ -196,37 +183,33 @@ async function createWindow() {
 
 function setupIPC() {
   ipcMain.handle('electron:save-file', async (_event, options: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) => {
-    const result = await dialog.showSaveDialog(mainWindow!, {
+    return dialog.showSaveDialog(mainWindow!, {
       defaultPath: options.defaultPath,
       filters: options.filters || [
         { name: 'Screenplay Files', extensions: ['screenplay'] },
         { name: 'All Files', extensions: ['*'] },
       ],
     });
-    return result;
   });
 
   ipcMain.handle('electron:open-file', async (_event, options?: { filters?: { name: string; extensions: string[] }[] }) => {
-    const result = await dialog.showOpenDialog(mainWindow!, {
+    return dialog.showOpenDialog(mainWindow!, {
       properties: ['openFile'],
       filters: options?.filters || [
         { name: 'Screenplay Files', extensions: ['screenplay'] },
         { name: 'All Files', extensions: ['*'] },
       ],
     });
-    return result;
   });
 
   ipcMain.handle('electron:read-file', async (_event, filePath: string) => {
-    const fs = await import('fs/promises');
-    return fs.readFile(filePath, 'utf-8');
+    return (await import('fs/promises')).readFile(filePath, 'utf-8');
   });
 
   ipcMain.handle('electron:write-file', async (_event, filePath: string, content: string) => {
-    const fs = await import('fs/promises');
-    const dir = path.dirname(filePath);
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(filePath, content, 'utf-8');
+    const fs2 = await import('fs/promises');
+    await fs2.mkdir(path.dirname(filePath), { recursive: true });
+    await fs2.writeFile(filePath, content, 'utf-8');
   });
 
   ipcMain.handle('electron:get-platform', () => process.platform);
@@ -276,13 +259,9 @@ if (!gotTheLock) {
 
 app.on('window-all-closed', () => {
   stopServer();
-  if (!isMac) {
-    app.quit();
-  }
+  if (!isMac) app.quit();
 });
 
-app.on('before-quit', () => {
-  stopServer();
-});
+app.on('before-quit', () => { stopServer(); });
 
 export { mainWindow };
