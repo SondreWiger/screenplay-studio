@@ -2,6 +2,8 @@
 
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
+import { clearLocalUser, isLocalOrElectron } from '@/lib/supabase/electron-client';
+import { putCached, deleteCached, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById } from '@/lib/offline/db';
 import logger from '@/lib/logger';
 import type {
   Project, Script, ScriptElement, Character, Location,
@@ -29,9 +31,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   setLoading: (loading) => set({ loading }),
   setInitialized: (initialized) => set({ initialized }),
   signOut: async () => {
-    const supabase = createClient();
     try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    await supabase.auth.signOut();
+    if (isLocalOrElectron()) {
+      clearLocalUser();
+    } else {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
     set({ user: null });
   },
 }));
@@ -65,9 +71,15 @@ export const useProjectStore = create<ProjectState>((set) => ({
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
   fetchProjects: async () => {
-    const supabase = createClient();
     set({ loading: true, error: null });
     try {
+      if (isLocalOrElectron()) {
+        // Local mode: read from IndexedDB
+        const projects = await getCachedProjects();
+        set({ projects: projects as unknown as Project[], loading: false });
+        return;
+      }
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.id) { set({ projects: [], loading: false }); return; }
 
@@ -90,9 +102,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
     }
   },
   fetchProject: async (id: string) => {
-    const supabase = createClient();
     set({ loading: true, error: null });
     try {
+      if (isLocalOrElectron()) {
+        const project = await getCachedById('projects', id);
+        set({ currentProject: (project as unknown as Project) || null, members: [], loading: false });
+        return;
+      }
+      const supabase = createClient();
       const [projectRes, membersRes] = await Promise.all([
         supabase.from('projects').select('*').eq('id', id).single(),
         supabase.from('project_members').select('*, profile:profiles!user_id(*)').eq('project_id', id),
@@ -139,14 +156,21 @@ interface ScriptState {
   reorderElements: (elements: ScriptElement[]) => Promise<void>;
 }
 
-// Sync a full snapshot of elements to Supabase
+// Sync a full snapshot of elements to Supabase (or IndexedDB in local mode)
 async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
+  if (isLocalOrElectron()) {
+    // In local mode, just write all elements to IndexedDB
+    for (const el of snapshot) {
+      await putCached('script_elements', el as unknown as Record<string, unknown>);
+    }
+    return;
+  }
   const supabase = createClient();
   const { data: rows } = await supabase
     .from('script_elements').select('id').eq('script_id', scriptId);
   const currentIds = new Set((rows ?? []).map((r: { id: string }) => r.id));
   const snapshotIds = new Set(snapshot.map((e) => e.id));
-  const toDelete = Array.from(currentIds).filter((id) => !snapshotIds.has(id));
+  const toDelete = Array.from(currentIds).filter((id) => !snapshotIds.has(id as string));
   if (toDelete.length > 0) {
     await supabase.from('script_elements').delete().in('id', toDelete);
   }
@@ -206,10 +230,20 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   setLoading: (loading) => set({ loading }),
 
   fetchScripts: async (projectId: string) => {
-    const supabase = createClient();
     // Clear immediately so stale data from a previous project is never shown.
     set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [] });
     try {
+      if (isLocalOrElectron()) {
+        const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
+        scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
+        set({ scripts });
+        if (scripts.length > 0) {
+          const active = scripts.find((s) => s.is_active) || scripts[0];
+          set({ currentScript: active });
+        }
+        return;
+      }
+      const supabase = createClient();
       const { data } = await supabase
         .from('scripts')
         .select('*')
@@ -230,9 +264,15 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 
   fetchElements: async (scriptId: string) => {
-    const supabase = createClient();
     set({ loading: true });
     try {
+      if (isLocalOrElectron()) {
+        const elements = await getCachedByScript(scriptId) as unknown as ScriptElement[];
+        elements.sort((a, b) => a.sort_order - b.sort_order);
+        set({ elements, loading: false });
+        return;
+      }
+      const supabase = createClient();
       const { data } = await supabase
         .from('script_elements')
         .select('*')
@@ -247,7 +287,6 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
   addElement: async (element) => {
     get().pushHistory();
-    const supabase = createClient();
     set({ saving: true });
     const elements = get().elements;
     const maxOrder = elements.length > 0 ? Math.max(...elements.map((e) => e.sort_order)) : 0;
@@ -255,6 +294,15 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       ...element,
       sort_order: element.sort_order ?? maxOrder + 1,
     };
+
+    if (isLocalOrElectron()) {
+      const newElement = { ...insertData, id: insertData.id || crypto.randomUUID() } as ScriptElement;
+      await putCached('script_elements', newElement as unknown as Record<string, unknown>);
+      set({ elements: [...get().elements, newElement].sort((a, b) => a.sort_order - b.sort_order), saving: false });
+      return newElement;
+    }
+
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('script_elements')
       .insert(insertData)
@@ -281,6 +329,14 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       elements: get().elements.map((e) => (e.id === id ? { ...e, ...updates } : e)),
       saving: true,
     });
+
+    if (isLocalOrElectron()) {
+      const updated = get().elements.find((e) => e.id === id);
+      if (updated) await putCached('script_elements', updated as unknown as Record<string, unknown>);
+      set({ saving: false });
+      return;
+    }
+
     const supabase = createClient();
     await supabase.from('script_elements').update(updates).eq('id', id);
     set({ saving: false });
@@ -288,14 +344,30 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
   deleteElement: async (id) => {
     get().pushHistory();
+
+    if (isLocalOrElectron()) {
+      await deleteCached('script_elements', id);
+      set({ elements: get().elements.filter((e) => e.id !== id) });
+      return;
+    }
+
     const supabase = createClient();
     await supabase.from('script_elements').delete().eq('id', id);
     set({ elements: get().elements.filter((e) => e.id !== id) });
   },
 
   reorderElements: async (elements) => {
-    const supabase = createClient();
     set({ elements, saving: true });
+
+    if (isLocalOrElectron()) {
+      for (const el of elements) {
+        await putCached('script_elements', { ...el, sort_order: elements.indexOf(el) } as unknown as Record<string, unknown>);
+      }
+      set({ saving: false });
+      return;
+    }
+
+    const supabase = createClient();
     // Use upsert for efficient batch update instead of N individual queries
     const updates = elements.map((e, i) => ({ id: e.id, sort_order: i }));
     const BATCH_SIZE = 100;

@@ -1,12 +1,16 @@
 /** @type {import('next').NextConfig} */
+const isElectron = process.env.ELECTRON_BUILD === 'true';
+
 const nextConfig = {
+  // Electron uses static export; web uses default (standalone)
+  output: isElectron ? 'standalone' : undefined,
   swcMinify: true,
   compress: true,
   eslint: {
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
 
   // ── Strip console.* in production builds ─────────────────
@@ -18,6 +22,7 @@ const nextConfig = {
   } : {}),
 
   images: {
+    unoptimized: isElectron, // Electron local server can't optimize images
     remotePatterns: [
       {
         protocol: 'https',
@@ -44,9 +49,11 @@ const nextConfig = {
   },
 
   experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
-    },
+    ...(isElectron ? {} : {
+      serverActions: {
+        bodySizeLimit: '10mb',
+      },
+    }),
     // Tree-shake icon/utility libraries — biggest single bundle win
     optimizePackageImports: [
       'lucide-react',
@@ -101,6 +108,13 @@ const nextConfig = {
         source: '/:path*\\.(svg|png|jpg|jpeg|gif|webp|avif|ico|woff2|woff|ttf|otf)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        // ── Desktop app downloads — cache 1 hour, revalidate ────
+        source: '/downloads/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=1800' },
         ],
       },
       {

@@ -28,6 +28,8 @@ import { useRecentProjects } from '@/hooks/useRecentProjects';
 import { useTranslation } from '@/components/TranslationProvider';
 import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder, UsageIntent } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
+import { isElectronMode, isLocalOrElectron } from '@/lib/supabase/electron-client';
+import { putCached } from '@/lib/offline/db';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
@@ -1392,6 +1394,7 @@ function NewProjectModal({
   const [seasonNumber, setSeasonNumber] = useState('1');
   const [episodeCount, setEpisodeCount] = useState('');
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; description?: string; project_type: string; script_type?: string; genre?: string; format?: string; structure_snapshot?: any }>>([]);
+  const [storageMode, setStorageMode] = useState<'cloud' | 'local'>('cloud');
 
   useEffect(() => {
     if (!isOpen || !userId) return;
@@ -1434,8 +1437,6 @@ function NewProjectModal({
     setError('');
 
     try {
-      const supabase = createClient();
-      
       // Set project type based on script type
       let finalProjectType: ProjectType = projectType;
       if (projectType === 'tv_production') finalProjectType = 'tv_production';
@@ -1444,10 +1445,14 @@ function NewProjectModal({
       else if (scriptType === 'youtube') finalProjectType = 'youtube';
       else if (scriptType === 'tiktok') finalProjectType = 'tiktok';
       else finalProjectType = 'film';
-      
-      const { data, error: insertError } = await supabase
-        .from('projects')
-        .insert({
+
+      const projectId = crypto.randomUUID();
+      const now = new Date().toISOString();
+
+      if (storageMode === 'local' || (isLocalOrElectron() && storageMode === 'local')) {
+        // ── Local project: write to IndexedDB ────────────────
+        const projectRow: Record<string, unknown> = {
+          id: projectId,
           title: title.trim(),
           logline: logline.trim() || null,
           format,
@@ -1456,25 +1461,88 @@ function NewProjectModal({
           project_type: finalProjectType,
           created_by: userId,
           company_id: selectedCompanyId || null,
+          created_at: now,
+          updated_at: now,
+          status: 'development',
+          is_showcased: false,
+          showcase_script: false,
+          showcase_mindmap: false,
+          showcase_moodboard: false,
+          set_photos: [],
+          external_links: {},
+          production_trivia: [],
           ...(scriptType === 'episodic' ? {
             season_number: seasonNumber ? parseInt(seasonNumber, 10) : 1,
             episode_count: episodeCount ? parseInt(episodeCount, 10) : null,
           } : {}),
-        })
-        .select()
-        .single();
+        };
 
-      if (insertError) {
-        console.error('Error creating project:', insertError);
-        setError(insertError.message);
-        setLoading(false);
-        return;
-      }
+        await putCached('projects', projectRow);
 
-      if (data) {
+        // Create a default script for the project
+        const scriptId = crypto.randomUUID();
+        const scriptRow: Record<string, unknown> = {
+          id: scriptId,
+          project_id: projectId,
+          title: 'Untitled Script',
+          version: 1,
+          is_active: true,
+          created_by: userId,
+          created_at: now,
+          updated_at: now,
+        };
+        await putCached('scripts', scriptRow);
+
+        // Create a title page element
+        const titleElement: Record<string, unknown> = {
+          id: crypto.randomUUID(),
+          script_id: scriptId,
+          element_type: 'title_page',
+          content: title.trim(),
+          sort_order: 0,
+          created_at: now,
+          updated_at: now,
+        };
+        await putCached('script_elements', titleElement);
+
         toast.success(pickToast(NEW_PROJECT));
-        router.push(scriptType === 'episodic' ? `/projects/${data.id}/episodes` : `/projects/${data.id}`);
+        router.push(`/projects/${projectId}`);
         onCreated();
+      } else {
+        // ── Cloud project: write to Supabase ─────────────────
+        const supabase = createClient();
+        const { data, error: insertError } = await supabase
+          .from('projects')
+          .insert({
+            id: projectId,
+            title: title.trim(),
+            logline: logline.trim() || null,
+            format,
+            genre,
+            script_type: scriptType,
+            project_type: finalProjectType,
+            created_by: userId,
+            company_id: selectedCompanyId || null,
+            ...(scriptType === 'episodic' ? {
+              season_number: seasonNumber ? parseInt(seasonNumber, 10) : 1,
+              episode_count: episodeCount ? parseInt(episodeCount, 10) : null,
+            } : {}),
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating project:', insertError);
+          setError(insertError.message);
+          setLoading(false);
+          return;
+        }
+
+        if (data) {
+          toast.success(pickToast(NEW_PROJECT));
+          router.push(scriptType === 'episodic' ? `/projects/${data.id}/episodes` : `/projects/${data.id}`);
+          onCreated();
+        }
       }
     } catch (err) {
       console.error('Unexpected error creating project:', err);
@@ -1653,6 +1721,44 @@ function NewProjectModal({
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Storage mode toggle — only show in Electron/local mode */}
+          {isElectronMode() && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-surface-300">Storage</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStorageMode('local')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
+                    storageMode === 'local'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
+                      : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375" /></svg>
+                  Local
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStorageMode('cloud')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
+                    storageMode === 'cloud'
+                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
+                      : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" /></svg>
+                  Cloud
+                </button>
+              </div>
+              <p className="text-[11px] text-surface-500">
+                {storageMode === 'local'
+                  ? 'Saved to your hard drive. You can sync to cloud later from Settings.'
+                  : 'Saved to the cloud. Access from any device.'}
+              </p>
             </div>
           )}
 

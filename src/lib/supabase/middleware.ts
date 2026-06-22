@@ -163,12 +163,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Local mode bypass — cookie set by electron-client.ts when user enters local mode
+  const isLocalMode = request.cookies.get('ss-local-mode')?.value === '1';
+
   // Ban / IP ban enforcement
   // Allow access to /banned, /suspended, static assets, and auth pages
   const enforcementExemptPaths = ['/banned', '/suspended', '/auth/', '/api/auth/', '/_next/', '/favicon.ico'];
   const isEnforcementExempt = enforcementExemptPaths.some(p => pathname.startsWith(p));
 
-  if (!isEnforcementExempt) {
+  if (!isEnforcementExempt && !isLocalMode) {
     // Check IP ban first (catches new accounts from banned IPs)
     const { data: ipBan } = await supabase
       .from('banned_ips')
@@ -312,15 +315,15 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   );
 
-  if (isProtected && !user) {
+  if (isProtected && !user && !isLocalMode) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     url.searchParams.set('redirect', request.nextUrl.pathname);
     return redirectWithCookies(url);
   }
 
-  // Admin / Mod panel route — allow admin UID, admins, and moderators
-  if (request.nextUrl.pathname.startsWith('/admin') && user) {
+  // Admin / Mod panel route — allow admin UID, admins, and moderators (skip in local mode)
+  if (request.nextUrl.pathname.startsWith('/admin') && user && !isLocalMode) {
     const ADMIN_UID = process.env.ADMIN_UID || '';
     if (!ADMIN_UID || user.id !== ADMIN_UID) {
       // Fetch profile to check role

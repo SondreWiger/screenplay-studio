@@ -10,6 +10,8 @@ import { Button, Modal, Input, Select, Avatar, Textarea, toast } from '@/compone
 import logger from '@/lib/logger';
 import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
+import { isElectronMode } from '@/lib/supabase/electron-client';
+import { getCachedSavePath, setCachedSavePath, saveProjectToDisk } from '@/lib/local-files';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
 import { VersionPanel } from '@/components/versioning/VersionPanel';
 import {
@@ -1049,6 +1051,23 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     // When saving just finished
     setLastSaved(new Date());
   }, [saving]);
+
+  // Auto-save to disk in Electron mode (every 30 seconds if there are changes)
+  useEffect(() => {
+    if (!isElectronMode() || !currentScript || elements.length === 0) return;
+    let lastAutoSave = Date.now();
+    const interval = setInterval(() => {
+      if (Date.now() - lastAutoSave > 25_000) {
+        saveProjectToDisk(
+          { id: currentScript.project_id } as any,
+          [currentScript],
+          elements
+        ).catch(() => {});
+        lastAutoSave = Date.now();
+      }
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [currentScript, elements]);
   // All version names present in this script (known + detected from elements)
   const allVersions = useMemo(() => getAllVersionNames(elements, versionConfig), [elements, versionConfig]);
 
@@ -1564,6 +1583,79 @@ ${pageHTML}
     setShowImportExport(false);
   }, [currentScript, elements, versionConfig]);
 
+  // ── Electron: Save / Open .screenplay files ─────────────────────
+  const handleElectronSave = useCallback(async () => {
+    if (!window.electron || !currentScript) return;
+    const data = {
+      version: 1,
+      script: currentScript,
+      elements,
+      savedAt: new Date().toISOString(),
+    };
+    const result = await window.electron.saveFile({
+      defaultPath: `${currentScript.title || 'script'}.screenplay`,
+      filters: [{ name: 'Screenplay Files', extensions: ['screenplay'] }],
+    });
+    if (!result.canceled && result.filePath) {
+      await window.electron.writeFile(result.filePath, JSON.stringify(data, null, 2));
+      toast.success('Script saved');
+    }
+  }, [currentScript, elements]);
+
+  const handleElectronOpen = useCallback(async () => {
+    if (!window.electron) return;
+    const result = await window.electron.openFile({
+      filters: [{ name: 'Screenplay Files', extensions: ['screenplay'] }],
+    });
+    if (result.canceled || !result.filePaths[0]) return;
+    try {
+      const content = await window.electron.readFile(result.filePaths[0]);
+      const data = JSON.parse(content);
+      if (data.elements && Array.isArray(data.elements)) {
+        // Replace current elements with loaded ones
+        const store = useScriptStore.getState();
+        store.setElements(data.elements);
+        if (data.script) store.setCurrentScript(data.script);
+        toast.success('Script loaded');
+      }
+    } catch (err) {
+      toast.error('Failed to open file');
+      logger.error('ScriptEditor', 'Electron open error:', err);
+    }
+    setShowImportExport(false);
+  }, []);
+
+  // ── Silent save: uses cached path, no dialog ──────────────────
+  const handleSilentSave = useCallback(async () => {
+    if (!window.electron || !currentScript) return;
+    const projectId = currentScript.project_id;
+    const cachedPath = getCachedSavePath(projectId);
+
+    const data = {
+      version: 1,
+      script: currentScript,
+      elements,
+      savedAt: new Date().toISOString(),
+    };
+
+    if (cachedPath) {
+      // Reuse the last save location — no dialog
+      await window.electron.writeFile(cachedPath, JSON.stringify(data, null, 2));
+      toast.success('Saved');
+    } else {
+      // First save — show dialog and cache the path
+      const result = await window.electron.saveFile({
+        defaultPath: `${currentScript.title || 'script'}.screenplay`,
+        filters: [{ name: 'Screenplay Files', extensions: ['screenplay'] }],
+      });
+      if (!result.canceled && result.filePath) {
+        await window.electron.writeFile(result.filePath, JSON.stringify(data, null, 2));
+        setCachedSavePath(projectId, result.filePath);
+        toast.success('Saved');
+      }
+    }
+  }, [currentScript, elements]);
+
   const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
       e.preventDefault();
@@ -1572,6 +1664,14 @@ ${pageHTML}
     if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
       e.preventDefault();
       handleExportPDF();
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault();
+      if (isElectronMode()) {
+        handleSilentSave();
+      } else {
+        toast.success('All changes are saved');
+      }
     }
     if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
       e.preventDefault();
@@ -1988,6 +2088,22 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
                     <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
                   </button>
+                  {isElectronMode() && (
+                    <>
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
+                      <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Local File</p>
+                      <button onClick={handleElectronSave} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                        <span className="w-8 text-[10px] font-mono text-blue-400">.ss</span> Save to File
+                      </button>
+                      <button onClick={handleElectronOpen} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                        <span className="w-8 text-[10px] font-mono text-blue-400">.ss</span> Open File
+                      </button>
+                    </>
+                  )}
                 </div>
               </>
             )}

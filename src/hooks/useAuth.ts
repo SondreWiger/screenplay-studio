@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { isLocalOrElectron, getLocalUser, createLocalUser } from '@/lib/supabase/electron-client';
+import { syncLocalProjectsToCloud } from '@/lib/sync-to-cloud';
 import { useAuthStore } from '@/lib/stores';
 import logger from '@/lib/logger';
 import type { Profile } from '@/lib/types';
@@ -31,6 +33,15 @@ export function useAuth() {
     if (useAuthStore.getState().initialized) return;
     setInitialized(true);
 
+    // ── Local / Electron mode ──────────────────────────────────
+    if (isLocalOrElectron()) {
+      const localUser = getLocalUser() || createLocalUser();
+      setUser(localUser);
+      setLoading(false);
+      return;
+    }
+
+    // ── Online / cloud mode ────────────────────────────────────
     const supabase = createClient();
 
     // Global safety timeout: force-clear loading if init hasn't completed.
@@ -94,6 +105,13 @@ export function useAuth() {
           // Apply UI theme (soft pastels)
           if (typeof document !== 'undefined' && (profile as Profile).ui_theme) {
             document.documentElement.setAttribute('data-theme', (profile as Profile).ui_theme!);
+          }
+
+          // Sync any local-only projects to cloud (fire-and-forget)
+          if (isLocalOrElectron()) {
+            syncLocalProjectsToCloud().then((count) => {
+              if (count > 0) logger.info('useAuth', `Synced ${count} local projects to cloud`);
+            }).catch((err) => logger.error('useAuth', 'Failed to sync local projects:', err));
           }
         } else {
           // Profile missing — create minimal one from auth data

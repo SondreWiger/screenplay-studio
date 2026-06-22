@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useFeatureAccess } from '@/components/FeatureGate';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 import { useProjectStore, usePresenceStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
 import { useCrossToolSync } from '@/hooks/useCrossToolSync';
@@ -815,9 +816,11 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           {!sidebarCollapsed && (
             <div className="flex items-center gap-1">
               <OfflineIndicator />
-              <Link href="/messages" className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors" title="Messages">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-              </Link>
+              {isFeatureEnabled('directMessages') && (
+                <Link href="/messages" className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors" title="Messages">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                </Link>
+              )}
               <button
                 onClick={() => { setTemplateName(currentProject?.title || ''); setShowSaveTemplate(true); }}
                 className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors"

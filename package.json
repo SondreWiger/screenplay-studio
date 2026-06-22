@@ -3,6 +3,7 @@
   "version": "2.7.7",
   "private": true,
   "packageManager": "npm@10.9.3",
+  "main": "electron/dist/main.js",
   "scripts": {
     "dev": "NODE_OPTIONS='--max-http-header-size=32768' next dev --turbo",
     "build": "next build",
@@ -12,7 +13,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "media-server": "npx ts-node --project tsconfig.server.json server/media-server.ts",
-    "dev:full": "concurrently \"npm run dev\" \"npm run media-server\""
+    "dev:full": "concurrently \"npm run dev\" \"npm run media-server\"",
+    "electron:compile": "tsc -p electron/tsconfig.json",
+    "electron:dev": "npm run electron:compile && ELECTRON_DEV_URL=http://localhost:3000 electron .",
+    "electron:build:next": "npm run build && mkdir -p .next/standalone/.next/static && cp -r .next/static/* .next/standalone/.next/static/ 2>/dev/null || true",
+    "electron:build": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json",
+    "electron:build:mac": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json --mac",
+    "electron:build:win": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json --win",
+    "electron:build:linux": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json --linux",
+    "electron:build:all": "npm run electron:build:next && npm run electron:compile && electron-builder --config electron-builder.json --mac --win --linux"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -56,6 +65,9 @@
     "@types/react-dom": "^18.3.1",
     "@types/sql.js": "^1.4.11",
     "autoprefixer": "^10.4.20",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-updater": "^6.3.9",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.2.21",
     "jsdom": "^29.1.1",
@@ -63,6 +75,7 @@
     "pg": "^8.20.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
     "vitest": "^4.1.7"
   }

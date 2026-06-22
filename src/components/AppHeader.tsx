@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useFeatureAccess } from '@/components/FeatureGate';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Avatar } from '@/components/ui';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
@@ -67,7 +68,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
     { href: '/idea-boards', label: t('nav.ideas'), match: ['/idea-boards'] },
     { href: '/quotes', label: t('nav.quotes'), match: ['/quotes'] },
     { href: '/blog', label: t('nav.blog'), match: ['/blog'] },
-    ...(canUseFeature('community') ? [{ href: '/community', label: t('nav.community'), match: ['/community'] }] : []),
+    ...(canUseFeature('community') && isFeatureEnabled('community') ? [{ href: '/community', label: t('nav.community'), match: ['/community'] }] : []),
     ...(user?.show_accountability !== false ? [{ href: '/accountability', label: 'Accountability', match: ['/accountability'] }] : []),
   ];
 
@@ -152,15 +153,17 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           <OfflineIndicator />
 
           {/* Messages */}
-          <Link
-            href="/messages"
-            className="p-2 text-white/30 hover:text-white hover:bg-white/5 transition-colors"
-            aria-label="Messages"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </Link>
+          {isFeatureEnabled('directMessages') && (
+            <Link
+              href="/messages"
+              className="p-2 text-white/30 hover:text-white hover:bg-white/5 transition-colors"
+              aria-label="Messages"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </Link>
+          )}
 
           <NotificationBell />
 
@@ -200,7 +203,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                     { href: '/accountability', label: 'Accountability', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z" /> },
                     { href: '/idea-boards', label: 'Idea Boards', icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /> },
                     { href: '/company', label: t('nav.company'), icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21" /> },
-                  ].map((item) => (
+                  ].filter((item) => isFeatureEnabled('companies') || item.href !== '/company').map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}

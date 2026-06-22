@@ -439,7 +439,7 @@ export default function AccountabilityPage() {
     setBuddies(data as AccountabilityBuddy[]);
 
     // Fetch profiles for the other side
-    const otherIds = data.map(b => b.requester_id === user.id ? b.addressee_id : b.requester_id);
+    const otherIds = data.map((b: AccountabilityBuddy) => b.requester_id === user.id ? b.addressee_id : b.requester_id);
     if (otherIds.length === 0) return;
     const { data: profiles } = await supabase
       .from('profiles')
