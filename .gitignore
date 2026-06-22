@@ -11,13 +11,6 @@ coverage/
 dist/
 *.tsbuildinfo
 ScreenPlayStudio/
-public/downloads/*.dmg
-public/downloads/*.blockmap
-public/downloads/*.exe
-public/downloads/*.AppImage
-public/downloads/*.zip
-public/downloads/*.yml
-public/downloads/*.yaml
 public/downloads/mac/
 public/downloads/mac-arm64/
 public/downloads/win/
