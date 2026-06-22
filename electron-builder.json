@@ -10,24 +10,6 @@
   "files": [
     "electron/dist/**/*"
   ],
-  "asarUnpack": [],
-  "extraResources": [
-    {
-      "from": ".next/standalone",
-      "to": "app",
-      "filter": ["**/*"]
-    },
-    {
-      "from": ".next/static",
-      "to": "app/.next/static",
-      "filter": ["**/*"]
-    },
-    {
-      "from": "public",
-      "to": "app/public",
-      "filter": ["**/*", "!**/downloads/**", "!**/.icon-icns/**"]
-    }
-  ],
   "artifactName": "ScreenplayStudio-${os}.${ext}",
   "mac": {
     "category": "public.app-category.entertainment",
