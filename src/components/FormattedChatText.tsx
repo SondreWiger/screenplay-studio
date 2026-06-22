@@ -14,18 +14,18 @@ import React from 'react';
  */
 
 // Match link, bold, italic, or underline tokens (order matters for regex alternation)
-const TOKEN_RE =
-  /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|(__([^_]+?)__)|(\*\*(.+?)\*\*)|(\*(.+?)\*)/g;
+const TOKEN_RE_SRC =
+  /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|(__([^_]+?)__)|(\*\*(.+?)\*\*)|(\*(.+?)\*)/;
 
 function parseTokens(text: string): React.ReactNode[] {
   const nodes: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  // Reset regex state
-  TOKEN_RE.lastIndex = 0;
+  // Each recursive call gets its own regex instance to avoid lastIndex clobbering
+  const re = new RegExp(TOKEN_RE_SRC.source, 'g');
 
-  while ((match = TOKEN_RE.exec(text)) !== null) {
+  while ((match = re.exec(text)) !== null) {
     // Push plain text before this match
     if (match.index > lastIndex) {
       nodes.push(text.slice(lastIndex, match.index));
