@@ -75,6 +75,8 @@ export default function MessagesClient() {
   const fetchConversations = async () => {
     try {
       const supabase = createClient();
+
+      // Step 1: Get conversation IDs for this user
       const { data: convMembers } = await supabase
         .from('conversation_members')
         .select('conversation_id')
@@ -87,11 +89,35 @@ export default function MessagesClient() {
       }
 
       const convIds = convMembers.map((cm) => cm.conversation_id);
-      const { data: convos } = await supabase
-        .from('conversations')
-        .select('*')
-        .in('id', convIds)
-        .order('last_message_at', { ascending: false });
+
+      // Step 2: Run all 4 queries in parallel (replaces N+1 sequential loop)
+      const [convosResult, allMembersResult, lastMsgsResult, unreadMsgsResult] = await Promise.all([
+        supabase
+          .from('conversations')
+          .select('*')
+          .in('id', convIds)
+          .order('last_message_at', { ascending: false }),
+        supabase
+          .from('conversation_members')
+          .select('*, profile:profiles!user_id(*)')
+          .in('conversation_id', convIds),
+        supabase
+          .from('direct_messages')
+          .select('*, sender:profiles!sender_id(*)')
+          .in('conversation_id', convIds)
+          .order('created_at', { ascending: false })
+          .limit(convIds.length * 2),
+        supabase
+          .from('direct_messages')
+          .select('conversation_id, created_at')
+          .in('conversation_id', convIds)
+          .neq('sender_id', user!.id),
+      ]);
+
+      const convos = convosResult.data;
+      const allMembers = allMembersResult.data || [];
+      const lastMsgs = lastMsgsResult.data || [];
+      const unreadMsgs = unreadMsgsResult.data || [];
 
       if (!convos) {
         setConversations([]);
@@ -99,48 +125,38 @@ export default function MessagesClient() {
         return;
       }
 
-      // Get members for each conversation with profiles
-      const { data: allMembers } = await supabase
-        .from('conversation_members')
-        .select('*, profile:profiles!user_id(*)')
-        .in('conversation_id', convIds);
-
-      // Get last message for each conversation
-      const enriched: Conversation[] = [];
-      for (const conv of convos) {
-        const convMembers = (allMembers || []).filter((m) => m.conversation_id === conv.id);
-        const myMembership = convMembers.find((m) => m.user_id === user!.id);
-
-        // Get last message
-        const { data: lastMsg, error: lastMsgError } = await supabase
-          .from('direct_messages')
-          .select('*, sender:profiles!sender_id(*)')
-          .eq('conversation_id', conv.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (lastMsgError) console.error('Failed to fetch last message:', lastMsgError.message);
-
-        // Count unread
-        let unreadCount = 0;
-        if (myMembership) {
-          const { count } = await supabase
-            .from('direct_messages')
-            .select('id', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .gt('created_at', myMembership.last_read_at)
-            .neq('sender_id', user!.id);
-          unreadCount = count || 0;
+      // Build last message map (first occurrence = most recent since ordered DESC)
+      const lastMsgByConvo = new Map<string, typeof lastMsgs[number]>();
+      for (const msg of lastMsgs) {
+        if (!lastMsgByConvo.has(msg.conversation_id)) {
+          lastMsgByConvo.set(msg.conversation_id, msg);
         }
-
-        enriched.push({
-          ...conv,
-          members: convMembers,
-          last_message: lastMsg || undefined,
-          unread_count: unreadCount,
-        });
       }
+
+      // Build membership map for current user (with last_read_at)
+      const myMembershipByConvo = new Map<string, typeof allMembers[number]>();
+      for (const m of allMembers) {
+        if (m.user_id === user!.id) {
+          myMembershipByConvo.set(m.conversation_id, m);
+        }
+      }
+
+      // Count unread per conversation client-side
+      const unreadCounts = new Map<string, number>();
+      for (const msg of unreadMsgs) {
+        const myMembership = myMembershipByConvo.get(msg.conversation_id);
+        if (myMembership && new Date(msg.created_at) > new Date(myMembership.last_read_at)) {
+          unreadCounts.set(msg.conversation_id, (unreadCounts.get(msg.conversation_id) || 0) + 1);
+        }
+      }
+
+      // Assemble enriched conversations
+      const enriched: Conversation[] = convos.map((conv) => ({
+        ...conv,
+        members: allMembers.filter((m) => m.conversation_id === conv.id),
+        last_message: lastMsgByConvo.get(conv.id) || undefined,
+        unread_count: unreadCounts.get(conv.id) || 0,
+      }));
 
       setConversations(enriched);
     } catch (err) {
