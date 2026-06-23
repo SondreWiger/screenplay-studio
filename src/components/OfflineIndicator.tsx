@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { cn } from '@/lib/utils';
 
@@ -13,61 +14,25 @@ import { cn } from '@/lib/utils';
  *  - Grey "Offline"   → no internet connection + pending count badge
  */
 export function OfflineIndicator({ className }: { className?: string }) {
-  const { isOnline, pendingCount, isSyncing, triggerSync } = useOnlineStatus();
+  const isOnline = useOnlineStatus();
 
-  // Only show when actually offline or actively syncing.
-  // Don't show a persistent "pending" badge — it confuses users into
-  // thinking they're offline when stale queue items exist.
-  if (isOnline && !isSyncing) {
+  // Only show when actually offline — don't confuse users with
+  // "pending" badges that make them think they're offline
+  if (isOnline) {
     return null;
   }
 
   return (
-    <button
-      onClick={triggerSync}
-      title={
-        !isOnline
-          ? `Offline — ${pendingCount} change${pendingCount !== 1 ? 's' : ''} queued`
-          : isSyncing
-          ? 'Syncing…'
-          : `${pendingCount} change${pendingCount !== 1 ? 's' : ''} waiting to sync — click to retry`
-      }
+    <div
+      title="You appear to be offline"
       className={cn(
         'flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium transition-colors',
-        !isOnline
-          ? 'bg-amber-500/15 text-amber-400 hover:bg-amber-500/25'
-          : isSyncing
-          ? 'bg-sky-500/15 text-sky-400'
-          : 'bg-amber-500/15 text-amber-400 hover:bg-amber-500/25',
+        'bg-amber-500/15 text-amber-400',
         className
       )}
     >
-      {/* Status dot */}
-      <span
-        className={cn(
-          'h-1.5 w-1.5 rounded-full',
-          !isOnline
-            ? 'bg-amber-400'
-            : isSyncing
-            ? 'bg-sky-400 animate-pulse'
-            : 'bg-amber-400 animate-pulse'
-        )}
-      />
-
-      {!isOnline ? (
-        <span>
-          Offline
-          {pendingCount > 0 && (
-            <span className="ml-1 font-semibold">({pendingCount})</span>
-          )}
-        </span>
-      ) : isSyncing ? (
-        <span>Syncing…</span>
-      ) : (
-        <span>
-          {pendingCount} pending
-        </span>
-      )}
-    </button>
+      <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+      <span>Offline</span>
+    </div>
   );
 }
