@@ -3,7 +3,8 @@
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
 import { clearLocalUser, isLocalOrElectron } from '@/lib/supabase/electron-client';
-import { putCached, deleteCached, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById } from '@/lib/offline/db';
+import { putCached, deleteCached, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById, pendingSyncCount } from '@/lib/offline/db';
+import { offlineUpsert, offlineDelete } from '@/lib/offline/sync';
 import logger from '@/lib/logger';
 import type {
   Project, Script, ScriptElement, Character, Location,
@@ -74,7 +75,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
     set({ loading: true, error: null });
     try {
       if (isLocalOrElectron()) {
-        // Local mode: read from IndexedDB
         const projects = await getCachedProjects();
         set({ projects: projects as unknown as Project[], loading: false });
         return;
@@ -83,22 +83,27 @@ export const useProjectStore = create<ProjectState>((set) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.id) { set({ projects: [], loading: false }); return; }
 
-      // Get projects where user is a member
       const { data: memberships } = await supabase
         .from('project_members')
         .select('project_id')
         .eq('user_id', user.id);
       const memberProjectIds = (memberships || []).map((m: { project_id: string }) => m.project_id);
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select('*')
         .or(`created_by.eq.${user.id}${memberProjectIds.length ? `,id.in.(${memberProjectIds.join(',')})` : ''}`)
         .order('updated_at', { ascending: false });
+      if (error || data === null) throw error || new Error('fetch failed');
       set({ projects: data || [], loading: false });
-    } catch (err) {
-      logger.error('ProjectStore', 'Error fetching projects:', err);
-      set({ projects: [], loading: false, error: 'Failed to load projects' });
+    } catch {
+      // Network error — fall back to IndexedDB cache
+      try {
+        const projects = await getCachedProjects();
+        set({ projects: projects as unknown as Project[], loading: false });
+      } catch {
+        set({ projects: [], loading: false, error: 'Failed to load projects' });
+      }
     }
   },
   fetchProject: async (id: string) => {
@@ -114,14 +119,20 @@ export const useProjectStore = create<ProjectState>((set) => ({
         supabase.from('projects').select('*').eq('id', id).single(),
         supabase.from('project_members').select('*, profile:profiles!user_id(*)').eq('project_id', id),
       ]);
+      if (projectRes.error || !projectRes.data) throw projectRes.error || new Error('fetch failed');
       set({
         currentProject: projectRes.data,
         members: membersRes.data || [],
         loading: false,
       });
-    } catch (err) {
-      logger.error('ProjectStore', 'Error fetching project:', err);
-      set({ currentProject: null, members: [], loading: false, error: 'Failed to load project' });
+    } catch {
+      // Network error — fall back to IndexedDB cache
+      try {
+        const project = await getCachedById('projects', id);
+        set({ currentProject: (project as unknown as Project) || null, members: [], loading: false });
+      } catch {
+        set({ currentProject: null, members: [], loading: false, error: 'Failed to load project' });
+      }
     }
   },
 }));
@@ -165,17 +176,9 @@ async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
     }
     return;
   }
-  const supabase = createClient();
-  const { data: rows } = await supabase
-    .from('script_elements').select('id').eq('script_id', scriptId);
-  const currentIds = new Set((rows ?? []).map((r: { id: string }) => r.id));
-  const snapshotIds = new Set(snapshot.map((e) => e.id));
-  const toDelete = Array.from(currentIds).filter((id) => !snapshotIds.has(id as string));
-  if (toDelete.length > 0) {
-    await supabase.from('script_elements').delete().in('id', toDelete);
-  }
-  for (let i = 0; i < snapshot.length; i += 100) {
-    await supabase.from('script_elements').upsert(snapshot.slice(i, i + 100));
+  // Cloud mode: offline-first — write locally, enqueue sync, try remote
+  for (const el of snapshot) {
+    await offlineUpsert('script_elements', el as unknown as Record<string, unknown>);
   }
 }
 
@@ -244,11 +247,12 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         return;
       }
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('scripts')
         .select('*')
         .eq('project_id', projectId)
         .order('version', { ascending: false });
+      if (error || data === null) throw error || new Error('fetch failed');
       const scripts = data || [];
       set({ scripts });
       if (scripts.length > 0) {
@@ -257,9 +261,20 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       } else {
         set({ currentScript: null, elements: [] });
       }
-    } catch (err) {
-      logger.error('ScriptStore', 'Error fetching scripts:', err);
-      set({ scripts: [] });
+    } catch {
+      // Network error — fall back to IndexedDB cache
+      try {
+        const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
+        scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
+        set({ scripts });
+        if (scripts.length > 0) {
+          const active = scripts.find((s) => s.is_active) || scripts[0];
+          set({ currentScript: active });
+        }
+      } catch {
+        logger.error('ScriptStore', 'Error fetching scripts (cache fallback failed)');
+        set({ scripts: [] });
+      }
     }
   },
 
@@ -273,15 +288,23 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         return;
       }
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('script_elements')
         .select('*')
         .eq('script_id', scriptId)
         .order('sort_order', { ascending: true });
+      if (error || data === null) throw error || new Error('fetch failed');
       set({ elements: data || [], loading: false });
-    } catch (err) {
-      logger.error('ScriptStore', 'Error fetching elements:', err);
-      set({ elements: [], loading: false });
+    } catch {
+      // Network error — fall back to IndexedDB cache
+      try {
+        const elements = await getCachedByScript(scriptId) as unknown as ScriptElement[];
+        elements.sort((a, b) => a.sort_order - b.sort_order);
+        set({ elements, loading: false });
+      } catch {
+        logger.error('ScriptStore', 'Error fetching elements (cache fallback failed)');
+        set({ elements: [], loading: false });
+      }
     }
   },
 
@@ -295,27 +318,18 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       sort_order: element.sort_order ?? maxOrder + 1,
     };
 
+    const newElement = { ...insertData, id: insertData.id || crypto.randomUUID() } as ScriptElement;
+
     if (isLocalOrElectron()) {
-      const newElement = { ...insertData, id: insertData.id || crypto.randomUUID() } as ScriptElement;
       await putCached('script_elements', newElement as unknown as Record<string, unknown>);
       set({ elements: [...get().elements, newElement].sort((a, b) => a.sort_order - b.sort_order), saving: false });
       return newElement;
     }
 
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('script_elements')
-      .insert(insertData)
-      .select()
-      .single();
-    if (error) {
-      logger.error('ScriptStore', '[addElement] Supabase error:', error.message, error.details, error.hint);
-    }
-    if (data && !error) {
-      set({ elements: [...get().elements, data].sort((a, b) => a.sort_order - b.sort_order) });
-    }
-    set({ saving: false });
-    return data ?? null;
+    // Cloud mode: offline-first — write locally, enqueue sync, try remote
+    await offlineUpsert('script_elements', newElement as unknown as Record<string, unknown>);
+    set({ elements: [...get().elements, newElement].sort((a, b) => a.sort_order - b.sort_order), saving: false });
+    return newElement;
   },
 
   updateElement: async (id, updates) => {
@@ -330,15 +344,17 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       saving: true,
     });
 
+    const updated = get().elements.find((e) => e.id === id);
+    if (!updated) { set({ saving: false }); return; }
+
     if (isLocalOrElectron()) {
-      const updated = get().elements.find((e) => e.id === id);
-      if (updated) await putCached('script_elements', updated as unknown as Record<string, unknown>);
+      await putCached('script_elements', updated as unknown as Record<string, unknown>);
       set({ saving: false });
       return;
     }
 
-    const supabase = createClient();
-    await supabase.from('script_elements').update(updates).eq('id', id);
+    // Cloud mode: offline-first
+    await offlineUpsert('script_elements', updated as unknown as Record<string, unknown>);
     set({ saving: false });
   },
 
@@ -351,8 +367,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       return;
     }
 
-    const supabase = createClient();
-    await supabase.from('script_elements').delete().eq('id', id);
+    // Cloud mode: offline-first
+    await offlineDelete('script_elements', id);
     set({ elements: get().elements.filter((e) => e.id !== id) });
   },
 
@@ -367,13 +383,10 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       return;
     }
 
-    const supabase = createClient();
-    // Use upsert for efficient batch update instead of N individual queries
-    const updates = elements.map((e, i) => ({ id: e.id, sort_order: i }));
-    const BATCH_SIZE = 100;
-    for (let i = 0; i < updates.length; i += BATCH_SIZE) {
-      const batch = updates.slice(i, i + BATCH_SIZE);
-      await supabase.from('script_elements').upsert(batch, { onConflict: 'id' });
+    // Cloud mode: offline-first
+    for (let i = 0; i < elements.length; i++) {
+      const el = { ...elements[i], sort_order: i };
+      await offlineUpsert('script_elements', el as unknown as Record<string, unknown>);
     }
     set({ saving: false });
   },
