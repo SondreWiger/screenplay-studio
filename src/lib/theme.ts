@@ -171,108 +171,48 @@ export function decodeTheme(encoded: string): AppTheme | null {
 
 function generateInlineOverrideCSS(theme: AppTheme): string {
   const c = theme.colors;
-  const s950 = `rgb(${hexToRgb(c.bgBase).join(' ')})`;
-  const s900 = `rgb(${hexToRgb(c.bgSurface).join(' ')})`;
-  const s800 = `rgb(${hexToRgb(c.bgElevated).join(' ')})`;
-  const s700 = `rgb(${hexToRgb(c.border).join(' ')})`;
-  const s300 = c.textSecondary;
-  const s500 = c.textMuted;
+  const s950 = `${hexToRgb(c.bgBase).join(', ')}`;
+  const s900 = `${hexToRgb(c.bgSurface).join(', ')}`;
+  const s800 = `${hexToRgb(c.bgElevated).join(', ')}`;
+  const s700 = `${hexToRgb(c.border).join(', ')}`;
   const brand = c.brand;
 
-  // Map of common hardcoded colors → their CSS variable replacements
-  // Each entry generates a [style*="color"] selector that overrides
-  // the inline style with the appropriate CSS variable.
-  const colorMap: [string, string, string][] = [
-    // Surface backgrounds
-    ['#070710', 'background', s950],
-    ['#0f0f1c', 'background', s900],
-    ['#181828', 'background', s800],
-    ['#24243a', 'background', s700],
-    ['#070710', 'background-color', s950],
-    ['#0f0f1c', 'background-color', s900],
-    ['#181828', 'background-color', s800],
-    ['#24243a', 'background-color', s700],
-    // Text
-    ['#f4f4fc', 'color', c.textPrimary],
-    ['#b0b0cc', 'color', s300],
-    ['#5c5c7a', 'color', s500],
-    ['#f4f4fc', 'color', c.textPrimary],
-    // Brand
-    ['#FF5F1F', 'background', brand],
-    ['#E54E15', 'background', `color-mix(in srgb, ${brand} 85%, black)`],
-    ['#FF5F1F', 'background-color', brand],
-    ['#E54E15', 'background-color', `color-mix(in srgb, ${brand} 85%, black)`],
-    ['#FF5F1F', 'color', brand],
-    ['#E54E15', 'color', `color-mix(in srgb, ${brand} 85%, black)`],
-    ['#FF5F1F', 'border', brand],
-    ['#E54E15', 'border-color', `color-mix(in srgb, ${brand} 85%, black)`],
-    // rgba patterns
-    ['255,255,255,0.07', 'background', `color-mix(in srgb, ${s700} 7%, transparent)`],
-    ['255,255,255,0.07', 'border', `color-mix(in srgb, ${s700} 7%, transparent)`],
-    ['255,95,31', 'background', brand],
-    ['229,78,21', 'background', `color-mix(in srgb, ${brand} 85%, black)`],
-  ];
-
-  const rules = colorMap
-    .filter(([hex]) => {
-      // Skip if the color is already close to the themed version
-      const themed = colorMap.find(([h]) => h === hex);
-      return themed;
-    })
-    .map(([hex, prop, replacement]) => {
-      const escaped = hex.replace(/[.#()]/g, '\\$&');
-      const propEscaped = prop === 'background' ? '(background|background-color)' : prop;
-      // Match both css-style and react-style inline syntax
-      return `[data-custom-theme="1"] [style*="${escaped}"] { ${prop}: ${replacement} !important; }`;
-    })
-    .join('\n    ');
-
-  // Also target react inline style objects (no quotes around hex)
-  const reactRules = colorMap
-    .map(([hex, prop, replacement]) => {
-      const hexClean = hex.replace('#', '');
-      return `[data-custom-theme="1"] [style*="${hexClean}"] { ${prop === 'background' ? 'background-color' : prop}: ${replacement} !important; }`;
-    })
-    .join('\n    ');
-
+  // These attribute selectors match elements with hardcoded inline styles
+  // (both React syntax and browser-serialized CSS syntax).
+  // The browser normalizes camelCase → kebab-case and removes spaces in rgba.
+  //
+  // For hex colors like #070710, we match on the hex value directly.
+  // For rgba colors, we match on the numeric portion (e.g. "255,255,255,0.07")
+  // to handle both "rgba(255,255,255,0.07)" and "rgba(255, 255, 255, 0.07)".
   return `
-    /* ── Inline style overrides (auto-generated) ──────── */
-    ${rules}
-    ${reactRules}
+    /* ══ Custom theme: hardcoded inline style overrides ══ */
 
-    /* ── rgba overrides for border/divider patterns ───── */
-    [data-custom-theme="1"] [style*="rgba(255,255,255,0.07"] {
-      background-color: ${s700} !important;
-      border-color: ${s700} !important;
-    }
-    [data-custom-theme="1"] [style*="borderBottom: 1px solid rgba(255,255,255,0.07)"] {
-      border-bottom: 1px solid ${s700} !important;
-    }
-    [data-custom-theme="1"] [style*="rgba(255,255,255,0.1)"] {
-      border-color: ${s700} !important;
-    }
-    [data-custom-theme="1"] [style*="rgba(255,255,255,0.05"] {
-      background-color: color-mix(in srgb, ${s900} 50%, transparent) !important;
-    }
+    /* ── Surface backgrounds ── */
+    [data-custom-theme="1"] [style*="#070710"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0f0f1c"] { background: rgb(${s900}) !important; background-color: rgb(${s900}) !important; }
+    [data-custom-theme="1"] [style*="#181828"] { background: rgb(${s800}) !important; background-color: rgb(${s800}) !important; }
+    [data-custom-theme="1"] [style*="#24243a"] { background: rgb(${s700}) !important; background-color: rgb(${s700}) !important; }
 
-    /* ── White text fallback ── */
-    [data-custom-theme="1"] [style*="color: white"],
-    [data-custom-theme="1"] [style*="color:'white'"],
-    [data-custom-theme="1"] [style*='color:"white"'] {
-      color: ${c.textPrimary} !important;
-    }
+    /* ── Text colors ── */
+    [data-custom-theme="1"] [style*="#f4f4fc"] { color: ${c.textPrimary} !important; }
+    [data-custom-theme="1"] [style*="#b0b0cc"] { color: ${c.textSecondary} !important; }
+    [data-custom-theme="1"] [style*="#5c5c7a"] { color: ${c.textMuted} !important; }
 
-    /* ── Border radius + gap combos ── */
-    [data-custom-theme="1"] [style*="rgba(255,255,255,0.08)"] {
-      border-color: color-mix(in srgb, ${s700} 50%, transparent) !important;
-    }
+    /* ── Brand colors ── */
+    [data-custom-theme="1"] [style*="#FF5F1F"] { background: ${brand} !important; background-color: ${brand} !important; color: ${brand} !important; border-color: ${brand} !important; }
+    [data-custom-theme="1"] [style*="#E54E15"] { background: color-mix(in srgb, ${brand} 85%, black) !important; background-color: color-mix(in srgb, ${brand} 85%, black) !important; color: color-mix(in srgb, ${brand} 85%, black) !important; border-color: color-mix(in srgb, ${brand} 85%, black) !important; }
 
-    /* ── Transparent background with brand tint ── */
-    [data-custom-theme="1"] [style*="rgba(255,95,31"] {
-      background-color: color-mix(in srgb, ${brand} 10%, transparent) !important;
-      color: ${brand} !important;
-      border-color: color-mix(in srgb, ${brand} 30%, transparent) !important;
-    }
+    /* ── rgba borders / dividers ── */
+    [data-custom-theme="1"] [style*="255,255,255,0.07"] { background-color: rgb(${s700}) !important; border-color: rgb(${s700}) !important; }
+    [data-custom-theme="1"] [style*="255,255,255,0.1"] { border-color: rgb(${s700}) !important; }
+    [data-custom-theme="1"] [style*="255,255,255,0.05"] { background-color: color-mix(in srgb, rgb(${s900}) 50%, transparent) !important; border-color: transparent !important; }
+    [data-custom-theme="1"] [style*="255,255,255,0.08"] { border-color: color-mix(in srgb, rgb(${s700}) 50%, transparent) !important; }
+    [data-custom-theme="1"] [style*="255,255,255,0.03"] { background-color: color-mix(in srgb, rgb(${s700}) 30%, transparent) !important; }
+
+    /* ── White text → themed primary text ── */
+    [data-custom-theme="1"] [style*="color: white"] { color: ${c.textPrimary} !important; }
+    [data-custom-theme="1"] [style*="color:'white'"] { color: ${c.textPrimary} !important; }
+    [data-custom-theme="1"] [style*='color:"white"'] { color: ${c.textPrimary} !important; }
   `;
 }
 
