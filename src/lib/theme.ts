@@ -169,28 +169,142 @@ export function decodeTheme(encoded: string): AppTheme | null {
 
 // ── Apply theme to document ────────────────────────────────────
 
+function generateInlineOverrideCSS(theme: AppTheme): string {
+  const c = theme.colors;
+  const s950 = `rgb(${hexToRgb(c.bgBase).join(' ')})`;
+  const s900 = `rgb(${hexToRgb(c.bgSurface).join(' ')})`;
+  const s800 = `rgb(${hexToRgb(c.bgElevated).join(' ')})`;
+  const s700 = `rgb(${hexToRgb(c.border).join(' ')})`;
+  const s300 = c.textSecondary;
+  const s500 = c.textMuted;
+  const brand = c.brand;
+
+  // Map of common hardcoded colors → their CSS variable replacements
+  // Each entry generates a [style*="color"] selector that overrides
+  // the inline style with the appropriate CSS variable.
+  const colorMap: [string, string, string][] = [
+    // Surface backgrounds
+    ['#070710', 'background', s950],
+    ['#0f0f1c', 'background', s900],
+    ['#181828', 'background', s800],
+    ['#24243a', 'background', s700],
+    ['#070710', 'background-color', s950],
+    ['#0f0f1c', 'background-color', s900],
+    ['#181828', 'background-color', s800],
+    ['#24243a', 'background-color', s700],
+    // Text
+    ['#f4f4fc', 'color', c.textPrimary],
+    ['#b0b0cc', 'color', s300],
+    ['#5c5c7a', 'color', s500],
+    ['#f4f4fc', 'color', c.textPrimary],
+    // Brand
+    ['#FF5F1F', 'background', brand],
+    ['#E54E15', 'background', `color-mix(in srgb, ${brand} 85%, black)`],
+    ['#FF5F1F', 'background-color', brand],
+    ['#E54E15', 'background-color', `color-mix(in srgb, ${brand} 85%, black)`],
+    ['#FF5F1F', 'color', brand],
+    ['#E54E15', 'color', `color-mix(in srgb, ${brand} 85%, black)`],
+    ['#FF5F1F', 'border', brand],
+    ['#E54E15', 'border-color', `color-mix(in srgb, ${brand} 85%, black)`],
+    // rgba patterns
+    ['255,255,255,0.07', 'background', `color-mix(in srgb, ${s700} 7%, transparent)`],
+    ['255,255,255,0.07', 'border', `color-mix(in srgb, ${s700} 7%, transparent)`],
+    ['255,95,31', 'background', brand],
+    ['229,78,21', 'background', `color-mix(in srgb, ${brand} 85%, black)`],
+  ];
+
+  const rules = colorMap
+    .filter(([hex]) => {
+      // Skip if the color is already close to the themed version
+      const themed = colorMap.find(([h]) => h === hex);
+      return themed;
+    })
+    .map(([hex, prop, replacement]) => {
+      const escaped = hex.replace(/[.#()]/g, '\\$&');
+      const propEscaped = prop === 'background' ? '(background|background-color)' : prop;
+      // Match both css-style and react-style inline syntax
+      return `[data-custom-theme="1"] [style*="${escaped}"] { ${prop}: ${replacement} !important; }`;
+    })
+    .join('\n    ');
+
+  // Also target react inline style objects (no quotes around hex)
+  const reactRules = colorMap
+    .map(([hex, prop, replacement]) => {
+      const hexClean = hex.replace('#', '');
+      return `[data-custom-theme="1"] [style*="${hexClean}"] { ${prop === 'background' ? 'background-color' : prop}: ${replacement} !important; }`;
+    })
+    .join('\n    ');
+
+  return `
+    /* ── Inline style overrides (auto-generated) ──────── */
+    ${rules}
+    ${reactRules}
+
+    /* ── rgba overrides for border/divider patterns ───── */
+    [data-custom-theme="1"] [style*="rgba(255,255,255,0.07"] {
+      background-color: ${s700} !important;
+      border-color: ${s700} !important;
+    }
+    [data-custom-theme="1"] [style*="borderBottom: 1px solid rgba(255,255,255,0.07)"] {
+      border-bottom: 1px solid ${s700} !important;
+    }
+    [data-custom-theme="1"] [style*="rgba(255,255,255,0.1)"] {
+      border-color: ${s700} !important;
+    }
+    [data-custom-theme="1"] [style*="rgba(255,255,255,0.05"] {
+      background-color: color-mix(in srgb, ${s900} 50%, transparent) !important;
+    }
+
+    /* ── White text fallback ── */
+    [data-custom-theme="1"] [style*="color: white"],
+    [data-custom-theme="1"] [style*="color:'white'"],
+    [data-custom-theme="1"] [style*='color:"white"'] {
+      color: ${c.textPrimary} !important;
+    }
+
+    /* ── Border radius + gap combos ── */
+    [data-custom-theme="1"] [style*="rgba(255,255,255,0.08)"] {
+      border-color: color-mix(in srgb, ${s700} 50%, transparent) !important;
+    }
+
+    /* ── Transparent background with brand tint ── */
+    [data-custom-theme="1"] [style*="rgba(255,95,31"] {
+      background-color: color-mix(in srgb, ${brand} 10%, transparent) !important;
+      color: ${brand} !important;
+      border-color: color-mix(in srgb, ${brand} 30%, transparent) !important;
+    }
+  `;
+}
+
+let _styleEl: HTMLStyleElement | null = null;
+
 export function applyTheme(theme: AppTheme) {
   const root = document.documentElement;
   const c = theme.colors;
 
-  // Generate full surface palette from the 4 user surface colors
+  // Set CSS variables for Tailwind utilities
   const surfacePalette = generateSurfacePalette(c.bgBase, c.bgSurface, c.bgElevated, c.textPrimary);
   const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
   SHADES.forEach((shade, i) => {
     root.style.setProperty(`--surface-${shade}`, surfacePalette[i]);
   });
 
-  // Generate full brand palette from accent color
   const brandPalette = generateBrandPalette(c.brand);
   SHADES.forEach((shade, i) => {
     root.style.setProperty(`--brand-${shade}`, brandPalette[i]);
   });
 
-  // Script editor overrides
   root.style.setProperty('--theme-script-bg', c.scriptBg);
   root.style.setProperty('--theme-script-text', c.scriptText);
-
   root.setAttribute('data-custom-theme', '1');
+
+  // Inject stylesheet for inline style overrides
+  if (!_styleEl) {
+    _styleEl = document.createElement('style');
+    _styleEl.id = 'custom-theme-inline-overrides';
+    document.head.appendChild(_styleEl);
+  }
+  _styleEl.textContent = generateInlineOverrideCSS(theme);
 }
 
 export function clearTheme() {
@@ -203,6 +317,12 @@ export function clearTheme() {
   root.style.removeProperty('--theme-script-bg');
   root.style.removeProperty('--theme-script-text');
   root.removeAttribute('data-custom-theme');
+
+  // Remove injected stylesheet
+  if (_styleEl) {
+    _styleEl.remove();
+    _styleEl = null;
+  }
 }
 
 // ── Stripe SVG for embeds ──────────────────────────────────────
