@@ -7,7 +7,7 @@
 //     explicit version bump forces old caches to be purged even if the rest of
 //     the SW logic is identical.
 
-const CACHE_VERSION = 'ss-v6';   // bumped June 2026 — fix POST cache.put crash
+const CACHE_VERSION = 'ss-v7';   // bumped — expanded pre-cache for offline reload
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE  = `${CACHE_VERSION}-dynamic`;
 
@@ -16,6 +16,9 @@ const PRECACHE_URLS = [
   '/',
   '/dashboard',
   '/offline',
+  '/auth/login',
+  '/settings',
+  '/colors',
 ];
 
 // ── Install: pre-cache app shell ─────────────────────────────────────────────
@@ -122,18 +125,37 @@ async function networkFirst(request) {
   }
 }
 
+// Evict oldest entries when cache exceeds maxItems
+async function trimCache(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItems) {
+    // Delete oldest half
+    const toDelete = keys.slice(0, Math.floor(keys.length / 2));
+    await Promise.all(toDelete.map((k) => cache.delete(k)));
+  }
+}
+
 async function networkFirstNavigate(request) {
   try {
     const response = await fetch(request);
-    if (response.ok && request.method === 'GET') {
+    // Cache all successful GET navigations (even redirects) so offline reload works
+    if (request.method === 'GET' && response.status >= 200 && response.status < 400) {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, response.clone());
+      // Evict oldest entries if cache grows too large (> 80 pages)
+      trimCache(DYNAMIC_CACHE, 80);
     }
     return response;
   } catch {
-    // Try matching from cache
+    // Try matching from cache (exact URL)
     const cached = await caches.match(request);
     if (cached) return cached;
+    // Try matching from cache (without query string)
+    const noQuery = new URL(request.url);
+    noQuery.search = '';
+    const cachedNoQuery = await caches.match(noQuery.toString());
+    if (cachedNoQuery) return cachedNoQuery;
     // Fall back to cached dashboard or root
     const fallback = await caches.match('/dashboard') || await caches.match('/');
     if (fallback) return fallback;
