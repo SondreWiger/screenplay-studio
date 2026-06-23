@@ -12,6 +12,9 @@ export function ElectronDragRegion() {
         const platform = await window.electron.getPlatform();
         if (platform === 'darwin') {
           setIsMacElectron(true);
+          document.body.style.paddingTop = '32px';
+          document.body.style.backgroundColor = 'transparent';
+          document.documentElement.style.backgroundColor = 'transparent';
         }
       }
     }

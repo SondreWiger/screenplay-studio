@@ -49,7 +49,9 @@ async function createWindow() {
       sandbox: false,
       partition: 'persist:screenplay',
     },
-    backgroundColor: '#070710',
+    backgroundColor: isMac ? '#00000000' : '#070710',
+    vibrancy: isMac ? 'under-window' : undefined,
+    visualEffectState: isMac ? 'active' : undefined,
     show: false,
   });
 

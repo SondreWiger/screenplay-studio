@@ -17,7 +17,7 @@ export function ElectronShell() {
 
     // Default landing → workspace
     if (pathname === '/') {
-      router.replace('/dashboard');
+      router.replace('/desktop-welcome');
       return;
     }
 

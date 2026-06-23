@@ -12,6 +12,8 @@ export const ELECTRON_WORKSPACE_PREFIXES = [
   '/company',
   '/billing',
   '/onboarding',
+  '/colors',
+  '/desktop-welcome',
 ];
 
 export const ELECTRON_MARKETING_PATHS = [
