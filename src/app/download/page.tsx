@@ -36,8 +36,8 @@ const PLATFORMS: {
   os: string;
 }[] = [
   { key: 'macos', label: 'macOS', icon: Laptop, format: '.dmg', ext: 'dmg', os: 'mac' },
-  { key: 'windows', label: 'Windows', icon: Monitor, format: '.exe', ext: 'exe', os: 'win' },
-  { key: 'linux', label: 'Linux', icon: LayoutGrid, format: '.AppImage', ext: 'AppImage', os: 'linux' },
+  { key: 'windows', label: 'Windows', icon: Monitor, format: '.exe', ext: 'exe', os: 'win-x64' },
+  { key: 'linux', label: 'Linux', icon: LayoutGrid, format: '.AppImage', ext: 'AppImage', os: 'linux-x86_64' },
 ];
 
 const FEATURES = [
