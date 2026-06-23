@@ -64,7 +64,7 @@ export default function BrowseCommunitiesPage() {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
 
         {/* Header */}
@@ -155,7 +155,7 @@ export default function BrowseCommunitiesPage() {
                     )}
                     <div
                       className="absolute bottom-0 left-4 translate-y-1/2 w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg"
-                      style={{ background: '#070710', border: `2px solid ${c.accent_color}` }}
+                      style={{ background: 'rgb(var(--surface-950))', border: `2px solid ${c.accent_color}` }}
                     >
                       {c.icon}
                     </div>

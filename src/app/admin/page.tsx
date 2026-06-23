@@ -4456,7 +4456,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
           </div>
 
           <button onClick={computePayout} disabled={payoutLoading || !payoutAmount || !payoutPeriodStart || !payoutPeriodEnd}
-            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-500 text-white hover:bg-[#e5541b] transition-colors disabled:opacity-50 mb-5">
+            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-500 text-white hover:bg-brand-500 transition-colors disabled:opacity-50 mb-5">
             {payoutLoading ? 'Computing…' : 'Compute Payout'}
           </button>
 

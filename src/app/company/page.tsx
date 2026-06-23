@@ -976,7 +976,7 @@ export default function CompanyDashboard() {
                   <input readOnly value={lastInviteLink} className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-surface-300 outline-none" />
                   <button
                     onClick={() => { navigator.clipboard.writeText(lastInviteLink); }}
-                    className="px-3 py-2 rounded-lg bg-brand-600 text-white text-xs font-medium hover:bg-[#CC4312] transition-colors"
+                    className="px-3 py-2 rounded-lg bg-brand-600 text-white text-xs font-medium hover:bg-brand-600 transition-colors"
                   >
                     Copy
                   </button>

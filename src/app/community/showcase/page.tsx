@@ -91,7 +91,7 @@ export default function ShowcasePage() {
     });
 
   return (
-    <div className="min-h-screen text-white" style={{ background: '#070710' }}>
+    <div className="min-h-screen text-white" style={{ background: 'rgb(var(--surface-950))' }}>
 
 
       {/* Hero */}

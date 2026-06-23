@@ -180,7 +180,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-brand-500" />
       </div>
     );
@@ -189,7 +189,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   // Not found
   if (!post) {
     return (
-      <div className="min-h-screen" style={{ background: '#070710' }}>
+      <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
         <nav className="backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="max-w-4xl mx-auto px-6 h-16 flex items-center">
             <Link href="/blog" className="text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors flex items-center gap-2">
@@ -214,7 +214,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const hasToC = sections.length > 1;
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
       {/* Nav */}
       <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -470,7 +470,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       </div>
 
       {/* Footer */}
-      <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#070710' }}>
+      <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgb(var(--surface-950))' }}>
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <Link href="/blog" className="text-xs font-mono uppercase tracking-widest text-white/30 hover:text-white transition-colors">
             ← Back to all posts

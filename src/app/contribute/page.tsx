@@ -311,7 +311,7 @@ export default function ContributePage() {
   // Hide page entirely when opensource mode is disabled
   if (!ossLoading && !ossEnabled) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6" style={{ background: '#070710', color: '#fff' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
         <span className="text-6xl">🔒</span>
         <div className="text-center">
           <h1 className="text-2xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>Coming soon</h1>
@@ -325,7 +325,7 @@ export default function ContributePage() {
   }
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: '#070710', color: '#fff' }}>
+    <div className="min-h-screen relative" style={{ backgroundColor: 'rgb(var(--surface-950))', color: '#fff' }}>
 
       {/* dot-grid texture */}
       <div
@@ -588,7 +588,7 @@ export default function ContributePage() {
                     <div
                       className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-black border-2 relative z-10"
                       style={{
-                        background: '#070710',
+                        background: 'rgb(var(--surface-950))',
                         borderColor: i === 0 ? ORANGE : 'rgba(255,255,255,0.12)',
                         color: i === 0 ? ORANGE : 'rgba(255,255,255,0.3)',
                         boxShadow: i === 0 ? `0 0 16px ${ORANGE}30` : 'none',

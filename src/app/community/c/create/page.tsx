@@ -66,13 +66,13 @@ export default function CreateCommunityPage() {
   };
 
   if (!user) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
       <p className="text-white/40 text-sm">Sign in to create a community.</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       <div className="max-w-lg mx-auto px-4 py-12">
         <div className="mb-8">
           <p className="text-[10px] font-mono text-brand-500 uppercase tracking-widest mb-1">New Community</p>

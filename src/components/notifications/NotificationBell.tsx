@@ -356,7 +356,7 @@ function CompanyInviteActions({ notification }: { notification: Notification }) 
       <button
         onClick={accept}
         disabled={loading}
-        className="px-3 py-1 rounded-md text-[11px] font-medium bg-brand-600 text-white hover:bg-[#CC4312] disabled:opacity-50 transition-colors"
+        className="px-3 py-1 rounded-md text-[11px] font-medium bg-brand-600 text-white hover:bg-brand-600 disabled:opacity-50 transition-colors"
       >
         {loading ? '...' : 'Accept'}
       </button>

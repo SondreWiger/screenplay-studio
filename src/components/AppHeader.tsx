@@ -93,7 +93,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
 
   if (minimal) {
     return (
-      <header className="sticky top-0 z-40" style={{ background: '#070710', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+      <header className="sticky top-0 z-40 bg-surface-950" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
           <Link href={backHref || '/dashboard'} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -109,7 +109,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
   }
 
   return (
-    <header className="sticky top-0 z-40" style={{ background: '#070710', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+    <header className="sticky top-0 z-40 bg-surface-950" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
 
       <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 h-14">
         {/* Logo + Nav */}

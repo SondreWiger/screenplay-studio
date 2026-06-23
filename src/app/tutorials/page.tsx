@@ -274,7 +274,7 @@ const TUTORIALS: TutorialSection[] = [
 
 export default function TutorialsPage() {
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: '#070710', color: '#fff' }}>
+    <div className="min-h-screen relative" style={{ backgroundColor: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* dot-grid texture */}
       <div
         className="fixed inset-0 pointer-events-none z-0"

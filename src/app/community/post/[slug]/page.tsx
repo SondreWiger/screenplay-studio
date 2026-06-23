@@ -315,7 +315,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   // Loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
@@ -324,7 +324,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   // Not found
   if (!post) {
     return (
-      <div className="min-h-screen" style={{ background: '#070710' }}>
+      <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
         <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}>
           <div className="max-w-4xl mx-auto px-6 h-14 flex items-center">
             <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
@@ -348,7 +348,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   );
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
 
       {/* Community context bar */}
       {subCommunity && (
@@ -577,7 +577,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                   <button
                     onClick={() => handleComment()}
                     disabled={!commentText.trim() || submitting}
-                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
+                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 disabled:opacity-50 rounded-lg transition-colors"
                   >
                     {submitting ? 'Posting...' : activeTab === 'suggestions' ? 'Submit Suggestion' : 'Post Comment'}
                   </button>
@@ -693,7 +693,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                 <h3 className="text-xl font-black text-white mb-2">Film Submitted!</h3>
                 <p className="text-sm text-white/40 mb-6">Your film has been sent for review. You&apos;ll be notified once it&apos;s approved.</p>
                 <button onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}
-                  className="px-6 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-[#CC4312] transition-colors">
+                  className="px-6 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-600 transition-colors">
                   Done
                 </button>
               </div>
@@ -746,7 +746,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                   <button
                     onClick={handleSubmitFilm}
                     disabled={!filmTitle.trim() || submittingFilm}
-                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
+                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 disabled:opacity-50 rounded-lg transition-colors"
                   >
                     {submittingFilm ? 'Submitting...' : 'Submit for Review'}
                   </button>

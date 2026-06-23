@@ -74,7 +74,7 @@ export default function AdminPollsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-brand-500 hover:bg-[#FF7F3F] text-white text-sm font-semibold rounded-lg transition-colors"
+          className="px-4 py-2 bg-brand-500 hover:bg-brand-500 text-white text-sm font-semibold rounded-lg transition-colors"
         >
           + New Poll
         </button>
@@ -129,7 +129,7 @@ export default function AdminPollsPage() {
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
-          <div className="relative bg-[#111113] border border-white/[0.08] rounded-xl p-6 w-full max-w-md shadow-2xl">
+          <div className="relative bg-surface-900 border border-white/[0.08] rounded-xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-lg font-bold text-white mb-5">New Poll</h2>
             <div className="space-y-4">
               <div>
@@ -160,7 +160,7 @@ export default function AdminPollsPage() {
               <button
                 onClick={handleCreate}
                 disabled={!newTitle.trim() || creating}
-                className="flex-1 py-2.5 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
+                className="flex-1 py-2.5 bg-brand-500 hover:bg-brand-500 disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
               >
                 {creating ? 'Creating…' : 'Create & Edit'}
               </button>

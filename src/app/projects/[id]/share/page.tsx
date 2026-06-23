@@ -257,7 +257,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
             onClick={() => setDrawerOpen(false)}
           />
-          <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-sm bg-[#111113] border-l border-white/10 shadow-2xl flex flex-col">
+          <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-sm bg-surface-900 border-l border-white/10 shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
               <h2 className="text-sm font-semibold text-white">{t('share.new_link')}</h2>
               <button

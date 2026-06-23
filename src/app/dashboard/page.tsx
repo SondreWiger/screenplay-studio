@@ -406,11 +406,10 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }} id="main-content">
+    <div className="min-h-screen bg-surface-950" id="main-content">
       {/* Top Bar */}
       <header
-        className="sticky top-0 z-40"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#070710' }}
+        className="sticky top-0 z-40 bg-surface-950" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -771,7 +770,7 @@ function DashboardContent() {
               return (
                 <div
                   key={folder.id}
-                  className={cn('mb-6 rounded-xl transition-colors duration-150', isDragOver && 'ring-2 ring-offset-2 ring-offset-[#070710]')}
+                  className={cn('mb-6 rounded-xl transition-colors duration-150', isDragOver && 'ring-2 ring-offset-2 ring-offset-surface-950')}
                   style={isDragOver && folder.color ? { '--tw-ring-color': folder.color } as React.CSSProperties : undefined}
                   onDragOver={e => {
                     e.preventDefault();
@@ -964,7 +963,7 @@ function DashboardContent() {
               if (unfiled.length === 0 && folders.length > 0 && !isDragOver) return null;
               return (
                 <div
-                  className={cn('mt-2 rounded-xl transition-colors duration-150', isDragOver && 'ring-2 ring-surface-600 ring-offset-2 ring-offset-[#070710]')}
+                  className={cn('mt-2 rounded-xl transition-colors duration-150', isDragOver && 'ring-2 ring-surface-600 ring-offset-2 ring-offset-surface-950')}
                   onDragOver={e => { e.preventDefault(); setDragOverTarget('unfiled'); }}
                   onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverTarget(null); }}
                   onDrop={e => {

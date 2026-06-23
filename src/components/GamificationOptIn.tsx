@@ -37,7 +37,7 @@ export function GamificationOptIn() {
         animating ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      <div className="pointer-events-auto w-full max-w-sm rounded-xl bg-[#0D0D1A] border border-white/10 shadow-2xl overflow-hidden"
+      <div className="pointer-events-auto w-full max-w-sm rounded-xl bg-surface-950 border border-white/10 shadow-2xl overflow-hidden"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.8)' }}
       >
         {/* Orange accent line */}

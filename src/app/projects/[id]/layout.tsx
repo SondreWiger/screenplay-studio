@@ -424,7 +424,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     const currentPageKey = pathname.split('/').pop() || 'overview';
     const currentPageLabel = PAGE_LABELS[currentPageKey] || currentProject.title;
     return (
-      <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: '#070710' }}>
+      <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: 'rgb(var(--surface-950))' }}>
         <main className="flex-1 overflow-y-auto pb-10">
           {children}
         </main>
@@ -880,7 +880,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: '#070710' }}>
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'rgb(var(--surface-950))' }}>
 
       {/* Quick Access picker */}
       {showShortcutPicker && (
@@ -896,7 +896,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       {/* Mobile header */}
       <div className="fixed top-0 left-0 right-0 z-40 md:hidden"
-        style={{ backgroundColor: '#070710', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)' }}
+        style={{ backgroundColor: 'rgb(var(--surface-950))', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)' }}
       >
         {/* Gradient top line on mobile too */}
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--brand-500) / 0.4), transparent)' }} />
@@ -955,7 +955,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pt-12 md:pt-0" style={{ background: '#070710' }}>
+      <main className="flex-1 overflow-y-auto pt-12 md:pt-0 bg-surface-950">
         <ErrorBoundary>
           {children}
         </ErrorBoundary>

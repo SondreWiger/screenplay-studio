@@ -177,7 +177,7 @@ export default function QuotesPage() {
   return (
     <>
       <AppHeader />
-      <div className="min-h-screen" style={{ background: '#070710' }}>
+      <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
         {/* Warm ambient gradient */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #FF5F1F 0%, transparent 70%)' }} />

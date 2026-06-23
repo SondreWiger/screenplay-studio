@@ -18,7 +18,7 @@ import { fetchUserWorkLogs, calculateStreak, aggregateLogsByDate } from '@/lib/w
 
 // Theme presets for profile customisation
 const PROFILE_THEMES: Record<string, { gradient: string; accent: string; accentRgb: string; cardBg: string; textAccent: string }> = {
-  default:   { gradient: 'from-[#0a0818] via-[#0d0b17] to-[#070710]',   accent: '#FF5F1F',   accentRgb: '255,95,31', cardBg: 'bg-white/[0.04]',  textAccent: 'text-brand-500' },
+  default:   { gradient: 'from-surface-950 via-surface-900 to-surface-950',   accent: '#FF5F1F',   accentRgb: '255,95,31', cardBg: 'bg-white/[0.04]',  textAccent: 'text-brand-500' },
   midnight:  { gradient: 'from-indigo-950 via-blue-900 to-slate-900',   accent: 'indigo-400',  accentRgb: '129,140,248', cardBg: 'bg-indigo-500/[0.06]', textAccent: 'text-indigo-400' },
   sunset:    { gradient: 'from-orange-700 via-rose-700 to-pink-800',    accent: 'orange-500',  accentRgb: '249,115,22', cardBg: 'bg-orange-500/[0.06]', textAccent: 'text-orange-400' },
   forest:    { gradient: 'from-emerald-900 via-teal-800 to-green-900',  accent: 'emerald-400', accentRgb: '52,211,153', cardBg: 'bg-emerald-500/[0.06]', textAccent: 'text-emerald-400' },
@@ -278,7 +278,7 @@ export default function UserProfilePage({ params }: { params: { username: string
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-amber-500" />
       </div>
     );
@@ -286,7 +286,7 @@ export default function UserProfilePage({ params }: { params: { username: string
 
   if (notFound || !profile) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#070710' }}>
+      <div className="min-h-screen bg-surface-950 flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">👤</div>
         <h1 className="text-3xl font-black text-white">User not found</h1>
         <p className="text-white/40">This profile doesn&apos;t exist or has been removed.</p>
@@ -300,7 +300,7 @@ export default function UserProfilePage({ params }: { params: { username: string
   const displayName = profile.display_name || profile.full_name || 'User';
 
   return (
-    <div className="min-h-screen text-white" style={{ background: '#070710' }}>
+    <div className="min-h-screen text-white bg-surface-950">
       {/* Nav */}
       <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -329,7 +329,7 @@ export default function UserProfilePage({ params }: { params: { username: string
           /* Animated subtle grid pattern for non-banner profiles */
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070710] via-[#070710]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface-950 via-surface-950/40 to-transparent" />
         {/* Decorative accent glow */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-32 rounded-full blur-[100px] opacity-20" style={{ backgroundColor: `rgb(${theme.accentRgb})` }} />
       </div>
@@ -344,10 +344,10 @@ export default function UserProfilePage({ params }: { params: { username: string
                 <img
                   src={profile.avatar_url}
                   alt={displayName}
-                  className="w-36 h-36 rounded-xl border-4 border-[#070710] object-cover shadow-2xl"
+                  className="w-36 h-36 rounded-xl border-4 border-surface-950 object-cover shadow-2xl"
                 />
               ) : (
-                <div className="w-36 h-36 rounded-xl border-4 border-[#070710] bg-white/10 backdrop-blur-sm flex items-center justify-center text-5xl font-bold text-white/60 shadow-2xl">
+                <div className="w-36 h-36 rounded-xl border-4 border-surface-950 bg-white/10 backdrop-blur-sm flex items-center justify-center text-5xl font-bold text-white/60 shadow-2xl">
                   {displayName[0].toUpperCase()}
                 </div>
               )}
@@ -869,7 +869,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                           <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover transition-transform duration-500" loading="lazy" />
                         </div>
                       ) : (
-                        <div className="aspect-video bg-gradient-to-br from-brand-500/10 to-[#0E0E1C] flex items-center justify-center">
+                        <div className="aspect-video bg-gradient-to-br from-brand-500/10 to-surface-950 flex items-center justify-center">
                           <span className="text-4xl opacity-30">📚</span>
                         </div>
                       )}
@@ -885,7 +885,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                             <span className="text-[9px] text-brand-500">{course.xp_reward} XP</span>
                           )}
                         </div>
-                        <h3 className="text-sm font-semibold text-white group-hover:text-[#FF7A3F] transition-colors line-clamp-2 leading-snug">{course.title}</h3>
+                        <h3 className="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors line-clamp-2 leading-snug">{course.title}</h3>
                         {course.short_desc && <p className="text-xs text-white/40 mt-1 line-clamp-1">{course.short_desc}</p>}
                         {/* Progress bar */}
                         <div className="mt-3">

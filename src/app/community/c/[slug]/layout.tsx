@@ -71,7 +71,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
   ];
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
       <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
     </div>
   );
@@ -83,7 +83,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
 
   return (
     <SubCommunityContext.Provider value={{ community, membership, isMod, isAdmin, isBanned, canPost, refetch: fetch }}>
-      <div style={{ background: '#070710', minHeight: '100vh', color: '#fff' }}>
+      <div style={{ background: 'rgb(var(--surface-950))', minHeight: '100vh', color: '#fff' }}>
 
         {/* Banner */}
         <div className="relative w-full overflow-hidden" style={{ height: '7rem', background: gradient }}>
@@ -98,7 +98,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
           <div className="relative flex items-end gap-4 -mt-8">
             {/* Icon bubble */}
             <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center text-3xl rounded-xl border-4 z-10"
-              style={{ background: accent + '22', borderColor: '#070710', backdropFilter: 'blur(8px)' }}>
+              style={{ background: accent + '22', borderColor: 'rgb(var(--surface-950))', backdropFilter: 'blur(8px)' }}>
               {community.icon ?? '🎬'}
             </div>
 

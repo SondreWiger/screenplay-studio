@@ -278,7 +278,7 @@ export default function TestimonialsPage() {
   }));
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#070710', color: '#fff' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'rgb(var(--surface-950))', color: '#fff' }}>
 
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <nav

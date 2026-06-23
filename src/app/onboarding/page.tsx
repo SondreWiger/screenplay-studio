@@ -208,7 +208,7 @@ export default function OnboardingPage() {
   const intentMeta = USAGE_OPTIONS.find(o => o.value === usageIntent);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#070710' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'rgb(var(--surface-950))' }}>
       {/* Top bar with progress */}
       <div className="sticky top-0 z-50" style={{ background: 'rgba(7,7,16,0.92)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-3xl mx-auto px-6 py-4">

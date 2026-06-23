@@ -219,7 +219,7 @@ const categories = [
 
 export default function LicensesPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#070710' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--surface-950))' }}>
       {/* Header */}
       <div className="border-b border-surface-800/60 sticky top-0 z-10 backdrop-blur-xl" style={{ backgroundColor: 'rgba(7,7,16,0.92)' }}>
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">

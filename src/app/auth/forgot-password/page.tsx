@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 relative" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center px-4 relative" style={{ background: 'rgb(var(--surface-950))' }}>
         <div
           className="pointer-events-none fixed inset-0 opacity-[0.18]"
           style={{
@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative" style={{ background: '#070710' }}>
+    <div className="min-h-screen flex items-center justify-center px-4 relative" style={{ background: 'rgb(var(--surface-950))' }}>
       {/* Dot-grid texture */}
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.18]"

@@ -46,7 +46,7 @@ export default function ChallengesPage() {
   const upcomingChallenges = challenges.filter((c) => getChallengePhase(c) === 'upcoming' && c.id !== activeChallenge?.id);
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
 
 
       <div className="max-w-5xl mx-auto px-6 py-10">

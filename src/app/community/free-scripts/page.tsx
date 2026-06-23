@@ -99,7 +99,7 @@ export default function FreeScriptsPage() {
     });
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
 
 
       <div className="max-w-6xl mx-auto px-6 py-10">

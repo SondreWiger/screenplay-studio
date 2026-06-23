@@ -43,7 +43,7 @@ function parseTokens(text: string): React.ReactNode[] {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-brand-500 underline underline-offset-2 hover:text-[#ff7a45] transition-colors break-all"
+          className="text-brand-500 underline underline-offset-2 hover:text-brand-400 transition-colors break-all"
         >
           {linkText}
         </a>

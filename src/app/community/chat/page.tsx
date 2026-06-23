@@ -404,7 +404,7 @@ export default function ChatPage() {
                 <button
                   onClick={handleSend}
                   disabled={!newMessage.trim() || sending}
-                  className="px-4 py-2.5 bg-brand-600 hover:bg-[#CC4312] disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors shrink-0"
+                  className="px-4 py-2.5 bg-brand-600 hover:bg-brand-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors shrink-0"
                 >
                   {sending ? '...' : 'Send'}
                 </button>

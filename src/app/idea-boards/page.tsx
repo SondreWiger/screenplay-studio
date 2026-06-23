@@ -140,7 +140,7 @@ export default function IdeaBoardsPage() {
   const sharedBoards = visibleBoards.filter(b => b.owner_id !== user?.id);
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
       <AppHeader />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">

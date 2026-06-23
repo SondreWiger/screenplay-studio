@@ -27,7 +27,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Top nav bar */}
       <div
         className="sticky top-0 z-30 backdrop-blur-xl"

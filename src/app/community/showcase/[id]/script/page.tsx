@@ -281,7 +281,7 @@ export default function DeepDiveScriptPage() {
   // Loading / Error
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-amber-500" />
           <p className="text-sm text-white/50 animate-pulse">Loading script&hellip;</p>
@@ -292,7 +292,7 @@ export default function DeepDiveScriptPage() {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-surface-950 text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">{'\u{1F4DC}'}</div>
         <h1 className="text-2xl font-black">Script Unavailable</h1>
         <p className="text-white/40 text-sm max-w-md text-center">{error || 'Something went wrong.'}</p>
@@ -307,14 +307,14 @@ export default function DeepDiveScriptPage() {
   const hasTitlePage = titlePage && (titlePage.title || titlePage.author);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col">
+    <div className="min-h-screen bg-surface-950 text-white flex flex-col">
       {/* Reading progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50 h-[3px] bg-black/40">
         <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-[width] duration-150" style={{ width: `${progress}%` }} />
       </div>
 
       {/* Top nav */}
-      <nav className="sticky top-0 z-40 bg-[#0a0a0c]/95 backdrop-blur-lg border-b border-white/[0.06]">
+      <nav className="sticky top-0 z-40 bg-surface-950/95 backdrop-blur-lg border-b border-white/[0.06]">
         <div className="max-w-[1800px] mx-auto px-4 flex items-center justify-between h-12">
           <div className="flex items-center gap-3 min-w-0">
             <Link href={`/community/showcase/${params.id}`} className="flex items-center gap-2 text-white/50 hover:text-white transition shrink-0">
@@ -355,7 +355,7 @@ export default function DeepDiveScriptPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-72 xl:w-80 shrink-0 border-r border-white/[0.06] bg-[#0c0c0e] flex flex-col overflow-hidden">
+          <aside className="w-72 xl:w-80 shrink-0 border-r border-white/[0.06] bg-surface-950 flex flex-col overflow-hidden">
             <div className="flex border-b border-white/[0.06]">
               {(['scenes', 'characters', 'stats'] as SidebarTab[]).map((tab) => (
                 <button
@@ -569,7 +569,7 @@ export default function DeepDiveScriptPage() {
             <div
               className={`rounded-xl shadow-2xl mx-auto transition-colors duration-300 ${
                 darkScript
-                  ? 'bg-[#141418] text-[#c8c8cc] shadow-black/60 border border-white/[0.06]'
+                  ? 'bg-surface-800 text-surface-200 shadow-black/60 border border-white/[0.06]'
                   : 'bg-surface-900 text-black shadow-black/40'
               }`}
               style={{

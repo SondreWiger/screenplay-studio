@@ -11,7 +11,7 @@ function BannedContent() {
   const isIpBan = params?.get('ip') === '1';
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#070710' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'rgb(var(--surface-950))' }}>
       <div className="pointer-events-none fixed inset-0 opacity-[0.06]" style={{
         backgroundImage: 'radial-gradient(circle, rgba(255,0,0,0.5) 1px, transparent 1px)',
         backgroundSize: '32px 32px',
@@ -61,7 +61,7 @@ function BannedContent() {
 
 export default function BannedPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" style={{ background: '#070710' }} />}>
+    <Suspense fallback={<div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }} />}>
       <BannedContent />
     </Suspense>
   );

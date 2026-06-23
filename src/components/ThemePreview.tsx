@@ -23,7 +23,7 @@ export function ThemePreview({ theme, accentColor, className }: ThemePreviewProp
         'rounded-xl overflow-hidden border-2 transition-all duration-300',
         theme === 'soft'
           ? 'border-white/10 bg-[#0d0d18]'
-          : 'border-white/10 bg-[#070710]',
+          : 'border-white/10 bg-surface-950',
         className
       )}
     >

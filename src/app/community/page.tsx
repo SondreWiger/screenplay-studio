@@ -139,7 +139,7 @@ export default function CommunityPage() {
     });
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Dot-grid texture */}
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.12]"
@@ -270,7 +270,7 @@ export default function CommunityPage() {
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.your_communities')}</p>
-                  <Link href="/community/c" className="text-[10px] text-brand-500 hover:text-[#FF7A3F] transition-colors">{t('community.browse')}</Link>
+                  <Link href="/community/c" className="text-[10px] text-brand-500 hover:text-brand-400 transition-colors">{t('community.browse')}</Link>
                 </div>
                 <div className="space-y-1">
                   {joinedCommunities.slice(0, 8).map(c => (
@@ -288,7 +288,7 @@ export default function CommunityPage() {
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.courses')}</p>
-                  <Link href="/community/courses" className="text-[10px] text-brand-500 hover:text-[#FF7A3F] transition-colors">All →</Link>
+                  <Link href="/community/courses" className="text-[10px] text-brand-500 hover:text-brand-400 transition-colors">All →</Link>
                 </div>
                 <div className="space-y-2">
                   {featuredCourses.map(c => {
@@ -323,7 +323,7 @@ export default function CommunityPage() {
                 <p className="text-lg font-semibold text-white/70 mb-2">{t('community.no_posts')}</p>
                 <p className="text-sm text-white/40 mb-6">{t('community.be_first')}</p>
                 {user && (
-                  <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors">
+                  <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors">
                     {t('community.share_script')}
                   </Link>
                 )}
@@ -457,7 +457,7 @@ export default function CommunityPage() {
       {/* Mobile category bar */}
       <div
         className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-2 z-20"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#070710' }}
+        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgb(var(--surface-950))' }}
       >
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           <button

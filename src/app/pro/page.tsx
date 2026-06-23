@@ -106,7 +106,7 @@ export default function ProUpgradePage() {
   // Gate: if pro_subscription flag is not accessible, redirect
   if (!flagsLoading && !canUseFeature('pro_subscription')) {
     return (
-      <div className="min-h-screen" style={{ background: '#070710' }}>
+      <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
         <AppHeader />
         <div className="max-w-4xl mx-auto px-6 py-16 text-center">
           <p className="text-white/30 text-sm">Pro subscriptions are not available yet.</p>
@@ -153,7 +153,7 @@ export default function ProUpgradePage() {
   // Already Pro
   if (isPro) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'rgb(var(--surface-950))' }}>
         <div className="max-w-md text-center">
           <div className="w-16 h-16 mx-auto mb-8 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
             <Icon name="star" size="xl" className="text-white" />
@@ -181,7 +181,7 @@ export default function ProUpgradePage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
       <AppHeader />
       {/* Hero */}
       <div className="relative overflow-hidden">

@@ -336,14 +336,14 @@ export default function CourseEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <div className="w-8 h-8 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Page sub-nav */}
       <div className="sticky top-14 z-30 backdrop-blur-xl border-b border-white/[0.07]" style={{ background: 'rgba(7,7,16,0.95)' }}>
         <div className="max-w-5xl mx-auto px-6 flex items-center gap-4 h-12">
@@ -508,8 +508,8 @@ export default function CourseEditPage() {
       {/* Lesson editor modal */}
       {editingLesson && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
-          <div className="w-full sm:max-w-2xl bg-[#0E0E1C] rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
-            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-[#0E0E1C] z-10">
+          <div className="w-full sm:max-w-2xl bg-surface-950 rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-surface-950 z-10">
               <h3 className="text-sm font-bold text-white">Edit Lesson</h3>
               <button onClick={() => setEditingLesson(null)} className="text-white/40 hover:text-white">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
@@ -565,7 +565,7 @@ export default function CourseEditPage() {
                 />
               </div>
             </div>
-            <div className="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.06] bg-[#0E0E1C]">
+            <div className="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.06] bg-surface-950">
               <button onClick={() => setEditingLesson(null)} className="px-4 py-2 text-sm text-white/50 hover:text-white">Cancel</button>
               <button onClick={saveEditLesson} className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 text-white hover:bg-brand-600">Save Lesson</button>
             </div>

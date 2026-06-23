@@ -146,7 +146,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-xl bg-[#111113] border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-4rem)]">
+      <div className="relative w-full max-w-xl bg-surface-900 border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-4rem)]">
         {/* Progress bar (only during questions) */}
         {step > 0 && step <= questions.length && (
           <div className="h-0.5 bg-white/5 w-full flex-shrink-0">
@@ -252,7 +252,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
             <button
               onClick={handleNext}
               disabled={!canProceed() || submitting}
-              className="px-6 py-2.5 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors min-w-[100px] flex items-center justify-center gap-2"
+              className="px-6 py-2.5 bg-brand-500 hover:bg-brand-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors min-w-[100px] flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />

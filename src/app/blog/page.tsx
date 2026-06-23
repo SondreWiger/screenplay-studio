@@ -54,7 +54,7 @@ export default function BlogPage() {
   const rest = filtered.slice(1);
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Dot-grid texture */}
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.12]"

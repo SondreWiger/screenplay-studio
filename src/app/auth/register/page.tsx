@@ -164,7 +164,7 @@ function RegisterForm() {
     return (
       <div
         className="min-h-screen flex items-center justify-center px-4 relative"
-        style={{ background: '#070710' }}
+        style={{ background: 'rgb(var(--surface-950))' }}
       >
         <div
           className="pointer-events-none fixed inset-0 opacity-[0.18]"
@@ -208,7 +208,7 @@ function RegisterForm() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 py-12 relative"
-      style={{ background: '#070710' }}
+      style={{ background: 'rgb(var(--surface-950))' }}
     >
       {/* Dot-grid texture */}
       <div

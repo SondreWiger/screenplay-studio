@@ -218,7 +218,7 @@ export default function DeepDiveMindmapPage() {
   const regularNodes = nodes.filter((n) => n.node_type !== 'group');
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a14] text-white overflow-hidden">
+    <div className="h-screen flex flex-col bg-surface-950 text-white overflow-hidden">
       {/* Nav */}
       <nav className="shrink-0 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-white/10 z-30">
         <div className="max-w-full mx-auto px-6 flex items-center justify-between h-14">

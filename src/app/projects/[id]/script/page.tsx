@@ -2054,12 +2054,12 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.fdx</span> Final Draft
+                    <span className="w-8 text-[10px] font-mono text-brand-500">.fdx</span> Final Draft
                   </button>
                   <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-[#FF7A43]">.ftn</span> Fountain
+                    <span className="w-8 text-[10px] font-mono text-brand-500">.ftn</span> Fountain
                   </button>
                   <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
                   <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Export</p>
@@ -2264,7 +2264,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[13px] text-surface-300">Font Size</span>
-                        <span className="text-[11px] font-mono text-[#FF7A43] tabular-nums">{displaySettings.fontSize}pt</span>
+                        <span className="text-[11px] font-mono text-brand-500 tabular-nums">{displaySettings.fontSize}pt</span>
                       </div>
                       <input type="range" min={10} max={16} step={1} value={displaySettings.fontSize}
                         onChange={(e) => updateDisplaySettings({ fontSize: Number(e.target.value) })}
@@ -4361,7 +4361,7 @@ const LineEditor = memo(function LineEditor({
                 useScriptStore.getState().updateElement(elementId, { element_type: type });
                 setShowTypeMenu(false);
               }} className={cn('w-full text-left px-3 py-1.5 text-[12px] transition-colors',
-                element.element_type === type ? 'text-[#FF7A43] font-medium' : 'text-surface-300 hover:text-white'
+                element.element_type === type ? 'text-brand-500 font-medium' : 'text-surface-300 hover:text-white'
               )}
                 onMouseEnter={(e) => { if (element.element_type !== type) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'; }}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
@@ -4435,7 +4435,7 @@ const LineEditor = memo(function LineEditor({
                     useScriptStore.getState().updateElement(elementId, { element_type: type });
                     setShowLongPressMenu(false);
                   }} className={cn('w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors min-h-[44px] flex items-center',
-                    element.element_type === type ? 'bg-brand-500/15 text-[#FF7A43] font-medium' : 'text-surface-300 active:bg-surface-800'
+                    element.element_type === type ? 'bg-brand-500/15 text-brand-500 font-medium' : 'text-surface-300 active:bg-surface-800'
                   )}>
                     {ELEMENT_LABELS[type]}
                     {element.element_type === type && <span className="ml-auto text-brand-500 text-xs">Current</span>}

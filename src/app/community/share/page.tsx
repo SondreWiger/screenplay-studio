@@ -448,14 +448,14 @@ export default function ShareScriptPage() {
 
   if (authLoading || loadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Dot-grid texture */}
       <div className="pointer-events-none fixed inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
@@ -725,7 +725,7 @@ export default function ShareScriptPage() {
                                 {p.title?.[0]?.toUpperCase() || '?'}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <h4 className={`text-sm font-semibold truncate ${isSelected ? 'text-[#CC4312]' : 'text-white'}`}>
+                                <h4 className={`text-sm font-semibold truncate ${isSelected ? 'text-brand-600' : 'text-white'}`}>
                                   {p.title}
                                 </h4>
                                 {p.logline && (
@@ -969,7 +969,7 @@ export default function ShareScriptPage() {
                   type="button"
                   onClick={importProjectMembers}
                   disabled={importingMembers}
-                  className="flex items-center gap-1.5 text-[11px] font-mono text-brand-500 hover:text-[#FF7A3D] disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 text-[11px] font-mono text-brand-500 hover:text-brand-400 disabled:opacity-50 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />

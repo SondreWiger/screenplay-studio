@@ -226,7 +226,7 @@ export default function ChallengeDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#070710] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
@@ -234,7 +234,7 @@ export default function ChallengeDetailPage() {
 
   if (!challenge) {
     return (
-      <div className="min-h-screen bg-[#070710] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="flex flex-col items-center text-center">
           <p className="text-lg font-semibold text-white/70 mb-4">Challenge not found</p>
           <Link href="/community/challenges" className="text-sm text-brand-500 hover:underline">← Back to Challenges</Link>
@@ -244,7 +244,7 @@ export default function ChallengeDetailPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
 
 
       <div className="max-w-4xl mx-auto px-6 py-10">
@@ -466,7 +466,7 @@ export default function ChallengeDetailPage() {
                       <button
                         onClick={handleSubmit}
                         disabled={submitting || !subTitle.trim() || (scriptSource === 'text' ? !subContent.trim() : !scriptElements?.length)}
-                        className="px-6 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-[#CC4312] disabled:bg-white/10 disabled:text-white/50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                        className="px-6 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-600 disabled:bg-white/10 disabled:text-white/50 disabled:cursor-not-allowed rounded-lg transition-colors"
                       >
                         {submitting ? 'Submitting...' : 'Submit Entry'}
                       </button>
@@ -483,7 +483,7 @@ export default function ChallengeDetailPage() {
             ) : (
               <div className="rounded-xl border border-white/10 bg-surface-900 py-10 text-center">
                 <p className="text-sm text-white/40 mb-3">Sign in to submit your script</p>
-                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors">
+                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors">
                   Sign In
                 </Link>
               </div>
@@ -533,7 +533,7 @@ export default function ChallengeDetailPage() {
             {!user && (
               <div className="rounded-xl border border-white/10 bg-surface-900 py-6 text-center mb-6">
                 <p className="text-sm text-white/40 mb-3">Sign in to vote</p>
-                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors">
+                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors">
                   Sign In
                 </Link>
               </div>
@@ -570,7 +570,7 @@ export default function ChallengeDetailPage() {
                             <button
                               onClick={() => handleVote(sub.id)}
                               disabled={voting !== null}
-                              className="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-[#CC4312] disabled:bg-white/10 disabled:text-white/50 rounded-lg transition-colors"
+                              className="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-600 disabled:bg-white/10 disabled:text-white/50 rounded-lg transition-colors"
                             >
                               {voting === sub.id ? 'Voting...' : 'Vote'}
                             </button>

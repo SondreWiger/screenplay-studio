@@ -275,7 +275,7 @@ function ScriptEditorLesson({
       </div>
 
       {/* Mini screenplay editor */}
-      <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0A14]">
+      <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-surface-950">
         {/* Editor header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06] bg-white/[0.03]">
           <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Screenplay Editor</span>
@@ -409,7 +409,7 @@ function ExampleLesson({ content }: { content: LessonContentExample }) {
       {content.description && (
         <p className="text-sm text-white/60 leading-relaxed">{content.description}</p>
       )}
-      <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#080810]">
+      <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-surface-950">
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06] bg-white/[0.03]">
           <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
             {content.language === 'fountain' ? 'Screenplay Example' : content.language}
@@ -712,7 +712,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <div className="w-8 h-8 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
@@ -723,7 +723,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
   const isCompleted = enrollment?.completed_at != null;
 
   return (
-    <div className="flex h-[calc(100vh-56px)] overflow-hidden" style={{ background: '#070710', color: '#fff' }}>
+    <div className="flex h-[calc(100vh-56px)] overflow-hidden" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* ─── Sidebar ─── */}
       <div className={cn(
         'flex-shrink-0 border-r border-white/[0.07] transition-[width] duration-200 overflow-hidden',
@@ -872,7 +872,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
       {/* ─── Rating modal ─── */}
       {showRating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-[#0D0D1A] rounded-xl border border-brand-500/20 p-8 text-center shadow-2xl">
+          <div className="w-full max-w-sm bg-surface-950 rounded-xl border border-brand-500/20 p-8 text-center shadow-2xl">
             <div className="text-4xl mb-3">🎉</div>
             <h3 className="text-xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Complete!</h3>
             <p className="text-sm text-white/50 mb-2">You earned <span className="text-brand-500 font-bold">+{course.xp_reward} XP</span></p>

@@ -76,7 +76,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-brand-500" />
       </div>
     );
@@ -84,7 +84,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
 
   if (notFound || !company) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#070710' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <h1 className="text-3xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>PAGE NOT FOUND</h1>
         <p className="text-white/40 mb-6 font-mono text-sm">This company page doesn&apos;t exist or isn&apos;t public.</p>
         <Link href="/" className="ss-btn-orange text-sm">
@@ -95,7 +95,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
   }
 
   return (
-    <div className="min-h-screen text-white" style={{ background: '#070710' }}>
+    <div className="min-h-screen text-white" style={{ background: 'rgb(var(--surface-950))' }}>
       {/* Hero */}
       <header
         className="relative"

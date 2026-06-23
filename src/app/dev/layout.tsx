@@ -47,7 +47,7 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = !loading && user && (user.id === ADMIN_UID || user.role === 'admin' || user.role === 'moderator');
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex">
+    <div className="min-h-screen bg-surface-950 flex">
       {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside className="w-52 shrink-0 border-r border-white/[0.06] flex flex-col py-6 px-3 sticky top-0 h-screen">
         {/* Logo / Back */}

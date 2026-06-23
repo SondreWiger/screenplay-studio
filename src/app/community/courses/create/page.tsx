@@ -495,7 +495,7 @@ export default function CreateCoursePage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       <div className="pointer-events-none fixed inset-0 opacity-[0.10]"
         style={{ backgroundImage: 'radial-gradient(circle,rgba(255,255,255,0.4) 1px,transparent 1px)', backgroundSize: '32px 32px' }}
       />
@@ -697,8 +697,8 @@ export default function CreateCoursePage() {
       {/* Lesson Editor Modal */}
       {editingLesson && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
-          <div className="w-full sm:max-w-2xl bg-[#0E0E1C] rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
-            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-[#0E0E1C] z-10">
+          <div className="w-full sm:max-w-2xl bg-surface-950 rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-surface-950 z-10">
               <h3 className="text-sm font-bold text-white">Edit Lesson</h3>
               <button onClick={() => setEditingLesson(null)} className="text-white/40 hover:text-white transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
@@ -801,7 +801,7 @@ export default function CreateCoursePage() {
               </div>
             </div>
 
-            <div className="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.06] bg-[#0E0E1C]">
+            <div className="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.06] bg-surface-950">
               <button onClick={() => setEditingLesson(null)} className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors">Cancel</button>
               <button onClick={saveEditLesson}
                 className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 text-white hover:bg-brand-600 transition-colors">

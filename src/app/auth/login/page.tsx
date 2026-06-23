@@ -30,7 +30,7 @@ function friendlyAuthError(msg: string): string {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" style={{ background: '#070710' }} />}>
+    <Suspense fallback={<div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }} />}>
       <LoginForm />
     </Suspense>
   );
@@ -100,7 +100,7 @@ function LoginForm() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 relative"
-      style={{ background: '#070710' }}
+      style={{ background: 'rgb(var(--surface-950))' }}
     >
       {/* Dot-grid texture */}
       <div

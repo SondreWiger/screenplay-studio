@@ -336,7 +336,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                   />
                 </div>
                 {metaDirty && (
-                  <button onClick={saveMeta} disabled={saving} className="px-4 py-2 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
+                  <button onClick={saveMeta} disabled={saving} className="px-4 py-2 bg-brand-500 hover:bg-brand-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                     Save changes
                   </button>
                 )}
@@ -606,7 +606,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     <button
                       onClick={handleNotify}
                       disabled={notifying}
-                      className="text-xs px-3 py-1.5 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-1"
+                      className="text-xs px-3 py-1.5 bg-brand-500 hover:bg-brand-500 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-1"
                     >
                       {notifying ? (
                         <>
@@ -802,7 +802,7 @@ function QuestionForm({
         <button
           onClick={onSave}
           disabled={!qText.trim() || saving}
-          className="flex-1 py-2 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
+          className="flex-1 py-2 bg-brand-500 hover:bg-brand-500 disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
         >
           {saving ? 'Saving…' : 'Save question'}
         </button>

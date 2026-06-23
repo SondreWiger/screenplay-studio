@@ -51,7 +51,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
 
   if (notFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710', color: '#fff' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
         <div className="text-center">
           <p className="text-white/30 text-sm uppercase tracking-widest font-mono mb-3">Creator not found</p>
           <Link href="/" className="text-brand-500 text-sm hover:underline">Go to Screenplay Studio →</Link>
@@ -72,7 +72,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
   ].filter(Boolean) : [];
 
   return (
-    <div className="min-h-screen relative" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen relative" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Dot grid */}
       <div className="fixed inset-0 pointer-events-none z-0" style={{
         opacity: 0.028,

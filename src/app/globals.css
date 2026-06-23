@@ -1228,7 +1228,7 @@ a:active:not(:disabled) {
 /* ── Page wrapper ────────────────────────────────────────── */
 .ss-page {
   min-height: 100vh;
-  background-color: #070710;
+  background-color: rgb(var(--surface-950));
   color: #fff;
   position: relative;
 }

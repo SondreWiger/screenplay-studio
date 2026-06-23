@@ -385,7 +385,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
   const sortedNodes = [...nodes].sort((a, b) => a.sort_order - b.sort_order);
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
       <AppHeader
         actions={
           <div className="flex items-center gap-2">

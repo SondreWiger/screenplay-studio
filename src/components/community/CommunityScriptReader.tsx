@@ -271,32 +271,32 @@ export function CommunityScriptInfoPanel({
 
           {/* Stats grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-            <div className="bg-[#0a0a14] border border-white/[0.07] rounded-lg px-3 py-2.5">
+            <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
               <p className="text-[10px] text-white/25 uppercase tracking-wide">Words</p>
               <p className="text-xl font-bold text-white/80 mt-0.5">{stats.wordCount.toLocaleString()}</p>
             </div>
-            <div className="bg-[#0a0a14] border border-white/[0.07] rounded-lg px-3 py-2.5">
+            <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
               <p className="text-[10px] text-white/25 uppercase tracking-wide">Pages (~)</p>
               <p className="text-xl font-bold text-white/80 mt-0.5">~{stats.pageEstimate}</p>
             </div>
             {stats.isStructured ? (
               <>
-                <div className="bg-[#0a0a14] border border-white/[0.07] rounded-lg px-3 py-2.5">
+                <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
                   <p className="text-[10px] text-white/25 uppercase tracking-wide">Scenes</p>
                   <p className="text-xl font-bold text-white/80 mt-0.5">{stats.sceneCount}</p>
                 </div>
-                <div className="bg-[#0a0a14] border border-white/[0.07] rounded-lg px-3 py-2.5">
+                <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
                   <p className="text-[10px] text-white/25 uppercase tracking-wide">Characters</p>
                   <p className="text-xl font-bold text-white/80 mt-0.5">{stats.charCount}</p>
                 </div>
               </>
             ) : (
               <>
-                <div className="bg-[#0a0a14] border border-white/[0.07] rounded-lg px-3 py-2.5">
+                <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
                   <p className="text-[10px] text-white/25 uppercase tracking-wide">Read time</p>
                   <p className="text-xl font-bold text-white/80 mt-0.5">~{stats.readingTimeMin}m</p>
                 </div>
-                <div className="bg-[#0a0a14] border border-white/[0.07] rounded-lg px-3 py-2.5">
+                <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
                   <p className="text-[10px] text-white/25 uppercase tracking-wide">Format</p>
                   <p className="text-base font-bold text-white/70 mt-0.5 truncate">{formatLabel}</p>
                 </div>
@@ -564,7 +564,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
   ];
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[#0a0a0c] text-white flex flex-col">
+    <div className="fixed inset-0 z-[200] bg-surface-950 text-white flex flex-col">
       {/* Reading progress bar */}
       <div className="fixed top-0 left-0 right-0 z-[201] h-[3px] bg-black/40">
         <div
@@ -574,7 +574,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
       </div>
 
       {/* Top nav */}
-      <nav className="sticky top-0 z-[200] bg-[#0a0a0c]/95 backdrop-blur-lg border-b border-white/[0.06]">
+      <nav className="sticky top-0 z-[200] bg-surface-950/95 backdrop-blur-lg border-b border-white/[0.06]">
         <div className="px-4 flex items-center justify-between h-12">
           {/* Left: close + title */}
           <div className="flex items-center gap-3 min-w-0">
@@ -653,7 +653,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-72 xl:w-80 shrink-0 border-r border-white/[0.06] bg-[#0c0c0e] flex flex-col overflow-hidden">
+          <aside className="w-72 xl:w-80 shrink-0 border-r border-white/[0.06] bg-surface-950 flex flex-col overflow-hidden">
             {/* Sidebar tab bar */}
             <div className="flex border-b border-white/[0.06]">
               {sidebarTabs.map(({ key, label }) => (
@@ -888,7 +888,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
             <div
               className={`rounded-xl shadow-2xl mx-auto transition-colors duration-300 ${
                 darkScript
-                  ? 'bg-[#141418] text-[#c8c8cc] shadow-black/60 border border-white/[0.06]'
+                  ? 'bg-surface-800 text-surface-200 shadow-black/60 border border-white/[0.06]'
                   : 'bg-white text-black shadow-black/40'
               }`}
               style={{
@@ -1010,7 +1010,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                             <span className="text-[10px] font-semibold" style={{ color: '#FF8F5F' }}>
                               {a.author?.full_name || 'User'}
                             </span>
-                            <p className="text-xs mt-0.5" style={{ color: darkScript ? '#c8c8cc' : '#555' }}>
+                            <p className="text-xs mt-0.5" style={{ color: darkScript ? 'rgb(var(--surface-200))' : '#555' }}>
                               {a.content}
                             </p>
                           </div>
@@ -1058,7 +1058,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                         +
                       </button>
                     )}
-                    <p className={`text-xs leading-relaxed whitespace-pre-wrap ${darkScript ? 'text-[#c8c8cc]' : 'text-gray-800'}`}>
+                    <p className={`text-xs leading-relaxed whitespace-pre-wrap ${darkScript ? 'text-surface-200' : 'text-gray-800'}`}>
                       {para}
                     </p>
                     {isAnnotating && (
@@ -1101,7 +1101,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                             <span className="text-[10px] font-semibold" style={{ color: '#FF8F5F' }}>
                               {a.author?.full_name || 'User'}
                             </span>
-                            <p className="text-xs mt-0.5" style={{ color: darkScript ? '#c8c8cc' : '#555' }}>
+                            <p className="text-xs mt-0.5" style={{ color: darkScript ? 'rgb(var(--surface-200))' : '#555' }}>
                               {a.content}
                             </p>
                           </div>

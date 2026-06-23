@@ -16,7 +16,7 @@ import type { SupportTicket, TicketMessage, TicketCategory } from '@/lib/types';
 export default function SupportPageWrapper() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#070710] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     }>
@@ -190,7 +190,7 @@ function SupportPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#070710] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
@@ -198,11 +198,11 @@ function SupportPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#070710] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-surface-950 flex flex-col items-center justify-center gap-4">
         <div className="text-5xl">🎫</div>
         <h1 className="text-xl font-black text-white/90">Support Center</h1>
         <p className="text-sm text-white/40">Sign in to submit or view support tickets.</p>
-        <Link href="/auth/login?redirect=/support" className="px-5 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-[#CC4312] transition-colors">
+        <Link href="/auth/login?redirect=/support" className="px-5 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-600 transition-colors">
           Sign In
         </Link>
       </div>
@@ -210,7 +210,7 @@ function SupportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070710]">
+    <div className="min-h-screen bg-surface-950">
       {/* Header */}
       <header className="bg-surface-900 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -232,7 +232,7 @@ function SupportPage() {
           <div className="w-80 shrink-0">
             <button
               onClick={() => { setShowNewForm(true); setSelectedTicket(null); }}
-              className="w-full px-4 py-3 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-xl transition-colors mb-4 flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-xl transition-colors mb-4 flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               New Ticket
@@ -327,7 +327,7 @@ function SupportPage() {
                     <button
                       onClick={handleCreateTicket}
                       disabled={!newSubject.trim() || !newMessage.trim() || submitting}
-                      className="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
+                      className="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors disabled:opacity-50"
                     >
                       {submitting ? 'Submitting...' : 'Submit Ticket'}
                     </button>
@@ -392,7 +392,7 @@ function SupportPage() {
                         </div>
                         <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                           msg.is_staff
-                            ? 'bg-brand-500/10 text-[#CC4312] border border-brand-500/30'
+                            ? 'bg-brand-500/10 text-brand-600 border border-brand-500/30'
                             : 'bg-surface-800 text-white/90'
                         }`}>
                           {msg.content}
@@ -419,7 +419,7 @@ function SupportPage() {
                       <button
                         onClick={handleSendMessage}
                         disabled={!messageText.trim() || submitting}
-                        className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
+                        className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors disabled:opacity-50"
                       >
                         Send
                       </button>

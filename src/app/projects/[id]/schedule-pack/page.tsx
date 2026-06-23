@@ -563,7 +563,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
       ) : (
         <div className="flex-1 overflow-y-auto">
           {/* Day header */}
-          <div className="sticky top-0 z-10 bg-[#070710] border-b border-surface-800 px-6 py-3 flex items-center gap-3">
+          <div className="sticky top-0 z-10 bg-surface-950 border-b border-surface-800 px-6 py-3 flex items-center gap-3">
             <div className="flex-1">
               {editingDay ? (
                 <input

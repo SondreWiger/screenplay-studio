@@ -60,7 +60,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6 w-full max-w-sm shadow-2xl">
+      <div className="bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-sm shadow-2xl">
         <h2 className="text-lg font-semibold text-white mb-4">Log today&apos;s work</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -95,7 +95,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
               Cancel
             </button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-[#ff7a45] transition-colors disabled:opacity-50">
+              className="flex-1 py-2 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-500 transition-colors disabled:opacity-50">
               {saving ? 'Saving…' : 'Log Work'}
             </button>
           </div>
@@ -182,7 +182,7 @@ function BuddyCard({
         {isPending && !isRequester && (
           <>
             <button onClick={accept} disabled={acting}
-              className="text-xs px-3 py-1.5 bg-brand-500 text-white rounded-lg hover:bg-[#ff7a45] transition-colors disabled:opacity-40">
+              className="text-xs px-3 py-1.5 bg-brand-500 text-white rounded-lg hover:bg-brand-500 transition-colors disabled:opacity-40">
               Accept
             </button>
             <button onClick={decline} disabled={acting}
@@ -291,7 +291,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#181818] border border-white/10 rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl">
+      <div className="bg-surface-800 border border-white/10 rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
           <h2 className="text-base font-semibold text-white">{group.name}</h2>
@@ -317,7 +317,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                 {members.slice(0, 8).map(m => (
                   <Link key={m.user_id} href={`/u/${m.profile.username || m.user_id}`}
                     title={m.profile.display_name || m.profile.username || 'Member'}
-                    className="w-7 h-7 rounded-full overflow-hidden border-2 border-[#181818] bg-white/10">
+                    className="w-7 h-7 rounded-full overflow-hidden border-2 border-surface-800 bg-white/10">
                     {m.profile.avatar_url ? (
                       <img src={m.profile.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
@@ -328,7 +328,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                   </Link>
                 ))}
                 {members.length > 8 && (
-                  <div className="w-7 h-7 rounded-full border-2 border-[#181818] bg-white/10 flex items-center justify-center text-[9px] text-white/30">
+                  <div className="w-7 h-7 rounded-full border-2 border-surface-800 bg-white/10 flex items-center justify-center text-[9px] text-white/30">
                     +{members.length - 8}
                   </div>
                 )}
@@ -375,7 +375,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                 className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30"
               />
               <button type="submit" disabled={sending || !message.trim()}
-                className="px-4 py-2 bg-brand-500 text-white text-sm rounded-lg hover:bg-[#ff7a45] transition-colors disabled:opacity-40">
+                className="px-4 py-2 bg-brand-500 text-white text-sm rounded-lg hover:bg-brand-500 transition-colors disabled:opacity-40">
                 Send
               </button>
             </form>
@@ -583,7 +583,7 @@ export default function AccountabilityPage() {
   if (user.show_accountability === false) return <LoadingPage />;
 
   return (
-    <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Dot-grid texture */}
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.07]"

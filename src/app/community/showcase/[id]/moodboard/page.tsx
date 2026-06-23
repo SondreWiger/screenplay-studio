@@ -243,7 +243,7 @@ export default function DeepDiveMoodboardPage() {
           onClick={() => setSelectedItem(null)}
         >
           <div
-            className="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border border-white/10 rounded-xl"
+            className="relative max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-surface-800 border border-white/10 rounded-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
