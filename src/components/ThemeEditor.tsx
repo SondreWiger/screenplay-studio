@@ -129,8 +129,9 @@ export function ThemeEditor() {
         }
       }
     } catch { /* fall through */ }
-    // Fallback: full URL
-    const fullUrl = `${window.location.origin}/colors/${sha}`;
+    // Fallback: use truncated SHA (12 chars) which matches Supabase theme ID
+    const shortId = sha.slice(0, 12);
+    const fullUrl = `${window.location.origin}/colors/${shortId}`;
     setShareUrl(fullUrl);
     try {
       await navigator.clipboard.writeText(fullUrl);
@@ -164,9 +165,13 @@ export function ThemeEditor() {
         }),
       });
       if (res.ok) {
+        const { theme: published } = await res.json();
         toast.success('Theme published to store!');
         setPublishName('');
         setPublishDesc('');
+        if (published?.id) {
+          setShareUrl(`${window.location.origin}/colors/${published.id}`);
+        }
       } else {
         toast.error('Failed to publish');
       }

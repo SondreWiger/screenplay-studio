@@ -273,16 +273,31 @@ function ShareThemeCard() {
   const [copied, setCopied] = useState(false);
 
   const generate = async () => {
-    const { sha, encoded } = await encodeTheme(theme);
-    // Save to server
+    const { sha } = await encodeTheme(theme);
+    // Save to Supabase via themes API
     try {
-      await fetch(`/api/colors/${sha}`, {
+      const res = await fetch('/api/themes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...theme, sha }),
+        body: JSON.stringify({
+          name: 'Shared Theme',
+          colors: theme.colors,
+          sha,
+          category: 'dark',
+        }),
       });
+      if (res.ok) {
+        const { theme: saved } = await res.json();
+        if (saved?.id) {
+          const shareUrl = `${window.location.origin}/colors/${saved.id}`;
+          setUrl(shareUrl);
+          return;
+        }
+      }
     } catch { /* ok if fails */ }
-    const shareUrl = `${window.location.origin}/colors/${sha}`;
+    // Fallback: truncated SHA
+    const shortId = sha.slice(0, 12);
+    const shareUrl = `${window.location.origin}/colors/${shortId}`;
     setUrl(shareUrl);
   };
 
