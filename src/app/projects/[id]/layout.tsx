@@ -369,6 +369,24 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
         setLoading(false);
         return;
       }
+      // When offline in cloud mode, fall back to IndexedDB cache
+      if (!navigator.onLine) {
+        const project = await getCachedById('projects', params.id);
+        if (!project) {
+          router.push('/dashboard');
+          return;
+        }
+        setCurrentProject(project as any);
+        setMembers([]);
+        recordView({
+          id: project.id,
+          title: project.title || 'Untitled',
+          cover_url: (project as any).cover_url ?? null,
+          project_type: (project as any).project_type,
+        });
+        setLoading(false);
+        return;
+      }
       const supabase = createClient();
       const [projectRes, membersRes] = await Promise.all([
         supabase.from('projects').select('*').eq('id', params.id).single(),

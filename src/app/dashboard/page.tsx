@@ -174,6 +174,13 @@ function DashboardContent() {
         setLoading(false);
         return;
       }
+      // When offline, fall back to IndexedDB cache
+      if (!navigator.onLine) {
+        const cached = await getCachedProjects();
+        setProjects(cached as unknown as Project[]);
+        setLoading(false);
+        return;
+      }
       const supabase = createClient();
 
       // Get project IDs where user is a member (but not creator)
@@ -214,6 +221,8 @@ function DashboardContent() {
 
   const fetchCompanyData = async () => {
     if (!user?.id) return;
+    // Company memberships aren't cached in IndexedDB — skip when offline
+    if (!navigator.onLine) return;
     try {
       const supabase = createClient();
       // Get all company memberships for this user, with company details
