@@ -5,49 +5,70 @@ import { isElectronMode } from '@/lib/supabase/electron-client';
 import { useProjectStore, useScriptStore } from '@/lib/stores';
 import { saveProjectToDisk } from '@/lib/local-files';
 
-/**
- * Auto-save hook for Electron mode.
- *
- * Listens for `auto-save-tick` events from the main process (every 30s)
- * and persists the current project + scripts + elements to disk.
- *
- * Returns `lastSaved` — the Date of the last successful save, or null.
- */
 export function useAutoSave() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const savingRef = useRef(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerSave = async () => {
+    if (!isElectronMode() || savingRef.current) return;
+    
+    const { currentProject } = useProjectStore.getState();
+    const { scripts, elements } = useScriptStore.getState();
+    
+    if (!currentProject) return;
+
+    savingRef.current = true;
+    try {
+      await saveProjectToDisk(currentProject, scripts, elements);
+      setLastSaved(new Date());
+
+      if (window.electron?.addRecentProject) {
+        window.electron.addRecentProject({
+          id: currentProject.id,
+          title: currentProject.title || 'Untitled',
+        });
+      }
+    } catch (err) {
+      console.error('[auto-save] Failed to save:', err);
+    } finally {
+      savingRef.current = false;
+    }
+  };
 
   useEffect(() => {
-    if (!isElectronMode() || !window.electron?.onAutoSaveTick) return;
+    if (!isElectronMode()) return;
 
-    const cleanup = window.electron.onAutoSaveTick(async () => {
-      if (savingRef.current) return; // Skip if already saving
-
-      const { currentProject } = useProjectStore.getState();
-      const { scripts, elements } = useScriptStore.getState();
-
-      if (!currentProject) return;
-
-      savingRef.current = true;
-      try {
-        await saveProjectToDisk(currentProject, scripts, elements);
-        setLastSaved(new Date());
-
-        // Also track as recent project
-        if (window.electron?.addRecentProject) {
-          window.electron.addRecentProject({
-            id: currentProject.id,
-            title: currentProject.title || 'Untitled',
-          });
-        }
-      } catch (err) {
-        console.error('[auto-save] Failed to save:', err);
-      } finally {
-        savingRef.current = false;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        triggerSave();
       }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const unsubScript = useScriptStore.subscribe(() => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(triggerSave, 3000);
     });
 
-    return cleanup;
+    const unsubProject = useProjectStore.subscribe(() => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(triggerSave, 3000);
+    });
+
+    let cleanupTick: (() => void) | undefined;
+    if (window.electron?.onAutoSaveTick) {
+      cleanupTick = window.electron.onAutoSaveTick(triggerSave);
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      unsubScript();
+      unsubProject();
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      if (cleanupTick) cleanupTick();
+      triggerSave();
+    };
   }, []);
 
   return { lastSaved };

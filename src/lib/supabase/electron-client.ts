@@ -17,6 +17,9 @@ export function isElectronMode(): boolean {
 
 export function isLocalMode(): boolean {
   if (typeof window === 'undefined') return false;
+  if (isElectronMode() && window.electron?.getPreferenceSync) {
+    return window.electron.getPreferenceSync('ss-local-mode') === '1';
+  }
   return localStorage.getItem('ss-local-mode') === '1';
 }
 
@@ -31,10 +34,16 @@ const LOCAL_MODE_KEY = 'ss-local-mode';
 
 export function getLocalUser(): Profile | null {
   if (typeof window === 'undefined') return null;
-  const stored = localStorage.getItem(LOCAL_USER_KEY);
+  let stored: string | null = null;
+  if (isElectronMode() && window.electron?.getPreferenceSync) {
+    stored = window.electron.getPreferenceSync(LOCAL_USER_KEY);
+  } else {
+    stored = localStorage.getItem(LOCAL_USER_KEY);
+  }
+  
   if (stored) {
     try {
-      return JSON.parse(stored) as Profile;
+      return typeof stored === 'string' ? JSON.parse(stored) as Profile : stored as unknown as Profile;
     } catch {
       return null;
     }
@@ -45,6 +54,9 @@ export function getLocalUser(): Profile | null {
 export function createLocalUser(displayName?: string): Profile {
   const existing = getLocalUser();
   if (existing) {
+    if (isElectronMode() && window.electron?.setPreference) {
+      window.electron.setPreference(LOCAL_MODE_KEY, '1');
+    }
     localStorage.setItem(LOCAL_MODE_KEY, '1');
     document.cookie = `${LOCAL_MODE_KEY}=1; path=/; max-age=31536000; SameSite=Lax`;
     return existing;
@@ -90,6 +102,11 @@ export function createLocalUser(displayName?: string): Profile {
     allow_dms: false,
     profile_views: 0,
   };
+  
+  if (isElectronMode() && window.electron?.setPreference) {
+    window.electron.setPreference(LOCAL_USER_KEY, JSON.stringify(user));
+    window.electron.setPreference(LOCAL_MODE_KEY, '1');
+  }
   localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
   localStorage.setItem(LOCAL_MODE_KEY, '1');
   // Set cookie for middleware bypass
@@ -99,16 +116,26 @@ export function createLocalUser(displayName?: string): Profile {
 
 export function setLocalMode(enabled: boolean) {
   if (enabled) {
+    if (isElectronMode() && window.electron?.setPreference) {
+      window.electron.setPreference(LOCAL_MODE_KEY, '1');
+    }
     localStorage.setItem(LOCAL_MODE_KEY, '1');
     // Set cookie for middleware bypass (server-side can't read localStorage)
     document.cookie = `${LOCAL_MODE_KEY}=1; path=/; max-age=31536000; SameSite=Lax`;
   } else {
+    if (isElectronMode() && window.electron?.setPreference) {
+      window.electron.setPreference(LOCAL_MODE_KEY, null);
+    }
     localStorage.removeItem(LOCAL_MODE_KEY);
     document.cookie = `${LOCAL_MODE_KEY}=; path=/; max-age=0`;
   }
 }
 
 export function clearLocalUser() {
+  if (isElectronMode() && window.electron?.setPreference) {
+    window.electron.setPreference(LOCAL_USER_KEY, null);
+    window.electron.setPreference(LOCAL_MODE_KEY, null);
+  }
   localStorage.removeItem(LOCAL_USER_KEY);
   localStorage.removeItem(LOCAL_MODE_KEY);
   document.cookie = `${LOCAL_MODE_KEY}=; path=/; max-age=0`;

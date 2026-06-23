@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { setupMenu, addRecentProject, getRecentProjects, clearRecentProjects } from './menu';
 import { startLocalServer, stopLocalServer } from './next-server';
 import { loadWindowState, trackWindowState } from './window-state';
+import { getPreference, setPreference } from './preferences';
 
 const MARKETING_PATHS = [
   '/blog', '/community', '/legal', '/support', '/about', '/pricing', '/pro',
@@ -208,6 +209,15 @@ function setupIPC() {
 
   // ── New: User data path (for auto-save etc.) ─────────────
   ipcMain.handle('electron:get-user-data-path', () => app.getPath('userData'));
+
+  // ── Preferences ──────────────────────────────────────────
+  ipcMain.on('electron:get-preference-sync', (event, key: string) => {
+    event.returnValue = getPreference(key);
+  });
+
+  ipcMain.handle('electron:set-preference', (_event, key: string, value: any) => {
+    setPreference(key, value);
+  });
 
   // ── New: Recent projects ─────────────────────────────────
   ipcMain.handle('electron:get-recent-projects', () => getRecentProjects());

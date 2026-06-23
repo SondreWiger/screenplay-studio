@@ -39,6 +39,8 @@ export interface ElectronAPI {
   clearRecentProjects: () => Promise<void>;
   onMenuAction: (callback: (action: MenuAction, ...args: unknown[]) => void) => () => void;
   onAutoSaveTick: (callback: () => void) => () => void;
+  getPreferenceSync: (key: string) => any;
+  setPreference: (key: string, value: any) => Promise<void>;
 }
 
 contextBridge.exposeInMainWorld('electron', {
@@ -96,4 +98,6 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.removeListener('auto-save-tick', fn);
     };
   },
+  getPreferenceSync: (key: string) => ipcRenderer.sendSync('electron:get-preference-sync', key),
+  setPreference: (key: string, value: any) => ipcRenderer.invoke('electron:set-preference', key, value),
 } satisfies ElectronAPI);

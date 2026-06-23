@@ -30,6 +30,7 @@ import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyR
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
 import { isElectronMode, isLocalMode, setLocalMode } from '@/lib/supabase/electron-client';
 import { putCached, cacheRows, getCachedProjects } from '@/lib/offline/db';
+import { saveProjectToDisk } from '@/lib/local-files';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
