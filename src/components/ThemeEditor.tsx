@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useThemeStore } from '@/lib/stores';
-import { DEFAULT_THEME, THEME_COLOR_FIELDS, encodeTheme, type AppTheme, type ThemeColors } from '@/lib/theme';
+import { useThemeStore, useAuthStore } from '@/lib/stores';
+import { DEFAULT_THEME, THEME_COLOR_FIELDS, encodeTheme, THEME_CATEGORIES, type AppTheme, type ThemeColors } from '@/lib/theme';
 import { Button, Input, toast } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
 
@@ -88,22 +88,93 @@ function ColorField({
 
 export function ThemeEditor() {
   const { theme, updateColor, setTheme, editorOpen, setEditorOpen } = useThemeStore();
+  const user = useAuthStore((s) => s.user);
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [publishName, setPublishName] = useState('');
+  const [publishCategory, setPublishCategory] = useState('dark');
+  const [publishDesc, setPublishDesc] = useState('');
+  const [publishing, setPublishing] = useState(false);
 
   const handleShare = useCallback(async () => {
-    const { sha, encoded } = await encodeTheme(theme);
-    const url = `${window.location.origin}/colors/${sha}?t=${encoded}`;
-    setShareUrl(url);
+    const { sha } = await encodeTheme(theme);
+    // Try to create short URL
     try {
-      await navigator.clipboard.writeText(url);
+      const res = await fetch('/api/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: theme.name || 'Shared Theme',
+          colors: theme.colors,
+          sha,
+          author_id: user?.id || null,
+          author_name: user?.display_name || user?.email || null,
+          category: 'dark',
+        }),
+      });
+      if (res.ok) {
+        const { theme: saved } = await res.json();
+        if (saved?.id) {
+          const shortUrl = `${window.location.origin}/t/${saved.id}`;
+          setShareUrl(shortUrl);
+          try {
+            await navigator.clipboard.writeText(shortUrl);
+            setCopied(true);
+            toast.success('Short URL copied!');
+            setTimeout(() => setCopied(false), 2000);
+          } catch {
+            toast.success('Short URL ready');
+          }
+          return;
+        }
+      }
+    } catch { /* fall through */ }
+    // Fallback: full URL
+    const fullUrl = `${window.location.origin}/colors/${sha}`;
+    setShareUrl(fullUrl);
+    try {
+      await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
-      toast.success('Share URL copied to clipboard');
+      toast.success('Share URL copied');
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.success('URL generated — copy it below');
+      toast.success('URL generated');
     }
-  }, [theme]);
+  }, [theme, user]);
+
+  const handlePublish = useCallback(async () => {
+    if (!publishName.trim()) {
+      toast.error('Give your theme a name');
+      return;
+    }
+    setPublishing(true);
+    try {
+      const { sha } = await encodeTheme(theme);
+      const res = await fetch('/api/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: publishName.trim(),
+          description: publishDesc.trim() || null,
+          category: publishCategory,
+          colors: theme.colors,
+          sha,
+          author_id: user?.id || null,
+          author_name: user?.display_name || user?.email || null,
+        }),
+      });
+      if (res.ok) {
+        toast.success('Theme published to store!');
+        setPublishName('');
+        setPublishDesc('');
+      } else {
+        toast.error('Failed to publish');
+      }
+    } catch {
+      toast.error('Failed to publish');
+    }
+    setPublishing(false);
+  }, [theme, publishName, publishDesc, publishCategory, user]);
 
   if (!editorOpen) return null;
 
@@ -213,11 +284,46 @@ export function ThemeEditor() {
                   {copied ? '✓' : 'Copy'}
                 </button>
               </div>
-              <p className="text-[10px] mt-1" style={{ color: theme.colors.textMuted }}>
-                Share this link. Open it to apply the theme.
-              </p>
             </div>
           )}
+
+          {/* Publish to Store */}
+          <div className="pt-4 border-t" style={{ borderColor: theme.colors.border }}>
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.colors.textMuted }}>Publish to Store</h3>
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Theme name"
+                value={publishName}
+                onChange={(e) => setPublishName(e.target.value)}
+                className="w-full bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-xs text-surface-300 focus:outline-none focus:border-white/30"
+              />
+              <input
+                type="text"
+                placeholder="Description (optional)"
+                value={publishDesc}
+                onChange={(e) => setPublishDesc(e.target.value)}
+                className="w-full bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-xs text-surface-300 focus:outline-none focus:border-white/30"
+              />
+              <select
+                value={publishCategory}
+                onChange={(e) => setPublishCategory(e.target.value)}
+                className="w-full bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-xs text-surface-300 focus:outline-none"
+              >
+                {THEME_CATEGORIES.filter((c) => c.id !== 'all').map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>
+                ))}
+              </select>
+              <button
+                onClick={handlePublish}
+                disabled={publishing || !publishName.trim()}
+                className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40"
+                style={{ background: theme.colors.brand, color: '#fff' }}
+              >
+                {publishing ? 'Publishing...' : 'Publish Theme'}
+              </button>
+            </div>
+          </div>
 
           {/* Presets */}
           <div className="pt-4 border-t" style={{ borderColor: theme.colors.border }}>

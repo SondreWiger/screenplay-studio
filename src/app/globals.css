@@ -5,6 +5,21 @@
 /* Fonts are self-hosted via next/font (see layout.tsx) — no @import needed */
 
 @layer base {
+  /* ── Surface color CSS variables ────────────────────────── */
+  :root {
+    --surface-50: 244 244 252;
+    --surface-100: 234 234 245;
+    --surface-200: 212 212 232;
+    --surface-300: 176 176 204;
+    --surface-400: 136 136 170;
+    --surface-500: 92 92 122;
+    --surface-600: 58 58 86;
+    --surface-700: 36 36 58;
+    --surface-800: 24 24 40;
+    --surface-900: 15 15 28;
+    --surface-950: 7 7 16;
+  }
+
   /* ── Accent color CSS variables ────────────────────────── */
   :root, [data-accent="brand"] {
     --brand-50: 255 247 237;
@@ -1597,67 +1612,48 @@ a:active:not(:disabled) {
 }
 
 /* ── Custom theme overrides ──────────────────────────────────── */
-[data-custom-theme="1"] {
-  background-color: var(--theme-bg-base) !important;
-  color: var(--theme-text-primary) !important;
-}
+/* Most overrides are handled via --surface-* and --brand-* CSS variables
+   which Tailwind utilities automatically pick up. These are special cases. */
+
 [data-custom-theme="1"] body {
-  background-color: var(--theme-bg-base) !important;
+  background-color: rgb(var(--surface-950)) !important;
 }
-[data-custom-theme="1"] .bg-surface-950 { background-color: var(--theme-bg-base) !important; }
-[data-custom-theme="1"] .bg-surface-900 { background-color: var(--theme-bg-surface) !important; }
-[data-custom-theme="1"] .bg-surface-800 { background-color: var(--theme-bg-elevated) !important; }
-[data-custom-theme="1"] .bg-surface-800\/50 { background-color: color-mix(in srgb, var(--theme-bg-elevated) 50%, transparent) !important; }
-[data-custom-theme="1"] .bg-surface-700 { background-color: var(--theme-bg-elevated) !important; }
-[data-custom-theme="1"] .bg-surface-900\/50 { background-color: color-mix(in srgb, var(--theme-bg-surface) 50%, transparent) !important; }
-
-[data-custom-theme="1"] .text-white { color: var(--theme-text-primary) !important; }
-[data-custom-theme="1"] .text-surface-50 { color: var(--theme-text-primary) !important; }
-[data-custom-theme="1"] .text-surface-100 { color: var(--theme-text-primary) !important; }
-[data-custom-theme="1"] .text-surface-200 { color: var(--theme-text-secondary) !important; }
-[data-custom-theme="1"] .text-surface-300 { color: var(--theme-text-secondary) !important; }
-[data-custom-theme="1"] .text-surface-400 { color: var(--theme-text-muted) !important; }
-[data-custom-theme="1"] .text-surface-500 { color: var(--theme-text-muted) !important; }
-
-[data-custom-theme="1"] .border-surface-700 { border-color: var(--theme-border) !important; }
-[data-custom-theme="1"] .border-surface-800 { border-color: var(--theme-border) !important; }
-[data-custom-theme="1"] .border-surface-700\/50 { border-color: color-mix(in srgb, var(--theme-border) 50%, transparent) !important; }
-[data-custom-theme="1"] .divide-surface-700 > :not([hidden]) ~ :not([hidden]) { border-color: var(--theme-border) !important; }
-
-[data-custom-theme="1"] .bg-brand-500 { background-color: var(--theme-brand) !important; }
-[data-custom-theme="1"] .bg-brand-600 { background-color: color-mix(in srgb, var(--theme-brand) 85%, black) !important; }
-[data-custom-theme="1"] .bg-brand-700 { background-color: color-mix(in srgb, var(--theme-brand) 70%, black) !important; }
-[data-custom-theme="1"] .text-brand-400 { color: var(--theme-brand) !important; }
-[data-custom-theme="1"] .text-brand-500 { color: var(--theme-brand) !important; }
-[data-custom-theme="1"] .border-brand-500 { border-color: var(--theme-brand) !important; }
-[data-custom-theme="1"] .border-brand-400 { border-color: var(--theme-brand) !important; }
-[data-custom-theme="1"] .ring-brand-500\/30 { --tw-ring-color: color-mix(in srgb, var(--theme-brand) 30%, transparent) !important; }
-[data-custom-theme="1"] .from-brand-500 { --tw-gradient-from: var(--theme-brand) !important; }
-[data-custom-theme="1"] .to-brand-700 { --tw-gradient-to: color-mix(in srgb, var(--theme-brand) 70%, black) !important; }
-
-/* Sidebar */
-[data-custom-theme="1"] .sidebar-link.active { background: linear-gradient(90deg, color-mix(in srgb, var(--theme-brand) 18%, transparent) 0%, transparent 100%) !important; }
-[data-custom-theme="1"] .sidebar-link.active .text-brand-400 { color: var(--theme-brand) !important; }
 
 /* Script editor */
 [data-custom-theme="1"] .sp-page { background: var(--theme-script-bg) !important; color: var(--theme-script-text) !important; }
-[data-custom-theme="1"] .sp-dark { background: var(--theme-bg-base) !important; }
+[data-custom-theme="1"] .sp-dark { background: rgb(var(--surface-950)) !important; }
 [data-custom-theme="1"] .sp-element { color: var(--theme-script-text) !important; }
 
 /* Brand gradient text */
 [data-custom-theme="1"] .gradient-text {
-  background: linear-gradient(135deg, var(--theme-brand), color-mix(in srgb, var(--theme-brand) 60%, white)) !important;
+  background: linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-300))) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
 /* Glow effects */
-[data-custom-theme="1"] .glow-brand { box-shadow: 0 0 20px color-mix(in srgb, var(--theme-brand) 15%, transparent) !important; }
+[data-custom-theme="1"] .glow-brand { box-shadow: 0 0 20px rgb(var(--brand-500) / 0.15) !important; }
 
 /* Buttons */
 [data-custom-theme="1"] .btn-primary {
-  background: linear-gradient(135deg, var(--theme-brand), color-mix(in srgb, var(--theme-brand) 70%, black)) !important;
+  background: linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700))) !important;
 }
 [data-custom-theme="1"] .btn-primary:hover {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--theme-brand) 90%, white), var(--theme-brand)) !important;
+  background: linear-gradient(135deg, rgb(var(--brand-400)), rgb(var(--brand-500))) !important;
+}
+
+/* Sidebar */
+[data-custom-theme="1"] .sidebar-link.active {
+  background: linear-gradient(90deg, rgb(var(--brand-600) / 0.18) 0%, transparent 100%) !important;
+}
+
+/* Modals and portals */
+[data-custom-theme="1"] [data-radix-portal] {
+  --surface-800: var(--surface-800);
+  --surface-700: var(--surface-700);
+}
+
+/* Card hover glow */
+[data-custom-theme="1"] .card-glow {
+  box-shadow: 0 0 16px rgb(var(--brand-500) / 0.15);
 }

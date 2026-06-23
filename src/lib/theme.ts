@@ -34,6 +34,15 @@ export interface ThemeColors {
 export interface AppTheme {
   name: string;
   colors: ThemeColors;
+  id?: string;
+  author_id?: string;
+  author_name?: string;
+  category?: string;
+  description?: string;
+  created_at?: string;
+  use_count?: number;
+  is_staff_pick?: boolean;
+  staff_pick_week?: string;
 }
 
 // ── Defaults ───────────────────────────────────────────────────
@@ -53,6 +62,66 @@ export const DEFAULT_THEME: AppTheme = {
     scriptText: '#e0e0e0',
   },
 };
+
+// ── Color helpers ──────────────────────────────────────────────
+
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.slice(0, 2), 16),
+    parseInt(h.slice(2, 4), 16),
+    parseInt(h.slice(4, 6), 16),
+  ];
+}
+
+function rgbStr(r: number, g: number, b: number): string {
+  return `${r} ${g} ${b}`;
+}
+
+function mix(a: number, b: number, t: number): number {
+  return Math.round(a + (b - a) * t);
+}
+
+function generateSurfacePalette(base: string, surface: string, elevated: string, textPrimary: string): string[] {
+  const [bR, bG, bB] = hexToRgb(base);
+  const [sR, sG, sB] = hexToRgb(surface);
+  const [eR, eG, eB] = hexToRgb(elevated);
+  const [tR, tG, tB] = hexToRgb(textPrimary);
+
+  return [
+    rgbStr(mix(tR, sR, 0.8), mix(tG, sG, 0.8), mix(tB, sB, 0.8)),       // 50 - lightest
+    rgbStr(mix(tR, sR, 0.65), mix(tG, sG, 0.65), mix(tB, sB, 0.65)),     // 100
+    rgbStr(mix(tR, sR, 0.5), mix(tG, sG, 0.5), mix(tB, sB, 0.5)),        // 200
+    rgbStr(mix(tR, sR, 0.35), mix(tG, sG, 0.35), mix(tB, sB, 0.35)),     // 300
+    rgbStr(mix(tR, sR, 0.2), mix(tG, sG, 0.2), mix(tB, sB, 0.2)),        // 400
+    rgbStr(mix(sR, eR, 0.4), mix(sG, eG, 0.4), mix(sB, eB, 0.4)),        // 500
+    rgbStr(mix(sR, eR, 0.7), mix(sG, eG, 0.7), mix(sB, eB, 0.7)),        // 600
+    rgbStr(eR, eG, eB),                                                     // 700 - border
+    rgbStr(mix(eR, bR, 0.4), mix(eG, bG, 0.4), mix(eB, bB, 0.4)),        // 800
+    rgbStr(mix(eR, bR, 0.7), mix(eG, bG, 0.7), mix(eB, bB, 0.7)),        // 900
+    rgbStr(bR, bG, bB),                                                     // 950 - base
+  ];
+}
+
+function generateBrandPalette(accent: string): string[] {
+  const [aR, aG, aB] = hexToRgb(accent);
+  const white: [number, number, number] = [255, 255, 255];
+  const black: [number, number, number] = [10, 10, 10];
+
+  return [
+    rgbStr(...white.map((w, i) => mix(w, [aR, aG, aB][i], 0.12)) as [number, number, number]),  // 50
+    rgbStr(...white.map((w, i) => mix(w, [aR, aG, aB][i], 0.25)) as [number, number, number]),  // 100
+    rgbStr(...white.map((w, i) => mix(w, [aR, aG, aB][i], 0.4)) as [number, number, number]),   // 200
+    rgbStr(...white.map((w, i) => mix(w, [aR, aG, aB][i], 0.6)) as [number, number, number]),   // 300
+    rgbStr(...white.map((w, i) => mix(w, [aR, aG, aB][i], 0.8)) as [number, number, number]),   // 400
+    rgbStr(aR, aG, aB),                                                                           // 500
+    rgbStr(...[aR, aG, aB].map((v, i) => mix(v, [black[0], black[1], black[2]][i], 0.15)) as [number, number, number]), // 600
+    rgbStr(...[aR, aG, aB].map((v, i) => mix(v, [black[0], black[1], black[2]][i], 0.3)) as [number, number, number]),  // 700
+    rgbStr(...[aR, aG, aB].map((v, i) => mix(v, [black[0], black[1], black[2]][i], 0.5)) as [number, number, number]),  // 800
+    rgbStr(...[aR, aG, aB].map((v, i) => mix(v, [black[0], black[1], black[2]][i], 0.7)) as [number, number, number]),  // 900
+    rgbStr(...[aR, aG, aB].map((v, i) => mix(v, [black[0], black[1], black[2]][i], 0.85)) as [number, number, number]), // 950
+  ];
+}
 
 // ── Color pickers config ───────────────────────────────────────
 
@@ -78,9 +147,6 @@ async function sha256hex(input: string): Promise<string> {
 }
 
 // ── Encode / decode theme to compact string ────────────────────
-//
-// The theme is encoded as a JSON object, then base64url-encoded.
-// The SHA is computed over the JSON string.
 
 export async function encodeTheme(theme: AppTheme): Promise<{ sha: string; encoded: string }> {
   const json = JSON.stringify(theme);
@@ -106,26 +172,36 @@ export function decodeTheme(encoded: string): AppTheme | null {
 export function applyTheme(theme: AppTheme) {
   const root = document.documentElement;
   const c = theme.colors;
-  root.style.setProperty('--theme-bg-base', c.bgBase);
-  root.style.setProperty('--theme-bg-surface', c.bgSurface);
-  root.style.setProperty('--theme-bg-elevated', c.bgElevated);
-  root.style.setProperty('--theme-border', c.border);
-  root.style.setProperty('--theme-text-primary', c.textPrimary);
-  root.style.setProperty('--theme-text-secondary', c.textSecondary);
-  root.style.setProperty('--theme-text-muted', c.textMuted);
-  root.style.setProperty('--theme-brand', c.brand);
+
+  // Generate full surface palette from the 4 user surface colors
+  const surfacePalette = generateSurfacePalette(c.bgBase, c.bgSurface, c.bgElevated, c.textPrimary);
+  const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+  SHADES.forEach((shade, i) => {
+    root.style.setProperty(`--surface-${shade}`, surfacePalette[i]);
+  });
+
+  // Generate full brand palette from accent color
+  const brandPalette = generateBrandPalette(c.brand);
+  SHADES.forEach((shade, i) => {
+    root.style.setProperty(`--brand-${shade}`, brandPalette[i]);
+  });
+
+  // Script editor overrides
   root.style.setProperty('--theme-script-bg', c.scriptBg);
   root.style.setProperty('--theme-script-text', c.scriptText);
+
   root.setAttribute('data-custom-theme', '1');
 }
 
 export function clearTheme() {
   const root = document.documentElement;
-  [
-    '--theme-bg-base', '--theme-bg-surface', '--theme-bg-elevated',
-    '--theme-border', '--theme-text-primary', '--theme-text-secondary',
-    '--theme-text-muted', '--theme-brand', '--theme-script-bg', '--theme-script-text',
-  ].forEach((v) => root.style.removeProperty(v));
+  const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+  SHADES.forEach((shade) => {
+    root.style.removeProperty(`--surface-${shade}`);
+    root.style.removeProperty(`--brand-${shade}`);
+  });
+  root.style.removeProperty('--theme-script-bg');
+  root.style.removeProperty('--theme-script-text');
   root.removeAttribute('data-custom-theme');
 }
 
@@ -145,3 +221,19 @@ export function generateStripeSVG(theme: AppTheme): string {
     <text x="${w / 2}" y="${h + 24}" text-anchor="middle" font-family="monospace" font-size="12" fill="#888">screenplaystudio.fun/colors</text>
   </svg>`;
 }
+
+// ── Categories ─────────────────────────────────────────────────
+
+export const THEME_CATEGORIES = [
+  { id: 'all', label: 'All Themes', icon: '🎨' },
+  { id: 'dark', label: 'Dark', icon: '🌙' },
+  { id: 'light', label: 'Light', icon: '☀️' },
+  { id: 'neon', label: 'Neon', icon: '⚡' },
+  { id: 'pastel', label: 'Pastel', icon: '🌸' },
+  { id: 'warm', label: 'Warm', icon: '🔥' },
+  { id: 'cool', label: 'Cool', icon: '❄️' },
+  { id: 'minimal', label: 'Minimal', icon: '◻️' },
+  { id: 'retro', label: 'Retro', icon: '📼' },
+] as const;
+
+export type ThemeCategory = typeof THEME_CATEGORIES[number]['id'];
