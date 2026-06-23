@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useThemeStore, useAuthStore } from '@/lib/stores';
 import { DEFAULT_THEME, THEME_COLOR_FIELDS, encodeTheme, THEME_CATEGORIES, type AppTheme, type ThemeColors } from '@/lib/theme';
 import { Button, Input, toast } from '@/components/ui';
@@ -95,6 +95,12 @@ export function ThemeEditor() {
   const [publishCategory, setPublishCategory] = useState('dark');
   const [publishDesc, setPublishDesc] = useState('');
   const [publishing, setPublishing] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditorOpen(false); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [setEditorOpen]);
 
   const handleShare = useCallback(async () => {
     const { sha } = await encodeTheme(theme);
@@ -210,8 +216,9 @@ export function ThemeEditor() {
             <Icon name="share" size="sm" className="mr-1" />
             Share Theme
           </Button>
-          <button onClick={() => setEditorOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
-            <Icon name="close" size="md" style={{ color: theme.colors.textSecondary }} />
+          <button onClick={() => setEditorOpen(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{ color: theme.colors.textSecondary, background: theme.colors.bgElevated }}>
+            <Icon name="close" size="sm" />
+            Close
           </button>
         </div>
       </div>
