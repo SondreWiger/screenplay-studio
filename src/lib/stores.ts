@@ -481,3 +481,70 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     await supabase.from('notifications').delete().eq('id', id);
   },
 }));
+
+// Theme Store
+import type { AppTheme, ThemeColors } from '@/lib/theme';
+import { DEFAULT_THEME, applyTheme, clearTheme } from '@/lib/theme';
+
+const THEME_STORAGE_KEY = 'ss-custom-theme';
+
+interface ThemeStore {
+  theme: AppTheme;
+  isCustom: boolean;
+  editorOpen: boolean;
+  setTheme: (theme: AppTheme) => void;
+  updateColor: (key: keyof ThemeColors, value: string) => void;
+  resetTheme: () => void;
+  setEditorOpen: (open: boolean) => void;
+  loadSaved: () => void;
+  saveToStorage: () => void;
+}
+
+export const useThemeStore = create<ThemeStore>((set, get) => ({
+  theme: DEFAULT_THEME,
+  isCustom: false,
+  editorOpen: false,
+
+  setTheme: (theme) => {
+    set({ theme, isCustom: true });
+    applyTheme(theme);
+    get().saveToStorage();
+  },
+
+  updateColor: (key, value) => {
+    const current = get().theme;
+    const updated: AppTheme = {
+      ...current,
+      colors: { ...current.colors, [key]: value },
+    };
+    set({ theme: updated, isCustom: true });
+    applyTheme(updated);
+    get().saveToStorage();
+  },
+
+  resetTheme: () => {
+    set({ theme: DEFAULT_THEME, isCustom: false });
+    clearTheme();
+    localStorage.removeItem(THEME_STORAGE_KEY);
+  },
+
+  setEditorOpen: (open) => set({ editorOpen: open }),
+
+  loadSaved: () => {
+    try {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY);
+      if (saved) {
+        const theme = JSON.parse(saved) as AppTheme;
+        if (theme.colors && typeof theme.colors.bgBase === 'string') {
+          set({ theme, isCustom: true });
+          applyTheme(theme);
+        }
+      }
+    } catch { /* ignore */ }
+  },
+
+  saveToStorage: () => {
+    const { theme } = get();
+    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
+  },
+}));

@@ -1,78 +1,33 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { processSyncQueue, pendingSyncCount } from '@/lib/offline/queue';
+import { useState, useEffect } from 'react';
 
-export interface OnlineStatus {
-  isOnline: boolean;
-  pendingCount: number;
-  isSyncing: boolean;
-  lastSyncedAt: Date | null;
-  triggerSync: () => Promise<void>;
-}
+/**
+ * Returns true when the browser is online.
+ * In Electron local mode, always returns true (no network required).
+ */
+export function useOnlineStatus(): boolean {
+  const [online, setOnline] = useState(true);
 
-export function useOnlineStatus(): OnlineStatus {
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  );
-  const [pendingCount, setPendingCount] = useState(0);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
-
-  const refreshPendingCount = useCallback(async () => {
-    const count = await pendingSyncCount();
-    setPendingCount(count);
-  }, []);
-
-  const triggerSync = useCallback(async () => {
-    if (isSyncing || !isOnline) return;
-    setIsSyncing(true);
-    try {
-      await processSyncQueue();
-      setLastSyncedAt(new Date());
-    } finally {
-      setIsSyncing(false);
-      await refreshPendingCount();
+  useEffect(() => {
+    // In Electron, we're always "online" for local features
+    if (typeof window !== 'undefined' && (window as any).electron) {
+      setOnline(true);
+      return;
     }
-  }, [isSyncing, isOnline, refreshPendingCount]);
 
-  useEffect(() => {
-    const onOnline = () => {
-      setIsOnline(true);
-      // Auto-sync pending writes as soon as we reconnect
-      triggerSync();
-    };
-    const onOffline = () => setIsOnline(false);
+    setOnline(navigator.onLine);
 
-    window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
+    const handleOnline = () => setOnline(true);
+    const handleOffline = () => setOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
     return () => {
-      window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
-  }, [triggerSync]);
-
-  // On mount: flush any stale sync items if we're online
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const count = await pendingSyncCount();
-      if (count > 0 && navigator.onLine && !cancelled) {
-        triggerSync();
-      }
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Poll pending count every 10 s so the badge stays accurate
-  // Only poll when online — IndexedDB reads still work offline but are wasteful
-  useEffect(() => {
-    if (!isOnline) return;
-    refreshPendingCount();
-    const interval = setInterval(refreshPendingCount, 10_000);
-    return () => clearInterval(interval);
-  }, [refreshPendingCount, isOnline]);
-
-  return { isOnline, pendingCount, isSyncing, lastSyncedAt, triggerSync };
+  return online;
 }

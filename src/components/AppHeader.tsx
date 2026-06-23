@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { cn } from '@/lib/utils';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { isFeatureEnabled } from '@/lib/feature-flags';
@@ -36,6 +37,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
   const router = useRouter();
   const { canUse: canUseFeature } = useFeatureAccess();
   const { t } = useTranslation();
+  const isOnline = useOnlineStatus();
 
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -78,7 +80,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
     { href: '/idea-boards', label: t('nav.ideas'), match: ['/idea-boards'] },
     { href: '/quotes', label: t('nav.quotes'), match: ['/quotes'] },
     ...(!isElectron ? [{ href: '/blog', label: t('nav.blog'), match: ['/blog'] }] : []),
-    ...(canUseFeature('community') && isFeatureEnabled('community') && !isElectron ? [{ href: '/community', label: t('nav.community'), match: ['/community'] }] : []),
+    ...(canUseFeature('community') && isFeatureEnabled('community') && !isElectron ? [{ href: '/community', label: t('nav.community'), match: ['/community'], offlineDisabled: !isOnline }] : []),
     ...(user?.show_accountability !== false ? [{ href: '/accountability', label: 'Accountability', match: ['/accountability'] }] : []),
     ...(isElectron ? [{ href: '#external-docs', label: 'Docs', external: `${SITE}/docs` }] : []),
   ];
@@ -134,6 +136,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           <nav className="hidden md:flex items-center gap-0.5">
             {navLinks.map((link) => {
               const active = !('external' in link) && isActive(link);
+              const disabled = 'offlineDisabled' in link && link.offlineDisabled;
               if ('external' in link) {
                 return (
                   <button
@@ -148,13 +151,17 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
               return (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  href={disabled ? '#' : link.href}
+                  onClick={(e) => { if (disabled) e.preventDefault(); }}
                   className={cn(
                     'relative px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest transition-colors duration-150',
-                    active
-                      ? 'text-white'
-                      : 'text-white/40 hover:text-white/70'
+                    disabled
+                      ? 'text-white/15 cursor-not-allowed'
+                      : active
+                        ? 'text-white'
+                        : 'text-white/40 hover:text-white/70'
                   )}
+                  title={disabled ? 'Offline — unavailable' : undefined}
                 >
                   <span className="relative">{link.label}</span>
                   {active && (
@@ -177,8 +184,12 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           {/* Messages */}
           {isFeatureEnabled('directMessages') && (
             <Link
-              href="/messages"
-              className="p-2 text-white/30 hover:text-white hover:bg-white/5 transition-colors"
+              href={isOnline ? '/messages' : '#'}
+              onClick={(e) => { if (!isOnline) e.preventDefault(); }}
+              className={cn(
+                'p-2 transition-colors',
+                isOnline ? 'text-white/30 hover:text-white hover:bg-white/5' : 'text-white/10 cursor-not-allowed'
+              )}
               aria-label="Messages"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

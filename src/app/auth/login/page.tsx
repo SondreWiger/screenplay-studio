@@ -4,7 +4,7 @@ import { useState, Suspense, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { createLocalUser } from '@/lib/supabase/electron-client';
+import { createLocalUser, isElectronMode } from '@/lib/supabase/electron-client';
 import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
 
@@ -201,17 +201,19 @@ function LoginForm() {
             className="mt-8 pt-6 text-center"
             style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
           >
-            {/* Use without account — local/Electron mode */}
-            <button
-              onClick={() => {
-                createLocalUser();
-                window.location.href = redirect;
-              }}
-              className="w-full mb-4 h-10 flex items-center justify-center text-[11px] font-mono uppercase tracking-widest text-white/40 hover:text-white/70 transition-colors border hover:border-white/20"
-              style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-            >
-              Use without account
-            </button>
+            {/* Use without account — Electron mode only */}
+            {isElectronMode() && (
+              <button
+                onClick={() => {
+                  createLocalUser();
+                  window.location.href = redirect;
+                }}
+                className="w-full mb-4 h-10 flex items-center justify-center text-[11px] font-mono uppercase tracking-widest text-white/40 hover:text-white/70 transition-colors border hover:border-white/20"
+                style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+              >
+                Use without account
+              </button>
+            )}
             <p className="text-[11px] font-mono text-white/25 uppercase tracking-widest">
               <Link href="/auth/register" className="hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
                 {t('auth.no_account')}

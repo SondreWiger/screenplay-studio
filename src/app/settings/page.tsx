@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useThemeStore } from '@/lib/stores';
+import { encodeTheme } from '@/lib/theme';
 import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
@@ -205,7 +206,118 @@ function PreMiDCard() {
 
 
 
-type SettingsTab = 'profile' | 'preferences' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
+type SettingsTab = 'profile' | 'preferences' | 'appearance' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
+
+function AppearanceTab() {
+  const { theme, isCustom, setEditorOpen, resetTheme } = useThemeStore();
+  const c = theme.colors;
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white mb-1">Custom Theme</h2>
+            <p className="text-sm text-surface-400">
+              Create your own color scheme for the entire app. Tweak backgrounds, text, accent colors, and script editor colors.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {isCustom && (
+              <Button variant="ghost" size="sm" onClick={resetTheme}>Reset</Button>
+            )}
+            <Button onClick={() => setEditorOpen(true)}>
+              Open Theme Editor
+            </Button>
+          </div>
+        </div>
+
+        {/* Current theme preview */}
+        <div className="mt-6 rounded-xl border border-surface-700 overflow-hidden">
+          <div className="flex h-6">
+            {[c.bgBase, c.bgSurface, c.bgElevated, c.brand, c.scriptBg, c.textPrimary, c.scriptText, c.border].map((col, i) => (
+              <div key={i} className="flex-1" style={{ background: col }} />
+            ))}
+          </div>
+          <div className="p-4" style={{ background: c.bgSurface }}>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg" style={{ background: c.brand }} />
+              <div>
+                <div className="text-sm font-medium" style={{ color: c.textPrimary }}>Theme Preview</div>
+                <div className="text-xs" style={{ color: c.textSecondary }}>Custom colors applied to the interface</div>
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <div className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: c.brand, color: '#fff' }}>Primary</div>
+              <div className="px-3 py-1.5 rounded-lg text-xs font-medium border" style={{ borderColor: c.border, color: c.textSecondary }}>Secondary</div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Share theme */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-white mb-1">Share Theme</h2>
+        <p className="text-sm text-surface-400 mb-4">
+          Generate a shareable link. Anyone with the link can preview and apply your theme.
+        </p>
+        <ShareThemeCard />
+      </Card>
+    </div>
+  );
+}
+
+function ShareThemeCard() {
+  const { theme } = useThemeStore();
+  const [url, setUrl] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const generate = async () => {
+    const { sha, encoded } = await encodeTheme(theme);
+    // Save to server
+    try {
+      await fetch(`/api/colors/${sha}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...theme, sha }),
+      });
+    } catch { /* ok if fails */ }
+    const shareUrl = `${window.location.origin}/colors/${sha}`;
+    setUrl(shareUrl);
+  };
+
+  const copyUrl = async () => {
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    toast.success('Copied to clipboard');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-3">
+      {!url ? (
+        <Button variant="secondary" onClick={generate}>Generate Share Link</Button>
+      ) : (
+        <>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={url}
+              className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-surface-300 font-mono focus:outline-none"
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+            />
+            <Button variant="secondary" onClick={copyUrl}>
+              {copied ? 'Copied!' : 'Copy'}
+            </Button>
+          </div>
+          <p className="text-xs text-surface-500">
+            Share this link on Discord, Twitter, etc. Recipients will see a color palette preview and can apply the theme.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
 
 function GamificationSettingsTab() {
   const { user } = useAuth();
@@ -1300,6 +1412,13 @@ export default function UserSettingsPage() {
             </div>
           </Card>
         </>)}
+
+        {/* Appearance Tab */}
+        {tab === 'appearance' && (
+          <div className="space-y-6">
+            <AppearanceTab />
+          </div>
+        )}
 
         {/* Company Tab */}
         {tab === 'company' && (
