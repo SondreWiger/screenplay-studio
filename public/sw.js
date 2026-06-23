@@ -7,7 +7,7 @@
 //     explicit version bump forces old caches to be purged even if the rest of
 //     the SW logic is identical.
 
-const CACHE_VERSION = 'ss-v7';   // bumped — expanded pre-cache for offline reload
+const CACHE_VERSION = 'ss-v8';   // bumped — 4s fetch timeout to prevent infinite loading
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE  = `${CACHE_VERSION}-dynamic`;
 
@@ -113,7 +113,10 @@ async function cacheFirst(request) {
 
 async function networkFirst(request) {
   try {
-    const response = await fetch(request);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(timeout);
     if (response.ok && request.method === 'GET') {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, response.clone());
@@ -138,7 +141,10 @@ async function trimCache(cacheName, maxItems) {
 
 async function networkFirstNavigate(request) {
   try {
-    const response = await fetch(request);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(timeout);
     // Cache all successful GET navigations (even redirects) so offline reload works
     if (request.method === 'GET' && response.status >= 200 && response.status < 400) {
       const cache = await caches.open(DYNAMIC_CACHE);
