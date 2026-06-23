@@ -3,6 +3,7 @@ import { Inter, Courier_Prime } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { Providers } from './providers';
 import { CookieConsentBanner } from '@/components/CookieConsent';
+import { ElectronDragRegion } from '@/components/ElectronDragRegion';
 import { isOpenSourceEnabled } from '@/lib/site-settings';
 import './globals.css';
 
@@ -150,6 +151,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-surface-950">
+        <ElectronDragRegion />
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-brand-600 focus:text-white focus:focus:rounded-lg focus:text-sm">Skip to content</a>
         <Providers><main id="main-content">{children}</main></Providers>
         <CookieConsentBanner />

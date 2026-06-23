@@ -337,7 +337,7 @@ export default function ComparePage() {
             </p>
             <ul className="space-y-3 pl-4">
               {[
-                'No native desktop apps yet — the PWA works well, but some users prefer a standalone app.',
+                'Native Mac desktop app available — offline writing, local files, and optional cloud sync.',
                 'No FDX export yet (planned for Pro). If you need to exchange files with Final Draft users today, you will hit a wall.',
                 'The user base is smaller — fewer templates, fewer community resources, fewer third-party integrations.',
                 'No dedicated mobile app yet. The PWA works on mobile browsers, but it is not a native experience.',

@@ -1,5 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr';
-import { isLocalOrElectron, createLocalSupabaseClient } from './electron-client';
+import { isLocalMode, createLocalSupabaseClient } from './electron-client';
 
 /**
  * Offline-aware fetch wrapper for the Supabase client.
@@ -49,7 +49,7 @@ function offlineSafeFetch(url: RequestInfo | URL, init?: RequestInit): Promise<R
 let sharedClient: ReturnType<typeof createBrowserClient> | null = null;
 
 export function createClient() {
-  if (isLocalOrElectron()) {
+  if (isLocalMode()) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return createLocalSupabaseClient() as any;
   }

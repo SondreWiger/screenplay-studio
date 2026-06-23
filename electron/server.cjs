@@ -29,7 +29,7 @@ const handle = app.getRequestHandler();
 app.prepare().then(() => {
   console.log('[server] Next.js ready');
 
-  createServer(async (req, res) => {
+  http.createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true);
       await handle(req, res, parsedUrl);

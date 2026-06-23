@@ -18,3 +18,5 @@ public/downloads/linux/
 build/mac/
 build/win/
 build/linux/
+public/downloads/*-unpacked/
+public/downloads/.icon-*/

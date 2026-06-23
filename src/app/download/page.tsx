@@ -19,7 +19,7 @@ import {
 
 const ORANGE = '#FF5F1F';
 const GITHUB_REPO = 'SondreWiger/screenplay-studio';
-const RELEASE_TAG = 'v1.0.0-electron.1';
+const RELEASE_TAG = 'v2.7.7';
 
 function getDownloadUrl(os: string, ext: string): string {
   return `https://github.com/${GITHUB_REPO}/releases/download/${RELEASE_TAG}/ScreenplayStudio-${os}.${ext}`;

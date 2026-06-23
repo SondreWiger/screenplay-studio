@@ -8,7 +8,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { cn } from '@/lib/utils';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { isFeatureEnabled } from '@/lib/feature-flags';
-import { isElectronMode } from '@/lib/supabase/electron-client';
+import { isElectronMode, isLocalMode } from '@/lib/supabase/electron-client';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Avatar } from '@/components/ui';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
@@ -82,7 +82,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
     ...(!isElectron ? [{ href: '/blog', label: t('nav.blog'), match: ['/blog'] }] : []),
     ...(canUseFeature('community') && isFeatureEnabled('community') && !isElectron ? [{ href: '/community', label: t('nav.community'), match: ['/community'], offlineDisabled: !isOnline }] : []),
     ...(user?.show_accountability !== false ? [{ href: '/accountability', label: 'Accountability', match: ['/accountability'] }] : []),
-    ...(isElectron ? [{ href: '#external-docs', label: 'Docs', external: `${SITE}/docs` }] : []),
+    ...(isElectron ? [{ href: '#external-docs', label: 'Docs', external: `${SITE}/docs` }] : [{ href: '/download', label: 'Desktop', match: ['/download'] }]),
   ];
 
   const isActive = (link: typeof navLinks[0]) => {
@@ -101,7 +101,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           </Link>
           <div className="flex items-center gap-3">
             {actions}
-            <NotificationBell />
+            {(!isElectron || !isLocalMode()) && <NotificationBell />}
           </div>
         </div>
       </header>
@@ -141,7 +141,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                 return (
                   <button
                     key={link.href}
-                    onClick={() => openExternal(link.external)}
+                    onClick={() => openExternal(link.external!)}
                     className="relative px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest transition-colors duration-150 text-white/40 hover:text-white/70"
                   >
                     <span className="relative">{link.label}</span>
@@ -179,10 +179,21 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
         {/* Right side */}
         <div className="flex items-center gap-1 sm:gap-2">
           {actions}
-          <OfflineIndicator />
+          
+          {isLocalMode() && (
+            <Link
+              href="/auth/login"
+              className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-150 hover:-translate-y-px mr-2"
+              style={{ background: '#FF5F1F' }}
+            >
+              Sign In
+            </Link>
+          )}
+
+          {!isElectron && <OfflineIndicator />}
 
           {/* Messages */}
-          {isFeatureEnabled('directMessages') && (
+          {isFeatureEnabled('directMessages') && !isElectron && (
             <Link
               href={isOnline ? '/messages' : '#'}
               onClick={(e) => { if (!isOnline) e.preventDefault(); }}
@@ -198,7 +209,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
             </Link>
           )}
 
-          <NotificationBell />
+          {(!isElectron || !isLocalMode()) && <NotificationBell />}
 
           {/* Profile dropdown */}
           <div ref={profileRef} className="relative ml-1">

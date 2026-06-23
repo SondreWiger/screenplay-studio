@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
 
@@ -141,6 +143,11 @@ async function TestimonialsSection() {
 }
 
 export default async function LandingPage() {
+  const cookieStore = cookies();
+  if (cookieStore.get('ss-local-mode')?.value === '1') {
+    redirect('/dashboard');
+  }
+
   const supabase = createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   const isLoggedIn = !!user;

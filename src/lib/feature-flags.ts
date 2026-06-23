@@ -4,17 +4,15 @@
  * server-dependent features are disabled.
  */
 
+import { isLocalMode } from '@/lib/supabase/electron-client';
+
 export function isElectron(): boolean {
   if (typeof window === 'undefined') return false;
   return !!(window as unknown as Record<string, unknown>).electron;
 }
 
 export function isElectronLocalMode(): boolean {
-  if (!isElectron()) return false;
-  // In local mode, user hasn't signed in to cloud
-  const user = localStorage.getItem('ss-local-user');
-  const cloudConnected = localStorage.getItem('ss-cloud-connected');
-  return !cloudConnected && !!user;
+  return isElectron() && isLocalMode();
 }
 
 export const FEATURE_FLAGS = {

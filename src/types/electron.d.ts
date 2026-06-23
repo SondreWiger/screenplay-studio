@@ -1,5 +1,7 @@
 export {};
 
+type MenuAction = 'menu:new-project' | 'menu:open-file' | 'menu:save' | 'menu:save-as';
+
 declare global {
   interface Window {
     electron?: {
@@ -13,6 +15,8 @@ declare global {
       }>;
       readFile: (filePath: string) => Promise<string>;
       writeFile: (filePath: string, content: string) => Promise<void>;
+      getHomeDir: () => Promise<string>;
+      listDir: (dirPath: string) => Promise<string[]>;
       getPlatform: () => Promise<string>;
       getVersions: () => Promise<{
         node: string;
@@ -23,6 +27,7 @@ declare global {
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<void>;
       isPackaged: () => Promise<boolean>;
       openExternal: (url: string) => Promise<void>;
+      onMenuAction: (callback: (action: MenuAction) => void) => () => void;
     };
   }
 }

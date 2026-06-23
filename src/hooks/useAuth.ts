@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { isLocalOrElectron, getLocalUser, createLocalUser } from '@/lib/supabase/electron-client';
+import { isLocalMode, getLocalUser, createLocalUser, isElectronMode, setLocalMode } from '@/lib/supabase/electron-client';
 import { syncLocalProjectsToCloud } from '@/lib/sync-to-cloud';
 import { useAuthStore } from '@/lib/stores';
 import logger from '@/lib/logger';
@@ -33,8 +33,8 @@ export function useAuth() {
     if (useAuthStore.getState().initialized) return;
     setInitialized(true);
 
-    // ── Local / Electron mode ──────────────────────────────────
-    if (isLocalOrElectron()) {
+    // ── Local mode (browser or Electron "use without account") ──
+    if (isLocalMode()) {
       const localUser = getLocalUser() || createLocalUser();
       setUser(localUser);
       setLoading(false);
@@ -137,10 +137,17 @@ export function useAuth() {
           }
 
           // Sync any local-only projects to cloud (fire-and-forget)
-          if (isLocalOrElectron()) {
+          if (isElectronMode() || isLocalMode()) {
             syncLocalProjectsToCloud().then((count) => {
               if (count > 0) logger.info('useAuth', `Synced ${count} local projects to cloud`);
             }).catch((err) => logger.error('useAuth', 'Failed to sync local projects:', err));
+            
+            if (isElectronMode()) {
+              import('@/lib/sync-to-cloud').then(m => m.syncDiskProjectsToCloud())
+                .then((count) => {
+                  if (count > 0) logger.info('useAuth', `Synced ${count} disk projects to cloud`);
+                }).catch((err) => logger.error('useAuth', 'Failed to sync disk projects:', err));
+            }
           }
         } else {
           // Profile missing — create minimal one from auth data
@@ -193,6 +200,10 @@ export function useAuth() {
         }
 
         if (session?.user) {
+          if (isElectronMode()) {
+            setLocalMode(false);
+            localStorage.setItem('ss-cloud-connected', '1');
+          }
           // Mark session active (covers email verification, OAuth callbacks)
           try { sessionStorage.setItem('ss_session_active', '1'); } catch {}
           try {

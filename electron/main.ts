@@ -1,7 +1,16 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme } from 'electron';
 import * as path from 'path';
-import { setupMenu } from './menu';
+import * as fs from 'fs';
+import { setupMenu, addRecentProject, getRecentProjects, clearRecentProjects } from './menu';
 import { startLocalServer, stopLocalServer } from './next-server';
+import { loadWindowState, trackWindowState } from './window-state';
+
+const MARKETING_PATHS = [
+  '/blog', '/community', '/legal', '/support', '/about', '/pricing', '/pro',
+  '/testimonials', '/translations', '/download', '/colorbar', '/compare',
+  '/changelog', '/contribute', '/feedback', '/licenses', '/press', '/ref',
+  '/sitemap-visual', '/dev',
+];
 
 const isDev = !app.isPackaged;
 const isMac = process.platform === 'darwin';
@@ -11,14 +20,22 @@ let mainWindow: BrowserWindow | null = null;
 let menuSetup = false;
 let updaterSetup = false;
 
+// Auto-save interval handle
+let autoSaveInterval: ReturnType<typeof setInterval> | null = null;
+
 function getDevUrl(): string {
   return process.env.ELECTRON_DEV_URL || 'http://localhost:3000';
 }
 
 async function createWindow() {
+  // ── Restore saved window geometry ────────────────────────
+  const savedState = loadWindowState();
+
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
+    x: savedState.x,
+    y: savedState.y,
+    width: savedState.width,
+    height: savedState.height,
     minWidth: 800,
     minHeight: 600,
     title: 'Screenplay Studio',
@@ -34,6 +51,14 @@ async function createWindow() {
     backgroundColor: '#070710',
     show: false,
   });
+
+  // Restore maximized state after creation
+  if (savedState.isMaximized) {
+    mainWindow.maximize();
+  }
+
+  // ── Track window geometry for next launch ────────────────
+  trackWindowState(mainWindow);
 
   let url: string;
   if (isDev) {
@@ -55,20 +80,36 @@ async function createWindow() {
     mainWindow?.focus();
   });
 
-  mainWindow.on('closed', () => { mainWindow = null; });
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+    if (autoSaveInterval) {
+      clearInterval(autoSaveInterval);
+      autoSaveInterval = null;
+    }
+  });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
   });
 
-  // Block navigation to public/marketing pages — open in browser instead
-  const PUBLIC_PATHS = ['/blog', '/community', '/legal', '/support', '/about', '/pricing', '/pro', '/testimonials', '/translations', '/download', '/colorbar'];
   mainWindow.webContents.on('will-navigate', (e, url) => {
     try {
       const parsed = new URL(url);
       const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
-      if (!isLocal && PUBLIC_PATHS.some(p => parsed.pathname.startsWith(p))) {
+
+      if (isLocal) {
+        if (parsed.pathname === '/') {
+          e.preventDefault();
+          mainWindow?.loadURL(`${parsed.origin}/dashboard`);
+          return;
+        }
+        if (MARKETING_PATHS.some((p) => parsed.pathname === p || parsed.pathname.startsWith(`${p}/`))) {
+          e.preventDefault();
+          shell.openExternal(`https://screenplaystudio.fun${parsed.pathname}${parsed.search}`);
+          return;
+        }
+      } else if (MARKETING_PATHS.some((p) => parsed.pathname.startsWith(p))) {
         e.preventDefault();
         shell.openExternal(url);
       }
@@ -89,6 +130,15 @@ async function createWindow() {
           }
         });
       }, 5_000);
+    }
+
+    // ── Start auto-save heartbeat (every 30s) ──────────────
+    if (!autoSaveInterval && mainWindow) {
+      autoSaveInterval = setInterval(() => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('auto-save-tick');
+        }
+      }, 30_000);
     }
   });
 }
@@ -119,9 +169,22 @@ function setupIPC() {
   });
 
   ipcMain.handle('electron:write-file', async (_event, filePath: string, content: string) => {
-    const fs = await import('fs/promises');
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, content, 'utf-8');
+    const fsp = await import('fs/promises');
+    await fsp.mkdir(path.dirname(filePath), { recursive: true });
+    await fsp.writeFile(filePath, content, 'utf-8');
+  });
+
+  ipcMain.handle('electron:get-home-dir', () => app.getPath('home'));
+  ipcMain.handle('electron:get-documents-dir', () => app.getPath('documents'));
+
+  ipcMain.handle('electron:list-dir', async (_event, dirPath: string) => {
+    const fsp = await import('fs/promises');
+    try {
+      const entries = await fsp.readdir(dirPath, { withFileTypes: true });
+      return entries.filter((e) => e.isDirectory()).map((e) => e.name);
+    } catch {
+      return [];
+    }
   });
 
   ipcMain.handle('electron:get-platform', () => process.platform);
@@ -141,6 +204,23 @@ function setupIPC() {
 
   ipcMain.handle('electron:open-external', (_event, url: string) => {
     shell.openExternal(url);
+  });
+
+  // ── New: User data path (for auto-save etc.) ─────────────
+  ipcMain.handle('electron:get-user-data-path', () => app.getPath('userData'));
+
+  // ── New: Recent projects ─────────────────────────────────
+  ipcMain.handle('electron:get-recent-projects', () => getRecentProjects());
+
+  ipcMain.handle('electron:add-recent-project', (_event, project: { id: string; title: string; path?: string }) => {
+    addRecentProject(project);
+    // Rebuild menu with updated recent list
+    if (mainWindow) setupMenu(mainWindow);
+  });
+
+  ipcMain.handle('electron:clear-recent-projects', () => {
+    clearRecentProjects();
+    if (mainWindow) setupMenu(mainWindow);
   });
 }
 
@@ -177,6 +257,10 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   stopLocalServer();
+  if (autoSaveInterval) {
+    clearInterval(autoSaveInterval);
+    autoSaveInterval = null;
+  }
 });
 
 export { mainWindow };

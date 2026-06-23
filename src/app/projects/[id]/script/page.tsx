@@ -12,7 +12,10 @@ import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
 import { isElectronMode } from '@/lib/supabase/electron-client';
 import { getCachedSavePath, setCachedSavePath, saveProjectToDisk } from '@/lib/local-files';
+import { setZenMode } from '@/lib/zen-mode';
+import { useElectronMenu } from '@/hooks/useElectronMenu';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
+import { useAutoSave } from '@/hooks/useAutoSave';
 import { VersionPanel } from '@/components/versioning/VersionPanel';
 import {
   DEFAULT_VERSION_CONFIG,
@@ -519,8 +522,50 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const revisionColorPickerRef = useRef<HTMLButtonElement>(null);
   const [showMobileTypePicker, setShowMobileTypePicker] = useState(false);
   const [showSceneJump, setShowSceneJump] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
+  const [zenMode, setZenModeState] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  const toggleZenMode = useCallback((active: boolean) => {
+    if (active) {
+      setShowCommentPanel(false);
+      setShowVersionPanel(false);
+      setShowSearch(false);
+      setShowScriptsSidebar(false);
+      setShowImportExport(false);
+      setShowDisplaySettings(false);
+      setSelectedElementIds(new Set());
+    }
+    setZenModeState(active);
+    setZenMode(active);
+  }, []);
+
+  useEffect(() => {
+    return () => { setZenMode(false); };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.altKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        toggleZenMode(!zenMode);
+      }
+      if (e.key === 'Escape' && zenMode) {
+        e.preventDefault();
+        toggleZenMode(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zenMode, toggleZenMode]);
+
+  const applyZenElementType = useCallback((type: ScriptElementType) => {
+    const focused = document.activeElement;
+    if (focused && focused.id?.startsWith('el-')) {
+      const elId = focused.id.replace('el-', '');
+      useScriptStore.getState().updateElement(elId, { element_type: type });
+    }
+    setActiveElementType(type);
+  }, []);
 
   // Detect mobile keyboard open/close via visualViewport
   useEffect(() => {
@@ -1052,22 +1097,14 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     setLastSaved(new Date());
   }, [saving]);
 
-  // Auto-save to disk in Electron mode (every 30 seconds if there are changes)
+  // Auto-save to disk in Electron mode via IPC heartbeat
+  const { lastSaved: electronLastSaved } = useAutoSave();
+  
   useEffect(() => {
-    if (!isElectronMode() || !currentScript || elements.length === 0) return;
-    let lastAutoSave = Date.now();
-    const interval = setInterval(() => {
-      if (Date.now() - lastAutoSave > 25_000) {
-        saveProjectToDisk(
-          { id: currentScript.project_id } as any,
-          [currentScript],
-          elements
-        ).catch(() => {});
-        lastAutoSave = Date.now();
-      }
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, [currentScript, elements]);
+    if (electronLastSaved) {
+      setLastSaved(electronLastSaved);
+    }
+  }, [electronLastSaved]);
   // All version names present in this script (known + detected from elements)
   const allVersions = useMemo(() => getAllVersionNames(elements, versionConfig), [elements, versionConfig]);
 
@@ -1656,6 +1693,12 @@ ${pageHTML}
     }
   }, [currentScript, elements]);
 
+  useElectronMenu({
+    'menu:save': () => { handleSilentSave(); },
+    'menu:save-as': () => { handleElectronSave(); },
+    'menu:open-file': () => { handleElectronOpen(); },
+  });
+
   const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
       e.preventDefault();
@@ -1749,14 +1792,19 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </div>
       )}
 
-      <div className="flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden" onKeyDown={handleEditorKeyDown}>
+      <div className={cn(
+        zenMode ? 'fixed inset-0 z-[200] flex flex-col bg-[#080810]' : 'flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden',
+      )} onKeyDown={handleEditorKeyDown}>
       {/* Scripts sidebar toggle on mobile/tablet */}
+      {!zenMode && (
       <button onClick={() => setShowScriptsSidebar(!showScriptsSidebar)}
         className="fixed bottom-4 left-4 z-30 lg:hidden p-3 bg-brand-600 text-white rounded-full shadow-lg">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" /></svg>
       </button>
+      )}
 
       {/* Sidebar */}
+      {!zenMode && (
       <div className={cn(
         'w-56 border-r border-surface-800 flex flex-col bg-surface-950 overflow-hidden shrink-0',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-40 max-lg:w-64 max-lg:transition-transform max-lg:duration-200',
@@ -1934,11 +1982,12 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </div>
         </div>
       </div>
+      )}
 
       {/* Editor */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Toolbar — Row 1: Element Types */}
-        <div className={cn('border-b border-surface-800/60 bg-surface-950 px-2 md:px-4 py-2 flex items-center gap-2 no-print', focusMode && 'hidden')}>
+        <div className={cn('border-b border-surface-800/60 bg-surface-950 px-2 md:px-4 py-2 flex items-center gap-2 no-print', zenMode && 'hidden')}>
           {canEdit && (
             <div className="flex items-center gap-0.5 flex-wrap min-w-0">
               {elementCycle.map((type) => (
@@ -1983,7 +2032,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </div>
 
         {/* Toolbar — Row 2: Tools */}
-        <div className={cn('border-b border-surface-800 bg-surface-950 px-2 md:px-4 py-1 flex items-center gap-1 no-print', focusMode && 'hidden')}>
+        <div className={cn('border-b border-surface-800 bg-surface-950 px-2 md:px-4 py-1 flex items-center gap-1 no-print', zenMode && 'hidden')}>
           {/* Left: Editing tools */}
           {canEdit && (
             <>
@@ -2205,11 +2254,11 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               )}
             </button>
           </div>
-          {/* Focus Mode Toggle */}
-          <button onClick={() => setFocusMode(!focusMode)}
-            className={cn('p-1.5 rounded-md transition-colors duration-150', focusMode ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
-            title={focusMode ? 'Exit Focus Mode' : 'Focus Mode — hide toolbars'}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          {/* Zen Mode */}
+          <button onClick={() => toggleZenMode(!zenMode)}
+            className={cn('p-1.5 rounded-md transition-colors duration-150', zenMode ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            title={zenMode ? 'Exit Zen mode (Esc)' : 'Zen mode — script only (⌘⌥Z)'}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.5 12.5h15M12 4.5v15M7.5 7.5l9 9M16.5 7.5l-9 9" /></svg>
           </button>
           {/* Display Settings */}
           <div className="relative">
@@ -2337,7 +2386,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </div>
 
         {/* Locked script banner */}
-        {currentScript?.locked && (
+        {currentScript?.locked && !zenMode && (
           <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border-b border-amber-500/30 no-print">
             <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             <span className="text-xs text-amber-300 flex-1">
@@ -2348,9 +2397,12 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         )}
 
         {/* Document */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0 bg-surface-900/30 transition-colors duration-300 pb-20 lg:pb-0">
-          {/* Title page — always shown, all fields editable inline */}
-          {currentScript && (
+        <div ref={scrollContainerRef} className={cn(
+          'flex-1 overflow-y-auto min-h-0 bg-surface-900/30 transition-colors duration-300',
+          zenMode ? 'pb-28 bg-[#080810]' : 'pb-20 lg:pb-0',
+        )}>
+          {/* Title page — hidden in Zen mode */}
+          {currentScript && !zenMode && (
             <div ref={titlePageRef} className={cn('sp-page mx-auto mt-4 md:mt-8 mb-0', scriptPageSize === 'a4' && 'sp-page-a4', darkMode && 'sp-dark')}>
               {/* Use sp-page's own 1in/1.5in padding — no extra padding inside */}
               <div className="flex flex-col" style={{ minHeight: scriptPageSize === 'a4' ? 'calc(297mm - 50mm)' : 'calc(11in - 2in)' }}>
@@ -2683,7 +2735,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </div>
 
         {/* Script Minimap */}
-        {displaySettings.showMinimap && (
+        {displaySettings.showMinimap && !zenMode && (
           <ScriptMinimap
             elements={elements}
             scrollEl={scrollContainerRef}
@@ -2695,7 +2747,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       </div>
 
       {/* ── Version Panel (right sidebar) ────────────────────── */}
-      {showVersionPanel && (
+      {showVersionPanel && !zenMode && (
         <div className="w-72 shrink-0 max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-40 max-md:shadow-2xl">
           <VersionPanel
             versions={allVersions}
@@ -2714,7 +2766,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       )}
 
       {/* ── Selection action bar ───────────────────────────────── */}
-      {selectedElementIds.size > 0 && (
+      {selectedElementIds.size > 0 && !zenMode && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 bg-surface-900 border border-surface-700 rounded-xl shadow-2xl text-sm select-none">
           <span className="text-white font-medium">{selectedElementIds.size} element{selectedElementIds.size !== 1 ? 's' : ''} selected</span>
           <span className="text-surface-700">·</span>
@@ -2913,14 +2965,67 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </button>
       )}
 
+      {/* ── Zen mode: element types + exit ───────────────────── */}
+      {zenMode && (
+        <>
+          <button
+            type="button"
+            onClick={() => toggleZenMode(false)}
+            className="fixed top-4 right-4 z-[210] flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-widest text-white/50 hover:text-white border border-white/10 hover:border-white/25 bg-black/40 backdrop-blur-md transition-colors"
+            title="Exit Zen mode (Esc)"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            Exit Zen
+          </button>
+          {canEdit && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[210] max-w-[95vw]">
+              <div className="flex items-center gap-1 px-2 py-2 rounded-2xl bg-surface-950/95 border border-white/10 shadow-2xl backdrop-blur-md overflow-x-auto scrollbar-none">
+                <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 px-2 shrink-0">Type</span>
+                {elementCycle.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => applyZenElementType(type)}
+                    className={cn(
+                      'shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors whitespace-nowrap',
+                      activeElementType === type
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'text-surface-400 hover:text-white hover:bg-white/5',
+                    )}
+                    title={`Set element to ${ELEMENT_LABELS[type]} (Tab also cycles)`}
+                  >
+                    {ELEMENT_LABELS[type]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Zen mode enter — floating corner button */}
+      {!zenMode && canEdit && (
+        <button
+          type="button"
+          onClick={() => toggleZenMode(true)}
+          className="fixed bottom-5 right-5 z-30 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-mono uppercase tracking-widest text-white/40 hover:text-white/80 border border-white/10 hover:border-white/20 bg-surface-950/80 backdrop-blur-md shadow-lg transition-colors no-print"
+          title="Zen mode — script only (⌘⌥Z)"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.5 12.5h15M12 4.5v15M7.5 7.5l9 9M16.5 7.5l-9 9" /></svg>
+          Zen
+        </button>
+      )}
+
       {/* ── Mobile Scroll-to-Top FAB ─────────────────────────── */}
+      {!zenMode && (
       <button onClick={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
         className="lg:hidden fixed bottom-[100px] left-4 z-30 p-3 bg-surface-800/90 backdrop-blur text-white rounded-full shadow-lg border border-surface-700/50 min-h-[44px] min-w-[44px] flex items-center justify-center">
         <svg className="w-5 h-5 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
       </button>
+      )}
 
       {/* ── Comment Panel (right sidebar) ────────────────────── */}
-      {showCommentPanel && (
+      {showCommentPanel && !zenMode && (
         <ScriptCommentPanel
           elementId={commentPanelElement}
           elements={elements}
@@ -2952,7 +3057,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       />
 
       {/* Floating format toolbar — shown when text is selected in a script element */}
-      {formatToolbar && (
+      {formatToolbar && !zenMode && (
         <div
           className="fixed z-[9990] flex items-center gap-0.5 rounded-lg px-1.5 py-1 no-print"
           style={{ left: formatToolbar.x, top: formatToolbar.y - 4, transform: 'translateX(-50%) translateY(-100%)', backgroundColor: '#252542', border: '1px solid rgba(255,255,255,0.13)', boxShadow: '0 16px 48px rgba(0,0,0,0.7), 0 2px 12px rgba(0,0,0,0.5)' }}

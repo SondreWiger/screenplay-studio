@@ -2,7 +2,8 @@
 
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
-import { clearLocalUser, isLocalOrElectron } from '@/lib/supabase/electron-client';
+import { clearLocalUser, isLocalMode, isElectronMode } from '@/lib/supabase/electron-client';
+import { loadProjectFromDisk } from '@/lib/local-files';
 import { putCached, deleteCached, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById, pendingSyncCount } from '@/lib/offline/db';
 import { offlineUpsert, offlineDelete } from '@/lib/offline/sync';
 import logger from '@/lib/logger';
@@ -33,7 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setInitialized: (initialized) => set({ initialized }),
   signOut: async () => {
     try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    if (isLocalOrElectron()) {
+    if (isLocalMode()) {
       clearLocalUser();
     } else {
       const supabase = createClient();
@@ -74,14 +75,30 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProjects: async () => {
     set({ loading: true, error: null });
     try {
-      if (isLocalOrElectron() || !navigator.onLine) {
-        const projects = await getCachedProjects();
-        set({ projects: projects as unknown as Project[], loading: false });
+      let diskProjects: Project[] = [];
+      if (isElectronMode()) {
+        diskProjects = await listLocalProjects();
+      }
+
+      if (isLocalMode() || !navigator.onLine) {
+        const idbProjects = await getCachedProjects() as unknown as Project[];
+        const merged = new Map<string, Project>();
+        for (const p of diskProjects) merged.set(p.id, p);
+        for (const p of idbProjects) {
+          const existing = merged.get(p.id);
+          if (!existing || (p.updated_at || p.created_at || '') > (existing.updated_at || existing.created_at || '')) {
+            merged.set(p.id, p);
+          }
+        }
+        set({ 
+          projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')), 
+          loading: false 
+        });
         return;
       }
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.id) { set({ projects: [], loading: false }); return; }
+      if (!user?.id) { set({ projects: diskProjects, loading: false }); return; }
 
       const { data: memberships } = await supabase
         .from('project_members')
@@ -95,12 +112,40 @@ export const useProjectStore = create<ProjectState>((set) => ({
         .or(`created_by.eq.${user.id}${memberProjectIds.length ? `,id.in.(${memberProjectIds.join(',')})` : ''}`)
         .order('updated_at', { ascending: false });
       if (error || data === null) throw error || new Error('fetch failed');
-      set({ projects: data || [], loading: false });
+      
+      const merged = new Map<string, Project>();
+      for (const p of diskProjects) merged.set(p.id, p);
+      for (const p of data) {
+        const existing = merged.get(p.id);
+        if (!existing || (p.updated_at || p.created_at || '') > (existing.updated_at || existing.created_at || '')) {
+          merged.set(p.id, p);
+        }
+      }
+      
+      set({ 
+        projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')), 
+        loading: false 
+      });
     } catch {
-      // Network error — fall back to IndexedDB cache
+      // Network error — fall back to cache
       try {
-        const projects = await getCachedProjects();
-        set({ projects: projects as unknown as Project[], loading: false });
+        let diskProjects: Project[] = [];
+        if (isElectronMode()) {
+          diskProjects = await listLocalProjects();
+        }
+        const idbProjects = await getCachedProjects() as unknown as Project[];
+        const merged = new Map<string, Project>();
+        for (const p of diskProjects) merged.set(p.id, p);
+        for (const p of idbProjects) {
+          const existing = merged.get(p.id);
+          if (!existing || (p.updated_at || p.created_at || '') > (existing.updated_at || existing.created_at || '')) {
+            merged.set(p.id, p);
+          }
+        }
+        set({ 
+          projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')), 
+          loading: false 
+        });
       } catch {
         set({ projects: [], loading: false, error: 'Failed to load projects' });
       }
@@ -109,7 +154,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProject: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      if (isLocalOrElectron() || !navigator.onLine) {
+      if (isLocalMode() || !navigator.onLine) {
+        if (isElectronMode()) {
+          const diskData = await loadProjectFromDisk(id);
+          if (diskData) {
+            set({ currentProject: diskData.project, members: [], loading: false });
+            return;
+          }
+        }
         const project = await getCachedById('projects', id);
         set({ currentProject: (project as unknown as Project) || null, members: [], loading: false });
         return;
@@ -126,8 +178,15 @@ export const useProjectStore = create<ProjectState>((set) => ({
         loading: false,
       });
     } catch {
-      // Network error — fall back to IndexedDB cache
+      // Network error — fall back to cache
       try {
+        if (isElectronMode()) {
+          const diskData = await loadProjectFromDisk(id);
+          if (diskData) {
+            set({ currentProject: diskData.project, members: [], loading: false });
+            return;
+          }
+        }
         const project = await getCachedById('projects', id);
         set({ currentProject: (project as unknown as Project) || null, members: [], loading: false });
       } catch {
@@ -169,7 +228,7 @@ interface ScriptState {
 
 // Sync a full snapshot of elements to Supabase (or IndexedDB in local mode)
 async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
-  if (isLocalOrElectron()) {
+  if (isLocalMode()) {
     // In local mode, just write all elements to IndexedDB
     for (const el of snapshot) {
       await putCached('script_elements', el as unknown as Record<string, unknown>);
@@ -236,7 +295,20 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
     // Clear immediately so stale data from a previous project is never shown.
     set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [] });
     try {
-      if (isLocalOrElectron() || !navigator.onLine) {
+      if (isLocalMode() || !navigator.onLine) {
+        if (isElectronMode()) {
+          const diskData = await loadProjectFromDisk(projectId);
+          if (diskData?.scripts) {
+            const scripts = diskData.scripts;
+            scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
+            set({ scripts });
+            if (scripts.length > 0) {
+              const active = scripts.find((s) => s.is_active) || scripts[0];
+              set({ currentScript: active });
+            }
+            return;
+          }
+        }
         const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
         scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
         set({ scripts });
@@ -262,8 +334,21 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         set({ currentScript: null, elements: [] });
       }
     } catch {
-      // Network error — fall back to IndexedDB cache
+      // Network error — fall back to cache
       try {
+        if (isElectronMode()) {
+          const diskData = await loadProjectFromDisk(projectId);
+          if (diskData?.scripts) {
+            const scripts = diskData.scripts;
+            scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
+            set({ scripts });
+            if (scripts.length > 0) {
+              const active = scripts.find((s) => s.is_active) || scripts[0];
+              set({ currentScript: active });
+            }
+            return;
+          }
+        }
         const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
         scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
         set({ scripts });
@@ -281,7 +366,19 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   fetchElements: async (scriptId: string) => {
     set({ loading: true });
     try {
-      if (isLocalOrElectron() || !navigator.onLine) {
+      if (isLocalMode() || !navigator.onLine) {
+        if (isElectronMode()) {
+          const currentProject = useProjectStore.getState().currentProject;
+          if (currentProject) {
+            const diskData = await loadProjectFromDisk(currentProject.id);
+            if (diskData?.elements) {
+              const elements = diskData.elements.filter(e => e.script_id === scriptId);
+              elements.sort((a, b) => a.sort_order - b.sort_order);
+              set({ elements, loading: false });
+              return;
+            }
+          }
+        }
         const elements = await getCachedByScript(scriptId) as unknown as ScriptElement[];
         elements.sort((a, b) => a.sort_order - b.sort_order);
         set({ elements, loading: false });
@@ -296,8 +393,20 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       if (error || data === null) throw error || new Error('fetch failed');
       set({ elements: data || [], loading: false });
     } catch {
-      // Network error — fall back to IndexedDB cache
+      // Network error — fall back to cache
       try {
+        if (isElectronMode()) {
+          const currentProject = useProjectStore.getState().currentProject;
+          if (currentProject) {
+            const diskData = await loadProjectFromDisk(currentProject.id);
+            if (diskData?.elements) {
+              const elements = diskData.elements.filter(e => e.script_id === scriptId);
+              elements.sort((a, b) => a.sort_order - b.sort_order);
+              set({ elements, loading: false });
+              return;
+            }
+          }
+        }
         const elements = await getCachedByScript(scriptId) as unknown as ScriptElement[];
         elements.sort((a, b) => a.sort_order - b.sort_order);
         set({ elements, loading: false });
@@ -320,7 +429,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
     const newElement = { ...insertData, id: insertData.id || crypto.randomUUID() } as ScriptElement;
 
-    if (isLocalOrElectron()) {
+    if (isLocalMode()) {
       await putCached('script_elements', newElement as unknown as Record<string, unknown>);
       set({ elements: [...get().elements, newElement].sort((a, b) => a.sort_order - b.sort_order), saving: false });
       return newElement;
@@ -347,7 +456,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
     const updated = get().elements.find((e) => e.id === id);
     if (!updated) { set({ saving: false }); return; }
 
-    if (isLocalOrElectron()) {
+    if (isLocalMode()) {
       await putCached('script_elements', updated as unknown as Record<string, unknown>);
       set({ saving: false });
       return;
@@ -361,7 +470,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   deleteElement: async (id) => {
     get().pushHistory();
 
-    if (isLocalOrElectron()) {
+    if (isLocalMode()) {
       await deleteCached('script_elements', id);
       set({ elements: get().elements.filter((e) => e.id !== id) });
       return;
@@ -375,7 +484,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   reorderElements: async (elements) => {
     set({ elements, saving: true });
 
-    if (isLocalOrElectron()) {
+    if (isLocalMode()) {
       for (const el of elements) {
         await putCached('script_elements', { ...el, sort_order: elements.indexOf(el) } as unknown as Record<string, unknown>);
       }

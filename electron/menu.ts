@@ -1,16 +1,105 @@
-import { BrowserWindow, Menu, MenuItemConstructorOptions, app, shell } from 'electron';
+import { BrowserWindow, Menu, MenuItemConstructorOptions, app, shell, dialog } from 'electron';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const isMac = process.platform === 'darwin';
 const SITE = 'https://screenplaystudio.fun';
 
+// ── Recent Projects persistence ────────────────────────────────
+
+export interface RecentProject {
+  id: string;
+  title: string;
+  path?: string;
+  lastOpened: string; // ISO timestamp
+}
+
+const RECENT_FILE = path.join(app.getPath('userData'), 'recent-projects.json');
+const MAX_RECENT = 10;
+
+export function getRecentProjects(): RecentProject[] {
+  try {
+    if (fs.existsSync(RECENT_FILE)) {
+      const raw = fs.readFileSync(RECENT_FILE, 'utf-8');
+      const list = JSON.parse(raw) as RecentProject[];
+      return Array.isArray(list) ? list.slice(0, MAX_RECENT) : [];
+    }
+  } catch { /* ignore */ }
+  return [];
+}
+
+function saveRecentProjects(list: RecentProject[]): void {
+  try {
+    fs.writeFileSync(RECENT_FILE, JSON.stringify(list.slice(0, MAX_RECENT), null, 2), 'utf-8');
+  } catch { /* ignore */ }
+}
+
+export function addRecentProject(project: { id: string; title: string; path?: string }): void {
+  const list = getRecentProjects().filter((p) => p.id !== project.id);
+  list.unshift({
+    id: project.id,
+    title: project.title,
+    path: project.path,
+    lastOpened: new Date().toISOString(),
+  });
+  saveRecentProjects(list);
+}
+
+export function clearRecentProjects(): void {
+  saveRecentProjects([]);
+}
+
+// ── Menu setup ─────────────────────────────────────────────────
+
 export function setupMenu(window: BrowserWindow) {
+  const recentProjects = getRecentProjects();
+
+  const recentSubmenu: MenuItemConstructorOptions[] =
+    recentProjects.length > 0
+      ? [
+          ...recentProjects.map((rp) => ({
+            label: rp.title || 'Untitled',
+            click: () => {
+              window.webContents.send('menu:open-recent', rp.id);
+            },
+          })),
+          { type: 'separator' as const },
+          {
+            label: 'Clear Recent Projects',
+            click: () => {
+              clearRecentProjects();
+              setupMenu(window); // Rebuild
+            },
+          },
+        ]
+      : [{ label: 'No Recent Projects', enabled: false }];
+
   const template: MenuItemConstructorOptions[] = [
     ...(isMac
       ? [
           {
             label: app.name,
             submenu: [
-              { role: 'about' as const },
+              {
+                label: `About ${app.name}`,
+                click: () => {
+                  dialog.showMessageBox(window, {
+                    type: 'info',
+                    title: `About ${app.name}`,
+                    message: app.name,
+                    detail: [
+                      `Version ${app.getVersion()}`,
+                      `Electron ${process.versions.electron}`,
+                      `Chromium ${process.versions.chrome}`,
+                      `Node.js ${process.versions.node}`,
+                      '',
+                      '© 2024 Nordhem Development',
+                      'screenplaystudio.fun',
+                    ].join('\n'),
+                    buttons: ['OK'],
+                  });
+                },
+              },
               { type: 'separator' as const },
               { role: 'services' as const },
               { type: 'separator' as const },
@@ -36,6 +125,11 @@ export function setupMenu(window: BrowserWindow) {
           accelerator: 'CmdOrCtrl+O',
           click: () => window.webContents.send('menu:open-file'),
         },
+        {
+          label: 'Open Recent',
+          submenu: recentSubmenu,
+        },
+        { type: 'separator' },
         {
           label: 'Save',
           accelerator: 'CmdOrCtrl+S',
@@ -92,6 +186,31 @@ export function setupMenu(window: BrowserWindow) {
     {
       label: 'Help',
       submenu: [
+        ...(!isMac
+          ? [
+              {
+                label: `About ${app.name}`,
+                click: () => {
+                  dialog.showMessageBox(window, {
+                    type: 'info',
+                    title: `About ${app.name}`,
+                    message: app.name,
+                    detail: [
+                      `Version ${app.getVersion()}`,
+                      `Electron ${process.versions.electron}`,
+                      `Chromium ${process.versions.chrome}`,
+                      `Node.js ${process.versions.node}`,
+                      '',
+                      '© 2024 Nordhem Development',
+                      'screenplaystudio.fun',
+                    ].join('\n'),
+                    buttons: ['OK'],
+                  });
+                },
+              },
+              { type: 'separator' as const },
+            ]
+          : []),
         {
           label: 'Report a Bug',
           click: () => shell.openExternal(`${SITE}/support`),

@@ -226,6 +226,9 @@ function AppearanceTab() {
             {isCustom && (
               <Button variant="ghost" size="sm" onClick={resetTheme}>Reset</Button>
             )}
+            <Link href="/colors" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-surface-700 bg-surface-900 hover:bg-surface-800 hover:text-white h-9 px-4 py-2">
+              Browse Community Themes
+            </Link>
             <Button onClick={() => setEditorOpen(true)}>
               Open Theme Editor
             </Button>
@@ -870,11 +873,15 @@ export default function UserSettingsPage() {
 
     // Apply accent color to document immediately
     document.documentElement.setAttribute('data-accent', accentColor);
+    localStorage.setItem('ss-accent-color', accentColor);
+    
     // Apply UI theme to document immediately
     if (uiTheme === 'soft') {
       document.documentElement.setAttribute('data-theme', 'soft');
+      localStorage.setItem('ss-ui-theme', 'soft');
     } else {
       document.documentElement.removeAttribute('data-theme');
+      localStorage.removeItem('ss-ui-theme');
     }
 
     useAuthStore.getState().setUser({

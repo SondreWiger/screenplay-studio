@@ -1,15 +1,7 @@
 /**
  * Local project storage for Electron mode.
  * Projects are stored on disk in a visible file structure:
- *   ~/ScreenplayStudio/
- *     projects/
- *       {project-id}/
- *         project.json          — metadata
- *         scripts/
- *           {script-id}.json    — script + elements
- *         characters.json
- *         scenes.json
- *         ...
+ *   ~/ScreenplayStudio/projects/{project-id}/project.json
  */
 
 import { isElectronMode } from '@/lib/supabase/electron-client';
@@ -17,22 +9,14 @@ import type { Project, Script, ScriptElement } from '@/lib/types';
 
 const PROJECTS_DIR = 'ScreenplayStudio/projects';
 
-// ── Electron file system helpers ───────────────────────────────
+let cachedDocumentsDir: string | null = null;
 
-async function getBasePath(): Promise<string | null> {
+export async function getBasePath(): Promise<string | null> {
   if (!window.electron) return null;
-  const platform = await window.electron.getPlatform();
-  const home = platform === 'darwin'
-    ? process.env.HOME || '/Users/user'
-    : platform === 'win32'
-      ? process.env.USERPROFILE || 'C:\\Users\\user'
-      : process.env.HOME || '/home/user';
-  return `${home}/${PROJECTS_DIR}`;
-}
-
-async function ensureDir(path: string): Promise<void> {
-  // Electron doesn't have mkdir via IPC yet; we rely on writeFile creating parent dirs
-  // This is a no-op for now; real implementation would use IPC
+  if (!cachedDocumentsDir) {
+    cachedDocumentsDir = await window.electron.getDocumentsDir();
+  }
+  return `${cachedDocumentsDir}/${PROJECTS_DIR}`;
 }
 
 // ── Project file operations ────────────────────────────────────
@@ -83,9 +67,22 @@ export async function loadProjectFromDisk(
 
 export async function listLocalProjects(): Promise<Project[]> {
   if (!window.electron) return [];
-  // In a real implementation, we'd list directories
-  // For now, return empty — the IndexedDB layer handles listing
-  return [];
+  const basePath = await getBasePath();
+  if (!basePath) return [];
+
+  const projectIds = await window.electron.listDir(basePath);
+  const projects: Project[] = [];
+
+  for (const id of projectIds) {
+    const loaded = await loadProjectFromDisk(id);
+    if (loaded?.project) projects.push(loaded.project);
+  }
+
+  return projects.sort((a, b) => {
+    const aTime = a.updated_at || a.created_at || '';
+    const bTime = b.updated_at || b.created_at || '';
+    return bTime.localeCompare(aTime);
+  });
 }
 
 export async function saveScriptToDisk(
