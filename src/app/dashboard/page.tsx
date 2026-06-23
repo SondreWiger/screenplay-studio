@@ -29,7 +29,7 @@ import { useTranslation } from '@/components/TranslationProvider';
 import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder, UsageIntent } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
 import { isElectronMode, isLocalOrElectron } from '@/lib/supabase/electron-client';
-import { putCached, getCachedProjects } from '@/lib/offline/db';
+import { putCached, cacheRows, getCachedProjects } from '@/lib/offline/db';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
@@ -210,7 +210,12 @@ function DashboardContent() {
         (assignments || []).map((a: { project_id: string; folder_id: string | null }) => [a.project_id, a.folder_id])
       );
       // Override folder_id on each project with the user's personal assignment
-      setProjects(projectList.map((p) => ({ ...p, folder_id: folderMap.has(p.id) ? folderMap.get(p.id) ?? null : null })));
+      const finalProjects = projectList.map((p) => ({ ...p, folder_id: folderMap.has(p.id) ? folderMap.get(p.id) ?? null : null }));
+      setProjects(finalProjects);
+      // Cache projects to IndexedDB so they're available offline
+      if (finalProjects.length > 0) {
+        cacheRows('projects', finalProjects).catch(() => {});
+      }
     } catch (err) {
       console.error('Unexpected error fetching projects:', err);
       setProjects([]);

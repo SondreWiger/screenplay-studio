@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProjectStore } from '@/lib/stores';
+import { getCachedByProject, getCachedByScript } from '@/lib/offline/db';
 import { Card, Badge, Progress, Button, LoadingPage } from '@/components/ui';
 import { formatDate, formatCurrency, timeAgo, cn } from '@/lib/utils';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
@@ -199,6 +200,9 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
   const fetchStats = async () => {
     try {
+      if (!navigator.onLine) {
+        throw new Error('Browser is offline');
+      }
       const supabase = createClient();
       const [scripts, characters, locations, scenes, shots, ideas, budget, events, members, documents] = await Promise.all([
         supabase.from('scripts').select('*').eq('project_id', params.id).order('updated_at', { ascending: false }),
@@ -212,6 +216,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         supabase.from('project_members').select('id').eq('project_id', params.id),
         supabase.from('project_documents').select('id', { count: 'exact', head: true }).eq('project_id', params.id),
       ]);
+
+      if (scripts.error) throw scripts.error;
 
       // Count script lines (script_elements) using actual script IDs
       const scriptIds = (scripts.data || []).map((s: { id: string }) => s.id);
@@ -361,7 +367,80 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       setActivity(activityItems.slice(0, 20));
       setStatsLoaded(true);
     } catch (err) {
-      console.error('Error fetching stats:', err);
+      console.error('Error fetching stats from Supabase, falling back to local cache:', err);
+      try {
+        const scripts = await getCachedByProject('scripts', params.id) as any[];
+        const characters = await getCachedByProject('characters', params.id) as any[];
+        const locations = await getCachedByProject('locations', params.id) as any[];
+        const scenes = await getCachedByProject('scenes', params.id) as any[];
+        const shots = await getCachedByProject('shots', params.id) as any[];
+        const ideas = await getCachedByProject('ideas', params.id) as any[];
+        const budget = await getCachedByProject('budget_items', params.id) as any[];
+        const events = await getCachedByProject('production_schedule', params.id) as any[];
+        const members = await getCachedByProject('project_members', params.id) as any[];
+
+        let scriptLines = 0;
+        for (const s of scripts) {
+          try {
+            const elts = await getCachedByScript(s.id);
+            scriptLines += elts.length;
+          } catch {}
+        }
+
+        const expenseItems = budget.filter((b: { is_income?: boolean }) => !b.is_income);
+        const totalDurationMinutes = scenes.reduce((sum: number, s: { estimated_duration_minutes?: number }) => sum + (s.estimated_duration_minutes || 0), 0);
+        const totalPageCount = scenes.reduce((sum: number, s: { page_count?: number }) => sum + (s.page_count || 0), 0);
+
+        setStats({
+          scripts: scripts.length,
+          characters: characters.length,
+          locations: locations.length,
+          scenes: scenes.length,
+          shots: shots.length,
+          ideas: ideas.length,
+          budgetTotal: expenseItems.reduce((sum: number, b: { estimated_amount?: number }) => sum + (b.estimated_amount || 0), 0),
+          budgetSpent: expenseItems.reduce((sum: number, b: { actual_amount?: number }) => sum + (b.actual_amount || 0), 0),
+          upcomingEvents: events.length,
+          completedScenes: scenes.filter((s: { is_completed?: boolean }) => s.is_completed).length,
+          completedShots: shots.filter((s: { is_completed?: boolean }) => s.is_completed).length,
+          totalDurationMinutes,
+          totalPageCount,
+          members: members.length,
+          documents: 0,
+          scriptLines,
+          comments: 0,
+        });
+
+        setRecentScripts(scripts.slice(0, 3));
+        setUpcomingEvents(events.slice(0, 5));
+
+        // Build activity timeline from offline cached records
+        const activityItems: ActivityItem[] = [];
+        scripts.slice(0, 5).forEach((s: { id: string; title: string; updated_at: string }) => {
+          activityItems.push({ id: 'script-' + s.id, type: 'script', label: s.title, detail: 'Script updated (cached)', timestamp: s.updated_at, icon: 'script', color: '#6366f1' });
+        });
+        characters.slice(0, 5).forEach((c: { id: string; name: string; updated_at: string }) => {
+          activityItems.push({ id: 'char-' + c.id, type: 'character', label: c.name, detail: 'Character updated (cached)', timestamp: c.updated_at, icon: 'character', color: '#ec4899' });
+        });
+        locations.slice(0, 5).forEach((l: { id: string; name: string; updated_at: string }) => {
+          activityItems.push({ id: 'loc-' + l.id, type: 'location', label: l.name, detail: 'Location updated (cached)', timestamp: l.updated_at, icon: 'location', color: '#14b8a6' });
+        });
+        scenes.slice(0, 5).forEach((s: { id: string; scene_number?: string; is_completed?: boolean; updated_at: string }) => {
+          activityItems.push({ id: 'scene-' + s.id, type: 'scene', label: 'Scene ' + (s.scene_number || ''), detail: s.is_completed ? 'Scene completed (cached)' : 'Scene updated (cached)', timestamp: s.updated_at, icon: 'scene', color: '#f59e0b' });
+        });
+        shots.slice(0, 5).forEach((s: { id: string; shot_number?: string; is_completed?: boolean; updated_at: string }) => {
+          activityItems.push({ id: 'shot-' + s.id, type: 'shot', label: 'Shot ' + (s.shot_number || ''), detail: s.is_completed ? 'Shot completed (cached)' : 'Shot updated (cached)', timestamp: s.updated_at, icon: 'shot', color: '#3b82f6' });
+        });
+        ideas.slice(0, 5).forEach((i: { id: string; title: string; updated_at: string }) => {
+          activityItems.push({ id: 'idea-' + i.id, type: 'idea', label: i.title, detail: 'Idea updated (cached)', timestamp: i.updated_at, icon: 'idea', color: '#a855f7' });
+        });
+
+        activityItems.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        setActivity(activityItems.slice(0, 20));
+        setStatsLoaded(true);
+      } catch (cacheErr) {
+        console.error('Failed to load stats from local cache:', cacheErr);
+      }
     }
   };
 

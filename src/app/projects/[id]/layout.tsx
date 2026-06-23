@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { isLocalOrElectron } from '@/lib/supabase/electron-client';
-import { getCachedById } from '@/lib/offline/db';
+import { getCachedById, putCached, getCachedByProject, cacheRows } from '@/lib/offline/db';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useFeatureAccess } from '@/components/FeatureGate';
@@ -304,8 +304,9 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     if (!user) {
       if (navigator.onLine) {
         router.replace('/auth/login');
+        return;
       }
-      return;
+      // If offline, continue to fetchProjectData() to load from local cache
     }
     fetchProjectData();
   }, [params.id, user, authLoading]);
@@ -359,10 +360,11 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           return;
         }
         setCurrentProject(project as any);
-        setMembers([]);
+        const cachedMembers = await getCachedByProject('project_members', params.id);
+        setMembers(cachedMembers as any[] || []);
         recordView({
-          id: project.id,
-          title: project.title || 'Untitled',
+          id: (project as any).id,
+          title: (project as any).title || 'Untitled',
           cover_url: (project as any).cover_url ?? null,
           project_type: (project as any).project_type,
         });
@@ -377,10 +379,11 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           return;
         }
         setCurrentProject(project as any);
-        setMembers([]);
+        const cachedMembers = await getCachedByProject('project_members', params.id);
+        setMembers(cachedMembers as any[] || []);
         recordView({
-          id: project.id,
-          title: project.title || 'Untitled',
+          id: (project as any).id,
+          title: (project as any).title || 'Untitled',
           cover_url: (project as any).cover_url ?? null,
           project_type: (project as any).project_type,
         });
@@ -410,6 +413,10 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       setCurrentProject(projectRes.data);
       setMembers(membersRes.data || []);
+      // Cache project members locally
+      if (membersRes.data && membersRes.data.length > 0) {
+        cacheRows('project_members', membersRes.data).catch(() => {});
+      }
       // Record this project as recently viewed
       recordView({
         id: projectRes.data.id,
