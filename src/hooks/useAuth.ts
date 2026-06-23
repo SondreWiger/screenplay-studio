@@ -56,7 +56,25 @@ export function useAuth() {
     // If offline, skip all network calls — use session flag to keep user state
     if (!navigator.onLine) {
       const hasSession = sessionStorage.getItem('ss_session_active') === '1';
-      if (!hasSession) setUser(null);
+      if (hasSession) {
+        // Restore cached profile so pages don't redirect to /auth/login
+        try {
+          const cached = sessionStorage.getItem('ss_cached_profile');
+          if (cached) {
+            const profile = JSON.parse(cached) as Profile;
+            setUser(profile);
+            // Apply accent color
+            if (typeof document !== 'undefined' && profile.accent_color) {
+              document.documentElement.setAttribute('data-accent', profile.accent_color);
+            }
+            if (typeof document !== 'undefined' && profile.ui_theme) {
+              document.documentElement.setAttribute('data-theme', profile.ui_theme);
+            }
+          }
+        } catch {}
+      } else {
+        setUser(null);
+      }
       setLoading(false);
       clearTimeout(safetyTimer);
       return;
@@ -107,6 +125,8 @@ export function useAuth() {
           ).then(() => {}).catch((err) => logger.error('useAuth', 'Failed to update last_seen:', err));
 
           setUser(profile as Profile);
+          // Cache profile in sessionStorage so offline reloads can restore it
+          try { sessionStorage.setItem('ss_cached_profile', JSON.stringify(profile)); } catch {}
           // Apply global accent color from profile
           if (typeof document !== 'undefined' && (profile as Profile).accent_color) {
             document.documentElement.setAttribute('data-accent', (profile as Profile).accent_color!);
@@ -157,6 +177,14 @@ export function useAuth() {
       async (event, session) => {
         if (event === 'INITIAL_SESSION') return; // Already handled above
 
+        // When offline, Supabase token refresh fails and fires SIGNED_OUT.
+        // Ignore it — the session cookies are still valid; we just can't
+        // verify them right now.  The initAuth() above already handles the
+        // offline case via navigator.onLine.
+        if (event === 'SIGNED_OUT' && !navigator.onLine) {
+          return;
+        }
+
         if (event === 'SIGNED_OUT') {
           try { sessionStorage.removeItem('ss_session_active'); } catch {}
           setUser(null);
@@ -182,6 +210,7 @@ export function useAuth() {
               ).then(() => {}).catch((err) => logger.error('useAuth', 'Failed to update last_seen:', err));
 
               setUser(profile as Profile);
+              try { sessionStorage.setItem('ss_cached_profile', JSON.stringify(profile)); } catch {}
               if (typeof document !== 'undefined' && (profile as Profile).accent_color) {
                 document.documentElement.setAttribute('data-accent', (profile as Profile).accent_color!);
               }

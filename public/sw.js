@@ -7,7 +7,7 @@
 //     explicit version bump forces old caches to be purged even if the rest of
 //     the SW logic is identical.
 
-const CACHE_VERSION = 'ss-v8';   // bumped — 4s fetch timeout to prevent infinite loading
+const CACHE_VERSION = 'ss-v9';   // bumped — resilient pre-cache, offline reload fix
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE  = `${CACHE_VERSION}-dynamic`;
 
@@ -24,8 +24,22 @@ const PRECACHE_URLS = [
 // ── Install: pre-cache app shell ─────────────────────────────────────────────
 
 self.addEventListener('install', (event) => {
+  // Use individual cache.put() instead of cache.addAll() — if one URL is
+  // unreachable (e.g. user is offline during a SW update), the others still
+  // get cached.  cache.addAll() aborts the ENTIRE batch on a single failure.
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(STATIC_CACHE).then(async (cache) => {
+      for (const url of PRECACHE_URLS) {
+        try {
+          const response = await fetch(url);
+          if (response.ok) {
+            await cache.put(url, response);
+          }
+        } catch {
+          // URL unreachable — skip, don't block the entire install
+        }
+      }
+    })
   );
   self.skipWaiting();
 });
@@ -145,11 +159,17 @@ async function networkFirstNavigate(request) {
     const timeout = setTimeout(() => controller.abort(), 4000);
     const response = await fetch(request, { signal: controller.signal });
     clearTimeout(timeout);
-    // Cache all successful GET navigations (even redirects) so offline reload works
-    if (request.method === 'GET' && response.status >= 200 && response.status < 400) {
+    // Cache successful navigations, but SKIP if the response was redirected
+    // to a different path (e.g. middleware /dashboard → /auth/login).
+    // Caching the login page under /dashboard would serve the wrong page offline.
+    if (
+      request.method === 'GET' &&
+      response.status >= 200 &&
+      response.status < 400 &&
+      !response.redirected
+    ) {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, response.clone());
-      // Evict oldest entries if cache grows too large (> 80 pages)
       trimCache(DYNAMIC_CACHE, 80);
     }
     return response;

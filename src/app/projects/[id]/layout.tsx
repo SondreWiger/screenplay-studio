@@ -302,7 +302,9 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.replace('/auth/login');
+      if (navigator.onLine) {
+        router.replace('/auth/login');
+      }
       return;
     }
     fetchProjectData();

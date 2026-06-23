@@ -147,7 +147,11 @@ function DashboardContent() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.replace('/auth/login');
+      // Don't redirect to login when offline — the user was authenticated
+      // before losing connection and will be restored from sessionStorage.
+      if (navigator.onLine) {
+        router.replace('/auth/login');
+      }
       return;
     }
     // Redirect to onboarding if not completed

@@ -767,7 +767,7 @@ export default function UserSettingsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { router.replace('/auth/login'); return; }
+    if (!user) { if (navigator.onLine) router.replace('/auth/login'); return; }
 
     setFullName(user.full_name || '');
     setDisplayName(user.display_name || '');
