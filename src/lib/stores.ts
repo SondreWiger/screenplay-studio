@@ -74,7 +74,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProjects: async () => {
     set({ loading: true, error: null });
     try {
-      if (isLocalOrElectron()) {
+      if (isLocalOrElectron() || !navigator.onLine) {
         const projects = await getCachedProjects();
         set({ projects: projects as unknown as Project[], loading: false });
         return;
@@ -109,7 +109,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProject: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      if (isLocalOrElectron()) {
+      if (isLocalOrElectron() || !navigator.onLine) {
         const project = await getCachedById('projects', id);
         set({ currentProject: (project as unknown as Project) || null, members: [], loading: false });
         return;
@@ -236,7 +236,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
     // Clear immediately so stale data from a previous project is never shown.
     set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [] });
     try {
-      if (isLocalOrElectron()) {
+      if (isLocalOrElectron() || !navigator.onLine) {
         const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
         scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
         set({ scripts });
@@ -281,7 +281,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   fetchElements: async (scriptId: string) => {
     set({ loading: true });
     try {
-      if (isLocalOrElectron()) {
+      if (isLocalOrElectron() || !navigator.onLine) {
         const elements = await getCachedByScript(scriptId) as unknown as ScriptElement[];
         elements.sort((a, b) => a.sort_order - b.sort_order);
         set({ elements, loading: false });
@@ -450,6 +450,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
   fetchNotifications: async () => {
+    if (!navigator.onLine) { set({ loading: false }); return; }
     const supabase = createClient();
     set({ loading: true });
     try {
