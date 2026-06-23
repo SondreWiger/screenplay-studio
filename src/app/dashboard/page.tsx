@@ -175,9 +175,23 @@ function DashboardContent() {
   const fetchProjects = async () => {
     if (!user?.id) return;
     try {
+      let diskProjects: Project[] = [];
+      if (isElectronMode()) {
+        const { listLocalProjects } = await import('@/lib/local-files');
+        diskProjects = await listLocalProjects();
+      }
+
       if (isLocalMode()) {
-        const localProjects = await getCachedProjects();
-        setProjects(localProjects as unknown as Project[]);
+        const idbProjects = await getCachedProjects() as unknown as Project[];
+        const merged = new Map<string, Project>();
+        for (const p of diskProjects) merged.set(p.id, p);
+        for (const p of idbProjects) {
+          const existing = merged.get(p.id);
+          if (!existing || (p.updated_at || p.created_at || '') > (existing.updated_at || existing.created_at || '')) {
+            merged.set(p.id, p);
+          }
+        }
+        setProjects(Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')));
         setLoading(false);
         return;
       }

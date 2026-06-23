@@ -43,6 +43,13 @@ export function getLocalUser(): Profile | null {
 }
 
 export function createLocalUser(displayName?: string): Profile {
+  const existing = getLocalUser();
+  if (existing) {
+    localStorage.setItem(LOCAL_MODE_KEY, '1');
+    document.cookie = `${LOCAL_MODE_KEY}=1; path=/; max-age=31536000; SameSite=Lax`;
+    return existing;
+  }
+
   const id = crypto.randomUUID();
   const name = displayName || 'Local Writer';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
