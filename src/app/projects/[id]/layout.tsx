@@ -936,7 +936,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           />
           <aside
             className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col md:hidden animate-slide-right"
-            style={{ background: '#0a0a16', borderRight: '1px solid rgb(var(--brand-900) / 0.4)' }}
+            style={{ background: 'rgb(var(--surface-950))', borderRight: '1px solid rgb(var(--brand-900) / 0.4)' }}
           >
             {sidebarContent(true)}
           </aside>
@@ -949,7 +949,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           'hidden md:flex flex-col transition-[width] duration-300',
           sidebarCollapsed ? 'w-14' : 'w-60'
         )}
-        style={{ background: '#0a0a16', borderRight: '1px solid rgb(var(--brand-900) / 0.35)' }}
+        style={{ background: 'rgb(var(--surface-950))', borderRight: '1px solid rgb(var(--brand-900) / 0.35)' }}
       >
         {sidebarContent(false)}
       </aside>

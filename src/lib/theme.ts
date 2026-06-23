@@ -189,9 +189,26 @@ function generateInlineOverrideCSS(theme: AppTheme): string {
 
     /* ── Surface backgrounds ── */
     [data-custom-theme="1"] [style*="#070710"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0a0a16"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0a0a12"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0a0a0c"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0a0a0f"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0d0d14"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0D0D1A"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0E0E1C"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#0c0c0e"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
+    [data-custom-theme="1"] [style*="#080810"] { background: rgb(${s950}) !important; background-color: rgb(${s950}) !important; }
     [data-custom-theme="1"] [style*="#0f0f1c"] { background: rgb(${s900}) !important; background-color: rgb(${s900}) !important; }
+    [data-custom-theme="1"] [style*="#111113"] { background: rgb(${s900}) !important; background-color: rgb(${s900}) !important; }
     [data-custom-theme="1"] [style*="#181828"] { background: rgb(${s800}) !important; background-color: rgb(${s800}) !important; }
+    [data-custom-theme="1"] [style*="#141418"] { background: rgb(${s800}) !important; background-color: rgb(${s800}) !important; }
+    [data-custom-theme="1"] [style*="#1a1a1a"] { background: rgb(${s800}) !important; background-color: rgb(${s800}) !important; }
+    [data-custom-theme="1"] [style*="#181818"] { background: rgb(${s800}) !important; background-color: rgb(${s800}) !important; }
     [data-custom-theme="1"] [style*="#24243a"] { background: rgb(${s700}) !important; background-color: rgb(${s700}) !important; }
+    [data-custom-theme="1"] [style*="#252542"] { background: rgb(${s800}) !important; background-color: rgb(${s800}) !important; }
+    [data-custom-theme="1"] [style*="#171728"] { background: rgb(${s900}) !important; background-color: rgb(${s900}) !important; }
+    [data-custom-theme="1"] [style*="#1e1e30"] { background: rgb(${s800}) !important; background-color: rgb(${s800}) !important; }
+    [data-custom-theme="1"] [style*="#2d2d45"] { background: rgb(${s700}) !important; background-color: rgb(${s700}) !important; }
 
     /* ── Text colors ── */
     [data-custom-theme="1"] [style*="#f4f4fc"] { color: ${c.textPrimary} !important; }
