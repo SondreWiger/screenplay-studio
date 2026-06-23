@@ -53,6 +53,15 @@ export function useAuth() {
       }
     }, AUTH_INIT_TIMEOUT_MS);
 
+    // If offline, skip all network calls — use session flag to keep user state
+    if (!navigator.onLine) {
+      const hasSession = sessionStorage.getItem('ss_session_active') === '1';
+      if (!hasSession) setUser(null);
+      setLoading(false);
+      clearTimeout(safetyTimer);
+      return;
+    }
+
     const initAuth = async () => {
       try {
         let hasSessionFlag = false;
