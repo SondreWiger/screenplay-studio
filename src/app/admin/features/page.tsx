@@ -114,7 +114,7 @@ export default function FeatureFlagsPage() {
   }, {});
 
   if (authLoading || loading) {
-    return <div className="min-h-screen bg-surface-950 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" /></div>;
+    return <div className="min-h-screen bg-surface-950 flex items-center justify-center"><div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" /></div>;
   }
 
   if (!isAdmin) return null;

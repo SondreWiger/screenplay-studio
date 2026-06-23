@@ -18,7 +18,7 @@ import { fetchUserWorkLogs, calculateStreak, aggregateLogsByDate } from '@/lib/w
 
 // Theme presets for profile customisation
 const PROFILE_THEMES: Record<string, { gradient: string; accent: string; accentRgb: string; cardBg: string; textAccent: string }> = {
-  default:   { gradient: 'from-[#0a0818] via-[#0d0b17] to-[#070710]',   accent: '#FF5F1F',   accentRgb: '255,95,31', cardBg: 'bg-white/[0.04]',  textAccent: 'text-[#FF5F1F]' },
+  default:   { gradient: 'from-[#0a0818] via-[#0d0b17] to-[#070710]',   accent: '#FF5F1F',   accentRgb: '255,95,31', cardBg: 'bg-white/[0.04]',  textAccent: 'text-brand-500' },
   midnight:  { gradient: 'from-indigo-950 via-blue-900 to-slate-900',   accent: 'indigo-400',  accentRgb: '129,140,248', cardBg: 'bg-indigo-500/[0.06]', textAccent: 'text-indigo-400' },
   sunset:    { gradient: 'from-orange-700 via-rose-700 to-pink-800',    accent: 'orange-500',  accentRgb: '249,115,22', cardBg: 'bg-orange-500/[0.06]', textAccent: 'text-orange-400' },
   forest:    { gradient: 'from-emerald-900 via-teal-800 to-green-900',  accent: 'emerald-400', accentRgb: '52,211,153', cardBg: 'bg-emerald-500/[0.06]', textAccent: 'text-emerald-400' },
@@ -446,7 +446,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                 )}
                 {creatorProfile && (
                   <a href={`/ref/${creatorProfile.ref_code}`} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#FF5F1F] bg-[#FF5F1F]/10 border border-[#FF5F1F]/25 rounded-full hover:bg-[#FF5F1F]/15 transition-colors">
+                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-brand-500 bg-brand-500/10 border border-brand-500/25 rounded-full hover:bg-brand-500/15 transition-colors">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                     Creator
                   </a>
@@ -869,7 +869,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                           <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover transition-transform duration-500" loading="lazy" />
                         </div>
                       ) : (
-                        <div className="aspect-video bg-gradient-to-br from-[#FF5F1F]/10 to-[#0E0E1C] flex items-center justify-center">
+                        <div className="aspect-video bg-gradient-to-br from-brand-500/10 to-[#0E0E1C] flex items-center justify-center">
                           <span className="text-4xl opacity-30">📚</span>
                         </div>
                       )}
@@ -882,7 +882,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                               Done
                             </span>
                           ) : (
-                            <span className="text-[9px] text-[#FF5F1F]">{course.xp_reward} XP</span>
+                            <span className="text-[9px] text-brand-500">{course.xp_reward} XP</span>
                           )}
                         </div>
                         <h3 className="text-sm font-semibold text-white group-hover:text-[#FF7A3F] transition-colors line-clamp-2 leading-snug">{course.title}</h3>
@@ -924,7 +924,7 @@ export default function UserProfilePage({ params }: { params: { username: string
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

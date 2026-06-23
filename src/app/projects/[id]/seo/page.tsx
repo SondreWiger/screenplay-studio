@@ -344,7 +344,7 @@ export default function SEOPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -392,7 +392,7 @@ export default function SEOPage() {
               </p>
               <button 
                 onClick={() => setShowScoreDetails(!showScoreDetails)}
-                className="text-[#FF5F1F] text-sm mt-2 hover:underline"
+                className="text-brand-500 text-sm mt-2 hover:underline"
               >
                 {showScoreDetails ? 'Hide details' : 'View detailed breakdown'}
               </button>
@@ -647,7 +647,7 @@ export default function SEOPage() {
                   type="text"
                   value={chapter.title}
                   onChange={(e) => updateChapter(chapter.id, { title: e.target.value })}
-                  className="flex-1 bg-transparent border-b border-surface-600 px-2 py-1 text-sm text-white focus:border-[#FF5F1F] focus:outline-none"
+                  className="flex-1 bg-transparent border-b border-surface-600 px-2 py-1 text-sm text-white focus:border-brand-500 focus:outline-none"
                   placeholder="Chapter title"
                   disabled={!canEdit}
                 />

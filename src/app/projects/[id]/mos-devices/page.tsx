@@ -400,7 +400,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
                   className={cn(
                     'p-2 rounded border text-[10px] text-center transition-colors',
                     newType === t.value
-                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-white'
+                      ? 'border-brand-500 bg-brand-500/10 text-white'
                       : 'border-surface-700 text-surface-400 hover:border-surface-500'
                   )}
                 >

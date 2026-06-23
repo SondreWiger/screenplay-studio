@@ -70,7 +70,7 @@ export default function BrowseCommunitiesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-mono text-[#FF5F1F] uppercase tracking-widest mb-1">Communities</p>
+            <p className="text-[10px] font-mono text-brand-500 uppercase tracking-widest mb-1">Communities</p>
             <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
               BROWSE COMMUNITIES
             </h1>
@@ -128,7 +128,7 @@ export default function BrowseCommunitiesPage() {
         {/* Grid */}
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-[#FF5F1F]" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">

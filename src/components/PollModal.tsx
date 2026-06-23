@@ -151,7 +151,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
         {step > 0 && step <= questions.length && (
           <div className="h-0.5 bg-white/5 w-full flex-shrink-0">
             <div
-              className="h-full bg-gradient-to-r from-[#FF5F1F] to-[#f97316] transition-[width] duration-300"
+              className="h-full bg-gradient-to-r from-brand-500 to-[#f97316] transition-[width] duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -176,7 +176,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
         <div className="flex-1 overflow-y-auto px-5 pb-4">
           {loading && (
             <div className="flex items-center justify-center py-16">
-              <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
@@ -194,7 +194,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
               {session.preface && (
                 <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap mb-4">{session.preface}</p>
               )}
-              <div className="flex items-center gap-3 py-3 px-4 bg-[#FF5F1F]/10 border border-[#FF5F1F]/20 rounded-xl mt-2">
+              <div className="flex items-center gap-3 py-3 px-4 bg-brand-500/10 border border-brand-500/20 rounded-xl mt-2">
                 <span className="text-xl">🎮</span>
                 <div>
                   <p className="text-sm font-semibold text-white">Earn {xpAwarded} XP</p>
@@ -227,8 +227,8 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
                 Your answers help shape the future of Screenplay Studio.
               </p>
               {!hasResponded && (
-                <div className="inline-flex items-center gap-2 bg-[#FF5F1F]/10 border border-[#FF5F1F]/20 rounded-full px-5 py-2">
-                  <span className="text-[#FF5F1F] font-bold">+{xpAwarded} XP</span>
+                <div className="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 rounded-full px-5 py-2">
+                  <span className="text-brand-500 font-bold">+{xpAwarded} XP</span>
                   <span className="text-white/40 text-sm">added to your account</span>
                 </div>
               )}
@@ -252,7 +252,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
             <button
               onClick={handleNext}
               disabled={!canProceed() || submitting}
-              className="px-6 py-2.5 bg-[#FF5F1F] hover:bg-[#FF7F3F] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors min-w-[100px] flex items-center justify-center gap-2"
+              className="px-6 py-2.5 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors min-w-[100px] flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -303,7 +303,7 @@ function QuestionStep({
               onClick={() => onChange(v)}
               className={`py-4 rounded-xl border-2 text-sm font-semibold transition-colors ${
                 answer === v
-                  ? 'bg-[#FF5F1F]/20 border-[#FF5F1F] text-white'
+                  ? 'bg-brand-500/20 border-brand-500 text-white'
                   : 'bg-white/[0.03] border-white/10 text-white/50 hover:border-white/20 hover:text-white'
               }`}
             >
@@ -322,12 +322,12 @@ function QuestionStep({
               onClick={() => onChange(opt)}
               className={`w-full text-left px-4 py-3 rounded-xl border transition-colors text-sm ${
                 answer === opt
-                  ? 'bg-[#FF5F1F]/20 border-[#FF5F1F] text-white font-medium'
+                  ? 'bg-brand-500/20 border-brand-500 text-white font-medium'
                   : 'bg-white/[0.03] border-white/10 text-white/60 hover:border-white/20 hover:text-white'
               }`}
             >
               <span className={`inline-block w-4 h-4 rounded-full border mr-3 align-middle flex-shrink-0 transition-colors ${
-                answer === opt ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'border-white/30'
+                answer === opt ? 'bg-brand-500 border-brand-500' : 'border-white/30'
               }`} />
               {opt}
             </button>
@@ -354,12 +354,12 @@ function QuestionStep({
                 onClick={toggle}
                 className={`w-full text-left px-4 py-3 rounded-xl border transition-colors text-sm ${
                   selected
-                    ? 'bg-[#FF5F1F]/20 border-[#FF5F1F] text-white font-medium'
+                    ? 'bg-brand-500/20 border-brand-500 text-white font-medium'
                     : 'bg-white/[0.03] border-white/10 text-white/60 hover:border-white/20 hover:text-white'
                 }`}
               >
                 <span className={`inline-block w-4 h-4 rounded border mr-3 align-middle flex-shrink-0 transition-colors relative ${
-                  selected ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'border-white/30'
+                  selected ? 'bg-brand-500 border-brand-500' : 'border-white/30'
                 }`}>
                   {selected && (
                     <svg className="absolute inset-0 w-full h-full text-white" fill="none" viewBox="0 0 16 16">
@@ -380,7 +380,7 @@ function QuestionStep({
           <p className="text-xs text-white/30 mb-3">Drag to reorder — top = most preferred</p>
           {(answer as string[]).map((opt, idx) => (
             <div key={opt} className="flex items-center gap-3 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3">
-              <span className="text-[#FF5F1F] font-bold text-sm w-5 flex-shrink-0">{idx + 1}</span>
+              <span className="text-brand-500 font-bold text-sm w-5 flex-shrink-0">{idx + 1}</span>
               <span className="flex-1 text-sm text-white">{opt}</span>
               <div className="flex flex-col gap-0.5 flex-shrink-0">
                 <button
@@ -423,7 +423,7 @@ function QuestionStep({
           value={(answer as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Type your answer…"
-          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50 transition-colors"
+          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 transition-colors"
         />
       )}
 
@@ -435,7 +435,7 @@ function QuestionStep({
           value={(answer as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Type your answer…"
-          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50 transition-colors resize-none"
+          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 transition-colors resize-none"
         />
       )}
     </div>

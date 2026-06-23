@@ -157,7 +157,7 @@ function PreMiDCard() {
           </h2>
           <p className="text-sm text-surface-400 mt-0.5">
             Requires{' '}
-            <a href="https://premid.app" target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors">
+            <a href="https://premid.app" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-400 transition-colors">
               PreMiD
             </a>
             {' '}— install the app + browser extension, then your Discord status updates automatically.
@@ -366,7 +366,7 @@ function GamificationSettingsTab() {
           </div>
           <button
             onClick={() => setGamificationEnabled(!enabled)}
-            className={`shrink-0 w-12 h-6 rounded-full relative transition-colors ${enabled ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}
+            className={`shrink-0 w-12 h-6 rounded-full relative transition-colors ${enabled ? 'bg-brand-500' : 'bg-surface-700'}`}
           >
             <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${enabled ? 'left-[26px]' : 'left-0.5'}`} />
           </button>
@@ -402,7 +402,7 @@ function GamificationSettingsTab() {
             ].map(({ label, value }) => (
               <div key={label} className="p-3 rounded-xl bg-surface-800/50 border border-surface-700 text-center">
                 <p className="text-xs text-surface-400 mb-1">{label}</p>
-                <p className="text-lg font-black text-[#FF5F1F]">{value}</p>
+                <p className="text-lg font-black text-brand-500">{value}</p>
               </div>
             ))}
           </div>
@@ -447,7 +447,7 @@ function GamificationSettingsTab() {
                       title="Show as primary badge"
                       className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
                         currentSlot === 1
-                          ? 'bg-[#FF5F1F]/20 border-[#FF5F1F]/40 text-[#FF5F1F]'
+                          ? 'bg-brand-500/20 border-brand-500/40 text-brand-500'
                           : 'bg-surface-800 border-surface-600 text-surface-400 hover:text-white'
                       }`}
                     >
@@ -498,7 +498,7 @@ function GamificationSettingsTab() {
               <div className="flex items-center gap-2 text-sm text-surface-300">
                 <span>{label}</span>
               </div>
-              <span className="text-xs font-mono font-bold text-[#FF5F1F]">{xp}</span>
+              <span className="text-xs font-mono font-bold text-brand-500">{xp}</span>
             </div>
           ))}
         </div>
@@ -579,7 +579,7 @@ function TranslationsSettingsTab() {
           <button
             onClick={() => saveLanguage('')}
             className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
-              !preferredLang ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5' : 'border-surface-700 hover:border-surface-600'
+              !preferredLang ? 'border-brand-500/40 bg-brand-500/5' : 'border-surface-700 hover:border-surface-600'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -590,7 +590,7 @@ function TranslationsSettingsTab() {
               </div>
             </div>
             {!preferredLang && (
-              <svg className="w-4 h-4 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             )}
           </button>
 
@@ -600,7 +600,7 @@ function TranslationsSettingsTab() {
               onClick={() => saveLanguage(lang.code)}
               disabled={saving}
               className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
-                preferredLang === lang.code ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5' : 'border-surface-700 hover:border-surface-600'
+                preferredLang === lang.code ? 'border-brand-500/40 bg-brand-500/5' : 'border-surface-700 hover:border-surface-600'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -613,12 +613,12 @@ function TranslationsSettingsTab() {
               <div className="flex items-center gap-3">
                 <div className="w-16 h-1.5 bg-surface-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] rounded-full"
+                    className="h-full bg-gradient-to-r from-brand-600 to-brand-500 rounded-full"
                     style={{ width: `${progress[lang.code] || 0}%` }}
                   />
                 </div>
                 {preferredLang === lang.code && (
-                  <svg className="w-4 h-4 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                 )}
               </div>
             </button>
@@ -956,7 +956,7 @@ export default function UserSettingsPage() {
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F]"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500"
                       placeholder="your-username"
                     />
                   </div>
@@ -996,13 +996,13 @@ export default function UserSettingsPage() {
                       key={t.key}
                       onClick={() => setProfileTheme(t.key)}
                       className={`relative rounded-lg overflow-hidden border-2 transition-colors ${
-                        profileTheme === t.key ? 'border-[#FF5F1F] ring-2 ring-[#FF5F1F]/30' : 'border-surface-700 hover:border-surface-600'
+                        profileTheme === t.key ? 'border-brand-500 ring-2 ring-brand-500/30' : 'border-surface-700 hover:border-surface-600'
                       }`}
                     >
                       <div className={`h-12 bg-gradient-to-br ${t.gradient}`} />
                       <p className="text-[10px] font-medium text-surface-300 py-1 text-center">{t.label}</p>
                       {profileTheme === t.key && (
-                        <div className="absolute top-1 right-1 w-4 h-4 bg-[#FF5F1F] rounded-full flex items-center justify-center">
+                        <div className="absolute top-1 right-1 w-4 h-4 bg-brand-500 rounded-full flex items-center justify-center">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                         </div>
                       )}
@@ -1034,7 +1034,7 @@ export default function UserSettingsPage() {
                       value={socialLinks[social.key] || ''}
                       onChange={(e) => setSocialLinks((prev) => ({ ...prev, [social.key]: e.target.value }))}
                       placeholder={social.placeholder}
-                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F] transition-colors"
+                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 transition-colors"
                     />
                   </div>
                 ))}
@@ -1061,7 +1061,7 @@ export default function UserSettingsPage() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-500">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
                       <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -1090,7 +1090,7 @@ export default function UserSettingsPage() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-500">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
                       <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -1112,7 +1112,7 @@ export default function UserSettingsPage() {
                 {username && (
                   <div className="col-span-2">
                     <p className="text-surface-500">Public Profile</p>
-                    <Link href={`/u/${username}`} className="text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors mt-1 inline-block text-sm">/u/{username}</Link>
+                    <Link href={`/u/${username}`} className="text-brand-500 hover:text-brand-400 transition-colors mt-1 inline-block text-sm">/u/{username}</Link>
                   </div>
                 )}
               </div>
@@ -1145,12 +1145,12 @@ export default function UserSettingsPage() {
                     onClick={() => setUsageIntent(opt.value)}
                     className={`flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-colors ${
                       usageIntent === opt.value
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
+                        ? 'border-brand-500 bg-brand-500/10'
                         : 'border-surface-700 hover:border-surface-600'
                     }`}
                   >
-                    <Icon name={opt.icon} size="md" className={usageIntent === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
-                    <span className={`text-sm font-medium ${usageIntent === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>{opt.label}</span>
+                    <Icon name={opt.icon} size="md" className={usageIntent === opt.value ? 'text-brand-500' : 'text-surface-400'} />
+                    <span className={`text-sm font-medium ${usageIntent === opt.value ? 'text-brand-500' : 'text-white'}`}>{opt.label}</span>
                   </button>
                 ))}
               </div>
@@ -1172,7 +1172,7 @@ export default function UserSettingsPage() {
                     key={feat.key}
                     onClick={() => feat.set(!feat.value)}
                     className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-colors ${
-                      feat.value ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5' : 'border-surface-700 opacity-50'
+                      feat.value ? 'border-brand-500/40 bg-brand-500/5' : 'border-surface-700 opacity-50'
                     }`}
                   >
                     <Icon name={feat.icon} size="md" className="text-surface-300" />
@@ -1180,7 +1180,7 @@ export default function UserSettingsPage() {
                       <h3 className="text-sm font-semibold text-white">{feat.label}</h3>
                       <p className="text-[11px] text-surface-400">{feat.desc}</p>
                     </div>
-                    <div className={`w-11 h-6 rounded-full shrink-0 transition-colors relative ${feat.value ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                    <div className={`w-11 h-6 rounded-full shrink-0 transition-colors relative ${feat.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
                       <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${feat.value ? 'left-[22px]' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -1198,12 +1198,12 @@ export default function UserSettingsPage() {
                     onClick={() => setPreferredScriptType(opt.value)}
                     className={`p-3 rounded-lg border-2 text-left transition-colors ${
                       preferredScriptType === opt.value
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
+                        ? 'border-brand-500 bg-brand-500/10'
                         : 'border-surface-700 hover:border-surface-600'
                     }`}
                   >
-                    <Icon name={opt.icon} size="md" className={preferredScriptType === opt.value ? 'text-[#FF5F1F]' : 'text-surface-400'} />
-                    <p className={`text-xs font-medium mt-1 ${preferredScriptType === opt.value ? 'text-[#FF5F1F]' : 'text-white'}`}>{opt.label}</p>
+                    <Icon name={opt.icon} size="md" className={preferredScriptType === opt.value ? 'text-brand-500' : 'text-surface-400'} />
+                    <p className={`text-xs font-medium mt-1 ${preferredScriptType === opt.value ? 'text-brand-500' : 'text-white'}`}>{opt.label}</p>
                   </button>
                 ))}
               </div>
@@ -1325,12 +1325,12 @@ export default function UserSettingsPage() {
                         onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
                         className={`p-2 rounded-lg border text-left transition-colors flex items-center justify-between gap-2 ${
                           sidebarTabs[tab.key]
-                            ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
+                            ? 'border-brand-500/40 bg-brand-500/10'
                             : 'border-surface-700 bg-surface-900/50'
                         }`}
                       >
                         <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
-                        <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-[#E54E15]' : 'bg-surface-700'}`}>
+                        <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-brand-600' : 'bg-surface-700'}`}>
                           <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${sidebarTabs[tab.key] ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
                         </span>
                       </button>
@@ -1353,12 +1353,12 @@ export default function UserSettingsPage() {
                         onClick={() => setSidebarTabs(prev => ({ ...prev, [tab.key]: !prev[tab.key] }))}
                         className={`p-2 rounded-lg border text-left transition-colors flex items-center justify-between gap-2 ${
                           sidebarTabs[tab.key]
-                            ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
+                            ? 'border-brand-500/40 bg-brand-500/10'
                             : 'border-surface-700 bg-surface-900/50'
                         }`}
                       >
                         <p className={`text-xs font-medium ${sidebarTabs[tab.key] ? 'text-white' : 'text-surface-500'}`}>{tab.label}</p>
-                        <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-[#E54E15]' : 'bg-surface-700'}`}>
+                        <span className={`w-6 h-3.5 rounded-full relative transition-colors inline-flex items-center shrink-0 ${sidebarTabs[tab.key] ? 'bg-brand-600' : 'bg-surface-700'}`}>
                           <span className={`absolute w-2.5 h-2.5 rounded-full bg-white transform transition-transform ${sidebarTabs[tab.key] ? 'translate-x-[10px]' : 'translate-x-[2px]'}`} />
                         </span>
                       </button>
@@ -1445,7 +1445,7 @@ export default function UserSettingsPage() {
                         </div>
                         <Link
                           href={`/company/${company.slug}`}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#FF5F1F] bg-[#FF5F1F]/10 hover:bg-[#FF5F1F]/20 transition-colors"
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium text-brand-500 bg-brand-500/10 hover:bg-brand-500/20 transition-colors"
                         >
                           Manage
                         </Link>
@@ -1478,7 +1478,7 @@ export default function UserSettingsPage() {
                 <h3 className="text-lg font-semibold text-white mb-1">No Company Yet</h3>
                 <p className="text-sm text-surface-400 mb-6 max-w-sm mx-auto">
                   Create a company to organize projects under a shared workspace with teams and permissions.
-                  <span className="block mt-1 text-[#FF5F1F] text-xs">Pro Feature</span>
+                  <span className="block mt-1 text-brand-500 text-xs">Pro Feature</span>
                 </p>
               </Card>
             )}
@@ -1504,7 +1504,7 @@ export default function UserSettingsPage() {
                       type="text"
                       value={companySlug}
                       onChange={(e) => setCompanySlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F]"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500"
                       placeholder="acme-pictures"
                     />
                   </div>
@@ -1579,7 +1579,7 @@ export default function UserSettingsPage() {
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">Privacy Settings</h2>
               <p className="text-sm text-surface-400">
-                Profile visibility toggles (email, projects, activity, DMs) are on the <Link href="/settings?tab=profile" className="text-[#FF5F1F] hover:text-[#FF8F5F] underline">Profile tab</Link>.
+                Profile visibility toggles (email, projects, activity, DMs) are on the <Link href="/settings?tab=profile" className="text-brand-500 hover:text-brand-400 underline">Profile tab</Link>.
               </p>
             </Card>
 
@@ -1606,7 +1606,7 @@ export default function UserSettingsPage() {
               <p className="text-[10px] text-surface-600 mt-3">
                 {t('settings.delete_warning')}
                 <br />
-                <a href="/legal/privacy" className="text-[#FF5F1F] hover:text-[#FF8F5F]">Read our Privacy Policy</a>
+                <a href="/legal/privacy" className="text-brand-500 hover:text-brand-400">Read our Privacy Policy</a>
               </p>
             </Card>
           </div>
@@ -1725,14 +1725,14 @@ export default function UserSettingsPage() {
                       onClick={() => setShowActivityGrid(opt.value)}
                       className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-colors ${
                         showActivityGrid === opt.value
-                          ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
+                          ? 'border-brand-500/40 bg-brand-500/10'
                           : 'border-surface-800 hover:border-surface-700 bg-surface-900/50'
                       }`}
                     >
                       <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center transition-colors ${
-                        showActivityGrid === opt.value ? 'border-[#FF5F1F]' : 'border-surface-600'
+                        showActivityGrid === opt.value ? 'border-brand-500' : 'border-surface-600'
                       }`}>
-                        {showActivityGrid === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-[#FF5F1F]" />}
+                        {showActivityGrid === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />}
                       </div>
                       <div>
                         <p className={`text-sm font-medium ${showActivityGrid === opt.value ? 'text-white' : 'text-surface-300'}`}>{opt.label}</p>

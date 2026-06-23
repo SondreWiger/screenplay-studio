@@ -341,7 +341,7 @@ export default function AdminEmailPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -489,7 +489,7 @@ export default function AdminEmailPage() {
                 </p>
                 <button
                   onClick={toggleAllVisible}
-                  className="text-xs text-[#FF5F1F] hover:underline font-medium"
+                  className="text-xs text-brand-500 hover:underline font-medium"
                 >
                   {targetUsers.length > 0 && targetUsers.every(u => selectedUserIds.has(u.id))
                     ? 'Deselect all visible'
@@ -507,14 +507,14 @@ export default function AdminEmailPage() {
                     key={u.id}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors',
-                      selectedUserIds.has(u.id) ? 'bg-[#FF5F1F]/8 border border-[#FF5F1F]/20' : 'hover:bg-surface-800/60 border border-transparent'
+                      selectedUserIds.has(u.id) ? 'bg-brand-500/8 border border-brand-500/20' : 'hover:bg-surface-800/60 border border-transparent'
                     )}
                   >
                     <input
                       type="checkbox"
                       checked={selectedUserIds.has(u.id)}
                       onChange={() => toggleUserSelection(u.id)}
-                      className="rounded border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]/30 bg-surface-800"
+                      className="rounded border-surface-600 text-brand-500 focus:ring-brand-500/30 bg-surface-800"
                     />
                     <div className="w-7 h-7 rounded-full bg-surface-700 flex items-center justify-center text-[10px] text-surface-400 shrink-0">
                       {(u.display_name || u.full_name || u.email)?.[0]?.toUpperCase() || '?'}
@@ -648,7 +648,7 @@ export default function AdminEmailPage() {
                       <td className="py-2.5 px-3 text-xs text-surface-400 whitespace-nowrap">{timeAgo(entry.date)}</td>
                       <td className="py-2.5 px-3 text-sm text-white font-medium truncate max-w-[300px]">{entry.subject}</td>
                       <td className="py-2.5 px-3">
-                        <span className="text-xs font-bold text-[#FF5F1F] bg-[#FF5F1F]/10 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-bold text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded-full">
                           {entry.recipientCount.toLocaleString()}
                         </span>
                       </td>
@@ -690,7 +690,7 @@ export default function AdminEmailPage() {
                   </div>
                   <div className="w-full bg-surface-700 rounded-full h-1.5 mb-1">
                     <div
-                      className={cn('h-1.5 rounded-full transition-[width]', b.status === 'completed' ? 'bg-green-500' : 'bg-[#FF5F1F]')}
+                      className={cn('h-1.5 rounded-full transition-[width]', b.status === 'completed' ? 'bg-green-500' : 'bg-brand-500')}
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -717,7 +717,7 @@ export default function AdminEmailPage() {
               />
               {ctaLabel && (
                 <div className="text-center">
-                  <span className="inline-block px-6 py-3 rounded-lg bg-[#FF5F1F] text-white font-bold text-sm">
+                  <span className="inline-block px-6 py-3 rounded-lg bg-brand-500 text-white font-bold text-sm">
                     {replace(ctaLabel)}
                   </span>
                 </div>
@@ -758,14 +758,14 @@ export default function AdminEmailPage() {
 
       {sending && sendProgress.total > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-surface-900 border border-surface-700 rounded-xl px-6 py-4 shadow-2xl flex items-center gap-4">
-          <div className="w-5 h-5 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
           <div>
             <p className="text-sm font-bold text-white">Sending emails...</p>
             <p className="text-xs text-surface-400">{sendProgress.sent} / {sendProgress.total} sent</p>
           </div>
           <div className="w-32 h-2 bg-surface-800 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#FF5F1F] transition-[width] duration-300"
+              className="h-full rounded-full bg-brand-500 transition-[width] duration-300"
               style={{ width: `${sendProgress.total > 0 ? (sendProgress.sent / sendProgress.total) * 100 : 0}%` }}
             />
           </div>

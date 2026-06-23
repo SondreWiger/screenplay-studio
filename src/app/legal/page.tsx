@@ -141,7 +141,7 @@ export default function LegalCenterPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-base font-semibold text-white hover:text-[#FF5F1F] transition-colors"
+              className="text-base font-semibold text-white hover:text-brand-500 transition-colors"
             >
               Northem Development
             </a>

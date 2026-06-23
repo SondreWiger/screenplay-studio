@@ -1705,7 +1705,7 @@ ${pageHTML}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {YOUTUBE_FORMAT_GUIDE.elements.map(el => (
                     <div key={el.type} className="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-700/50">
-                      <code className="px-2 py-1 bg-surface-700 text-[#FF5F1F] rounded font-mono text-sm">{el.symbol}</code>
+                      <code className="px-2 py-1 bg-surface-700 text-brand-500 rounded font-mono text-sm">{el.symbol}</code>
                       <div>
                         <p className="text-white font-medium text-sm">{el.name}</p>
                         <p className="text-surface-400 text-xs">{el.desc}</p>
@@ -1752,7 +1752,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       <div className="flex h-[calc(100dvh-3rem)] md:h-[100dvh] overflow-hidden" onKeyDown={handleEditorKeyDown}>
       {/* Scripts sidebar toggle on mobile/tablet */}
       <button onClick={() => setShowScriptsSidebar(!showScriptsSidebar)}
-        className="fixed bottom-4 left-4 z-30 lg:hidden p-3 bg-[#E54E15] text-white rounded-full shadow-lg">
+        className="fixed bottom-4 left-4 z-30 lg:hidden p-3 bg-brand-600 text-white rounded-full shadow-lg">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" /></svg>
       </button>
 
@@ -1777,7 +1777,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           {scripts.map((script) => (
             <button key={script.id} onClick={() => setCurrentScript(script)}
               className={cn('w-full text-left px-2 py-1.5 rounded text-xs transition-colors mb-0.5',
-                currentScript?.id === script.id ? 'bg-[#E54E15]/10 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+                currentScript?.id === script.id ? 'bg-brand-600/10 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
               )}>
               <div className="flex items-center justify-between">
                 <span className="truncate">{script.title}</span>
@@ -1796,7 +1796,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   <button key={chapter.id} onClick={() => {
                     document.getElementById(`el-${chapter.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 transition-colors">
-                    <span className="text-[#FF5F1F] mr-1">#</span>
+                    <span className="text-brand-500 mr-1">#</span>
                     <span className="truncate">{(chapter.content || '# Untitled Chapter').replace(/^#\s*/, '')}</span>
                   </button>
                 ))}
@@ -1924,7 +1924,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 </div>
                 <div className="mt-1.5 w-full bg-surface-800 rounded-full h-1.5">
                   <div
-                    className="h-1.5 rounded-full bg-[#FF5F1F] transition-[width] duration-500"
+                    className="h-1.5 rounded-full bg-brand-500 transition-[width] duration-500"
                     style={{ width: `${Math.min(100, (totalPages / 120) * 100)}%` }}
                   />
                 </div>
@@ -1945,7 +1945,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <button key={type} onClick={() => handleToolbarAdd(type)}
                   className={cn('px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors duration-150 whitespace-nowrap',
                     activeElementType === type
-                      ? 'bg-[#E54E15]/20 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30 shadow-sm'
+                      ? 'bg-brand-600/20 text-brand-500 ring-1 ring-brand-500/30 shadow-sm'
                       : 'text-surface-400 hover:text-white hover:bg-surface-800/80'
                   )} title={`Add ${ELEMENT_LABELS[type]}`}>
                   {ELEMENT_LABELS[type]}
@@ -2008,17 +2008,17 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
 
           {/* Center: Navigation & Comments */}
-          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title={`${t('script.search')} (Cmd+F)`}>
+          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title={`${t('script.search')} (Cmd+F)`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
           <button
             onClick={() => setShowCommentPanel(!showCommentPanel)}
-            className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 relative min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showCommentPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 relative min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showCommentPanel ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title="Comments"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
             {scriptComments.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#FF5F1F] text-[7px] font-bold text-white flex items-center justify-center shadow-sm">
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-brand-500 text-[7px] font-bold text-white flex items-center justify-center shadow-sm">
                 {scriptComments.filter(c => !c.parent_id).length}
               </span>
             )}
@@ -2035,7 +2035,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </button>
           {/* Import / Export dropdown */}
           <div className="relative">
-            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded-md transition-colors duration-150', showImportExport ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Import / Export">
+            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded-md transition-colors duration-150', showImportExport ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Import / Export">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             </button>
             {showImportExport && (
@@ -2160,7 +2160,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                           key={color}
                           onClick={() => handleSetRevisionColor(color)}
                           className={cn('w-7 h-7 rounded-md border-2 transition-colors',
-                            currentScript.revision_color === color ? 'border-[#FF5F1F]' : 'border-transparent hover:border-white/30'
+                            currentScript.revision_color === color ? 'border-brand-500' : 'border-transparent hover:border-white/30'
                           )}
                           style={{ background: hex }}
                           title={color.charAt(0).toUpperCase() + color.slice(1)}
@@ -2175,7 +2175,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-colors duration-150" title={t('script.draft_snapshot')}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
           </button>
-          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded-md transition-colors duration-150', showDrafts ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
+          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded-md transition-colors duration-150', showDrafts ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </button>
           {/* Format Guide Button (for content creators) */}
@@ -2191,7 +2191,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             <button
               onClick={() => setShowVersionPanel(!showVersionPanel)}
               className={cn('relative p-1.5 rounded-md transition-colors duration-150',
-                showVersionPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
+                showVersionPanel ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
               )}
               title="Story Versions"
             >
@@ -2199,7 +2199,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
               {allVersions.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5 shadow-sm">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5 shadow-sm">
                   {allVersions.length}
                 </span>
               )}
@@ -2207,14 +2207,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </div>
           {/* Focus Mode Toggle */}
           <button onClick={() => setFocusMode(!focusMode)}
-            className={cn('p-1.5 rounded-md transition-colors duration-150', focusMode ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-1.5 rounded-md transition-colors duration-150', focusMode ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title={focusMode ? 'Exit Focus Mode' : 'Focus Mode — hide toolbars'}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
           </button>
           {/* Display Settings */}
           <div className="relative">
             <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
-              className={cn('p-1.5 rounded-md transition-colors duration-150', showDisplaySettings ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+              className={cn('p-1.5 rounded-md transition-colors duration-150', showDisplaySettings ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
               title="Display Settings">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
             </button>
@@ -2584,7 +2584,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                           className={cn(
                             'relative overflow-visible',
                             isFaded ? 'opacity-20 pointer-events-none select-none' : undefined,
-                            isSelected ? 'outline outline-2 outline-[#FF5F1F]/40 outline-offset-1 rounded-md' : undefined,
+                            isSelected ? 'outline outline-2 outline-brand-500/40 outline-offset-1 rounded-md' : undefined,
                           )}
                           style={element.element_type === 'sequence_end' && seqColor ? { color: seqColor } : undefined}
                           onClick={(e) => {
@@ -2763,7 +2763,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               }}
                 className={cn('shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[44px]',
                   activeElementType === type
-                    ? 'bg-[#E54E15] text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'text-surface-400 bg-surface-800/60 active:bg-surface-700'
                 )}>
                 {ELEMENT_LABELS[type]}
@@ -2888,7 +2888,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     document.getElementById(`el-${el.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     setShowSceneJump(false);
                   }} className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-300 hover:bg-surface-800 active:bg-surface-700 transition-colors flex items-center gap-2 min-h-[44px]">
-                    <span className="text-[#FF5F1F] font-mono text-xs font-bold">{sceneNumberMap[el.id] ?? i + 1}</span>
+                    <span className="text-brand-500 font-mono text-xs font-bold">{sceneNumberMap[el.id] ?? i + 1}</span>
                     <span className="truncate" dangerouslySetInnerHTML={{ __html: el.content || 'Untitled Scene' }} />
                   </button>
                 ))
@@ -2909,7 +2909,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       ) && (
         <button onClick={() => setShowSceneJump(true)}
           className="lg:hidden fixed bottom-[100px] right-4 z-30 p-3 bg-surface-800/90 backdrop-blur text-white rounded-full shadow-lg border border-surface-700/50 min-h-[44px] min-w-[44px] flex items-center justify-center">
-          <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.2 2.5 0 00-2.5-2.5H14" /></svg>
+          <svg className="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.2 2.5 0 00-2.5-2.5H14" /></svg>
         </button>
       )}
 
@@ -3075,19 +3075,19 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#FF5F1F]/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <div className="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <div className="flex-1 min-w-0 pr-4">
                 <p className="text-sm font-medium text-white">Creator Format</p>
                 <p className="text-xs text-surface-400 mt-0.5">
-                  Use <code className="px-1 py-0.5 bg-surface-700 rounded text-[#FF5F1F]">#</code> for chapters,
-                  <code className="px-1 py-0.5 bg-surface-700 rounded text-[#FF5F1F] ml-1">!</code> for hooks,
-                  <code className="px-1 py-0.5 bg-surface-700 rounded text-[#FF5F1F] ml-1">&gt;</code> for script
+                  Use <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-500">#</code> for chapters,
+                  <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-500 ml-1">!</code> for hooks,
+                  <code className="px-1 py-0.5 bg-surface-700 rounded text-brand-500 ml-1">&gt;</code> for script
                 </p>
                 <button
                   onClick={() => setShowFormatIntro(true)}
-                  className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] mt-2 inline-flex items-center gap-1"
+                  className="text-xs text-brand-500 hover:text-brand-400 mt-2 inline-flex items-center gap-1"
                 >
                   View full guide
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -3177,7 +3177,7 @@ function ScriptCommentPanel({
           </div>
           <p className="text-sm text-surface-300 whitespace-pre-wrap">{comment.content}</p>
           <div className="flex items-center gap-3 mt-1">
-            <button onClick={() => setShowReply(!showReply)} className="text-[11px] text-surface-500 hover:text-[#FF5F1F]">Reply</button>
+            <button onClick={() => setShowReply(!showReply)} className="text-[11px] text-surface-500 hover:text-brand-500">Reply</button>
             {comment.comment_type === 'issue' && !comment.is_resolved && (
               <button onClick={() => onResolve(comment.id)} className="text-[11px] text-surface-500 hover:text-green-400">Resolve</button>
             )}
@@ -3192,7 +3192,7 @@ function ScriptCommentPanel({
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Reply..."
                 rows={2}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none resize-none"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none resize-none"
               />
               <div className="flex items-center gap-2">
                 <select value={replyType} onChange={(e) => setReplyType(e.target.value as CommentType)}
@@ -3233,7 +3233,7 @@ function ScriptCommentPanel({
                 className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 flex items-center gap-2 mb-0.5">
                 <span className="text-[9px] text-surface-600 font-medium uppercase shrink-0">{ELEMENT_LABELS[el?.element_type || 'action']}</span>
                 <span className="truncate flex-1">{el?.content || 'Empty'}</span>
-                <span className="text-[9px] bg-[#FF5F1F]/20 text-[#FF5F1F] px-1.5 py-0.5 rounded-full shrink-0">{count}</span>
+                <span className="text-[9px] bg-brand-500/20 text-brand-500 px-1.5 py-0.5 rounded-full shrink-0">{count}</span>
               </button>
             );
           })}
@@ -3284,7 +3284,7 @@ function ScriptCommentPanel({
             onChange={(e) => setNewCommentText(e.target.value)}
             placeholder="Add a comment..."
             rows={2}
-            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none resize-none"
+            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none resize-none"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
@@ -4292,7 +4292,7 @@ const LineEditor = memo(function LineEditor({
             <Link
               href={`/projects/${projectId}/characters`}
               onClick={(e) => e.stopPropagation()}
-              className="w-4 h-4 flex items-center justify-center text-surface-400 hover:text-[#FF5F1F] transition-colors shrink-0"
+              className="w-4 h-4 flex items-center justify-center text-surface-400 hover:text-brand-500 transition-colors shrink-0"
               title="Manage characters"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -4306,7 +4306,7 @@ const LineEditor = memo(function LineEditor({
           className={cn(
             'absolute -right-8 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full transition-colors',
             commentCount > 0
-              ? 'text-[#FF5F1F] bg-[#FF5F1F]/15 opacity-100'
+              ? 'text-brand-500 bg-brand-500/15 opacity-100'
               : 'text-surface-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-surface-700 hover:text-white'
           )}
           title={commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : 'Add comment'}
@@ -4314,7 +4314,7 @@ const LineEditor = memo(function LineEditor({
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
           {commentCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center">
               {commentCount > 9 ? '9+' : commentCount}
             </span>
           )}
@@ -4343,7 +4343,7 @@ const LineEditor = memo(function LineEditor({
                 className={cn(
                   'px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors select-none',
                   i === tabPickerIdx
-                    ? 'bg-[#E54E15] text-white ring-1 ring-[#FF5F1F]/50'
+                    ? 'bg-brand-600 text-white ring-1 ring-brand-500/50'
                     : 'text-surface-400 hover:text-white hover:bg-surface-700',
                 )}
               >
@@ -4414,7 +4414,7 @@ const LineEditor = memo(function LineEditor({
             {suggestions.map((name, i) => (
               <button key={i} onMouseDown={(ev) => { ev.preventDefault(); applySuggestion(name); }}
                 className={cn('w-full text-left px-3 py-1.5 text-xs font-mono',
-                  i === selectedSuggestion ? 'bg-[#E54E15]/30 text-[#FF8F5F]' : 'text-surface-300 hover:bg-surface-700'
+                  i === selectedSuggestion ? 'bg-brand-600/30 text-brand-400' : 'text-surface-300 hover:bg-surface-700'
                 )}>{name}</button>
             ))}
           </div>
@@ -4435,10 +4435,10 @@ const LineEditor = memo(function LineEditor({
                     useScriptStore.getState().updateElement(elementId, { element_type: type });
                     setShowLongPressMenu(false);
                   }} className={cn('w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors min-h-[44px] flex items-center',
-                    element.element_type === type ? 'bg-[#FF5F1F]/15 text-[#FF7A43] font-medium' : 'text-surface-300 active:bg-surface-800'
+                    element.element_type === type ? 'bg-brand-500/15 text-[#FF7A43] font-medium' : 'text-surface-300 active:bg-surface-800'
                   )}>
                     {ELEMENT_LABELS[type]}
-                    {element.element_type === type && <span className="ml-auto text-[#FF5F1F] text-xs">Current</span>}
+                    {element.element_type === type && <span className="ml-auto text-brand-500 text-xs">Current</span>}
                   </button>
                 ))}
               </div>

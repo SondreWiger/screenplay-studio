@@ -202,7 +202,7 @@ function SupportPage() {
         <div className="text-5xl">🎫</div>
         <h1 className="text-xl font-black text-white/90">Support Center</h1>
         <p className="text-sm text-white/40">Sign in to submit or view support tickets.</p>
-        <Link href="/auth/login?redirect=/support" className="px-5 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg hover:bg-[#CC4312] transition-colors">
+        <Link href="/auth/login?redirect=/support" className="px-5 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-[#CC4312] transition-colors">
           Sign In
         </Link>
       </div>
@@ -232,7 +232,7 @@ function SupportPage() {
           <div className="w-80 shrink-0">
             <button
               onClick={() => { setShowNewForm(true); setSelectedTicket(null); }}
-              className="w-full px-4 py-3 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-xl transition-colors mb-4 flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-xl transition-colors mb-4 flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               New Ticket
@@ -255,7 +255,7 @@ function SupportPage() {
                     onClick={() => handleSelectTicket(ticket)}
                     className={`w-full text-left p-3 rounded-xl border transition-colors ${
                       selectedTicket?.id === ticket.id
-                        ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10 shadow-sm'
+                        ? 'border-brand-500/40 bg-brand-500/10 shadow-sm'
                         : 'border-white/10 bg-surface-900 hover:border-white/15'
                     }`}
                   >
@@ -295,7 +295,7 @@ function SupportPage() {
                       value={newSubject}
                       onChange={(e) => setNewSubject(e.target.value)}
                       placeholder="Brief summary of your issue..."
-                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-brand-500 focus:outline-none"
                     />
                   </div>
 
@@ -304,7 +304,7 @@ function SupportPage() {
                     <select
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value as TicketCategory)}
-                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm focus:border-[#FF5F1F] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm focus:border-brand-500 focus:outline-none"
                     >
                       {TICKET_CATEGORY_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -319,7 +319,7 @@ function SupportPage() {
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Describe your issue in detail..."
                       rows={6}
-                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none resize-none"
+                      className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-brand-500 focus:outline-none resize-none"
                     />
                   </div>
 
@@ -327,7 +327,7 @@ function SupportPage() {
                     <button
                       onClick={handleCreateTicket}
                       disabled={!newSubject.trim() || !newMessage.trim() || submitting}
-                      className="px-6 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
+                      className="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
                     >
                       {submitting ? 'Submitting...' : 'Submit Ticket'}
                     </button>
@@ -392,7 +392,7 @@ function SupportPage() {
                         </div>
                         <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                           msg.is_staff
-                            ? 'bg-[#FF5F1F]/10 text-[#CC4312] border border-[#FF5F1F]/30'
+                            ? 'bg-brand-500/10 text-[#CC4312] border border-brand-500/30'
                             : 'bg-surface-800 text-white/90'
                         }`}>
                           {msg.content}
@@ -413,13 +413,13 @@ function SupportPage() {
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-brand-500 focus:outline-none"
                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
                       />
                       <button
                         onClick={handleSendMessage}
                         disabled={!messageText.trim() || submitting}
-                        className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
+                        className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors disabled:opacity-50"
                       >
                         Send
                       </button>
@@ -455,7 +455,7 @@ function SupportPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

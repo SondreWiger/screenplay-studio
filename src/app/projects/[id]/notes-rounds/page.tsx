@@ -230,7 +230,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -271,7 +271,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
                   onClick={() => setSelectedRound(round)}
                   className={cn(
                     'w-full text-left px-4 py-3 border-b border-surface-800/50 transition-colors hover:bg-surface-800/50 group',
-                    selectedRound?.id === round.id && 'bg-surface-800/70 border-l-2 border-l-[#FF5F1F]'
+                    selectedRound?.id === round.id && 'bg-surface-800/70 border-l-2 border-l-brand-500'
                   )}
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
@@ -362,7 +362,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
                       onClick={() => setFilterCategory(cat as NoteCategory | 'all')}
                       className={cn('text-[11px] px-2 py-0.5 rounded-full border transition-colors capitalize',
                         filterCategory === cat
-                          ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-[#FF5F1F]/40'
+                          ? 'bg-brand-500/20 text-brand-500 border-brand-500/40'
                           : 'text-surface-400 border-surface-700 hover:border-surface-500'
                       )}
                     >
@@ -379,7 +379,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
                       onClick={() => setFilterStatus(s as NoteStatus | 'all')}
                       className={cn('text-[11px] px-2 py-0.5 rounded-full border transition-colors',
                         filterStatus === s
-                          ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-[#FF5F1F]/40'
+                          ? 'bg-brand-500/20 text-brand-500 border-brand-500/40'
                           : 'text-surface-400 border-surface-700 hover:border-surface-500'
                       )}
                     >
@@ -393,7 +393,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 {loadingNotes ? (
                   <div className="flex items-center justify-center py-12">
-                    <div className="w-5 h-5 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : filteredNotes.length === 0 ? (
                   <div className="text-center py-12">
@@ -501,7 +501,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
               type="date"
               value={roundDue}
               onChange={(e) => setRoundDue(e.target.value)}
-              className="w-full bg-surface-800 border border-surface-600 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]/60"
+              className="w-full bg-surface-800 border border-surface-600 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand-500/60"
             />
           </div>
         </div>
@@ -544,7 +544,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
               onChange={(e) => setNoteContent(e.target.value)}
               placeholder="The protagonist's motivation in Act 2 needs to be clearer..."
               rows={4}
-              className="w-full bg-surface-800 border border-surface-600 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F]/60 resize-none"
+              className="w-full bg-surface-800 border border-surface-600 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500/60 resize-none"
               autoFocus
             />
           </div>

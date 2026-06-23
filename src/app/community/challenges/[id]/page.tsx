@@ -227,7 +227,7 @@ export default function ChallengeDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#070710] flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-[#FF5F1F]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
   }
@@ -237,7 +237,7 @@ export default function ChallengeDetailPage() {
       <div className="min-h-screen bg-[#070710] flex items-center justify-center">
         <div className="flex flex-col items-center text-center">
           <p className="text-lg font-semibold text-white/70 mb-4">Challenge not found</p>
-          <Link href="/community/challenges" className="text-sm text-[#FF5F1F] hover:underline">← Back to Challenges</Link>
+          <Link href="/community/challenges" className="text-sm text-brand-500 hover:underline">← Back to Challenges</Link>
         </div>
       </div>
     );
@@ -296,7 +296,7 @@ export default function ChallengeDetailPage() {
                   <div className={`font-medium mb-1 ${isCurrent ? 'text-white' : 'text-white/50'}`}>{t.label}</div>
                   <div className={`${isPast ? 'text-white/40' : 'text-white/80'}`}>{formatDateTime(t.date)}</div>
                   {isCurrent && !isPast && (
-                    <div className="text-[#FF8F5F] font-semibold mt-1">{timeUntil(t.date)} left</div>
+                    <div className="text-brand-400 font-semibold mt-1">{timeUntil(t.date)} left</div>
                   )}
                 </div>
               );
@@ -328,10 +328,10 @@ export default function ChallengeDetailPage() {
               !showSubmitForm ? (
                 <button
                   onClick={() => { setShowSubmitForm(true); loadUserProjects(); }}
-                  className="w-full rounded-xl border-2 border-dashed border-white/15 hover:border-[#FF5F1F] py-10 text-center transition-colors group"
+                  className="w-full rounded-xl border-2 border-dashed border-white/15 hover:border-brand-500 py-10 text-center transition-colors group"
                 >
                   <div className="text-3xl mb-2">✍️</div>
-                  <span className="text-sm font-semibold text-white/60 group-hover:text-[#FF5F1F] transition-colors">
+                  <span className="text-sm font-semibold text-white/60 group-hover:text-brand-500 transition-colors">
                     Submit Your Script
                   </span>
                   <p className="text-xs text-white/50 mt-1">You have {timeUntil(challenge.submissions_close_at)} left</p>
@@ -349,7 +349,7 @@ export default function ChallengeDetailPage() {
                           className={cn(
                             'flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors border',
                             scriptSource === 'project'
-                              ? 'bg-[#FF5F1F]/10 text-[#E54E15] border-[#FF5F1F]/40'
+                              ? 'bg-brand-500/10 text-brand-600 border-brand-500/40'
                               : 'text-white/40 hover:text-white/70 border-white/10 hover:bg-surface-900'
                           )}
                         >
@@ -360,7 +360,7 @@ export default function ChallengeDetailPage() {
                           className={cn(
                             'flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors border',
                             scriptSource === 'text'
-                              ? 'bg-[#FF5F1F]/10 text-[#E54E15] border-[#FF5F1F]/40'
+                              ? 'bg-brand-500/10 text-brand-600 border-brand-500/40'
                               : 'text-white/40 hover:text-white/70 border-white/10 hover:bg-surface-900'
                           )}
                         >
@@ -384,7 +384,7 @@ export default function ChallengeDetailPage() {
                                 className={cn(
                                   'text-left rounded-lg border p-3 transition-colors',
                                   selectedProject?.id === project.id
-                                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]'
+                                    ? 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500'
                                     : 'border-white/10 hover:border-white/15 hover:bg-surface-900'
                                 )}
                               >
@@ -397,7 +397,7 @@ export default function ChallengeDetailPage() {
                                     <p className="text-[10px] text-white/50">{project.format} · {project.script_type || 'screenplay'}</p>
                                   </div>
                                   {selectedProject?.id === project.id && (
-                                    <svg className="w-4 h-4 text-[#FF5F1F] shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                    <svg className="w-4 h-4 text-brand-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                                   )}
                                 </div>
                               </button>
@@ -438,7 +438,7 @@ export default function ChallengeDetailPage() {
                           onChange={(e) => setSubContent(e.target.value)}
                           rows={14}
                           placeholder="Paste or write your screenplay here..."
-                          className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/30 focus:border-[#FF5F1F] resize-y font-mono"
+                          className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-y font-mono"
                         />
                       </div>
                     )}
@@ -449,7 +449,7 @@ export default function ChallengeDetailPage() {
                         value={subTitle}
                         onChange={(e) => setSubTitle(e.target.value)}
                         placeholder="Your script title"
-                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/30 focus:border-[#FF5F1F]"
+                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
                       />
                     </div>
                     <div>
@@ -459,14 +459,14 @@ export default function ChallengeDetailPage() {
                         onChange={(e) => setSubDesc(e.target.value)}
                         rows={2}
                         placeholder="Brief description of your approach to the theme"
-                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/30 focus:border-[#FF5F1F] resize-none"
+                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-none"
                       />
                     </div>
                     <div className="flex items-center gap-3 pt-2">
                       <button
                         onClick={handleSubmit}
                         disabled={submitting || !subTitle.trim() || (scriptSource === 'text' ? !subContent.trim() : !scriptElements?.length)}
-                        className="px-6 py-2.5 text-sm font-semibold text-white bg-[#E54E15] hover:bg-[#CC4312] disabled:bg-white/10 disabled:text-white/50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                        className="px-6 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-[#CC4312] disabled:bg-white/10 disabled:text-white/50 disabled:cursor-not-allowed rounded-lg transition-colors"
                       >
                         {submitting ? 'Submitting...' : 'Submit Entry'}
                       </button>
@@ -483,7 +483,7 @@ export default function ChallengeDetailPage() {
             ) : (
               <div className="rounded-xl border border-white/10 bg-surface-900 py-10 text-center">
                 <p className="text-sm text-white/40 mb-3">Sign in to submit your script</p>
-                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors">
+                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors">
                   Sign In
                 </Link>
               </div>
@@ -533,7 +533,7 @@ export default function ChallengeDetailPage() {
             {!user && (
               <div className="rounded-xl border border-white/10 bg-surface-900 py-6 text-center mb-6">
                 <p className="text-sm text-white/40 mb-3">Sign in to vote</p>
-                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-4 py-2 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors">
+                <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors">
                   Sign In
                 </Link>
               </div>
@@ -544,7 +544,7 @@ export default function ChallengeDetailPage() {
                 const isMyVote = myVote === sub.id;
                 const isOwn = user && sub.author_id === user.id;
                 return (
-                  <div key={sub.id} className={`rounded-xl border bg-surface-900 p-6 transition-colors ${isMyVote ? 'border-[#FF5F1F]/40 ring-2 ring-[#FF5F1F]/20' : 'border-white/10'}`}>
+                  <div key={sub.id} className={`rounded-xl border bg-surface-900 p-6 transition-colors ${isMyVote ? 'border-brand-500/40 ring-2 ring-brand-500/20' : 'border-white/10'}`}>
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div>
                         <h3 className="text-base font-semibold text-white">{sub.title}</h3>
@@ -562,7 +562,7 @@ export default function ChallengeDetailPage() {
                         {user && !isOwn ? (
                           myVote ? (
                             isMyVote ? (
-                              <span className="px-4 py-2 text-xs font-semibold text-[#E54E15] bg-[#FF5F1F]/10 rounded-lg">
+                              <span className="px-4 py-2 text-xs font-semibold text-brand-600 bg-brand-500/10 rounded-lg">
                                 ✓ Your Vote
                               </span>
                             ) : null
@@ -570,7 +570,7 @@ export default function ChallengeDetailPage() {
                             <button
                               onClick={() => handleVote(sub.id)}
                               disabled={voting !== null}
-                              className="px-4 py-2 text-xs font-semibold text-white bg-[#E54E15] hover:bg-[#CC4312] disabled:bg-white/10 disabled:text-white/50 rounded-lg transition-colors"
+                              className="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-[#CC4312] disabled:bg-white/10 disabled:text-white/50 rounded-lg transition-colors"
                             >
                               {voting === sub.id ? 'Voting...' : 'Vote'}
                             </button>
@@ -627,7 +627,7 @@ export default function ChallengeDetailPage() {
                       key={sub.id}
                       className={`rounded-xl border p-5 transition-colors ${
                         isWinner
-                          ? 'border-amber-400/40 bg-gradient-to-r from-amber-400/10 to-[#FF5F1F]/08 ring-1 ring-amber-400/20'
+                          ? 'border-amber-400/40 bg-gradient-to-r from-amber-400/10 to-brand-500/08 ring-1 ring-amber-400/20'
                           : isTop3
                           ? 'border-white/10 bg-surface-900'
                           : 'border-white/07 bg-surface-900'
@@ -712,7 +712,7 @@ export default function ChallengeDetailPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

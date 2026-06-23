@@ -246,7 +246,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                   });
                   if (error) toast.error(error.message); else { toast.success('Color Bars source added'); fetchSources(); }
                 }}
-                className="ml-auto px-3 py-1.5 text-xs bg-[#FF5F1F] hover:bg-[#E54E15] text-white rounded font-medium transition-colors"
+                className="ml-auto px-3 py-1.5 text-xs bg-brand-500 hover:bg-brand-600 text-white rounded font-medium transition-colors"
               >
                 + Add
               </button>
@@ -273,7 +273,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                       className={cn(
                         'relative text-left p-3 rounded-lg border transition-colors',
                         selectedSource?.id === source.id
-                          ? 'border-[#FF5F1F] bg-surface-800'
+                          ? 'border-brand-500 bg-surface-800'
                           : 'border-surface-800 bg-surface-900 hover:border-surface-700',
                       )}
                     >

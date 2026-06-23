@@ -19,7 +19,7 @@ interface BreakdownItem {
 
 const CATEGORY_META: Record<Category, { label: string; color: string; bg: string; icon: string }> = {
   props: { label: 'Props', color: 'text-amber-400', bg: 'bg-amber-500/10', icon: 'P' },
-  characters: { label: 'Characters', color: 'text-[#FF8F5F]', bg: 'bg-[#FF5F1F]/10', icon: 'C' },
+  characters: { label: 'Characters', color: 'text-brand-400', bg: 'bg-brand-500/10', icon: 'C' },
   locations: { label: 'Locations', color: 'text-teal-400', bg: 'bg-teal-500/10', icon: 'L' },
   sfx: { label: 'SFX', color: 'text-orange-400', bg: 'bg-orange-500/10', icon: 'S' },
   vehicles: { label: 'Vehicles', color: 'text-cyan-400', bg: 'bg-cyan-500/10', icon: 'V' },
@@ -234,7 +234,7 @@ export default function AutoBreakdownPage() {
   if (storeLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
       </div>
     );
   }

@@ -85,7 +85,7 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-bold text-white">Announcements</h2>
           {unreadCount > 0 && (
-            <span className="text-xs bg-[#FF5F1F] text-white px-2 py-0.5 rounded-full font-semibold">{unreadCount} new</span>
+            <span className="text-xs bg-brand-500 text-white px-2 py-0.5 rounded-full font-semibold">{unreadCount} new</span>
           )}
         </div>
         {canManage && <Button size="sm" onClick={() => setShowCreate(true)}>+ Post Announcement</Button>}
@@ -101,7 +101,7 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
           const pc = PRIORITY_CONFIG[ann.priority] || PRIORITY_CONFIG.normal;
           return (
             <Card key={ann.id}
-              className={cn('p-5 transition-colors', !isRead && 'ring-1 ring-[#FF5F1F]/30 bg-[#FF5F1F]/5')}
+              className={cn('p-5 transition-colors', !isRead && 'ring-1 ring-brand-500/30 bg-brand-500/5')}
               onClick={() => markRead(ann.id)}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -111,7 +111,7 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: pc.color + '20', color: pc.color }}>
                       {pc.label}
                     </span>
-                    {!isRead && <span className="w-2 h-2 rounded-full bg-[#FF5F1F]" />}
+                    {!isRead && <span className="w-2 h-2 rounded-full bg-brand-500" />}
                   </div>
                   <h3 className="font-semibold text-white text-base">{ann.title}</h3>
                   <p className="text-sm text-surface-400 mt-2 whitespace-pre-wrap">{ann.content}</p>

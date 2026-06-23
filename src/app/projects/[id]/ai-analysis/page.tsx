@@ -866,7 +866,7 @@ export default function AIAnalysisPage() {
 
         return (
           <div className="space-y-6">
-            <Card className="p-5 border border-[#FF5F1F]/20">
+            <Card className="p-5 border border-brand-500/20">
               <h3 className="text-base font-semibold text-white mb-2">Script Feedback</h3>
               <p className="text-sm text-surface-400">Actionable suggestions based on analysis of your {overview.totalElements.toLocaleString()} script elements, {overview.totalScenes} scenes, and {characterDialogues.length} speaking characters.</p>
             </Card>
@@ -902,7 +902,7 @@ export default function AIAnalysisPage() {
       {/* ============ ISSUES TAB ============ */}
       {activeTab === 'issues' && (
         <div className="space-y-6">
-          <Card className="p-5 border border-[#FF5F1F]/20">
+          <Card className="p-5 border border-brand-500/20">
             <h3 className="text-base font-semibold text-white mb-2">Content Scan</h3>
             <p className="text-sm text-surface-400">Writing-level issues found in your actual script text — specific lines with suggestions.</p>
           </Card>
@@ -1039,7 +1039,7 @@ export default function AIAnalysisPage() {
                     {characterDialogues.slice(0, 5).map((cd, i) => (
                       <div key={cd.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-[10px] flex items-center justify-center font-bold">{i + 1}</span>
+                          <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-500 text-[10px] flex items-center justify-center font-bold">{i + 1}</span>
                           <span className="text-sm text-surface-200">{cd.name}</span>
                         </div>
                         <span className="text-xs text-surface-400">{cd.wordCount.toLocaleString()} words</span>

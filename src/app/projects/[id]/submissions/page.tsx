@@ -282,7 +282,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
               value={form.recipient_name}
               onChange={(e) => setForm((f) => ({ ...f, recipient_name: e.target.value }))}
               placeholder="Lionsgate Films, William Morris, Sundance…"
-              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60"
+              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60"
             />
           </div>
 
@@ -337,7 +337,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
               value={form.notes ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               placeholder="Contact details, submission requirements, feedback…"
-              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60 resize-none"
+              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60 resize-none"
               rows={3}
             />
           </div>

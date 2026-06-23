@@ -128,7 +128,7 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
       <div className="flex gap-2 flex-wrap">
         {['all', ...Object.keys(STATUS_CONFIG)].map(s => (
           <button key={s} onClick={() => setFilter(s)}
-            className={cn('px-3 py-1.5 text-xs rounded-lg capitalize', filter === s ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 bg-surface-800')}>
+            className={cn('px-3 py-1.5 text-xs rounded-lg capitalize', filter === s ? 'bg-brand-500 text-white' : 'text-surface-400 bg-surface-800')}>
             {s === 'all' ? 'All' : STATUS_CONFIG[s].label}
           </button>
         ))}

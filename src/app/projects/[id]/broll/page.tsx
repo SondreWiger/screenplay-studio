@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import type { BrollItem, BrollStatus } from '@/lib/types';
 
 const STATUS_COLORS: Record<BrollStatus, string> = {
-  needed: 'bg-[#FF5F1F]/20 text-[#FF5F1F]',
+  needed: 'bg-brand-500/20 text-brand-500',
   found: 'bg-blue-500/20 text-blue-400',
   filmed: 'bg-purple-500/20 text-purple-400',
   edited: 'bg-green-500/20 text-green-400',
@@ -122,7 +122,7 @@ export default function BRollPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -152,7 +152,7 @@ export default function BRollPage() {
             onClick={() => setFilter(filter === status ? 'all' : status)}
             className={cn(
               'bg-surface-900 border rounded-xl p-4 text-center transition-colors',
-              filter === status ? 'border-[#FF5F1F]' : 'border-surface-800 hover:border-surface-700'
+              filter === status ? 'border-brand-500' : 'border-surface-800 hover:border-surface-700'
             )}
           >
             <p className="text-2xl font-black text-white">{stats[status]}</p>
@@ -283,7 +283,7 @@ export default function BRollPage() {
                     </Badge>
                     
                     {item.source_url && (
-                      <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline">
+                      <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-500 hover:underline">
                         🔗 Source
                       </a>
                     )}

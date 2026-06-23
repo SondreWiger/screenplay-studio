@@ -391,7 +391,7 @@ export default async function LandingPage() {
                 key={t}
                 className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/30 border
                   transition-colors duration-150 cursor-default
-                  hover:text-[#FF5F1F] hover:border-[rgba(255,95,31,0.35)] hover:bg-[rgba(255,95,31,0.05)]"
+                  hover:text-brand-500 hover:border-[rgba(255,95,31,0.35)] hover:bg-[rgba(255,95,31,0.05)]"
                 style={{ borderColor: 'rgba(255,255,255,0.08)' }}
               >
                 {t}
@@ -637,7 +637,7 @@ export default async function LandingPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors duration-150 text-[#FF5F1F]/60 hover:text-[#FF5F1F]"
+              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors duration-150 text-brand-500/60 hover:text-brand-500"
             >
               Northem Development ♥ Oslo, Norway
             </a>

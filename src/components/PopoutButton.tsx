@@ -102,7 +102,7 @@ export function PopoutBar({ projectId, projectTitle, pageLabel }: PopoutBarProps
     >
       {/* Left — project + page */}
       <div className="flex items-center gap-2 text-surface-500">
-        <span className="font-bold text-[#FF5F1F]">S</span>
+        <span className="font-bold text-brand-500">S</span>
         <span className="text-surface-700">/</span>
         <span className="truncate max-w-[200px] font-medium text-surface-400">{projectTitle}</span>
         <span className="text-surface-700">/</span>

@@ -425,7 +425,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
                   value={editScriptText}
                   onChange={(e) => setEditScriptText(e.target.value)}
                   rows={20}
-                  className="w-full bg-surface-900 text-white border border-surface-700 rounded-lg px-4 py-3 text-base font-serif leading-relaxed placeholder-surface-600 focus:ring-1 focus:ring-[#FF5F1F] focus:border-[#FF5F1F]"
+                  className="w-full bg-surface-900 text-white border border-surface-700 rounded-lg px-4 py-3 text-base font-serif leading-relaxed placeholder-surface-600 focus:ring-1 focus:ring-brand-500 focus:border-brand-500"
                   placeholder="Enter the script/prompter text for this story...
 
 Example:

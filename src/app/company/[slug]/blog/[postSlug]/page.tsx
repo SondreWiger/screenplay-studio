@@ -103,7 +103,7 @@ export default function CompanyBlogPostPage() {
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="text-center">
           <p className="text-surface-400 mb-4">Post not found.</p>
-          <Link href={`/company/${slug}/blog`} className="text-[#FF5F1F] hover:underline text-sm">
+          <Link href={`/company/${slug}/blog`} className="text-brand-500 hover:underline text-sm">
             ← Back to blog
           </Link>
         </div>
@@ -212,7 +212,7 @@ export default function CompanyBlogPostPage() {
             ) : (
               <Card className="p-6 text-center mb-8">
                 <p className="text-sm text-surface-400">
-                  <Link href={`/auth/login?redirect=/company/${slug}/blog/${postSlug}`} className="text-[#FF5F1F] hover:underline">Sign in</Link>
+                  <Link href={`/auth/login?redirect=/company/${slug}/blog/${postSlug}`} className="text-brand-500 hover:underline">Sign in</Link>
                   {' '}to leave a comment.
                 </p>
               </Card>

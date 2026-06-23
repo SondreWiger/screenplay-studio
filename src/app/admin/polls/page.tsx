@@ -54,7 +54,7 @@ export default function AdminPollsPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -74,7 +74,7 @@ export default function AdminPollsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-[#FF5F1F] hover:bg-[#FF7F3F] text-white text-sm font-semibold rounded-lg transition-colors"
+          className="px-4 py-2 bg-brand-500 hover:bg-[#FF7F3F] text-white text-sm font-semibold rounded-lg transition-colors"
         >
           + New Poll
         </button>
@@ -105,7 +105,7 @@ export default function AdminPollsPage() {
                       <span className="text-xs text-white/30">{s.questions.length} question{s.questions.length !== 1 ? 's' : ''}</span>
                     )}
                   </div>
-                  <h2 className="font-semibold text-white group-hover:text-[#FF8F5F] transition-colors truncate">{s.title}</h2>
+                  <h2 className="font-semibold text-white group-hover:text-brand-400 transition-colors truncate">{s.title}</h2>
                   {s.preface && (
                     <p className="text-sm text-white/40 mt-1 line-clamp-2">{s.preface}</p>
                   )}
@@ -139,7 +139,7 @@ export default function AdminPollsPage() {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="What should we work on next?"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50"
                 />
               </div>
               <div>
@@ -149,7 +149,7 @@ export default function AdminPollsPage() {
                   value={newPreface}
                   onChange={(e) => setNewPreface(e.target.value)}
                   placeholder="We want to hear your thoughts on what to build next…"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50 resize-none"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 resize-none"
                 />
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function AdminPollsPage() {
               <button
                 onClick={handleCreate}
                 disabled={!newTitle.trim() || creating}
-                className="flex-1 py-2.5 bg-[#FF5F1F] hover:bg-[#FF7F3F] disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
+                className="flex-1 py-2.5 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
               >
                 {creating ? 'Creating…' : 'Create & Edit'}
               </button>

@@ -61,7 +61,7 @@ function Toggle({ checked, onChange, small }: { checked: boolean; onChange: () =
       className={cn(
         'relative shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none',
         small ? 'inline-flex h-3.5 w-6' : 'inline-flex h-4 w-7',
-        checked ? 'bg-[#FF5F1F]' : 'bg-surface-600',
+        checked ? 'bg-brand-500' : 'bg-surface-600',
       )}
     >
       <span className={cn(
@@ -141,7 +141,7 @@ function VersionRow({
           className={cn(
             'shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wide transition-colors',
             isTaggedOnAll
-              ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] hover:bg-[#FF5F1F]/30'
+              ? 'bg-brand-500/20 text-brand-500 hover:bg-brand-500/30'
               : 'bg-surface-700/60 text-surface-400 hover:bg-surface-700 hover:text-white',
           )}
         >
@@ -252,7 +252,7 @@ export function VersionPanel({
       {/* Header */}
       <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-surface-800">
         <div className="flex items-center gap-2">
-          <svg className="w-3.5 h-3.5 text-[#FF5F1F] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-3.5 h-3.5 text-brand-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
           </svg>
           <span className="text-[11px] font-semibold text-white tracking-wide">Versions</span>
@@ -274,10 +274,10 @@ export function VersionPanel({
       {mode === 'script' && (
         <div className={cn(
           'px-3.5 py-2 border-b border-surface-800/60 transition-colors',
-          selectedCount > 0 ? 'bg-[#FF5F1F]/5' : '',
+          selectedCount > 0 ? 'bg-brand-500/5' : '',
         )}>
           {selectedCount > 0 ? (
-            <span className="text-[11px] text-[#FF5F1F] font-medium">
+            <span className="text-[11px] text-brand-500 font-medium">
               {selectedCount} element{selectedCount !== 1 ? 's' : ''} selected
             </span>
           ) : (
@@ -416,13 +416,13 @@ export function VersionPanel({
               if (e.key === 'Escape') { e.preventDefault(); onClose(); }
             }}
             placeholder={mode === 'script' ? 'New version (use / to nest)' : 'version name\u2026'}
-            className="flex-1 min-w-0 bg-surface-800 border border-surface-700/80 rounded-md text-[11px] text-white placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-[#FF5F1F]/40 transition-colors"
+            className="flex-1 min-w-0 bg-surface-800 border border-surface-700/80 rounded-md text-[11px] text-white placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
           />
           <button
             type="button"
             onClick={handleCreate}
             disabled={!newName.trim()}
-            className="shrink-0 px-2.5 py-1.5 rounded-md bg-[#FF5F1F] hover:bg-[#FF5F1F]/90 text-white text-[10px] font-semibold disabled:opacity-30 transition-colors"
+            className="shrink-0 px-2.5 py-1.5 rounded-md bg-brand-500 hover:bg-brand-500/90 text-white text-[10px] font-semibold disabled:opacity-30 transition-colors"
           >
             {mode === 'script' ? 'Add' : 'Insert'}
           </button>

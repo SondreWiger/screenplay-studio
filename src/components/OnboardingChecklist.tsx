@@ -280,7 +280,7 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
       {/* Progress bar */}
       <div className="w-full h-0.5 bg-surface-800">
         <div
-          className="h-full bg-gradient-to-r from-[#FF5F1F] to-[#FF8F5F] transition-[width] duration-500"
+          className="h-full bg-gradient-to-r from-brand-500 to-brand-400 transition-[width] duration-500"
           style={{ width: `${(completedCount / CHECKLIST.length) * 100}%` }}
         />
       </div>
@@ -302,7 +302,7 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
               <p className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{item.label}</p>
               <p className="text-[10px] text-surface-500 mt-0.5">{item.description}</p>
             </div>
-            <svg className="w-4 h-4 text-surface-600 group-hover:text-[#FF5F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-surface-600 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>

@@ -11,12 +11,12 @@ export default function CreatorTermsPage() {
     <div>
       <div className="max-w-4xl">
         <div className="mb-10">
-          <p className="text-xs font-medium text-[#FF5F1F] uppercase tracking-wider mb-3">Creator Program</p>
+          <p className="text-xs font-medium text-brand-500 uppercase tracking-wider mb-3">Creator Program</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Creator Affiliate Terms</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: subject to program availability</p>
         </div>
 
-        <article className="prose prose-invert max-w-none prose-headings:text-white prose-headings:font-semibold prose-headings:tracking-tight prose-p:text-surface-300 prose-p:leading-relaxed prose-li:text-surface-300 prose-a:text-[#FF5F1F] prose-a:no-underline hover:prose-a:text-orange-400 prose-strong:text-white">
+        <article className="prose prose-invert max-w-none prose-headings:text-white prose-headings:font-semibold prose-headings:tracking-tight prose-p:text-surface-300 prose-p:leading-relaxed prose-li:text-surface-300 prose-a:text-brand-500 prose-a:no-underline hover:prose-a:text-orange-400 prose-strong:text-white">
 
           <section>
             <h2 className="text-2xl font-semibold text-white">1. Overview</h2>

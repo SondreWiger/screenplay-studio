@@ -255,7 +255,7 @@ export default function ModerationPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -395,7 +395,7 @@ export default function ModerationPage() {
               className={cn(
                 'py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2',
                 subTab === tab.key
-                  ? 'border-[#FF5F1F] text-white'
+                  ? 'border-brand-500 text-white'
                   : 'border-transparent text-surface-400 hover:text-white'
               )}
             >
@@ -491,7 +491,7 @@ export default function ModerationPage() {
                             <p className="text-xs text-surface-500">{flag.flagged_user.email}</p>
                           </div>
                           {flag.flagged_user.username && (
-                            <Link href={`/profile/${flag.flagged_user.username}`} className="text-xs text-[#FF5F1F] hover:underline">
+                            <Link href={`/profile/${flag.flagged_user.username}`} className="text-xs text-brand-500 hover:underline">
                               @{flag.flagged_user.username}
                             </Link>
                           )}
@@ -625,7 +625,7 @@ export default function ModerationPage() {
                   placeholder="Search projects, owners..."
                   value={projectSearch}
                   onChange={(e) => setProjectSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F] w-72"
+                  className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 w-72"
                 />
               </div>
             </div>
@@ -647,7 +647,7 @@ export default function ModerationPage() {
                     )}
                   >
                     {/* Project icon */}
-                    <div className="w-10 h-10 rounded-lg bg-[#E54E15] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
                       {p.title?.[0] || '?'}
                     </div>
 
@@ -815,7 +815,7 @@ export default function ModerationPage() {
                   onChange={(e) => setActionDays(parseInt(e.target.value) || 30)}
                   min={1}
                   max={365}
-                  className="w-32 px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white outline-none focus:border-[#FF5F1F]"
+                  className="w-32 px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white outline-none focus:border-brand-500"
                 />
               </div>
             )}

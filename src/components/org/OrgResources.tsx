@@ -98,7 +98,7 @@ export function OrgResources({ companyId, userId, canManage }: Props) {
         <div className="flex bg-surface-800 rounded-lg">
           {['all', ...Object.keys(TYPE_ICONS)].map(t => (
             <button key={t} onClick={() => setFilter(t)}
-              className={cn('px-3 py-1.5 text-xs rounded-lg capitalize', filter === t ? 'bg-[#FF5F1F] text-white' : 'text-surface-400')}>
+              className={cn('px-3 py-1.5 text-xs rounded-lg capitalize', filter === t ? 'bg-brand-500 text-white' : 'text-surface-400')}>
               {t === 'all' ? 'All' : `${TYPE_ICONS[t]} ${t}`}
             </button>
           ))}
@@ -170,7 +170,7 @@ function ResourceCard({ resource, canManage, userId, onPin, onDelete }: {
       </div>
       {resource.description && <p className="text-xs text-surface-500 line-clamp-2">{resource.description}</p>}
       {resource.file_url && (
-        <a href={resource.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline truncate">
+        <a href={resource.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-500 hover:underline truncate">
           {resource.file_url}
         </a>
       )}

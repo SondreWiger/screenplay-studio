@@ -145,12 +145,12 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
             <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
               <button onClick={() => setFilterScene('all')} className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-colors',
-                filterScene === 'all' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'bg-surface-900 text-surface-400'
+                filterScene === 'all' ? 'bg-brand-600/20 text-brand-500' : 'bg-surface-900 text-surface-400'
               )}>All</button>
               {scenes.map((s) => (
                 <button key={s.id} onClick={() => setFilterScene(s.id)} className={cn(
                   'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-colors',
-                  filterScene === s.id ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'bg-surface-900 text-surface-400'
+                  filterScene === s.id ? 'bg-brand-600/20 text-brand-500' : 'bg-surface-900 text-surface-400'
                 )}>Sc. {s.scene_number || '?'}</button>
               ))}
             </div>

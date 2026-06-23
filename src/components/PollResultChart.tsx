@@ -70,7 +70,7 @@ export function PollResultCard({ result }: { result: QuestionResult }) {
             const barPct = maxRank > 1 ? Math.round((1 - (r.avg_rank - 1) / (maxRank - 1)) * 100) : 100;
             return (
               <div key={r.label} className="flex items-center gap-3">
-                <span className="text-[#FF5F1F] font-bold text-sm w-5 flex-shrink-0">
+                <span className="text-brand-500 font-bold text-sm w-5 flex-shrink-0">
                   #{i + 1}
                 </span>
                 <div className="flex-1 min-w-0">

@@ -309,7 +309,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
             className={cn(
               'px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px',
               activeTab === tab.key
-                ? 'text-white border-[#E54E15]'
+                ? 'text-white border-brand-600'
                 : 'text-surface-400 border-transparent hover:text-surface-200'
             )}
           >

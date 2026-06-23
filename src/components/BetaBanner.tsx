@@ -39,8 +39,8 @@ export function BetaBanner() {
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
           {/* Beta badge */}
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-[#FF5F1F]/20 text-[#FF8F5F] border border-[#FF5F1F]/30 shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FF5F1F] animate-pulse" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-brand-500/20 text-brand-400 border border-brand-500/30 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
             Beta
           </span>
           <p className="text-xs text-surface-300 leading-snug">
@@ -51,7 +51,7 @@ export function BetaBanner() {
         <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/feedback"
-            className="text-xs font-medium text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors underline underline-offset-2"
+            className="text-xs font-medium text-brand-500 hover:text-brand-400 transition-colors underline underline-offset-2"
           >
             Report a bug
           </Link>

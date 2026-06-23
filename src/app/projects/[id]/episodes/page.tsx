@@ -549,7 +549,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
           </div>
           <div className="h-1.5 rounded-full bg-surface-800 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#FF5F1F] to-[#FF8F5F] transition-[width]"
+              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400 transition-[width]"
               style={{ width: `${Math.min(Math.round((total / planned) * 100), 100)}%` }}
             />
           </div>
@@ -635,7 +635,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                             isDraggingThis
                               ? 'opacity-40 border-surface-600 bg-surface-900'
                               : isDragTarget
-                                ? 'border-[#FF5F1F]/50 bg-[#FF5F1F]/5'
+                                ? 'border-brand-500/50 bg-brand-500/5'
                                 : 'border-surface-800 bg-surface-900/40 hover:border-surface-700 hover:bg-surface-900/70',
                           )}
                         >
@@ -997,7 +997,7 @@ function SeasonManager({
               </div>
               {/* Name input */}
               <input
-                className="flex-1 min-w-0 bg-transparent border-b border-surface-600 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F]/60 py-0.5 transition-colors"
+                className="flex-1 min-w-0 bg-transparent border-b border-surface-600 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500/60 py-0.5 transition-colors"
                 value={s.name}
                 onChange={e => updateName(s.num, e.target.value)}
                 placeholder={`Season ${s.num}`}
@@ -1014,7 +1014,7 @@ function SeasonManager({
             </div>
             {/* Logline */}
             <input
-              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-[#FF5F1F]/40 transition-colors"
+              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
               value={s.logline ?? ''}
               onChange={e => updateLogline(s.num, e.target.value)}
               placeholder="Logline — one sentence that captures this season…"
@@ -1022,7 +1022,7 @@ function SeasonManager({
             {/* Synopsis */}
             <textarea
               rows={2}
-              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-[#FF5F1F]/40 transition-colors resize-none"
+              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors resize-none"
               value={s.synopsis ?? ''}
               onChange={e => updateSynopsis(s.num, e.target.value)}
               placeholder="Synopsis — brief overview of this season's arc…"
@@ -1033,7 +1033,7 @@ function SeasonManager({
         {/* Add season */}
         <div className="flex items-center gap-2 pt-1">
           <input
-            className="flex-1 min-w-0 bg-surface-800 border border-surface-700 rounded-lg text-sm text-white placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-[#FF5F1F]/40 transition-colors"
+            className="flex-1 min-w-0 bg-surface-800 border border-surface-700 rounded-lg text-sm text-white placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
             value={newName}
             onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSeason(); } }}

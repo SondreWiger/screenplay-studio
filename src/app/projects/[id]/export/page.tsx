@@ -284,7 +284,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={batchMode}
                     onChange={e => setBatchMode(e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                   />
                   Batch export
                 </label>
@@ -308,7 +308,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       }}
                       className={`p-3 rounded-lg border text-center transition-colors ${
                         isActive
-                          ? 'bg-[#FF5F1F]/10 border-[#FF5F1F] text-[#FF5F1F]'
+                          ? 'bg-brand-500/10 border-brand-500 text-brand-500'
                           : 'bg-surface-800/50 border-surface-700 text-surface-400 hover:border-surface-600'
                       }`}
                     >
@@ -328,7 +328,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   type="checkbox"
                   checked={config.includeCover}
                   onChange={e => updateConfig('includeCover', e.target.checked)}
-                  className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                 />
               </div>
               {config.includeCover && (
@@ -395,7 +395,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   type="checkbox"
                   checked={config.watermarkEnabled}
                   onChange={e => updateConfig('watermarkEnabled', e.target.checked)}
-                  className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                 />
               </div>
               {config.watermarkEnabled && (
@@ -418,7 +418,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.pageNumbers}
                     onChange={e => updateConfig('pageNumbers', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                   />
                   Page numbers
                 </label>
@@ -427,7 +427,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.sceneNumbers}
                     onChange={e => updateConfig('sceneNumbers', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                   />
                   Scene numbers
                 </label>
@@ -436,7 +436,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.includeTitle}
                     onChange={e => updateConfig('includeTitle', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                   />
                   Title page
                 </label>
@@ -445,7 +445,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     type="checkbox"
                     checked={config.footerEnabled}
                     onChange={e => updateConfig('footerEnabled', e.target.checked)}
-                    className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                   />
                   Footer
                 </label>
@@ -482,7 +482,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   type="checkbox"
                   checked={config.colorCoding}
                   onChange={e => updateConfig('colorCoding', e.target.checked)}
-                  className="rounded bg-surface-800 border-surface-600 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
                 />
               </div>
               {config.colorCoding && (
@@ -493,7 +493,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       onClick={() => updateConfig('revisionColor', c.value)}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-colors ${
                         config.revisionColor === c.value
-                          ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
+                          ? 'border-brand-500 bg-brand-500/10'
                           : 'border-surface-700 hover:border-surface-600'
                       }`}
                     >

@@ -313,7 +313,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-white">Advanced Schedule</h2>
               <button onClick={() => setForm({ ...form, advanced_schedule: [...form.advanced_schedule, { scene: '', location: '', cast: '', pages: '', est_time: '' }] })}
-                className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">+ Add Row</button>
+                className="text-xs text-brand-500 hover:text-brand-400">+ Add Row</button>
             </div>
             {/* Desktop: compact grid rows */}
             <div className="hidden md:block space-y-2">
@@ -371,7 +371,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-white">Crew Call Times</h2>
               <button onClick={() => setForm({ ...form, crew_calls: [...form.crew_calls, { name: '', dept: '', call_time: '', notes: '' }] })}
-                className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">+ Add Row</button>
+                className="text-xs text-brand-500 hover:text-brand-400">+ Add Row</button>
             </div>
             {/* Desktop: compact grid rows */}
             <div className="hidden md:block space-y-2">

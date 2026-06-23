@@ -188,7 +188,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
                 <div className="flex gap-2 flex-wrap">
                   <input type="date" value={newDay} onChange={(e) => setNewDay(e.target.value)}
                     className="bg-surface-800 border border-surface-700 rounded-lg px-3 py-1.5 text-sm text-white" />
-                  <button onClick={addShootDay} className="px-3 py-1.5 text-sm bg-[#FF5F1F] text-white rounded-lg">Add</button>
+                  <button onClick={addShootDay} className="px-3 py-1.5 text-sm bg-brand-500 text-white rounded-lg">Add</button>
                   <button onClick={() => setAddingDay(false)} className="px-3 py-1.5 text-sm bg-surface-700 text-white rounded-lg">Cancel</button>
                 </div>
               ) : (

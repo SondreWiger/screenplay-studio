@@ -126,7 +126,7 @@ export default function BrandingPage() {
         <div>
           <label className="block text-sm text-surface-400 mb-2">Company / Production Company Name</label>
           <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Acme Studios"
-            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]" />
+            className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500" />
           <p className="text-[11px] text-surface-500 mt-1">Appears on cover pages and branded exports</p>
         </div>
       </Card>
@@ -167,13 +167,13 @@ export default function BrandingPage() {
           <div>
             <label className="block text-sm text-surface-400 mb-2">Logo URL</label>
             <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://yourcompany.com/logo.png"
-              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]" />
+              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500" />
             <p className="text-[11px] text-surface-500 mt-1">Appears on cover pages and exported documents</p>
           </div>
           <div>
             <label className="block text-sm text-surface-400 mb-2">Watermark Text</label>
             <input value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} placeholder="e.g. CONFIDENTIAL — Draft"
-              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]" />
+              className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500" />
           </div>
           <div>
             <label className="block text-sm text-surface-400 mb-2">Watermark Opacity: {watermarkOpacity}%</label>
@@ -191,17 +191,17 @@ export default function BrandingPage() {
             <div>
               <label className="block text-sm text-surface-400 mb-2">Title Override</label>
               <input value={coverTitle} onChange={(e) => setCoverTitle(e.target.value)} placeholder="Uses project title if empty"
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]" />
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500" />
             </div>
             <div>
               <label className="block text-sm text-surface-400 mb-2">Subtitle</label>
               <input value={coverSubtitle} onChange={(e) => setCoverSubtitle(e.target.value)} placeholder="e.g. Written by Jane Doe"
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]" />
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500" />
             </div>
             <div>
               <label className="block text-sm text-surface-400 mb-2">Font</label>
               <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]">
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500">
                 <option value="Courier Prime">Courier Prime (Industry Standard)</option>
                 <option value="Courier New">Courier New</option>
                 <option value="Source Code Pro">Source Code Pro</option>
@@ -229,7 +229,7 @@ export default function BrandingPage() {
         <div className="grid grid-cols-3 gap-3">
           {['minimal', 'classic', 'branded'].map((t) => (
             <button key={t} onClick={() => setHeaderTemplate(t)}
-              className={`p-4 rounded-lg border text-center transition-colors ${headerTemplate === t ? 'border-[#FF5F1F] bg-[#FF5F1F]/10' : 'border-surface-700 hover:border-surface-600'}`}>
+              className={`p-4 rounded-lg border text-center transition-colors ${headerTemplate === t ? 'border-brand-500 bg-brand-500/10' : 'border-surface-700 hover:border-surface-600'}`}>
               <p className="text-sm font-medium text-white capitalize">{t}</p>
               <p className="text-[10px] text-surface-500 mt-1">
                 {t === 'minimal' ? 'Clean, no extras' : t === 'classic' ? 'Page numbers + date' : 'Logo + company info'}

@@ -162,20 +162,20 @@ export default function LanguageTranslationPage() {
             <p className="text-sm text-surface-300">
               <span className="font-semibold text-white">{translatedCount}</span> of {totalCount} keys translated
             </p>
-            <p className="text-sm font-semibold text-[#FF5F1F]">{progressPercent}%</p>
+            <p className="text-sm font-semibold text-brand-500">{progressPercent}%</p>
           </div>
           <div className="w-full h-2 bg-surface-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] rounded-full transition-all"
+              className="h-full bg-gradient-to-r from-brand-600 to-brand-500 rounded-full transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </Card>
 
         {!agreed && (
-          <Card className="p-5 mb-6 border-[#FF5F1F]/20 bg-[#FF5F1F]/5">
+          <Card className="p-5 mb-6 border-brand-500/20 bg-brand-500/5">
             <p className="text-sm text-surface-300">
-              You must <Link href="/translations" className="text-[#FF5F1F] hover:underline">agree to the translation guidelines</Link> before contributing.
+              You must <Link href="/translations" className="text-brand-500 hover:underline">agree to the translation guidelines</Link> before contributing.
             </p>
           </Card>
         )}
@@ -189,7 +189,7 @@ export default function LanguageTranslationPage() {
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   filter === f
-                    ? 'bg-[#FF5F1F]/10 border border-[#FF5F1F]/40 text-[#FF5F1F]'
+                    ? 'bg-brand-500/10 border border-brand-500/40 text-brand-500'
                     : 'bg-surface-800/50 border border-surface-700/50 text-surface-400 hover:border-surface-600'
                 }`}
               >
@@ -202,7 +202,7 @@ export default function LanguageTranslationPage() {
             placeholder="Search keys..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-3 py-1.5 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-[#FF5F1F]/70 focus:outline-none"
+            className="flex-1 px-3 py-1.5 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-brand-500/70 focus:outline-none"
           />
         </div>
 
@@ -301,7 +301,7 @@ export default function LanguageTranslationPage() {
                                 onChange={(e) => setEditText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && submitSuggestion(k.id)}
                                 placeholder="Enter your translation..."
-                                className="flex-1 px-3 py-2 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-[#FF5F1F]/70 focus:outline-none"
+                                className="flex-1 px-3 py-2 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-brand-500/70 focus:outline-none"
                                 autoFocus
                               />
                               <Button size="sm" onClick={() => submitSuggestion(k.id)} loading={submitting} disabled={!editText.trim()}>
@@ -314,7 +314,7 @@ export default function LanguageTranslationPage() {
                           ) : (
                             <button
                               onClick={() => { setEditingKey(k.id); setEditText(k.winner?.translated_text || ''); }}
-                              className="text-xs text-[#FF5F1F] hover:text-[#FF5F1F]/80 transition-colors font-medium"
+                              className="text-xs text-brand-500 hover:text-brand-500/80 transition-colors font-medium"
                             >
                               + Suggest Translation
                             </button>

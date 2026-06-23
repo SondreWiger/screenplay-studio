@@ -479,7 +479,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
         ) : (
           <div className="text-center py-16">
             <p className="text-sm text-surface-400">No items match the current filters.</p>
-            <button onClick={() => { setFilterCategory('all'); setFilterPaid('all'); setViewMode('all'); }} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] mt-2">
+            <button onClick={() => { setFilterCategory('all'); setFilterPaid('all'); setViewMode('all'); }} className="text-xs text-brand-500 hover:text-brand-400 mt-2">
               Clear filters
             </button>
           </div>
@@ -876,7 +876,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
               <select
                 value={form.category}
                 onChange={(e) => updateField('category', e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white focus:border-[#FF5F1F] focus:outline-none"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white focus:border-brand-500 focus:outline-none"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
@@ -899,7 +899,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
               type="checkbox"
               checked={useUnitCost}
               onChange={(e) => setUseUnitCost(e.target.checked)}
-              className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+              className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500"
             />
             <span className="text-xs text-surface-400">Use quantity × unit cost</span>
           </label>
@@ -988,7 +988,7 @@ function BudgetEditor({ isOpen, onClose, item, projectId, userId, onSaved, onDel
             type="checkbox"
             checked={form.is_paid}
             onChange={(e) => updateField('is_paid', e.target.checked)}
-            className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+            className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500"
           />
           <span className="text-sm text-surface-300">{form.is_income ? 'Funds Received' : 'Marked as Paid'}</span>
         </label>

@@ -183,7 +183,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                       onChange={e => setEditingValue(e.target.value)}
                       onBlur={commitRename}
                       onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setEditingLabel(null); }}
-                      className="flex-1 bg-surface-800 border border-[#FF5F1F]/50 rounded px-2 py-0.5 text-xs text-white outline-none"
+                      className="flex-1 bg-surface-800 border border-brand-500/50 rounded px-2 py-0.5 text-xs text-white outline-none"
                       autoFocus
                     />
                   ) : (
@@ -247,7 +247,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                               onChange={e => setEditingValue(e.target.value)}
                               onBlur={commitRename}
                               onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setEditingLabel(null); }}
-                              className="flex-1 bg-surface-800 border border-[#FF5F1F]/50 rounded px-2 py-0.5 text-xs text-white outline-none"
+                              className="flex-1 bg-surface-800 border border-brand-500/50 rounded px-2 py-0.5 text-xs text-white outline-none"
                               autoFocus
                             />
                           ) : (
@@ -329,14 +329,14 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                   onChange={e => setNewSectionName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') addSection(); if (e.key === 'Escape') { setShowNewSection(false); setNewSectionName(''); } }}
                   placeholder="Section name"
-                  className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-[#FF5F1F]/60"
+                  className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-brand-500/60"
                   autoFocus
                 />
-                <button onClick={addSection} className="text-xs px-2.5 py-1.5 rounded-lg bg-[#FF5F1F] text-white hover:bg-orange-500 transition-colors shrink-0">{t('common.add')}</button>
+                <button onClick={addSection} className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-500 text-white hover:bg-orange-500 transition-colors shrink-0">{t('common.add')}</button>
                 <button onClick={() => { setShowNewSection(false); setNewSectionName(''); }} className="text-surface-500 hover:text-white text-xs transition-colors">✕</button>
               </div>
             ) : (
-              <button onClick={() => setShowNewSection(true)} className="flex items-center gap-1.5 text-xs text-surface-600 hover:text-[#FF5F1F] transition-colors py-1">
+              <button onClick={() => setShowNewSection(true)} className="flex items-center gap-1.5 text-xs text-surface-600 hover:text-brand-500 transition-colors py-1">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 Add section
               </button>
@@ -357,7 +357,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
               ]).map(opt => (
                 <label key={opt.value} className="flex items-start gap-2.5 cursor-pointer group">
                   <input type="radio" name="scope" value={opt.value} checked={saveScope === opt.value} onChange={() => setSaveScope(opt.value)}
-                    className="mt-0.5 accent-[#FF5F1F]" />
+                    className="mt-0.5 accent-brand-500" />
                   <span>
                     <span className="text-xs font-medium text-surface-200 group-hover:text-white transition-colors block">{opt.label}</span>
                     <span className="text-[10px] text-surface-600">{opt.desc}</span>
@@ -369,7 +369,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
 
             <div className="flex items-center gap-2 pt-1">
             <button onClick={handleSave} disabled={saving}
-              className="flex-1 py-2 rounded-xl bg-[#FF5F1F] text-white font-semibold text-sm hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
+              className="flex-1 py-2 rounded-xl bg-brand-500 text-white font-semibold text-sm hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
               {saving ? 'Saving…' : 'Save Layout'}
             </button>
             <div className="relative">

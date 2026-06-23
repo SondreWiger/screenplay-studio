@@ -174,7 +174,7 @@ export default function CommunityPage() {
                 </div>
                 <Link
                   href={`/community/challenges/${activeChallenge.id}`}
-                  className="px-4 py-2 text-sm font-medium bg-surface-900 text-[#E54E15] hover:bg-surface-900/90 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium bg-surface-900 text-brand-600 hover:bg-surface-900/90 rounded-lg transition-colors"
                 >
                   {phase === 'submissions' ? t('community.submit') : t('community.view')}
                 </Link>
@@ -232,7 +232,7 @@ export default function CommunityPage() {
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                  !selectedCategory ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium' : 'text-white/60 hover:bg-surface-800'
+                  !selectedCategory ? 'bg-brand-500/10 text-brand-600 font-medium' : 'text-white/60 hover:bg-surface-800'
                 }`}
               >
                 {t('community.all_scripts')}
@@ -242,7 +242,7 @@ export default function CommunityPage() {
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug)}
                   className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${
-                    selectedCategory === cat.slug ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium' : 'text-white/60 hover:bg-surface-800'
+                    selectedCategory === cat.slug ? 'bg-brand-500/10 text-brand-600 font-medium' : 'text-white/60 hover:bg-surface-800'
                   }`}
                 >
                   <span>{cat.icon}</span>
@@ -270,7 +270,7 @@ export default function CommunityPage() {
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.your_communities')}</p>
-                  <Link href="/community/c" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">{t('community.browse')}</Link>
+                  <Link href="/community/c" className="text-[10px] text-brand-500 hover:text-[#FF7A3F] transition-colors">{t('community.browse')}</Link>
                 </div>
                 <div className="space-y-1">
                   {joinedCommunities.slice(0, 8).map(c => (
@@ -288,7 +288,7 @@ export default function CommunityPage() {
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.courses')}</p>
-                  <Link href="/community/courses" className="text-[10px] text-[#FF5F1F] hover:text-[#FF7A3F] transition-colors">All →</Link>
+                  <Link href="/community/courses" className="text-[10px] text-brand-500 hover:text-[#FF7A3F] transition-colors">All →</Link>
                 </div>
                 <div className="space-y-2">
                   {featuredCourses.map(c => {
@@ -300,7 +300,7 @@ export default function CommunityPage() {
                         <div className="flex items-center gap-1.5 mt-1">
                           <span className={`text-[9px] font-semibold uppercase tracking-wide ${diffColor}`}>{c.difficulty}</span>
                           <span className="text-[9px] text-white/25">·</span>
-                          <span className="text-[9px] text-[#FF5F1F]">{c.xp_reward} XP</span>
+                          <span className="text-[9px] text-brand-500">{c.xp_reward} XP</span>
                           {c.enrollment_count > 0 && <span className="text-[9px] text-white/25 ml-auto">{c.enrollment_count} {t('community.enrolled')}</span>}
                         </div>
                       </Link>
@@ -323,7 +323,7 @@ export default function CommunityPage() {
                 <p className="text-lg font-semibold text-white/70 mb-2">{t('community.no_posts')}</p>
                 <p className="text-sm text-white/40 mb-6">{t('community.be_first')}</p>
                 {user && (
-                  <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] rounded-lg transition-colors">
+                  <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] rounded-lg transition-colors">
                     {t('community.share_script')}
                   </Link>
                 )}

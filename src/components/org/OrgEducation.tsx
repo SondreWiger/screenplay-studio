@@ -149,7 +149,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
       <div className="flex bg-surface-800 rounded-lg w-fit">
         {(['classes', 'assignments', 'submissions'] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={cn('px-4 py-2 text-sm rounded-lg capitalize', tab === t ? 'bg-[#FF5F1F] text-white' : 'text-surface-400')}>
+            className={cn('px-4 py-2 text-sm rounded-lg capitalize', tab === t ? 'bg-brand-500 text-white' : 'text-surface-400')}>
             {t}
           </button>
         ))}
@@ -187,7 +187,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
       {tab === 'assignments' && (
         <div className="space-y-4">
           {selectedClass && (
-            <button onClick={() => setSelectedClass(null)} className="text-xs text-[#FF5F1F] hover:underline">← All assignments</button>
+            <button onClick={() => setSelectedClass(null)} className="text-xs text-brand-500 hover:underline">← All assignments</button>
           )}
           {filteredAssignments.length === 0 && <Card className="p-8 text-center text-surface-500">No assignments</Card>}
           {filteredAssignments.map(a => {
@@ -239,7 +239,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                             <GradeInline maxPoints={a.max_points} onGrade={(g, f) => gradeSubmission(sub.id, g, f)} />
                           )}
                           <button onClick={() => { setExpandedSubmission(expandedSubmission === sub.id ? null : sub.id); loadPeerReviews(sub.id); }}
-                            className="text-[10px] text-[#FF5F1F] hover:underline ml-auto">
+                            className="text-[10px] text-brand-500 hover:underline ml-auto">
                             {expandedSubmission === sub.id ? 'Hide reviews' : 'Peer reviews'}
                           </button>
                         </div>
@@ -370,7 +370,7 @@ function GradeInline({ maxPoints, onGrade }: { maxPoints: number; onGrade: (grad
   const [open, setOpen] = useState(false);
   const [grade, setGrade] = useState('');
   const [feedback, setFeedback] = useState('');
-  if (!open) return <button onClick={() => setOpen(true)} className="text-[10px] text-[#FF5F1F] hover:underline">Grade</button>;
+  if (!open) return <button onClick={() => setOpen(true)} className="text-[10px] text-brand-500 hover:underline">Grade</button>;
   return (
     <div className="flex gap-2 items-end">
       <Input value={grade} onChange={e => setGrade(e.target.value)} type="number" placeholder={`/ ${maxPoints}`} className="w-20 text-xs" />

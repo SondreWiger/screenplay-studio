@@ -402,7 +402,7 @@ export default function ComparePage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/60 hover:text-[#FF5F1F]"
+              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/60 hover:text-brand-500"
             >
               Northem Development ♥ Oslo
             </a>

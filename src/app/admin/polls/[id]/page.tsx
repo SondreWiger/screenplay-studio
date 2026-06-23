@@ -249,7 +249,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -291,7 +291,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
               onClick={() => setView(v)}
               className={`px-4 py-3 text-sm font-medium transition-colors capitalize border-b-2 ${
                 view === v
-                  ? 'text-white border-[#FF5F1F]'
+                  ? 'text-white border-brand-500'
                   : 'text-white/40 hover:text-white border-transparent'
               }`}
             >
@@ -320,7 +320,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     type="text"
                     value={editTitle}
                     onChange={(e) => { setEditTitle(e.target.value); setMetaDirty(true); }}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50"
                   />
                 </div>
                 <div>
@@ -332,11 +332,11 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     value={editPreface}
                     onChange={(e) => { setEditPreface(e.target.value); setMetaDirty(true); }}
                     placeholder="Tell users what this poll is about and why their input matters…"
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50 resize-none"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 resize-none"
                   />
                 </div>
                 {metaDirty && (
-                  <button onClick={saveMeta} disabled={saving} className="px-4 py-2 bg-[#FF5F1F] hover:bg-[#FF7F3F] disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
+                  <button onClick={saveMeta} disabled={saving} className="px-4 py-2 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                     Save changes
                   </button>
                 )}
@@ -497,7 +497,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                         key={i}
                         onClick={() => setReviewStep(i)}
                         className={`w-2 h-2 rounded-full transition-colors ${
-                          i === reviewStep ? 'bg-[#FF5F1F]' : questions[i].is_approved ? 'bg-emerald-500' : 'bg-white/20'
+                          i === reviewStep ? 'bg-brand-500' : questions[i].is_approved ? 'bg-emerald-500' : 'bg-white/20'
                         }`}
                       />
                     ))}
@@ -593,7 +593,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
             )}
             {isLive && loadingResults && (
               <div className="flex items-center justify-center py-16">
-                <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
               </div>
             )}
             {isLive && !loadingResults && results !== null && (
@@ -606,7 +606,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     <button
                       onClick={handleNotify}
                       disabled={notifying}
-                      className="text-xs px-3 py-1.5 bg-[#FF5F1F] hover:bg-[#FF7F3F] disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-1"
+                      className="text-xs px-3 py-1.5 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-1"
                     >
                       {notifying ? (
                         <>
@@ -744,7 +744,7 @@ function QuestionForm({
   const needsOptions = ['single_select', 'multi_select', 'ranking'].includes(qType);
 
   return (
-    <div className="bg-white/[0.04] border border-[#FF5F1F]/20 rounded-xl p-5">
+    <div className="bg-white/[0.04] border border-brand-500/20 rounded-xl p-5">
       <h3 className="text-sm font-semibold text-white mb-4">{title}</h3>
       <div className="space-y-4">
         <div>
@@ -754,7 +754,7 @@ function QuestionForm({
             value={qText}
             onChange={(e) => setQText(e.target.value)}
             placeholder="What would you like to ask?"
-            className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50"
+            className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50"
           />
         </div>
         <div>
@@ -766,7 +766,7 @@ function QuestionForm({
                 onClick={() => setQType(t.value)}
                 className={`px-3 py-2 rounded-lg border text-left transition-colors ${
                   qType === t.value
-                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-white'
+                    ? 'border-brand-500 bg-brand-500/10 text-white'
                     : 'border-white/10 text-white/40 hover:border-white/20 hover:text-white'
                 }`}
               >
@@ -786,12 +786,12 @@ function QuestionForm({
               value={qOptions}
               onChange={(e) => setQOptions(e.target.value)}
               placeholder={"Option A\nOption B\nOption C"}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#FF5F1F]/50 resize-none font-mono"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 resize-none font-mono"
             />
           </div>
         )}
         <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={qRequired} onChange={(e) => setQRequired(e.target.checked)} className="w-4 h-4 accent-[#FF5F1F]" />
+          <input type="checkbox" checked={qRequired} onChange={(e) => setQRequired(e.target.checked)} className="w-4 h-4 accent-brand-500" />
           <span className="text-sm text-white/60">Required</span>
         </label>
       </div>
@@ -802,7 +802,7 @@ function QuestionForm({
         <button
           onClick={onSave}
           disabled={!qText.trim() || saving}
-          className="flex-1 py-2 bg-[#FF5F1F] hover:bg-[#FF7F3F] disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
+          className="flex-1 py-2 bg-brand-500 hover:bg-[#FF7F3F] disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
         >
           {saving ? 'Saving…' : 'Save question'}
         </button>

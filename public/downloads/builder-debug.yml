@@ -1,4 +1,4 @@
-x64:
+arm64:
   firstOrDefaultFilePatterns:
     - '!**/node_modules'
     - '!build{,/**/*}'
@@ -15,7 +15,7 @@ x64:
   nodeModuleFilePatterns:
     - '**/*'
     - electron/dist/**/*
-arm64:
+x64:
   firstOrDefaultFilePatterns:
     - '!**/node_modules'
     - '!build{,/**/*}'

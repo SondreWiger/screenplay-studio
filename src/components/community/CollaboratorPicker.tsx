@@ -111,7 +111,7 @@ export function CollaboratorPicker({
           value={query}
           onChange={handleInput}
           placeholder="Search for collaborators…"
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#FF5F1F]/50 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-brand-500/50 transition-colors"
         />
         {searching && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs">…</div>
@@ -150,7 +150,7 @@ export function CollaboratorPicker({
                       <p className="text-[10px] text-white/40 font-mono truncate">@{p.username}</p>
                     )}
                   </div>
-                  <span className="ml-auto text-[10px] text-[#FF5F1F] shrink-0">+ Add</span>
+                  <span className="ml-auto text-[10px] text-brand-500 shrink-0">+ Add</span>
                 </button>
               );
             })}

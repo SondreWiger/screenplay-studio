@@ -390,7 +390,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                         <p className="text-sm text-surface-200 group-hover:text-white transition-colors truncate">{rp.title || 'Untitled'}</p>
                         <p className="text-[11px] text-surface-500">{rp.project_type ?? 'Project'} · {new Date(rp.viewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
                       </div>
-                      <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-[#FF5F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                     </button>
                   ))}
                   <div className="mx-4 my-2 border-t border-surface-800" />
@@ -415,7 +415,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                     <p className="text-sm text-surface-200 group-hover:text-white transition-colors">{item.label}</p>
                     <p className="text-[11px] text-surface-500">{item.sublabel}</p>
                   </div>
-                  <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-[#FF5F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </button>
               ))}
             </div>
@@ -445,7 +445,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                         onMouseEnter={() => setCursor(idx)}
                         className={cn(
                           'w-full flex items-center gap-3 px-4 py-2 text-left transition-colors',
-                          isActive ? 'bg-[#FF5F1F]/10' : 'hover:bg-white/[0.03]'
+                          isActive ? 'bg-brand-500/10' : 'hover:bg-white/[0.03]'
                         )}
                       >
                         <div className="min-w-0 flex-1">

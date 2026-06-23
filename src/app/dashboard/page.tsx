@@ -545,14 +545,14 @@ function DashboardContent() {
         {pendingInvitations.length > 0 && (
           <div className="mb-6 space-y-3">
             {pendingInvitations.map((inv: { id: string; company_name?: string; company_logo?: string; company_color?: string; role: string; invited_by_name?: string }) => (
-              <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#FF5F1F]/30 bg-[#FF5F1F]/5 p-4">
+              <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ backgroundColor: inv.company_color || '#3B82F6' }}>
                     {inv.company_logo ? <img src={inv.company_logo} alt={inv.company_name || 'Company logo'} className="w-full h-full object-cover rounded-lg" loading="lazy" /> : inv.company_name?.[0] || '?'}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">
-                      <span className="text-[#FF5F1F]">{inv.company_name}</span> invited you to join as <span className="capitalize text-[#FF8F5F]">{inv.role}</span>
+                      <span className="text-brand-500">{inv.company_name}</span> invited you to join as <span className="capitalize text-brand-400">{inv.role}</span>
                     </p>
                     {inv.invited_by_name && <p className="text-xs text-surface-500">Invited by {inv.invited_by_name}</p>}
                   </div>
@@ -604,11 +604,11 @@ function DashboardContent() {
         {lastProject && (
           <button
             onClick={() => router.push(`/projects/${lastProject.id}/script`)}
-            className="w-full mb-8 group rounded-xl border border-surface-800 bg-gradient-to-r from-surface-900 to-surface-900/50 hover:border-[#FF5F1F]/40 p-5 text-left transition-colors hover:shadow-lg hover:shadow-brand-500/5"
+            className="w-full mb-8 group rounded-xl border border-surface-800 bg-gradient-to-r from-surface-900 to-surface-900/50 hover:border-brand-500/40 p-5 text-left transition-colors hover:shadow-lg hover:shadow-brand-500/5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] group-hover:bg-[#FF5F1F]/20 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:bg-brand-500/20 transition-colors">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </div>
                 <div>
@@ -618,7 +618,7 @@ function DashboardContent() {
               </div>
               <div className="flex items-center gap-2 text-xs text-surface-500">
                 <span>{t('dashboard.last_edited')} {timeAgo(lastProject.updated_at)}</span>
-                <svg className="w-4 h-4 text-surface-600 group-hover:text-[#FF5F1F] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                <svg className="w-4 h-4 text-surface-600 group-hover:text-brand-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </div>
             </div>
           </button>
@@ -639,7 +639,7 @@ function DashboardContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('dashboard.search_projects')}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-700 bg-surface-900 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-700 bg-surface-900 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none transition-colors"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -650,7 +650,7 @@ function DashboardContent() {
                 className={cn(
                   'px-3 py-2.5 md:py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap min-h-[44px] md:min-h-0',
                   filterStatus === status
-                    ? 'bg-[#E54E15] text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'text-surface-400 hover:text-white hover:bg-surface-800'
                 )}
               >
@@ -701,14 +701,14 @@ function DashboardContent() {
               <button
                 onClick={() => toggleViewMode('grid')}
                 title="Grid view"
-                className={cn('p-1.5 rounded transition-colors', viewMode === 'grid' ? 'bg-[#FF5F1F] text-white' : 'text-surface-500 hover:text-surface-300')}
+                className={cn('p-1.5 rounded transition-colors', viewMode === 'grid' ? 'bg-brand-500 text-white' : 'text-surface-500 hover:text-surface-300')}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
               </button>
               <button
                 onClick={() => toggleViewMode('list')}
                 title="List view"
-                className={cn('p-1.5 rounded transition-colors', viewMode === 'list' ? 'bg-[#FF5F1F] text-white' : 'text-surface-500 hover:text-surface-300')}
+                className={cn('p-1.5 rounded transition-colors', viewMode === 'list' ? 'bg-brand-500 text-white' : 'text-surface-500 hover:text-surface-300')}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
               </button>
@@ -721,9 +721,9 @@ function DashboardContent() {
                   onChange={e => setNewFolderName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setShowNewFolderInput(false); setNewFolderName(''); } }}
                   placeholder={t('dashboard.folder_name')}
-                  className="w-36 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
+                  className="w-36 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500"
                 />
-                <button onClick={createFolder} className="px-2 py-1 text-xs bg-[#FF5F1F] text-white rounded hover:bg-[#E54E15]">Add</button>
+                <button onClick={createFolder} className="px-2 py-1 text-xs bg-brand-500 text-white rounded hover:bg-brand-600">Add</button>
                 <button onClick={() => { setShowNewFolderInput(false); setNewFolderName(''); }} className="px-2 py-1 text-xs text-surface-500 hover:text-white">✕</button>
               </div>
             ) : (
@@ -738,7 +738,7 @@ function DashboardContent() {
         {filteredProjects.length === 0 && (searchQuery || filterStatus !== 'all') ? (
           <div className="text-center py-12 text-surface-500 text-sm mb-8">
             {t('dashboard.no_match')}{' '}
-            <button onClick={() => { setSearchQuery(''); setFilterStatus('all'); }} className="text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors">{t('dashboard.clear_filters')}</button>
+            <button onClick={() => { setSearchQuery(''); setFilterStatus('all'); }} className="text-brand-500 hover:text-brand-400 transition-colors">{t('dashboard.clear_filters')}</button>
           </div>
         ) : projects.length === 0 ? (
           <EmptyState
@@ -793,7 +793,7 @@ function DashboardContent() {
                 >
                   {/* Folder-reorder drop indicator */}
                   {isFolderDragOver && (
-                    <div className="mb-2 h-0.5 rounded-full bg-[#FF5F1F]/70 transition-[width]" />
+                    <div className="mb-2 h-0.5 rounded-full bg-brand-500/70 transition-[width]" />
                   )}
                   {/* Drop zone highlight bar (for projects) */}
                   {isDragOver && !isFolderDragOver && (
@@ -862,9 +862,9 @@ function DashboardContent() {
                         onChange={e => setNewSubFolderName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') createSubFolder(folder.id); if (e.key === 'Escape') { setNewSubFolderParentId(null); setNewSubFolderName(''); } }}
                         placeholder="Subfolder name…"
-                        className="w-36 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
+                        className="w-36 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500"
                       />
-                      <button onClick={() => createSubFolder(folder.id)} className="px-2 py-1 text-xs bg-[#FF5F1F] text-white rounded hover:bg-[#E54E15]">Add</button>
+                      <button onClick={() => createSubFolder(folder.id)} className="px-2 py-1 text-xs bg-brand-500 text-white rounded hover:bg-brand-600">Add</button>
                       <button onClick={() => { setNewSubFolderParentId(null); setNewSubFolderName(''); }} className="px-2 py-1 text-xs text-surface-500 hover:text-white">✕</button>
                     </div>
                   )}
@@ -1024,7 +1024,7 @@ function DashboardContent() {
                       {company.name[0]}
                     </div>
                   )}
-                  <h3 className="text-lg font-semibold text-white group-hover:text-[#FF5F1F] transition-colors">{company.name}</h3>
+                  <h3 className="text-lg font-semibold text-white group-hover:text-brand-500 transition-colors">{company.name}</h3>
                 </Link>
                 <Badge size="sm" variant="default">{membership.role}</Badge>
                 <span className="text-xs text-surface-500">({cProjects.length} project{cProjects.length !== 1 ? 's' : ''})</span>
@@ -1081,7 +1081,7 @@ function DashboardContent() {
                           </div>
                         </div>
                         <div className="p-4">
-                          <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
+                          <h3 className="text-base font-semibold text-white group-hover:text-brand-500 transition-colors truncate">
                             {project.title}
                           </h3>
                           {project.logline && (
@@ -1196,7 +1196,7 @@ function ProjectCard({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">{project.title}</p>
+              <p className="text-sm font-semibold text-white group-hover:text-brand-500 transition-colors truncate">{project.title}</p>
               {project.logline && <p className="text-xs text-surface-500 truncate">{project.logline}</p>}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -1243,7 +1243,7 @@ function ProjectCard({
                       <span className="w-2.5 h-2.5 rounded-md flex-shrink-0" style={{ backgroundColor: f.color }} />
                       {f.emoji && <span>{f.emoji}</span>}
                       <span className="truncate">{f.name}</span>
-                      {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-[#FF5F1F] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                      {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-brand-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
                     </button>
                   ))}
                 </div>
@@ -1291,7 +1291,7 @@ function ProjectCard({
           </div>
           <div className="p-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold text-white group-hover:text-[#FF5F1F] transition-colors truncate">
+              <h3 className="text-base font-semibold text-white group-hover:text-brand-500 transition-colors truncate">
                 {project.title}
               </h3>
               <Badge size="sm" variant="default">{({
@@ -1360,7 +1360,7 @@ function ProjectCard({
                     <span className="w-2.5 h-2.5 rounded-md flex-shrink-0" style={{ backgroundColor: f.color }} />
                     {f.emoji && <span>{f.emoji}</span>}
                     <span className="truncate">{f.name}</span>
-                    {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-[#FF5F1F] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                    {project.folder_id === f.id && <svg className="w-3 h-3 ml-auto text-brand-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
                   </button>
                 ))}
               </div>
@@ -1578,7 +1578,7 @@ function NewProjectModal({
                     key={t.id}
                     type="button"
                     onClick={() => applyTemplate(t)}
-                    className="flex items-center gap-2 px-3 py-2 bg-surface-800 hover:bg-surface-700 border border-surface-700 hover:border-[#FF5F1F]/40 rounded-lg text-left transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 bg-surface-800 hover:bg-surface-700 border border-surface-700 hover:border-brand-500/40 rounded-lg text-left transition-colors"
                   >
                     <span className="text-sm font-bold text-surface-400">T</span>
                     <div className="min-w-0">
@@ -1635,7 +1635,7 @@ function NewProjectModal({
                   scriptType === opt.value && projectType !== 'tv_production'
                     ? opt.value === 'podcast'
                       ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/30'
-                      : 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-1 ring-[#FF5F1F]/30'
+                      : 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500/30'
                     : 'border-surface-700 bg-surface-800/50 hover:border-surface-600'
                 }`}
               >
@@ -1644,13 +1644,13 @@ function NewProjectModal({
                   size="md"
                   className={
                     scriptType === opt.value && projectType !== 'tv_production'
-                      ? opt.value === 'podcast' ? 'text-violet-400' : 'text-[#FF5F1F]'
+                      ? opt.value === 'podcast' ? 'text-violet-400' : 'text-brand-500'
                       : 'text-surface-400'
                   }
                 />
                 <h3 className={`mt-1.5 text-sm font-semibold ${
                   scriptType === opt.value && projectType !== 'tv_production'
-                    ? opt.value === 'podcast' ? 'text-violet-400' : 'text-[#FF5F1F]'
+                    ? opt.value === 'podcast' ? 'text-violet-400' : 'text-brand-500'
                     : 'text-white'
                 }`}>{opt.label}</h3>
                 <p className="mt-0.5 text-[10px] text-surface-500">{opt.description}</p>
@@ -1695,7 +1695,7 @@ function NewProjectModal({
                   onClick={() => setSelectedCompanyId(null)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                     selectedCompanyId === null
-                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
+                      ? 'border-brand-500 bg-brand-500/10 text-brand-500 ring-1 ring-brand-500/30'
                       : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
                   }`}
                 >
@@ -1709,7 +1709,7 @@ function NewProjectModal({
                     onClick={() => setSelectedCompanyId(m.company_id)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                       selectedCompanyId === m.company_id
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
+                        ? 'border-brand-500 bg-brand-500/10 text-brand-500 ring-1 ring-brand-500/30'
                         : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
                     }`}
                   >
@@ -1740,7 +1740,7 @@ function NewProjectModal({
                   onClick={() => setStorageMode('local')}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                     storageMode === 'local'
-                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
+                      ? 'border-brand-500 bg-brand-500/10 text-brand-500 ring-1 ring-brand-500/30'
                       : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
                   }`}
                 >
@@ -1752,7 +1752,7 @@ function NewProjectModal({
                   onClick={() => setStorageMode('cloud')}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                     storageMode === 'cloud'
-                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/30'
+                      ? 'border-brand-500 bg-brand-500/10 text-brand-500 ring-1 ring-brand-500/30'
                       : 'border-surface-700 bg-surface-800/50 text-surface-300 hover:border-surface-600'
                   }`}
                 >
@@ -1817,7 +1817,7 @@ function NewProjectModal({
                       onClick={() => toggleGenre(g)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                         genre.includes(g)
-                          ? 'bg-[#E54E15] text-white'
+                          ? 'bg-brand-600 text-white'
                           : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
                       }`}
                     >
@@ -1878,11 +1878,11 @@ function NewProjectModal({
             <div className="bg-surface-800/50 rounded-xl p-4 border border-surface-700">
               <p className="text-sm text-surface-300 mb-3 font-semibold">Your series gets:</p>
               <ul className="text-xs text-surface-400 space-y-1.5">
-                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Episode manager — one script per episode, tracked together</li>
-                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Season + episode numbering &amp; arc planning</li>
-                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Series-wide character, location &amp; scene tracking</li>
-                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Per-episode production scheduling &amp; shot lists</li>
-                <li className="flex items-center gap-2"><span className="text-[#FF5F1F]">✓</span> Real-time collaboration across the entire season</li>
+                <li className="flex items-center gap-2"><span className="text-brand-500">✓</span> Episode manager — one script per episode, tracked together</li>
+                <li className="flex items-center gap-2"><span className="text-brand-500">✓</span> Season + episode numbering &amp; arc planning</li>
+                <li className="flex items-center gap-2"><span className="text-brand-500">✓</span> Series-wide character, location &amp; scene tracking</li>
+                <li className="flex items-center gap-2"><span className="text-brand-500">✓</span> Per-episode production scheduling &amp; shot lists</li>
+                <li className="flex items-center gap-2"><span className="text-brand-500">✓</span> Real-time collaboration across the entire season</li>
               </ul>
             </div>
           )}
@@ -1978,7 +1978,7 @@ function StreakBadge() {
   const colors = streak >= 30 ? 'from-red-500 to-orange-500 text-red-100 border-red-500/30'
     : streak >= 14 ? 'from-orange-500 to-amber-500 text-orange-100 border-orange-500/30'
     : streak >= 7 ? 'from-amber-500 to-yellow-500 text-amber-100 border-amber-500/30'
-    : 'from-yellow-500 to-[#FF5F1F] text-yellow-100 border-yellow-500/30';
+    : 'from-yellow-500 to-brand-500 text-yellow-100 border-yellow-500/30';
 
   return (
     <span

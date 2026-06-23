@@ -16,7 +16,7 @@ const LocationMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full bg-surface-900">
-        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
       </div>
     ),
   }
@@ -217,7 +217,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
             {(['all', 'confirmed', 'scouting', 'needs_setup'] as const).map((f) => (
               <button key={f} onClick={() => setFilter(f)} className={cn(
                 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors',
-                filter === f ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+                filter === f ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
               )}>
                 {f === 'needs_setup' ? `Needs Setup (${locations.filter(needsSetup).length})` : f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
               </button>

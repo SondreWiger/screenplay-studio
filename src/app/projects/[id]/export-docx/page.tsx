@@ -386,7 +386,7 @@ function ExportDocxPageInner({ params }: { params: { id: string } }) {
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
                       placeholder="Your name"
-                      className="w-full bg-surface-800/80 border border-surface-700/80 rounded-lg px-3 py-2.5 text-sm text-white font-medium placeholder:text-surface-600 focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 transition-colors"
+                      className="w-full bg-surface-800/80 border border-surface-700/80 rounded-lg px-3 py-2.5 text-sm text-white font-medium placeholder:text-surface-600 focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-colors"
                     />
                   </div>
 

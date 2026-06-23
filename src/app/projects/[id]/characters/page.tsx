@@ -214,7 +214,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
             className={cn(
               'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
               filter === f.key
-                ? 'bg-[#E54E15]/20 text-[#FF5F1F]'
+                ? 'bg-brand-600/20 text-brand-500'
                 : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
             )}
           >

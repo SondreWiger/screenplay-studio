@@ -139,7 +139,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
             className={cn(
               'px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors',
               activeChar === c.id
-                ? 'bg-[#FF5F1F] border-[#FF5F1F] text-white'
+                ? 'bg-brand-500 border-brand-500 text-white'
                 : 'bg-surface-800/50 border-surface-700 text-surface-300 hover:border-surface-500',
             )}
           >
@@ -180,7 +180,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
           <div className="block md:hidden space-y-3">
             {/* Character bar */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-800/60 border border-surface-700/40 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#FF5F1F] shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />
               <p className="text-sm font-bold text-white truncate">{activeCharName}</p>
               <p className="text-[11px] text-surface-500 ml-auto shrink-0">Tap field to edit</p>
             </div>
@@ -235,14 +235,14 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
                                   if (e.key === 'Enter' && e.metaKey) commitEdit();
                                 }}
                                 rows={3}
-                                className="w-full bg-surface-800 border border-[#FF5F1F] rounded-lg px-3 py-2 text-sm text-white resize-none focus:outline-none"
+                                className="w-full bg-surface-800 border border-brand-500 rounded-lg px-3 py-2 text-sm text-white resize-none focus:outline-none"
                                 placeholder={`Add ${f.label.toLowerCase()}…`}
                               />
                               <div className="flex gap-2">
                                 <button
                                   onClick={commitEdit}
                                   disabled={isSavingThis}
-                                  className="flex-1 py-2 rounded-lg bg-[#FF5F1F] text-white text-sm font-semibold disabled:opacity-50 transition-opacity"
+                                  className="flex-1 py-2 rounded-lg bg-brand-500 text-white text-sm font-semibold disabled:opacity-50 transition-opacity"
                                 >
                                   {isSavingThis ? 'Saving…' : 'Save'}
                                 </button>
@@ -335,10 +335,10 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
                                       onChange={(e) => setDraft(e.target.value)}
                                       onKeyDown={(e) => { if (e.key === 'Escape') setEditCell(null); if (e.key === 'Enter' && e.metaKey) commitEdit(); }}
                                       rows={3}
-                                      className="w-full bg-surface-800 border border-[#FF5F1F] rounded px-2 py-1 text-xs text-white resize-none focus:outline-none"
+                                      className="w-full bg-surface-800 border border-brand-500 rounded px-2 py-1 text-xs text-white resize-none focus:outline-none"
                                     />
                                     <div className="flex gap-1">
-                                      <button onClick={commitEdit} className="px-2 py-0.5 rounded bg-[#FF5F1F] text-white text-[10px] font-medium">Save</button>
+                                      <button onClick={commitEdit} className="px-2 py-0.5 rounded bg-brand-500 text-white text-[10px] font-medium">Save</button>
                                       <button onClick={() => setEditCell(null)} className="px-2 py-0.5 rounded bg-surface-700 text-surface-300 text-[10px]">Cancel</button>
                                     </div>
                                   </div>

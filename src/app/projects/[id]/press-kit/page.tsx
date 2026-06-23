@@ -76,7 +76,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               onClick={() => canEdit && setEnabled(!enabled)}
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 transition-colors duration-200 focus:outline-none ${
                 enabled
-                  ? 'bg-[#FF5F1F] border-[#FF5F1F]'
+                  ? 'bg-brand-500 border-brand-500'
                   : 'bg-surface-700 border-surface-700'
               } ${!canEdit ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               aria-pressed={enabled}
@@ -126,7 +126,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
                 href={publicUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 text-sm text-[#FF5F1F] underline underline-offset-2 truncate hover:text-orange-300 transition-colors"
+                className="flex-1 text-sm text-brand-500 underline underline-offset-2 truncate hover:text-orange-300 transition-colors"
               >
                 {publicUrl}
               </a>
@@ -167,7 +167,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               onChange={(e) => setTagline(e.target.value)}
               disabled={!canEdit}
               placeholder="A short, punchy tagline shown beneath the title"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F]/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -183,7 +183,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               onChange={(e) => setContact(e.target.value)}
               disabled={!canEdit}
               placeholder="press@example.com"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F]/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <p className="text-xs text-surface-600 mt-1.5">Shown as a clickable &quot;Contact Press Team&quot; button on the public page.</p>
           </div>
@@ -201,7 +201,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               disabled={!canEdit}
               placeholder="Leave blank for public access"
               autoComplete="off"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F]/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <p className="text-xs text-surface-600 mt-1.5">Visitors will be asked to enter this password before viewing the press kit.</p>
           </div>
@@ -219,7 +219,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               'Custom tagline & press contact (set above)',
             ].map((item) => (
               <li key={item} className="flex items-start gap-2">
-                <svg className="w-4 h-4 text-[#FF5F1F] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-brand-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 {item}
@@ -228,7 +228,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
           </ul>
           <p className="text-xs text-surface-600 mt-3">
             Edit your logline, synopsis and images in{' '}
-            <a href={`/projects/${params.id}/settings`} className="text-[#FF5F1F] hover:underline">
+            <a href={`/projects/${params.id}/settings`} className="text-brand-500 hover:underline">
               Project Settings
             </a>
             .
@@ -241,7 +241,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2.5 rounded-xl bg-[#FF5F1F] text-white font-semibold text-sm hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 rounded-xl bg-brand-500 text-white font-semibold text-sm hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Saving…' : 'Save Settings'}
             </button>

@@ -69,7 +69,7 @@ export function ShortcutPicker({ projectId, userId, shortcuts, onToggle, onClose
         </svg>
         <span className={cn('truncate flex-1', pinned ? 'text-white' : 'text-surface-300 group-hover/pi:text-white')}>{item.title}</span>
         <span className={cn('w-4 h-4 shrink-0 flex items-center justify-center rounded-full border transition-colors',
-          pinned ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'border-surface-600 group-hover/pi:border-surface-400'
+          pinned ? 'bg-brand-500 border-brand-500' : 'border-surface-600 group-hover/pi:border-surface-400'
         )}>
           {pinned && (
             <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +102,7 @@ export function ShortcutPicker({ projectId, userId, shortcuts, onToggle, onClose
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search scripts & documents…"
-            className="w-full bg-surface-900/60 rounded-lg px-3 py-1.5 text-sm text-white placeholder-surface-500 outline-none border border-surface-700 focus:border-[#FF5F1F]/50"
+            className="w-full bg-surface-900/60 rounded-lg px-3 py-1.5 text-sm text-white placeholder-surface-500 outline-none border border-surface-700 focus:border-brand-500/50"
           />
         </div>
         <div className="max-h-72 overflow-y-auto p-1">

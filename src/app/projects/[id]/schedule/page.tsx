@@ -134,9 +134,9 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
         </div>
         <div className="flex gap-3">
           <div className="flex rounded-lg border border-surface-700 overflow-hidden">
-            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white')}>Month</button>
-            <button onClick={() => setView('day')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'day' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white')}>Day</button>
-            <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'list' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white')}>List</button>
+            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white')}>Month</button>
+            <button onClick={() => setView('day')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'day' ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white')}>Day</button>
+            <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'list' ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white')}>List</button>
           </div>
           {canEdit && (
             <Button onClick={() => { setSelectedEvent(null); setSelectedDate(null); setShowEditor(true); }}>
@@ -182,7 +182,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                 <div key={i} className={cn(
                   'min-h-[90px] p-1.5 border-r border-b border-surface-800/50 transition-colors',
                   day ? 'hover:bg-surface-900/[0.02] cursor-pointer' : '',
-                  isToday(day!) ? 'bg-[#E54E15]/5' : '',
+                  isToday(day!) ? 'bg-brand-600/5' : '',
                 )} onClick={() => {
                   if (!day) return;
                   const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -191,7 +191,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                 }}>
                   {day && (
                     <>
-                      <span className={cn('text-xs font-medium', isToday(day) ? 'text-[#FF5F1F]' : 'text-surface-400')}>{day}</span>
+                      <span className={cn('text-xs font-medium', isToday(day) ? 'text-brand-500' : 'text-surface-400')}>{day}</span>
                       <div className="mt-1 space-y-0.5">
                         {dayEvents.slice(0, 3).map((ev) => {
                           const evType = EVENT_TYPES.find((t) => t.value === ev.event_type);
@@ -326,7 +326,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
         </div>
         <div className="flex items-center gap-2">
           {!isToday && (
-            <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-[#FF5F1F] hover:text-[#FF8F5F] border border-surface-700 rounded-lg hover:border-surface-600 transition-colors">
+            <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-brand-500 hover:text-brand-400 border border-surface-700 rounded-lg hover:border-surface-600 transition-colors">
               Today
             </button>
           )}
@@ -359,8 +359,8 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
           <div className="absolute left-0 right-0 z-20 pointer-events-none"
             style={{ top: ((currentTimeMinutes - 5 * 60) / 60) * 64 }}>
             <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full bg-[#FF5F1F] -ml-1" />
-              <div className="flex-1 h-[2px] bg-[#FF5F1F]/60" />
+              <div className="w-2 h-2 rounded-full bg-brand-500 -ml-1" />
+              <div className="flex-1 h-[2px] bg-brand-500/60" />
             </div>
           </div>
         )}

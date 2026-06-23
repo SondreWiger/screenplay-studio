@@ -143,7 +143,7 @@ function QuizForm({ value, onChange }: { value: LessonContentQuiz; onChange: (v:
             className="w-full bg-white/[0.04] border border-white/10 rounded-lg text-sm text-white/80 px-3 py-2 outline-none focus:border-white/30 resize-none"
           />
           <div className="space-y-1.5">
-            <p className="text-[10px] text-white/30 uppercase tracking-wider">Answer Choices <span className="text-[#FF5F1F]">— click radio to mark correct</span></p>
+            <p className="text-[10px] text-white/30 uppercase tracking-wider">Answer Choices <span className="text-brand-500">— click radio to mark correct</span></p>
             {q.options.map(opt => (
               <div key={opt.id} className="flex items-center gap-2">
                 <button
@@ -215,7 +215,7 @@ function ScriptEditorForm({ value, onChange }: { value: LessonContentScriptEdito
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
           <input type="checkbox" checked={value.locked} onChange={e => onChange({ ...value, locked: e.target.checked })}
-            className="w-4 h-4 accent-[#FF5F1F]" />
+            className="w-4 h-4 accent-brand-500" />
           Read-only (student can only view, not edit)
         </label>
       </div>
@@ -273,7 +273,7 @@ function ArcEditorForm({ value, onChange }: { value: LessonContentArcEditor; onC
       </div>
       <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
         <input type="checkbox" checked={value.locked} onChange={e => onChange({ ...value, locked: e.target.checked })}
-          className="w-4 h-4 accent-[#FF5F1F]" />
+          className="w-4 h-4 accent-brand-500" />
         Read-only (students can only view this arc, not edit it)
       </label>
       <div>
@@ -336,7 +336,7 @@ function ExampleForm({ value, onChange }: { value: LessonContentExample; onChang
           <input value={annNote} onChange={e => setAnnNote(e.target.value)} placeholder="Annotation text..." className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg text-sm text-white/80 px-3 py-1.5 outline-none" />
           <button
             onClick={() => { if (annLine && annNote.trim()) { onChange({ ...value, annotations: [...(value.annotations||[]), { line: +annLine, note: annNote.trim() }] }); setAnnLine(''); setAnnNote(''); } }}
-            className="px-3 py-1.5 text-xs font-semibold bg-[#FF5F1F]/10 text-[#FF5F1F] rounded-lg hover:bg-[#FF5F1F]/20 transition-colors">
+            className="px-3 py-1.5 text-xs font-semibold bg-brand-500/10 text-brand-500 rounded-lg hover:bg-brand-500/20 transition-colors">
             Add
           </button>
         </div>
@@ -513,7 +513,7 @@ export default function CreateCoursePage() {
               <button key={s} onClick={() => step === 'build' || s === 'meta' ? setStep(s) : undefined}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
-                  step === s ? 'bg-[#FF5F1F] text-white' : 'text-white/40 hover:text-white/60',
+                  step === s ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/60',
                 )}>
                 <span className="w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[9px]">{i+1}</span>
                 {s === 'meta' ? 'Details' : 'Build'}
@@ -537,7 +537,7 @@ export default function CreateCoursePage() {
                 <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Title *</label>
                 <input value={title} onChange={e => setTitle(e.target.value)}
                   placeholder="Introduction to Screenplay Formatting"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-base font-semibold text-white px-4 py-3 outline-none focus:border-[#FF5F1F]/40 placeholder-white/20"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-base font-semibold text-white px-4 py-3 outline-none focus:border-brand-500/40 placeholder-white/20"
                 />
               </div>
               <div>
@@ -613,7 +613,7 @@ export default function CreateCoursePage() {
               <button
                 onClick={() => { if (title.trim()) setStep('build'); }}
                 disabled={!title.trim()}
-                className="px-6 py-3 rounded-xl font-semibold text-sm bg-[#FF5F1F] text-white hover:bg-[#E54E15] transition-colors disabled:opacity-40"
+                className="px-6 py-3 rounded-xl font-semibold text-sm bg-brand-500 text-white hover:bg-brand-600 transition-colors disabled:opacity-40"
               >
                 Continue to Builder →
               </button>
@@ -633,7 +633,7 @@ export default function CreateCoursePage() {
                   Save Draft
                 </button>
                 <button onClick={() => handleSave('published')} disabled={saving || sections.every(s => s.lessons.length === 0)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#FF5F1F] text-white hover:bg-[#E54E15] transition-colors disabled:opacity-40">
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-500 text-white hover:bg-brand-600 transition-colors disabled:opacity-40">
                   {saving ? 'Publishing...' : 'Publish Course'}
                 </button>
               </div>
@@ -643,7 +643,7 @@ export default function CreateCoursePage() {
               <div key={sec.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
                 {/* Section header */}
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] bg-white/[0.03]">
-                  <span className="w-6 h-6 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-xs font-bold flex items-center justify-center shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-brand-500/20 text-brand-500 text-xs font-bold flex items-center justify-center shrink-0">
                     {si + 1}
                   </span>
                   <input
@@ -729,7 +729,7 @@ export default function CreateCoursePage() {
                     <input type="checkbox"
                       checked={editingLesson.lesson.is_required}
                       onChange={e => setEditingLesson(el => el ? { ...el, lesson: { ...el.lesson, is_required: e.target.checked } } : null)}
-                      className="w-4 h-4 accent-[#FF5F1F]"
+                      className="w-4 h-4 accent-brand-500"
                     />
                     Required to complete
                   </label>
@@ -746,7 +746,7 @@ export default function CreateCoursePage() {
                       className={cn(
                         'flex items-start gap-2.5 p-3 rounded-xl border text-left transition-colors',
                         editingLesson.lesson.lesson_type === opt.value
-                          ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10'
+                          ? 'border-brand-500/40 bg-brand-500/10'
                           : 'border-white/[0.08] bg-white/[0.03] hover:border-white/20',
                       )}>
                       <span className="text-lg leading-none">{opt.icon}</span>
@@ -804,7 +804,7 @@ export default function CreateCoursePage() {
             <div className="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.06] bg-[#0E0E1C]">
               <button onClick={() => setEditingLesson(null)} className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors">Cancel</button>
               <button onClick={saveEditLesson}
-                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[#FF5F1F] text-white hover:bg-[#E54E15] transition-colors">
+                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 text-white hover:bg-brand-600 transition-colors">
                 Save Lesson
               </button>
             </div>

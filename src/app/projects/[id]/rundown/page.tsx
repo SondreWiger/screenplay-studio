@@ -454,7 +454,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
               const rd = rundowns.find(r => r.id === e.target.value);
               if (rd) setActiveRundown(rd);
             }}
-            className="bg-surface-800 text-white border border-surface-700 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-[#FF5F1F]"
+            className="bg-surface-800 text-white border border-surface-700 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-brand-500"
           >
             {rundowns.map(r => (
               <option key={r.id} value={r.id}>
@@ -547,7 +547,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                       item.is_break && !isOnAir && 'bg-surface-800/30',
                       !isOnAir && !isDone && !isKilled && 'hover:bg-surface-800/30',
                       draggedId === item.id && 'opacity-40',
-                      dragOverId === item.id && 'border-t-2 border-t-[#FF5F1F]',
+                      dragOverId === item.id && 'border-t-2 border-t-brand-500',
                     )}
                     onDoubleClick={() => openEditItem(item)}
                   >

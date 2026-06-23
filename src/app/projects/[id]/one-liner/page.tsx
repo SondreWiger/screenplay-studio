@@ -307,7 +307,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -346,7 +346,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
           <button
             onClick={() => setShowCut(!showCut)}
             className={cn('text-xs px-2.5 py-1 rounded-lg border transition-colors',
-              showCut ? 'text-surface-300 bg-surface-800 border-surface-700' : 'text-[#FF5F1F] bg-[#FF5F1F]/10 border-[#FF5F1F]/30'
+              showCut ? 'text-surface-300 bg-surface-800 border-surface-700' : 'text-brand-500 bg-brand-500/10 border-brand-500/30'
             )}
           >
             {showCut ? 'Hide Cut' : 'Show Cut'}
@@ -434,14 +434,14 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
                             if (e.key === 'Enter') saveSynopsis(scene.id);
                             if (e.key === 'Escape') setEditingSynopsis(null);
                           }}
-                          className="flex-1 bg-surface-700 border border-surface-500 rounded px-2 py-1 text-xs text-white outline-none focus:border-[#FF5F1F]/60"
+                          className="flex-1 bg-surface-700 border border-surface-500 rounded px-2 py-1 text-xs text-white outline-none focus:border-brand-500/60"
                           placeholder="Brief scene description..."
                           autoFocus
                         />
                         <button
                           onClick={() => saveSynopsis(scene.id)}
                           disabled={!!savingSynopsis}
-                          className="text-[10px] px-2 py-1 rounded bg-[#FF5F1F] text-white hover:bg-[#E54E15] transition-colors"
+                          className="text-[10px] px-2 py-1 rounded bg-brand-500 text-white hover:bg-brand-600 transition-colors"
                         >
                           {savingSynopsis === scene.id ? '…' : 'Save'}
                         </button>

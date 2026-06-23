@@ -12,7 +12,7 @@ import type { StageEnsembleMember, StageEnsembleGroup } from '@/lib/types';
 const GROUPS = STAGE_ENSEMBLE_GROUPS;
 
 const GROUP_COLORS: Record<StageEnsembleGroup, string> = {
-  'Principal':    'bg-[#FF5F1F]/20 text-[#FF8F5F] border-[#FF5F1F]/30',
+  'Principal':    'bg-brand-500/20 text-brand-400 border-brand-500/30',
   'Ensemble':     'bg-[#6366f1]/20 text-[#a5b4fc] border-[#6366f1]/30',
   'Understudy':   'bg-[#f59e0b]/20 text-[#fbbf24] border-[#f59e0b]/30',
   'Dance Captain':'bg-[#ec4899]/20 text-[#f9a8d4] border-[#ec4899]/30',
@@ -162,7 +162,7 @@ export default function EnsemblePage() {
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search actor or character…"
-          className="w-56 bg-surface-800 border border-surface-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
+          className="w-56 bg-surface-800 border border-surface-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500"
         />
         {(['All', ...GROUPS] as const).map(g => (
           <button
@@ -171,7 +171,7 @@ export default function EnsemblePage() {
             className={cn(
               'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
               filterGroup === g
-                ? 'bg-[#FF5F1F] text-white border-[#FF5F1F]'
+                ? 'bg-brand-500 text-white border-brand-500'
                 : 'bg-surface-800 text-surface-400 border-surface-700 hover:border-surface-500',
             )}
           >
@@ -282,7 +282,7 @@ export default function EnsemblePage() {
               <select
                 value={form.ensemble_group ?? 'Ensemble'}
                 onChange={e => setForm(f => ({ ...f, ensemble_group: e.target.value as StageEnsembleGroup }))}
-                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FF5F1F]"
+                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-500"
               >
                 {GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
@@ -292,7 +292,7 @@ export default function EnsemblePage() {
               <select
                 value={form.vocal_range ?? ''}
                 onChange={e => setForm(f => ({ ...f, vocal_range: e.target.value }))}
-                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FF5F1F]"
+                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-500"
               >
                 <option value="">— select —</option>
                 {VOCAL_RANGES.map(v => <option key={v} value={v}>{v}</option>)}
@@ -336,7 +336,7 @@ export default function EnsemblePage() {
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               placeholder="Special requirements, understudy for, conflicts…"
               rows={3}
-              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F] resize-none"
+              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500 resize-none"
             />
           </div>
 

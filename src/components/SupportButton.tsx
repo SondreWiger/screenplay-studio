@@ -69,11 +69,11 @@ export function SupportButton() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-300 hover:text-white hover:bg-white/5 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-[#FF5F1F]/10 border border-[#FF5F1F]/20 flex items-center justify-center"><Icon name="ticket" size="sm" className="text-[#FF5F1F]" /></span>
+              <span className="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center"><Icon name="ticket" size="sm" className="text-brand-500" /></span>
               <div className="flex-1 min-w-0">
                 <span className="font-medium">Support Tickets</span>
                 {openTicketCount > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-[#FF5F1F]/20 text-[#FF5F1F] rounded-full">
+                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-brand-500/20 text-brand-500 rounded-full">
                     {openTicketCount} open
                   </span>
                 )}
@@ -125,7 +125,7 @@ export function SupportButton() {
         className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
           open
             ? 'bg-surface-700 text-white rotate-45 shadow-surface-900/50'
-            : 'bg-[#E54E15] hover:bg-[#FF5F1F] text-white shadow-[#E54E15]/30 hover:shadow-[#FF5F1F]/40'
+            : 'bg-brand-600 hover:bg-brand-500 text-white shadow-brand-600/30 hover:shadow-brand-500/40'
         }`}
         title="Help & Support"
       >

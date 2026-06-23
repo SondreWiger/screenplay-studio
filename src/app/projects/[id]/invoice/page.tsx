@@ -166,7 +166,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
               value={settings[field] as string}
               onChange={(e) => setField(field, e.target.value)}
               placeholder={placeholder}
-              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60"
+              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60"
             />
           ))}
         </Card>
@@ -182,7 +182,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
               value={settings[field] as string}
               onChange={(e) => setField(field, e.target.value)}
               placeholder={placeholder}
-              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60"
+              className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60"
             />
           ))}
         </Card>
@@ -193,7 +193,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
               value={settings.invoiceNumber}
               onChange={(e) => setField('invoiceNumber', e.target.value)}
               placeholder="Invoice #"
-              className="px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60"
+              className="px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60"
             />
             <div className="flex items-center gap-1">
               <select
@@ -210,7 +210,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
                 value={settings.hourlyRate}
                 onChange={(e) => setField('hourlyRate', parseFloat(e.target.value))}
                 placeholder="Rate/hr"
-                className="flex-1 px-3 py-2 bg-surface-800/60 border-y border-r border-surface-700 rounded-r-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60 min-w-0"
+                className="flex-1 px-3 py-2 bg-surface-800/60 border-y border-r border-surface-700 rounded-r-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60 min-w-0"
               />
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
             value={settings.paymentTerms}
             onChange={(e) => setField('paymentTerms', e.target.value)}
             placeholder="Payment terms (e.g. 30 days)"
-            className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60"
+            className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60"
           />
         </Card>
         <Card className="p-4 space-y-3">
@@ -227,7 +227,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
             value={settings.notes}
             onChange={(e) => setField('notes', e.target.value)}
             placeholder="Payment instructions, notes to client…"
-            className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60 resize-none"
+            className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60 resize-none"
             rows={4}
           />
         </Card>

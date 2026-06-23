@@ -262,7 +262,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   <p className="text-xs text-surface-400">{email}</p>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
                     {member.production_role && (
-                      <span className="text-[11px] text-[#FF5F1F] font-medium">
+                      <span className="text-[11px] text-brand-500 font-medium">
                         {PRODUCTION_ROLES.find(r => r.value === member.production_role)?.label || member.production_role}
                       </span>
                     )}
@@ -319,14 +319,14 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                     className={cn(
                       'w-full flex items-center justify-between p-3 rounded-lg border transition-colors',
                       editingMember.role === role.value
-                        ? 'border-[#FF5F1F]/50 bg-[#E54E15]/10'
+                        ? 'border-brand-500/50 bg-brand-600/10'
                         : 'border-surface-700 hover:border-surface-600 hover:bg-surface-900/[0.02]'
                     )}>
                     <div>
                       <p className={cn('text-sm font-medium', ROLE_COLORS[role.value])}>{t(role.labelKey)}</p>
                       <p className="text-xs text-surface-500">{t(role.descKey)}</p>
                     </div>
-                    {editingMember.role === role.value && <span className="text-[#FF5F1F]">{'\u2713'}</span>}
+                    {editingMember.role === role.value && <span className="text-brand-500">{'\u2713'}</span>}
                   </button>
                 ))}
               </div>
@@ -437,13 +437,13 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-medium text-white">{credit.name}</h3>
                       {credit.external_url && (
-                        <a href={credit.external_url} target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:text-[#FF8F5F]">
+                        <a href={credit.external_url} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:text-brand-400">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                         </a>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px] text-[#FF5F1F] font-medium">
+                      <span className="text-[11px] text-brand-500 font-medium">
                         {PRODUCTION_ROLES.find(r => r.value === credit.production_role)?.label || credit.production_role}
                       </span>
                       {credit.character_name && (
@@ -453,7 +453,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                   </div>
                   {canManage && (
                     <div className="flex items-center gap-1">
-                      <button onClick={() => setEditingCredit(credit)} className="p-1.5 text-surface-500 hover:text-[#FF5F1F] rounded-lg hover:bg-surface-900/5">
+                      <button onClick={() => setEditingCredit(credit)} className="p-1.5 text-surface-500 hover:text-brand-500 rounded-lg hover:bg-surface-900/5">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                       </button>
                       <button onClick={() => handleDeleteCredit(credit.id)} className="p-1.5 text-surface-500 hover:text-red-400 rounded-lg hover:bg-surface-900/5">
@@ -572,13 +572,13 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
               <button key={r.value} onClick={() => setRole(r.value)}
                 className={cn(
                   'w-full flex items-center justify-between p-3 rounded-lg border transition-colors text-left',
-                  role === r.value ? 'border-[#FF5F1F]/50 bg-[#E54E15]/10' : 'border-surface-700 hover:border-surface-600'
+                  role === r.value ? 'border-brand-500/50 bg-brand-600/10' : 'border-surface-700 hover:border-surface-600'
                 )}>
                 <div>
                   <p className={cn('text-sm font-medium', ROLE_COLORS[r.value])}>{t(r.labelKey)}</p>
                   <p className="text-xs text-surface-500">{t(r.descKey)}</p>
                 </div>
-                {role === r.value && <span className="text-[#FF5F1F]">{'\u2713'}</span>}
+                {role === r.value && <span className="text-brand-500">{'\u2713'}</span>}
               </button>
             ))}
           </div>
@@ -637,7 +637,7 @@ function AddCreditModal({ isOpen, onClose, projectId, characters, onAdded }: {
         <div>
           <label className="block text-sm font-medium text-surface-300 mb-1.5">Production Role</label>
           <select value={role} onChange={(e) => setRole(e.target.value as ProductionRole)}
-            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
+            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
             {PRODUCTION_ROLES.map((r) => (
               <option key={r.value} value={r.value}>{r.label}</option>
             ))}
@@ -648,7 +648,7 @@ function AddCreditModal({ isOpen, onClose, projectId, characters, onAdded }: {
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Character</label>
             {characters.length > 0 ? (
               <select value={characterName} onChange={(e) => setCharacterName(e.target.value)}
-                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
+                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
                 <option value="">Select character...</option>
                 {characters.map((c) => (
                   <option key={c.id} value={c.name}>{c.name}{c.description ? ` \u2014 ${c.description}` : ''}</option>
@@ -733,7 +733,7 @@ function EditCreditModal({ isOpen, onClose, credit, characters, onSaved }: {
         <div>
           <label className="block text-sm font-medium text-surface-300 mb-1.5">Production Role</label>
           <select value={role} onChange={(e) => setRole(e.target.value as ProductionRole)}
-            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
+            className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
             {PRODUCTION_ROLES.map((r) => (
               <option key={r.value} value={r.value}>{r.label}</option>
             ))}
@@ -744,7 +744,7 @@ function EditCreditModal({ isOpen, onClose, credit, characters, onSaved }: {
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Character</label>
             {characters.length > 0 ? (
               <select value={characterName} onChange={(e) => setCharacterName(e.target.value)}
-                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-[#FF5F1F] focus:ring-1 focus:ring-[#FF5F1F] outline-none">
+                className="w-full rounded-lg bg-surface-800 border border-surface-700 px-3 py-2 text-sm text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
                 <option value="">Select character...</option>
                 {characters.map((c) => (
                   <option key={c.id} value={c.name}>{c.name}{c.description ? ` \u2014 ${c.description}` : ''}</option>

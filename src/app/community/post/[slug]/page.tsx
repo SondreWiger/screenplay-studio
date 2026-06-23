@@ -316,7 +316,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-[#FF5F1F]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
   }
@@ -337,7 +337,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-3xl font-black text-white mb-2">Post not found</h1>
           <p className="text-white/40">This post may have been removed or doesn&apos;t exist.</p>
-          <Link href="/community" className="mt-8 px-6 py-3 bg-[#E54E15] text-white font-medium rounded-lg">Browse Community</Link>
+          <Link href="/community" className="mt-8 px-6 py-3 bg-brand-600 text-white font-medium rounded-lg">Browse Community</Link>
         </div>
       </div>
     );
@@ -400,14 +400,14 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               className="flex items-center gap-3 group"
             >
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-[#FF5F1F] transition-colors" loading="lazy" />
+                <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-10 h-10 rounded-full group-hover:ring-2 ring-brand-500 transition-colors" loading="lazy" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-[#FF5F1F]/15 flex items-center justify-center text-sm font-bold text-[#FF5F1F] group-hover:ring-2 ring-[#FF5F1F] transition-colors">
+                <div className="w-10 h-10 rounded-full bg-brand-500/15 flex items-center justify-center text-sm font-bold text-brand-500 group-hover:ring-2 ring-brand-500 transition-colors">
                   {(post.author?.full_name || 'A')[0]}
                 </div>
               )}
               <div>
-                <p className="text-sm font-semibold text-white/90 group-hover:text-[#FF5F1F] transition-colors">{post.author?.full_name || 'Anonymous'}</p>
+                <p className="text-sm font-semibold text-white/90 group-hover:text-brand-500 transition-colors">{post.author?.full_name || 'Anonymous'}</p>
                 <p className="text-xs text-white/50">{formatDate(post.created_at)} · {post.view_count} views</p>
               </div>
             </Link>
@@ -430,7 +430,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                 disabled={!user}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                   hasUpvoted
-                    ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10 text-[#E54E15]'
+                    ? 'border-brand-500/40 bg-brand-500/10 text-brand-600'
                     : 'border-white/10 bg-surface-900 text-white/60 hover:border-white/15'
                 } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
@@ -577,7 +577,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                   <button
                     onClick={() => handleComment()}
                     disabled={!commentText.trim() || submitting}
-                    className="px-5 py-2 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
+                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
                   >
                     {submitting ? 'Posting...' : activeTab === 'suggestions' ? 'Submit Suggestion' : 'Post Comment'}
                   </button>
@@ -586,7 +586,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             ) : (
               <div className="mb-8 rounded-xl bg-surface-800 p-6 text-center">
                 <p className="text-sm text-white/60 mb-3">Sign in to join the conversation</p>
-                <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="inline-block px-5 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg">Sign In</Link>
+                <Link href={`/auth/login?redirect=/community/post/${params.slug}`} className="inline-block px-5 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg">Sign In</Link>
               </div>
             )}
 
@@ -693,7 +693,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                 <h3 className="text-xl font-black text-white mb-2">Film Submitted!</h3>
                 <p className="text-sm text-white/40 mb-6">Your film has been sent for review. You&apos;ll be notified once it&apos;s approved.</p>
                 <button onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}
-                  className="px-6 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg hover:bg-[#CC4312] transition-colors">
+                  className="px-6 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-[#CC4312] transition-colors">
                   Done
                 </button>
               </div>
@@ -709,7 +709,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                     <input
                       value={filmTitle} onChange={(e) => setFilmTitle(e.target.value)}
                       placeholder="My Short Film"
-                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-brand-500 focus:outline-none"
                     />
                   </div>
                   <div>
@@ -718,7 +718,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                       value={filmDesc} onChange={(e) => setFilmDesc(e.target.value)}
                       placeholder="Tell us about your production..."
                       rows={3}
-                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none resize-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-brand-500 focus:outline-none resize-none"
                     />
                   </div>
                   <div>
@@ -726,7 +726,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                     <input
                       value={filmUrl} onChange={(e) => setFilmUrl(e.target.value)}
                       placeholder="https://youtube.com/watch?v=..."
-                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-brand-500 focus:outline-none"
                     />
                   </div>
                   <div>
@@ -734,7 +734,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                     <input
                       value={filmThumb} onChange={(e) => setFilmThumb(e.target.value)}
                       placeholder="https://example.com/thumbnail.jpg"
-                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-surface-900 px-3 py-2 text-sm text-white/90 focus:border-brand-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -746,7 +746,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                   <button
                     onClick={handleSubmitFilm}
                     disabled={!filmTitle.trim() || submittingFilm}
-                    className="px-5 py-2 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
+                    className="px-5 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-[#CC4312] disabled:opacity-50 rounded-lg transition-colors"
                   >
                     {submittingFilm ? 'Submitting...' : 'Submit for Review'}
                   </button>
@@ -770,7 +770,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>
@@ -809,16 +809,16 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
         <div className="flex items-start gap-3">
           <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`}>
             {comment.author?.avatar_url ? (
-              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-[#FF5F1F] transition-colors')} loading="lazy" />
+              <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-brand-500 transition-colors')} loading="lazy" />
             ) : (
-              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-[#FF5F1F] transition-colors')}>
+              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-brand-500 transition-colors')}>
                 {(comment.author?.full_name || '?')[0]}
               </div>
             )}
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className={cn(isRoot ? 'text-sm' : 'text-xs', 'font-semibold text-white/90 hover:text-[#FF5F1F] transition-colors')}>{comment.author?.full_name || 'Anonymous'}</Link>
+              <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className={cn(isRoot ? 'text-sm' : 'text-xs', 'font-semibold text-white/90 hover:text-brand-500 transition-colors')}>{comment.author?.full_name || 'Anonymous'}</Link>
               {comment.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>🔰 Moderator</span>}
               {comment.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>🛡️ Admin</span>}
               <span className="text-[10px] text-white/50">{timeAgo(comment.created_at)}</span>
@@ -831,7 +831,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
               {user && (
                 <button
                   onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                  className="text-xs text-[#FF5F1F] hover:text-[#E54E15] transition-colors"
+                  className="text-xs text-brand-500 hover:text-brand-600 transition-colors"
                 >
                   Reply
                 </button>
@@ -859,13 +859,13 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Write a reply..."
-                  className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm focus:border-[#FF5F1F] focus:outline-none"
+                  className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
                   onKeyDown={(e) => { if (e.key === 'Enter') handleComment(comment.id); }}
                 />
                 <button
                   onClick={() => handleComment(comment.id)}
                   disabled={!replyText.trim() || submitting}
-                  className="px-3 py-2 text-sm font-medium text-white bg-[#E54E15] rounded-lg disabled:opacity-50"
+                  className="px-3 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg disabled:opacity-50"
                 >Reply</button>
               </div>
             )}

@@ -91,8 +91,8 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
         <h2 className="text-lg font-bold text-white">Calendar & Milestones</h2>
         <div className="flex gap-2">
           <div className="flex bg-surface-800 rounded-lg">
-            <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs rounded-lg', view === 'list' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400')}>List</button>
-            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs rounded-lg', view === 'calendar' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400')}>Grid</button>
+            <button onClick={() => setView('list')} className={cn('px-3 py-1.5 text-xs rounded-lg', view === 'list' ? 'bg-brand-500 text-white' : 'text-surface-400')}>List</button>
+            <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs rounded-lg', view === 'calendar' ? 'bg-brand-500 text-white' : 'text-surface-400')}>Grid</button>
           </div>
           <Button size="sm" onClick={() => setShowCreate(true)}>+ New Event</Button>
         </div>
@@ -167,8 +167,8 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
                 const dayEvents = events.filter(e => e.start_at.slice(0, 10) === dayStr);
                 const isToday = dayStr === now.toISOString().slice(0, 10);
                 cells.push(
-                  <div key={d} className={cn('min-h-[60px] p-1 rounded border border-transparent', isToday && 'border-[#FF5F1F]/30 bg-[#FF5F1F]/5')}>
-                    <span className={cn('text-[10px] font-medium', isToday ? 'text-[#FF5F1F]' : 'text-surface-500')}>{d}</span>
+                  <div key={d} className={cn('min-h-[60px] p-1 rounded border border-transparent', isToday && 'border-brand-500/30 bg-brand-500/5')}>
+                    <span className={cn('text-[10px] font-medium', isToday ? 'text-brand-500' : 'text-surface-500')}>{d}</span>
                     {dayEvents.slice(0, 3).map(ev => (
                       <div key={ev.id} className="text-[8px] truncate rounded px-1 mt-0.5" style={{ backgroundColor: ev.color + '20', color: ev.color }}>
                         {ev.title}

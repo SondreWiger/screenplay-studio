@@ -57,7 +57,7 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
             Dashboard
           </Link>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#FF5F1F] to-[#E54E15] flex items-center justify-center text-[10px] font-bold text-white">D</div>
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-[10px] font-bold text-white">D</div>
             <span className="text-white text-sm font-semibold tracking-tight">Dev Portal</span>
           </div>
         </div>

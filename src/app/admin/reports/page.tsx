@@ -44,14 +44,14 @@ const CONTENT_TYPE_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const REASON_BADGE_COLORS: Record<string, string> = {
-  spam: 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-yellow-500/30',
+  spam: 'bg-brand-500/20 text-brand-500 border-yellow-500/30',
   harassment: 'bg-red-500/20 text-red-400 border-red-500/30',
   hate_speech: 'bg-red-500/20 text-red-400 border-red-500/30',
   copyright: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   nsfw: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
   illegal: 'bg-red-500/20 text-red-400 border-red-500/30',
   impersonation: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  misinformation: 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-amber-500/30',
+  misinformation: 'bg-brand-500/20 text-brand-500 border-amber-500/30',
   other: 'bg-surface-700/50 text-surface-300 border-surface-600',
 };
 

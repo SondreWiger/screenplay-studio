@@ -194,7 +194,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search name / org / topic…"
-              className="w-44 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
+              className="w-44 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500"
             />
             <select value={filterCat} onChange={e => setFilterCat(e.target.value as ContactCategory | 'all')}
               className="bg-surface-800 border border-surface-700 rounded px-2 py-1 text-xs text-white">
@@ -319,13 +319,13 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
               {selected.phone && (
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-surface-500 w-12">Phone</span>
-                  <a href={`tel:${selected.phone}`} className="text-xs text-[#FF5F1F] hover:underline">{selected.phone}</a>
+                  <a href={`tel:${selected.phone}`} className="text-xs text-brand-500 hover:underline">{selected.phone}</a>
                 </div>
               )}
               {selected.email && (
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-surface-500 w-12">Email</span>
-                  <a href={`mailto:${selected.email}`} className="text-xs text-[#FF5F1F] hover:underline truncate">{selected.email}</a>
+                  <a href={`mailto:${selected.email}`} className="text-xs text-brand-500 hover:underline truncate">{selected.email}</a>
                 </div>
               )}
               {selected.last_contacted_at && (

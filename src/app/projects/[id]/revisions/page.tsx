@@ -386,7 +386,7 @@ export default function RevisionsPage() {
 
       {/* Compare Mode Panel */}
       {compareMode && activeScript && (
-        <Card className="p-4 border-[#FF5F1F]/30">
+        <Card className="p-4 border-brand-500/30">
           <p className="text-sm text-surface-300 mb-3">Select two revisions to compare:</p>
           <div className="flex items-center gap-4">
             <div className="flex-1">
@@ -394,7 +394,7 @@ export default function RevisionsPage() {
               <select
                 value={compareA || ''}
                 onChange={(e) => setCompareA(e.target.value || null)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
               >
                 <option value="">Select revision...</option>
                 {revisions.map((r) => (
@@ -412,7 +412,7 @@ export default function RevisionsPage() {
               <select
                 value={compareB || ''}
                 onChange={(e) => setCompareB(e.target.value || null)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]"
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-brand-500"
               >
                 <option value="">Select revision...</option>
                 {revisions.map((r) => (
@@ -454,7 +454,7 @@ export default function RevisionsPage() {
                     <span className={`font-medium ${b.word_count >= a.word_count ? 'text-green-400' : 'text-red-400'}`}>
                       {b.word_count >= a.word_count ? '+' : ''}{b.word_count - a.word_count}
                     </span> net words ·{' '}
-                    <span className="text-[#FF5F1F] font-medium">{Math.abs(b.page_count - a.page_count)}</span> page difference
+                    <span className="text-brand-500 font-medium">{Math.abs(b.page_count - a.page_count)}</span> page difference
                   </p>
                 </div>
               </div>
@@ -510,7 +510,7 @@ export default function RevisionsPage() {
                       <div className="mt-2 flex items-center gap-2">
                         <input
                           autoFocus
-                          className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-xs text-white outline-none focus:border-[#FF5F1F]"
+                          className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-xs text-white outline-none focus:border-brand-500"
                           placeholder="Add revision notes..."
                           value={notesValue}
                           onChange={(e) => setNotesValue(e.target.value)}

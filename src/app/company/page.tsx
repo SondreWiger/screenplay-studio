@@ -439,7 +439,7 @@ export default function CompanyDashboard() {
                 onClick={() => setTab(t.key)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   tab === t.key
-                    ? 'border-[#FF5F1F] text-white'
+                    ? 'border-brand-500 text-white'
                     : 'border-transparent text-surface-400 hover:text-white'
                 }`}
               >
@@ -497,7 +497,7 @@ export default function CompanyDashboard() {
 
             {/* Getting Started Checklist — show if company is new/sparse */}
             {(members.length <= 1 || teams.length === 0 || projects.length === 0) && canManage && (
-              <Card className="p-5 border border-[#FF5F1F]/20">
+              <Card className="p-5 border border-brand-500/20">
                 <h3 className="text-sm font-semibold text-white mb-3">🚀 Getting Started</h3>
                 <div className="space-y-2">
                   {[
@@ -528,7 +528,7 @@ export default function CompanyDashboard() {
               {company.website && (
                 <Card className="p-4">
                   <p className="text-xs text-surface-500">Website</p>
-                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-[#FF5F1F] hover:underline">{company.website}</a>
+                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-brand-500 hover:underline">{company.website}</a>
                 </Card>
               )}
               {company.email && (
@@ -583,7 +583,7 @@ export default function CompanyDashboard() {
                     <p className="text-xs text-surface-400">{m.job_title || m.role} {m.department ? `· ${m.department}` : ''}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-                    m.role === 'owner' ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' :
+                    m.role === 'owner' ? 'bg-brand-500/20 text-brand-500' :
                     m.role === 'admin' ? 'bg-blue-500/20 text-blue-400' :
                     m.role === 'manager' ? 'bg-green-500/20 text-green-400' :
                     'bg-surface-700 text-surface-300'
@@ -672,7 +672,7 @@ export default function CompanyDashboard() {
                       <div className="mt-4 pt-3 border-t border-surface-800 flex justify-between items-center">
                         <button
                           onClick={() => setShowAddToTeamModal(team.id)}
-                          className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] flex items-center gap-1"
+                          className="text-xs text-brand-500 hover:text-brand-400 flex items-center gap-1"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                           Add Member
@@ -772,7 +772,7 @@ export default function CompanyDashboard() {
                     <p className="text-sm font-medium text-white">Allow Comments</p>
                     <p className="text-[11px] text-surface-400">Let readers comment on this post</p>
                   </div>
-                  <div className={`ml-auto w-10 h-6 rounded-full shrink-0 transition-colors relative ${blogForm.allow_comments ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                  <div className={`ml-auto w-10 h-6 rounded-full shrink-0 transition-colors relative ${blogForm.allow_comments ? 'bg-brand-500' : 'bg-surface-700'}`}>
                     <div className={`absolute top-1 w-4 h-4 rounded-full bg-surface-900 shadow transition-transform ${blogForm.allow_comments ? 'left-5' : 'left-1'}`} />
                   </div>
                 </button>
@@ -799,7 +799,7 @@ export default function CompanyDashboard() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      {post.pinned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FF5F1F]/20 text-[#FF5F1F] font-bold">PINNED</span>}
+                      {post.pinned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-500 font-bold">PINNED</span>}
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide ${
                         post.status === 'published' ? 'bg-green-500/20 text-green-400' :
                         post.status === 'draft' ? 'bg-surface-700 text-surface-400' :
@@ -827,7 +827,7 @@ export default function CompanyDashboard() {
                       <button onClick={() => togglePinPost(post)} className="text-xs text-surface-400 hover:text-yellow-400 px-2 py-1" title={post.pinned ? 'Unpin' : 'Pin'}>
                         📌
                       </button>
-                      <button onClick={() => editBlogPost(post)} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] px-2 py-1">Edit</button>
+                      <button onClick={() => editBlogPost(post)} className="text-xs text-brand-500 hover:text-brand-400 px-2 py-1">Edit</button>
                       <button onClick={() => deleteBlogPost(post.id)} className="text-xs text-red-400 hover:text-red-300 px-2 py-1">Delete</button>
                     </div>
                   )}
@@ -881,7 +881,7 @@ export default function CompanyDashboard() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-400">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-brand-500' : 'bg-surface-700'}`}>
                       <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-surface-900 shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[18px]' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -976,14 +976,14 @@ export default function CompanyDashboard() {
                   <input readOnly value={lastInviteLink} className="flex-1 rounded-lg border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-surface-300 outline-none" />
                   <button
                     onClick={() => { navigator.clipboard.writeText(lastInviteLink); }}
-                    className="px-3 py-2 rounded-lg bg-[#E54E15] text-white text-xs font-medium hover:bg-[#CC4312] transition-colors"
+                    className="px-3 py-2 rounded-lg bg-brand-600 text-white text-xs font-medium hover:bg-[#CC4312] transition-colors"
                   >
                     Copy
                   </button>
                 </div>
                 <p className="text-[10px] text-surface-500 text-center">Link expires in 7 days. They&apos;ll also see a banner on their dashboard if they&apos;re registered.</p>
                 <div className="flex justify-between items-center pt-2">
-                  <button onClick={() => setLastInviteLink('')} className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F]">Invite another</button>
+                  <button onClick={() => setLastInviteLink('')} className="text-xs text-brand-500 hover:text-brand-400">Invite another</button>
                   <Button variant="ghost" onClick={() => { setShowInviteModal(false); setLastInviteLink(''); }}>Done</Button>
                 </div>
               </div>
@@ -994,7 +994,7 @@ export default function CompanyDashboard() {
                   <div>
                     <label className="block text-sm font-medium text-surface-300 mb-1.5">Role</label>
                     <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as CompanyRole)}
-                      className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]">
+                      className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500">
                       <option value="admin">Admin — Full access</option>
                       <option value="manager">Manager — Manage projects & members</option>
                       <option value="member">Member — Edit content</option>
@@ -1040,7 +1040,7 @@ export default function CompanyDashboard() {
                     <label key={perm.key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-800 cursor-pointer">
                       <input type="checkbox" checked={(teamPerms as Record<string, boolean>)[perm.key]}
                         onChange={(e) => setTeamPerms({ ...teamPerms, [perm.key]: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]" />
+                        className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500" />
                       <span className="text-sm text-surface-300">{perm.label}</span>
                     </label>
                   ))}
@@ -1068,7 +1068,7 @@ export default function CompanyDashboard() {
                   onClick={() => setSelectedMemberForTeam(m.id)}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors text-left ${
                     selectedMemberForTeam === m.id
-                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
+                      ? 'border-brand-500 bg-brand-500/10'
                       : 'border-surface-700 hover:border-surface-600'
                   }`}
                 >
@@ -1080,7 +1080,7 @@ export default function CompanyDashboard() {
                     <p className="text-[11px] text-surface-400">{m.role}</p>
                   </div>
                   {selectedMemberForTeam === m.id && (
-                    <svg className="w-5 h-5 text-[#FF5F1F] shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <svg className="w-5 h-5 text-brand-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                   )}
                 </button>
               ))}

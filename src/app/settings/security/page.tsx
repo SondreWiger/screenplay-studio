@@ -346,7 +346,7 @@ export default function SecuritySettingsPage() {
                     type="checkbox"
                     checked={consent.marketing_emails}
                     onChange={(e) => setConsent((prev) => ({ ...prev, marketing_emails: e.target.checked }))}
-                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-brand-500 focus:ring-brand-500"
                   />
                   <div>
                     <p className="text-surface-200 text-sm font-medium">Marketing Emails</p>
@@ -359,7 +359,7 @@ export default function SecuritySettingsPage() {
                     type="checkbox"
                     checked={consent.analytics_tracking}
                     onChange={(e) => setConsent((prev) => ({ ...prev, analytics_tracking: e.target.checked }))}
-                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="h-4 w-4 rounded border-surface-600 bg-surface-950 text-brand-500 focus:ring-brand-500"
                   />
                   <div>
                     <p className="text-surface-200 text-sm font-medium">Analytics Tracking</p>

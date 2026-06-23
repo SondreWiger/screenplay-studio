@@ -134,7 +134,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
           <h1 className="text-xl font-black text-white mb-2">You&apos;re Invited!</h1>
           <p className="text-surface-400 mb-1">
             <span className="text-white font-semibold">{company?.name || 'A company'}</span> has invited you to join as{' '}
-            <span className="capitalize text-[#FF5F1F]">{invitation?.role || 'member'}</span>.
+            <span className="capitalize text-brand-500">{invitation?.role || 'member'}</span>.
           </p>
           <p className="text-sm text-surface-500 mb-6">Sign in or create an account to accept this invitation.</p>
           <div className="flex gap-3 justify-center">
@@ -170,7 +170,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
           <div className="text-4xl mb-4">🎉</div>
           <h1 className="text-xl font-black text-white mb-2">Welcome to {company?.name || 'the team'}!</h1>
           <p className="text-sm text-surface-400 mb-6">
-            You&apos;ve joined as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
+            You&apos;ve joined as <span className="capitalize text-brand-500 font-medium">{invitation?.role || 'member'}</span>.
           </p>
           <div className="flex gap-3 justify-center">
             <Button onClick={() => router.push(company?.slug ? `/company/${company.slug}` : '/company')}>
@@ -197,7 +197,7 @@ export default function AcceptInvitePage({ params }: { params: { token: string }
 
         <h1 className="text-xl font-black text-white mb-2">Join {company?.name || 'Company'}</h1>
         <p className="text-surface-400 mb-1">
-          You&apos;ve been invited to join as <span className="capitalize text-[#FF5F1F] font-medium">{invitation?.role || 'member'}</span>.
+          You&apos;ve been invited to join as <span className="capitalize text-brand-500 font-medium">{invitation?.role || 'member'}</span>.
         </p>
         <p className="text-xs text-surface-500 mb-6">
           Invited to: <span className="text-surface-300">{invitation?.email}</span>

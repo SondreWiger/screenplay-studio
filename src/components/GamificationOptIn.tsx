@@ -41,10 +41,10 @@ export function GamificationOptIn() {
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.8)' }}
       >
         {/* Orange accent line */}
-        <div className="h-0.5 bg-gradient-to-r from-transparent via-[#FF5F1F] to-transparent" />
+        <div className="h-0.5 bg-gradient-to-r from-transparent via-brand-500 to-transparent" />
 
         <div className="p-5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[#FF5F1F]/60 mb-1">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-brand-500/60 mb-1">
             One quick question
           </p>
           <h2 className="text-xl font-black text-white mb-1">
@@ -73,7 +73,7 @@ export function GamificationOptIn() {
           <div className="flex gap-2">
             <button
               onClick={() => choose(true)}
-              className="flex-1 py-2.5 rounded-xl bg-[#FF5F1F] hover:bg-[#E54E15] text-white text-sm font-bold transition-colors"
+              className="flex-1 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-bold transition-colors"
             >
               Let&apos;s go! 🚀
             </button>

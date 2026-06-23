@@ -61,7 +61,7 @@ function FeedbackCard({ item, userVoted, onVote }: {
         className={cn(
           'flex flex-col items-center justify-center min-w-[44px] py-2 px-1 rounded-lg border text-xs font-black transition-colors duration-150 shrink-0',
           userVoted
-            ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
+            ? 'border-brand-500 bg-brand-500/10 text-brand-500'
             : 'border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-500 hover:text-white'
         )}
         title={userVoted ? 'Remove vote' : 'Upvote'}
@@ -81,7 +81,7 @@ function FeedbackCard({ item, userVoted, onVote }: {
             </span>
           ))}
         </div>
-        <h3 className="text-sm font-semibold text-white group-hover:text-[#FF5F1F] transition-colors line-clamp-2 leading-snug mb-1">
+        <h3 className="text-sm font-semibold text-white group-hover:text-brand-500 transition-colors line-clamp-2 leading-snug mb-1">
           {item.title}
         </h3>
         <p className="text-xs text-surface-500 line-clamp-2 leading-relaxed mb-2">{item.body}</p>
@@ -278,7 +278,7 @@ export default function FeedbackPage() {
                   Screenplay Studio
                 </Link>
                 <span className="text-surface-700">/</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF5F1F]">Feedback</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-500">Feedback</span>
               </div>
               <h1 className="text-4xl font-black tracking-tight mb-2">Feedback & Roadmap</h1>
               <p className="text-surface-400 text-sm max-w-xl leading-relaxed">
@@ -377,7 +377,7 @@ export default function FeedbackPage() {
             <MessageSquare size={32} className="mx-auto mb-3 opacity-30" />
             <p className="font-semibold">No items found</p>
             <p className="text-sm mt-1">Try adjusting your filters or be the first to submit!</p>
-            <button onClick={() => setShowSubmit(true)} className="mt-4 text-[#FF5F1F] text-sm font-bold hover:underline">
+            <button onClick={() => setShowSubmit(true)} className="mt-4 text-brand-500 text-sm font-bold hover:underline">
               Submit feedback →
             </button>
           </div>
@@ -412,7 +412,7 @@ export default function FeedbackPage() {
             </div>
             <button
               onClick={() => setShowSubmit(true)}
-              className="text-xs font-bold text-[#FF5F1F] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-brand-500 hover:underline flex items-center gap-1"
             >
               Leave a review <ArrowRight size={12} />
             </button>
@@ -450,7 +450,7 @@ export default function FeedbackPage() {
             <SiteVersion light />
             <span className="text-white/10">·</span>
             <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80">
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80">
               Northem ♥
             </a>
           </div>

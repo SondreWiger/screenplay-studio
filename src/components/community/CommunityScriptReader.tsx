@@ -242,7 +242,7 @@ export function CommunityScriptInfoPanel({
         />
         <div className="px-5 py-3 border-t border-white/[0.07] flex items-center justify-between">
           <span className="text-xs text-white/30">PDF viewer</span>
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline">
+          <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-500 hover:underline">
             Open in new tab ↗
           </a>
         </div>
@@ -604,7 +604,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
             {scenes.length > 0 && (
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={`p-2 rounded-md border transition-colors ${sidebarOpen ? 'bg-[#FF5F1F]/10 border-[#FF5F1F]/30 text-[#FF8F5F]' : 'border-white/10 text-white/40 hover:text-white/60'}`}
+                className={`p-2 rounded-md border transition-colors ${sidebarOpen ? 'bg-brand-500/10 border-brand-500/30 text-brand-400' : 'border-white/10 text-white/40 hover:text-white/60'}`}
                 title="Toggle sidebar (T)"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -624,14 +624,14 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
               <>
                 <button
                   onClick={() => setShowSceneNumbers(!showSceneNumbers)}
-                  className={`px-2.5 py-1.5 text-[11px] rounded-md border transition-colors ${showSceneNumbers ? 'bg-[#FF5F1F]/10 border-[#FF5F1F]/30 text-[#FF8F5F]' : 'border-white/10 text-white/40 hover:text-white/60'}`}
+                  className={`px-2.5 py-1.5 text-[11px] rounded-md border transition-colors ${showSceneNumbers ? 'bg-brand-500/10 border-brand-500/30 text-brand-400' : 'border-white/10 text-white/40 hover:text-white/60'}`}
                   title="Scene numbers"
                 >
                   #
                 </button>
                 <button
                   onClick={() => setShowCharColors(!showCharColors)}
-                  className={`px-2.5 py-1.5 text-[11px] rounded-md border transition-colors ${showCharColors ? 'bg-[#FF5F1F]/10 border-[#FF5F1F]/30 text-[#FF8F5F]' : 'border-white/10 text-white/40 hover:text-white/60'}`}
+                  className={`px-2.5 py-1.5 text-[11px] rounded-md border transition-colors ${showCharColors ? 'bg-brand-500/10 border-brand-500/30 text-brand-400' : 'border-white/10 text-white/40 hover:text-white/60'}`}
                   title="Character colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -662,7 +662,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                   onClick={() => setSidebarTab(key)}
                   className={`flex-1 py-2.5 text-[11px] font-medium uppercase tracking-wider transition-colors ${
                     sidebarTab === key
-                      ? 'text-[#FF8F5F] border-b-2 border-[#FF5F1F]'
+                      ? 'text-brand-400 border-b-2 border-brand-500'
                       : 'text-white/40 hover:text-white/60'
                   }`}
                 >
@@ -680,7 +680,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     placeholder="Search scenes…"
                     value={sceneFilter}
                     onChange={e => setSceneFilter(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-white/[0.03] border border-white/10 rounded-lg text-white placeholder-white/20 outline-none focus:border-[#FF5F1F]/40 mb-3"
+                    className="w-full px-3 py-2 text-xs bg-white/[0.03] border border-white/10 rounded-lg text-white placeholder-white/20 outline-none focus:border-brand-500/40 mb-3"
                   />
                   <div className="space-y-0.5">
                     {filteredScenes.map(scene => {
@@ -692,12 +692,12 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                           onClick={() => scrollToScene(sceneIdx)}
                           className={`w-full text-left px-3 py-2 rounded-lg transition group ${
                             isActive
-                              ? 'bg-[#FF5F1F]/10 border border-[#FF5F1F]/20'
+                              ? 'bg-brand-500/10 border border-brand-500/20'
                               : 'hover:bg-white/[0.03] border border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold tabular-nums shrink-0 w-6 text-center ${isActive ? 'text-[#FF8F5F]' : 'text-white/25'}`}>
+                            <span className={`text-[10px] font-bold tabular-nums shrink-0 w-6 text-center ${isActive ? 'text-brand-400' : 'text-white/25'}`}>
                               {scene.number}
                             </span>
                             <span className={`text-xs truncate ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>
@@ -731,7 +731,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     placeholder="Search characters…"
                     value={charFilter}
                     onChange={e => setCharFilter(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-white/[0.03] border border-white/10 rounded-lg text-white placeholder-white/20 outline-none focus:border-[#FF5F1F]/40 mb-3"
+                    className="w-full px-3 py-2 text-xs bg-white/[0.03] border border-white/10 rounded-lg text-white placeholder-white/20 outline-none focus:border-brand-500/40 mb-3"
                   />
                   <div className="space-y-1">
                     {filteredChars.map((char, i) => (
@@ -838,7 +838,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                       {annotations.map(a => (
                         <div
                           key={a.id}
-                          className="rounded-lg border p-3 cursor-pointer hover:border-[#FF5F1F]/30 transition-colors"
+                          className="rounded-lg border p-3 cursor-pointer hover:border-brand-500/30 transition-colors"
                           style={{ background: '#FF5F1F06', borderColor: '#FF5F1F20' }}
                           onClick={() => setActiveAnnotationLine(a.line_ref)}
                         >
@@ -1125,7 +1125,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
               <span className="text-[10px] text-white/20">Screenplay Studio — Community</span>
               <button
                 onClick={onClose}
-                className="text-[10px] text-white/40 hover:text-[#FF8F5F] transition-colors"
+                className="text-[10px] text-white/40 hover:text-brand-400 transition-colors"
               >
                 Close reader ×
               </button>

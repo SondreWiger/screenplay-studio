@@ -184,7 +184,7 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
                   onChange={(e) => setMessageText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                   placeholder={`Message #${activeChannelData.name}`}
-                  className="flex-1 bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600 focus:outline-none focus:border-[#FF5F1F]"
+                  className="flex-1 bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500"
                 />
                 <Button size="sm" onClick={sendMessage} disabled={!messageText.trim() || sending}>Send</Button>
               </div>
@@ -207,7 +207,7 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
               {(['general', 'project', 'team', 'announcement', 'random'] as const).map(t => (
                 <button key={t} onClick={() => setNewChannelType(t)}
                   className={cn('px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                    newChannelType === t ? 'bg-[#FF5F1F] text-white' : 'bg-surface-800 text-surface-400 hover:text-white')}>
+                    newChannelType === t ? 'bg-brand-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white')}>
                   {channelTypeIcons[t]} {t}
                 </button>
               ))}

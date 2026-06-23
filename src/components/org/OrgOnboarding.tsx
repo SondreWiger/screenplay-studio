@@ -180,7 +180,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                   key={s}
                   className={cn(
                     'w-2 h-2 rounded-full transition-colors duration-300',
-                    i <= stepIndex ? 'bg-[#FF5F1F] scale-100' : 'bg-surface-700 scale-75'
+                    i <= stepIndex ? 'bg-brand-500 scale-100' : 'bg-surface-700 scale-75'
                   )}
                 />
               ))}
@@ -189,7 +189,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
           </div>
           <div className="h-0.5 bg-surface-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] transition-[width] duration-500 ease-out rounded-full"
+              className="h-full bg-gradient-to-r from-brand-600 to-brand-500 transition-[width] duration-500 ease-out rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -201,7 +201,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
           {step === 'basics' && (
             <div className="p-8">
               <div className="text-center mb-8">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#E54E15] to-[#FF5F1F] flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
@@ -232,7 +232,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                       type="text"
                       value={data.slug}
                       onChange={(e) => setData(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F] transition-colors"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 transition-colors"
                       placeholder="acme-pictures"
                     />
                   </div>
@@ -270,7 +270,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     className={cn(
                       'w-full flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 text-left group',
                       data.size === opt.value
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 ring-1 ring-[#FF5F1F]/20'
+                        ? 'border-brand-500 bg-brand-500/5 ring-1 ring-brand-500/20'
                         : 'border-surface-800 hover:border-surface-700 hover:bg-surface-800/50'
                     )}
                   >
@@ -283,7 +283,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     <div className={cn(
                       'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors',
                       data.size === opt.value
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]'
+                        ? 'border-brand-500 bg-brand-500'
                         : 'border-surface-600'
                     )}>
                       {data.size === opt.value && (
@@ -314,7 +314,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     className={cn(
                       'w-full flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 text-left',
                       data.style === opt.value
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 ring-1 ring-[#FF5F1F]/20'
+                        ? 'border-brand-500 bg-brand-500/5 ring-1 ring-brand-500/20'
                         : 'border-surface-800 hover:border-surface-700 hover:bg-surface-800/50'
                     )}
                   >
@@ -326,7 +326,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     <div className={cn(
                       'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors',
                       data.style === opt.value
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]'
+                        ? 'border-brand-500 bg-brand-500'
                         : 'border-surface-600'
                     )}>
                       {data.style === opt.value && (
@@ -386,12 +386,12 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                       className={cn(
                         'flex items-start gap-3 p-4 rounded-xl border transition-colors duration-200 text-left relative',
                         isSelected
-                          ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 ring-1 ring-[#FF5F1F]/20'
+                          ? 'border-brand-500 bg-brand-500/5 ring-1 ring-brand-500/20'
                           : 'border-surface-800 hover:border-surface-700 hover:bg-surface-800/50'
                       )}
                     >
                       {isRecommended && (
-                        <span className="absolute -top-2 right-3 text-[9px] px-1.5 py-0.5 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] font-bold">
+                        <span className="absolute -top-2 right-3 text-[9px] px-1.5 py-0.5 rounded-full bg-brand-500/20 text-brand-500 font-bold">
                           RECOMMENDED
                         </span>
                       )}
@@ -403,7 +403,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                       <div className={cn(
                         'w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors',
                         isSelected
-                          ? 'border-[#FF5F1F] bg-[#FF5F1F]'
+                          ? 'border-brand-500 bg-brand-500'
                           : 'border-surface-600'
                       )}>
                         {isSelected && (

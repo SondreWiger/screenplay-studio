@@ -213,7 +213,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-semibold text-white">{char.name}</p>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${char.is_main ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' : 'bg-neutral-800 text-neutral-400'}`}>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${char.is_main ? 'bg-brand-500/20 text-brand-500' : 'bg-neutral-800 text-neutral-400'}`}>
                       {char.is_main ? 'Lead' : 'Supporting'}
                     </span>
                   </div>

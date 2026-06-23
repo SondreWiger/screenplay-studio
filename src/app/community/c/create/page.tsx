@@ -75,7 +75,7 @@ export default function CreateCommunityPage() {
     <div className="min-h-screen" style={{ background: '#070710', color: '#fff' }}>
       <div className="max-w-lg mx-auto px-4 py-12">
         <div className="mb-8">
-          <p className="text-[10px] font-mono text-[#FF5F1F] uppercase tracking-widest mb-1">New Community</p>
+          <p className="text-[10px] font-mono text-brand-500 uppercase tracking-widest mb-1">New Community</p>
           <h1 className="text-2xl font-black" style={{ letterSpacing: '-0.03em' }}>CREATE YOUR SPACE</h1>
           <p className="text-white/40 text-sm mt-1">Build a community for writers who share your passion.</p>
         </div>

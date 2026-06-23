@@ -203,7 +203,7 @@ export default function ChatPage() {
                   className={cn(
                     'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2',
                     activeChannel?.id === ch.id
-                      ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium'
+                      ? 'bg-brand-500/10 text-brand-600 font-medium'
                       : 'text-white/60 hover:bg-surface-900 hover:text-white'
                   )}
                 >
@@ -229,7 +229,7 @@ export default function ChatPage() {
                       className={cn(
                         'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2',
                         activeChannel?.id === ch.id
-                          ? 'bg-[#FF5F1F]/10 text-[#E54E15] font-medium'
+                          ? 'bg-brand-500/10 text-brand-600 font-medium'
                           : 'text-white/60 hover:bg-surface-900 hover:text-white'
                       )}
                     >
@@ -323,10 +323,10 @@ export default function ChatPage() {
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
                             onKeyDown={(e) => { if (e.key === 'Enter') handleEdit(msg.id); if (e.key === 'Escape') setEditingId(null); }}
-                            className="flex-1 text-sm text-white/90 bg-surface-900 border border-white/10 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#FF5F1F]"
+                            className="flex-1 text-sm text-white/90 bg-surface-900 border border-white/10 rounded-lg px-3 py-1.5 focus:outline-none focus:border-brand-500"
                             autoFocus
                           />
-                          <button onClick={() => handleEdit(msg.id)} className="text-xs text-[#FF5F1F] hover:text-[#E54E15]">Save</button>
+                          <button onClick={() => handleEdit(msg.id)} className="text-xs text-brand-500 hover:text-brand-600">Save</button>
                           <button onClick={() => setEditingId(null)} className="text-xs text-white/50 hover:text-white/60">Cancel</button>
                         </div>
                       ) : (
@@ -398,13 +398,13 @@ export default function ChatPage() {
                   onKeyDown={handleKeyDown}
                   placeholder={`Message #${activeChannel?.name || 'general'}...`}
                   rows={1}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 bg-surface-900 text-sm text-white/90 focus:outline-none focus:border-[#FF5F1F] resize-none max-h-32"
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 bg-surface-900 text-sm text-white/90 focus:outline-none focus:border-brand-500 resize-none max-h-32"
                   style={{ minHeight: '40px' }}
                 />
                 <button
                   onClick={handleSend}
                   disabled={!newMessage.trim() || sending}
-                  className="px-4 py-2.5 bg-[#E54E15] hover:bg-[#CC4312] disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors shrink-0"
+                  className="px-4 py-2.5 bg-brand-600 hover:bg-[#CC4312] disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors shrink-0"
                 >
                   {sending ? '...' : 'Send'}
                 </button>
@@ -412,7 +412,7 @@ export default function ChatPage() {
             </div>
           ) : (
             <div className="shrink-0 px-5 py-4 border-t border-white/10 bg-surface-900 text-center">
-              <Link href="/auth/login?redirect=/community/chat" className="text-sm text-[#FF5F1F] hover:text-[#E54E15] font-medium transition-colors">
+              <Link href="/auth/login?redirect=/community/chat" className="text-sm text-brand-500 hover:text-brand-600 font-medium transition-colors">
                 Sign in to join the conversation →
               </Link>
             </div>

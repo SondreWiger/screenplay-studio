@@ -130,7 +130,7 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
         <div className="flex items-center gap-1.5">
           <Link
             href={`/u/${user.username || user.id}`}
-            className="text-[10px] font-mono uppercase tracking-widest text-white/40 hover:text-[#FF5F1F] transition-colors"
+            className="text-[10px] font-mono uppercase tracking-widest text-white/40 hover:text-brand-500 transition-colors"
             onClick={onClose}
           >
             Profile ↗
@@ -178,7 +178,7 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
             <span>No posts yet.</span>
             <Link
               href="/community/share"
-              className="text-[#FF5F1F] text-xs hover:underline"
+              className="text-brand-500 text-xs hover:underline"
               onClick={onClose}
             >
               Share something →

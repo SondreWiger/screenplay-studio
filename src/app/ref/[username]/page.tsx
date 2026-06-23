@@ -54,7 +54,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710', color: '#fff' }}>
         <div className="text-center">
           <p className="text-white/30 text-sm uppercase tracking-widest font-mono mb-3">Creator not found</p>
-          <Link href="/" className="text-[#FF5F1F] text-sm hover:underline">Go to Screenplay Studio →</Link>
+          <Link href="/" className="text-brand-500 text-sm hover:underline">Go to Screenplay Studio →</Link>
         </div>
       </div>
     );

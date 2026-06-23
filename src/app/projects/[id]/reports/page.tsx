@@ -718,7 +718,7 @@ export default function ReportsPage() {
             onClick={() => { setSelectedType(rt.type); setViewingReport(null); }}
             className={`p-5 rounded-xl border text-left transition-colors hover:shadow-lg ${
               selectedType === rt.type
-                ? 'border-[#FF5F1F] bg-[#FF5F1F]/5 shadow-brand-500/10'
+                ? 'border-brand-500 bg-brand-500/5 shadow-brand-500/10'
                 : 'border-surface-800 bg-surface-900 hover:border-surface-700'
             }`}
           >
@@ -731,7 +731,7 @@ export default function ReportsPage() {
 
       {/* ── Generation Panel ───────────────────────────────────── */}
       {selectedType && (
-        <Card className="p-5 border-[#FF5F1F]/30 space-y-4">
+        <Card className="p-5 border-brand-500/30 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h3 className="text-base font-semibold text-white">
@@ -774,7 +774,7 @@ export default function ReportsPage() {
                         onClick={() => setSelectedEventId(ev.id)}
                         className={`p-3 rounded-lg border text-left text-xs transition-colors ${
                           selectedEventId === ev.id
-                            ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
+                            ? 'border-brand-500 bg-brand-500/10'
                             : 'border-surface-800 bg-surface-950 hover:border-surface-700'
                         }`}
                       >

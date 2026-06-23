@@ -449,7 +449,7 @@ export default function ShareScriptPage() {
   if (authLoading || loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-[#FF5F1F]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
       </div>
     );
   }
@@ -483,7 +483,7 @@ export default function ShareScriptPage() {
           {/* Community picker — multi-select with search */}
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1.5">
-              Post to Communities <span className="text-[#FF5F1F]">*</span>
+              Post to Communities <span className="text-brand-500">*</span>
             </label>
 
             {/* Selected community chips */}
@@ -521,7 +521,7 @@ export default function ShareScriptPage() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
                 placeholder="Search communities…"
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-white/15 bg-surface-900 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-white/15 bg-surface-900 text-sm text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
               />
             </div>
 
@@ -555,10 +555,10 @@ export default function ShareScriptPage() {
                           {c.name && <p className="text-[11px] text-white/35 truncate">{c.name}{c.member_count ? ` · ${c.member_count} members` : ''}</p>}
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
-                          {isJoined && !communitySearch && <span className="text-[9px] font-bold text-[#FF5F1F]">JOINED</span>}
+                          {isJoined && !communitySearch && <span className="text-[9px] font-bold text-brand-500">JOINED</span>}
                           {c.posting_mode === 'require_approval' && <span className="text-[9px] text-amber-400/70">approval</span>}
                           {isSelected && (
-                            <svg className="w-4 h-4 text-[#FF5F1F]" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
                           )}
@@ -576,12 +576,12 @@ export default function ShareScriptPage() {
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">Title <span className="text-[#FF5F1F]">*</span></label>
+            <label className="block text-sm font-medium text-white/70 mb-1.5">Title <span className="text-brand-500">*</span></label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What's this post about?"
-              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-base text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors"
+              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-base text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
             />
           </div>
 
@@ -593,7 +593,7 @@ export default function ShareScriptPage() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder={"What's on your mind?\n\nShare a concept, request feedback, start a discussion — or just drop some thoughts. You can attach a script below if you want."}
               rows={7}
-              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-3 text-sm text-white/90 placeholder:text-white/25 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] resize-y transition-colors leading-relaxed"
+              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-3 text-sm text-white/90 placeholder:text-white/25 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-y transition-colors leading-relaxed"
             />
           </div>
 
@@ -630,7 +630,7 @@ export default function ShareScriptPage() {
                     value={coverUrl}
                     onChange={(e) => setCoverUrl(e.target.value)}
                     placeholder="https://..."
-                    className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors"
+                    className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
                   />
                 </div>
 
@@ -640,7 +640,7 @@ export default function ShareScriptPage() {
                   <select
                     value={scriptLanguage}
                     onChange={(e) => setScriptLanguage(e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors appearance-none cursor-pointer"
+                    className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors appearance-none cursor-pointer"
                   >
                     <option value="">Select language...</option>
                     {LANGUAGE_OPTIONS.map((l) => (
@@ -714,13 +714,13 @@ export default function ShareScriptPage() {
                             }}
                             className={`text-left rounded-xl border-2 p-4 transition-colors ${
                               isSelected
-                                ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 ring-2 ring-[#FF5F1F]/30'
+                                ? 'border-brand-500 bg-brand-500/10 ring-2 ring-brand-500/30'
                                 : 'border-white/10 bg-surface-900 hover:border-white/15 hover:shadow-sm'
                             }`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
-                                isSelected ? 'bg-[#FF5F1F] text-white' : 'bg-surface-800 text-white/40'
+                                isSelected ? 'bg-brand-500 text-white' : 'bg-surface-800 text-white/40'
                               }`}>
                                 {p.title?.[0]?.toUpperCase() || '?'}
                               </div>
@@ -738,7 +738,7 @@ export default function ShareScriptPage() {
                                 </div>
                               </div>
                               {isSelected && (
-                                <svg className="w-5 h-5 text-[#FF5F1F] shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-5 h-5 text-brand-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                               )}
@@ -759,7 +759,7 @@ export default function ShareScriptPage() {
                               onClick={() => { setSelectedScriptId(s.id); loadScriptElements(s.id); }}
                               className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                                 selectedScriptId === s.id
-                                  ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#E54E15]'
+                                  ? 'border-brand-500 bg-brand-500/10 text-brand-600'
                                   : 'border-white/10 bg-surface-900 text-white/60 hover:border-white/15'
                               }`}
                             >
@@ -814,7 +814,7 @@ export default function ShareScriptPage() {
                   onChange={(e) => { setScriptContent(e.target.value); setScriptElements(null); }}
                   placeholder="Paste or write your screenplay here..."
                   rows={16}
-                  className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] resize-none transition-colors font-mono leading-relaxed"
+                  className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none transition-colors font-mono leading-relaxed"
                 />
                 <p className="text-xs text-white/50 mt-1">Tip: Use &quot;From My Projects&quot; to share with proper screenplay formatting.</p>
               </div>
@@ -833,7 +833,7 @@ export default function ShareScriptPage() {
                     }}
                     className={`rounded-xl border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${
                       isDragging
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/5'
+                        ? 'border-brand-500 bg-brand-500/5'
                         : 'border-white/15 hover:border-white/25 hover:bg-white/[0.02]'
                     }`}
                   >
@@ -848,7 +848,7 @@ export default function ShareScriptPage() {
                       <div className="text-5xl mb-4">📎</div>
                       <p className="text-sm font-medium text-white/70 mb-1">
                         Drop your screenplay here, or{' '}
-                        <span className="text-[#FF5F1F] hover:underline">browse</span>
+                        <span className="text-brand-500 hover:underline">browse</span>
                       </p>
                       <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
                         {(['fdx', 'fountain', 'txt', 'pdf'] as const).map((fmt) => (
@@ -874,7 +874,7 @@ export default function ShareScriptPage() {
                         <p className="text-xs text-white/40">
                           {formatFileSize(attachedFile.size)}
                           {attachedFileType && (
-                            <> · <span className="text-[#FF5F1F]">
+                            <> · <span className="text-brand-500">
                               {FORMAT_LABELS[attachedFileType as UploadableFormat] ?? attachedFileType.toUpperCase()}
                             </span></>
                           )}
@@ -892,7 +892,7 @@ export default function ShareScriptPage() {
                     {/* Status messages */}
                     {fileUploading && (
                       <div className="flex items-center gap-2 text-sm text-white/50">
-                        <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-[#FF5F1F] animate-spin shrink-0" />
+                        <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-brand-500 animate-spin shrink-0" />
                         Uploading PDF…
                       </div>
                     )}
@@ -950,7 +950,7 @@ export default function ShareScriptPage() {
                   onClick={() => toggleCategory(cat.id)}
                   className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                     selectedCategories.includes(cat.id)
-                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#E54E15] font-medium'
+                      ? 'border-brand-500 bg-brand-500/10 text-brand-600 font-medium'
                       : 'border-white/10 bg-surface-900 text-white/60 hover:border-white/15'
                   }`}
                 >
@@ -969,7 +969,7 @@ export default function ShareScriptPage() {
                   type="button"
                   onClick={importProjectMembers}
                   disabled={importingMembers}
-                  className="flex items-center gap-1.5 text-[11px] font-mono text-[#FF5F1F] hover:text-[#FF7A3D] disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 text-[11px] font-mono text-brand-500 hover:text-[#FF7A3D] disabled:opacity-50 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1004,7 +1004,7 @@ export default function ShareScriptPage() {
                     type="checkbox"
                     checked={value}
                     onChange={(e) => setter(e.target.checked)}
-                    className="mt-0.5 rounded border-white/15 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                    className="mt-0.5 rounded border-white/15 text-brand-500 focus:ring-brand-500"
                   />
                   <div>
                     <span className="text-sm font-medium text-white/90">{label}</span>

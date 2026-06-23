@@ -492,7 +492,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -503,7 +503,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
         <div className="px-4 py-3 border-b border-surface-800 flex items-center justify-between">
           <span className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Shoot Days</span>
           {canEdit && (
-            <button onClick={handleAddDay} className="text-surface-500 hover:text-[#FF5F1F] p-1 rounded transition-colors" title="Add day">
+            <button onClick={handleAddDay} className="text-surface-500 hover:text-brand-500 p-1 rounded transition-colors" title="Add day">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </button>
           )}
@@ -512,7 +512,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
           {days.length === 0 ? (
             <div className="px-4 py-8 text-center">
               <p className="text-xs text-surface-600">No shoot days yet.</p>
-              {canEdit && <button onClick={handleAddDay} className="mt-2 text-xs text-[#FF5F1F] hover:underline">Add first day</button>}
+              {canEdit && <button onClick={handleAddDay} className="mt-2 text-xs text-brand-500 hover:underline">Add first day</button>}
             </div>
           ) : (
             days.map(day => (
@@ -521,7 +521,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                 onClick={() => setSelectedDayId(day.id)}
                 className={cn(
                   'w-full text-left px-4 py-2.5 hover:bg-surface-800/50 transition-colors group',
-                  selectedDayId === day.id && 'bg-surface-800/80 border-r-2 border-[#FF5F1F]'
+                  selectedDayId === day.id && 'bg-surface-800/80 border-r-2 border-brand-500'
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -557,7 +557,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <p className="text-surface-400 font-medium">Select a shoot day</p>
-            {canEdit && <button onClick={handleAddDay} className="mt-2 text-sm text-[#FF5F1F] hover:underline">or add one</button>}
+            {canEdit && <button onClick={handleAddDay} className="mt-2 text-sm text-brand-500 hover:underline">or add one</button>}
           </div>
         </div>
       ) : (
@@ -570,7 +570,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   value={editingDay.title || ''}
                   onChange={e => setEditingDay(d => d ? { ...d, title: e.target.value } : d)}
                   placeholder={`Day ${selectedDay.day_number}`}
-                  className="text-lg font-bold text-white bg-transparent outline-none border-b border-[#FF5F1F]/40 focus:border-[#FF5F1F] w-full max-w-sm"
+                  className="text-lg font-bold text-white bg-transparent outline-none border-b border-brand-500/40 focus:border-brand-500 w-full max-w-sm"
                 />
               ) : (
                 <div className="flex items-center gap-2">
@@ -592,7 +592,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
               {editingDay ? (
                 <>
                   <button onClick={() => setEditingDay(null)} className="text-xs px-3 py-1.5 rounded-lg border border-surface-700 text-surface-300 hover:text-white transition-colors">Cancel</button>
-                  <button onClick={handleSaveDay} disabled={saving} className="text-xs px-3 py-1.5 rounded-lg bg-[#FF5F1F] text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
+                  <button onClick={handleSaveDay} disabled={saving} className="text-xs px-3 py-1.5 rounded-lg bg-brand-500 text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
                     {saving ? 'Saving…' : 'Save'}
                   </button>
                 </>
@@ -606,7 +606,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   )}
                   <button
                     onClick={() => handleExportDayPack(selectedDay)}
-                    className="text-xs px-2.5 py-1.5 rounded-lg bg-[#FF5F1F] text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all flex items-center gap-1.5"
+                    className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-500 text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all flex items-center gap-1.5"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                     Export Day Pack
@@ -637,7 +637,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       type={type}
                       value={(editingDay as Record<string, unknown>)[key] as string || ''}
                       onChange={e => setEditingDay(d => d ? { ...d, [key]: e.target.value || null } : d)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-surface-900 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-surface-900 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60"
                     />
                   </div>
                 ))}
@@ -647,7 +647,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                     value={editingDay.notes || ''}
                     onChange={e => setEditingDay(d => d ? { ...d, notes: e.target.value } : d)}
                     rows={2}
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-surface-900 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60 resize-none"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-surface-900 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60 resize-none"
                     placeholder="Day notes…"
                   />
                 </div>
@@ -680,7 +680,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Scenes — {selectedDay.scenes.length}</h3>
                 {canEdit && (
-                  <button onClick={() => setShowAddScene(true)} className="text-xs text-[#FF5F1F] hover:underline flex items-center gap-1">
+                  <button onClick={() => setShowAddScene(true)} className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                     Add Scene
                   </button>
@@ -693,7 +693,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                     value={sceneSearch}
                     onChange={e => setSceneSearch(e.target.value)}
                     placeholder="Search scene headings…"
-                    className="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60 mb-2"
+                    className="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60 mb-2"
                     autoFocus
                   />
                   <div className="max-h-48 overflow-y-auto space-y-0.5">
@@ -741,7 +741,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Cast Called — {selectedDay.cast.length}</h3>
                 {canEdit && (
-                  <button onClick={() => setShowAddCast(!showAddCast)} className="text-xs text-[#FF5F1F] hover:underline flex items-center gap-1">
+                  <button onClick={() => setShowAddCast(!showAddCast)} className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                     Add Cast
                   </button>
@@ -752,15 +752,15 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                 <div className="mb-3 p-3 rounded-xl bg-surface-900 border border-surface-700 grid grid-cols-3 gap-2">
                   <input value={newCast.character_name} onChange={e => setNewCast(c => ({ ...c, character_name: e.target.value }))}
                     placeholder="Character *" autoFocus
-                    className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60" />
+                    className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60" />
                   <input value={newCast.actor_name} onChange={e => setNewCast(c => ({ ...c, actor_name: e.target.value }))}
                     placeholder="Actor name"
-                    className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60" />
+                    className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60" />
                   <input type="time" value={newCast.call_time} onChange={e => setNewCast(c => ({ ...c, call_time: e.target.value }))}
-                    className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60" />
+                    className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60" />
                   <div className="col-span-3 flex justify-end gap-2">
                     <button onClick={() => { setShowAddCast(false); setNewCast({ character_name: '', actor_name: '', call_time: '' }); }} className="text-xs text-surface-500 hover:text-white px-3 py-1 rounded border border-surface-700 transition-colors">Cancel</button>
-                    <button onClick={handleAddCast} className="text-xs px-3 py-1 rounded bg-[#FF5F1F] text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all">Add</button>
+                    <button onClick={handleAddCast} className="text-xs px-3 py-1 rounded bg-brand-500 text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all">Add</button>
                   </div>
                 </div>
               )}
@@ -793,7 +793,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                 <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Gear — {selectedDay.gear.length} items</h3>
                 {canEdit && (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => { setShowNewGearInline(true); setShowAssignGear(false); }} className="text-xs text-[#FF5F1F] hover:underline flex items-center gap-1">
+                    <button onClick={() => { setShowNewGearInline(true); setShowAssignGear(false); }} className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                       New Item
                     </button>
@@ -811,31 +811,31 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   <p className="text-[11px] text-surface-400 font-medium">New gear item for this day</p>
                   <input value={newGearForm.name} onChange={e => setNewGearForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="Item name *" autoFocus
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60" />
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60" />
                   <div className="grid grid-cols-2 gap-2">
                     <select value={newGearForm.category} onChange={e => setNewGearForm(f => ({ ...f, category: e.target.value }))}
-                      className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60">
+                      className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60">
                       {GEAR_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <select value={newGearForm.ownership} onChange={e => setNewGearForm(f => ({ ...f, ownership: e.target.value }))}
-                      className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60">
+                      className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60">
                       {[['owned','Owned'],['rented','Rented'],['provided','Provided'],['tbc','TBC']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                     <div className="flex gap-2">
                       <input type="number" min={1} value={newGearForm.quantity} onChange={e => setNewGearForm(f => ({ ...f, quantity: +e.target.value || 1 }))}
-                        className="w-16 px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60" />
+                        className="w-16 px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60" />
                       <select value={newGearForm.unit} onChange={e => setNewGearForm(f => ({ ...f, unit: e.target.value }))}
-                        className="flex-1 px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60">
+                        className="flex-1 px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60">
                         {['unit','set','kit','day','week','roll','box'].map(u => <option key={u} value={u}>{u}</option>)}
                       </select>
                     </div>
                     <input value={newGearForm.vendor} onChange={e => setNewGearForm(f => ({ ...f, vendor: e.target.value }))}
                       placeholder="Vendor (optional)"
-                      className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-[#FF5F1F]/60" />
+                      className="px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-white text-xs outline-none focus:border-brand-500/60" />
                   </div>
                   <div className="flex justify-end gap-2">
                     <button onClick={() => { setShowNewGearInline(false); setNewGearForm({ name: '', category: 'Camera', quantity: 1, unit: 'unit', ownership: 'tbc', vendor: '' }); }} className="text-xs text-surface-500 hover:text-white px-3 py-1 rounded border border-surface-700 transition-colors">Cancel</button>
-                    <button onClick={handleCreateGearForDay} disabled={savingGear} className="text-xs px-3 py-1 rounded bg-[#FF5F1F] text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
+                    <button onClick={handleCreateGearForDay} disabled={savingGear} className="text-xs px-3 py-1 rounded bg-brand-500 text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
                       {savingGear ? 'Adding…' : 'Add to Day'}
                     </button>
                   </div>
@@ -849,7 +849,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   <div className="mb-3 p-3 rounded-xl bg-surface-900 border border-surface-700">
                     <input value={gearSearch} onChange={e => setGearSearch(e.target.value)}
                       placeholder="Search gear from project…"
-                      className="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60 mb-2"
+                      className="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60 mb-2"
                       autoFocus />
                     {unassigned.length === 0 ? (
                       <p className="text-xs text-surface-600 italic py-2 text-center">
@@ -910,7 +910,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       <div key={scene.id} className="rounded-xl border border-surface-800 overflow-hidden">
                         <div className="bg-surface-900/60 px-4 py-2 border-b border-surface-800 flex items-center gap-2">
                           {scene.scene_number && <span className="text-[11px] font-mono text-surface-500 shrink-0">#{scene.scene_number}</span>}
-                          <span className="text-xs font-bold text-[#FF5F1F] uppercase tracking-wide">{scene.scene_heading}</span>
+                          <span className="text-xs font-bold text-brand-500 uppercase tracking-wide">{scene.scene_heading}</span>
                         </div>
                         <div className="px-5 py-3 font-mono text-[11px] leading-relaxed space-y-0.5 max-h-80 overflow-y-auto">
                           {content.length === 0 ? (

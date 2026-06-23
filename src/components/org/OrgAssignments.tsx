@@ -102,7 +102,7 @@ export function OrgAssignments({ companyId, userId, canManage }: Props) {
         {(['all', 'mine', 'active', 'completed'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={cn('px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-              filter === f ? 'bg-[#FF5F1F] text-white' : 'bg-surface-800 text-surface-400 hover:text-white')}>
+              filter === f ? 'bg-brand-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white')}>
             {f === 'all' ? `All (${assignments.length})` :
              f === 'mine' ? `My (${assignments.filter(a => a.assigned_to === userId).length})` :
              f === 'active' ? `Active (${assignments.filter(a => !['approved', 'rejected'].includes(a.status)).length})` :

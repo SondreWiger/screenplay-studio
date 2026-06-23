@@ -163,7 +163,7 @@ export default function FreeScriptsPage() {
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors ${
-                  !selectedCategory ? 'text-[#FF5F1F]' : 'text-white/40 hover:text-white'
+                  !selectedCategory ? 'text-brand-500' : 'text-white/40 hover:text-white'
                 }`}
               >
                 All Scripts
@@ -173,7 +173,7 @@ export default function FreeScriptsPage() {
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug)}
                   className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors flex items-center gap-2 ${
-                    selectedCategory === cat.slug ? 'text-[#FF5F1F]' : 'text-white/40 hover:text-white'
+                    selectedCategory === cat.slug ? 'text-brand-500' : 'text-white/40 hover:text-white'
                   }`}
                 >
                   <span>{cat.icon}</span> {cat.name}
@@ -186,7 +186,7 @@ export default function FreeScriptsPage() {
           <div className="flex-1 min-w-0">
             {loading ? (
               <div className="flex justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#FF5F1F]" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-brand-500" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
@@ -271,7 +271,7 @@ export default function FreeScriptsPage() {
                             🎬 {(post as EnrichedPost)._productionCount} production{(post as EnrichedPost)._productionCount !== 1 ? 's' : ''}
                           </span>
                         )}
-                        <span className="ml-auto text-[#FF5F1F] font-black">Free to Use</span>
+                        <span className="ml-auto text-brand-500 font-black">Free to Use</span>
                       </div>
 
                       {/* Permission badges */}
@@ -307,7 +307,7 @@ export default function FreeScriptsPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

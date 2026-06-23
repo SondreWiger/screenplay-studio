@@ -16,7 +16,7 @@ const SEGMENT_TYPES: { value: SponsorSegmentType; label: string; description: st
 ];
 
 const PAYMENT_STATUS_COLORS = {
-  pending: 'bg-[#FF5F1F]/20 text-[#FF5F1F]',
+  pending: 'bg-brand-500/20 text-brand-500',
   invoiced: 'bg-blue-500/20 text-blue-400',
   paid: 'bg-green-500/20 text-green-400',
 };
@@ -203,7 +203,7 @@ export default function SponsorsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -288,7 +288,7 @@ export default function SponsorsPage() {
                       <ul className="text-sm text-surface-300 space-y-1">
                         {sponsor.talking_points.slice(0, 3).map((point, i) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="text-[#FF5F1F]">•</span>
+                            <span className="text-brand-500">•</span>
                             {point}
                           </li>
                         ))}
@@ -311,7 +311,7 @@ export default function SponsorsPage() {
                     {sponsor.cta_link && (
                       <div>
                         <span className="text-surface-500">Link: </span>
-                        <a href={sponsor.cta_link} target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">
+                        <a href={sponsor.cta_link} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">
                           {sponsor.cta_link.replace(/^https?:\/\//, '').slice(0, 30)}...
                         </a>
                       </div>
@@ -372,11 +372,11 @@ export default function SponsorsPage() {
                   className={cn(
                     'p-3 rounded-lg border text-left transition-colors',
                     form.segment_type === type.value
-                      ? 'border-[#FF5F1F] bg-[#FF5F1F]/10'
+                      ? 'border-brand-500 bg-brand-500/10'
                       : 'border-surface-700 hover:border-surface-600'
                   )}
                 >
-                  <p className={cn('text-sm font-medium', form.segment_type === type.value ? 'text-[#FF5F1F]' : 'text-white')}>
+                  <p className={cn('text-sm font-medium', form.segment_type === type.value ? 'text-brand-500' : 'text-white')}>
                     {type.label}
                   </p>
                   <p className="text-xs text-surface-500">{type.description}</p>

@@ -601,7 +601,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                 >
                   <span className={cn(
                     'text-[9px] font-black uppercase tracking-[0.2em] transition-colors',
-                    hasActivePage ? 'text-[#FF5F1F]' : 'text-surface-600 group-hover:text-surface-400'
+                    hasActivePage ? 'text-brand-500' : 'text-surface-600 group-hover:text-surface-400'
                   )}>
                     {sidebarCatT(cat.category)}
                   </span>
@@ -609,7 +609,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                     className={cn(
                       'w-2.5 h-2.5 transition-transform duration-200',
                       isSectionCollapsed ? '' : 'rotate-90',
-                      hasActivePage ? 'text-[#FF5F1F]' : 'text-surface-700 group-hover:text-surface-500'
+                      hasActivePage ? 'text-brand-500' : 'text-surface-700 group-hover:text-surface-500'
                     )}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
                   >
@@ -689,7 +689,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                             if (user) saveOtherIcons(user.id, params.id, next);
                           }}
                           title="Move to main sidebar"
-                          className="mr-1 p-1 rounded opacity-0 group-hover/other:opacity-100 transition-opacity text-surface-600 hover:text-[#FF5F1F]"
+                          className="mr-1 p-1 rounded opacity-0 group-hover/other:opacity-100 transition-opacity text-surface-600 hover:text-brand-500"
                         >
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -743,7 +743,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             <button
               ref={shortcutAddBtnRef}
               onClick={(e) => { setPickerAnchorEl(e.currentTarget); setShowShortcutPicker(true); }}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-surface-500 hover:text-[#FF5F1F] hover:bg-surface-800 transition-colors text-[10px]"
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-surface-500 hover:text-brand-500 hover:bg-surface-800 transition-colors text-[10px]"
               title="Pin scripts or documents here"
             >
               <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -774,16 +774,16 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         'flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg text-xs transition-colors',
-                        active ? 'bg-[#FF5F1F]/10 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+                        active ? 'bg-brand-500/10 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
                       )}
                       title={`Open ${sc.type === 'script' ? 'script' : 'document'}: ${sc.title}`}
                     >
                       {sc.type === 'script' ? (
-                        <svg className={cn('w-3.5 h-3.5 shrink-0', active ? 'text-[#FF5F1F]' : 'text-surface-500')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className={cn('w-3.5 h-3.5 shrink-0', active ? 'text-brand-500' : 'text-surface-500')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       ) : (
-                        <svg className={cn('w-3.5 h-3.5 shrink-0', active ? 'text-[#FF5F1F]' : 'text-surface-500')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className={cn('w-3.5 h-3.5 shrink-0', active ? 'text-brand-500' : 'text-surface-500')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                         </svg>
                       )}
@@ -1005,7 +1005,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
               type="checkbox"
               checked={templatePublic}
               onChange={e => setTemplatePublic(e.target.checked)}
-              className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+              className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500"
             />
             <span className="text-sm text-surface-300">Make public (visible to all users)</span>
           </label>

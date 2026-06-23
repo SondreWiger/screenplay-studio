@@ -884,7 +884,7 @@ export default function AdminPage() {
             className={cn(
               'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200',
               activeTab === tab.key
-                ? 'bg-[#E54E15]/12 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/25 shadow-sm'
+                ? 'bg-brand-600/12 text-brand-500 ring-1 ring-brand-500/25 shadow-sm'
                 : 'text-surface-400 hover:text-white hover:bg-surface-800/50'
             )}
           >
@@ -1689,7 +1689,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           <div className="space-y-3">
             {stats.recentProjects.map((p: Project) => (
               <div key={p.id} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-[#E54E15] flex items-center justify-center text-xs font-bold text-white shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
                   {(p.title || '?')[0].toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -1929,7 +1929,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
           <button
             onClick={() => setDmAllOpen(true)}
             title={`Send DM to ${search ? 'filtered' : 'all'} users`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors duration-150 bg-[#FF5F1F]/10 border-[#FF5F1F]/30 text-[#FF5F1F] hover:bg-[#FF5F1F]/20 hover:border-[#FF5F1F]/50"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors duration-150 bg-brand-500/10 border-brand-500/30 text-brand-500 hover:bg-brand-500/20 hover:border-brand-500/50"
           >
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -1969,7 +1969,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
               placeholder="Search users..."
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F] w-64"
+              className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 w-64"
             />
           </div>
         </div>
@@ -2028,7 +2028,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
                 <td className="px-4 py-3 text-xs text-surface-400">{formatDate(u.created_at)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center gap-1 justify-end">
-                    <button onClick={() => handleDmUser(u)} className="p-1.5 rounded text-surface-400 hover:text-[#FF5F1F] hover:bg-[#FF5F1F]/10 transition-colors" title="Send DM">
+                    <button onClick={() => handleDmUser(u)} className="p-1.5 rounded text-surface-400 hover:text-brand-500 hover:bg-brand-500/10 transition-colors" title="Send DM">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                     </button>
                     {u.id !== ADMIN_UID && (
@@ -2086,7 +2086,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
             rows={4}
           />
           {dmAllProgress && (
-            <p className="text-xs text-[#FF5F1F] font-mono">{dmAllProgress}</p>
+            <p className="text-xs text-brand-500 font-mono">{dmAllProgress}</p>
           )}
           <div className="flex gap-2">
             <Button onClick={handleDmAll} disabled={!dmAllMessage.trim() || dmAllSending} className="flex-1">
@@ -2234,7 +2234,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
             placeholder="Search projects..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-[#FF5F1F] w-64"
+            className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 w-64"
           />
         </div>
       </div>
@@ -2246,7 +2246,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
               onClick={() => loadProjectStats(p.id)}
               className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-surface-800/30 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#E54E15] flex items-center justify-center text-sm font-bold text-white shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
                 {p.title?.[0] || '?'}
               </div>
               <div className="min-w-0 flex-1">
@@ -2377,7 +2377,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
               <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
                 proGatingEnabled
                   ? 'text-white/30 border-white/10 bg-white/5'
-                  : 'text-[#FF5F1F] border-[#FF5F1F]/30 bg-[#FF5F1F]/10'
+                  : 'text-brand-500 border-brand-500/30 bg-brand-500/10'
               }`}>
                 {proGatingEnabled ? 'ON' : 'ALL FREE'}
               </span>
@@ -2392,7 +2392,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
         <button
           onClick={() => onToggleProGating(!proGatingEnabled)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
-            proGatingEnabled ? 'bg-surface-700' : 'bg-[#FF5F1F]'
+            proGatingEnabled ? 'bg-surface-700' : 'bg-brand-500'
           }`}
         >
           <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
@@ -2414,7 +2414,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
               Creator Affiliate Program
               <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
                 creatorProgramEnabled
-                  ? 'text-[#FF5F1F] border-[#FF5F1F]/30 bg-[#FF5F1F]/10'
+                  ? 'text-brand-500 border-brand-500/30 bg-brand-500/10'
                   : 'text-white/30 border-white/10 bg-white/5'
               }`}>
                 {creatorProgramEnabled ? 'ON' : 'OFF'}
@@ -2430,7 +2430,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
         <button
           onClick={() => onToggleCreatorProgram(!creatorProgramEnabled)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
-            creatorProgramEnabled ? 'bg-[#FF5F1F]' : 'bg-surface-700'
+            creatorProgramEnabled ? 'bg-brand-500' : 'bg-surface-700'
           }`}
         >
           <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
@@ -2480,8 +2480,8 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
       {/* Version control */}
       <div className="mb-6 rounded-xl border border-surface-800 bg-surface-900/50 p-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
+          <div className="w-10 h-10 rounded-lg bg-brand-500/20 flex items-center justify-center">
+            <svg className="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">Site Version</h3>
@@ -2493,7 +2493,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
             <input
               value={versionDraft}
               onChange={(e) => setVersionDraft(e.target.value)}
-              className="w-32 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white font-mono focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F]"
+              className="w-32 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               placeholder="e.g. 1.2.0"
               autoFocus
               onKeyDown={(e) => {
@@ -2509,7 +2509,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
             onClick={() => { setVersionDraft(siteVersion); setEditingVersion(true); }}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 transition-colors group"
           >
-            <span className="text-sm font-mono text-[#FF5F1F]">v{siteVersion || '—'}</span>
+            <span className="text-sm font-mono text-brand-500">v{siteVersion || '—'}</span>
             <svg className="w-3.5 h-3.5 text-surface-500 group-hover:text-surface-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
           </button>
         )}
@@ -2952,7 +2952,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
     await loadProductions();
   };
 
-  const inputCls = 'w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] transition-colors';
+  const inputCls = 'w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors';
 
   return (
     <div>
@@ -3038,9 +3038,9 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
                       {prod.description && <p className="text-xs text-surface-400 line-clamp-2">{prod.description}</p>}
                       <p className="text-xs text-surface-500 mt-1">
                         by {prod.submitter?.full_name || prod.submitter?.email || 'Unknown'} · {timeAgo(prod.created_at)}
-                        {prod.post && <> · script: <a href={`/community/post/${prod.post.slug}`} target="_blank" className="text-[#FF5F1F] hover:underline">{prod.post.title}</a></>}
+                        {prod.post && <> · script: <a href={`/community/post/${prod.post.slug}`} target="_blank" className="text-brand-500 hover:underline">{prod.post.title}</a></>}
                       </p>
-                      {prod.url && <a href={prod.url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#FF5F1F] hover:underline mt-1 inline-block">🔗 Watch →</a>}
+                      {prod.url && <a href={prod.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-500 hover:underline mt-1 inline-block">🔗 Watch →</a>}
                     </div>
                   </div>
                   {prod.status === 'pending' && (
@@ -3332,7 +3332,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
               type="checkbox"
               checked={allowComments}
               onChange={(e) => setAllowComments(e.target.checked)}
-              className="rounded border-surface-600 bg-surface-900 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+              className="rounded border-surface-600 bg-surface-900 text-brand-500 focus:ring-brand-500"
             />
             Allow comments
           </label>
@@ -3378,7 +3378,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
                     onChange={(e) => updateSection(idx, 'body', e.target.value)}
                     placeholder="Section content... (use blank lines for paragraph breaks)"
                     rows={6}
-                    className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none focus:ring-1 focus:ring-[#FF5F1F] resize-none transition-colors font-mono"
+                    className="w-full rounded-lg border border-surface-700 bg-surface-900 px-4 py-2.5 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none transition-colors font-mono"
                   />
                 </div>
               </div>
@@ -3459,7 +3459,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
               onClick={() => setStatusFilter(s)}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium rounded-lg transition-colors capitalize',
-                statusFilter === s ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+                statusFilter === s ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
               )}
             >
               {s.replace('_', ' ')}
@@ -3484,7 +3484,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                 className={cn(
                   'w-full text-left p-4 rounded-xl border transition-colors',
                   selectedTicketId === ticket.id
-                    ? 'border-[#FF5F1F]/30 bg-[#FF5F1F]/5'
+                    ? 'border-brand-500/30 bg-brand-500/5'
                     : 'border-surface-800 bg-surface-900 hover:border-surface-700'
                 )}
               >
@@ -3575,13 +3575,13 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                       <div className={`flex items-center gap-2 mb-1 ${msg.is_staff ? 'justify-end' : ''}`}>
                         <span className="text-xs font-semibold text-surface-300">{msg.profile?.full_name || 'User'}</span>
                         {msg.is_staff && (
-                          <span className="px-1.5 py-0.5 text-[9px] font-bold text-[#FF5F1F] bg-[#FF5F1F]/10 rounded border border-[#FF5F1F]/20">STAFF</span>
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold text-brand-500 bg-brand-500/10 rounded border border-brand-500/20">STAFF</span>
                         )}
                         <span className="text-[10px] text-surface-500">{timeAgo(msg.created_at)}</span>
                       </div>
                       <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                         msg.is_staff
-                          ? 'bg-[#E54E15]/10 text-[#FF8F5F] border border-[#FF5F1F]/20'
+                          ? 'bg-brand-600/10 text-brand-400 border border-brand-500/20'
                           : 'bg-surface-800 text-surface-200 border border-surface-700'
                       }`}>
                         {msg.content}
@@ -3599,13 +3599,13 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                       value={replyText}
                       onChange={(e) => onReplyChange(e.target.value)}
                       placeholder="Type a staff reply..."
-                      className="flex-1 px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 focus:border-[#FF5F1F] focus:outline-none"
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none"
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onReply(); } }}
                     />
                     <button
                       onClick={onReply}
                       disabled={!replyText.trim()}
-                      className="px-5 py-2.5 text-sm font-medium text-white bg-[#E54E15] hover:bg-[#FF5F1F] rounded-lg transition-colors disabled:opacity-50"
+                      className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-500 rounded-lg transition-colors disabled:opacity-50"
                     >
                       Reply
                     </button>
@@ -3683,9 +3683,9 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
           <h1 className="text-xl font-bold text-white">Contributors</h1>
           <p className="text-sm text-surface-400 mt-1">
             Manage contributors listed on the{' '}
-            <a href="/contribute" target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">/contribute</a>{' '}
+            <a href="/contribute" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">/contribute</a>{' '}
             and{' '}
-            <a href="/about" target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">/about</a>{' '}
+            <a href="/about" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">/about</a>{' '}
             pages. Featured contributors appear highlighted.
           </p>
         </div>
@@ -3709,7 +3709,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
 
       {/* Add Form */}
       {showAddForm && (
-        <div className="mb-6 rounded-xl border border-[#FF5F1F]/20 p-5" style={{ background: 'rgba(255,95,31,0.04)' }}>
+        <div className="mb-6 rounded-xl border border-brand-500/20 p-5" style={{ background: 'rgba(255,95,31,0.04)' }}>
           <h3 className="text-sm font-semibold text-white mb-4">Add Contributor</h3>
           <div className="space-y-4">
 
@@ -3741,8 +3741,8 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                 </div>
               )}
               {selectedUser && (
-                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border border-[#FF5F1F]/25" style={{ background: 'rgba(255,95,31,0.08)' }}>
-                  <div className="w-6 h-6 rounded-full bg-[#FF5F1F] flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border border-brand-500/25" style={{ background: 'rgba(255,95,31,0.08)' }}>
+                  <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-[10px] font-black text-white shrink-0">
                     {(selectedUser.full_name || selectedUser.email || '?')[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -3777,7 +3777,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                     className={cn(
                       'px-3 py-1 text-[11px] font-medium rounded-full border transition-colors',
                       areas.includes(a)
-                        ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-[#FF5F1F]/30'
+                        ? 'bg-brand-500/20 text-brand-500 border-brand-500/30'
                         : 'bg-surface-900 text-surface-400 border-surface-700 hover:border-surface-500'
                     )}
                   >
@@ -3847,7 +3847,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                       href={`https://github.com/${c.github_handle}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-[#FF5F1F] hover:underline"
+                      className="text-[11px] text-brand-500 hover:underline"
                     >
                       @{c.github_handle}
                     </a>
@@ -4049,7 +4049,7 @@ function BadgesAdminTab() {
           <button
             onClick={handleCreate}
             disabled={saving || !form.name.trim()}
-            className="ml-auto px-4 py-2 rounded-lg bg-[#FF5F1F] text-white text-sm font-semibold disabled:opacity-40 hover:bg-[#FF5F1F]/80 transition-colors"
+            className="ml-auto px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-semibold disabled:opacity-40 hover:bg-brand-500/80 transition-colors"
           >
             {saving ? 'Creating…' : 'Create Badge'}
           </button>
@@ -4089,7 +4089,7 @@ function BadgesAdminTab() {
         <button
           onClick={handleAward}
           disabled={!awardForm.badgeId || !awardForm.username.trim()}
-          className="mt-4 px-4 py-2 rounded-lg bg-[#FF5F1F] text-white text-sm font-semibold disabled:opacity-40 hover:bg-[#FF5F1F]/80 transition-colors"
+          className="mt-4 px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-semibold disabled:opacity-40 hover:bg-brand-500/80 transition-colors"
         >
           Award Badge
         </button>
@@ -4159,14 +4159,14 @@ function CoursesAdminTab() {
           {(['pending','published','rejected','all'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-colors ${
-                filter === f ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white'
+                filter === f ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white'
               }`}>{f}</button>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><div className="w-6 h-6 border-2 border-[#FF5F1F]/30 border-t-[#FF5F1F] rounded-full animate-spin" /></div>
+        <div className="flex justify-center py-16"><div className="w-6 h-6 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" /></div>
       ) : courses.length === 0 ? (
         <div className="text-center py-16 text-surface-400 text-sm">No {filter === 'all' ? '' : filter} courses.</div>
       ) : (
@@ -4352,7 +4352,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
             {(['pending', 'approved', 'rejected'] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-colors ${
-                  filterStatus === s ? 'bg-[#FF5F1F] text-white' : 'bg-surface-800 text-surface-400 hover:text-white'
+                  filterStatus === s ? 'bg-brand-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white'
                 }`}>{s}</button>
             ))}
           </div>
@@ -4375,7 +4375,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-semibold text-white truncate">{c.profile?.full_name || c.profile?.username || c.user_id.slice(0, 8)}</span>
                         <span className="text-xs text-surface-500">@{c.profile?.username}</span>
-                        <span className="font-mono text-xs text-[#FF5F1F]">/ref/{c.ref_code}</span>
+                        <span className="font-mono text-xs text-brand-500">/ref/{c.ref_code}</span>
                       </div>
                       {c.application_note && (
                         <p className="text-xs text-surface-400 mt-1 italic">&quot;{c.application_note}&quot;</p>
@@ -4414,7 +4414,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                       value={rejectReason.reason}
                       onChange={(e) => setRejectReason({ ...rejectReason, reason: e.target.value })}
                       placeholder="Rejection reason (optional)"
-                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-[#FF5F1F] focus:outline-none"
+                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-brand-500 focus:outline-none"
                     />
                     <button onClick={() => reject(c.id, rejectReason.reason)} disabled={actionLoading === c.id}
                       className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors disabled:opacity-50">
@@ -4440,23 +4440,23 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
             <div>
               <label className="text-xs text-surface-400 mb-1 block">Period start</label>
               <input type="date" value={payoutPeriodStart} onChange={(e) => setPayoutPeriodStart(e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-[#FF5F1F] focus:outline-none" />
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-brand-500 focus:outline-none" />
             </div>
             <div>
               <label className="text-xs text-surface-400 mb-1 block">Period end</label>
               <input type="date" value={payoutPeriodEnd} onChange={(e) => setPayoutPeriodEnd(e.target.value)}
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-[#FF5F1F] focus:outline-none" />
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-brand-500 focus:outline-none" />
             </div>
             <div>
               <label className="text-xs text-surface-400 mb-1 block">Total amount (USD)</label>
               <input type="number" min="0" step="0.01" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)}
                 placeholder="e.g. 500"
-                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-[#FF5F1F] focus:outline-none" />
+                className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-1.5 text-sm text-white focus:border-brand-500 focus:outline-none" />
             </div>
           </div>
 
           <button onClick={computePayout} disabled={payoutLoading || !payoutAmount || !payoutPeriodStart || !payoutPeriodEnd}
-            className="px-4 py-2 rounded-lg text-sm font-semibold bg-[#FF5F1F] text-white hover:bg-[#e5541b] transition-colors disabled:opacity-50 mb-5">
+            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-500 text-white hover:bg-[#e5541b] transition-colors disabled:opacity-50 mb-5">
             {payoutLoading ? 'Computing…' : 'Compute Payout'}
           </button>
 

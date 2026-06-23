@@ -541,7 +541,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     <div className="flex h-full relative">
       {/* Mobile sidebar toggle */}
       <button onClick={() => setShowSidebar(!showSidebar)}
-        className="md:hidden fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-[#E54E15] text-white shadow-lg flex items-center justify-center">
+        className="md:hidden fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-brand-600 text-white shadow-lg flex items-center justify-center">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
         </svg>
@@ -622,7 +622,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 onClick={() => { setCurrentDoc(doc); setShowSidebar(false); }}
                 className={cn(
                   'w-full text-left px-2 py-1.5 rounded text-xs transition-colors flex items-center gap-2',
-                  currentDoc?.id === doc.id ? 'bg-[#E54E15]/10 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+                  currentDoc?.id === doc.id ? 'bg-brand-600/10 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
                 )}
               >
                 <span className="shrink-0 text-[9px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[doc.doc_type]}</span>
@@ -714,8 +714,8 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   )}
                   {/* Remote collaborator indicators */}
                   {remoteEditors.filter((e) => e.docId === currentDoc?.id).map((editor) => (
-                    <span key={editor.userId} className="flex items-center gap-1 text-[10px] text-[#FF5F1F] animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF5F1F]" />
+                    <span key={editor.userId} className="flex items-center gap-1 text-[10px] text-brand-500 animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
                       {editor.name} editing
                     </span>
                   ))}
@@ -733,7 +733,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={() => setShowVersionPreview((v) => !v)}
                     className={cn('p-1.5 rounded transition-colors',
-                      showVersionPreview ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
+                      showVersionPreview ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
                     )}
                     title={showVersionPreview ? 'Back to editing' : 'Preview with version filter'}
                   >
@@ -743,7 +743,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <button
                   onClick={() => setShowVersionPanel((v) => !v)}
                   className={cn('relative p-1.5 rounded transition-colors',
-                    showVersionPanel ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
+                    showVersionPanel ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
                   )}
                   title="Story Versions"
                 >
@@ -751,7 +751,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                   </svg>
                   {docVersions.length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5">
                       {docVersions.length}
                     </span>
                   )}
@@ -760,13 +760,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <button
                   onClick={() => setShowComments(v => !v)}
                   className={cn('relative p-1.5 rounded transition-colors',
-                    showComments ? 'text-[#FF5F1F] bg-[#FF5F1F]/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
+                    showComments ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-900/10'
                   )}
                   title="Comments"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
                   {docCommentCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-[#FF5F1F] text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5">
                       {docCommentCount}
                     </span>
                   )}
@@ -783,7 +783,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                     <div className="absolute top-2 right-2 z-10">
                       <button
                         onClick={() => { setShowComments(true); commentInputRef.current?.focus(); }}
-                        className="flex items-center gap-1.5 px-2.5 py-1 bg-[#FF5F1F] text-white text-[11px] font-semibold rounded-lg shadow-lg hover:bg-[#e54e15] transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-500 text-white text-[11px] font-semibold rounded-lg shadow-lg hover:bg-brand-600 transition-colors"
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
                         Comment on selection
@@ -844,7 +844,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   {canEdit && (
                     <div className="p-3 border-b border-surface-800/60 space-y-2">
                       {selectedText && (
-                        <div className="px-2 py-1.5 bg-surface-800/60 rounded-lg border-l-2 border-[#FF5F1F]/60">
+                        <div className="px-2 py-1.5 bg-surface-800/60 rounded-lg border-l-2 border-brand-500/60">
                           <p className="text-[10px] text-surface-500 mb-0.5">Commenting on:</p>
                           <p className="text-[11px] text-surface-300 italic line-clamp-2">&ldquo;{selectedText}&rdquo;</p>
                         </div>
@@ -879,7 +879,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                         <button
                           onClick={handleAddComment}
                           disabled={!commentText.trim() || addingComment}
-                          className="px-3 py-1 bg-[#FF5F1F] text-white text-[11px] font-semibold rounded-lg hover:bg-[#e54e15] disabled:opacity-40 transition-colors"
+                          className="px-3 py-1 bg-brand-500 text-white text-[11px] font-semibold rounded-lg hover:bg-brand-600 disabled:opacity-40 transition-colors"
                         >
                           {addingComment ? 'Posting…' : 'Post'}
                         </button>
@@ -903,7 +903,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                             : 'border-surface-800/80 bg-surface-900/60'
                         )}>
                           {comment.selected_text && (
-                            <div className="mb-2 px-2 py-1 bg-surface-800/40 rounded border-l-2 border-[#FF5F1F]/40">
+                            <div className="mb-2 px-2 py-1 bg-surface-800/40 rounded border-l-2 border-brand-500/40">
                               <p className="text-[10px] text-surface-400 italic line-clamp-2">&ldquo;{comment.selected_text}&rdquo;</p>
                             </div>
                           )}
@@ -1015,7 +1015,7 @@ function NewDocumentModal({ isOpen, onClose, onCreate }: {
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 rounded-lg border text-left text-sm transition-colors',
                   docType === key
-                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
+                    ? 'border-brand-500 bg-brand-500/10 text-brand-500'
                     : 'border-surface-700 text-surface-400 hover:border-surface-600 hover:text-white'
                 )}
               >

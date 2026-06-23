@@ -97,7 +97,7 @@ export default function ShowcasePage() {
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color: '#FF5F1F' }}>
-            <span className="inline-block w-3 h-px bg-[#FF5F1F] mr-2 align-middle" />Community Showcase
+            <span className="inline-block w-3 h-px bg-brand-500 mr-2 align-middle" />Community Showcase
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
             FINISHED PROJECTS
@@ -177,7 +177,7 @@ export default function ShowcasePage() {
           {(filterGenre || filterFormat || filterLanguage) && (
             <button
               onClick={() => { setFilterGenre(null); setFilterFormat(null); setFilterLanguage(null); }}
-              className="text-xs font-mono text-[#FF5F1F] hover:opacity-80 transition-opacity"
+              className="text-xs font-mono text-brand-500 hover:opacity-80 transition-opacity"
             >
               Clear filters
             </button>
@@ -253,7 +253,7 @@ export default function ShowcasePage() {
 
                   {/* Info */}
                   <div className="p-4">
-                    <h3 className="font-black text-white group-hover:text-[#FF5F1F] transition-colors line-clamp-1" style={{ letterSpacing: '-0.02em' }}>
+                    <h3 className="font-black text-white group-hover:text-brand-500 transition-colors line-clamp-1" style={{ letterSpacing: '-0.02em' }}>
                       {project.title}
                     </h3>
                     {(project.showcase_description || project.logline) && (
@@ -279,8 +279,8 @@ export default function ShowcasePage() {
                     {/* Rating */}
                     {reviewStats[project.id] && (
                       <div className="flex items-center gap-1.5 mt-2">
-                        <svg className="w-3.5 h-3.5 text-[#FF5F1F]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                        <span className="text-xs font-semibold text-[#FF5F1F]">{reviewStats[project.id].avg.toFixed(1)}</span>
+                        <svg className="w-3.5 h-3.5 text-brand-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                        <span className="text-xs font-semibold text-brand-500">{reviewStats[project.id].avg.toFixed(1)}</span>
                         <span className="text-[10px] text-white/50">({reviewStats[project.id].count})</span>
                       </div>
                     )}

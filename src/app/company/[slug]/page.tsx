@@ -266,7 +266,7 @@ export default function CompanyPage() {
                 onClick={() => setTab(t.key)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   tab === t.key
-                    ? 'border-[#FF5F1F] text-white'
+                    ? 'border-brand-500 text-white'
                     : 'border-transparent text-surface-400 hover:text-white'
                 }`}
               >
@@ -307,7 +307,7 @@ export default function CompanyPage() {
               {company.website && (
                 <Card className="p-4">
                   <p className="text-xs text-surface-500">Website</p>
-                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-[#FF5F1F] hover:underline">{company.website}</a>
+                  <a href={company.website} target="_blank" rel="noopener" className="text-sm text-brand-500 hover:underline">{company.website}</a>
                 </Card>
               )}
               {company.email && (
@@ -365,7 +365,7 @@ export default function CompanyPage() {
                     <p className="text-xs text-surface-400">{m.job_title || m.role} {m.department ? `· ${m.department}` : ''}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-                    m.role === 'owner' ? 'bg-[#FF5F1F]/20 text-[#FF5F1F]' :
+                    m.role === 'owner' ? 'bg-brand-500/20 text-brand-500' :
                     m.role === 'admin' ? 'bg-blue-500/20 text-blue-400' :
                     'bg-surface-700 text-surface-300'
                   }`}>{m.role}</span>
@@ -539,7 +539,7 @@ export default function CompanyPage() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-400">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-[#FF5F1F]' : 'bg-surface-700'}`}>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-brand-500' : 'bg-surface-700'}`}>
                       <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-surface-900 shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[18px]' : 'left-0.5'}`} />
                     </div>
                   </button>
@@ -591,7 +591,7 @@ export default function CompanyPage() {
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as CompanyRole)}
-                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF5F1F]"
+                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white outline-none focus:border-brand-500"
                 >
                   <option value="admin">Admin — Full access</option>
                   <option value="manager">Manager — Manage projects & members</option>
@@ -638,7 +638,7 @@ export default function CompanyPage() {
                         type="checkbox"
                         checked={(teamPerms as Record<string, boolean>)[perm.key]}
                         onChange={(e) => setTeamPerms({ ...teamPerms, [perm.key]: e.target.checked })}
-                        className="rounded border-surface-600 bg-surface-800 text-[#FF5F1F] focus:ring-[#FF5F1F]"
+                        className="rounded border-surface-600 bg-surface-800 text-brand-500 focus:ring-brand-500"
                       />
                       <span className="text-sm text-surface-300">{perm.label}</span>
                     </label>

@@ -435,7 +435,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
       {/* ── Welcome Card ──────────────────────────────── */}
       {showWelcomeCard && (
-        <div className="relative mb-8 p-6 rounded-xl border border-[#FF5F1F]/20 bg-gradient-to-br from-[#FF5F1F]/5 to-surface-900/50">
+        <div className="relative mb-8 p-6 rounded-xl border border-brand-500/20 bg-gradient-to-br from-brand-500/5 to-surface-900/50">
           <button
             onClick={() => {
               setIsWelcomeDismissed(true);
@@ -448,8 +448,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
             </svg>
           </button>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[#FF5F1F]/15 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 rounded-xl bg-brand-500/15 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             </div>
@@ -460,8 +460,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Link href={`/projects/${params.id}/script`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
@@ -470,8 +470,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               </div>
             </Link>
             <Link href={`/projects/${params.id}/characters`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -480,8 +480,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               </div>
             </Link>
             <Link href={`/projects/${params.id}/locations`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -491,8 +491,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
               </div>
             </Link>
             <Link href={`/projects/${params.id}/moodboard`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-[#FF5F1F]/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center text-[#FF5F1F] transition-transform">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
+                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -622,7 +622,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
                       className="flex items-start gap-3 group rounded-lg transition-colors duration-150 hover:bg-white/[0.03] -mx-2 px-2 py-1.5"
                     >
                       <div
-                        className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center z-10 ring-2 ring-surface-950 transition-colors duration-150 group-hover:ring-[#FF5F1F]/30"
+                        className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center z-10 ring-2 ring-surface-950 transition-colors duration-150 group-hover:ring-brand-500/30"
                         style={{ backgroundColor: item.color + '20' }}
                       >
                         {typeIcon ? (
@@ -633,7 +633,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-white truncate group-hover:text-[#FF5F1F] transition-colors">{item.label}</p>
+                          <p className="text-sm font-semibold text-white truncate group-hover:text-brand-500 transition-colors">{item.label}</p>
                           <Badge size="sm">{item.type}</Badge>
                         </div>
                         <p className="text-[11px] text-surface-500 mt-0.5">{item.detail} · {timeAgo(item.timestamp)}</p>
@@ -693,7 +693,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
                       </svg>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-white truncate group-hover:text-[#FF8F5F] transition-colors">{script.title}</p>
+                      <p className="text-sm font-semibold text-white truncate group-hover:text-brand-400 transition-colors">{script.title}</p>
                       <p className="text-[11px] text-surface-500">v{script.version} · {formatDate(script.updated_at)}</p>
                     </div>
                     <Badge size="sm">{script.revision_color}</Badge>

@@ -223,7 +223,7 @@ export default function LicensesPage() {
       {/* Header */}
       <div className="border-b border-surface-800/60 sticky top-0 z-10 backdrop-blur-xl" style={{ backgroundColor: 'rgba(7,7,16,0.92)' }}>
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/" className="w-8 h-8 bg-[#FF5F1F] rounded-lg flex items-center justify-center text-xs font-black text-white shrink-0">
+          <Link href="/" className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center text-xs font-black text-white shrink-0">
             SS
           </Link>
           <div className="flex-1 min-w-0">
@@ -332,7 +332,7 @@ export default function LicensesPage() {
                           href={(lic as any).ccUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[11px] text-[#FF5F1F] hover:underline"
+                          className="text-[11px] text-brand-500 hover:underline"
                         >
                           Official ↗
                         </a>
@@ -350,7 +350,7 @@ export default function LicensesPage() {
                       ))}
                     </div>
                     <div className="flex items-start gap-2 rounded-lg bg-surface-900/40 border border-surface-800/40 px-3 py-2.5">
-                      <span className="text-[#FF5F1F] text-xs mt-0.5 shrink-0">→</span>
+                      <span className="text-brand-500 text-xs mt-0.5 shrink-0">→</span>
                       <p className="text-xs text-surface-400 leading-relaxed"><span className="text-surface-300 font-medium">Use when:</span> {lic.usedWhen}</p>
                     </div>
                   </div>
@@ -366,11 +366,11 @@ export default function LicensesPage() {
             <div>
               <p className="text-xs text-surface-500">
                 Creative Commons licenses are maintained by the{' '}
-                <a href="https://creativecommons.org" target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">
+                <a href="https://creativecommons.org" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">
                   Creative Commons organization
                 </a>
                 . WGA registration info at{' '}
-                <a href="https://www.wga.org/contracts/registration" target="_blank" rel="noopener noreferrer" className="text-[#FF5F1F] hover:underline">
+                <a href="https://www.wga.org/contracts/registration" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">
                   wga.org
                 </a>
                 .

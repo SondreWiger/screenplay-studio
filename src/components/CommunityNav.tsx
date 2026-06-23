@@ -261,7 +261,7 @@ export function CommunityNav() {
                     className={cn(
                       'text-[11px] font-mono uppercase tracking-widest py-2.5 px-3 rounded-lg transition-colors',
                       active
-                        ? 'text-[#FF5F1F] bg-[#FF5F1F]/[0.08]'
+                        ? 'text-brand-500 bg-brand-500/[0.08]'
                         : 'text-white/50 hover:text-white hover:bg-white/5',
                     )}
                   >

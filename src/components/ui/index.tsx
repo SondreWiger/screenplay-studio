@@ -14,11 +14,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'text-white shadow-lg hover:-translate-y-px hover:shadow-[#FF5F1F]/20 active:translate-y-0',
+      primary: 'text-white shadow-lg hover:-translate-y-px hover:shadow-brand-500/20 active:translate-y-0',
       secondary: 'border border-surface-600 bg-surface-800/80 text-white hover:bg-surface-700 hover:border-surface-500 shadow-sm',
       ghost: 'text-surface-400 hover:text-white hover:bg-white/8',
       danger: 'bg-red-600 text-white hover:bg-red-500 shadow-md shadow-red-900/30 hover:-translate-y-px',
-      outline: 'border border-surface-600 text-surface-300 hover:border-[#FF5F1F]/60 hover:text-white hover:bg-white/4',
+      outline: 'border border-surface-600 text-surface-300 hover:border-brand-500/60 hover:text-white hover:bg-white/4',
     };
     const sizes = {
       sm: 'px-3 py-1.5 text-xs font-semibold',
@@ -32,9 +32,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(
           'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5F1F] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          variant === 'primary' && 'bg-gradient-to-r from-[#E54E15] to-[#FF5F1F]',
+          variant === 'primary' && 'bg-gradient-to-r from-brand-600 to-brand-500',
           variants[variant],
           sizes[size],
           className
@@ -81,7 +81,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
               'border-surface-700/80 placeholder:text-surface-600',
-              'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+              'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
               'transition-colors duration-200',
               icon && 'pl-10',
               error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
@@ -116,7 +116,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className={cn(
             'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
             'border-surface-700/80 placeholder:text-surface-600 resize-none',
-            'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+            'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
             'transition-colors duration-200',
             error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
             className
@@ -150,7 +150,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           className={cn(
             'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
             'border-surface-700/80',
-            'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+            'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
             'transition-colors duration-200',
             error && 'border-red-500/70',
             className
@@ -446,7 +446,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 export function LoadingSpinner({ className }: { className?: string }) {
   return (
     <div className={cn('flex items-center justify-center', className)}>
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-surface-700 border-t-[#FF5F1F]" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-surface-700 border-t-brand-500" />
     </div>
   );
 }
@@ -456,7 +456,7 @@ export function LoadingPage() {
   return (
     <div className="flex h-screen items-center justify-center bg-surface-950">
       <div className="text-center">
-        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-surface-700 border-t-[#FF5F1F]" />
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-surface-700 border-t-brand-500" />
         <p className="mt-4 text-sm text-surface-400">{t('common.loading')}</p>
       </div>
     </div>
@@ -747,9 +747,9 @@ export function Toggle({ checked, onChange, label, description, disabled, size =
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
         className={cn(
-          'relative inline-flex shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5F1F] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
+          'relative inline-flex shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
           trackSize,
-          checked ? 'bg-[#E54E15]' : 'bg-surface-700',
+          checked ? 'bg-brand-600' : 'bg-surface-700',
         )}
       >
         <span
@@ -830,7 +830,7 @@ export function SearchInput({ value, onChange, placeholder, className, autoFocus
         className={cn(
           'w-full rounded-lg border bg-surface-900/80 pl-10 pr-8 py-2.5 text-sm text-white font-medium',
           'border-surface-700/80 placeholder:text-surface-600',
-          'focus:border-[#FF5F1F]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:bg-surface-800/80',
+          'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
           'transition-colors duration-200'
         )}
       />
@@ -987,7 +987,7 @@ export function FilterTabs({ tabs, active, onChange, className }: FilterTabsProp
           className={cn(
             'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200',
             active === tab.key
-              ? 'bg-[#E54E15]/15 text-[#FF5F1F] ring-1 ring-[#FF5F1F]/20'
+              ? 'bg-brand-600/15 text-brand-500 ring-1 ring-brand-500/20'
               : 'text-surface-400 hover:text-white hover:bg-surface-800/60'
           )}
         >
@@ -995,7 +995,7 @@ export function FilterTabs({ tabs, active, onChange, className }: FilterTabsProp
           {tab.count !== undefined && (
             <span className={cn(
               'ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full',
-              active === tab.key ? 'bg-[#FF5F1F]/20' : 'bg-surface-800 text-surface-500'
+              active === tab.key ? 'bg-brand-500/20' : 'bg-surface-800 text-surface-500'
             )}>
               {tab.count}
             </span>

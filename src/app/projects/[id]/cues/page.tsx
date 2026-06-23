@@ -242,7 +242,7 @@ export default function CuePage() {
               <select
                 value={form.cue_type ?? 'lighting'}
                 onChange={e => setForm(f => ({ ...f, cue_type: e.target.value as StageCueType }))}
-                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FF5F1F]"
+                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-500"
               >
                 {CUE_TYPES.map(t => (
                   <option key={t} value={t}>{STAGE_CUE_TYPE_CONFIG[t].label} ({STAGE_CUE_TYPE_CONFIG[t].abbrev})</option>
@@ -326,7 +326,7 @@ export default function CuePage() {
               value={form.notes ?? ''}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               rows={3}
-              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F] resize-none"
+              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500 resize-none"
               placeholder="Extra notes, dependencies, warnings…"
             />
           </div>

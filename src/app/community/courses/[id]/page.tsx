@@ -25,12 +25,12 @@ function renderMarkdown(md: string): string {
     .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold text-white mt-7 mb-3">$1</h1>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em class="italic text-white/80">$1</em>')
-    .replace(/`(.+?)`/g, '<code class="px-1.5 py-0.5 rounded text-[#FF5F1F] bg-[#FF5F1F]/10 font-mono text-sm">$1</code>')
-    .replace(/^\> (.+)$/gm, '<blockquote class="border-l-2 border-[#FF5F1F]/40 pl-4 text-white/60 italic my-3">$1</blockquote>')
+    .replace(/`(.+?)`/g, '<code class="px-1.5 py-0.5 rounded text-brand-500 bg-brand-500/10 font-mono text-sm">$1</code>')
+    .replace(/^\> (.+)$/gm, '<blockquote class="border-l-2 border-brand-500/40 pl-4 text-white/60 italic my-3">$1</blockquote>')
     .replace(/^\- (.+)$/gm, '<li class="text-white/70 ml-4 list-disc mb-1">$1</li>')
     .replace(/^(\d+)\. (.+)$/gm, '<li class="text-white/70 ml-4 list-decimal mb-1">$2</li>')
     .replace(/\n\n/g, '</p><p class="text-white/70 leading-relaxed mb-4">')
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-[#FF5F1F] hover:underline" target="_blank" rel="noopener">$1</a>');
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-brand-500 hover:underline" target="_blank" rel="noopener">$1</a>');
 }
 
 // Lesson type renders
@@ -184,7 +184,7 @@ function QuizLesson({
           className={cn(
             'w-full py-3 rounded-xl text-sm font-semibold transition-colors',
             allAnswered
-              ? 'bg-[#FF5F1F] text-white hover:bg-[#E54E15]'
+              ? 'bg-brand-500 text-white hover:bg-brand-600'
               : 'bg-white/5 text-white/30 cursor-not-allowed',
           )}
         >
@@ -201,7 +201,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
   return (
     <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-5">
       <div className="flex items-start gap-3 mb-4">
-        <span className="w-6 h-6 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+        <span className="w-6 h-6 rounded-full bg-brand-500/20 text-brand-500 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
           {idx + 1}
         </span>
         <p className="text-sm text-white font-medium leading-relaxed">{q.text}</p>
@@ -218,7 +218,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
               className={cn(
                 'w-full text-left px-4 py-3 rounded-xl text-sm transition-colors border',
                 !showResult && !isSelected && 'border-white/10 text-white/60 hover:border-white/30 hover:text-white bg-white/[0.03]',
-                !showResult && isSelected  && 'border-[#FF5F1F]/40 text-white bg-[#FF5F1F]/10',
+                !showResult && isSelected  && 'border-brand-500/40 text-white bg-brand-500/10',
                 showResult && isCorrect    && 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10',
                 showResult && !isCorrect && isSelected && !opt.is_correct && 'border-red-500/40 text-red-400 bg-red-500/10',
                 showResult && !isCorrect && !isSelected && 'border-white/5 text-white/30',
@@ -227,7 +227,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
               <div className="flex items-center gap-3">
                 <span className={cn(
                   'w-4 h-4 rounded-full border-2 shrink-0 transition-colors',
-                  !showResult && isSelected ? 'border-[#FF5F1F] bg-[#FF5F1F]' : 'border-white/20',
+                  !showResult && isSelected ? 'border-brand-500 bg-brand-500' : 'border-white/20',
                   showResult && isCorrect ? 'border-emerald-500 bg-emerald-500' : '',
                   showResult && !isCorrect && isSelected ? 'border-red-500 bg-red-500' : '',
                 )} />
@@ -266,9 +266,9 @@ function ScriptEditorLesson({
   return (
     <div className="space-y-4">
       {/* Instructions */}
-      <div className="p-4 rounded-xl bg-[#FF5F1F]/5 border border-[#FF5F1F]/20">
+      <div className="p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[#FF5F1F] text-xs font-bold uppercase tracking-wider">Task</span>
+          <span className="text-brand-500 text-xs font-bold uppercase tracking-wider">Task</span>
           {content.locked && <span className="text-[9px] text-white/30 uppercase tracking-wider bg-white/5 px-1.5 py-0.5 rounded">Read Only</span>}
         </div>
         <p className="text-sm text-white/70 leading-relaxed">{content.instructions}</p>
@@ -338,7 +338,7 @@ function ScriptEditorLesson({
             ['[[SYNOPSIS]]', 'Synopsis'],
           ].map(([syntax, desc]) => (
             <div key={syntax} className="flex gap-2">
-              <code className="text-[#FF5F1F] shrink-0 w-32">{syntax}</code>
+              <code className="text-brand-500 shrink-0 w-32">{syntax}</code>
               <span className="text-white/30">{desc}</span>
             </div>
           ))}
@@ -370,9 +370,9 @@ function ArcEditorLesson({
   return (
     <div className="space-y-4">
       {/* Instructions */}
-      <div className="p-4 rounded-xl bg-[#FF5F1F]/5 border border-[#FF5F1F]/20">
+      <div className="p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[#FF5F1F] text-xs font-bold uppercase tracking-wider">
+          <span className="text-brand-500 text-xs font-bold uppercase tracking-wider">
             {content.locked ? 'Example' : 'Task'}
           </span>
           {content.locked && <span className="text-[9px] text-white/30 uppercase tracking-wider bg-white/5 px-1.5 py-0.5 rounded">Read Only</span>}
@@ -392,7 +392,7 @@ function ArcEditorLesson({
 
       {!content.locked && !existingCompletion && (
         <button onClick={onComplete}
-          className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[#FF5F1F] text-white hover:bg-[#E54E15] transition-colors">
+          className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 text-white hover:bg-brand-600 transition-colors">
           Submit Arc & Complete ✓
         </button>
       )}
@@ -423,7 +423,7 @@ function ExampleLesson({ content }: { content: LessonContentExample }) {
                 const lineNum = i + 1;
                 const note = annotationMap.get(lineNum);
                 return (
-                  <tr key={i} className={cn('group', note && 'bg-[#FF5F1F]/5')}>
+                  <tr key={i} className={cn('group', note && 'bg-brand-500/5')}>
                     <td className="py-0.5 px-3 text-right text-white/20 select-none w-10 border-r border-white/[0.04]">
                       {lineNum}
                     </td>
@@ -431,7 +431,7 @@ function ExampleLesson({ content }: { content: LessonContentExample }) {
                       <FountainLine text={line} lang={content.language} />
                     </td>
                     {note && (
-                      <td className="py-0.5 px-3 text-[10px] text-[#FF5F1F]/70 italic whitespace-nowrap">
+                      <td className="py-0.5 px-3 text-[10px] text-brand-500/70 italic whitespace-nowrap">
                         ← {note}
                       </td>
                     )}
@@ -458,7 +458,7 @@ function FountainLine({ text, lang }: { text: string; lang: string }) {
   if (/^>/.test(t))
     return <span className="text-purple-400">{text}</span>;
   if (/^=/.test(t))
-    return <span className="text-[#FF5F1F]">{text}</span>;
+    return <span className="text-brand-500">{text}</span>;
   if (t === '')
     return <span> </span>;
   return <span>{text}</span>;
@@ -493,7 +493,7 @@ function ProgressSidebar({
               <span className="text-white/60">{enrollment.progress_percent}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-[#FF5F1F] rounded-full transition-[width]" style={{ width: `${enrollment.progress_percent}%` }} />
+              <div className="h-full bg-brand-500 rounded-full transition-[width]" style={{ width: `${enrollment.progress_percent}%` }} />
             </div>
           </div>
         )}
@@ -515,26 +515,26 @@ function ProgressSidebar({
                   onClick={() => onSelect(lesson)}
                   className={cn(
                     'w-full text-left px-4 py-2.5 flex items-start gap-2.5 transition-colors text-xs',
-                    active ? 'bg-[#FF5F1F]/10 text-white' : 'text-white/60 hover:bg-white/[0.04] hover:text-white/80',
+                    active ? 'bg-brand-500/10 text-white' : 'text-white/60 hover:bg-white/[0.04] hover:text-white/80',
                   )}
                 >
                   <span className={cn(
                     'w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center border',
                     done ? 'bg-emerald-500 border-emerald-500'
-                      : active ? 'border-[#FF5F1F]'
+                      : active ? 'border-brand-500'
                       : 'border-white/20',
                   )}>
                     {done ? (
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
                     ) : active ? (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF5F1F]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
                     ) : null}
                   </span>
                   <div className="min-w-0">
                     <span className="block leading-snug line-clamp-2">{lesson.title}</span>
                     <span className={cn(
                       'text-[9px] uppercase tracking-wider mt-0.5 block',
-                      active ? 'text-[#FF5F1F]/70' : 'text-white/25',
+                      active ? 'text-brand-500/70' : 'text-white/25',
                     )}>
                       {LESSON_TYPE_LABEL[lesson.lesson_type]} · {lesson.xp_reward} XP
                     </span>
@@ -550,7 +550,7 @@ function ProgressSidebar({
       <div className="p-4 border-t border-white/[0.06]">
         <div className="flex items-center justify-between text-xs">
           <span className="text-white/30">Course reward</span>
-          <span className="text-[#FF5F1F] font-bold">+{course.xp_reward} XP</span>
+          <span className="text-brand-500 font-bold">+{course.xp_reward} XP</span>
         </div>
       </div>
     </div>
@@ -713,7 +713,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
-        <div className="w-8 h-8 border-2 border-[#FF5F1F]/30 border-t-[#FF5F1F] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
   }
@@ -781,7 +781,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
                   <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
                     {LESSON_TYPE_LABEL[activeLesson.lesson_type]}
                   </span>
-                  <span className="text-[10px] text-[#FF5F1F]/70">+{activeLesson.xp_reward} XP</span>
+                  <span className="text-[10px] text-brand-500/70">+{activeLesson.xp_reward} XP</span>
                   {completedIds.has(activeLesson.id) && (
                     <span className="flex items-center gap-1 text-[10px] text-emerald-400 ml-auto">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
@@ -850,7 +850,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
                   {activeIdx < allLessons.length - 1 && (
                     <button
                       onClick={() => setActiveLessonId(allLessons[activeIdx + 1]?.id ?? null)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-[#FF5F1F]/10 hover:bg-[#FF5F1F]/20 text-[#FF5F1F] rounded-xl transition-colors border border-[#FF5F1F]/20"
+                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-brand-500/10 hover:bg-brand-500/20 text-brand-500 rounded-xl transition-colors border border-brand-500/20"
                     >
                       Next
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
@@ -872,10 +872,10 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
       {/* ─── Rating modal ─── */}
       {showRating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm bg-[#0D0D1A] rounded-xl border border-[#FF5F1F]/20 p-8 text-center shadow-2xl">
+          <div className="w-full max-w-sm bg-[#0D0D1A] rounded-xl border border-brand-500/20 p-8 text-center shadow-2xl">
             <div className="text-4xl mb-3">🎉</div>
             <h3 className="text-xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Complete!</h3>
-            <p className="text-sm text-white/50 mb-2">You earned <span className="text-[#FF5F1F] font-bold">+{course.xp_reward} XP</span></p>
+            <p className="text-sm text-white/50 mb-2">You earned <span className="text-brand-500 font-bold">+{course.xp_reward} XP</span></p>
             <p className="text-sm text-white/60 mb-6">How would you rate this course?</p>
             <div className="flex items-center justify-center gap-2 mb-6">
               {[1,2,3,4,5].map(r => (

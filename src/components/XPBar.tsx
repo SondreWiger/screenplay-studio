@@ -32,7 +32,7 @@ export function XPBar({
 
   // Color gradient shifts per glow tier
   const barColors: Record<typeof glowTier, string> = {
-    none:     'from-[#FF5F1F] to-orange-400',
+    none:     'from-brand-500 to-orange-400',
     bronze:   'from-amber-600 to-amber-400',
     silver:   'from-slate-400 to-slate-200',
     gold:     'from-yellow-500 to-yellow-300',
@@ -45,7 +45,7 @@ export function XPBar({
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5">
           <span
-            className={`text-xs font-black text-[#FF5F1F] ${glowClass}`}
+            className={`text-xs font-black text-brand-500 ${glowClass}`}
           >
             Lvl {level}
           </span>
@@ -58,7 +58,7 @@ export function XPBar({
 
         <div className="flex items-center gap-2">
           {showMultiplier && multiplier > 1 && (
-            <span className="text-[9px] font-black text-[#FF5F1F] bg-[#FF5F1F]/10 px-1.5 py-0.5 rounded-full border border-[#FF5F1F]/20 animate-pulse">
+            <span className="text-[9px] font-black text-brand-500 bg-brand-500/10 px-1.5 py-0.5 rounded-full border border-brand-500/20 animate-pulse">
               {multiplier}× XP
             </span>
           )}

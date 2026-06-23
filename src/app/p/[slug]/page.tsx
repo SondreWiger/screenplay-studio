@@ -77,7 +77,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#FF5F1F]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-brand-500" />
       </div>
     );
   }
@@ -216,7 +216,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                     </div>
                   )}
                   <div className="p-4">
-                    {post.pinned && <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF5F1F] mb-1 block">Pinned</span>}
+                    {post.pinned && <span className="text-[10px] font-mono uppercase tracking-widest text-brand-500 mb-1 block">Pinned</span>}
                     <h3 className="font-black text-white line-clamp-2" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
                     {post.excerpt && <p className="text-sm text-white/40 mt-1 line-clamp-2">{post.excerpt}</p>}
                     <div className="flex items-center gap-2 mt-3">

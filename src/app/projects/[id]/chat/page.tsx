@@ -22,7 +22,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
 };
 
 const ROLE_BADGES: Record<UserRole, { label: string; color: string }> = {
-  owner: { label: 'Owner', color: 'bg-[#FF5F1F]/20 text-[#FF5F1F]' },
+  owner: { label: 'Owner', color: 'bg-brand-500/20 text-brand-500' },
   admin: { label: 'Admin', color: 'bg-red-500/20 text-red-400' },
   writer: { label: 'Writer', color: 'bg-sky-500/20 text-sky-400' },
   editor: { label: 'Editor', color: 'bg-emerald-500/20 text-emerald-400' },
@@ -530,7 +530,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                                   {roleBadge.label}
                                 </span>
                                 {prodRole && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-[#FF5F1F]/20 text-[#FF5F1F]">
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-brand-500/20 text-brand-500">
                                     {prodRole}
                                   </span>
                                 )}
@@ -568,7 +568,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={`Message #${selectedChannel.name}...`}
-                    className="flex-1 px-4 py-2.5 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/50 placeholder-surface-500"
+                    className="flex-1 px-4 py-2.5 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/50 placeholder-surface-500"
                     rows={1}
                     style={{ maxHeight: '120px' }}
                     onInput={(e) => {
@@ -621,7 +621,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                             {m.profile?.full_name || m.profile?.email || 'User'}
                           </p>
                           {m.production_role && (
-                            <p className="text-[10px] text-[#FF5F1F] truncate">
+                            <p className="text-[10px] text-brand-500 truncate">
                               {PRODUCTION_ROLES.find((r) => r.value === m.production_role)?.label || m.production_role}
                             </p>
                           )}

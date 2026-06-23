@@ -75,7 +75,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
       <Card className="p-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-white">Scene Progress</h2>
-          <Link href={`/projects/${params.id}/scenes`} className="text-xs text-[#FF5F1F] hover:underline">View all →</Link>
+          <Link href={`/projects/${params.id}/scenes`} className="text-xs text-brand-500 hover:underline">View all →</Link>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex-1">
@@ -106,7 +106,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-white">Upcoming Call Sheets</h2>
-            <Link href={`/projects/${params.id}/call-sheet`} className="text-xs text-[#FF5F1F] hover:underline">All →</Link>
+            <Link href={`/projects/${params.id}/call-sheet`} className="text-xs text-brand-500 hover:underline">All →</Link>
           </div>
           {callSheets.length === 0 ? (
             <p className="text-sm text-surface-500">No upcoming shoot days.</p>
@@ -131,7 +131,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-white">Safety Alerts</h2>
-            <Link href={`/projects/${params.id}/safety-plan`} className="text-xs text-[#FF5F1F] hover:underline">All →</Link>
+            <Link href={`/projects/${params.id}/safety-plan`} className="text-xs text-brand-500 hover:underline">All →</Link>
           </div>
           {sortedAlerts.length === 0 ? (
             <div className="flex items-center gap-2 text-green-400 text-sm">
@@ -154,7 +154,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-white">On Set Today &amp; Tomorrow</h2>
-            <Link href={`/projects/${params.id}/dood`} className="text-xs text-[#FF5F1F] hover:underline">DOOD →</Link>
+            <Link href={`/projects/${params.id}/dood`} className="text-xs text-brand-500 hover:underline">DOOD →</Link>
           </div>
           <div className="space-y-3">
             <div>

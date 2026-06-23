@@ -154,7 +154,7 @@ export default function FeedbackItemPage() {
 
   if (loading) return (
     <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -162,7 +162,7 @@ export default function FeedbackItemPage() {
     <div className="min-h-screen bg-surface-950 flex items-center justify-center text-center">
       <div>
         <p className="text-surface-400 mb-4">Issue not found.</p>
-        <Link href="/feedback" className="text-[#FF5F1F] font-bold hover:underline">← Back to Feedback</Link>
+        <Link href="/feedback" className="text-brand-500 font-bold hover:underline">← Back to Feedback</Link>
       </div>
     </div>
   );
@@ -372,7 +372,7 @@ export default function FeedbackItemPage() {
                       onChange={e => setCommentText(e.target.value)}
                       placeholder="Share your thoughts or additional context…"
                       rows={3}
-                      className="w-full bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/50 resize-none transition-colors"
+                      className="w-full bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/50 resize-none transition-colors"
                     />
                     <button
                       onClick={handleComment}
@@ -405,7 +405,7 @@ export default function FeedbackItemPage() {
                 className={cn(
                   'w-full flex flex-col items-center justify-center py-4 px-4 rounded-xl border-2 font-black transition-colors duration-150 text-3xl mb-2',
                   voted
-                    ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 text-[#FF5F1F]'
+                    ? 'border-brand-500 bg-brand-500/10 text-brand-500'
                     : 'border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-500 hover:text-white'
                 )}
               >
@@ -512,7 +512,7 @@ export default function FeedbackItemPage() {
             <SiteVersion light />
             <span className="text-white/10">·</span>
             <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80">
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80">
               Northem ♥
             </a>
           </div>

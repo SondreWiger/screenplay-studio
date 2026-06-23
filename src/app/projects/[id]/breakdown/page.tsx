@@ -268,7 +268,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
         {[
           { label: 'Total Scenes',  value: displayScenes.length,          color: 'bg-surface-800/60 text-white' },
           { label: 'Total Pages',   value: summary.totalPages.toFixed(1), color: 'bg-surface-800/60 text-white' },
-          { label: 'Cast Members',  value: Math.max(summary.allCastIds.length, scriptCharToScenes.size), color: 'bg-[#FF5F1F]/10 text-[#FF8F5F]' },
+          { label: 'Cast Members',  value: Math.max(summary.allCastIds.length, scriptCharToScenes.size), color: 'bg-brand-500/10 text-brand-400' },
           { label: 'Unique Props',  value: summary.allProps.length,       color: 'bg-amber-500/10 text-amber-300' },
           { label: 'VFX Scenes',    value: summary.vfxScenes,             color: 'bg-purple-500/10 text-purple-300' },
           { label: 'Stunt Scenes',  value: summary.stuntScenes,           color: 'bg-red-500/10 text-red-300' },
@@ -285,7 +285,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
         {(['stripboard', 'cast', 'locations', 'departments'] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={cn('px-3 py-1.5 text-xs font-medium rounded-md capitalize transition-colors',
-              tab === t ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white')}>
+              tab === t ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white')}>
             {t}
           </button>
         ))}
@@ -334,7 +334,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                             )}
                             {!isOpen && (
                               <div className="flex flex-wrap gap-1 mt-0.5">
-                                {cast.slice(0, 3).map((n) => <DeptTag key={n} color="bg-[#FF5F1F]/10 text-[#FF8F5F]">{n}</DeptTag>)}
+                                {cast.slice(0, 3).map((n) => <DeptTag key={n} color="bg-brand-500/10 text-brand-400">{n}</DeptTag>)}
                                 {cast.length > 3 && <DeptTag color="bg-surface-700/60 text-surface-400">+{cast.length - 3} more</DeptTag>}
                                 {(scene.extras_count ?? 0) > 0 && <DeptTag color="bg-surface-700/60 text-surface-400">{scene.extras_count} extras</DeptTag>}
                                 {scene.vfx_notes && <DeptTag color="bg-purple-500/10 text-purple-300">VFX</DeptTag>}
@@ -365,7 +365,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                                 <p className="text-surface-300">{scene.synopsis}</p>
                               </div>
                             )}
-                            <DeptSection label="Cast" color="bg-[#FF5F1F]/10 text-[#FF8F5F]" items={cast} />
+                            <DeptSection label="Cast" color="bg-brand-500/10 text-brand-400" items={cast} />
                             {(scene.extras_count ?? 0) > 0 && <DeptSection label="Extras" color="bg-surface-700/60 text-surface-300" items={[String(scene.extras_count) + ' extras']} />}
                             <DeptSection label="Location" color="bg-teal-500/10 text-teal-300"
                               items={[scene.location_name ?? locById[scene.location_id ?? ''] ?? ''].filter(Boolean)} />
@@ -456,7 +456,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
               <p className="text-[11px] text-surface-500 px-1 mb-1">
                 <span className="inline-block w-2 h-2 rounded-md bg-indigo-500/60 mr-1.5 align-middle" />
                 Script-detected &nbsp;·&nbsp;
-                <span className="inline-block w-2 h-2 rounded-md bg-[#FF5F1F]/60 mr-1.5 align-middle" />
+                <span className="inline-block w-2 h-2 rounded-md bg-brand-500/60 mr-1.5 align-middle" />
                 Manually assigned
               </p>
             )}
@@ -470,7 +470,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                 <div key={entry.key} className="rounded-xl border border-surface-700/40 bg-surface-800/30 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[#E54E15]/40 flex items-center justify-center text-xs font-bold text-[#FF8F5F]">
+                      <div className="w-7 h-7 rounded-full bg-brand-600/40 flex items-center justify-center text-xs font-bold text-brand-400">
                         {entry.displayName[0] ?? '?'}
                       </div>
                       <span className="font-semibold text-white text-sm">{entry.displayName}</span>
@@ -493,7 +493,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                           title={fromManual && fromScript ? 'Manual + Script' : fromScript ? 'From script' : 'Manually assigned'}
                           className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${
                             fromManual
-                              ? 'bg-[#FF5F1F]/10 text-[#FF8F5F] border-[#FF5F1F]/20'
+                              ? 'bg-brand-500/10 text-brand-400 border-brand-500/20'
                               : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
                           }`}
                         >

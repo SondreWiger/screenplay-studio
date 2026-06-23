@@ -161,7 +161,7 @@ export function MentionTextarea({
         className={[
           'w-full resize-none bg-white/5 border border-white/10 rounded-lg px-3 py-2.5',
           'text-sm text-white placeholder-white/30 leading-relaxed',
-          'focus:outline-none focus:border-[#FF5F1F]/50 transition-colors',
+          'focus:outline-none focus:border-brand-500/50 transition-colors',
           'overflow-hidden',
           className,
         ].join(' ')}

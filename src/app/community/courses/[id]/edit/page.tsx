@@ -129,7 +129,7 @@ function LessonContentForm({ type, value, onChange }: {
         <textarea value={v.initial_content} onChange={e => onChange({ ...v, initial_content: e.target.value })} rows={6}
           className="w-full bg-white/[0.04] border border-white/10 rounded-xl font-mono text-sm text-white/80 px-4 py-3 outline-none resize-y" placeholder="INT. — DAY" />
         <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
-          <input type="checkbox" checked={v.locked} onChange={e => onChange({ ...v, locked: e.target.checked })} className="w-4 h-4 accent-[#FF5F1F]" />
+          <input type="checkbox" checked={v.locked} onChange={e => onChange({ ...v, locked: e.target.checked })} className="w-4 h-4 accent-brand-500" />
           Read-only
         </label>
       </div>
@@ -142,7 +142,7 @@ function LessonContentForm({ type, value, onChange }: {
         <textarea value={v.instructions} onChange={e => onChange({ ...v, instructions: e.target.value })} rows={2}
           placeholder="Instructions for student…" className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white/80 px-4 py-2.5 outline-none resize-none" />
         <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
-          <input type="checkbox" checked={v.locked} onChange={e => onChange({ ...v, locked: e.target.checked })} className="w-4 h-4 accent-[#FF5F1F]" />
+          <input type="checkbox" checked={v.locked} onChange={e => onChange({ ...v, locked: e.target.checked })} className="w-4 h-4 accent-brand-500" />
           Read-only
         </label>
         <div className="rounded-xl overflow-hidden border border-white/[0.08]" style={{ height: '360px' }}>
@@ -337,7 +337,7 @@ export default function CourseEditPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
-        <div className="w-8 h-8 border-2 border-[#FF5F1F]/30 border-t-[#FF5F1F] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
   }
@@ -354,7 +354,7 @@ export default function CourseEditPage() {
           <div className="flex items-center gap-1 ml-auto">
             {(['meta','build'] as const).map((s, i) => (
               <button key={s} onClick={() => setStep(s)}
-                className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors', step === s ? 'bg-[#FF5F1F] text-white' : 'text-white/40 hover:text-white/60')}>
+                className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors', step === s ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/60')}>
                 <span className="w-3.5 h-3.5 rounded-full bg-current/20 flex items-center justify-center text-[9px]">{i+1}</span>
                 {s === 'meta' ? 'Details' : 'Build'}
               </button>
@@ -376,7 +376,7 @@ export default function CourseEditPage() {
               <div>
                 <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Title *</label>
                 <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Course title…"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-base font-semibold text-white px-4 py-3 outline-none focus:border-[#FF5F1F]/40" />
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-base font-semibold text-white px-4 py-3 outline-none focus:border-brand-500/40" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Short Description</label>
@@ -434,7 +434,7 @@ export default function CourseEditPage() {
 
             <div className="flex items-center gap-3 pt-2">
               <button onClick={() => setStep('build')} disabled={!title.trim()}
-                className="px-6 py-3 rounded-xl font-semibold text-sm bg-[#FF5F1F] text-white hover:bg-[#E54E15] transition-colors disabled:opacity-40">
+                className="px-6 py-3 rounded-xl font-semibold text-sm bg-brand-500 text-white hover:bg-brand-600 transition-colors disabled:opacity-40">
                 Continue to Builder →
               </button>
             </div>
@@ -458,7 +458,7 @@ export default function CourseEditPage() {
                   Save Draft
                 </button>
                 <button onClick={() => handleSave('published')} disabled={saving}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#FF5F1F] text-white hover:bg-[#E54E15] transition-colors disabled:opacity-40">
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-500 text-white hover:bg-brand-600 transition-colors disabled:opacity-40">
                   {saving ? 'Saving…' : 'Save & Publish'}
                 </button>
               </div>
@@ -467,7 +467,7 @@ export default function CourseEditPage() {
             {sections.map((sec, si) => (
               <div key={sec.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
-                  <span className="w-5 h-5 rounded-full bg-[#FF5F1F]/20 text-[#FF5F1F] text-[10px] font-bold flex items-center justify-center shrink-0">{si+1}</span>
+                  <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-500 text-[10px] font-bold flex items-center justify-center shrink-0">{si+1}</span>
                   <input value={sec.title} onChange={e => updateSection(sec.id, { title: e.target.value })}
                     className="flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder-white/20" placeholder="Section Title" />
                   <button onClick={() => removeSection(sec.id)} className="text-xs text-red-400/50 hover:text-red-400 transition-colors">Remove</button>
@@ -533,7 +533,7 @@ export default function CourseEditPage() {
                   <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
                     <input type="checkbox" checked={editingLesson.lesson.is_required}
                       onChange={e => setEditingLesson(el => el ? { ...el, lesson: { ...el.lesson, is_required: e.target.checked } } : null)}
-                      className="w-4 h-4 accent-[#FF5F1F]" />
+                      className="w-4 h-4 accent-brand-500" />
                     Required
                   </label>
                 </div>
@@ -545,7 +545,7 @@ export default function CourseEditPage() {
                   {LESSON_TYPES.map(opt => (
                     <button key={opt.value}
                       onClick={() => setEditingLesson(el => el ? { ...el, lesson: { ...el.lesson, lesson_type: opt.value, content: defaultContent(opt.value) } } : null)}
-                      className={cn('flex items-start gap-2.5 p-3 rounded-xl border text-left transition-colors', editingLesson.lesson.lesson_type === opt.value ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/10' : 'border-white/[0.08] bg-white/[0.03] hover:border-white/20')}>
+                      className={cn('flex items-start gap-2.5 p-3 rounded-xl border text-left transition-colors', editingLesson.lesson.lesson_type === opt.value ? 'border-brand-500/40 bg-brand-500/10' : 'border-white/[0.08] bg-white/[0.03] hover:border-white/20')}>
                       <span className="text-lg leading-none">{opt.icon}</span>
                       <div>
                         <div className="text-xs font-semibold text-white">{opt.label}</div>
@@ -567,7 +567,7 @@ export default function CourseEditPage() {
             </div>
             <div className="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.06] bg-[#0E0E1C]">
               <button onClick={() => setEditingLesson(null)} className="px-4 py-2 text-sm text-white/50 hover:text-white">Cancel</button>
-              <button onClick={saveEditLesson} className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[#FF5F1F] text-white hover:bg-[#E54E15]">Save Lesson</button>
+              <button onClick={saveEditLesson} className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 text-white hover:bg-brand-600">Save Lesson</button>
             </div>
           </div>
         </div>

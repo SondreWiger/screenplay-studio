@@ -10,7 +10,7 @@ import type { StageProductionTeamMember, StageProductionDepartment } from '@/lib
 import { STAGE_DEPARTMENTS } from '@/lib/types';
 
 const DEPT_COLORS: Record<StageProductionDepartment, string> = {
-  'Direction':          'text-[#FF5F1F]  bg-[#FF5F1F]/10  border-[#FF5F1F]/20',
+  'Direction':          'text-brand-500  bg-brand-500/10  border-brand-500/20',
   'Stage Management':   'text-[#f59e0b]  bg-[#f59e0b]/10  border-[#f59e0b]/20',
   'Lighting':           'text-[#fbbf24]  bg-[#fbbf24]/10  border-[#fbbf24]/20',
   'Sound':              'text-[#3b82f6]  bg-[#3b82f6]/10  border-[#3b82f6]/20',
@@ -134,7 +134,7 @@ export default function ProductionTeamPage() {
           <p className="text-3xl mb-3">🎬</p>
           <p className="text-surface-300 font-medium">No production team yet</p>
           <p className="text-surface-500 text-sm mt-1">Add your director, stage manager, designers and crew.</p>
-          <button onClick={() => openAdd()} className="mt-4 px-4 py-2 rounded-lg bg-[#FF5F1F]/10 text-[#FF8F5F] hover:bg-[#FF5F1F]/20 text-sm transition-colors">
+          <button onClick={() => openAdd()} className="mt-4 px-4 py-2 rounded-lg bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 text-sm transition-colors">
             + Add first member
           </button>
         </Card>
@@ -248,7 +248,7 @@ export default function ProductionTeamPage() {
             <select
               value={form.department ?? 'Direction'}
               onChange={e => setForm(f => ({ ...f, department: e.target.value as StageProductionDepartment }))}
-              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FF5F1F]"
+              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-500"
             >
               {STAGE_DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -281,7 +281,7 @@ export default function ProductionTeamPage() {
               value={form.notes ?? ''}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               rows={3}
-              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F] resize-none"
+              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500 resize-none"
               placeholder="Any notes about this person…"
             />
           </div>

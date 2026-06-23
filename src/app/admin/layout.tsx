@@ -164,7 +164,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="border-b border-surface-800 p-4">
           <div className="flex items-center gap-3">
             <Link href="/dashboard">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#E54E15] to-[#FF5F1F] rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-[#E54E15]/20">
+              <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-brand-500 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-brand-600/20">
                 A
               </div>
             </Link>
@@ -190,11 +190,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     className={cn(
                       'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
                       isActive(item)
-                        ? 'bg-[#E54E15]/10 text-[#FF5F1F] font-semibold'
+                        ? 'bg-brand-600/10 text-brand-500 font-semibold'
                         : 'text-surface-400 hover:bg-surface-900/5 hover:text-white'
                     )}
                   >
-                    <span className={cn(isActive(item) ? 'text-[#FF5F1F]' : 'text-surface-500')}>
+                    <span className={cn(isActive(item) ? 'text-brand-500' : 'text-surface-500')}>
                       {item.icon}
                     </span>
                     {item.label}

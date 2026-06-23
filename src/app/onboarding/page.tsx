@@ -65,9 +65,9 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
           key={i}
           className={`rounded-full transition-[width] duration-500 ${
             i === current
-              ? 'w-8 h-2 bg-[#FF5F1F]'
+              ? 'w-8 h-2 bg-brand-500'
               : i < current
-              ? 'w-2 h-2 bg-[#FF5F1F]/40'
+              ? 'w-2 h-2 bg-brand-500/40'
               : 'w-2 h-2 bg-surface-700'
           }`}
         />
@@ -288,7 +288,7 @@ export default function OnboardingPage() {
                     <button
                       key={id}
                       onClick={() => { applyIntentDefaults(id as UsageIntent); goNext(); }}
-                      className="p-3 rounded-xl border border-surface-700 bg-surface-900/50 hover:border-[#FF5F1F]/40 hover:bg-[#FF5F1F]/5 transition-colors text-center"
+                      className="p-3 rounded-xl border border-surface-700 bg-surface-900/50 hover:border-brand-500/40 hover:bg-brand-500/5 transition-colors text-center"
                     >
                       <span className="text-sm font-medium text-white">{label}</span>
                     </button>
@@ -315,7 +315,7 @@ export default function OnboardingPage() {
                       onClick={() => applyIntentDefaults(opt.value)}
                       className={`group relative text-left p-5 rounded-xl border-2 transition-colors duration-200 ${
                         selected
-                          ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
+                          ? 'border-brand-500 bg-brand-500/10 shadow-lg shadow-brand-500/5'
                           : 'border-surface-700 bg-surface-900/50 hover:border-surface-600 hover:bg-surface-800/50 hover:shadow-md'
                       }`}
                     >
@@ -327,12 +327,12 @@ export default function OnboardingPage() {
                       <div className={`text-2xl mb-2 transition-transform duration-200 ${selected ? 'scale-110' : ''}`}>
                         {opt.emoji}
                       </div>
-                      <h3 className={`text-sm font-bold ${selected ? 'text-[#FF5F1F]' : 'text-white group-hover:text-white'}`}>
+                      <h3 className={`text-sm font-bold ${selected ? 'text-brand-500' : 'text-white group-hover:text-white'}`}>
                         {opt.label}
                       </h3>
                       <p className="mt-1 text-xs text-surface-500 leading-relaxed">{opt.description}</p>
                       {selected && (
-                        <div className="mt-3 pt-3 border-t border-[#FF5F1F]/10">
+                        <div className="mt-3 pt-3 border-t border-brand-500/10">
                           <div className="flex flex-wrap gap-2">
                             {showCommunity && <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🌐 Community</span>}
                             {showProductionTools && <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🎥 Production</span>}
@@ -365,7 +365,7 @@ export default function OnboardingPage() {
                       onClick={() => setScriptType(opt.value)}
                       className={`relative text-left p-4 rounded-xl border-2 transition-colors duration-200 ${
                         selected
-                          ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
+                          ? 'border-brand-500 bg-brand-500/10 shadow-lg shadow-brand-500/5'
                           : 'border-surface-700 bg-surface-900/50 hover:border-surface-600 hover:bg-surface-800/50'
                       }`}
                     >
@@ -374,8 +374,8 @@ export default function OnboardingPage() {
                           <AnimatedCheckmark />
                         </div>
                       )}
-                      <Icon name={opt.icon} size="md" className={selected ? 'text-[#FF5F1F]' : 'text-surface-400'} />
-                      <h3 className={`mt-1.5 text-sm font-bold ${selected ? 'text-[#FF5F1F]' : 'text-white'}`}>
+                      <Icon name={opt.icon} size="md" className={selected ? 'text-brand-500' : 'text-surface-400'} />
+                      <h3 className={`mt-1.5 text-sm font-bold ${selected ? 'text-brand-500' : 'text-white'}`}>
                         {opt.label}
                       </h3>
                       <p className="mt-0.5 text-[11px] text-surface-500">{opt.description}</p>
@@ -472,7 +472,7 @@ export default function OnboardingPage() {
                       onClick={toggle}
                       className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-colors duration-200 ${
                         isOn
-                          ? 'border-[#FF5F1F]/40 bg-[#FF5F1F]/5'
+                          ? 'border-brand-500/40 bg-brand-500/5'
                           : 'border-surface-700/50 bg-surface-900/30 opacity-60 hover:opacity-80'
                       }`}
                     >
@@ -482,7 +482,7 @@ export default function OnboardingPage() {
                         <p className="text-[11px] text-surface-500">{feat.description}</p>
                       </div>
                       <div className={`w-11 h-6 rounded-full shrink-0 transition-colors duration-300 relative ${
-                        isOn ? 'bg-[#FF5F1F] shadow-sm shadow-[#FF5F1F]/30' : 'bg-surface-700'
+                        isOn ? 'bg-brand-500 shadow-sm shadow-brand-500/30' : 'bg-surface-700'
                       }`}>
                         <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${
                           isOn ? 'left-[22px]' : 'left-0.5'
@@ -516,20 +516,20 @@ export default function OnboardingPage() {
                     <div key={lvl.level} className="relative pb-4 last:pb-0">
                       {/* Timeline line */}
                       {i < LEVEL_PREVIEW.length - 1 && (
-                        <div className="absolute left-[11px] top-6 bottom-0 w-px bg-gradient-to-b from-[#FF5F1F]/30 to-transparent" />
+                        <div className="absolute left-[11px] top-6 bottom-0 w-px bg-gradient-to-b from-brand-500/30 to-transparent" />
                       )}
                       {/* Timeline dot */}
-                      <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-surface-800 border-2 border-[#FF5F1F]/30 flex items-center justify-center">
+                      <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-surface-800 border-2 border-brand-500/30 flex items-center justify-center">
                         <span className="text-[10px]">{lvl.icon}</span>
                       </div>
                       <div className="bg-surface-900/50 rounded-xl border border-surface-800/50 p-3 hover:border-surface-700/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-[10px] font-mono text-[#FF5F1F] font-bold">LVL {lvl.level}</span>
+                            <span className="text-[10px] font-mono text-brand-500 font-bold">LVL {lvl.level}</span>
                             <h4 className="text-sm font-semibold text-white">{lvl.title}</h4>
                           </div>
                           {lvl.unlock && (
-                            <span className="text-[10px] px-2 py-1 rounded-full bg-[#FF5F1F]/10 text-[#FF5F1F] font-medium whitespace-nowrap">
+                            <span className="text-[10px] px-2 py-1 rounded-full bg-brand-500/10 text-brand-500 font-medium whitespace-nowrap">
                               Unlocks: {lvl.unlock}
                             </span>
                           )}
@@ -547,12 +547,12 @@ export default function OnboardingPage() {
                     onClick={() => setGamificationChoice(true)}
                     className={`flex-1 p-4 rounded-xl border-2 text-center transition-colors duration-200 ${
                       gamificationChoice === true
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
+                        ? 'border-brand-500 bg-brand-500/10 shadow-lg shadow-brand-500/5'
                         : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
                     }`}
                   >
                     <div className="text-2xl mb-1">🚀</div>
-                    <h3 className={`text-sm font-bold ${gamificationChoice === true ? 'text-[#FF5F1F]' : 'text-white'}`}>
+                    <h3 className={`text-sm font-bold ${gamificationChoice === true ? 'text-brand-500' : 'text-white'}`}>
                       Yes, let&apos;s go!
                     </h3>
                     <p className="text-[10px] text-surface-500 mt-0.5">Earn XP, badges & profile effects</p>
@@ -595,24 +595,24 @@ export default function OnboardingPage() {
                     onClick={() => setWantsCompany(false)}
                     className={`flex-1 p-5 rounded-xl border-2 text-center transition-colors duration-200 ${
                       !wantsCompany
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
+                        ? 'border-brand-500 bg-brand-500/10 shadow-lg shadow-brand-500/5'
                         : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
                     }`}
                   >
                     <div className="text-3xl mb-2">🙋</div>
-                    <h3 className={`text-sm font-bold ${!wantsCompany ? 'text-[#FF5F1F]' : 'text-white'}`}>Just me</h3>
+                    <h3 className={`text-sm font-bold ${!wantsCompany ? 'text-brand-500' : 'text-white'}`}>Just me</h3>
                     <p className="text-[11px] text-surface-500 mt-1">Solo projects, full control</p>
                   </button>
                   <button
                     onClick={() => setWantsCompany(true)}
                     className={`flex-1 p-5 rounded-xl border-2 text-center transition-colors duration-200 ${
                       wantsCompany
-                        ? 'border-[#FF5F1F] bg-[#FF5F1F]/10 shadow-lg shadow-[#FF5F1F]/5'
+                        ? 'border-brand-500 bg-brand-500/10 shadow-lg shadow-brand-500/5'
                         : 'border-surface-700 bg-surface-900/50 hover:border-surface-600'
                     }`}
                   >
                     <div className="text-3xl mb-2">🏢</div>
-                    <h3 className={`text-sm font-bold ${wantsCompany ? 'text-[#FF5F1F]' : 'text-white'}`}>Team / Company</h3>
+                    <h3 className={`text-sm font-bold ${wantsCompany ? 'text-brand-500' : 'text-white'}`}>Team / Company</h3>
                     <p className="text-[11px] text-surface-500 mt-1">Collaborate together</p>
                   </button>
                 </div>
@@ -634,7 +634,7 @@ export default function OnboardingPage() {
                 )}
 
                 {(showAccountability || showCommunity) && (
-                  <div className="rounded-xl bg-gradient-to-r from-[#FF5F1F]/5 to-transparent border border-[#FF5F1F]/10 p-4">
+                  <div className="rounded-xl bg-gradient-to-r from-brand-500/5 to-transparent border border-brand-500/10 p-4">
                     <p className="text-xs text-surface-400 leading-relaxed">
                       💡 <span className="text-white/80 font-medium">Pro tip:</span> With collaboration enabled, you and your team can
                       edit scripts in real-time, leave comments, and track changes together.

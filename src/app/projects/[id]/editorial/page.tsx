@@ -190,7 +190,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search stories…"
-            className="w-40 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-[#FF5F1F]"
+            className="w-40 bg-surface-800 border border-surface-700 rounded px-2.5 py-1 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500"
           />
           <select
             value={filterAssignee}

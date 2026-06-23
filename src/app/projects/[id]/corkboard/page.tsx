@@ -73,7 +73,7 @@ function SynopsisEditor({
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={handleBlur}
-        className="w-full text-xs text-surface-300 bg-surface-700/60 rounded p-1.5 resize-none border border-[#FF5F1F]/40 focus:outline-none leading-relaxed"
+        className="w-full text-xs text-surface-300 bg-surface-700/60 rounded p-1.5 resize-none border border-brand-500/40 focus:outline-none leading-relaxed"
         rows={4}
       />
     );
@@ -159,7 +159,7 @@ function SceneCard({
         'relative rounded-xl border p-4 transition-colors duration-150 group',
         cardColorClass,
         isDragging && 'opacity-30 scale-95',
-        isDragOver && !isDragging && 'ring-2 ring-[#FF5F1F]/60 scale-[1.02]',
+        isDragOver && !isDragging && 'ring-2 ring-brand-500/60 scale-[1.02]',
         canEdit && 'cursor-grab active:cursor-grabbing',
       )}
     >
@@ -392,7 +392,7 @@ export default function CorkboardPage({ params }: { params: { id: string } }) {
                 onClick={() => setFilter(f)}
                 className={cn(
                   'px-3 py-1.5 text-xs font-medium rounded-md transition-colors capitalize',
-                  filter === f ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white',
+                  filter === f ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white',
                 )}
               >
                 {f}

@@ -60,7 +60,7 @@ export default function ChallengesPage() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#FF5F1F]" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-brand-500" />
           </div>
         ) : (
           <>
@@ -82,7 +82,7 @@ export default function ChallengesPage() {
                   { num: '04', title: 'Winner Revealed', desc: 'Sunday 12:00 UTC — the ranking is revealed!' },
                 ].map((step, i) => (
                   <div key={i} className="p-5" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
-                    <div className="text-2xl font-black text-[#FF5F1F] mb-2" style={{ letterSpacing: '-0.04em' }}>{step.num}</div>
+                    <div className="text-2xl font-black text-brand-500 mb-2" style={{ letterSpacing: '-0.04em' }}>{step.num}</div>
                     <h3 className="text-sm font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>{step.title}</h3>
                     <p className="text-xs font-mono text-white/40 leading-relaxed">{step.desc}</p>
                   </div>
@@ -149,7 +149,7 @@ export default function ChallengesPage() {
                       <p className="text-sm text-white/40 mt-1 line-clamp-2">{c.description}</p>
                       <div className="flex items-center gap-3 mt-3 text-xs font-mono text-white/50">
                         <span>{formatDate(c.starts_at)} — {formatDate(c.reveal_at)}</span>
-                        {c.prize_title && <span className="text-[#FF5F1F]">★ {c.prize_title}</span>}
+                        {c.prize_title && <span className="text-brand-500">★ {c.prize_title}</span>}
                       </div>
                     </Link>
                   ))}
@@ -174,7 +174,7 @@ export default function ChallengesPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>
@@ -269,7 +269,7 @@ function ActiveChallengeCard({ challenge, user }: { challenge: CommunityChalleng
                       {isPast ? (
                         <div className="h-full w-full bg-green-400/60 rounded-full" />
                       ) : isActive ? (
-                        <div className="h-full bg-[#FF5F1F] rounded-full animate-pulse" style={{
+                        <div className="h-full bg-brand-500 rounded-full animate-pulse" style={{
                           width: `${Math.max(10, 100 - (new Date(step.end).getTime() - Date.now()) / (new Date(step.end).getTime() - new Date(i === 0 ? challenge.starts_at : phaseTimeline[i - 1].end).getTime()) * 100)}%`
                         }} />
                       ) : (

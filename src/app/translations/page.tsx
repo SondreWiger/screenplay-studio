@@ -156,7 +156,7 @@ export default function TranslationsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-medium text-[#FF5F1F] uppercase tracking-wider mb-3">Community</p>
+          <p className="text-xs font-medium text-brand-500 uppercase tracking-wider mb-3">Community</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Translator Hub</h1>
           <p className="text-surface-400 mt-2 max-w-xl">
             Help translate Screenplay Studio into your language. Suggest translations, vote on the best ones, and make the app accessible to creators worldwide.
@@ -165,10 +165,10 @@ export default function TranslationsPage() {
 
         {/* Agreement gate */}
         {!agreed && (
-          <Card className="p-6 mb-8 border-[#FF5F1F]/20 bg-[#FF5F1F]/5">
+          <Card className="p-6 mb-8 border-brand-500/20 bg-brand-500/5">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg bg-[#FF5F1F]/10 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-[#FF5F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
@@ -253,7 +253,7 @@ export default function TranslationsPage() {
                             </div>
                             <div className="w-24 h-2 bg-surface-800 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-gradient-to-r from-[#E54E15] to-[#FF5F1F] rounded-full transition-all"
+                                className="h-full bg-gradient-to-r from-brand-600 to-brand-500 rounded-full transition-all"
                                 style={{ width: `${progress[lang.code] || 0}%` }}
                               />
                             </div>
@@ -308,28 +308,28 @@ export default function TranslationsPage() {
           </p>
           <ul className="space-y-2 text-sm text-surface-400">
             <li className="flex gap-2">
-              <svg className="w-4 h-4 text-[#FF5F1F] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <svg className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               Be genuinely fluent in the language you translate to
             </li>
             <li className="flex gap-2">
-              <svg className="w-4 h-4 text-[#FF5F1F] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <svg className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               Provide accurate, natural translations (no raw machine translations)
             </li>
             <li className="flex gap-2">
-              <svg className="w-4 h-4 text-[#FF5F1F] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <svg className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               No hate speech, spam, or prohibited content
             </li>
             <li className="flex gap-2">
-              <svg className="w-4 h-4 text-[#FF5F1F] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <svg className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               No vote manipulation or coordinated voting
             </li>
             <li className="flex gap-2">
-              <svg className="w-4 h-4 text-[#FF5F1F] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <svg className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               Admins may remove translations that violate guidelines
             </li>
           </ul>
           <p className="text-xs text-surface-500">
-            Full guidelines: <Link href="/legal/translation-guidelines" className="text-[#FF5F1F] hover:underline">/legal/translation-guidelines</Link>
+            Full guidelines: <Link href="/legal/translation-guidelines" className="text-brand-500 hover:underline">/legal/translation-guidelines</Link>
           </p>
         </div>
         <div className="flex gap-3 mt-6">
@@ -429,7 +429,7 @@ export default function TranslationsPage() {
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           quizAnswers[i] === j
-                            ? 'bg-[#FF5F1F]/10 border border-[#FF5F1F]/40 text-white'
+                            ? 'bg-brand-500/10 border border-brand-500/40 text-white'
                             : 'bg-surface-800/50 border border-surface-700/50 text-surface-400 hover:border-surface-600'
                         }`}
                       >

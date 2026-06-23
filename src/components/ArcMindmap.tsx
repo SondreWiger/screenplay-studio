@@ -820,7 +820,7 @@ export function ArcMindmap({
     <div className="flex h-full w-full bg-[#0d0d14] overflow-hidden select-none relative">
       <aside className="w-14 flex flex-col items-center py-4 gap-2 border-r border-white/5 bg-black/30 z-10 shrink-0">
         <div className="mb-2">
-          <div className="w-2 h-2 rounded-full bg-[#FF5F1F] mx-auto" />
+          <div className="w-2 h-2 rounded-full bg-brand-500 mx-auto" />
         </div>
         {(Object.keys(NODE_LABEL) as NodeType[]).map((t) => (
           <button
@@ -1113,7 +1113,7 @@ export function ArcMindmap({
               className={cn(
                 'px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors',
                 dirty && !saving
-                  ? 'bg-[#E54E15] text-white hover:bg-[#FF5F1F]'
+                  ? 'bg-brand-600 text-white hover:bg-brand-500'
                   : 'bg-white/5 text-white/30 cursor-default',
               )}
             >
@@ -1279,7 +1279,7 @@ function PropertiesPanel({
               onClick={() => updateNode(node.id, 'locked', !node.locked)}
               className={cn(
                 'w-8 h-5 rounded-full transition-colors relative',
-                node.locked ? 'bg-[#E54E15]' : 'bg-white/10',
+                node.locked ? 'bg-brand-600' : 'bg-white/10',
               )}
             >
               <span className={cn('absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-[left]', node.locked ? 'left-3.5' : 'left-0.5')} />

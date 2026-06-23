@@ -569,7 +569,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
               onClick={() => switchScope('project')}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium rounded-lg transition-colors',
-                scope === 'project' ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white hover:bg-surface-800',
+                scope === 'project' ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white hover:bg-surface-800',
               )}
             >
               📁 Full Project
@@ -646,7 +646,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                   onClick={() => setFramework(key as FrameworkKey)}
                   className={cn(
                     'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
-                    framework === key ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white',
+                    framework === key ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white',
                   )}
                 >
                   {label}
@@ -762,7 +762,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                 className={cn(
                   'rounded-xl border transition-colors duration-150',
                   isActive
-                    ? 'border-[#FF5F1F]/50 bg-surface-800/80'
+                    ? 'border-brand-500/50 bg-surface-800/80'
                     : hasNote
                     ? 'border-surface-700/60 bg-surface-800/40'
                     : 'border-surface-800/60 bg-surface-800/20',
@@ -859,7 +859,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                         setBeatNotes((prev) => ({ ...prev, [beat.id]: e.target.value }))
                       }
                       placeholder={`What happens at the ${beat.label}? What does your hero want vs. need?`}
-                      className="w-full bg-surface-700/40 rounded-lg border border-surface-700/60 p-3 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60 resize-none mt-3"
+                      className="w-full bg-surface-700/40 rounded-lg border border-surface-700/60 p-3 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60 resize-none mt-3"
                       rows={4}
                       disabled={!canEdit}
                       autoFocus
@@ -921,7 +921,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                       <div className="flex justify-end mt-2">
                         <button
                           onClick={() => { save(); setActiveNote(null); }}
-                          className="text-xs text-[#FF5F1F] hover:text-[#FF8F5F] transition-colors"
+                          className="text-xs text-brand-500 hover:text-brand-400 transition-colors"
                         >
                           Save & close ↵
                         </button>
@@ -993,7 +993,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                     value={beat.label}
                     onChange={(e) => updateBuilderBeat(idx, { label: e.target.value })}
                     placeholder="Beat name"
-                    className="flex-1 min-w-0 bg-surface-700/40 border border-surface-700/60 rounded px-2 py-1 text-xs text-white placeholder-surface-600 focus:outline-none focus:border-[#FF5F1F]/60"
+                    className="flex-1 min-w-0 bg-surface-700/40 border border-surface-700/60 rounded px-2 py-1 text-xs text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/60"
                   />
 
                   <input
@@ -1006,7 +1006,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                         pageHint: `p. ${Math.round((pct / 100) * totalPages)}`,
                       });
                     }}
-                    className="w-16 bg-surface-700/40 border border-surface-700/60 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-[#FF5F1F]/60"
+                    className="w-16 bg-surface-700/40 border border-surface-700/60 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-brand-500/60"
                     min={0}
                     max={100}
                     title="Page %"

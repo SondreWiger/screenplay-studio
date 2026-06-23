@@ -128,12 +128,12 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button onClick={() => setFilterScene('all')} className={cn(
             'px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
-            filterScene === 'all' ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+            filterScene === 'all' ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
           )}>All Scenes</button>
           {scenes.map((s) => (
             <button key={s.id} onClick={() => setFilterScene(s.id)} className={cn(
               'px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
-              filterScene === s.id ? 'bg-[#E54E15]/20 text-[#FF5F1F]' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+              filterScene === s.id ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
             )}>Scene {s.scene_number || '?'}</button>
           ))}
         </div>

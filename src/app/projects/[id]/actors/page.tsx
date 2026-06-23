@@ -394,7 +394,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
         {(['roster', 'payments', 'overview'] as MainTab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={cn('px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors capitalize',
-              tab === t ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white hover:bg-surface-800')}>
+              tab === t ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white hover:bg-surface-800')}>
             {t}
           </button>
         ))}
@@ -421,7 +421,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                 return (
                   <button key={actor.id} onClick={() => { setSelected(actor); setDetailTab('profile'); }}
                     className={cn('w-full text-left p-3 rounded-xl border transition-colors',
-                      isSelected ? 'border-[#FF5F1F]/50 bg-[#FF5F1F]/5' : 'border-surface-800 bg-surface-900/40 hover:border-surface-700')}>
+                      isSelected ? 'border-brand-500/50 bg-brand-500/5' : 'border-surface-800 bg-surface-900/40 hover:border-surface-700')}>
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-700 flex items-center justify-center shrink-0 text-lg font-bold text-surface-400">
@@ -502,7 +502,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         {selected.email && (
                           <div><p className="text-[10px] text-surface-600 uppercase tracking-wider mb-0.5">Email</p>
-                          <a href={`mailto:${selected.email}`} className="text-[#FF5F1F] hover:underline">{selected.email}</a></div>
+                          <a href={`mailto:${selected.email}`} className="text-brand-500 hover:underline">{selected.email}</a></div>
                         )}
                         {selected.phone && (
                           <div><p className="text-[10px] text-surface-600 uppercase tracking-wider mb-0.5">Phone</p>
@@ -564,7 +564,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                                 <div className="flex items-center gap-3 mt-1.5">
                                   {doc.file_url && (
                                     <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-                                      className="text-[10px] text-[#FF5F1F] hover:underline flex items-center gap-1">
+                                      className="text-[10px] text-brand-500 hover:underline flex items-center gap-1">
                                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                       {doc.file_name ?? 'Open file'}
                                     </a>
@@ -805,7 +805,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
               ))}
             </div>
             <div className="flex gap-2">
-              <input className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-surface-600 outline-none focus:border-[#FF5F1F]/40"
+              <input className="flex-1 bg-surface-800 border border-surface-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-surface-600 outline-none focus:border-brand-500/40"
                 placeholder="Type role and press Enter…"
                 value={editingActor._roleInput ?? ''}
                 onChange={e => setEditingActor(p => ({ ...p, _roleInput: e.target.value }))}
@@ -832,7 +832,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
               <label className="block text-sm font-medium text-surface-300 mb-1.5">Pay Unit</label>
               <select value={editingActor.pay_unit ?? 'flat'}
                 onChange={e => setEditingActor(p => ({ ...p, pay_unit: e.target.value as PayUnit }))}
-                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]/40">
+                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand-500/40">
                 {PAY_UNITS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
               </select>
             </div>
@@ -843,7 +843,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
               <label className="block text-sm font-medium text-surface-300 mb-1.5">Contract Status</label>
               <select value={editingActor.contract_status ?? 'negotiating'}
                 onChange={e => setEditingActor(p => ({ ...p, contract_status: e.target.value as ContractStatus }))}
-                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]/40">
+                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand-500/40">
                 {CONTRACT_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </div>
@@ -867,7 +867,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Actor *</label>
             <select value={editingPay.cast_member_id ?? ''}
               onChange={e => setEditingPay(p => ({ ...p, cast_member_id: e.target.value }))}
-              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]/40">
+              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand-500/40">
               <option value="">Select actor…</option>
               {actors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
@@ -887,7 +887,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
               <label className="block text-sm font-medium text-surface-300 mb-1.5">Status</label>
               <select value={editingPay.status ?? 'unpaid'}
                 onChange={e => setEditingPay(p => ({ ...p, status: e.target.value as PaymentStatus }))}
-                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]/40">
+                className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand-500/40">
                 {PAYMENT_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </div>
@@ -911,7 +911,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Actor *</label>
             <select value={editingDoc.cast_member_id ?? ''}
               onChange={e => setEditingDoc(p => ({ ...p, cast_member_id: e.target.value }))}
-              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]/40">
+              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand-500/40">
               <option value="">Select actor…</option>
               {actors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
@@ -921,7 +921,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
             <label className="block text-sm font-medium text-surface-300 mb-1.5">Document Type</label>
             <select value={editingDoc.doc_type ?? 'other'}
               onChange={e => setEditingDoc(p => ({ ...p, doc_type: e.target.value as DocType }))}
-              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F1F]/40">
+              className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-brand-500/40">
               {DOC_TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
             </select>
           </div>

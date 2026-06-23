@@ -255,7 +255,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
         <Badge variant="warning" className="mb-3">Pro Feature</Badge>
         <h2 className="text-xl font-black text-white mb-2">Analytics Dashboard</h2>
         <p className="text-surface-400 mb-4">Unlock real project metrics, script activity tracking, and team contribution analytics.</p>
-        <a href="/pro" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#E54E15] text-white text-sm font-medium hover:bg-[#FF5F1F] transition-colors">Upgrade to Pro</a>
+        <a href="/pro" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-500 transition-colors">Upgrade to Pro</a>
       </Card>
     </div>
   );
@@ -281,7 +281,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                 key={r}
                 onClick={() => setRange(r)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  range === r ? 'bg-[#FF5F1F] text-white' : 'text-surface-400 hover:text-white'
+                  range === r ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white'
                 }`}
               >
                 {r === 'all' ? 'All' : r}
@@ -334,7 +334,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                       {scriptActivity.slice(-60).map(({ date, elementCount }) => (
                         <div key={date} className="flex-1 flex flex-col items-center group relative">
                           <div
-                            className="w-full bg-[#FF5F1F]/60 hover:bg-[#FF5F1F] rounded-t transition-colors min-h-[2px]"
+                            className="w-full bg-brand-500/60 hover:bg-brand-500 rounded-t transition-colors min-h-[2px]"
                             style={{ height: `${(elementCount / maxActivity) * 100}%` }}
                           />
                           <div className="absolute -top-8 hidden group-hover:block bg-surface-800 px-2 py-1 rounded text-[10px] text-white whitespace-nowrap z-10">
@@ -389,7 +389,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                             <span className="text-surface-500">{count}</span>
                           </div>
                           <div className="h-1.5 bg-surface-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-[#FF5F1F]/60 rounded-full" style={{ width: `${(count / maxCount) * 100}%` }} />
+                            <div className="h-full bg-brand-500/60 rounded-full" style={{ width: `${(count / maxCount) * 100}%` }} />
                           </div>
                         </div>
                       );

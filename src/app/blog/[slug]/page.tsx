@@ -18,7 +18,7 @@ function renderInline(text: string): ReactNode[] {
     if (link) {
       return (
         <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer"
-          className="text-[#FF5F1F] underline underline-offset-2 hover:opacity-80 transition-opacity">
+          className="text-brand-500 underline underline-offset-2 hover:opacity-80 transition-opacity">
           {link[1]}
         </a>
       );
@@ -181,7 +181,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070710' }}>
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#FF5F1F]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-brand-500" />
       </div>
     );
   }
@@ -259,7 +259,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <header className="pt-16 pb-10">
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags?.map((tag) => (
-                <span key={tag} className="px-3 py-1 text-xs font-mono uppercase tracking-widest text-[#FF5F1F]" style={{ border: '1px solid rgba(255,95,31,0.35)' }}>
+                <span key={tag} className="px-3 py-1 text-xs font-mono uppercase tracking-widest text-brand-500" style={{ border: '1px solid rgba(255,95,31,0.35)' }}>
                   {tag}
                 </span>
               ))}
@@ -347,7 +347,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                   <Link
                     key={tag}
                     href={`/blog?tag=${tag}`}
-                    className="px-3 py-1.5 text-xs font-mono uppercase tracking-widest text-white/50 hover:text-[#FF5F1F] transition-colors"
+                    className="px-3 py-1.5 text-xs font-mono uppercase tracking-widest text-white/50 hover:text-brand-500 transition-colors"
                     style={{ border: '1px solid rgba(255,255,255,0.1)' }}
                   >
                     {tag}
@@ -455,7 +455,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                         onClick={() => scrollToSection(idx)}
                         className={`block w-full text-left text-xs font-mono py-1.5 pl-3 border-l-2 transition-colors uppercase tracking-wide ${
                           activeSection === idx
-                            ? 'border-[#FF5F1F] text-[#FF5F1F]'
+                            ? 'border-brand-500 text-brand-500'
                             : 'border-transparent text-white/30 hover:text-white/60'
                         }`}
                       >
@@ -477,7 +477,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </Link>
           <div className="flex items-center gap-6 text-xs font-mono text-white/30">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="hover:text-[#FF5F1F] transition-colors">
+            <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="hover:text-brand-500 transition-colors">
               Support
             </a>
             <SiteVersion />
@@ -486,7 +486,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-[#FF5F1F]/40 hover:text-[#FF5F1F]/80"
+              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>
@@ -538,7 +538,7 @@ function CommentCard({
               {timeAgo(comment.created_at)}
             </span>
             {comment.is_pinned && (
-              <span className="px-1.5 py-0.5 text-[10px] font-mono text-[#FF5F1F]" style={{ border: '1px solid rgba(255,95,31,0.4)' }}>
+              <span className="px-1.5 py-0.5 text-[10px] font-mono text-brand-500" style={{ border: '1px solid rgba(255,95,31,0.4)' }}>
                 PINNED
               </span>
             )}
@@ -550,7 +550,7 @@ function CommentCard({
           {user && (
             <button
               onClick={() => onSetReplyingTo(replyingTo === comment.id ? null : comment.id)}
-              className="mt-2 text-xs font-mono text-white/30 hover:text-[#FF5F1F] transition-colors"
+              className="mt-2 text-xs font-mono text-white/30 hover:text-brand-500 transition-colors"
             >
               Reply
             </button>

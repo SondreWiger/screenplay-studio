@@ -329,7 +329,7 @@ export default function BulkImportPage() {
           onClick={() => fileInputRef.current?.click()}
           className={`relative cursor-pointer border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 ${
             dragOver
-              ? 'border-[#FF5F1F] bg-[#FF5F1F]/5'
+              ? 'border-brand-500 bg-brand-500/5'
               : 'border-surface-700 hover:border-surface-500 bg-surface-900/30'
           }`}
         >
@@ -343,9 +343,9 @@ export default function BulkImportPage() {
           />
           <div className="flex flex-col items-center gap-4">
             <div className={`w-14 h-14 flex items-center justify-center rounded-xl transition-colors ${
-              dragOver ? 'bg-[#FF5F1F]/20' : 'bg-surface-800'
+              dragOver ? 'bg-brand-500/20' : 'bg-surface-800'
             }`}>
-              <svg className={`w-7 h-7 transition-colors ${dragOver ? 'text-[#FF5F1F]' : 'text-surface-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className={`w-7 h-7 transition-colors ${dragOver ? 'text-brand-500' : 'text-surface-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
               </svg>
             </div>
@@ -399,7 +399,7 @@ export default function BulkImportPage() {
                       <input
                         value={file.title}
                         onChange={(e) => updateFile(file.id, { title: e.target.value })}
-                        className="w-full px-3 py-2 text-sm bg-surface-800 border border-surface-700 rounded-lg text-white focus:border-[#FF5F1F] focus:outline-none transition-colors"
+                        className="w-full px-3 py-2 text-sm bg-surface-800 border border-surface-700 rounded-lg text-white focus:border-brand-500 focus:outline-none transition-colors"
                         disabled={importing}
                       />
                     </div>
@@ -412,7 +412,7 @@ export default function BulkImportPage() {
                       <select
                         value={file.scriptType}
                         onChange={(e) => updateFile(file.id, { scriptType: e.target.value as ScriptType })}
-                        className="w-full px-3 py-2 text-sm bg-surface-800 border border-surface-700 rounded-lg text-white focus:border-[#FF5F1F] focus:outline-none transition-colors"
+                        className="w-full px-3 py-2 text-sm bg-surface-800 border border-surface-700 rounded-lg text-white focus:border-brand-500 focus:outline-none transition-colors"
                         disabled={importing}
                       >
                         {SCRIPT_TYPE_OPTIONS.map((opt) => (
@@ -429,7 +429,7 @@ export default function BulkImportPage() {
                       <select
                         value={file.projectType}
                         onChange={(e) => updateFile(file.id, { projectType: e.target.value as ProjectType })}
-                        className="w-full px-3 py-2 text-sm bg-surface-800 border border-surface-700 rounded-lg text-white focus:border-[#FF5F1F] focus:outline-none transition-colors"
+                        className="w-full px-3 py-2 text-sm bg-surface-800 border border-surface-700 rounded-lg text-white focus:border-brand-500 focus:outline-none transition-colors"
                         disabled={importing}
                       >
                         {Object.entries(PROJECT_TYPE_MAP).map(([_, pt]) => (

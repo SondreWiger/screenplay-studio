@@ -218,7 +218,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <Link href={`/projects/${params.id}/script`} className="text-sm text-surface-400 hover:text-[#FF5F1F] transition-colors inline-flex items-center gap-1 mb-2">
+          <Link href={`/projects/${params.id}/script`} className="text-sm text-surface-400 hover:text-brand-500 transition-colors inline-flex items-center gap-1 mb-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>

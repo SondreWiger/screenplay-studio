@@ -47,14 +47,14 @@ const EVENT_BADGE_COLORS: Record<string, string> = {
   password_changed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   email_changed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   suspicious_login: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  rate_limited: 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-amber-500/30',
+  rate_limited: 'bg-brand-500/20 text-brand-500 border-amber-500/30',
   api_abuse: 'bg-red-500/20 text-red-400 border-red-500/30',
   brute_force: 'bg-red-500/20 text-red-400 border-red-500/30',
   account_locked: 'bg-red-500/20 text-red-400 border-red-500/30',
   data_export: 'bg-green-500/20 text-green-400 border-green-500/30',
   account_deletion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   admin_action: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-  permission_change: 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-yellow-500/30',
+  permission_change: 'bg-brand-500/20 text-brand-500 border-yellow-500/30',
 };
 
 // Types
@@ -694,8 +694,8 @@ export default function SecurityPage() {
                             ban.ban_type === 'permanent'
                               ? 'bg-red-500/20 text-red-400 border-red-500/30'
                               : ban.ban_type === 'temporary'
-                                ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-amber-500/30'
-                                : 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-yellow-500/30'
+                                ? 'bg-brand-500/20 text-brand-500 border-amber-500/30'
+                                : 'bg-brand-500/20 text-brand-500 border-yellow-500/30'
                           )}
                         >
                           {ban.ban_type}

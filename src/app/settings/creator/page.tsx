@@ -203,7 +203,7 @@ export default function CreatorSettingsPage() {
           <Card className="p-6">
             <h2 className="text-base font-semibold text-white mb-1">Apply to become a Creator</h2>
             <p className="text-sm text-surface-400 mb-5">
-              Creators get a personal referral link at <code className="text-[#FF5F1F]">screenplaystudio.fun/ref/[username]</code>. Your social links will appear on your public profile and on the referral landing page.
+              Creators get a personal referral link at <code className="text-brand-500">screenplaystudio.fun/ref/[username]</code>. Your social links will appear on your public profile and on the referral landing page.
             </p>
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -219,12 +219,12 @@ export default function CreatorSettingsPage() {
                   onChange={(e) => setAppNote(e.target.value)}
                   rows={3}
                   placeholder="Tell us a bit about your audience or how you plan to share the link..."
-                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-[#FF5F1F] resize-none"
+                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 resize-none"
                 />
               </div>
               <p className="text-[11px] text-surface-500">
                 By applying you agree to the{' '}
-                <Link href="/legal/creator-terms" className="text-[#FF5F1F] hover:underline" target="_blank">Creator Program Terms</Link>.
+                <Link href="/legal/creator-terms" className="text-brand-500 hover:underline" target="_blank">Creator Program Terms</Link>.
                 No payout is automatic or retroactive.
               </p>
               <Button onClick={handleApply} disabled={submitting} style={{ background: '#FF5F1F', color: '#fff' }}>
@@ -254,7 +254,7 @@ export default function CreatorSettingsPage() {
             {creator.rejected_reason && (
               <p className="text-sm text-surface-300 mb-2">{creator.rejected_reason}</p>
             )}
-            <p className="text-xs text-surface-500">You can reach out on the <Link href="/feedback" className="text-[#FF5F1F] hover:underline">feedback board</Link> if you have questions.</p>
+            <p className="text-xs text-surface-500">You can reach out on the <Link href="/feedback" className="text-brand-500 hover:underline">feedback board</Link> if you have questions.</p>
           </div>
         )}
 
@@ -269,7 +269,7 @@ export default function CreatorSettingsPage() {
               </div>
               <p className="text-xs text-surface-500 mb-3">Share this link. Anyone who signs up through it counts toward your stats.</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 bg-surface-900 border border-surface-700 rounded-lg px-3 py-2.5 text-sm text-[#FF5F1F] font-mono truncate">
+                <code className="flex-1 bg-surface-900 border border-surface-700 rounded-lg px-3 py-2.5 text-sm text-brand-500 font-mono truncate">
                   {refUrl}
                 </code>
                 <Button
@@ -301,7 +301,7 @@ export default function CreatorSettingsPage() {
                 <h2 className="text-base font-semibold text-white mb-1">Payouts</h2>
                 <p className="text-xs text-surface-500 mb-4">
                   Payouts are distributed proportionally on the 12th of each month based on signups that month.{' '}
-                  <Link href="/legal/creator-terms" className="text-[#FF5F1F] hover:underline" target="_blank">Terms apply.</Link>
+                  <Link href="/legal/creator-terms" className="text-brand-500 hover:underline" target="_blank">Terms apply.</Link>
                 </p>
                 {stats.payouts.length === 0 ? (
                   <p className="text-sm text-surface-500 italic">No payouts yet.</p>

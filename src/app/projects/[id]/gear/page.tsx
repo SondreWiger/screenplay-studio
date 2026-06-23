@@ -170,7 +170,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#FF5F1F] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -195,7 +195,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
           {canEdit && (
             <button
               onClick={openNew}
-              className="text-xs px-3 py-1.5 rounded-lg bg-[#FF5F1F] text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all flex items-center gap-1.5"
+              className="text-xs px-3 py-1.5 rounded-lg bg-brand-500 text-white font-semibold hover:bg-orange-500 active:scale-95 transition-all flex items-center gap-1.5"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Add Gear
@@ -214,7 +214,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
         <select
           value={filterCat}
           onChange={(e) => setFilterCat(e.target.value as GearCategory | 'All')}
-          className="text-xs bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1 text-surface-300 outline-none focus:border-[#FF5F1F]/50"
+          className="text-xs bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1 text-surface-300 outline-none focus:border-brand-500/50"
         >
           <option value="All">All categories</option>
           {GEAR_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -222,7 +222,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as GearStatus | 'All')}
-          className="text-xs bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1 text-surface-300 outline-none focus:border-[#FF5F1F]/50"
+          className="text-xs bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1 text-surface-300 outline-none focus:border-brand-500/50"
         >
           <option value="All">All statuses</option>
           {STATUS_CYCLE.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
@@ -270,7 +270,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
                             {item.shoot_day_id && (() => {
                               const d = shootDays.find(sd => sd.id === item.shoot_day_id);
                               return d ? (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FF5F1F]/10 text-[#FF5F1F] border border-[#FF5F1F]/20 font-medium">Day {d.day_number}</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-500 border border-brand-500/20 font-medium">Day {d.day_number}</span>
                               ) : (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500 border border-surface-700">Scheduled</span>
                               );
@@ -336,7 +336,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">Name *</label>
                 <input value={form.name || ''} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60"
+                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60"
                   placeholder="e.g. ARRI Alexa 35, 5-ton truck…" autoFocus />
               </div>
 
@@ -344,14 +344,14 @@ export default function GearPage({ params }: { params: { id: string } }) {
                 <div>
                   <label className="block text-xs font-medium text-surface-400 mb-1">Category</label>
                   <select value={form.category || 'Other'} onChange={e => setForm(f => ({ ...f, category: e.target.value as GearCategory }))}
-                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60">
+                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60">
                     {GEAR_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-surface-400 mb-1">Ownership</label>
                   <select value={form.ownership || 'tbc'} onChange={e => setForm(f => ({ ...f, ownership: e.target.value as GearOwnership }))}
-                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60">
+                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60">
                     {(Object.keys(OWNERSHIP_LABEL) as GearOwnership[]).map(o => <option key={o} value={o}>{OWNERSHIP_LABEL[o]}</option>)}
                   </select>
                 </div>
@@ -361,12 +361,12 @@ export default function GearPage({ params }: { params: { id: string } }) {
                 <div>
                   <label className="block text-xs font-medium text-surface-400 mb-1">Quantity</label>
                   <input type="number" min={1} value={form.quantity || 1} onChange={e => setForm(f => ({ ...f, quantity: parseInt(e.target.value) || 1 }))}
-                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60" />
+                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-surface-400 mb-1">Unit</label>
                   <select value={form.unit || 'unit'} onChange={e => setForm(f => ({ ...f, unit: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60">
+                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60">
                     {['unit', 'set', 'kit', 'day', 'week', 'roll', 'box'].map(u => <option key={u} value={u}>{u}</option>)}
                   </select>
                 </div>
@@ -375,7 +375,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">Vendor / Supplier</label>
                 <input value={form.vendor || ''} onChange={e => setForm(f => ({ ...f, vendor: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60"
+                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60"
                   placeholder="e.g. Panavision, AbelCine…" />
               </div>
 
@@ -383,13 +383,13 @@ export default function GearPage({ params }: { params: { id: string } }) {
                 <div>
                   <label className="block text-xs font-medium text-surface-400 mb-1">Daily Rate ($)</label>
                   <input type="number" min={0} step="0.01" value={form.daily_rate ?? ''} onChange={e => setForm(f => ({ ...f, daily_rate: e.target.value ? parseFloat(e.target.value) : undefined }))}
-                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60"
+                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60"
                     placeholder="0.00" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-surface-400 mb-1">Total / Flat Cost ($)</label>
                   <input type="number" min={0} step="0.01" value={form.total_cost ?? ''} onChange={e => setForm(f => ({ ...f, total_cost: e.target.value ? parseFloat(e.target.value) : undefined }))}
-                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60"
+                    className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60"
                     placeholder="0.00" />
                 </div>
               </div>
@@ -397,7 +397,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">Status</label>
                 <select value={form.status || 'pending'} onChange={e => setForm(f => ({ ...f, status: e.target.value as GearStatus }))}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60">
+                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60">
                   {STATUS_CYCLE.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
                 </select>
               </div>
@@ -405,7 +405,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">Notes</label>
                 <textarea value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-[#FF5F1F]/60 resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60 resize-none"
                   placeholder="Any notes about this item…" />
               </div>
             </div>
@@ -415,7 +415,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
                 Cancel
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="px-5 py-2 rounded-lg bg-[#FF5F1F] text-white font-semibold text-sm hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
+                className="px-5 py-2 rounded-lg bg-brand-500 text-white font-semibold text-sm hover:bg-orange-500 active:scale-95 transition-all disabled:opacity-50">
                 {saving ? 'Saving…' : editingId ? 'Update' : 'Add Item'}
               </button>
             </div>

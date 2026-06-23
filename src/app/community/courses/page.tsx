@@ -62,7 +62,7 @@ function CourseCard({
         {/* Overlays */}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           {course.type === 'system' && (
-            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#FF5F1F] text-white rounded-full">Official</span>
+            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-brand-500 text-white rounded-full">Official</span>
           )}
           <span className={cn('px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full', diff.bg, diff.text)}>
             {diff.label}
@@ -76,7 +76,7 @@ function CourseCard({
         {/* Progress bar */}
         {enrollment && !done && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-            <div className="h-full bg-[#FF5F1F] transition-[width]" style={{ width: `${pct}%` }} />
+            <div className="h-full bg-brand-500 transition-[width]" style={{ width: `${pct}%` }} />
           </div>
         )}
       </div>
@@ -117,7 +117,7 @@ function CourseCard({
 
         {/* XP + creator */}
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
-          <span className="text-xs font-semibold text-[#FF5F1F]">+{course.xp_reward} XP</span>
+          <span className="text-xs font-semibold text-brand-500">+{course.xp_reward} XP</span>
           {course.type === 'user' && course.creator && (
             <Link href={`/u/${course.creator.username || ''}`} className="text-[10px] text-white/30 hover:text-white/60 transition-colors">
               by {course.creator.full_name || 'Anonymous'}
@@ -129,14 +129,14 @@ function CourseCard({
         {enrollment ? (
           <Link
             href={`/community/courses/${course.id}`}
-            className="block text-center py-2 rounded-xl text-xs font-semibold transition-colors bg-[#FF5F1F]/10 text-[#FF5F1F] hover:bg-[#FF5F1F]/20"
+            className="block text-center py-2 rounded-xl text-xs font-semibold transition-colors bg-brand-500/10 text-brand-500 hover:bg-brand-500/20"
           >
             {done ? 'Review Course' : `Continue — ${pct}%`}
           </Link>
         ) : (
           <button
             onClick={() => onEnroll(course.id)}
-            className="w-full py-2 rounded-xl text-xs font-semibold transition-colors bg-white/5 text-white/70 hover:bg-[#FF5F1F]/10 hover:text-[#FF5F1F]"
+            className="w-full py-2 rounded-xl text-xs font-semibold transition-colors bg-white/5 text-white/70 hover:bg-brand-500/10 hover:text-brand-500"
           >
             Start Course
           </button>
@@ -228,7 +228,7 @@ export default function CoursesPage() {
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="text-[10px] font-bold text-[#FF5F1F] uppercase tracking-widest font-mono">Community</span>
+              <span className="text-[10px] font-bold text-brand-500 uppercase tracking-widest font-mono">Community</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
               SCREENWRITING<br />COURSES
@@ -260,7 +260,7 @@ export default function CoursesPage() {
             {([['all','All'],['system','Official'],['user','Community'],['enrolled','My Courses']] as const).map(([v,label]) => (
               <button key={v} onClick={() => setFilter(v as any)}
                 className={cn('px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-colors',
-                  filter === v ? 'bg-[#FF5F1F] text-white' : 'text-white/40 hover:text-white/70'
+                  filter === v ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/70'
                 )}>
                 {label}
               </button>
@@ -280,7 +280,7 @@ export default function CoursesPage() {
 
           {canCreate && (
             <Link href="/community/courses/create"
-              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-[10px] font-mono uppercase tracking-wider bg-[#FF5F1F]/10 text-[#FF5F1F] border border-[#FF5F1F]/30 rounded-xl hover:bg-[#FF5F1F]/20 transition-colors">
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-[10px] font-mono uppercase tracking-wider bg-brand-500/10 text-brand-500 border border-brand-500/30 rounded-xl hover:bg-brand-500/20 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Create Course
             </Link>
@@ -331,7 +331,7 @@ export default function CoursesPage() {
               <div className="text-center py-24">
                 <div className="text-5xl mb-4">📖</div>
                 <p className="text-white/40">No courses found for this filter.</p>
-                {!user && <Link href="/auth/register" className="mt-4 inline-block text-sm text-[#FF5F1F] hover:underline">Sign up to create one →</Link>}
+                {!user && <Link href="/auth/register" className="mt-4 inline-block text-sm text-brand-500 hover:underline">Sign up to create one →</Link>}
               </div>
             )}
 
@@ -344,7 +344,7 @@ export default function CoursesPage() {
                   Reach <span className="text-white/70 font-semibold">Level 10</span> to unlock course creation. You&apos;re at Level {userLevel}.
                 </p>
                 <div className="mt-4 h-2 max-w-xs mx-auto bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#FF5F1F] rounded-full transition-[width]" style={{ width: `${Math.min((userLevel / 10) * 100, 100)}%` }} />
+                  <div className="h-full bg-brand-500 rounded-full transition-[width]" style={{ width: `${Math.min((userLevel / 10) * 100, 100)}%` }} />
                 </div>
                 <p className="text-[11px] text-white/30 mt-2">{userLevel} / 10</p>
               </div>

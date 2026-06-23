@@ -420,7 +420,7 @@ export default function CastingPage() {
   };
 
   const roleBadgeColor = (char: Character) => {
-    if (char.is_main) return 'bg-[#FF5F1F]/20 text-[#FF5F1F]';
+    if (char.is_main) return 'bg-brand-500/20 text-brand-500';
     return 'bg-surface-700 text-surface-300';
   };
 
@@ -598,7 +598,7 @@ export default function CastingPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm text-surface-400">Application Questions</label>
-                <button onClick={addQuestion} className="text-[11px] text-[#FF5F1F] hover:text-[#FF8F5F]">+ Add Question</button>
+                <button onClick={addQuestion} className="text-[11px] text-brand-500 hover:text-brand-400">+ Add Question</button>
               </div>
               <div className="space-y-2">
                 {castingQuestions.map((q, idx) => (
@@ -864,7 +864,7 @@ export default function CastingPage() {
                         onClick={() => setShowTeamPicker(!showTeamPicker)}
                         className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
                           showTeamPicker
-                            ? 'bg-[#FF5F1F]/20 text-[#FF5F1F] border-amber-500/40'
+                            ? 'bg-brand-500/20 text-brand-500 border-amber-500/40'
                             : 'bg-surface-800 text-surface-300 border-surface-700 hover:border-surface-600'
                         }`}
                         title="Pick from team"

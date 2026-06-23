@@ -155,7 +155,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
               : 'Your feedback has been submitted. You can track its progress on the feedback portal.'}
           </p>
           {submittedId && type !== 'testimonial' && (
-            <a href={`/feedback/${submittedId}`} className="text-[#FF5F1F] text-sm font-bold hover:underline flex items-center justify-center gap-1">
+            <a href={`/feedback/${submittedId}`} className="text-brand-500 text-sm font-bold hover:underline flex items-center justify-center gap-1">
               View your submission <ArrowRight size={14} />
             </a>
           )}
@@ -200,7 +200,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                     onClick={() => { setType(t.value); setTimeout(() => setStep(1), 150); }}
                     className={cn(
                       'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-colors',
-                      type === t.value ? 'border-[#FF5F1F] bg-[#FF5F1F]/5' : 'border-surface-700 hover:border-surface-600 bg-surface-800'
+                      type === t.value ? 'border-brand-500 bg-brand-500/5' : 'border-surface-700 hover:border-surface-600 bg-surface-800'
                     )}
                   >
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: t.color + '22' }}>
