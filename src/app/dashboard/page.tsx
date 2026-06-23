@@ -28,7 +28,7 @@ import { useRecentProjects } from '@/hooks/useRecentProjects';
 import { useTranslation } from '@/components/TranslationProvider';
 import type { Project, ScriptType, ProjectType, Company, CompanyMember, CompanyRole, DashboardFolder, UsageIntent } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
-import { isElectronMode, isLocalOrElectron } from '@/lib/supabase/electron-client';
+import { isElectronMode, isLocalMode, setLocalMode } from '@/lib/supabase/electron-client';
 import { putCached, cacheRows, getCachedProjects } from '@/lib/offline/db';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
@@ -114,6 +114,13 @@ function DashboardContent() {
     }
   }, [searchParams, user?.usage_intent, projects]);
 
+  useEffect(() => {
+    if (searchParams?.get('new') === '1') {
+      setShowNewProject(true);
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, [searchParams]);
+
   const palette = useCommandPalette();
 
   const { recentProjects, clearRecent } = useRecentProjects();
@@ -168,7 +175,7 @@ function DashboardContent() {
   const fetchProjects = async () => {
     if (!user?.id) return;
     try {
-      if (isLocalOrElectron()) {
+      if (isLocalMode()) {
         const localProjects = await getCachedProjects();
         setProjects(localProjects as unknown as Project[]);
         setLoading(false);
@@ -1417,7 +1424,9 @@ function NewProjectModal({
   const [seasonNumber, setSeasonNumber] = useState('1');
   const [episodeCount, setEpisodeCount] = useState('');
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; description?: string; project_type: string; script_type?: string; genre?: string; format?: string; structure_snapshot?: any }>>([]);
-  const [storageMode, setStorageMode] = useState<'cloud' | 'local'>(isLocalOrElectron() ? 'local' : 'cloud');
+  const [storageMode, setStorageMode] = useState<'cloud' | 'local'>(
+    isElectronMode() && isLocalMode() ? 'local' : isElectronMode() ? 'cloud' : 'cloud'
+  );
 
   useEffect(() => {
     if (!isOpen || !userId) return;
@@ -1754,7 +1763,10 @@ function NewProjectModal({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setStorageMode('local')}
+                  onClick={() => {
+                    setStorageMode('local');
+                    if (isElectronMode()) setLocalMode(true);
+                  }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                     storageMode === 'local'
                       ? 'border-brand-500 bg-brand-500/10 text-brand-500 ring-1 ring-brand-500/30'
@@ -1766,7 +1778,10 @@ function NewProjectModal({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStorageMode('cloud')}
+                  onClick={() => {
+                    setStorageMode('cloud');
+                    if (isElectronMode()) setLocalMode(false);
+                  }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-colors text-sm ${
                     storageMode === 'cloud'
                       ? 'border-brand-500 bg-brand-500/10 text-brand-500 ring-1 ring-brand-500/30'

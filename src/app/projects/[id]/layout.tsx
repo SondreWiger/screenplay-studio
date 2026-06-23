@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { isLocalOrElectron } from '@/lib/supabase/electron-client';
+import { isLocalMode } from '@/lib/supabase/electron-client';
 import { getCachedById, putCached, getCachedByProject, cacheRows } from '@/lib/offline/db';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
@@ -31,6 +31,7 @@ import { usePreMiD } from '@/hooks/usePreMiD';
 import { getDefaultOtherIcons, loadOtherIcons, saveOtherIcons } from '@/lib/sidebarDefaults';
 import { useTranslation } from '@/components/TranslationProvider';
 import dynamic from 'next/dynamic';
+import { ZEN_MODE_EVENT } from '@/lib/zen-mode';
 import { getTourState, endTour } from '@/lib/tourState';
 import type { UsageIntent } from '@/lib/types';
 const SidebarCustomiser = dynamic(() => import('@/components/SidebarCustomiser'), { ssr: false });
@@ -75,6 +76,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   return new Set(defaults);
 });
   const [showCustomiser, setShowCustomiser] = useState(false);
+  const [zenMode, setZenMode] = useState(false);
   // Guided tour — show banner if paused, full tour if active
   const [showTour, setShowTour] = useState(false);
   const [showTourBanner, setShowTourBanner] = useState(false);
@@ -351,9 +353,15 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     active: !!currentProject,
   });
 
+  useEffect(() => {
+    const handler = (e: Event) => setZenMode((e as CustomEvent<boolean>).detail);
+    window.addEventListener(ZEN_MODE_EVENT, handler);
+    return () => window.removeEventListener(ZEN_MODE_EVENT, handler);
+  }, []);
+
   const fetchProjectData = async () => {
     try {
-      if (isLocalOrElectron()) {
+      if (isLocalMode()) {
         const project = await getCachedById('projects', params.id);
         if (!project) {
           router.push('/dashboard');
@@ -413,7 +421,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       setCurrentProject(projectRes.data);
       setMembers(membersRes.data || []);
-      // Cache project members locally
+      // Cache project and members locally
+      putCached('projects', projectRes.data).catch(() => {});
       if (membersRes.data && membersRes.data.length > 0) {
         cacheRows('project_members', membersRes.data).catch(() => {});
       }
@@ -922,6 +931,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       )}
 
       {/* Mobile header */}
+      {!zenMode && (
       <div className="fixed top-0 left-0 right-0 z-40 md:hidden"
         style={{ backgroundColor: 'rgb(var(--surface-950))', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)' }}
       >
@@ -952,9 +962,10 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           <NotificationBell />
         </div>
       </div>
+      )}
 
       {/* Mobile sidebar overlay */}
-      {mobileMenuOpen && (
+      {!zenMode && mobileMenuOpen && (
         <>
           <div
             className="fixed inset-0 z-40 md:hidden"
@@ -971,6 +982,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       )}
 
       {/* Desktop sidebar */}
+      {!zenMode && (
       <aside
         className={cn(
           'hidden md:flex flex-col transition-[width] duration-300',
@@ -980,9 +992,10 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       >
         {sidebarContent(false)}
       </aside>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pt-12 md:pt-0 bg-surface-950">
+      <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-12 md:pt-0')}>
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
