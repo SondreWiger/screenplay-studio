@@ -12,8 +12,8 @@ export default function PrivacyPolicyPage() {
         <div className="mb-10">
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Privacy</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Privacy Policy</h1>
-          <p className="text-sm text-surface-500 mt-2">Effective: March 18, 2026</p>
-          <p className="text-xs text-surface-600 mt-1">Previous version: February 22, 2026 ,  <a href="mailto:privacy@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
+          <p className="text-sm text-surface-500 mt-2">Effective: June 24, 2026</p>
+          <p className="text-xs text-surface-600 mt-1">Previous version: March 18, 2026 ,  <a href="mailto:privacy@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
         </div>
 
         {/* Table of Contents */}

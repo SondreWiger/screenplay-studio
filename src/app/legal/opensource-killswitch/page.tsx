@@ -12,7 +12,7 @@ export default function OpensourceKillswitchPage() {
         <div className="mb-10">
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Project Continuity</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Automated Dead Man&apos;s Switch / Escrow</h1>
-          <p className="text-sm text-surface-500 mt-2">Effective: February 22, 2026</p>
+          <p className="text-sm text-surface-500 mt-2">Effective: June 24, 2026</p>
         </div>
 
         {/* Table of Contents */}

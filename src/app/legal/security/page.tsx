@@ -12,7 +12,7 @@ export default function SecurityPage() {
         <div className="mb-10">
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Security</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Security</h1>
-          <p className="text-sm text-surface-500 mt-2">Effective: February 22, 2026</p>
+          <p className="text-sm text-surface-500 mt-2">Effective: June 24, 2026</p>
         </div>
 
         <article className="prose prose-invert max-w-none prose-headings:text-white prose-headings:font-semibold prose-headings:tracking-tight prose-p:text-surface-300 prose-p:leading-relaxed prose-li:text-surface-300 prose-a:text-red-400 prose-a:no-underline hover:prose-a:text-red-300 prose-strong:text-white">
