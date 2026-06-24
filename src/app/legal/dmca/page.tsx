@@ -47,7 +47,7 @@ export default function DMCAPage() {
                 </div>
                 <div>
                   <dt className="text-surface-500 text-sm">Response Time</dt>
-                  <dd className="text-surface-300">Within 24 hours of receipt</dd>
+                  <dd className="text-surface-300">Expeditiously upon receipt</dd>
                 </div>
               </dl>
             </div>
@@ -242,12 +242,12 @@ export default function DMCAPage() {
                 <tbody className="divide-y divide-surface-800">
                   <tr className="bg-surface-950">
                     <td className="px-4 py-3 text-white font-medium">Acknowledgment</td>
-                    <td className="px-4 py-3 text-surface-300">Within 24 hours</td>
+                    <td className="px-4 py-3 text-surface-300">Expeditiously</td>
                     <td className="px-4 py-3 text-surface-400">We acknowledge receipt of the takedown notice and confirm that it is being reviewed.</td>
                   </tr>
                   <tr className="bg-surface-900">
                     <td className="px-4 py-3 text-white font-medium">Action on Takedown</td>
-                    <td className="px-4 py-3 text-surface-300">Within 72 hours</td>
+                    <td className="px-4 py-3 text-surface-300">Expeditiously</td>
                     <td className="px-4 py-3 text-surface-400">If the notice is valid, the infringing content is removed or access is disabled. The affected user is notified.</td>
                   </tr>
                   <tr className="bg-surface-950">

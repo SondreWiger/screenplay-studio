@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Open-Source Kill Switch ,  Screenplay Studio',
-  description: 'What happens to Screenplay Studio if the project can no longer be maintained ,  open-sourcing, self-hosting, and data portability guarantees.',
+  title: 'Automated Dead Man\'s Switch / Escrow | Screenplay Studio',
+  description: 'What happens to Screenplay Studio if the project can no longer be maintained—automated code release and self-hosting.',
 };
 
 export default function OpensourceKillswitchPage() {
@@ -11,7 +11,7 @@ export default function OpensourceKillswitchPage() {
       <div className="max-w-4xl">
         <div className="mb-10">
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Project Continuity</p>
-          <h1 className="text-3xl font-black text-white tracking-tight">Open-Source Kill Switch</h1>
+          <h1 className="text-3xl font-black text-white tracking-tight">Automated Dead Man&apos;s Switch / Escrow</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: February 22, 2026</p>
         </div>
 
@@ -19,10 +19,10 @@ export default function OpensourceKillswitchPage() {
         <nav className="mb-12 rounded-lg bg-surface-900/50 border border-surface-800/60 p-6">
           <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-wider mb-4">Table of Contents</h2>
           <ol className="list-decimal list-inside space-y-1.5 text-surface-400 text-[13px] columns-1 sm:columns-2 gap-8">
-            <li><a href="#what" className="hover:text-red-400 transition-colors">What Is the Open-Source Kill Switch</a></li>
+            <li><a href="#what" className="hover:text-red-400 transition-colors">What Is the Dead Man&apos;s Switch</a></li>
             <li><a href="#why" className="hover:text-red-400 transition-colors">Why It Exists</a></li>
-            <li><a href="#trigger" className="hover:text-red-400 transition-colors">When It Activates</a></li>
-            <li><a href="#warning" className="hover:text-red-400 transition-colors">30-Day Warning Period</a></li>
+            <li><a href="#trigger" className="hover:text-red-400 transition-colors">When It Activates (60-Day Trigger)</a></li>
+            <li><a href="#code-release" className="hover:text-red-400 transition-colors">Codebase Release</a></li>
             <li><a href="#code-release" className="hover:text-red-400 transition-colors">Codebase Release</a></li>
             <li><a href="#self-hosting" className="hover:text-red-400 transition-colors">Self-Hosting</a></li>
             <li><a href="#data" className="hover:text-red-400 transition-colors">What Happens to Your Data</a></li>
@@ -33,13 +33,13 @@ export default function OpensourceKillswitchPage() {
 
         <article className="prose prose-invert max-w-none prose-headings:text-white prose-headings:font-semibold prose-headings:tracking-tight prose-p:text-surface-300 prose-p:leading-relaxed prose-li:text-surface-300 prose-a:text-red-400 prose-a:no-underline hover:prose-a:text-red-300 prose-strong:text-white prose-headings:border-b prose-headings:border-surface-800/60 prose-headings:pb-3 prose-headings:mb-5">
           {/* 1. What Is the Open-Source Kill Switch */}
-          <h2 id="what" className="scroll-mt-24">1. What Is the Open-Source Kill Switch</h2>
+          <h2 id="what" className="scroll-mt-24">1. What Is the Dead Man&apos;s Switch</h2>
           <p>
             Screenplay Studio is developed and maintained by Northem Development, currently as a solo
-            development effort. The open-source kill switch is a commitment that if the project can no
-            longer be maintained ,  whether due to personal circumstances, financial constraints, or any
-            other reason ,  the full codebase will be released publicly so that users can continue running
-            the software on their own infrastructure.
+            development effort. To protect against sudden incapacitation or unforeseen life events, the
+            project relies on an automated dead man&apos;s switch and codebase escrow. If the project
+            can no longer be maintained, the full codebase will be released publicly automatically so
+            that users can continue running the software on their own infrastructure.
           </p>
           <p>
             This is not an internal feature toggle. This is a guarantee that the software will never die
@@ -49,8 +49,8 @@ export default function OpensourceKillswitchPage() {
           {/* 2. Why It Exists */}
           <h2 id="why" className="scroll-mt-24">2. Why It Exists</h2>
           <p>
-            Solo-maintained open-source projects carry a fundamental risk: what happens when the single
-            maintainer can no longer maintain it? The open-source kill switch addresses this directly:
+            Solo-maintained projects carry a fundamental risk: what happens when the single
+            maintainer is suddenly incapacitated and cannot manually hand off the project? The automated dead man&apos;s switch addresses this directly:
           </p>
           <ul>
             <li>
@@ -74,45 +74,24 @@ export default function OpensourceKillswitchPage() {
           </ul>
 
           {/* 3. When It Activates */}
-          <h2 id="trigger" className="scroll-mt-24">3. When It Activates</h2>
+          <h2 id="trigger" className="scroll-mt-24">3. When It Activates (60-Day Trigger)</h2>
           <p>
-            The open-source kill switch is triggered when the project maintainer determines that the
-            project can no longer be actively maintained. This includes, but is not limited to:
+            The automated dead man&apos;s switch is triggered if the primary administrator account is entirely inactive for <strong>60 consecutive days</strong>.
           </p>
           <ul>
-            <li>The maintainer is unable to continue development due to personal health, life circumstances, or other obligations.</li>
-            <li>Northem Development ceases operations or is dissolved.</li>
-            <li>The project has been inactive for an extended period with no reasonable prospect of resumption.</li>
-            <li>The maintainer voluntarily decides to step away from the project.</li>
+            <li>If the developer is incapacitated, hospitalized, or deceased, the 60-day inactivity timer will lapse.</li>
+            <li>Once the timer lapses, an automated protocol executes the open-source release.</li>
+            <li>The codebase is pushed from private repositories/escrow to public repositories automatically.</li>
+            <li>The developer can also trigger this release manually in the event of a planned shutdown.</li>
           </ul>
           <p>
-            The determination of whether the kill switch should be activated is at the sole discretion
-            of the project maintainer. The goal is to ensure continuity for users, not to create
-            bureaucratic hurdles.
+            Because this is an automated system designed for incapacitation, there may not be a 30-day manual warning period. The 60 days of inactivity serves as the delay before the codebase goes public.
           </p>
 
-          {/* 4. 30-Day Warning Period */}
-          <h2 id="warning" className="scroll-mt-24">4. 30-Day Warning Period</h2>
+          {/* 4. Codebase Release */}
+          <h2 id="code-release" className="scroll-mt-24">4. Codebase Release</h2>
           <p>
-            Before the kill switch is activated, users will receive a <strong className="text-white">minimum
-            30-day advance warning</strong>. During this period:
-          </p>
-          <ul>
-            <li>All registered users will be notified via email to the address associated with their account.</li>
-            <li>A prominent notice will be displayed on the platform.</li>
-            <li>The warning will clearly state the expected shutdown date and provide instructions for data export.</li>
-            <li>Users will have full access to all features during the warning period to export their content.</li>
-          </ul>
-          <p>
-            This 30-day period is a minimum. The actual warning period may be longer depending on the
-            circumstances. The intent is to give users ample time to export their data and prepare for
-            self-hosting or migration.
-          </p>
-
-          {/* 5. Codebase Release */}
-          <h2 id="code-release" className="scroll-mt-24">5. Codebase Release</h2>
-          <p>
-            Upon activation of the kill switch, the complete source code of Screenplay Studio will be
+            Upon activation of the switch, the complete source code of Screenplay Studio will be
             made publicly available under an <strong className="text-white">open-source license</strong>.
             This includes:
           </p>
@@ -128,8 +107,8 @@ export default function OpensourceKillswitchPage() {
             ensuring the community can maintain and improve the software independently.
           </p>
 
-          {/* 6. Self-Hosting */}
-          <h2 id="self-hosting" className="scroll-mt-24">6. Self-Hosting</h2>
+          {/* 5. Self-Hosting */}
+          <h2 id="self-hosting" className="scroll-mt-24">5. Self-Hosting</h2>
           <p>
             Screenplay Studio is designed to be self-hostable. After the kill switch activates, users
             with the technical capability to do so can:
@@ -147,21 +126,17 @@ export default function OpensourceKillswitchPage() {
             transitions to community maintenance.
           </p>
           <p>
-            For users without the technical capability to self-host, the 30-day warning period provides
-            sufficient time to export all content in standard formats (Fountain, Final Draft, PDF, JSON)
-            for use in other tools.
+            Since the platform operates offline-first, your local files on your computer remain entirely unaffected and fully yours.
           </p>
 
-          {/* 7. What Happens to Your Data */}
-          <h2 id="data" className="scroll-mt-24">7. What Happens to Your Data</h2>
+          {/* 6. What Happens to Your Data */}
+          <h2 id="data" className="scroll-mt-24">6. What Happens to Your Data</h2>
           <p>
             Your data remains yours. Here is exactly what happens:
           </p>
           <ul>
             <li>
-              <strong className="text-white">During the warning period:</strong> Full access to all data
-              and export functionality. Export your screenplays, scripts, and project data at any time
-              in Fountain, Final Draft (.fdx), PDF, or JSON format.
+              <strong className="text-white">Local Desktop Files:</strong> All files saved locally on your computer via the desktop app will remain fully accessible, even if the online service goes down.
             </li>
             <li>
               <strong className="text-white">At shutdown:</strong> The hosted platform at
@@ -181,10 +156,10 @@ export default function OpensourceKillswitchPage() {
             </li>
           </ul>
 
-          {/* 8. Community Continuity */}
-          <h2 id="continuity" className="scroll-mt-24">8. Community Continuity</h2>
+          {/* 7. Community Continuity */}
+          <h2 id="continuity" className="scroll-mt-24">7. Community Continuity</h2>
           <p>
-            The open-source kill switch is designed to enable seamless community takeover:
+            The automated dead man&apos;s switch is designed to enable seamless community takeover:
           </p>
           <ul>
             <li>
@@ -207,10 +182,10 @@ export default function OpensourceKillswitchPage() {
             </li>
           </ul>
 
-          {/* 9. Contact */}
-          <h2 id="contact" className="scroll-mt-24">9. Contact</h2>
+          {/* 8. Contact */}
+          <h2 id="contact" className="scroll-mt-24">8. Contact</h2>
           <p>
-            If you have questions about the open-source kill switch, the project&apos;s continuity plans,
+            If you have questions about the dead man&apos;s switch, the project&apos;s continuity plans,
             or how to prepare for self-hosting, please contact us:
           </p>
           <div className="rounded-lg bg-surface-900 border border-surface-800 p-4 not-prose text-surface-300">

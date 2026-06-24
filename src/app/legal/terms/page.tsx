@@ -67,10 +67,10 @@ export default function TermsOfServicePage() {
           {/* 2. Eligibility */}
           <h2 id="eligibility" className="scroll-mt-24">2. Eligibility</h2>
           <p>
-            You must be at least sixteen (16) years of age to use the Service. By creating an account or using the Service, you represent and warrant that you are at least 16 years old and have the legal capacity to enter into this Agreement. If you are between the ages of 16 and 18 (or the age of legal majority in your jurisdiction), you represent that your parent or legal guardian has reviewed and agreed to these Terms on your behalf.
+            You must be at least eighteen (18) years of age to use the Service. By creating an account or using the Service, you make a legally binding representation and warranty that you are at least 18 years old and have the legal capacity to enter into this Agreement. To protect your privacy and adhere to strict data minimization principles, we do not ask for or collect your date of birth during registration; your use of the Service serves as your binding representation of age.
           </p>
           <p>
-            We reserve the right to request proof of age at any time. If we discover or have reason to believe that a User does not meet the minimum age requirement, we will promptly terminate that User&apos;s account and delete all associated data, in compliance with applicable child protection laws including the EU General Data Protection Regulation (GDPR) and the Norwegian Personal Data Act (Personopplysningsloven).
+            If we discover or have reason to believe that a User does not meet the minimum age requirement, we will immediately and without notice terminate that User&apos;s account and delete all associated data, in compliance with applicable child protection laws including the EU General Data Protection Regulation (GDPR) and the Norwegian Personal Data Act (Personopplysningsloven).
           </p>
           <p>
             Users who have been previously suspended, banned, or otherwise prohibited from using the Service are not eligible to create new accounts or access the Service in any manner.
@@ -93,7 +93,7 @@ export default function TermsOfServicePage() {
             You may not share your login credentials with any other person. Each account is for a single individual User. We reserve the right to suspend or terminate accounts where we detect credential sharing, concurrent sessions from multiple geographic locations suggesting shared access, or other indicators of unauthorized multi-user access to a single account.
           </p>
           <p>
-            We will never ask you for your password via email, phone, or any communication channel. If you receive such a request purporting to be from us, do not respond and report it to our security team.
+            We will never ask you for your password via email, phone, or any communication channel. If you receive such a request purporting to be from us, do not respond and report it to us immediately.
           </p>
 
           {/* 4. Your Content */}
@@ -365,20 +365,21 @@ export default function TermsOfServicePage() {
             <li>Automated access to the Service outside of provided APIs is expressly prohibited.</li>
           </ul>
 
-          {/* 17b. Open-Source Kill Switch */}
           <h2 id="kill-switch" className="scroll-mt-24">17b. Open-Source Kill Switch</h2>
           <p>
             Screenplay Studio is developed and maintained by Northem Development as a solo development effort.
-            The open-source kill switch is a commitment that if the project can no longer be maintained , 
-            whether due to personal circumstances, financial constraints, or any other reason ,  the full
-            codebase will be released publicly so that users can continue running the software on their own
-            infrastructure.
+            The open-source kill switch is a commitment that if the project can no longer be maintained, 
+            the full codebase will be released publicly so that users can continue running the software on their own infrastructure.
           </p>
           <p>
-            If the kill switch is activated, all registered users will receive a minimum 30-day advance warning
-            via email. During the warning period, users will have full access to all features and data export
-            functionality. The complete source code will be published under an open-source license on GitHub
-            and mirrored to at least one additional platform.
+            To protect against sudden incapacitation (such as a medical emergency) where manual action is impossible, this kill switch is structurally fortified by two mechanisms:
+          </p>
+          <ol className="list-decimal pl-6 space-y-2 mb-4">
+            <li><strong>Automated Dead Man&apos;s Switch:</strong> If the primary administrator account is entirely inactive for 60 consecutive days, an automated protocol will trigger the open-source release.</li>
+            <li><strong>Technical Executor &amp; Escrow:</strong> A designated legal executor holds the technical repository keys and a pre-funded financial escrow. This escrow is strictly earmarked to cover 30 days of server costs, ensuring that even if the developer is incapacitated, the servers will remain online to fulfill the guaranteed 30-day export window.</li>
+          </ol>
+          <p>
+            If the kill switch is activated, all registered users will receive a minimum 30-day advance warning via email. During the warning period, users will have full access to all features and data export functionality. The complete source code will be published under an open-source license on GitHub.
           </p>
           <p>
             Your data remains yours. You can export all content in Fountain, Final Draft, PDF, or JSON format
@@ -466,13 +467,12 @@ export default function TermsOfServicePage() {
             If you are a consumer residing in the European Economic Area (EEA), you may also have the right to bring proceedings in the courts of your country of residence, and nothing in these Terms affects your statutory consumer rights under applicable mandatory law.
           </p>
 
-          {/* 23. Dispute Resolution */}
           <h2 id="disputes" className="scroll-mt-24">23. Dispute Resolution</h2>
           <p>
             Before initiating any formal legal proceeding, you agree to first attempt to resolve any dispute informally by contacting us at <a href="mailto:legal@screenplaystudio.fun">legal@screenplaystudio.fun</a>. We will attempt to resolve the dispute through good-faith negotiations within thirty (30) days of receipt of your written notice of dispute.
           </p>
           <p>
-            If the dispute cannot be resolved informally within thirty (30) days, either party may initiate formal proceedings in accordance with the Governing Law section above. Alternatively, either party may elect to submit the dispute to mediation administered by the Oslo Chamber of Commerce (Handelskammeret i Oslo), with costs shared equally between the parties.
+            If the dispute cannot be resolved informally within thirty (30) days, either party may initiate formal proceedings in accordance with the Governing Law section above. Alternatively, either party may elect to submit the dispute to standard digital dispute resolution or small claims court, provided the claim is within the jurisdiction of such a court.
           </p>
           <p>
             For disputes involving amounts less than NOK 50,000, we agree to participate in the Norwegian Consumer Dispute Resolution process (Forbrukertilsynet) if you are an individual consumer, as required by Norwegian law.

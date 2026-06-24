@@ -250,18 +250,16 @@ export default function ContentPolicyPage() {
             </li>
             <li>
               <strong className="text-white">Human review:</strong> Flagged content and user reports are reviewed
-              by trained human moderators who understand the nuances of creative writing and contextual
-              interpretation.
+              manually.
             </li>
             <li>
               <strong className="text-white">Appeals process:</strong> If your content is removed or your
-              account is restricted, you may appeal the decision. Appeals are reviewed by a different moderator
-              than the one who made the original decision. You will receive a response within 7 business days.
+              account is restricted, you may appeal the decision. You will receive a response as promptly as possible.
             </li>
           </ul>
           <p className="text-surface-300">
             We prioritize accuracy in moderation and understand that creative works often explore challenging
-            themes. Moderators are trained to distinguish between artistic expression and policy violations.
+            themes. We strive to distinguish between artistic expression and policy violations.
           </p>
         </section>
 
@@ -327,7 +325,7 @@ export default function ContentPolicyPage() {
             </li>
           </ul>
           <p className="text-surface-300">
-            All reports are reviewed within 48 hours. Reports involving prohibited content (Section 3) are
+            All reports are reviewed promptly. Reports involving prohibited content (Section 3) are
             prioritized for immediate review. We do not disclose the identity of reporters.
           </p>
         </section>

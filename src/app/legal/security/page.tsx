@@ -195,8 +195,7 @@ export default function SecurityPage() {
             </li>
             <li>
               <strong className="text-white">Admin panel restrictions:</strong> Administrative functions are
-              restricted to authorized personnel with elevated credentials, separate authentication, and full
-              audit logging of all administrative actions.
+              restricted and strictly limited, with full audit logging of all administrative actions.
             </li>
           </ul>
         </section>
@@ -219,7 +218,7 @@ export default function SecurityPage() {
             </li>
             <li>
               <strong className="text-white">Real-time alerts:</strong> Critical security events trigger
-              immediate alerts to our engineering team, enabling rapid response to potential incidents.
+              immediate alerts, enabling rapid response to potential incidents.
             </li>
           </ul>
         </section>
@@ -352,24 +351,7 @@ export default function SecurityPage() {
           </ul>
         </section>
 
-        {/* ── Penetration Testing ── */}
-        <section className="mt-10">
-          <h2 className="text-2xl font-semibold text-white">12. Penetration Testing</h2>
-          <p className="text-surface-300">
-            We conduct <strong className="text-white">annual penetration testing</strong> performed by qualified
-            independent security professionals. These assessments cover:
-          </p>
-          <ul className="text-surface-300 space-y-1">
-            <li>Web application security testing (OWASP Top 10)</li>
-            <li>API security assessment</li>
-            <li>Authentication and authorization testing</li>
-            <li>Infrastructure and configuration review</li>
-          </ul>
-          <p className="text-surface-300">
-            Findings are prioritized by severity and addressed promptly. Critical and high-severity findings are
-            remediated immediately, with verification testing to confirm fixes.
-          </p>
-        </section>
+
 
         {/* ── Contact ── */}
         <section className="mt-10">

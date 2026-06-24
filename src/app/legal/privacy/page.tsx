@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
           <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Privacy</p>
           <h1 className="text-3xl font-black text-white tracking-tight">Privacy Policy</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: March 18, 2026</p>
-          <p className="text-xs text-surface-600 mt-1">Previous version: February 22, 2026 ,  <a href="mailto:dpo@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
+          <p className="text-xs text-surface-600 mt-1">Previous version: February 22, 2026 ,  <a href="mailto:privacy@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
         </div>
 
         {/* Table of Contents */}
@@ -55,7 +55,7 @@ export default function PrivacyPolicyPage() {
           <div className="rounded-lg bg-surface-900 border border-surface-800 p-4 not-prose text-surface-300 mb-4">
             <p><strong className="text-white">Screenplay Studio</strong></p>
             <p>Norway</p>
-            <p>Email: <a href="mailto:dpo@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">dpo@screenplaystudio.fun</a></p>
+            <p>Email: <a href="mailto:privacy@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">privacy@screenplaystudio.fun</a></p>
           </div>
           <p>
             This Privacy Policy should be read in conjunction with our <Link href="/legal/terms" className="text-red-400 hover:text-red-300 transition-colors">Terms of Service</Link>. By using the Service, you acknowledge that you have read and understood this Privacy Policy. If you do not agree with how we process your data, please do not use the Service.
@@ -303,20 +303,30 @@ export default function PrivacyPolicyPage() {
           {/* 7. AI & Machine Learning Policy */}
           <h2 id="ai-ml" className="scroll-mt-24">7. AI &amp; Machine Learning Policy</h2>
           <p className="font-semibold text-white">
-            Screenplay Studio does NOT use your scripts, screenplays, or creative content to train, develop, or improve any artificial intelligence or machine learning models. This is an unconditional, irrevocable commitment.
+            Screenplay Studio makes an unconditional, irrevocable commitment that we do NOT use your scripts, screenplays, or creative content internally to train, develop, or improve any artificial intelligence or machine learning models.
           </p>
           <p>
-            Specifically, your data is never:
+            Specifically, regarding our internal operations, your data is never:
           </p>
           <ul>
             <li>Used as training data for large language models (LLMs), generative AI, or any other machine learning system.</li>
             <li>Fed into AI training pipelines, fine-tuning processes, or reinforcement learning systems.</li>
             <li>Used for prompt engineering, model evaluation, or AI benchmarking.</li>
-            <li>Shared with or sold to any third party for AI or ML training purposes.</li>
-            <li>Analysed by AI systems for content understanding, pattern recognition, or style analysis, except as explicitly described below.</li>
-            <li>Used to generate synthetic training data or data augmentation datasets.</li>
-            <li>Included in any anonymized or aggregated datasets used for machine learning.</li>
+            <li>Shared with, licensed, or sold to any third party for AI or ML training purposes.</li>
           </ul>
+          
+          <h3 className="text-xl font-semibold mt-6 mb-3">Protection Against External Third-Party Scraping</h3>
+          <p>
+            While we guarantee our internal non-use of your data for AI, we cannot absolutely guarantee the behavior of hostile external actors. For public content (such as community showcases), we employ strict, aggressive technical measures to combat third-party AI scraping, including:
+          </p>
+          <ul>
+            <li>Active bot detection algorithms and user-agent filtering.</li>
+            <li>Aggressive rate limiting and IP blocking for suspicious request patterns.</li>
+            <li>Content obfuscation where technically feasible.</li>
+          </ul>
+          <p className="font-semibold text-white">
+            Limitation of Liability: While we vigorously defend our platform against automated scrapers, we cannot be held legally liable for illicit, unauthorized scraping by malicious third parties who unlawfully circumvent our technical security measures.
+          </p>
           <p>
             If we introduce optional AI-powered features in the future (such as formatting assistance, structural analysis, or writing tools):
           </p>
@@ -342,7 +352,7 @@ export default function PrivacyPolicyPage() {
             <li><strong>Supplementary Measures:</strong> Where necessary, we implement additional technical and organizational measures, such as encryption in transit and at rest, to supplement SCCs and ensure an adequate level of protection.</li>
           </ul>
           <p>
-            You may obtain a copy of the safeguards we use for international transfers by contacting our DPO at <a href="mailto:dpo@screenplaystudio.fun">dpo@screenplaystudio.fun</a>.
+            You may obtain a copy of the safeguards we use for international transfers by contacting us at <a href="mailto:privacy@screenplaystudio.fun">privacy@screenplaystudio.fun</a>.
           </p>
 
           {/* 9. Data Retention */}
@@ -421,13 +431,13 @@ export default function PrivacyPolicyPage() {
           </div>
 
           <p className="mt-4">
-            After the retention period expires, data is permanently deleted or irreversibly anonymized. Backups containing expired data are purged within 30 days of the retention period ending. When you delete your account, we initiate a 30-day grace period during which you may recover your account. After 30 days, all data is permanently and irreversibly deleted, except for payment records retained under legal obligation.
+            After the retention period expires, data is permanently deleted or irreversibly anonymized. Please note that our database infrastructure utilizes continuous Point-In-Time Recovery (PITR) backups for disaster recovery purposes. It is technically impossible to surgically purge individual deleted records from an immutable, continuous backup stream. Therefore, your deleted data will remain securely encrypted in our backup archives until those backups naturally expire and rotate out (typically within 30 days). When you delete your account, we initiate a 30-day grace period during which you may recover your account. After 30 days, all live data is permanently deleted.
           </p>
 
           {/* 10. Your GDPR Rights */}
           <h2 id="gdpr-rights" className="scroll-mt-24">10. Your GDPR Rights</h2>
           <p>
-            If you are located in the European Economic Area (EEA), the United Kingdom, or Norway, you have the following rights under the GDPR and applicable national data protection law. You may exercise these rights at any time by contacting us at <a href="mailto:dpo@screenplaystudio.fun">dpo@screenplaystudio.fun</a> or through the relevant functionality in your account settings.
+            If you are located in the European Economic Area (EEA), the United Kingdom, or Norway, you have the following rights under the GDPR and applicable national data protection law. You may exercise these rights at any time by contacting us at <a href="mailto:privacy@screenplaystudio.fun">privacy@screenplaystudio.fun</a> or through the relevant functionality in your account settings.
           </p>
 
           <h3>10.1 Right of Access (Article 15 GDPR)</h3>
@@ -476,7 +486,7 @@ export default function PrivacyPolicyPage() {
             <p>Website: <a href="https://www.datatilsynet.no" className="text-red-400 hover:text-red-300 transition-colors" target="_blank" rel="noopener noreferrer">datatilsynet.no</a></p>
           </div>
           <p className="mt-4">
-            We kindly request that you contact us first at <a href="mailto:dpo@screenplaystudio.fun">dpo@screenplaystudio.fun</a> to give us the opportunity to address your concern before filing a complaint.
+            We kindly request that you contact us first at <a href="mailto:privacy@screenplaystudio.fun">privacy@screenplaystudio.fun</a> to give us the opportunity to address your concern before filing a complaint.
           </p>
 
           {/* 11. CCPA Rights */}
@@ -492,19 +502,19 @@ export default function PrivacyPolicyPage() {
             <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising any of your CCPA/CPRA rights.</li>
           </ul>
           <p>
-            To exercise your CCPA rights, contact us at <a href="mailto:dpo@screenplaystudio.fun">dpo@screenplaystudio.fun</a>. We will verify your identity before processing your request. We will respond to verifiable consumer requests within forty-five (45) days.
+            To exercise your CCPA rights, contact us at <a href="mailto:privacy@screenplaystudio.fun">privacy@screenplaystudio.fun</a>. We will verify your identity before processing your request. We will respond to verifiable consumer requests within forty-five (45) days.
           </p>
 
           {/* 12. Children's Privacy */}
           <h2 id="children" className="scroll-mt-24">12. Children&apos;s Privacy</h2>
           <p>
-            The Service is not intended for use by children under the age of sixteen (16). We do not knowingly collect, solicit, or maintain personal data from anyone under 16 years of age. If we become aware that we have collected personal data from a child under 16, we will promptly delete that data and terminate the associated account.
+            The Service is strictly not intended for use by individuals under the age of eighteen (18). We do not knowingly collect, solicit, or maintain personal data from anyone under 18 years of age. 
           </p>
           <p>
-            If you are a parent or guardian and believe that your child under 16 has provided us with personal data, please contact us immediately at <a href="mailto:dpo@screenplaystudio.fun">dpo@screenplaystudio.fun</a>, and we will take steps to remove the data from our systems.
+            In accordance with our strict data minimization principles, we do not ask for or collect your date of birth during the account registration process. Instead, by creating an account and using the Service, you make a legally binding representation and warranty that you are at least 18 years of age and possess the legal capacity to enter into binding contracts.
           </p>
           <p>
-            This age requirement complies with Article 8 of the GDPR regarding conditions applicable to a child&apos;s consent in relation to information society services and the relevant provisions of the Norwegian Personal Data Act.
+            If we become aware that we have collected personal data from a minor under 18, we will immediately and without notice terminate the associated account and delete all associated data from our active systems. If you are a parent or guardian and believe that your minor child has provided us with personal data, please contact us immediately at <a href="mailto:privacy@screenplaystudio.fun">privacy@screenplaystudio.fun</a>.
           </p>
 
           {/* 13. Security */}
@@ -526,7 +536,7 @@ export default function PrivacyPolicyPage() {
 
           <h3>Organizational Measures</h3>
           <ul>
-            <li><strong>Access Controls:</strong> Access to personal data is restricted to authorized personnel on a need-to-know basis, with role-based access controls.</li>
+            <li><strong>Access Controls:</strong> Access to personal data is heavily restricted on a strict need-to-know basis.</li>
             <li><strong>Security Audits:</strong> We conduct periodic security assessments and code reviews to identify and remediate vulnerabilities.</li>
             <li><strong>Incident Response:</strong> We maintain a documented incident response plan for detecting, responding to, and recovering from security incidents.</li>
             <li><strong>Data Minimization:</strong> We collect and retain only the data necessary for the specified purposes, in accordance with the GDPR principle of data minimization.</li>
@@ -647,19 +657,7 @@ export default function PrivacyPolicyPage() {
             We encourage you to review this Privacy Policy periodically. Your continued use of the Service after the effective date of an updated Privacy Policy constitutes acceptance of the revised policy, except where your consent is required for specific changes.
           </p>
 
-          {/* 19. Data Protection Officer */}
-          <h2 id="dpo" className="scroll-mt-24">19. Data Protection Officer</h2>
-          <p>
-            We have appointed a Data Protection Officer (DPO) who is responsible for overseeing our data protection strategy and compliance. You may contact our DPO for any questions or concerns regarding this Privacy Policy, how we process your personal data, or to exercise your data protection rights:
-          </p>
-          <div className="rounded-lg bg-surface-900 border border-surface-800 p-4 not-prose text-surface-300">
-            <p><strong className="text-white">Data Protection Officer</strong></p>
-            <p>Screenplay Studio</p>
-            <p>Email: <a href="mailto:dpo@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">dpo@screenplaystudio.fun</a></p>
-          </div>
-          <p className="mt-4">
-            Our DPO will acknowledge receipt of your inquiry within two (2) business days and provide a substantive response within one (1) month, extendable by two additional months for complex matters with prior notification.
-          </p>
+
 
           {/* 20. Contact */}
           <h2 id="contact" className="scroll-mt-24">20. Contact</h2>
@@ -671,7 +669,7 @@ export default function PrivacyPolicyPage() {
             <p className="mt-1 text-surface-400 text-sm">Operator of Screenplay Studio</p>
             <p className="mt-2">Privacy Inquiries</p>
             <p>Email: <a href="mailto:legal@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">legal@screenplaystudio.fun</a></p>
-            <p>DPO: <a href="mailto:dpo@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">dpo@screenplaystudio.fun</a></p>
+            <p>Privacy Inquiries: <a href="mailto:privacy@screenplaystudio.fun" className="text-red-400 hover:text-red-300 transition-colors">privacy@screenplaystudio.fun</a></p>
             <p className="mt-2"><a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 transition-colors">development.northem.no</a></p>
           </div>
 

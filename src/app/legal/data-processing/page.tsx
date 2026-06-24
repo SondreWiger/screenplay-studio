@@ -208,11 +208,7 @@ export default function DataProcessingPage() {
                   <td className="py-3 pr-4">Regular encrypted backups with point-in-time recovery</td>
                   <td className="py-3">Daily + PITR</td>
                 </tr>
-                <tr className="border-b border-surface-800">
-                  <td className="py-3 pr-4 font-medium text-white">Penetration testing</td>
-                  <td className="py-3 pr-4">Regular security assessments by independent parties</td>
-                  <td className="py-3">Annual</td>
-                </tr>
+
               </tbody>
             </table>
           </div>
@@ -247,17 +243,12 @@ export default function DataProcessingPage() {
         <section className="mt-10">
           <h2 className="text-2xl font-semibold text-white">8. Audit Rights</h2>
           <p className="text-surface-300">
-            The Controller has the right to audit Screenplay Studio&apos;s compliance with this DPA. This includes:
+            Due to our reliance on managed cloud infrastructure (Supabase and Vercel) and our status as a solo development operation, direct technical or physical audits of our systems by individual users are not technically or legally possible. However, the Controller has the right to verify our compliance with this DPA by:
           </p>
           <ul className="text-surface-300 space-y-1">
-            <li>Requesting documentation of our security measures and data processing activities</li>
-            <li>Conducting or commissioning audits and inspections, with reasonable prior notice</li>
-            <li>Reviewing our sub-processor agreements and security certifications</li>
+            <li>Requesting our standard security documentation and data processing records</li>
+            <li>Reviewing the publicly available security and compliance certifications (e.g., SOC 2, ISO 27001) provided by our sub-processors (Supabase and Vercel)</li>
           </ul>
-          <p className="text-surface-300">
-            Audits shall be conducted during normal business hours with at least 30 days&apos; written notice. We may
-            charge reasonable fees for audits that exceed one per year.
-          </p>
         </section>
 
         {/* ── Data Return & Deletion ── */}
@@ -370,7 +361,7 @@ export default function DataProcessingPage() {
                 <tr className="border-b border-surface-800">
                   <td className="py-3 pr-4 font-medium text-white">Resilience</td>
                   <td className="py-3 pr-4">Testing</td>
-                  <td className="py-3">Annual penetration testing, vulnerability scanning, dependency audits</td>
+                  <td className="py-3">Vulnerability scanning, dependency audits</td>
                 </tr>
                 <tr className="border-b border-surface-800">
                   <td className="py-3 pr-4 font-medium text-white">Accountability</td>
@@ -391,9 +382,9 @@ export default function DataProcessingPage() {
         <section className="mt-10">
           <h2 className="text-2xl font-semibold text-white">12. Contact</h2>
           <p className="text-surface-300">
-            For questions about this Data Processing Agreement, contact our Data Protection Officer at{' '}
-            <a href="mailto:dpo@screenplaystudio.fun" className="text-red-400 hover:text-red-300">
-              dpo@screenplaystudio.fun
+            For questions about this Data Processing Agreement, contact us at{' '}
+            <a href="mailto:privacy@screenplaystudio.fun" className="text-red-400 hover:text-red-300">
+              privacy@screenplaystudio.fun
             </a>.
           </p>
         </section>

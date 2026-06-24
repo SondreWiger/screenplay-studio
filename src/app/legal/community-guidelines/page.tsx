@@ -180,7 +180,7 @@ export default function CommunityGuidelinesPage() {
             <li>Do not upload copyrighted scripts from produced films, TV shows, or other writers</li>
             <li>Understand that once shared publicly, others may read and comment on your work</li>
             <li>You can unpublish or remove your shared scripts at any time</li>
-            <li>Public scripts are protected from AI scraping ,  see our <Link href="/legal/security" className="text-red-400 hover:text-red-300">Security Policy</Link></li>
+            <li>We make reasonable efforts to protect public scripts from unauthorized AI scraping.</li>
           </ul>
         </section>
 
@@ -267,11 +267,11 @@ export default function CommunityGuidelinesPage() {
             </div>
             <div className="flex gap-3 items-start">
               <span className="w-6 h-6 rounded-full bg-red-500/15 text-red-400 text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
-              <p className="text-sm text-surface-300">A different moderator from the one who made the original decision will review your appeal.</p>
+              <p className="text-sm text-surface-300">Your appeal will be reviewed.</p>
             </div>
             <div className="flex gap-3 items-start">
               <span className="w-6 h-6 rounded-full bg-red-500/15 text-red-400 text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
-              <p className="text-sm text-surface-300">We will respond with our decision within 7 business days.</p>
+              <p className="text-sm text-surface-300">We will respond with our decision as promptly as possible.</p>
             </div>
             <div className="flex gap-3 items-start">
               <span className="w-6 h-6 rounded-full bg-red-500/15 text-red-400 text-xs flex items-center justify-center shrink-0 mt-0.5">4</span>
@@ -293,7 +293,7 @@ export default function CommunityGuidelinesPage() {
             </div>
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-white mb-2">🤖 Automated Detection</h3>
-              <p className="text-xs text-surface-400">We use automated tools to detect spam, harassment patterns, and prohibited content ,  but human moderators make all final decisions.</p>
+              <p className="text-xs text-surface-400">We use automated tools to detect spam, harassment patterns, and prohibited content.</p>
             </div>
             <div className="bg-surface-900 border border-surface-800 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-white mb-2">📊 Transparency Reports</h3>

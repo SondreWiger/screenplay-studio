@@ -268,7 +268,7 @@ export default function AcceptableUsePolicyPage() {
               <li>
                 <strong className="text-white">Support:</strong> Contact our{' '}
                 <Link href="/support" className="text-red-400 hover:text-red-300">
-                  Support team
+                  Support
                 </Link>{' '}
                 for assistance.
               </li>
