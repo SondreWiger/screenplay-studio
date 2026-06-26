@@ -39,6 +39,7 @@ export default function robots(): MetadataRoute.Robots {
           '/idea-boards',
           '/accountability',
           '/casting',
+          '/3add3530-3324-4cf9-89c6-bb33db94b66e',
         ],
       },
       // Block AI training crawlers from ALL content
