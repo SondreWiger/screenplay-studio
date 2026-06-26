@@ -2,7 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import { ConverterLayout } from '../converter-layout';
+import { OrangeButton, GhostButton } from '../shared';
 import { parsePDF } from '@/lib/scripts/pdf';
+
+const ORANGE = '#FF5F1F';
 
 interface SlateData {
   project: string;
@@ -23,28 +26,14 @@ interface SlateData {
 
 export default function SlatesPage() {
   const [slate, setSlate] = useState<SlateData>({
-    project: '',
-    scene: '',
-    take: '1',
-    director: '',
-    dop: '',
-    date: new Date().toISOString().split('T')[0],
-    camera: '',
-    lens: '',
-    fps: '24',
-    notes: '',
-    production: '',
-    roll: '',
-    sound: 'SYNC',
-    mos: false,
+    project: '', scene: '', take: '1', director: '', dop: '',
+    date: new Date().toISOString().split('T')[0], camera: '', lens: '',
+    fps: '24', notes: '', production: '', roll: '', sound: 'SYNC', mos: false,
   });
-
   const [extracting, setExtracting] = useState(false);
-  const [extractError, setExtractError] = useState<string | null>(null);
 
-  const updateField = (field: keyof SlateData, value: string | boolean) => {
+  const update = (field: keyof SlateData, value: string | boolean) =>
     setSlate(prev => ({ ...prev, [field]: value }));
-  };
 
   const extractFromPDF = useCallback(async () => {
     const input = document.createElement('input');
@@ -54,54 +43,44 @@ export default function SlatesPage() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       setExtracting(true);
-      setExtractError(null);
       try {
         const result = await parsePDF(file);
-        if (result.titlePage.title) {
-          updateField('project', result.titlePage.title);
-        }
-        if (result.titlePage.author) {
-          updateField('director', result.titlePage.author);
-        }
-      } catch (err) {
-        setExtractError('Failed to parse PDF');
-      } finally {
-        setExtracting(false);
-      }
+        if (result.titlePage.title) update('project', result.titlePage.title);
+        if (result.titlePage.author) update('director', result.titlePage.author);
+      } finally { setExtracting(false); }
     };
     input.click();
   }, []);
 
   const generateSlateText = (): string => {
-    const lines = [
+    const p = (s: string) => s.padEnd(36);
+    return [
       '╔══════════════════════════════════════════════════╗',
       '║                  SLATE                           ║',
       '╠══════════════════════════════════════════════════╣',
-      `║  PROJECT:   ${slate.project.padEnd(36)}║`,
-      `║  PRODUCTION:${slate.production.padEnd(36)}║`,
+      `║  PROJECT:   ${p(slate.project)}║`,
+      `║  PRODUCTION:${p(slate.production)}║`,
       '╠══════════════════════════════════════════════════╣',
-      `║  SCENE:     ${slate.scene.padEnd(36)}║`,
-      `║  TAKE:      ${slate.take.padEnd(36)}║`,
-      `║  ROLL:      ${slate.roll.padEnd(36)}║`,
+      `║  SCENE:     ${p(slate.scene)}║`,
+      `║  TAKE:      ${p(slate.take)}║`,
+      `║  ROLL:      ${p(slate.roll)}║`,
       '╠══════════════════════════════════════════════════╣',
-      `║  DIRECTOR:  ${slate.director.padEnd(36)}║`,
-      `║  DOP:       ${slate.dop.padEnd(36)}║`,
-      `║  CAMERA:    ${slate.camera.padEnd(36)}║`,
-      `║  LENS:      ${slate.lens.padEnd(36)}║`,
+      `║  DIRECTOR:  ${p(slate.director)}║`,
+      `║  DOP:       ${p(slate.dop)}║`,
+      `║  CAMERA:    ${p(slate.camera)}║`,
+      `║  LENS:      ${p(slate.lens)}║`,
       '╠══════════════════════════════════════════════════╣',
-      `║  DATE:      ${slate.date.padEnd(36)}║`,
-      `║  FPS:       ${slate.fps.padEnd(36)}║`,
-      `║  SOUND:     ${(slate.mos ? 'MOS' : slate.sound).padEnd(36)}║`,
+      `║  DATE:      ${p(slate.date)}║`,
+      `║  FPS:       ${p(slate.fps)}║`,
+      `║  SOUND:     ${p(slate.mos ? 'MOS' : slate.sound)}║`,
       '╠══════════════════════════════════════════════════╣',
-      `║  NOTES:     ${slate.notes.padEnd(36)}║`,
+      `║  NOTES:     ${p(slate.notes)}║`,
       '╚══════════════════════════════════════════════════╝',
-    ];
-    return lines.join('\n');
+    ].join('\n');
   };
 
   const downloadSlate = () => {
-    const text = generateSlateText();
-    const blob = new Blob([text], { type: 'text/plain' });
+    const blob = new Blob([generateSlateText()], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -110,93 +89,85 @@ export default function SlatesPage() {
     URL.revokeObjectURL(url);
   };
 
-  const copySlate = () => {
-    navigator.clipboard.writeText(generateSlateText());
-  };
-
   return (
-    <ConverterLayout title="Production Slates" description="Generate production slate cards for your shoot">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <ConverterLayout title="Production Slates" description="Generate production slate cards for your shoot.">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Form */}
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-foreground">Slate Details</h2>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-1 rounded-full" style={{ background: ORANGE }} />
+              <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">SLATE DETAILS</span>
+            </div>
             <button
               onClick={extractFromPDF}
               disabled={extracting}
-              className="text-xs text-orange-500 hover:text-orange-600 underline underline-offset-4 disabled:opacity-40"
+              className="text-[10px] font-bold uppercase tracking-[0.12em] underline underline-offset-4 disabled:opacity-30"
+              style={{ color: ORANGE }}
             >
               {extracting ? 'Extracting…' : 'Extract from PDF'}
             </button>
           </div>
-          {extractError && <p className="text-xs text-red-500">{extractError}</p>}
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Project" value={slate.project} onChange={v => updateField('project', v)} />
-            <Field label="Production" value={slate.production} onChange={v => updateField('production', v)} />
-            <Field label="Scene" value={slate.scene} onChange={v => updateField('scene', v)} />
-            <Field label="Take" value={slate.take} onChange={v => updateField('take', v)} />
-            <Field label="Roll" value={slate.roll} onChange={v => updateField('roll', v)} />
-            <Field label="Date" value={slate.date} onChange={v => updateField('date', v)} type="date" />
-            <Field label="Director" value={slate.director} onChange={v => updateField('director', v)} />
-            <Field label="DOP" value={slate.dop} onChange={v => updateField('dop', v)} />
-            <Field label="Camera" value={slate.camera} onChange={v => updateField('camera', v)} />
-            <Field label="Lens" value={slate.lens} onChange={v => updateField('lens', v)} />
-            <Field label="FPS" value={slate.fps} onChange={v => updateField('fps', v)} />
+            {([
+              ['Project', 'project'], ['Production', 'production'], ['Scene', 'scene'],
+              ['Take', 'take'], ['Roll', 'roll'], ['Director', 'director'],
+              ['DOP', 'dop'], ['Camera', 'camera'], ['Lens', 'lens'], ['FPS', 'fps'],
+            ] as const).map(([label, field]) => (
+              <Field key={field} label={label} value={slate[field]} onChange={v => update(field, v)} />
+            ))}
+            <Field label="Date" value={slate.date} onChange={v => update('date', v)} type="date" />
             <div>
-              <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">Sound</label>
-              <div className="flex items-center gap-3">
-                <select
-                  value={slate.mos ? 'mos' : slate.sound}
-                  onChange={e => {
-                    if (e.target.value === 'mos') {
-                      updateField('mos', true);
-                    } else {
-                      updateField('mos', false);
-                      updateField('sound', e.target.value);
-                    }
-                  }}
-                  className="flex-1 px-3 py-2 bg-transparent border border-border rounded-md text-sm text-foreground"
-                >
-                  <option value="SYNC">SYNC</option>
-                  <option value="WILD">WILD</option>
-                  <option value="SLATE">SLATE</option>
-                  <option value="mos">MOS</option>
-                </select>
-              </div>
+              <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">Sound</label>
+              <select
+                value={slate.mos ? 'mos' : slate.sound}
+                onChange={e => {
+                  if (e.target.value === 'mos') { update('mos', true); }
+                  else { update('mos', false); update('sound', e.target.value); }
+                }}
+                className="w-full px-3 py-2 bg-transparent border text-sm text-white/80"
+                style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+              >
+                <option value="SYNC" className="bg-black">SYNC</option>
+                <option value="WILD" className="bg-black">WILD</option>
+                <option value="SLATE" className="bg-black">SLATE</option>
+                <option value="mos" className="bg-black">MOS</option>
+              </select>
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">Notes</label>
+            <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">Notes</label>
             <textarea
               value={slate.notes}
-              onChange={e => updateField('notes', e.target.value)}
+              onChange={e => update('notes', e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 bg-transparent border border-border rounded-md text-sm text-foreground resize-none"
+              className="w-full px-3 py-2 bg-transparent border text-sm text-white/80 resize-none"
+              style={{ borderColor: 'rgba(255,255,255,0.1)' }}
             />
           </div>
 
           <div className="flex gap-3">
-            <button
-              onClick={copySlate}
-              className="px-6 py-2.5 border border-border rounded-lg text-sm text-foreground hover:bg-accent transition-colors"
-            >
+            <GhostButton onClick={() => navigator.clipboard.writeText(generateSlateText())}>
               Copy to Clipboard
-            </button>
-            <button
-              onClick={downloadSlate}
-              className="px-6 py-2.5 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
-            >
+            </GhostButton>
+            <OrangeButton onClick={downloadSlate}>
               Download .txt
-            </button>
+            </OrangeButton>
           </div>
         </div>
 
         {/* Preview */}
         <div>
-          <h2 className="text-sm font-medium text-foreground mb-3">Preview</h2>
-          <pre className="bg-card border border-border rounded-xl p-6 text-sm text-foreground font-mono whitespace-pre overflow-x-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-1 rounded-full" style={{ background: ORANGE }} />
+            <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">PREVIEW</span>
+          </div>
+          <pre
+            className="p-6 text-xs text-white/60 font-mono whitespace-pre overflow-x-auto leading-relaxed"
+            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
             {generateSlateText()}
           </pre>
         </div>
@@ -208,12 +179,13 @@ export default function SlatesPage() {
 function Field({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
   return (
     <div>
-      <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 block">{label}</label>
+      <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">{label}</label>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full px-3 py-2 bg-transparent border border-border rounded-md text-sm text-foreground"
+        className="w-full px-3 py-2 bg-transparent border text-sm text-white/80"
+        style={{ borderColor: 'rgba(255,255,255,0.1)' }}
       />
     </div>
   );

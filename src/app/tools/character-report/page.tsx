@@ -2,122 +2,79 @@
 
 import { useState, useCallback } from 'react';
 import { ConverterLayout } from '../converter-layout';
+import { UploadZone, GhostButton } from '../shared';
 import { parseFountain } from '@/lib/scripts/fountain';
 import { parseFDX } from '@/lib/scripts/fdx';
 import { parsePDF } from '@/lib/scripts/pdf';
 
-interface CharacterStats {
+const ORANGE = '#FF5F1F';
+
+interface CharStats {
   name: string;
-  dialogueCount: number;
-  totalWords: number;
-  parentheticalCount: number;
-  firstAppearance: number;
+  lines: number;
+  words: number;
+  parens: number;
 }
 
 export default function CharacterReportPage() {
-  const [characters, setCharacters] = useState<CharacterStats[]>([]);
-  const [fileName, setFileName] = useState<string>('');
+  const [chars, setChars] = useState<CharStats[]>([]);
+  const [fileName, setFileName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [totalElements, setTotalElements] = useState(0);
 
-  const analyzeFile = useCallback(async (file: File) => {
+  const analyze = useCallback(async (file: File) => {
     setError(null);
-    setCharacters([]);
+    setChars([]);
     setFileName(file.name);
-
     try {
       const ext = file.name.toLowerCase().split('.').pop();
       let elements: { content: string; element_type: string; sort_order: number }[] = [];
 
       if (ext === 'pdf') {
-        const result = await parsePDF(file);
-        elements = result.elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i }));
+        elements = (await parsePDF(file)).elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i }));
       } else if (ext === 'fdx') {
-        const text = await file.text();
-        const result = parseFDX(text);
-        elements = result.elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i }));
+        elements = (await parseFDX(await file.text())).elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i }));
       } else if (ext === 'fountain' || ext === 'txt') {
-        const text = await file.text();
-        const result = parseFountain(text);
-        elements = result.elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i }));
+        elements = (await parseFountain(await file.text())).elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i }));
       } else {
-        setError('Unsupported file format. Use PDF, FDX, or Fountain.');
+        setError('Unsupported file. Use PDF, FDX, or Fountain.');
         return;
       }
 
-      setTotalElements(elements.length);
-
-      // Build character stats
-      const charMap = new Map<string, CharacterStats>();
-
+      const map = new Map<string, CharStats>();
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i];
         if (el.element_type === 'character') {
-          const name = el.content?.toUpperCase().trim() || '';
+          const name = el.content?.toUpperCase().trim();
           if (!name) continue;
-
-          if (!charMap.has(name)) {
-            charMap.set(name, {
-              name,
-              dialogueCount: 0,
-              totalWords: 0,
-              parentheticalCount: 0,
-              firstAppearance: i,
-            });
-          }
-
-          const stats = charMap.get(name)!;
-          stats.dialogueCount++;
-
-          // Count following dialogue + parenthetical lines
+          if (!map.has(name)) map.set(name, { name, lines: 0, words: 0, parens: 0 });
+          const s = map.get(name)!;
+          s.lines++;
           let j = i + 1;
           while (j < elements.length) {
-            const next = elements[j];
-            if (next.element_type === 'dialogue') {
-              stats.totalWords += (next.content?.split(/\s+/).length || 0);
-              j++;
-            } else if (next.element_type === 'parenthetical') {
-              stats.parentheticalCount++;
-              j++;
-            } else {
-              break;
-            }
+            const n = elements[j];
+            if (n.element_type === 'dialogue') { s.words += (n.content?.split(/\s+/).length || 0); j++; }
+            else if (n.element_type === 'parenthetical') { s.parens++; j++; }
+            else break;
           }
-
-          i = j - 1; // Skip past dialogue block
+          i = j - 1;
         }
       }
-
-      // Sort by dialogue count (most lines first)
-      const sorted = Array.from(charMap.values()).sort((a, b) => b.dialogueCount - a.dialogueCount);
-      setCharacters(sorted);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to analyze file');
+      setChars(Array.from(map.values()).sort((a, b) => b.lines - a.lines));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to analyze file');
     }
   }, []);
 
-  const downloadReport = () => {
+  const download = () => {
+    const maxLines = chars[0]?.lines || 1;
     const lines = [
-      `CHARACTER REPORT`,
-      `${'═'.repeat(60)}`,
-      `File: ${fileName}`,
-      `Total Elements: ${totalElements}`,
-      `Characters Found: ${characters.length}`,
-      '',
-      `${'Character'.padEnd(25)} ${'Lines'.padStart(6)} ${'Words'.padStart(8)} ${'Par.}'.padStart(6)}`,
+      `CHARACTER REPORT`, `${'═'.repeat(60)}`,
+      `File: ${fileName}`, `Characters: ${chars.length}`, '',
+      `${'Character'.padEnd(25)} ${'Lines'.padStart(6)} ${'Words'.padStart(8)} ${'Par.'.padStart(6)}`,
       `${'─'.repeat(48)}`,
     ];
-
-    for (const c of characters) {
-      lines.push(
-        `${c.name.padEnd(25)} ${c.dialogueCount.toString().padStart(6)} ${c.totalWords.toString().padStart(8)} ${c.parentheticalCount.toString().padStart(6)}`
-      );
-    }
-
-    lines.push('');
-    lines.push(`${'─'.repeat(48)}`);
-    lines.push(`TOTAL DIALOGUE LINES: ${characters.reduce((s, c) => s + c.dialogueCount, 0)}`);
-    lines.push(`TOTAL DIALOGUE WORDS: ${characters.reduce((s, c) => s + c.totalWords, 0)}`);
+    for (const c of chars) lines.push(`${c.name.padEnd(25)} ${c.lines.toString().padStart(6)} ${c.words.toString().padStart(8)} ${c.parens.toString().padStart(6)}`);
+    lines.push('', `${'─'.repeat(48)}`, `TOTAL LINES: ${chars.reduce((s, c) => s + c.lines, 0)}`, `TOTAL WORDS: ${chars.reduce((s, c) => s + c.words, 0)}`);
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -129,66 +86,44 @@ export default function CharacterReportPage() {
   };
 
   return (
-    <ConverterLayout title="Character Report" description="Analyze dialogue distribution across characters in your screenplay">
+    <ConverterLayout title="Character Report" description="Analyze dialogue distribution across characters in your screenplay.">
       <div className="flex flex-col items-center gap-8">
-        {/* Upload */}
-        <div
-          className="w-full max-w-lg border-2 border-dashed border-border rounded-xl p-12 text-center hover:border-foreground/20 transition-colors cursor-pointer"
-          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          onDrop={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const dropped = e.dataTransfer.files[0];
-            if (dropped) analyzeFile(dropped);
-          }}
-          onClick={() => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.pdf,.fdx,.fountain,.txt';
-            input.onchange = (e) => {
-              const f = (e.target as HTMLInputElement).files?.[0];
-              if (f) analyzeFile(f);
-            };
-            input.click();
-          }}
-        >
-          <p className="text-foreground font-medium">Drop a script file or click to browse</p>
-          <p className="text-sm text-muted-foreground mt-1">PDF, FDX, Fountain, or .txt</p>
+        <div className="w-full max-w-lg">
+          <UploadZone
+            onFile={analyze}
+            accept=".pdf,.fdx,.fountain,.txt"
+            label="Drop a script file or click to browse"
+            sublabel="PDF, FDX, Fountain, or .txt"
+          />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
 
-        {characters.length > 0 && (
-          <div className="w-full max-w-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-xs text-muted-foreground">
-                {characters.length} characters found in {fileName}
-              </p>
-              <button
-                onClick={downloadReport}
-                className="text-xs text-orange-500 hover:text-orange-600 underline underline-offset-4"
-              >
-                Download Report
-              </button>
+        {chars.length > 0 && (
+          <div className="w-full max-w-2xl space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-1 rounded-full" style={{ background: ORANGE }} />
+                <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+                  {chars.length} CHARACTERS — {fileName}
+                </span>
+              </div>
+              <GhostButton onClick={download}>Download Report</GhostButton>
             </div>
 
             {/* Bar chart */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
-              <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Dialogue Distribution</h3>
+            <div className="p-6" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-4">DIALOGUE DISTRIBUTION</p>
               <div className="space-y-2">
-                {characters.slice(0, 15).map((c) => {
-                  const maxLines = characters[0]?.dialogueCount || 1;
-                  const pct = (c.dialogueCount / maxLines) * 100;
+                {chars.slice(0, 15).map(c => {
+                  const pct = (c.lines / (chars[0]?.lines || 1)) * 100;
                   return (
                     <div key={c.name} className="flex items-center gap-3">
-                      <span className="text-xs text-foreground w-24 truncate text-right font-mono">{c.name}</span>
-                      <div className="flex-1 h-4 bg-muted rounded overflow-hidden">
-                        <div
-                          className="h-full bg-orange-500 rounded transition-all duration-300"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <span className="text-[10px] text-white/40 w-24 truncate text-right font-mono">{c.name}</span>
+                      <div className="flex-1 h-3 overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <div className="h-full transition-all duration-300" style={{ width: `${pct}%`, background: ORANGE }} />
                       </div>
-                      <span className="text-xs text-muted-foreground w-8 text-right">{c.dialogueCount}</span>
+                      <span className="text-[10px] text-white/30 w-8 text-right font-mono">{c.lines}</span>
                     </div>
                   );
                 })}
@@ -196,27 +131,23 @@ export default function CharacterReportPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
+            <div style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+              <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left text-[10px] uppercase tracking-widest text-muted-foreground px-4 py-3">Character</th>
-                    <th className="text-right text-[10px] uppercase tracking-widest text-muted-foreground px-4 py-3">Lines</th>
-                    <th className="text-right text-[10px] uppercase tracking-widest text-muted-foreground px-4 py-3">Words</th>
-                    <th className="text-right text-[10px] uppercase tracking-widest text-muted-foreground px-4 py-3">Avg Words/Line</th>
-                    <th className="text-right text-[10px] uppercase tracking-widest text-muted-foreground px-4 py-3">Parentheticals</th>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    {['Character', 'Lines', 'Words', 'Avg', 'Par.'].map(h => (
+                      <th key={h} className={`text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono px-4 py-3 ${h === 'Lines' || h === 'Words' || h === 'Avg' || h === 'Par.' ? 'text-right' : 'text-left'}`}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {characters.map((c) => (
-                    <tr key={c.name} className="border-b border-border/50 hover:bg-accent/50 transition-colors">
-                      <td className="px-4 py-2 font-mono text-foreground">{c.name}</td>
-                      <td className="px-4 py-2 text-right text-muted-foreground">{c.dialogueCount}</td>
-                      <td className="px-4 py-2 text-right text-muted-foreground">{c.totalWords.toLocaleString()}</td>
-                      <td className="px-4 py-2 text-right text-muted-foreground">
-                        {c.dialogueCount > 0 ? Math.round(c.totalWords / c.dialogueCount) : 0}
-                      </td>
-                      <td className="px-4 py-2 text-right text-muted-foreground">{c.parentheticalCount}</td>
+                  {chars.map(c => (
+                    <tr key={c.name} className="hover:bg-white/[0.02] transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <td className="px-4 py-2.5 font-mono text-white/60">{c.name}</td>
+                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.lines}</td>
+                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.words.toLocaleString()}</td>
+                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.lines > 0 ? Math.round(c.words / c.lines) : 0}</td>
+                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.parens}</td>
                     </tr>
                   ))}
                 </tbody>

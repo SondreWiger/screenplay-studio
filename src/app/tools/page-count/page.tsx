@@ -2,13 +2,15 @@
 
 import { useState, useCallback } from 'react';
 import { ConverterLayout } from '../converter-layout';
+import { UploadZone, StatBox } from '../shared';
 import { parseFountain } from '@/lib/scripts/fountain';
 import { parseFDX } from '@/lib/scripts/fdx';
 import { parsePDF } from '@/lib/scripts/pdf';
 
+const ORANGE = '#FF5F1F';
+
 interface PageStats {
   totalPages: number;
-  totalElements: number;
   sceneCount: number;
   characterCount: number;
   estimatedMinutes: number;
@@ -19,138 +21,90 @@ interface PageStats {
 
 export default function PageCountPage() {
   const [stats, setStats] = useState<PageStats | null>(null);
-  const [fileName, setFileName] = useState<string>('');
+  const [fileName, setFileName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const analyzeFile = useCallback(async (file: File) => {
+  const analyze = useCallback(async (file: File) => {
     setError(null);
     setStats(null);
     setFileName(file.name);
-
     try {
       const ext = file.name.toLowerCase().split('.').pop();
       let elements: { content: string; element_type: string }[] = [];
 
       if (ext === 'pdf') {
-        const result = await parsePDF(file);
-        elements = result.elements;
+        elements = (await parsePDF(file)).elements;
       } else if (ext === 'fdx') {
-        const text = await file.text();
-        const result = parseFDX(text);
-        elements = result.elements;
+        elements = (await parseFDX(await file.text())).elements;
       } else if (ext === 'fountain' || ext === 'txt') {
-        const text = await file.text();
-        const result = parseFountain(text);
-        elements = result.elements;
+        elements = (await parseFountain(await file.text())).elements;
       } else {
-        setError('Unsupported file format. Use PDF, FDX, or Fountain.');
+        setError('Unsupported file. Use PDF, FDX, or Fountain.');
         return;
       }
 
-      // Calculate stats
-      const sceneHeadings = elements.filter(e => e.element_type === 'scene_heading');
-      const characters = new Set(elements.filter(e => e.element_type === 'character').map(e => e.content?.toUpperCase().trim()));
-      const dialogueElements = elements.filter(e => e.element_type === 'dialogue' || e.element_type === 'parenthetical');
-      const actionElements = elements.filter(e => e.element_type === 'action' || e.element_type === 'scene_heading' || e.element_type === 'transition');
+      const scenes = elements.filter(e => e.element_type === 'scene_heading');
+      const chars = new Set(elements.filter(e => e.element_type === 'character').map(e => e.content?.toUpperCase().trim()));
+      const dialogueW = elements.filter(e => e.element_type === 'dialogue' || e.element_type === 'parenthetical').reduce((s, e) => s + (e.content?.split(/\s+/).length || 0), 0);
+      const actionW = elements.filter(e => e.element_type === 'action' || e.element_type === 'scene_heading' || e.element_type === 'transition').reduce((s, e) => s + (e.content?.split(/\s+/).length || 0), 0);
+      const totalW = elements.reduce((s, e) => s + (e.content?.split(/\s+/).length || 0), 0);
 
-      const totalWords = elements.reduce((sum, e) => sum + (e.content?.split(/\s+/).length || 0), 0);
-
-      // Rough page estimation: ~250 words per screenplay page
-      // More accurate: weight by element type
-      const dialogueWords = dialogueElements.reduce((sum, e) => sum + (e.content?.split(/\s+/).length || 0), 0);
-      const actionWords = actionElements.reduce((sum, e) => sum + (e.content?.split(/\s+/).length || 0), 0);
-
-      // Dialogue-heavy pages tend to be shorter (~200 words/page)
-      // Action-heavy pages tend to be longer (~300 words/page)
-      const dialoguePages = dialogueWords / 200;
-      const actionPages = actionWords / 300;
-      const totalPages = Math.max(1, Math.ceil(dialoguePages + actionPages));
+      const dpg = dialogueW / 200;
+      const apg = actionW / 300;
+      const pages = Math.max(1, Math.ceil(dpg + apg));
 
       setStats({
-        totalPages,
-        totalElements: elements.length,
-        sceneCount: sceneHeadings.length,
-        characterCount: characters.size,
-        estimatedMinutes: totalPages, // 1 page ≈ 1 minute
-        wordCount: totalWords,
-        dialoguePages: Math.round(dialoguePages * 10) / 10,
-        actionPages: Math.round(actionPages * 10) / 10,
+        totalPages: pages, sceneCount: scenes.length, characterCount: chars.size,
+        estimatedMinutes: pages, wordCount: totalW,
+        dialoguePages: Math.round(dpg * 10) / 10, actionPages: Math.round(apg * 10) / 10,
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to analyze file');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to analyze file');
     }
   }, []);
 
   return (
-    <ConverterLayout title="Page Count Calculator" description="Estimate screenplay page count and runtime from your script file">
-      <div className="flex flex-col items-center gap-8">
-        {/* Upload */}
-        <div
-          className="w-full max-w-lg border-2 border-dashed border-border rounded-xl p-12 text-center hover:border-foreground/20 transition-colors cursor-pointer"
-          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          onDrop={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const dropped = e.dataTransfer.files[0];
-            if (dropped) analyzeFile(dropped);
-          }}
-          onClick={() => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.pdf,.fdx,.fountain,.txt';
-            input.onchange = (e) => {
-              const f = (e.target as HTMLInputElement).files?.[0];
-              if (f) analyzeFile(f);
-            };
-            input.click();
-          }}
-        >
-          <p className="text-foreground font-medium">Drop a script file or click to browse</p>
-          <p className="text-sm text-muted-foreground mt-1">PDF, FDX, Fountain, or .txt</p>
-        </div>
+    <ConverterLayout title="Page Count Calculator" description="Estimate screenplay page count and runtime from your script file.">
+      <div className="flex flex-col items-center gap-8 max-w-lg mx-auto">
+        <UploadZone
+          onFile={analyze}
+          accept=".pdf,.fdx,.fountain,.txt"
+          label="Drop a script file or click to browse"
+          sublabel="PDF, FDX, Fountain, or .txt"
+        />
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
 
         {stats && (
-          <div className="w-full max-w-lg">
-            <p className="text-xs text-muted-foreground mb-4 text-center">Analyzed: {fileName}</p>
+          <div className="w-full space-y-6">
+            <p className="text-[10px] text-white/20 text-center font-mono uppercase tracking-widest">Analyzed: {fileName}</p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <StatCard label="Pages" value={stats.totalPages.toString()} sub="est." />
-              <StatCard label="Runtime" value={`~${stats.estimatedMinutes} min`} sub="1pg ≈ 1min" />
-              <StatCard label="Scenes" value={stats.sceneCount.toString()} />
-              <StatCard label="Characters" value={stats.characterCount.toString()} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <StatBox label="Pages" value={stats.totalPages.toString()} sub="est." />
+              <StatBox label="Runtime" value={`~${stats.estimatedMinutes}`} sub="minutes" />
+              <StatBox label="Scenes" value={stats.sceneCount.toString()} />
+              <StatBox label="Characters" value={stats.characterCount.toString()} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <StatCard label="Words" value={stats.wordCount.toLocaleString()} />
-              <StatCard label="Elements" value={stats.totalElements.toLocaleString()} />
-              <StatCard label="Dialogue Pages" value={stats.dialoguePages.toString()} />
-              <StatCard label="Action Pages" value={stats.actionPages.toString()} />
+            <div className="grid grid-cols-2 gap-3">
+              <StatBox label="Words" value={stats.wordCount.toLocaleString()} />
+              <StatBox label="Dialogue Pages" value={stats.dialoguePages.toString()} />
+              <StatBox label="Action Pages" value={stats.actionPages.toString()} />
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-4 text-center">
-              <p className="text-xs text-muted-foreground mb-1">Industry Standard</p>
-              <p className="text-2xl font-light text-foreground">
-                {stats.totalPages} pages = ~{stats.estimatedMinutes} minutes of screen time
+            <div
+              className="p-6 text-center"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-2">INDUSTRY STANDARD</p>
+              <p className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>
+                {stats.totalPages} pages = ~{stats.estimatedMinutes} min
               </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                One screenplay page ≈ one minute of screen time (industry rule of thumb)
-              </p>
+              <p className="text-xs text-white/25 mt-2">One screenplay page ≈ one minute of screen time</p>
             </div>
           </div>
         )}
       </div>
     </ConverterLayout>
-  );
-}
-
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="bg-card border border-border rounded-lg p-3 text-center">
-      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
-      <p className="text-lg font-medium text-foreground">{value}</p>
-      {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
-    </div>
   );
 }
