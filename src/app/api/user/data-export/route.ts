@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
@@ -101,7 +102,7 @@ export async function POST() {
       },
     });
   } catch (err) {
-    console.error('[data-export] Unexpected error:', err);
+    logger.error('[api]', '[data-export] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

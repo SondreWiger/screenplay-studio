@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
@@ -47,7 +48,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error fetching active users:', error);
+    logger.error('[api]', 'Error fetching active users:', error);
     return NextResponse.json({ error: 'Failed to fetch active users' }, { status: 500 });
   }
 }

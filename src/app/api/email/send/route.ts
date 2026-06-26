@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, sendNotificationEmail } from '@/lib/mailer';
 
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error('[email/send] Error:', err);
+    logger.error('[api]', '[email/send] Error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

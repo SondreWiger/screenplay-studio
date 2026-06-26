@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/client';
 import { getChallengePhase, formatDateTime } from '@/lib/utils';
@@ -104,7 +105,7 @@ export async function GET() {
           status: 'success',
         });
       } catch (error) {
-        console.error(`Failed to announce challenge ${challenge.id}:`, error);
+        logger.error('[api]', `Failed to announce challenge ${challenge.id}:`, error);
         results.push({
           challengeId: challenge.id,
           phase,
@@ -150,7 +151,7 @@ export async function GET() {
             type: 'blog_post',
           });
         } catch (error) {
-          console.error(`Failed to announce blog post ${post.id}:`, error);
+          logger.error('[api]', `Failed to announce blog post ${post.id}:`, error);
           results.push({
             postId: post.id,
             title: post.title,
@@ -169,7 +170,7 @@ export async function GET() {
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Error in Discord challenge notification API:', error);
+    logger.error('[api]', 'Error in Discord challenge notification API:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

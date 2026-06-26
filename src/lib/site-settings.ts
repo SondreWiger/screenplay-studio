@@ -13,8 +13,18 @@ function makeAnonClient() {
   );
 }
 
-/** Read all site_settings rows into a key→value map */
+// Module-level cache — avoids a DB roundtrip on every page render.
+// TTL of 60s is safe: settings rarely change and instances are short-lived.
+let _settingsCache: Record<string, string> | null = null;
+let _settingsCacheAt = 0;
+const CACHE_TTL_MS = 60_000;
+
+/** Read all site_settings rows into a key→value map (cached 60s) */
 export async function getSiteSettings(): Promise<Record<string, string>> {
+  const now = Date.now();
+  if (_settingsCache && now - _settingsCacheAt < CACHE_TTL_MS) {
+    return _settingsCache;
+  }
   try {
     const supabase = makeAnonClient();
     const { data } = await supabase.from('site_settings').select('key,value');
@@ -22,9 +32,11 @@ export async function getSiteSettings(): Promise<Record<string, string>> {
     (data ?? []).forEach((row: { key: string; value: string }) => {
       result[row.key] = row.value;
     });
+    _settingsCache = result;
+    _settingsCacheAt = now;
     return result;
   } catch {
-    return {};
+    return _settingsCache ?? {};
   }
 }
 

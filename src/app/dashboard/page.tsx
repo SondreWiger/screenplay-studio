@@ -32,6 +32,8 @@ import { isElectronMode, isLocalMode, setLocalMode } from '@/lib/supabase/electr
 import { putCached, cacheRows, getCachedProjects } from '@/lib/offline/db';
 import { saveProjectToDisk } from '@/lib/local-files';
 
+const WritingGoalWidget = dynamic(() => import('@/components/WritingGoalWidget').then(m => ({ default: m.WritingGoalWidget })), { ssr: false });
+
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
 export default function DashboardPage() {
@@ -686,6 +688,13 @@ function DashboardContent() {
         {projects.length > 0 && (
           <div className="mb-8">
             <OnboardingChecklist projectId={projects[0]?.id ?? null} />
+          </div>
+        )}
+
+        {/* Writing Goal Widget */}
+        {user && (
+          <div className="mb-8">
+            <WritingGoalWidget userId={user.id} />
           </div>
         )}
 

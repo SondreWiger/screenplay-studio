@@ -75,6 +75,7 @@ function filmNav(p: string, isEpisodic: boolean, isViewer: boolean): NavCategory
         { label: 'Corkboard', href: `${p}/corkboard`, icon: 'corkboard', production: true },
         { label: 'Shot List', href: `${p}/shots`, icon: 'shots', always: true },
         { label: 'Mood Board', href: `${p}/moodboard`, icon: 'moodboard', always: true },
+        { label: 'Pitch Deck', href: `${p}/pitch-deck`, icon: 'pitch-deck', always: true },
         { label: 'Storyboard', href: `${p}/storyboard`, icon: 'storyboard', always: true },
         { label: 'Mind Map', href: `${p}/mindmap`, icon: 'mindmap', always: true },
         { label: 'Set Quotes', href: `${p}/quotes`, icon: 'quotes', always: true },

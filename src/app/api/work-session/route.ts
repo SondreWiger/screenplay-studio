@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
         .single();
 
       if (updateErr) {
-        console.error('[work-session] update error:', updateErr);
+        logger.error('[api]', '[work-session] update error:', updateErr);
         return NextResponse.json({ error: 'DB error' }, { status: 500 });
       }
 
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
         if (insertErr.code === '23505') {
           return NextResponse.json({ ok: true, total_seconds: HEARTBEAT_SECONDS });
         }
-        console.error('[work-session] insert error:', insertErr);
+        logger.error('[api]', '[work-session] insert error:', insertErr);
         return NextResponse.json({ error: 'DB error' }, { status: 500 });
       }
 
@@ -131,7 +132,7 @@ export async function POST(request: Request) {
     }
 
   } catch (err) {
-    console.error('[work-session] POST exception:', err);
+    logger.error('[api]', '[work-session] POST exception:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -226,7 +227,7 @@ export async function GET(request: Request) {
     });
 
   } catch (err) {
-    console.error('[work-session] GET exception:', err);
+    logger.error('[api]', '[work-session] GET exception:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

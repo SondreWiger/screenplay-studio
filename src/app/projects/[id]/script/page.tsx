@@ -16,6 +16,8 @@ import { setZenMode } from '@/lib/zen-mode';
 import { useElectronMenu } from '@/hooks/useElectronMenu';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
 import { useAutoSave } from '@/hooks/useAutoSave';
+import { FocusTimer } from '@/components/FocusTimer';
+import { ScriptStatsPanel } from '@/components/ScriptStatsPanel';
 import { VersionPanel } from '@/components/versioning/VersionPanel';
 import {
   DEFAULT_VERSION_CONFIG,
@@ -2029,6 +2031,9 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <div className="w-2 h-2 rounded-full bg-green-500" />Saved
             </span>
           )}
+          
+          <div className="w-px h-4 bg-surface-800 mx-2" />
+          <ScriptStatsPanel elements={elements} mode="bar" />
         </div>
 
         {/* Toolbar — Row 2: Tools */}
@@ -2383,6 +2388,23 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
             )}
           </button>
+
+          <div className="w-px h-4 bg-surface-800 mx-1" />
+          
+          {/* Focus Timer */}
+          <div className="relative z-[100] ml-1">
+            <FocusTimer 
+              workMinutes={25} 
+              breakMinutes={5}
+              onSessionComplete={() => {
+                // Award XP when pomodoro completes
+                fetch('/api/gamification/award', {
+                  method: 'POST',
+                  body: JSON.stringify({ action: 'POMODORO_COMPLETE' }),
+                }).catch(() => {});
+              }} 
+            />
+          </div>
         </div>
 
         {/* Locked script banner */}

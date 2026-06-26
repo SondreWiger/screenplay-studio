@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
@@ -78,7 +79,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
         .from('notifications')
         .insert(notifs.slice(i, i + 200));
       if (insErr) {
-        console.error('[publish poll] notification insert error:', insErr);
+        logger.error('[api]', '[publish poll] notification insert error:', insErr);
         insertErrors.push(insErr.message);
       }
     }

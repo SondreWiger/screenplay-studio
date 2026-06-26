@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { sendNotificationEmail } from '@/lib/mailer';
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
     .neq('email_weekly_digest', false);
 
   if (queryErr) {
-    console.error('[reengagement] query error:', queryErr);
+    logger.error('[api]', '[reengagement] query error:', queryErr);
     return NextResponse.json({ error: 'Failed to query profiles' }, { status: 500 });
   }
 
@@ -69,7 +70,7 @@ export async function GET(req: Request) {
       });
     } else {
       skipped++;
-      console.error(`[reengagement] failed to send to ${user.email}:`, result.error);
+      logger.error('[api]', `[reengagement] failed to send to ${user.email}:`, result.error);
     }
 
     // 200ms delay between sends

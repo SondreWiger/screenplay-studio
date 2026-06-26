@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
@@ -166,7 +167,7 @@ export async function POST(req: NextRequest) {
       }
     }
   } catch (err: any) {
-    console.error('PayPal capture error:', err);
+    logger.error('[api]', 'PayPal capture error:', err);
     return NextResponse.json(
       { error: err.message || 'Failed to capture payment' },
       { status: 500 }

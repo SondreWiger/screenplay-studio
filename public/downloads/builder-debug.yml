@@ -12,51 +12,6 @@ x64:
     - '!.yarn{,/**/*}'
     - '!.editorconfig'
     - '!.yarnrc.yml'
-    - - '!**/node_modules'
-      - '!build{,/**/*}'
-      - '!public/downloads{,/**/*}'
-      - electron/dist/**/*
-      - package.json
-      - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,forge-meta,pdb}'
-      - '!**/._*'
-      - '!**/electron-builder.{yaml,yml,json,json5,toml,ts}'
-      - '!**/{.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,.DS_Store,thumbs.db,.gitignore,.gitkeep,.gitattributes,.npmignore,.idea,.vs,.flowconfig,.jshintrc,.eslintrc,.circleci,.yarn-integrity,.yarn-metadata.json,yarn-error.log,yarn.lock,package-lock.json,npm-debug.log,appveyor.yml,.travis.yml,circle.yml,.nyc_output,.husky,.github,electron-builder.env}'
-      - '!.yarn{,/**/*}'
-      - '!.editorconfig'
-      - '!.yarnrc.yml'
-    - - '!**/node_modules'
-      - '!build{,/**/*}'
-      - '!public/downloads{,/**/*}'
-      - electron/dist/**/*
-      - package.json
-      - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,forge-meta,pdb}'
-      - '!**/._*'
-      - '!**/electron-builder.{yaml,yml,json,json5,toml,ts}'
-      - '!**/{.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,.DS_Store,thumbs.db,.gitignore,.gitkeep,.gitattributes,.npmignore,.idea,.vs,.flowconfig,.jshintrc,.eslintrc,.circleci,.yarn-integrity,.yarn-metadata.json,yarn-error.log,yarn.lock,package-lock.json,npm-debug.log,appveyor.yml,.travis.yml,circle.yml,.nyc_output,.husky,.github,electron-builder.env}'
-      - '!.yarn{,/**/*}'
-      - '!.editorconfig'
-      - '!.yarnrc.yml'
-  nodeModuleFilePatterns:
-    - '**/*'
-    - electron/dist/**/*
-    - - '**/*'
-      - electron/dist/**/*
-    - - '**/*'
-      - electron/dist/**/*
-arm64:
-  firstOrDefaultFilePatterns:
-    - '!**/node_modules'
-    - '!build{,/**/*}'
-    - '!public/downloads{,/**/*}'
-    - electron/dist/**/*
-    - package.json
-    - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,forge-meta,pdb}'
-    - '!**/._*'
-    - '!**/electron-builder.{yaml,yml,json,json5,toml,ts}'
-    - '!**/{.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,.DS_Store,thumbs.db,.gitignore,.gitkeep,.gitattributes,.npmignore,.idea,.vs,.flowconfig,.jshintrc,.eslintrc,.circleci,.yarn-integrity,.yarn-metadata.json,yarn-error.log,yarn.lock,package-lock.json,npm-debug.log,appveyor.yml,.travis.yml,circle.yml,.nyc_output,.husky,.github,electron-builder.env}'
-    - '!.yarn{,/**/*}'
-    - '!.editorconfig'
-    - '!.yarnrc.yml'
   nodeModuleFilePatterns:
     - '**/*'
     - electron/dist/**/*
@@ -135,8 +90,8 @@ nsis:
       !insertmacro MUI_LANGUAGE "Vietnamese"
     !macroend
 
-    !include "/private/var/folders/sm/5mjqc9ts4zs2x7xkjkq_5_gh0000gn/T/t-8FbDq3/3-messages.nsh"
-    !include "/private/var/folders/sm/5mjqc9ts4zs2x7xkjkq_5_gh0000gn/T/t-8FbDq3/2-messages.nsh"
+    !include "/private/var/folders/sm/5mjqc9ts4zs2x7xkjkq_5_gh0000gn/T/t-JmJzka/1-messages.nsh"
+    !include "/private/var/folders/sm/5mjqc9ts4zs2x7xkjkq_5_gh0000gn/T/t-JmJzka/0-messages.nsh"
     !addplugindir /x86-unicode "/Users/sondre/Library/Caches/electron-builder/nsis/nsis-resources-3.4.1/plugins/x86-unicode"
     !include "/Users/sondre/Documents/ManusSkriveTing/screenplay-studio/node_modules/app-builder-lib/templates/nsis/include/FileAssociation.nsh"
     !macro registerFileAssociations

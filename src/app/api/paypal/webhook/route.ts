@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { verifyWebhookSignature } from '@/lib/paypal';
@@ -12,7 +13,7 @@ export async function POST(req: NextRequest) {
 
     // Verify signature — reject early if webhook ID is not configured
     if (!webhookId) {
-      console.error('[paypal/webhook] PAYPAL_WEBHOOK_ID not configured — rejecting');
+      logger.error('[api]', '[paypal/webhook] PAYPAL_WEBHOOK_ID not configured — rejecting');
       return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
     }
 
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!isValid) {
-      console.error('Invalid PayPal webhook signature');
+      logger.error('[api]', 'Invalid PayPal webhook signature');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
 
       // Dispute opened
       case 'CUSTOMER.DISPUTE.CREATED': {
-        console.warn('PayPal dispute created:', resource?.dispute_id);
+        logger.warn('[api]', 'PayPal dispute created:', resource?.dispute_id);
         // Log for manual review
         break;
       }
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (err: any) {
-    console.error('PayPal webhook error:', err);
+    logger.error('[api]', 'PayPal webhook error:', err);
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { XP_VALUES } from '@/lib/gamification';
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error('[gamification/award]', error);
+      logger.error('[api]', '[gamification/award]', error);
       return NextResponse.json({ error: 'DB error' }, { status: 500 });
     }
 
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       level:      gamif?.level    ?? 1,
     });
   } catch (err) {
-    console.error('[gamification/award] unexpected error', err);
+    logger.error('[api]', '[gamification/award] unexpected error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

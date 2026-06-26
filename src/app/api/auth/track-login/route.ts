@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     const user_id = authUser?.id || body.user_id;
     if (!user_id) {
       // Still track anonymous login attempts for security
-      console.warn('[track-login] No user_id available, skipping tracking');
+      logger.warn('[api]', '[track-login] No user_id available, skipping tracking');
       return NextResponse.json({ ok: true, tracked: false });
     }
 
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (loginErr) {
-      console.error('[track-login] login_history insert failed:', loginErr);
+      logger.error('[api]', '[track-login] login_history insert failed:', loginErr);
     }
 
     // Insert audit_log entry
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (auditErr) {
-      console.error('[track-login] audit_log insert failed:', auditErr);
+      logger.error('[api]', '[track-login] audit_log insert failed:', auditErr);
     }
 
     // Suspicious login detection
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
           });
 
           if (secErr) {
-            console.error('[track-login] security_events insert failed:', secErr);
+            logger.error('[api]', '[track-login] security_events insert failed:', secErr);
           }
 
           // Create notification for the user
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
           });
 
           if (notifErr) {
-            console.error('[track-login] notification insert failed:', notifErr);
+            logger.error('[api]', '[track-login] notification insert failed:', notifErr);
           }
         }
       }
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[track-login] Unexpected error:', err);
+    logger.error('[api]', '[track-login] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

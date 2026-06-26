@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
       .in('user_id', targetIds);
 
     if (error) {
-      console.error('[push/send] DB error fetching subscriptions:', error);
+      logger.error('[api]', '[push/send] DB error fetching subscriptions:', error);
       return NextResponse.json({ error: 'DB error' }, { status: 500 });
     }
 
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
           if (pushErr?.statusCode === 410 || pushErr?.statusCode === 404) {
             expired.push(sub.id);
           } else {
-            console.error('[push/send] Failed for', sub.endpoint, pushErr?.statusCode, pushErr?.body);
+            logger.error('[api]', '[push/send] Failed for', sub.endpoint, pushErr?.statusCode, pushErr?.body);
           }
         }
       }),
@@ -125,7 +126,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ sent, expired: expired.length });
   } catch (err) {
-    console.error('[push/send] Unexpected error:', err);
+    logger.error('[api]', '[push/send] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

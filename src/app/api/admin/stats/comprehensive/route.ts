@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
@@ -174,7 +175,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error fetching comprehensive stats:', error);
+    logger.error('[api]', 'Error fetching comprehensive stats:', error);
     return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
   }
 }

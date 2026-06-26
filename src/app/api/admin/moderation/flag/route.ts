@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -84,13 +85,13 @@ export async function POST(req: NextRequest) {
       });
 
     if (flagError) {
-      console.error('Error creating content flag:', flagError);
+      logger.error('[api]', 'Error creating content flag:', flagError);
       return NextResponse.json({ error: 'Failed to create flag' }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true, flagged: true });
   } catch (err) {
-    console.error('Flag API error:', err);
+    logger.error('[api]', 'Flag API error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

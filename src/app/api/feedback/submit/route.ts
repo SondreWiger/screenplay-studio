@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
@@ -106,13 +107,13 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error('[/api/feedback/submit] insert error:', error);
+      logger.error('[api]', '[/api/feedback/submit] insert error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ id: data.id });
   } catch (err) {
-    console.error('[/api/feedback/submit] unexpected error:', err);
+    logger.error('[api]', '[/api/feedback/submit] unexpected error:', err);
     return NextResponse.json({ error: 'Unexpected server error' }, { status: 500 });
   }
 }

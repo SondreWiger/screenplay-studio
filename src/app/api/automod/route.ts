@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -128,7 +129,7 @@ export async function POST(req: NextRequest) {
       auto_actioned: shouldFlag && (result.severity === 'critical' || result.severity === 'high'),
     });
   } catch (err) {
-    console.error('[automod]', err);
+    logger.error('[api]', '[automod]', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

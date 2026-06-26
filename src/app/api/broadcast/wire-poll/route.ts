@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
@@ -278,7 +279,7 @@ export async function POST(request: NextRequest) {
         .select('id');
 
       if (insertError) {
-        console.error('Wire insert error:', insertError);
+        logger.error('[api]', 'Wire insert error:', insertError);
         await supabase
           .from('broadcast_wire_feeds')
           .update({ last_polled_at: new Date().toISOString(), last_error: insertError.message })
@@ -305,7 +306,7 @@ export async function POST(request: NextRequest) {
       total_items: items.length,
     });
   } catch (err: unknown) {
-    console.error('Wire poll error:', err);
+    logger.error('[api]', 'Wire poll error:', err);
     const message = err instanceof Error ? err.message : 'Internal error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

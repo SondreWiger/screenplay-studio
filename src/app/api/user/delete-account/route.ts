@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
@@ -66,7 +67,7 @@ export async function POST() {
       message: 'Your account and all associated data have been permanently deleted.',
     });
   } catch (err) {
-    console.error('[delete-account] Unexpected error:', err);
+    logger.error('[api]', '[delete-account] Unexpected error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

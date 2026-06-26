@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/client';
 import { getChallengePhase, formatDateTime } from '@/lib/utils';
@@ -116,7 +117,7 @@ export async function GET() {
           });
         }
       } catch (error) {
-        console.error(`Failed to process challenge ${challenge.id}:`, error);
+        logger.error('[api]', `Failed to process challenge ${challenge.id}:`, error);
         processedChallenges.push({
           challengeId: challenge.id,
           action: 'error',
@@ -158,7 +159,7 @@ export async function GET() {
             success: true,
           });
         } catch (error) {
-          console.error(`Failed to process blog post ${post.id}:`, error);
+          logger.error('[api]', `Failed to process blog post ${post.id}:`, error);
           processedChallenges.push({
             postId: post.id,
             title: post.title,
@@ -179,7 +180,7 @@ export async function GET() {
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Error in Discord challenge scheduler:', error);
+    logger.error('[api]', 'Error in Discord challenge scheduler:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

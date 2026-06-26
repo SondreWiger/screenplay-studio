@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createPayPalOrder } from '@/lib/paypal';
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       links: order.links,
     });
   } catch (err: any) {
-    console.error('PayPal create order error:', err);
+    logger.error('[api]', 'PayPal create order error:', err);
     return NextResponse.json(
       { error: err.message || 'Failed to create PayPal order' },
       { status: 500 }

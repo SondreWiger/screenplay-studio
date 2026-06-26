@@ -20,3 +20,6 @@ build/win/
 build/linux/
 public/downloads/*-unpacked/
 public/downloads/.icon-*/
+public/downloads/*.dmg
+public/downloads/*.exe
+public/downloads/*.AppImage

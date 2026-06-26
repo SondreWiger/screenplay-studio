@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { sendEmail } from '@/lib/mailer';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import logger from '@/lib/logger';
 
 const KILLSWITCH_KEY = process.env.KILLSWITCH_SECRET || '';
 
@@ -12,7 +14,7 @@ function sleep(ms: number) {
 }
 
 function buildKillswitchEmail(name: string): { html: string; text: string } {
-  const githubUrl = 'https://github.com/anomalyco/screenplay-studio';
+  const githubUrl = 'https://github.com/SondreWiger/screenplay-studio';
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://screenplaystudio.fun';
 
   const html = `
@@ -131,6 +133,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Kill switch not configured on this server.' }, { status: 503 });
   }
 
+  // IP-based rate limit — 3 attempts per 5 minutes to prevent brute-force
+  const ip = getClientIp(req);
+  const rateResult = checkRateLimit(`killswitch:${ip}`, 3, 5 * 60_000);
+  if (!rateResult.allowed) {
+    logger.warn('killswitch', `Rate limit hit from IP ${ip}`);
+    return NextResponse.json(
+      { error: 'Too many attempts. Try again later.' },
+      { status: 429, headers: { 'Retry-After': String(rateResult.retryAfter) } },
+    );
+  }
+
   let body: { key?: string; confirmation?: boolean };
   try {
     body = await req.json();
@@ -139,8 +152,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (!body.key || body.key.trim() !== KILLSWITCH_KEY.trim()) {
-    // Artificial delay to prevent timing attacks / brute-force
+    // Artificial delay to prevent timing attacks
     await sleep(1200);
+    logger.warn('killswitch', `Invalid key attempt from IP ${ip}`);
     return NextResponse.json({ error: 'Invalid key.' }, { status: 403 });
   }
 
@@ -207,6 +221,8 @@ export async function POST(req: NextRequest) {
   } catch {
     // table may not exist — that's fine
   }
+
+  logger.warn('killswitch', `EXECUTED — sent=${sent} failed=${failed} total=${users.length}`);
 
   return NextResponse.json({
     status: 'EXECUTED',
