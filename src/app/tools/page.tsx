@@ -2,26 +2,32 @@
 
 import Link from 'next/link';
 
-const converters = [
+const sections = [
   {
-    id: 'pdf-to-fdx',
-    name: 'PDF → FDX',
-    description: 'Convert PDF screenplays to Final Draft XML format',
+    title: 'Format Converters',
+    description: 'Convert screenplay files between PDF, Final Draft, and Fountain formats',
+    tools: [
+      { id: 'pdf-to-fdx', name: 'PDF → FDX', description: 'Convert PDF screenplays to Final Draft XML format' },
+      { id: 'pdf-to-fountain', name: 'PDF → Fountain', description: 'Convert PDF screenplays to Fountain plain text' },
+      { id: 'fdx-to-fountain', name: 'FDX → Fountain', description: 'Convert Final Draft XML to Fountain plain text' },
+      { id: 'fountain-to-fdx', name: 'Fountain → FDX', description: 'Convert Fountain plain text to Final Draft XML' },
+    ],
   },
   {
-    id: 'pdf-to-fountain',
-    name: 'PDF → Fountain',
-    description: 'Convert PDF screenplays to Fountain plain text',
+    title: 'Production Tools',
+    description: 'Tools for film and TV production workflows',
+    tools: [
+      { id: 'slates', name: 'Production Slates', description: 'Generate production slate cards with project details' },
+    ],
   },
   {
-    id: 'fdx-to-fountain',
-    name: 'FDX → Fountain',
-    description: 'Convert Final Draft XML to Fountain plain text',
-  },
-  {
-    id: 'fountain-to-fdx',
-    name: 'Fountain → FDX',
-    description: 'Convert Fountain plain text to Final Draft XML',
+    title: 'Script Analysis',
+    description: 'Analyze your screenplay for structure, characters, and pacing',
+    tools: [
+      { id: 'page-count', name: 'Page Count Calculator', description: 'Estimate screenplay page count and runtime from your script' },
+      { id: 'character-report', name: 'Character Report', description: 'Analyze dialogue distribution across characters' },
+      { id: 'scene-list', name: 'Scene List', description: 'Extract and list all scenes with page estimates' },
+    ],
   },
 ];
 
@@ -58,28 +64,32 @@ export default function ToolsPage() {
               <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Tools</span>
               <div className="h-px flex-1 bg-border" />
             </div>
-            <h1 className="text-4xl font-light text-foreground text-center mb-2">Format Converters</h1>
-            <p className="text-sm text-muted-foreground text-center">Convert screenplay files between PDF, Final Draft, and Fountain formats</p>
+            <h1 className="text-4xl font-light text-foreground text-center mb-2">Screenplay Tools</h1>
+            <p className="text-sm text-muted-foreground text-center">Convert, analyze, and prepare your screenplays for production</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {converters.map((converter) => (
-              <Link
-                key={converter.id}
-                href={`/tools/${converter.id}`}
-                className="border border-border rounded-xl p-6 hover:border-foreground/20 transition-colors bg-card group"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="text-lg font-medium text-foreground group-hover:text-orange-500 transition-colors">
-                      {converter.name}
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-1">{converter.description}</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {sections.map((section) => (
+            <div key={section.title} className="mb-12">
+              <div className="mb-4">
+                <h2 className="text-lg font-medium text-foreground">{section.title}</h2>
+                <p className="text-sm text-muted-foreground">{section.description}</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {section.tools.map((tool) => (
+                  <Link
+                    key={tool.id}
+                    href={`/tools/${tool.id}`}
+                    className="border border-border rounded-xl p-6 hover:border-foreground/20 transition-colors bg-card group"
+                  >
+                    <h3 className="text-base font-medium text-foreground group-hover:text-orange-500 transition-colors">
+                      {tool.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">{tool.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
