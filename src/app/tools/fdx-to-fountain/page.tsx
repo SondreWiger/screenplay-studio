@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react';
 import { ConverterLayout } from '../converter-layout';
 import { UploadZone, OrangeButton } from '../shared';
-import { parseFDX, generateFountain } from '@/lib/scripts/fdx';
+import { parseFDX } from '@/lib/scripts/fdx';
+import { generateFountain } from '@/lib/scripts/fountain';
 
 export default function FdxToFountainPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -27,7 +28,7 @@ export default function FdxToFountainPage() {
     try {
       const fdxText = await file.text();
       const result = parseFDX(fdxText);
-      const fountain = generateFountain(result.elements, result.titlePage);
+      const fountain = generateFountain({ elements: result.elements, titlePage: result.titlePage });
       const blob = new Blob([fountain], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
