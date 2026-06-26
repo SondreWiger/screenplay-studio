@@ -16,6 +16,7 @@ declare global {
       readFile: (filePath: string) => Promise<string>;
       writeFile: (filePath: string, content: string) => Promise<void>;
       getHomeDir: () => Promise<string>;
+      getDocumentsDir: () => Promise<string>;
       listDir: (dirPath: string) => Promise<string[]>;
       getPlatform: () => Promise<string>;
       getVersions: () => Promise<{
@@ -27,7 +28,14 @@ declare global {
       setTheme: (theme: 'light' | 'dark' | 'system') => Promise<void>;
       isPackaged: () => Promise<boolean>;
       openExternal: (url: string) => Promise<void>;
+      getUserDataPath: () => Promise<string>;
+      getRecentProjects: () => Promise<RecentProject[]>;
+      addRecentProject: (project: { id: string; title: string; path?: string }) => Promise<void>;
+      clearRecentProjects: () => Promise<void>;
       onMenuAction: (callback: (action: MenuAction) => void) => () => void;
+      onAutoSaveTick: (callback: () => void) => () => void;
+      getPreferenceSync: (key: string) => any;
+      setPreference: (key: string, value: any) => Promise<void>;
     };
   }
 }

@@ -12,6 +12,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Faster startup in Electron by disabling source maps
+  ...(isElectron ? {
+    productionBrowserSourceMaps: false,
+  } : {}),
 
   // ── Strip console.* in production builds ─────────────────
   // (Turbopack used in dev doesn't support this key — guard it)

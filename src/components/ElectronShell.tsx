@@ -15,12 +15,6 @@ export function ElectronShell() {
   useEffect(() => {
     if (!isElectronMode()) return;
 
-    // Default landing → workspace
-    if (pathname === '/') {
-      router.replace('/desktop-welcome');
-      return;
-    }
-
     // Keep marketing/public pages out of the app window
     if (isElectronMarketingPath(pathname)) {
       const url = `https://screenplaystudio.fun${pathname}${searchParams?.toString() ? `?${searchParams}` : ''}`;

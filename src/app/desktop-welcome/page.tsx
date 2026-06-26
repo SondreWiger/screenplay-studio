@@ -21,10 +21,68 @@ export default function DesktopWelcome() {
     }
   }, [router]);
 
-  const handleNewProject = () => {
-    // For now, redirect to dashboard with new project flag, 
-    // or eventually to a native empty script path.
-    router.push('/dashboard?new=1');
+  const handleNewProject = async () => {
+    const isLocal = localStorage.getItem('ss-local-mode') === '1';
+    if (isLocal) {
+      const projectId = crypto.randomUUID();
+      const scriptId = crypto.randomUUID();
+      const now = new Date().toISOString();
+
+      const user = JSON.parse(localStorage.getItem('ss-local-user') || '{}');
+
+      const { putCached } = await import('@/lib/offline/db');
+
+      await putCached('projects', {
+        id: projectId,
+        title: 'Untitled',
+        logline: null,
+        format: 'feature',
+        genre: [],
+        script_type: 'screenplay',
+        project_type: 'film',
+        created_by: user.id || '',
+        created_at: now,
+        updated_at: now,
+        status: 'development',
+        is_showcased: false,
+        showcase_script: false,
+        showcase_mindmap: false,
+        showcase_moodboard: false,
+        set_photos: [],
+        external_links: {},
+        production_trivia: [],
+        content_metadata: {},
+      });
+
+      await putCached('scripts', {
+        id: scriptId,
+        project_id: projectId,
+        title: 'Untitled Script',
+        version: 1,
+        is_active: true,
+        created_by: user.id || '',
+        created_at: now,
+        updated_at: now,
+      });
+
+      await putCached('script_elements', {
+        id: crypto.randomUUID(),
+        script_id: scriptId,
+        element_type: 'title_page',
+        content: 'Untitled',
+        sort_order: 0,
+        created_at: now,
+        updated_at: now,
+      });
+
+      if (window.electron?.addRecentProject) {
+        window.electron.addRecentProject({ id: projectId, title: 'Untitled' });
+      }
+
+      router.push(`/projects/${projectId}/script`);
+    } else {
+      router.push('/dashboard?new=1');
+    }
   };
 
   const handleOpenFile = async () => {

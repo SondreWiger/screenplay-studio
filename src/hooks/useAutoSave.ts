@@ -20,8 +20,10 @@ export function useAutoSave() {
 
     savingRef.current = true;
     try {
+      console.log('[auto-save] Saving project:', currentProject.id, currentProject.title);
       await saveProjectToDisk(currentProject, scripts, elements);
       setLastSaved(new Date());
+      console.log('[auto-save] Project saved successfully');
 
       if (window.electron?.addRecentProject) {
         window.electron.addRecentProject({
@@ -39,6 +41,12 @@ export function useAutoSave() {
   useEffect(() => {
     if (!isElectronMode()) return;
 
+    // Save immediately on first mount if there's a project
+    const { currentProject } = useProjectStore.getState();
+    if (currentProject) {
+      triggerSave();
+    }
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         triggerSave();
@@ -46,14 +54,15 @@ export function useAutoSave() {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Save on any script or project change (reduced delay to 1s for faster saves)
     const unsubScript = useScriptStore.subscribe(() => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = setTimeout(triggerSave, 3000);
+      saveTimeoutRef.current = setTimeout(triggerSave, 1000);
     });
 
     const unsubProject = useProjectStore.subscribe(() => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = setTimeout(triggerSave, 3000);
+      saveTimeoutRef.current = setTimeout(triggerSave, 1000);
     });
 
     let cleanupTick: (() => void) | undefined;

@@ -1,0 +1,60 @@
+directories:
+  output: public/downloads
+  buildResources: build
+$schema: https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json
+appId: fun.screenplaystudio.app
+productName: Screenplay Studio
+copyright: Copyright © 2024 Nordhem Development
+files:
+  - filter:
+      - electron/dist/**/*
+extraResources:
+  - from: .next/standalone
+    to: next-server
+artifactName: ScreenplayStudio-${os}-${arch}.${ext}
+fileAssociations:
+  - ext: screenplay
+    name: Screenplay Studio Script
+    role: Editor
+mac:
+  category: public.app-category.entertainment
+  icon: build/icon.png
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  darkModeSupport: true
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+dmg:
+  contents:
+    - x: 130
+      'y': 220
+    - x: 410
+      'y': 220
+      type: link
+      path: /Applications
+  window:
+    width: 540
+    height: 380
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.png
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  icon: build
+  category: AudioVideo
+electronVersion: 33.4.11

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, session } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, session, nativeTheme } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { setupMenu, addRecentProject, getRecentProjects, clearRecentProjects } from './menu';
@@ -52,7 +52,7 @@ async function createWindow() {
     backgroundColor: isMac ? '#00000000' : '#070710',
     vibrancy: isMac ? 'under-window' : undefined,
     visualEffectState: isMac ? 'active' : undefined,
-    show: false,
+    show: true, // Show immediately with loading screen
   });
 
   // Restore maximized state after creation
@@ -63,40 +63,116 @@ async function createWindow() {
   // ── Track window geometry for next launch ────────────────
   trackWindowState(mainWindow);
 
-  let url: string;
-  if (isDev) {
-    url = getDevUrl();
-  } else {
-    try {
-      const serverUrl = await startLocalServer();
-      url = `${serverUrl}/dashboard`;
-      console.log('Local server started at', serverUrl);
-    } catch (err) {
-      console.error('Failed to start local server, falling back to remote:', err);
-      url = `${WEB_URL}/dashboard`;
-    }
-  }
+  // Load a simple loading HTML first (instant)
+  mainWindow.loadURL(`data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background: #070710;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .loader {
+          text-align: center;
+          color: white;
+        }
+        .spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid rgba(255,95,31,0.3);
+          border-top-color: #FF5F1F;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 20px;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .text {
+          font-size: 14px;
+          color: rgba(255,255,255,0.6);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="loader">
+        <div class="spinner"></div>
+        <div class="text">Starting Screenplay Studio...</div>
+      </div>
+    </body>
+    </html>
+  `);
+
+     // Start server in background and load real app when ready
+     if (isDev) {
+       const url = getDevUrl();
+       setTimeout(() => {
+         loadAppUrl(url);
+       }, 100);
+     } else {
+       // Start server immediately without blocking window show
+       startLocalServer().then((serverUrl) => {
+         const url = `${serverUrl}/`;
+         console.log('Local server started at', serverUrl);
+         loadAppUrl(url);
+       }).catch((err) => {
+         console.error('Failed to start local server, falling back to remote:', err);
+         const url = `${WEB_URL}/`;
+         loadAppUrl(url);
+       });
+     }
+
+}
+
+function loadAppUrl(url: string) {
+  if (!mainWindow) return;
+  
   const localModePref = getPreference('ss-local-mode');
-  if (localModePref === '1') {
+  const onboardingCompleted = getPreference('ss-onboarding-completed');
+  const authChoice = getPreference('ss-auth-choice');
+
+  if (onboardingCompleted === '1') {
     try {
       const parsedUrl = new URL(url);
-      await session.defaultSession.cookies.set({
-        url: parsedUrl.origin,
-        name: 'ss-local-mode',
+      const origin = parsedUrl.origin;
+      
+      session.defaultSession.cookies.set({
+        url: origin,
+        name: 'ss-onboarding-completed',
         value: '1',
         path: '/',
       });
+
+      if (authChoice) {
+        session.defaultSession.cookies.set({
+          url: origin,
+          name: 'ss-auth-choice',
+          value: authChoice,
+          path: '/',
+        });
+      }
+
+      if (localModePref === '1') {
+        session.defaultSession.cookies.set({
+          url: origin,
+          name: 'ss-local-mode',
+          value: '1',
+          path: '/',
+        });
+      }
     } catch (err) {
-      console.error('Failed to set local mode cookie:', err);
+      console.error('Failed to set onboarding cookies:', err);
     }
   }
 
   mainWindow.loadURL(url);
-
-  mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
-    mainWindow?.focus();
-  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;

@@ -1,8 +1,8 @@
 version: 2.7.7
 files:
   - url: ScreenplayStudio-win-x64.exe
-    sha512: kEQar1Woq7rxOX0EaUSdVWPvDdwC9JJ2pRfBmG1Si5Zp6mD+7W6+29SUScE09Tt4pENFKv5XQ/2RN1g9lxYUDA==
-    size: 150357990
+    sha512: UA0b+j0s8UBTYyMy3j7ZWxc3s5zG0vCjuUle0wlkMLWSUQ+c9lttNSE3MCqeFEbbJIk6HGWI+krNozpHYOdw3Q==
+    size: 150830380
 path: ScreenplayStudio-win-x64.exe
-sha512: kEQar1Woq7rxOX0EaUSdVWPvDdwC9JJ2pRfBmG1Si5Zp6mD+7W6+29SUScE09Tt4pENFKv5XQ/2RN1g9lxYUDA==
-releaseDate: '2026-06-23T17:41:28.920Z'
+sha512: UA0b+j0s8UBTYyMy3j7ZWxc3s5zG0vCjuUle0wlkMLWSUQ+c9lttNSE3MCqeFEbbJIk6HGWI+krNozpHYOdw3Q==
+releaseDate: '2026-06-26T17:27:33.644Z'

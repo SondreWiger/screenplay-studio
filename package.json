@@ -42,6 +42,7 @@
     "lucide-react": "^0.468.0",
     "next": "^14.2.21",
     "node-media-server": "^4.2.4",
+    "pdfjs-dist": "^6.0.227",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.3.1",

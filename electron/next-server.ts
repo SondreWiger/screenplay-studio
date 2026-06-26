@@ -44,17 +44,26 @@ export async function startLocalServer(): Promise<string> {
     serverProcess = child;
 
     let resolved = false;
+    // Reduced timeout from 15s to 5s for faster feedback
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
         child.kill();
         reject(new Error('Local server start timeout'));
       }
-    }, 15_000);
+    }, 5_000);
 
     child.stdout?.on('data', (data: Buffer) => {
       const text = data.toString();
-      if (!resolved && (text.includes('Ready') || text.includes('started') || text.includes('listening'))) {
+      // More aggressive detection patterns for faster startup recognition
+      if (!resolved && (
+        text.includes('Ready') || 
+        text.includes('started') || 
+        text.includes('listening') ||
+        text.includes('localhost') ||
+        text.includes('127.0.0.1') ||
+        text.includes('Server running')
+      )) {
         resolved = true;
         clearTimeout(timeout);
         resolve(`http://127.0.0.1:${port}`);
@@ -62,7 +71,18 @@ export async function startLocalServer(): Promise<string> {
     });
 
     child.stderr?.on('data', (data: Buffer) => {
-      console.error('[next-server]', data.toString());
+      const text = data.toString();
+      console.error('[next-server]', text);
+      // Also check stderr for startup messages (some frameworks log there)
+      if (!resolved && (
+        text.includes('Ready') || 
+        text.includes('started') || 
+        text.includes('listening')
+      )) {
+        resolved = true;
+        clearTimeout(timeout);
+        resolve(`http://127.0.0.1:${port}`);
+      }
     });
 
     child.on('error', (err) => {

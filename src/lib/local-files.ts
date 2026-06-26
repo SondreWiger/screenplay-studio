@@ -39,10 +39,12 @@ export async function saveProjectToDisk(
     version: 1,
   };
 
+  console.log('[local-files] Saving project to disk:', project.id, project.title);
   await window.electron.writeFile(
     `${projectDir}/project.json`,
     JSON.stringify(data, null, 2)
   );
+  console.log('[local-files] Project saved successfully');
 }
 
 export async function loadProjectFromDisk(
@@ -53,14 +55,17 @@ export async function loadProjectFromDisk(
   if (!basePath) return null;
 
   try {
+    console.log('[local-files] Loading project from disk:', projectId);
     const content = await window.electron.readFile(`${basePath}/${projectId}/project.json`);
     const data = JSON.parse(content);
+    console.log('[local-files] Project loaded successfully:', data.project?.title);
     return {
       project: data.project,
       scripts: data.scripts || [],
       elements: data.elements || [],
     };
-  } catch {
+  } catch (e) {
+    console.error('[local-files] Failed to load project:', projectId, e);
     return null;
   }
 }
@@ -70,7 +75,9 @@ export async function listLocalProjects(): Promise<Project[]> {
   const basePath = await getBasePath();
   if (!basePath) return [];
 
+  console.log('[local-files] Listing local projects from:', basePath);
   const projectIds = await window.electron.listDir(basePath);
+  console.log('[local-files] Found project IDs:', projectIds);
   const projects: Project[] = [];
 
   for (const id of projectIds) {
@@ -78,6 +85,7 @@ export async function listLocalProjects(): Promise<Project[]> {
     if (loaded?.project) projects.push(loaded.project);
   }
 
+  console.log('[local-files] Loaded projects:', projects.length);
   return projects.sort((a, b) => {
     const aTime = a.updated_at || a.created_at || '';
     const bTime = b.updated_at || b.created_at || '';

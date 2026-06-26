@@ -37,7 +37,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ThemeLoader />
-      <ServiceWorkerRegistration />
+      {/* Defer Service Worker registration to not block initial render */}
+      <Suspense fallback={null}>
+        <ServiceWorkerRegistration />
+      </Suspense>
       <BetaBanner />
       <Suspense fallback={null}>
         <ElectronShell />
@@ -47,8 +50,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
           {children}
         </CommandPaletteProvider>
       </TranslationProvider>
-      <ThemeEditor />
-      <ConnectionToast />
+      {/* Defer heavy UI components to not block initial render */}
+      <Suspense fallback={null}>
+        <ThemeEditor />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ConnectionToast />
+      </Suspense>
       <ToastContainer />
       <Toaster position="bottom-right" theme="dark" richColors />
     </>

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
@@ -144,6 +144,28 @@ async function TestimonialsSection() {
 
 export default async function LandingPage() {
   const cookieStore = cookies();
+  
+  // Check if this is Electron (via user agent or header)
+  const userAgent = headers().get('user-agent') || '';
+  const isElectron = userAgent.includes('Electron');
+  
+  // For Electron: check onboarding status via cookie
+  if (isElectron) {
+    const onboardingCompleted = cookieStore.get('ss-onboarding-completed')?.value === '1';
+    if (!onboardingCompleted) {
+      redirect('/desktop-onboarding');
+    }
+    
+    const authChoice = cookieStore.get('ss-auth-choice')?.value;
+    if (authChoice === 'local') {
+      redirect('/desktop-welcome');
+    }
+    
+    // If cloud mode or no choice, go to dashboard (which will handle auth)
+    redirect('/dashboard');
+  }
+  
+  // For web: check local mode
   if (cookieStore.get('ss-local-mode')?.value === '1') {
     redirect('/dashboard');
   }
@@ -212,7 +234,7 @@ export default async function LandingPage() {
 
         {/* Links */}
         <div className="flex items-center">
-          {[['About', '/about'], ['Blog', '/blog'], ['Community', '/community'], ['Feedback', '/feedback']].map(([label, href]) => (
+          {[['About', '/about'], ['Tools', '/tools'], ['Blog', '/blog'], ['Community', '/community'], ['Feedback', '/feedback']].map(([label, href]) => (
             <Link
               key={href}
               href={href}
@@ -631,6 +653,7 @@ export default async function LandingPage() {
                 ['Security', '/legal/security'],
                 ['Blog', '/blog'],
                 ['Changelog', '/changelog'],
+                ['Tools', '/tools'],
               ].map(([label, href]) => (
                 <a
                   key={href}
