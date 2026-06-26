@@ -196,10 +196,18 @@ function DashboardContent() {
         setLoading(false);
         return;
       }
-      // When offline, fall back to IndexedDB cache
+      // When offline, fall back to IndexedDB cache + disk projects
       if (!navigator.onLine) {
-        const cached = await getCachedProjects();
-        setProjects(cached as unknown as Project[]);
+        const idbProjects = await getCachedProjects() as unknown as Project[];
+        const merged = new Map<string, Project>();
+        for (const p of diskProjects) merged.set(p.id, p);
+        for (const p of idbProjects) {
+          const existing = merged.get(p.id);
+          if (!existing || (p.updated_at || p.created_at || '') > (existing.updated_at || existing.created_at || '')) {
+            merged.set(p.id, p);
+          }
+        }
+        setProjects(Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')));
         setLoading(false);
         return;
       }
@@ -233,10 +241,21 @@ function DashboardContent() {
       );
       // Override folder_id on each project with the user's personal assignment
       const finalProjects = projectList.map((p) => ({ ...p, folder_id: folderMap.has(p.id) ? folderMap.get(p.id) ?? null : null }));
-      setProjects(finalProjects);
+      
+      const merged = new Map<string, Project>();
+      for (const p of diskProjects) merged.set(p.id, p);
+      for (const p of finalProjects) {
+        const existing = merged.get(p.id);
+        if (!existing || (p.updated_at || p.created_at || '') > (existing.updated_at || existing.created_at || '')) {
+          merged.set(p.id, p);
+        }
+      }
+      const sortedMerged = Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || ''));
+      
+      setProjects(sortedMerged);
       // Cache projects to IndexedDB so they're available offline
-      if (finalProjects.length > 0) {
-        cacheRows('projects', finalProjects).catch(() => {});
+      if (sortedMerged.length > 0) {
+        cacheRows('projects', sortedMerged).catch(() => {});
       }
     } catch (err) {
       console.error('Unexpected error fetching projects:', err);

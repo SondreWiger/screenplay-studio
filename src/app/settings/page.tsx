@@ -874,14 +874,23 @@ export default function UserSettingsPage() {
     // Apply accent color to document immediately
     document.documentElement.setAttribute('data-accent', accentColor);
     localStorage.setItem('ss-accent-color', accentColor);
+    if (typeof window !== 'undefined' && (window as any).electron?.setPreference) {
+      (window as any).electron.setPreference('ss-accent-color', accentColor);
+    }
     
     // Apply UI theme to document immediately
     if (uiTheme === 'soft') {
       document.documentElement.setAttribute('data-theme', 'soft');
       localStorage.setItem('ss-ui-theme', 'soft');
+      if (typeof window !== 'undefined' && (window as any).electron?.setPreference) {
+        (window as any).electron.setPreference('ss-ui-theme', 'soft');
+      }
     } else {
       document.documentElement.removeAttribute('data-theme');
       localStorage.removeItem('ss-ui-theme');
+      if (typeof window !== 'undefined' && (window as any).electron?.setPreference) {
+        (window as any).electron.setPreference('ss-ui-theme', null);
+      }
     }
 
     useAuthStore.getState().setUser({

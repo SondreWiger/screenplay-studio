@@ -17,9 +17,16 @@ function ThemeLoader() {
   useEffect(() => { 
     loadSaved(); 
     try {
-      const accent = localStorage.getItem('ss-accent-color');
+      let accent = null;
+      let uiTheme = null;
+      if (typeof window !== 'undefined' && (window as any).electron?.getPreferenceSync) {
+        accent = (window as any).electron.getPreferenceSync('ss-accent-color');
+        uiTheme = (window as any).electron.getPreferenceSync('ss-ui-theme');
+      }
+      if (!accent) accent = localStorage.getItem('ss-accent-color');
+      if (!uiTheme) uiTheme = localStorage.getItem('ss-ui-theme');
+      
       if (accent) document.documentElement.setAttribute('data-accent', accent);
-      const uiTheme = localStorage.getItem('ss-ui-theme');
       if (uiTheme) document.documentElement.setAttribute('data-theme', uiTheme);
     } catch {}
   }, [loadSaved]);

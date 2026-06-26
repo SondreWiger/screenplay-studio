@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, session } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { setupMenu, addRecentProject, getRecentProjects, clearRecentProjects } from './menu';
@@ -76,6 +76,21 @@ async function createWindow() {
       url = `${WEB_URL}/dashboard`;
     }
   }
+  const localModePref = getPreference('ss-local-mode');
+  if (localModePref === '1') {
+    try {
+      const parsedUrl = new URL(url);
+      await session.defaultSession.cookies.set({
+        url: parsedUrl.origin,
+        name: 'ss-local-mode',
+        value: '1',
+        path: '/',
+      });
+    } catch (err) {
+      console.error('Failed to set local mode cookie:', err);
+    }
+  }
+
   mainWindow.loadURL(url);
 
   mainWindow.once('ready-to-show', () => {

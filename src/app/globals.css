@@ -1657,3 +1657,15 @@ a:active:not(:disabled) {
 [data-custom-theme="1"] .card-glow {
   box-shadow: 0 0 16px rgb(var(--brand-500) / 0.15);
 }
+
+/* Electron Mac specific styles */
+body.is-mac-electron header {
+  -webkit-app-region: drag;
+  padding-left: 80px; /* Space for Mac traffic lights */
+}
+body.is-mac-electron header button,
+body.is-mac-electron header a,
+body.is-mac-electron header input,
+body.is-mac-electron header [role="button"] {
+  -webkit-app-region: no-drag;
+}
