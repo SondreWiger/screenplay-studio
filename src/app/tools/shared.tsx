@@ -2,8 +2,6 @@
 
 import { ReactNode } from 'react';
 
-const ORANGE = '#FF5F1F';
-
 interface UploadZoneProps {
   onFile: (file: File) => void;
   accept: string;
@@ -26,8 +24,7 @@ export function UploadZone({ onFile, accept, label, sublabel, children }: Upload
 
   return (
     <div
-      className="border-2 border-dashed p-12 text-center cursor-pointer transition-all duration-200 hover:bg-white/[0.02]"
-      style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+      className="border-2 border-dashed border-white/10 p-12 text-center cursor-pointer transition-all duration-200 hover:bg-white/[0.02] hover:border-white/15"
       onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
       onDrop={(e) => {
         e.preventDefault();
@@ -55,7 +52,7 @@ interface StatBoxProps {
 
 export function StatBox({ label, value, sub }: StatBoxProps) {
   return (
-    <div className="border p-4 text-center" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+    <div className="border border-white/6 p-4 text-center">
       <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1">{label}</p>
       <p className="text-xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>{value}</p>
       {sub && <p className="text-[10px] text-white/20 mt-0.5">{sub}</p>}
@@ -68,8 +65,7 @@ export function OrangeButton({ onClick, disabled, children }: { onClick: () => v
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-white transition-all duration-150 hover:-translate-y-px disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0"
-      style={{ background: ORANGE }}
+      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-white bg-brand-500 transition-all duration-150 hover:-translate-y-px disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0"
     >
       {children}
     </button>
@@ -80,8 +76,7 @@ export function GhostButton({ onClick, children }: { onClick: () => void; childr
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50 border transition-colors hover:text-white hover:bg-white/[0.03]"
-      style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50 border border-white/10 transition-colors hover:text-white hover:bg-white/[0.03]"
     >
       {children}
     </button>

@@ -5,23 +5,10 @@ import { ConverterLayout } from '../converter-layout';
 import { OrangeButton, GhostButton } from '../shared';
 import { parsePDF } from '@/lib/scripts/pdf';
 
-const ORANGE = '#FF5F1F';
-
 interface SlateData {
-  project: string;
-  scene: string;
-  take: string;
-  director: string;
-  dop: string;
-  date: string;
-  camera: string;
-  lens: string;
-  fps: string;
-  notes: string;
-  production: string;
-  roll: string;
-  sound: string;
-  mos: boolean;
+  project: string; scene: string; take: string; director: string; dop: string;
+  date: string; camera: string; lens: string; fps: string; notes: string;
+  production: string; roll: string; sound: string; mos: boolean;
 }
 
 export default function SlatesPage() {
@@ -37,8 +24,7 @@ export default function SlatesPage() {
 
   const extractFromPDF = useCallback(async () => {
     const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf';
+    input.type = 'file'; input.accept = '.pdf';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -82,53 +68,34 @@ export default function SlatesPage() {
   const downloadSlate = () => {
     const blob = new Blob([generateSlateText()], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `slate_${slate.scene || 'X'}_take${slate.take}.txt`;
-    a.click();
+    const a = document.createElement('a'); a.href = url;
+    a.download = `slate_${slate.scene || 'X'}_take${slate.take}.txt`; a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
     <ConverterLayout title="Production Slates" description="Generate production slate cards for your shoot.">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Form */}
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-1 rounded-full" style={{ background: ORANGE }} />
+              <div className="w-1 h-1 rounded-full bg-brand-500" />
               <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">SLATE DETAILS</span>
             </div>
-            <button
-              onClick={extractFromPDF}
-              disabled={extracting}
-              className="text-[10px] font-bold uppercase tracking-[0.12em] underline underline-offset-4 disabled:opacity-30"
-              style={{ color: ORANGE }}
-            >
+            <button onClick={extractFromPDF} disabled={extracting} className="text-[10px] font-bold uppercase tracking-[0.12em] underline underline-offset-4 text-brand-500 disabled:opacity-30">
               {extracting ? 'Extracting…' : 'Extract from PDF'}
             </button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {([
-              ['Project', 'project'], ['Production', 'production'], ['Scene', 'scene'],
-              ['Take', 'take'], ['Roll', 'roll'], ['Director', 'director'],
-              ['DOP', 'dop'], ['Camera', 'camera'], ['Lens', 'lens'], ['FPS', 'fps'],
-            ] as const).map(([label, field]) => (
+            {([['Project', 'project'], ['Production', 'production'], ['Scene', 'scene'], ['Take', 'take'], ['Roll', 'roll'], ['Director', 'director'], ['DOP', 'dop'], ['Camera', 'camera'], ['Lens', 'lens'], ['FPS', 'fps']] as const).map(([label, field]) => (
               <Field key={field} label={label} value={slate[field]} onChange={v => update(field, v)} />
             ))}
             <Field label="Date" value={slate.date} onChange={v => update('date', v)} type="date" />
             <div>
               <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">Sound</label>
-              <select
-                value={slate.mos ? 'mos' : slate.sound}
-                onChange={e => {
-                  if (e.target.value === 'mos') { update('mos', true); }
-                  else { update('mos', false); update('sound', e.target.value); }
-                }}
-                className="w-full px-3 py-2 bg-transparent border text-sm text-white/80"
-                style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-              >
+              <select value={slate.mos ? 'mos' : slate.sound} onChange={e => { if (e.target.value === 'mos') { update('mos', true); } else { update('mos', false); update('sound', e.target.value); } }}
+                className="w-full px-3 py-2 bg-transparent border border-white/10 text-sm text-white/80">
                 <option value="SYNC" className="bg-black">SYNC</option>
                 <option value="WILD" className="bg-black">WILD</option>
                 <option value="SLATE" className="bg-black">SLATE</option>
@@ -139,35 +106,22 @@ export default function SlatesPage() {
 
           <div>
             <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">Notes</label>
-            <textarea
-              value={slate.notes}
-              onChange={e => update('notes', e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2 bg-transparent border text-sm text-white/80 resize-none"
-              style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-            />
+            <textarea value={slate.notes} onChange={e => update('notes', e.target.value)} rows={2}
+              className="w-full px-3 py-2 bg-transparent border border-white/10 text-sm text-white/80 resize-none" />
           </div>
 
           <div className="flex gap-3">
-            <GhostButton onClick={() => navigator.clipboard.writeText(generateSlateText())}>
-              Copy to Clipboard
-            </GhostButton>
-            <OrangeButton onClick={downloadSlate}>
-              Download .txt
-            </OrangeButton>
+            <GhostButton onClick={() => navigator.clipboard.writeText(generateSlateText())}>Copy to Clipboard</GhostButton>
+            <OrangeButton onClick={downloadSlate}>Download .txt</OrangeButton>
           </div>
         </div>
 
-        {/* Preview */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-1 rounded-full" style={{ background: ORANGE }} />
+            <div className="w-1 h-1 rounded-full bg-brand-500" />
             <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">PREVIEW</span>
           </div>
-          <pre
-            className="p-6 text-xs text-white/60 font-mono whitespace-pre overflow-x-auto leading-relaxed"
-            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <pre className="p-6 text-xs text-white/60 font-mono whitespace-pre overflow-x-auto leading-relaxed bg-white/[0.02] border border-white/6">
             {generateSlateText()}
           </pre>
         </div>
@@ -180,13 +134,8 @@ function Field({ label, value, onChange, type = 'text' }: { label: string; value
   return (
     <div>
       <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full px-3 py-2 bg-transparent border text-sm text-white/80"
-        style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-      />
+      <input type={type} value={value} onChange={e => onChange(e.target.value)}
+        className="w-full px-3 py-2 bg-transparent border border-white/10 text-sm text-white/80" />
     </div>
   );
 }

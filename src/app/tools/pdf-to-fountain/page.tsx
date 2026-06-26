@@ -11,63 +11,40 @@ export default function PdfToFountainPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleFile = useCallback((f: File) => {
-    if (!f.name.toLowerCase().endsWith('.pdf')) {
-      setError('Select a PDF file.');
-      return;
-    }
-    setFile(f);
-    setStatus('idle');
-    setError(null);
+    if (!f.name.toLowerCase().endsWith('.pdf')) { setError('Select a PDF file.'); return; }
+    setFile(f); setStatus('idle'); setError(null);
   }, []);
 
   const convert = useCallback(async () => {
     if (!file) return;
-    setStatus('parsing');
-    setError(null);
+    setStatus('parsing'); setError(null);
     try {
       const result = await parsePDF(file);
       const fountain = generateFountainFromPDF(result);
       const blob = new Blob([fountain], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = file.name.replace(/\.pdf$/i, '.fountain');
-      a.click();
-      URL.revokeObjectURL(url);
-      setStatus('done');
+      const a = document.createElement('a'); a.href = url;
+      a.download = file.name.replace(/\.pdf$/i, '.fountain'); a.click();
+      URL.revokeObjectURL(url); setStatus('done');
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to convert PDF');
-      setStatus('error');
+      setError(e instanceof Error ? e.message : 'Failed to convert PDF'); setStatus('error');
     }
   }, [file]);
 
   return (
     <ConverterLayout title="PDF → Fountain" description="Extract screenplay content from a PDF and convert it to Fountain plain text.">
       <div className="flex flex-col items-center gap-8 max-w-lg mx-auto">
-        <UploadZone
-          onFile={handleFile}
-          accept=".pdf"
-          label="Drop a PDF here or click to browse"
-          sublabel="Screenwriting PDFs — exported from Final Draft, Fade In, Highland, etc."
-        >
+        <UploadZone onFile={handleFile} accept=".pdf" label="Drop a PDF here or click to browse" sublabel="Screenwriting PDFs — exported from Final Draft, Fade In, Highland, etc.">
           {file ? (
             <div>
               <p className="text-sm font-bold text-white/80">{file.name}</p>
               <p className="text-xs text-white/25 mt-1">{(file.size / 1024).toFixed(1)} KB</p>
-              <p
-                className="text-[10px] mt-3 underline underline-offset-4 cursor-pointer"
-                style={{ color: '#FF5F1F' }}
-                onClick={(e) => { e.stopPropagation(); setFile(null); setStatus('idle'); setError(null); }}
-              >
-                Choose a different file
-              </p>
+              <p className="text-[10px] mt-3 underline underline-offset-4 cursor-pointer text-brand-500" onClick={(e) => { e.stopPropagation(); setFile(null); setStatus('idle'); setError(null); }}>Choose a different file</p>
             </div>
           ) : undefined}
         </UploadZone>
-
         {error && <p className="text-xs text-red-400">{error}</p>}
-        {status === 'done' && <p className="text-xs" style={{ color: '#FF5F1F' }}>Conversion complete — check your downloads.</p>}
-
+        {status === 'done' && <p className="text-xs text-brand-500">Conversion complete — check your downloads.</p>}
         <OrangeButton onClick={convert} disabled={!file || status === 'parsing'}>
           {status === 'parsing' ? 'Converting…' : 'Convert to Fountain'}
         </OrangeButton>
