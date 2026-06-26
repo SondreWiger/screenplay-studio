@@ -293,10 +293,10 @@ export default async function LandingPage() {
                 {[
                   'SCREENPLAY EDITOR','SCENE BREAKDOWN','SHOT LISTS','CHARACTERS',
                   'ARC PLANNER','PRODUCTION SCHEDULE','BUDGET TRACKING',
-                  'TEAM COLLABORATION','SUBMISSIONS','CORKBOARD',
+                  'TEAM COLLABORATION','SUBMISSIONS','CORKBOARD','THEME EDITOR',
                   'SCREENPLAY EDITOR','SCENE BREAKDOWN','SHOT LISTS','CHARACTERS',
                   'ARC PLANNER','PRODUCTION SCHEDULE','BUDGET TRACKING',
-                  'TEAM COLLABORATION','SUBMISSIONS','CORKBOARD',
+                  'TEAM COLLABORATION','SUBMISSIONS','CORKBOARD','THEME EDITOR',
                 ].map((t, i) => (
                   <span
                     key={i}
@@ -392,7 +392,7 @@ export default async function LandingPage() {
               'Script Editor','Scene Breakdown','Shot Lists','Scheduling',
               'Budget','Characters','Locations','Corkboard','Arc Planner',
               'Beat Sheet','Submissions','Revision History','Team Access',
-              'AI Analysis','Mind Map','Export / PDF',
+              'AI Analysis','Mind Map','Export / PDF','Theme Editor',
             ].map((t) => (
               <span
                 key={t}
@@ -423,7 +423,7 @@ export default async function LandingPage() {
               </h2>
             </div>
             <div className="hidden md:flex flex-col items-end gap-1.5">
-              <Label>12 Core Tools</Label>
+              <Label>13 Core Tools</Label>
               <Label>Oslo · 2026</Label>
             </div>
           </div>
@@ -463,13 +463,14 @@ export default async function LandingPage() {
                 { n: '10', title: 'BUDGET TRACKING',         desc: 'Keep the budget in the same place as everything else. Categories, estimated vs actual spend, vendor tracking — enough for a short or a full production.' },
                 { n: '11', title: 'SUBMISSION TRACKER',      desc: 'A log of every submission — agent, manager, festival, production company. Dates sent, current status, follow-up notes. Because a spreadsheet for this is depressing.' },
                 { n: '12', title: 'TEAM + ROLES',            desc: 'Invite your crew and give them the access level that makes sense. A producer does not need script editing access. A writer does not need the budget.' },
+                { n: '13', title: 'THEME EDITOR',            desc: 'Make the app yours. Adjust every colour — background, text, accent, sidebar, script page — with a live preview. Share your theme with the community or keep it private.' },
               ].map((f, i) => (
                 <div
                   key={f.n}
                   className="group relative p-7 transition-colors duration-150 hover:bg-white/[0.025] cursor-default overflow-hidden"
                   style={{
                     borderRight: (i + 1) % 3 !== 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-                    borderBottom: i < 9 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    borderBottom: i < 12 ? '1px solid rgba(255,255,255,0.07)' : 'none',
                   }}
                 >
                   {/* left accent bar slides in on hover */}
