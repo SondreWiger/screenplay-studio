@@ -158,11 +158,11 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
     const tick = () => {
       setNodes((currentNodes) => {
         // Physics constants
-        const gravity = 0.03;
-        const repulsion = 1200;
-        const springLength = 80;
-        const springStrength = 0.05;
-        const friction = 0.85;
+        const gravity = 0.015;
+        const repulsion = 4000;
+        const springLength = 120;
+        const springStrength = 0.04;
+        const friction = 0.8;
 
         // Clone nodes to update positions
         const nextNodes = currentNodes.map((n) => ({ ...n }));
@@ -172,16 +172,23 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
           const nodeA = nextNodes[i];
           for (let j = i + 1; j < nextNodes.length; j++) {
             const nodeB = nextNodes[j];
-            const dx = nodeB.x - nodeA.x;
-            const dy = nodeB.y - nodeA.y;
-            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+            let dx = nodeB.x - nodeA.x;
+            let dy = nodeB.y - nodeA.y;
+            
+            // If nodes are exactly overlapping, apply small random jitter
+            if (dx === 0 && dy === 0) {
+              dx = Math.random() * 2 - 1;
+              dy = Math.random() * 2 - 1;
+            }
 
-            // Minimum distance to prevent extreme forces
-            const minDist = nodeA.size + nodeB.size + 15;
-            if (distance < 300) {
-              const force = repulsion / (distance * distance);
-              const fx = (dx / distance) * force;
-              const fy = (dy / distance) * force;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 400) {
+              // Clamp distance to a minimum of 40px to prevent infinite/extreme forces
+              const clampedDistance = Math.max(distance, 40);
+              const force = repulsion / (clampedDistance * clampedDistance);
+              const fx = (dx / clampedDistance) * force;
+              const fy = (dy / clampedDistance) * force;
 
               nodeA.vx -= fx;
               nodeA.vy -= fy;
@@ -197,8 +204,14 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
           const target = nextNodes.find((n) => n.id === link.targetId);
 
           if (source && target) {
-            const dx = target.x - source.x;
-            const dy = target.y - source.y;
+            let dx = target.x - source.x;
+            let dy = target.y - source.y;
+            
+            if (dx === 0 && dy === 0) {
+              dx = Math.random() * 2 - 1;
+              dy = Math.random() * 2 - 1;
+            }
+
             const distance = Math.sqrt(dx * dx + dy * dy) || 1;
             const displacement = distance - springLength;
 

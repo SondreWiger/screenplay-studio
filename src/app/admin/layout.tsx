@@ -214,7 +214,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
+      <main className="flex-1 min-w-0 overflow-y-auto pt-12 md:pt-0">
         <div className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
           <ErrorBoundary>{children}</ErrorBoundary>
         </div>
