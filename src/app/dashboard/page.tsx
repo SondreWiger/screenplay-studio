@@ -1580,6 +1580,11 @@ function NewProjectModal({
         };
         await putCached('script_elements', titleElement);
 
+        if (window.electron?.writeFile) {
+          const { saveProjectToDisk } = await import('@/lib/local-files');
+          await saveProjectToDisk(projectRow as any, [scriptRow as any], [titleElement as any]);
+        }
+
         toast.success(pickToast(NEW_PROJECT));
         router.push(`/projects/${projectId}`);
         onCreated();

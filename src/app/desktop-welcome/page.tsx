@@ -79,6 +79,14 @@ export default function DesktopWelcome() {
         window.electron.addRecentProject({ id: projectId, title: 'Untitled' });
       }
 
+      if (window.electron?.writeFile) {
+        const { saveProjectToDisk } = await import('@/lib/local-files');
+        const proj = { id: projectId, title: 'Untitled', status: 'development', updated_at: now, created_at: now };
+        const script = { id: scriptId, project_id: projectId, title: 'Untitled Script', version: 1, is_active: true, updated_at: now, created_at: now };
+        const element = { id: crypto.randomUUID(), script_id: scriptId, element_type: 'title_page', content: 'Untitled', sort_order: 0, updated_at: now, created_at: now };
+        await saveProjectToDisk(proj as any, [script as any], [element as any]);
+      }
+
       router.push(`/projects/${projectId}/script`);
     } else {
       router.push('/dashboard?new=1');

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { isLocalMode } from '@/lib/supabase/electron-client';
 import { getCachedById, putCached, getCachedByProject, cacheRows } from '@/lib/offline/db';
+import { loadProjectFromDisk } from '@/lib/local-files';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useFeatureAccess } from '@/components/FeatureGate';
@@ -304,11 +305,11 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      if (navigator.onLine) {
+      if (navigator.onLine && !isLocalMode()) {
         router.replace('/auth/login');
         return;
       }
-      // If offline, continue to fetchProjectData() to load from local cache
+      // If offline or local mode, continue to fetchProjectData() to load from local cache
     }
     fetchProjectData();
   }, [params.id, user, authLoading]);
@@ -362,11 +363,20 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const fetchProjectData = async () => {
     try {
       if (isLocalMode()) {
-        const project = await getCachedById('projects', params.id);
+        // First try to load from disk (truth for local mode)
+        const diskData = await loadProjectFromDisk(params.id);
+        let project = diskData?.project;
+        
+        // Fallback to IndexedDB cache just in case
+        if (!project) {
+          project = await getCachedById('projects', params.id) as any;
+        }
+
         if (!project) {
           router.push('/dashboard');
           return;
         }
+
         setCurrentProject(project as any);
         const cachedMembers = await getCachedByProject('project_members', params.id);
         setMembers(cachedMembers as any[] || []);
@@ -376,6 +386,16 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           cover_url: (project as any).cover_url ?? null,
           project_type: (project as any).project_type,
         });
+        
+        // Pre-warm the cache so other components find the local project
+        putCached('projects', project).catch(() => {});
+        if (diskData?.scripts?.length) {
+          cacheRows('scripts', diskData.scripts).catch(() => {});
+        }
+        if (diskData?.elements?.length) {
+          cacheRows('script_elements', diskData.elements).catch(() => {});
+        }
+        
         setLoading(false);
         return;
       }

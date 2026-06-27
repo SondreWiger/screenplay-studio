@@ -4,6 +4,7 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { FadeIn } from '@/components/FadeIn';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
 
@@ -138,7 +139,7 @@ async function TestimonialsSection() {
           </Link>
         </div>
       </section>
-    </>
+    </FadeIn>
   );
 }
 
@@ -158,7 +159,7 @@ export default async function LandingPage() {
     
     const authChoice = cookieStore.get('ss-auth-choice')?.value;
     if (authChoice === 'local') {
-      redirect('/desktop-welcome');
+      redirect('/dashboard');
     }
     
     // If cloud mode or no choice, go to dashboard (which will handle auth)
@@ -289,9 +290,12 @@ export default async function LandingPage() {
         <section className="max-w-screen-xl mx-auto px-6 pt-16">
           <Eyebrow>Northem Development · Oslo, Norway</Eyebrow>
 
+          <h1 className="sr-only">Free Professional Screenwriting Software and Production Suite</h1>
+
           {/* Giant display type */}
-          <h1
+          <div
             className="select-none"
+            aria-hidden="true"
             style={{
               fontSize: 'clamp(5rem, 18vw, 16rem)',
               fontWeight: 900,
@@ -303,7 +307,7 @@ export default async function LandingPage() {
             WRITE.<br />
             PLAN.<br />
             <span style={{ color: ORANGE }}>PRODUCE.</span>
-          </h1>
+          </div>
 
           {/* ── orange ticker bar — sits flush below the headline ── */}
           <div
@@ -342,11 +346,11 @@ export default async function LandingPage() {
             style={{ borderColor: 'rgba(255,255,255,0.07)' }}
           >
             <div>
-              <p className="text-sm text-white/40 max-w-[22rem] leading-loose">
-                Script editor. Scene breakdown. Shot lists. Schedule. Budget. Collaboration.
+              <p className="text-sm text-white/60 font-medium max-w-[28rem] leading-loose">
+                Screenplay Studio is a free, professional screenwriting software and complete film production suite.
               </p>
-              <p className="text-sm text-white/20 max-w-[22rem] leading-loose">
-                Every tool in one place. Free to use — Pro for productions that need more.
+              <p className="text-sm text-white/40 max-w-[28rem] leading-loose mt-2">
+                Script editor. Scene breakdown. Shot lists. Schedule. Budget. Real-time collaboration. Every tool in one place.
               </p>
             </div>
             <div className="shrink-0 flex flex-col items-start md:items-end gap-2">
@@ -361,47 +365,57 @@ export default async function LandingPage() {
               <Label>No credit card required</Label>
             </div>
           </div>
+
+          <FadeIn delay={0.2} className="mt-16 mb-16 w-full max-w-5xl mx-auto border shadow-2xl" style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.02)', boxShadow: `0 20px 80px ${ORANGE}10` }}>
+            <div className="relative w-full aspect-[16/10] overflow-hidden bg-[#111]">
+              <img src="/hero-mockup.png" alt="Screenplay Studio Editor Interface Mockup" className="absolute inset-0 w-full h-full object-contain p-2" />
+            </div>
+          </FadeIn>
         </section>
 
+        <TestimonialsSection />
+
         {/* ─── STATS ─────────────────────────────────────────── */}
-        <section className="max-w-screen-xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-            {[
-              { num: '100%', label: 'Free To Use',    sub: 'No payment, ever',           live: false },
-              { num: '2024', label: 'In Production',  sub: 'Actively maintained',         live: false },
-              { num: '40+',  label: 'Tools Included', sub: 'Script to wrap',              live: false },
-              { num: '7',    label: 'Script Formats',  sub: 'Film · TV · Audio · Stage',   live: false },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="group py-9 px-6 first:pl-0 last:pr-0 hover:bg-white/[0.018] transition-colors duration-200 cursor-default"
-                style={{ borderColor: 'rgba(255,255,255,0.07)' }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  {s.live && (
-                    <div
-                      className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
-                      style={{ background: ORANGE }}
-                    />
-                  )}
-                  <span
-                    className="font-black tracking-tight text-white leading-none transition-transform duration-200 origin-left inline-block"
-                    style={{ fontSize: 'clamp(1.8rem, 4vw, 3.25rem)' }}
-                  >
-                    {s.num}
-                  </span>
-                </div>
-                <p
-                  className="text-[9px] font-black uppercase tracking-[0.22em] mb-1"
-                  style={{ color: ORANGE }}
+        <FadeIn>
+          <section className="max-w-screen-xl mx-auto px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              {[
+                { num: '100%', label: 'Free To Use',    sub: 'No payment, ever',           live: false },
+                { num: '2024', label: 'In Production',  sub: 'Actively maintained',         live: false },
+                { num: '40+',  label: 'Tools Included', sub: 'Script to wrap',              live: false },
+                { num: '7',    label: 'Script Formats',  sub: 'Film · TV · Audio · Stage',   live: false },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="group py-9 px-6 first:pl-0 last:pr-0 hover:bg-white/[0.018] transition-colors duration-200 cursor-default"
+                  style={{ borderColor: 'rgba(255,255,255,0.07)' }}
                 >
-                  {s.label}
-                </p>
-                <p className="text-[10px] text-white/20">{s.sub}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+                  <div className="flex items-center gap-2 mb-2">
+                    {s.live && (
+                      <div
+                        className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
+                        style={{ background: ORANGE }}
+                      />
+                    )}
+                    <span
+                      className="font-black tracking-tight text-white leading-none transition-transform duration-200 origin-left inline-block"
+                      style={{ fontSize: 'clamp(1.8rem, 4vw, 3.25rem)' }}
+                    >
+                      {s.num}
+                    </span>
+                  </div>
+                  <p
+                    className="text-[9px] font-black uppercase tracking-[0.22em] mb-1"
+                    style={{ color: ORANGE }}
+                  >
+                    {s.label}
+                  </p>
+                  <p className="text-[10px] text-white/20">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </FadeIn>
 
         <Rule />
 
@@ -470,8 +484,9 @@ export default async function LandingPage() {
               </svg>
             ))}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-              style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+            <FadeIn delay={0.1}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
               {[
                 { n: '01', title: 'SCREENPLAY EDITOR',       desc: 'Write in Courier Prime with formatting that adjusts as you type. Scene headings, dialogue, action lines — the structure handles itself. You just write.' },
                 { n: '02', title: 'REAL-TIME COLLABORATION', desc: 'Everyone in the same draft at once. See who is editing what, comment inline, stop emailing PDFs back and forth.' },
@@ -616,8 +631,44 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ─── TESTIMONIALS ─────────────────────────────── */}
-        <TestimonialsSection />
+        {/* ─── VISIBLE FAQ ─────────────────────────────────── */}
+        <Rule />
+        <section className="max-w-screen-xl mx-auto px-6 py-24">
+          <div className="max-w-3xl mx-auto">
+            <Eyebrow>Frequently Asked Questions</Eyebrow>
+            <h2
+              className="font-black text-white mb-12"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: '-0.02em', lineHeight: 0.95 }}
+            >
+              EVERYTHING YOU<br />NEED TO KNOW.
+            </h2>
+            
+            <div className="flex flex-col gap-4">
+              {[
+                { q: 'What is Screenplay Studio?', a: 'Screenplay Studio is a free, open-source screenwriting and film production software. It provides a professional script editor with automatic formatting, real-time collaboration, character bibles, scene breakdowns, shot lists, corkboard planning, production scheduling, and budget tracking — all in one platform.' },
+                { q: 'Is Screenplay Studio really free?', a: 'Yes. Screenplay Studio is free and open-source software. You can use the script editor, collaborate with your team, plan scenes, create shot lists, and manage production schedules without paying anything. Pro features like advanced analytics are available for professional productions.' },
+                { q: 'Does Screenplay Studio support real-time collaboration?', a: 'Yes. Multiple people can work on the same script simultaneously. You can see who is editing what, leave inline comments, and stop emailing PDFs back and forth.' },
+                { q: 'What formats does Screenplay Studio support?', a: 'The script editor uses Courier Prime font and automatically formats scene headings, character names, dialogue, action lines, parentheticals, and transitions as you type.' },
+                { q: 'Can I plan a full film production with Screenplay Studio?', a: 'Yes. Screenplay Studio covers the full production stack: script writing, character development, scene breakdowns, shot lists with storyboard references, corkboard planning, arc planning, beat sheets, production scheduling, budget tracking, submission tracking, and team role management.' },
+                { q: 'Is Screenplay Studio open source?', a: 'Yes. Screenplay Studio is open source and available on GitHub. The community can contribute features, report bugs, and review the code.' },
+              ].map((faq, i) => (
+                <details
+                  key={i}
+                  className="group border-b pb-4 cursor-pointer"
+                  style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+                >
+                  <summary className="font-bold text-lg text-white/80 group-hover:text-white transition-colors duration-150 list-none flex justify-between items-center py-2">
+                    {faq.q}
+                    <span className="text-brand-500 font-mono text-xl group-open:rotate-45 transition-transform duration-200">+</span>
+                  </summary>
+                  <p className="mt-2 text-sm text-white/50 leading-[1.85] pr-8">
+                    {faq.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
 
       </main>
 

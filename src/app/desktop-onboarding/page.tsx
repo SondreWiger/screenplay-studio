@@ -31,7 +31,7 @@ export default function DesktopOnboarding() {
             }
             localStorage.setItem('ss-local-mode', '1');
             document.cookie = 'ss-local-mode=1; path=/; max-age=31536000; SameSite=Lax';
-            router.replace('/desktop-welcome');
+            router.replace('/dashboard');
           } else {
             router.replace('/auth/login');
           }
@@ -72,7 +72,7 @@ export default function DesktopOnboarding() {
        createLocalUser('Local Writer');
        console.log('[DesktopOnboarding] Created local user');
        
-       router.replace('/desktop-welcome');
+       router.replace('/dashboard');
      } else {
        // Set cookies for cloud mode
        document.cookie = 'ss-onboarding-completed=1; path=/; max-age=31536000; SameSite=Lax';

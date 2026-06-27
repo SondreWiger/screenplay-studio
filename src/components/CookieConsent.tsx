@@ -32,10 +32,13 @@ export function CookieConsentBanner() {
   const [marketing, setMarketing] = useState(false);
 
   useEffect(() => {
-    const consent = getConsent();
-    if (!consent) {
-      setShow(true);
-    }
+    import('@/lib/supabase/electron-client').then(({ isElectronMode }) => {
+      if (isElectronMode()) return;
+      const consent = getConsent();
+      if (!consent) {
+        setShow(true);
+      }
+    });
   }, []);
 
   const handleAcceptAll = () => {
