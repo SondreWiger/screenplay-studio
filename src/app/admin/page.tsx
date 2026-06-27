@@ -130,6 +130,19 @@ interface CompStats {
     weeklyProjects: { date: string; count: number }[];
     hourlySignupPattern: { hour: number; count: number }[];
   };
+  advanced?: {
+    dau: number;
+    wau: number;
+    mau: number;
+    featureAdoption: {
+      mindmaps: number;
+      budgets: number;
+      schedules: number;
+    };
+    collaboration: {
+      totalMembers: number;
+    };
+  };
 }
 
 interface PendingLanguage {
@@ -1376,6 +1389,99 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>}
         />
       </div>
+
+      {/* ── Advanced Sticky Metrics ── */}
+      {compStats?.advanced && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              Active Users
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs text-surface-400 mb-1">
+                  <span>DAU (24h)</span>
+                  <span className="font-semibold text-white">{compStats.advanced.dau.toLocaleString()}</span>
+                </div>
+                <div className="h-1.5 w-full bg-surface-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-brand-500 rounded-full" style={{ width: `${Math.min((compStats.advanced.dau / (compStats.advanced.mau || 1)) * 100, 100)}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs text-surface-400 mb-1">
+                  <span>WAU (7d)</span>
+                  <span className="font-semibold text-white">{compStats.advanced.wau.toLocaleString()}</span>
+                </div>
+                <div className="h-1.5 w-full bg-surface-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-brand-400/80 rounded-full" style={{ width: `${Math.min((compStats.advanced.wau / (compStats.advanced.mau || 1)) * 100, 100)}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs text-surface-400 mb-1">
+                  <span>MAU (30d)</span>
+                  <span className="font-semibold text-white">{compStats.advanced.mau.toLocaleString()}</span>
+                </div>
+                <div className="h-1.5 w-full bg-surface-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-brand-300/50 rounded-full" style={{ width: '100%' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+              Feature Adoption
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs text-surface-400 mb-1">
+                  <span>Mindmaps</span>
+                  <span className="font-semibold text-white">{compStats.advanced.featureAdoption.mindmaps.toLocaleString()} nodes</span>
+                </div>
+                <div className="h-1.5 w-full bg-surface-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min((compStats.advanced.featureAdoption.mindmaps / (stats.totalProjects || 1)) * 5, 100)}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs text-surface-400 mb-1">
+                  <span>Production Budgets</span>
+                  <span className="font-semibold text-white">{compStats.advanced.featureAdoption.budgets.toLocaleString()} items</span>
+                </div>
+                <div className="h-1.5 w-full bg-surface-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-400/80 rounded-full" style={{ width: `${Math.min((compStats.advanced.featureAdoption.budgets / (stats.totalProjects || 1)) * 2, 100)}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs text-surface-400 mb-1">
+                  <span>Schedules</span>
+                  <span className="font-semibold text-white">{compStats.advanced.featureAdoption.schedules.toLocaleString()} events</span>
+                </div>
+                <div className="h-1.5 w-full bg-surface-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-300/50 rounded-full" style={{ width: `${Math.min((compStats.advanced.featureAdoption.schedules / (stats.totalProjects || 1)) * 2, 100)}%` }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              Team Collaboration
+            </h3>
+            <div className="flex flex-col h-full justify-center pb-8 items-center text-center">
+              <span className="text-4xl font-black text-violet-400">
+                {stats.totalProjects > 0 ? (compStats.advanced.collaboration.totalMembers / stats.totalProjects).toFixed(1) : '0'}
+              </span>
+              <span className="text-sm text-surface-400 mt-1">avg members per project</span>
+              <span className="text-xs text-surface-500 mt-4 px-4 bg-surface-800/50 py-1.5 rounded-full">
+                Total {compStats.advanced.collaboration.totalMembers.toLocaleString()} network connections
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Growth charts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

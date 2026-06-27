@@ -10,6 +10,7 @@ import { TranslationProvider } from '@/components/TranslationProvider';
 import { ThemeEditor } from '@/components/ThemeEditor';
 import { ConnectionToast } from '@/components/ConnectionToast';
 import { ElectronShell } from '@/components/ElectronShell';
+import { GlobalPollPopup } from '@/components/GlobalPollPopup';
 import { useThemeStore } from '@/lib/stores';
 
 function ThemeLoader() {
@@ -56,6 +57,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       </Suspense>
       <Suspense fallback={null}>
         <ConnectionToast />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GlobalPollPopup />
       </Suspense>
       <ToastContainer />
       <Toaster position="bottom-right" theme="dark" richColors />

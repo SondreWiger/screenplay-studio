@@ -139,7 +139,7 @@ async function TestimonialsSection() {
           </Link>
         </div>
       </section>
-    </FadeIn>
+    </>
   );
 }
 
@@ -537,6 +537,7 @@ export default async function LandingPage() {
                 </div>
               ))}
             </div>
+        </FadeIn>
           </div>
         </section>
 

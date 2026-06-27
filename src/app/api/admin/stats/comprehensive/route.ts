@@ -82,6 +82,7 @@ export async function GET() {
       totalRes, activeRes, proRes, signups30, signups90, projects30, projects90,
       elementsRes, scenesRes, charsRes, scriptsRes,
       activityRes, activity7d,
+      dauRes, wauRes, mauRes, mindmapRes, budgetRes, scheduleRes, membersRes, projectsCountRes
     ] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('profiles').select('id', { count: 'exact', head: true }).or(`last_seen.gte.${new Date(now.getTime() - 5 * 60 * 1000).toISOString()},updated_at.gte.${new Date(now.getTime() - 5 * 60 * 1000).toISOString()}`),
@@ -96,6 +97,15 @@ export async function GET() {
       supabase.from('scripts').select('script_type'),
       supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
       supabase.from('profiles').select('created_at').gte('created_at', sevenDaysAgo),
+      // Advanced Metrics
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(now.getTime() - DAY).toISOString()), // DAU
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(now.getTime() - 7 * DAY).toISOString()), // WAU
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', new Date(now.getTime() - 30 * DAY).toISOString()), // MAU
+      supabase.from('mindmap_nodes').select('id', { count: 'exact', head: true }),
+      supabase.from('budget_items').select('id', { count: 'exact', head: true }),
+      supabase.from('production_schedule').select('id', { count: 'exact', head: true }),
+      supabase.from('project_members').select('id', { count: 'exact', head: true }),
+      supabase.from('projects').select('id', { count: 'exact', head: true }),
     ]);
 
     const totalUsers = totalRes.count || 0;
@@ -146,6 +156,20 @@ export async function GET() {
         scenes: scenesRes.count || 0,
         characters: charsRes.count || 0,
         scripts: scriptsRes.count || 0,
+        projects: projectsCountRes.count || 0,
+      },
+      advanced: {
+        dau: dauRes.count || 0,
+        wau: wauRes.count || 0,
+        mau: mauRes.count || 0,
+        featureAdoption: {
+          mindmaps: mindmapRes.count || 0,
+          budgets: budgetRes.count || 0,
+          schedules: scheduleRes.count || 0,
+        },
+        collaboration: {
+          totalMembers: membersRes.count || 0,
+        }
       },
       trends: {
         signups30Day: bucketByDay(signups30.data || [], 30),
