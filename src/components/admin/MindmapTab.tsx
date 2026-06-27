@@ -54,6 +54,10 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
   const [hoveredNode, setHoveredNode] = useState<MindmapNode | null>(null);
   const [selectedNode, setSelectedNode] = useState<MindmapNode | null>(null);
 
+  const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+
   // Initialize nodes and links
   useEffect(() => {
     const width = containerRef.current?.clientWidth || 800;
@@ -70,8 +74,8 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
       const memberCount = proj.project_members?.length || 0;
       const scriptsCount = proj.scripts?.[0]?.count || 0;
 
-      // Project sizing logic: users make it crazy bigger (x35), length/scripts adds a bit (x8)
-      const size = 32 + (memberCount * 28) + (scriptsCount * 6);
+      // Project sizing logic: Cap the massive node scaling so the map remains navigable
+      const size = Math.min(100, 24 + (memberCount * 12) + (scriptsCount * 3));
 
       // Distribute projects in a wide circle initially
       const angle = (index / projects.length) * Math.PI * 2;
@@ -242,12 +246,7 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
           node.vx *= friction;
           node.vy *= friction;
 
-          // Constrain boundaries
-          const margin = node.size + 10;
-          if (node.x < margin) { node.x = margin; node.vx = 0; }
-          if (node.x > width - margin) { node.x = width - margin; node.vx = 0; }
-          if (node.y < margin) { node.y = margin; node.vy = 0; }
-          if (node.y > height - margin) { node.y = height - margin; node.vy = 0; }
+          // (Boundaries removed for infinite pan/zoom canvas, center gravity handles clustering)
         });
 
         return nextNodes;
@@ -285,10 +284,26 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
         {/* Mind Map Canvas Area */}
         <div
           ref={containerRef}
-          style={{ flex: '1 1 600px', minWidth: 0 }}
+          style={{ flex: '1 1 600px', minWidth: 0, cursor: isDragging ? 'grabbing' : 'grab' }}
           className="h-[550px] border border-surface-800 bg-surface-900/50 rounded-xl relative overflow-hidden select-none"
+          onWheel={(e) => {
+            const zoomSensitivity = 0.002;
+            const delta = e.deltaY * zoomSensitivity;
+            setTransform(t => ({ ...t, k: Math.max(0.1, Math.min(t.k - delta, 5)) }));
+          }}
+          onMouseDown={(e) => {
+            setIsDragging(true);
+            dragStartRef.current = { x: e.clientX - transform.x, y: e.clientY - transform.y };
+          }}
+          onMouseMove={(e) => {
+            if (!isDragging) return;
+            setTransform(t => ({ ...t, x: e.clientX - dragStartRef.current.x, y: e.clientY - dragStartRef.current.y }));
+          }}
+          onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
         >
           <svg className="w-full h-full">
+            <g transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k})`}>
             {/* Draw Links */}
             {links.map((link, idx) => {
               const source = nodes.find((n) => n.id === link.sourceId);
@@ -372,6 +387,7 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
                 </g>
               );
             })}
+            </g>
           </svg>
         </div>
 
