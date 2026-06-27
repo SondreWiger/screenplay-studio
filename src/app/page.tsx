@@ -322,16 +322,16 @@ export default async function LandingPage() {
         </section>
 
         {/* ═══════════════════ THE PHILOSOPHY / REASONING ═════════════ */}
-        <section className="relative max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
-          <div className="relative">
+        <section className="relative w-full max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
+          <div className="relative w-full">
             {/* Corner brackets */}
             <div className="absolute -top-3 -left-3 w-6 h-6 border-l border-t border-white/10" />
             <div className="absolute -top-3 -right-3 w-6 h-6 border-r border-t border-white/10" />
             <div className="absolute -bottom-3 -left-3 w-6 h-6 border-l border-b border-white/10" />
             <div className="absolute -bottom-3 -right-3 w-6 h-6 border-r border-b border-white/10" />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-8 md:p-12 bg-white/[0.01]">
-              <div className="lg:col-span-4">
+            <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 p-8 md:p-12 bg-white/[0.01]">
+              <div className="md:col-span-4">
                 <div className="flex items-center gap-3 mb-4">
                   <Mono className="text-white/20">01.0</Mono>
                   <div className="w-6 h-px bg-white/10" />
@@ -341,7 +341,7 @@ export default async function LandingPage() {
                   WHY WE BUILT THIS.
                 </h3>
               </div>
-              <div className="lg:col-span-8 flex flex-col gap-6">
+              <div className="md:col-span-8 flex flex-col gap-6">
                 <p className="text-[13px] text-white/50 leading-[2.2] font-light">
                   Most modern screenwriting software locks your words behind restrictive paywalls, recurring monthly subscriptions, 
                   or proprietary file formats. We believe the tools to tell stories should be universally accessible. Screenplay Studio 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { MindmapTab } from '@/components/admin/MindmapTab';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select, toast } from '@/components/ui';
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
 import type { Profile, Project, BlogPost, BlogPostSection, BlogComment, CommunityPost, CommunityPostStatus, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
@@ -96,7 +97,11 @@ interface ProjectWithCounts {
   status: string;
   created_at: string;
   updated_at: string;
-  project_members: { count: number }[];
+  project_members: {
+    role?: string;
+    user_id?: string;
+    profile?: { id: string; display_name: string | null; email: string; avatar_url: string | null } | null;
+  }[];
   scripts: { count: number }[];
 }
 
@@ -179,7 +184,7 @@ interface PayoutPreviewItem {
   } | null;
 }
 
-type Tab = 'overview' | 'users' | 'projects' | 'blog' | 'community' | 'tickets' | 'system' | 'contributors' | 'badges' | 'courses' | 'creators' | 'translations';
+type Tab = 'overview' | 'users' | 'projects' | 'mindmap' | 'blog' | 'community' | 'tickets' | 'system' | 'contributors' | 'badges' | 'courses' | 'creators' | 'translations';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -502,9 +507,9 @@ export default function AdminPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from('projects')
-        .select('*, project_members(count), scripts(count)')
+        .select('*, project_members(role, user_id, profile:profiles(id, display_name, email, avatar_url)), scripts(count)')
         .order('updated_at', { ascending: false });
-      setProjects(data || []);
+      setProjects(data as any || []);
     } catch (err) {
       console.error('Error loading projects:', err);
     }
@@ -842,6 +847,10 @@ export default function AdminPage() {
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
     },
     {
+      key: 'mindmap' as Tab, label: 'Mind Map',
+      icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
+    },
+    {
       key: 'system', label: 'System',
       icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
     },
@@ -926,6 +935,9 @@ export default function AdminPage() {
           search={projectSearch}
           onSearchChange={setProjectSearch}
         />
+      )}
+      {activeTab === 'mindmap' && (
+        <MindmapTab projects={projects as any} />
       )}
       {activeTab === 'system' && (
         <SystemTab
