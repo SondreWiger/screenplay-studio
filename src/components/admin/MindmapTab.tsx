@@ -57,6 +57,8 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
+  const draggedNodeRef = useRef<{ id: string, startX: number, startY: number, mouseStartX: number, mouseStartY: number, currentX: number, currentY: number } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Initialize nodes and links
   useEffect(() => {
@@ -246,6 +248,14 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
           node.vx *= friction;
           node.vy *= friction;
 
+          // Override position if node is currently being dragged
+          if (draggedNodeRef.current?.id === node.id) {
+            node.x = draggedNodeRef.current.currentX;
+            node.y = draggedNodeRef.current.currentY;
+            node.vx = 0;
+            node.vy = 0;
+          }
+
           // (Boundaries removed for infinite pan/zoom canvas, center gravity handles clustering)
         });
 
@@ -260,7 +270,10 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
   }, [links, nodes.length]);
 
   return (
-    <div className="flex flex-col gap-6 w-full min-w-0" style={{ width: '100%' }}>
+    <div 
+      className={isFullscreen ? "fixed inset-0 z-[100] bg-surface-950 p-6 flex flex-col gap-6 overflow-hidden" : "flex flex-col gap-6 w-full min-w-0"} 
+      style={isFullscreen ? {} : { width: '100%' }}
+    >
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-black text-white">Project Network Overview</h2>
@@ -268,7 +281,7 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
             Glow sizes scale with project volume (scripts) and collaboration activity (active members).
           </p>
         </div>
-        <div className="flex gap-4 font-mono text-[10px]">
+        <div className="flex gap-4 font-mono text-[10px] items-center">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'rgb(var(--brand-500))' }} />
             <span className="text-white/60">PROJECT</span>
@@ -277,15 +290,25 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
             <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
             <span className="text-white/60">USER / MEMBER</span>
           </div>
+          <button 
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="ml-4 px-3 py-1.5 bg-surface-800 hover:bg-surface-700 text-white rounded-lg transition-colors flex items-center gap-2"
+          >
+            {isFullscreen ? (
+              <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> Exit Fullscreen</>
+            ) : (
+              <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg> Fullscreen</>
+            )}
+          </button>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', width: '100%' }}>
+      <div style={{ display: 'flex', flexWrap: isFullscreen ? 'nowrap' : 'wrap', gap: '24px', width: '100%', flex: isFullscreen ? '1' : 'none', minHeight: 0 }}>
         {/* Mind Map Canvas Area */}
         <div
           ref={containerRef}
-          style={{ flex: '1 1 600px', minWidth: 0, cursor: isDragging ? 'grabbing' : 'grab' }}
-          className="h-[550px] border border-surface-800 bg-surface-900/50 rounded-xl relative overflow-hidden select-none"
+          style={{ flex: isFullscreen ? '1 1 auto' : '1 1 600px', minWidth: 0, cursor: isDragging ? 'grabbing' : 'grab' }}
+          className={`${isFullscreen ? 'h-full' : 'h-[550px]'} border border-surface-800 bg-surface-900/50 rounded-xl relative overflow-hidden select-none`}
           onWheel={(e) => {
             const zoomSensitivity = 0.002;
             const delta = e.deltaY * zoomSensitivity;
@@ -296,11 +319,17 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
             dragStartRef.current = { x: e.clientX - transform.x, y: e.clientY - transform.y };
           }}
           onMouseMove={(e) => {
-            if (!isDragging) return;
-            setTransform(t => ({ ...t, x: e.clientX - dragStartRef.current.x, y: e.clientY - dragStartRef.current.y }));
+            if (draggedNodeRef.current) {
+              const dx = (e.clientX - draggedNodeRef.current.mouseStartX) / transform.k;
+              const dy = (e.clientY - draggedNodeRef.current.mouseStartY) / transform.k;
+              draggedNodeRef.current.currentX = draggedNodeRef.current.startX + dx;
+              draggedNodeRef.current.currentY = draggedNodeRef.current.startY + dy;
+            } else if (isDragging) {
+              setTransform(t => ({ ...t, x: e.clientX - dragStartRef.current.x, y: e.clientY - dragStartRef.current.y }));
+            }
           }}
-          onMouseUp={() => setIsDragging(false)}
-          onMouseLeave={() => setIsDragging(false)}
+          onMouseUp={() => { setIsDragging(false); draggedNodeRef.current = null; }}
+          onMouseLeave={() => { setIsDragging(false); draggedNodeRef.current = null; }}
         >
           <svg className="w-full h-full">
             <g transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k})`}>
@@ -343,6 +372,18 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
                   onMouseEnter={() => setHoveredNode(node)}
                   onMouseLeave={() => setHoveredNode(null)}
                   onClick={() => setSelectedNode(node)}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    draggedNodeRef.current = {
+                      id: node.id,
+                      startX: node.x,
+                      startY: node.y,
+                      mouseStartX: e.clientX,
+                      mouseStartY: e.clientY,
+                      currentX: node.x,
+                      currentY: node.y
+                    };
+                  }}
                 >
                   {/* Node Glow / Ring */}
                   <circle
@@ -393,8 +434,8 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
 
         {/* Readout Sidepanel */}
         <div 
-          style={{ flex: '0 1 350px', minWidth: '300px' }}
-          className="border border-surface-800 bg-surface-900/50 p-6 rounded-xl min-h-[380px] flex flex-col justify-between"
+          style={{ flex: isFullscreen ? '0 0 350px' : '0 1 350px', minWidth: '300px' }}
+          className={`border border-surface-800 bg-surface-900/50 p-6 rounded-xl ${isFullscreen ? 'h-full overflow-y-auto' : 'min-h-[380px]'} flex flex-col justify-between`}
         >
           {selectedNode || hoveredNode ? (
             (() => {
