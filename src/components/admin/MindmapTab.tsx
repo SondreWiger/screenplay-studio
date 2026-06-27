@@ -261,10 +261,10 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
   }, [links, nodes.length]);
 
   return (
-    <div className="flex flex-col gap-6 w-full min-w-0">
+    <div className="flex flex-col gap-6 w-full min-w-0" style={{ width: '100%' }}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black text-white">Project Network Mind Map</h2>
+          <h2 className="text-xl font-black text-white">Project Network Overview</h2>
           <p className="text-xs text-surface-400 mt-1">
             Glow sizes scale with project volume (scripts) and collaboration activity (active members).
           </p>
@@ -281,11 +281,12 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-start min-w-0">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', width: '100%' }}>
         {/* Mind Map Canvas Area */}
         <div
           ref={containerRef}
-          className="w-full md:col-span-8 h-[550px] border border-surface-800 bg-surface-900/50 rounded-xl relative overflow-hidden select-none min-w-0"
+          style={{ flex: '1 1 600px', minWidth: 0 }}
+          className="h-[550px] border border-surface-800 bg-surface-900/50 rounded-xl relative overflow-hidden select-none"
         >
           <svg className="w-full h-full">
             {/* Draw Links */}
@@ -375,7 +376,10 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
         </div>
 
         {/* Readout Sidepanel */}
-        <div className="w-full md:col-span-4 border border-surface-800 bg-surface-900/50 p-6 rounded-xl min-h-[380px] flex flex-col justify-between min-w-0">
+        <div 
+          style={{ flex: '0 1 350px', minWidth: '300px' }}
+          className="border border-surface-800 bg-surface-900/50 p-6 rounded-xl min-h-[380px] flex flex-col justify-between"
+        >
           {selectedNode || hoveredNode ? (
             (() => {
               const active = selectedNode || hoveredNode;

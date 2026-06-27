@@ -507,7 +507,7 @@ export default function AdminPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from('projects')
-        .select('*, project_members(role, user_id, profile:profiles(id, display_name, email, avatar_url)), scripts(count)')
+        .select('*, project_members(role, user_id, profile:profiles!project_members_user_id_fkey(id, display_name, email, avatar_url)), scripts(count)')
         .order('updated_at', { ascending: false });
       setProjects(data as any || []);
     } catch (err) {
