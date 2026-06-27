@@ -4,6 +4,7 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { InteractivePreview } from '@/components/InteractivePreview';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
 
@@ -321,7 +322,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════════ PRODUCT MOCKUP ═════════════ */}
+        {/* ═══════════════════ INTERACTIVE WORKSPACE PREVIEW ═════════════ */}
         <section className="relative max-w-screen-xl mx-auto px-6 md:px-8 py-16 md:py-24">
           <div className="relative">
             {/* Corner brackets */}
@@ -333,27 +334,12 @@ export default async function LandingPage() {
             {/* Cross at center top */}
             <Cross className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-white/10" />
 
-            <div className="border border-white/[0.06] bg-white/[0.01] overflow-hidden">
-              <div className="relative w-full aspect-[16/9] bg-[rgb(var(--surface-950))]">
-                <img
-                  src="/hero-mockup.png"
-                  alt="Screenplay Studio Editor Interface"
-                  className="absolute inset-0 w-full h-full object-contain p-1 md:p-2 opacity-90"
-                />
-                {/* Gradient fade at edges */}
-                <div className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: `linear-gradient(to right, rgb(var(--surface-950)) 0%, transparent 8%, transparent 92%, rgb(var(--surface-950)) 100%),
-                                 linear-gradient(to bottom, transparent 85%, rgb(var(--surface-950)) 100%)`,
-                  }}
-                />
-              </div>
-            </div>
+            <InteractivePreview />
 
             {/* Annotations */}
             <div className="flex justify-between mt-3">
-              <Mono className="text-white/10">fig. 01 — Editor interface</Mono>
-              <Mono className="text-white/10">Dark mode · Courier Prime</Mono>
+              <Mono className="text-white/10">fig. 01 — Interactive workspace preview</Mono>
+              <Mono className="text-white/10">Active module & tension index</Mono>
             </div>
           </div>
         </section>
