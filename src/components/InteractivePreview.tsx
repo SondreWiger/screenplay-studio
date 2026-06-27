@@ -2,349 +2,232 @@
 
 import { useState } from 'react';
 
-type Tab = 'editor' | 'corkboard' | 'shots' | 'timeline';
-
-interface Scene {
+interface StoryBeat {
   id: string;
-  num: string;
-  slug: string;
-  type: 'INT' | 'EXT';
-  time: 'DAY' | 'NIGHT';
-  desc: string;
-  characters: string[];
-  props: string[];
-  shots: { num: string; size: string; angle: string; desc: string }[];
-  tension: number; // 0 to 100
+  name: string;
+  act: string;
+  page: number;
+  elevation: number; // dramatic tension percentage
+  intensity: string;
+  excerpt: string;
+  log: string;
 }
 
-const SCENES: Scene[] = [
+const STORY_BEATS: StoryBeat[] = [
   {
-    id: 's1',
-    num: '01',
-    slug: 'INT. OBSERVER STATION - NIGHT',
-    type: 'INT',
-    time: 'NIGHT',
-    desc: 'Dr. Eleanor Vance adjusts the positioning dial on the telescope array. The hum of the massive machinery is the only sound.',
-    characters: ['ELEANOR VANCE'],
-    props: ['Telescope Console', 'Positioning Dial', 'Glow Stick'],
-    tension: 30,
-    shots: [
-      { num: '1A', size: 'WS', angle: 'High Angle', desc: 'Establishing the dome space. Vance is a silhouette against the telescope.' },
-      { num: '1B', size: 'MCU', angle: 'Eye Level', desc: 'Vance. Concentration and exhaustion show in her eyes.' },
-      { num: '1C', size: 'CU', angle: 'Overhead', desc: 'The console dials rotating. Coordinates shifting rapidly.' }
-    ]
+    id: 'beat-1',
+    name: '01 / Incident',
+    act: 'Act I — Departure',
+    page: 12,
+    elevation: 320,
+    intensity: '320m (Base Ascent)',
+    excerpt: 'INT. OBSERVER STATION - NIGHT\n\nDr. Vance locks the coordinates. The telescope positioning dial clicks. On the monitor, the satellite signals drop to absolute zero.',
+    log: 'Tension initiates. Standard frequency disrupted.'
   },
   {
-    id: 's2',
-    num: '02',
-    slug: 'EXT. RIDGE - NIGHT',
-    type: 'EXT',
-    time: 'NIGHT',
-    desc: 'Vance drives her vehicle to the edge of the overlook. The desert sky is clear, but a shadow starts encroaching the stars.',
-    characters: ['ELEANOR VANCE'],
-    props: ['SUV', 'Flashlight', 'Binoculars'],
-    tension: 65,
-    shots: [
-      { num: '2A', size: 'ELS', angle: 'Wide Profile', desc: 'The SUV headlights cutting through the pitch black desert.' },
-      { num: '2B', size: 'MS', angle: 'Low Angle', desc: 'Vance stepping out of the vehicle, looking up at the sky.' }
-    ]
+    id: 'beat-2',
+    name: '02 / Plot Point I',
+    act: 'Act IIA — Descent',
+    page: 28,
+    elevation: 540,
+    intensity: '540m (Steep Rise)',
+    excerpt: 'EXT. DESERT RIDGE - NIGHT\n\nThe sky doesn\'t just turn black; it turns empty. A shadow moves across the stars. Vance looks through her binoculars, hands shaking.',
+    log: 'Ascent accelerates. Visual anomalies verified.'
   },
   {
-    id: 's3',
-    num: '03',
-    slug: 'INT. LAB - NIGHT',
-    type: 'INT',
-    time: 'NIGHT',
-    desc: 'The screens flicker with static. Mark Thorne paces the floor, holding a printout of the satellite telemetry.',
-    characters: ['MARK THORNE'],
-    props: ['Satellite Printout', 'Flickering Monitor', 'Cold Coffee Cup'],
-    tension: 85,
-    shots: [
-      { num: '3A', size: 'WS', angle: 'Static', desc: 'Pacing the lab. The green monitor light casting long shadows.' },
-      { num: '3B', size: 'CU', angle: 'Macro', desc: 'The paper printout. Numbers dropping to absolute zero.' }
-    ]
+    id: 'beat-3',
+    name: '03 / Midpoint',
+    act: 'Act IIB — Confrontation',
+    page: 60,
+    elevation: 780,
+    intensity: '780m (Sub-Peak)',
+    excerpt: 'INT. CONTROL CENTER - DAY\n\nMark slams his hands on the metal console. The backup power grid fails. "It\'s not blocking the light," he whispers. "It\'s absorbing it."',
+    log: 'Atmospheric pressure critical. Local power grid collapse.'
   },
   {
-    id: 's4',
-    num: '04',
-    slug: 'EXT. SKY - CONTINUOUS',
-    type: 'EXT',
-    time: 'NIGHT',
-    desc: 'The moon begins to cross the path of the sun. An eclipse in the middle of midnight.',
-    characters: [],
-    props: [],
-    tension: 95,
-    shots: [
-      { num: '4A', size: 'XLS', angle: 'Extreme Tilt Up', desc: 'The black sphere of the moon covering the dark sky.' }
-    ]
+    id: 'beat-4',
+    name: '04 / Climax',
+    act: 'Act III — Resolution',
+    page: 95,
+    elevation: 1240,
+    intensity: '1240m (Summit)',
+    excerpt: 'EXT. ARRAY SITE - CONTINUOUS\n\nThe midnight eclipse is complete. Silence falls over the desert. Vance stands directly beneath the massive receiver dishes as the air turns to ice.',
+    log: 'Dramatic peak reached. System equilibrium at absolute zero.'
   }
 ];
 
 export function InteractivePreview() {
-  const [activeTab, setActiveTab] = useState<Tab>('editor');
-  const [selectedSceneIndex, setSelectedSceneIndex] = useState<number>(0);
-  const selectedScene = SCENES[selectedSceneIndex];
+  const [activeBeatId, setActiveBeatId] = useState<string>('beat-1');
+  const activeBeat = STORY_BEATS.find((b) => b.id === activeBeatId) || STORY_BEATS[0];
 
   return (
-    <div className="w-full border border-white/[0.06] bg-white/[0.01] rounded-lg overflow-hidden flex flex-col font-sans">
-      {/* ─── TAB BAR ─── */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2 bg-black/45">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full" style={{ background: 'rgb(var(--brand-500))' }} />
-          <span className="text-[10px] font-mono tracking-widest text-white/50 uppercase">workspace_preview</span>
+    <div className="w-full border border-white/[0.05] bg-black/40 rounded-lg p-6 md:p-8 flex flex-col font-sans select-none relative overflow-hidden">
+      
+      {/* ─── TITLE / SYSTEM DECORATION ─── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.05] pb-6 mb-8">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgb(var(--brand-500))' }} />
+            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/30">NARRATIVE TOPOGRAPHY</span>
+          </div>
+          <h3 className="text-sm font-black uppercase tracking-wider text-white">THE GEOGRAPHY OF A STORY</h3>
         </div>
-        <div className="flex border border-white/[0.08] rounded overflow-hidden">
-          {(['editor', 'corkboard', 'shots', 'timeline'] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 text-[9px] font-mono uppercase tracking-wider transition-all border-r border-white/[0.08] last:border-r-0 ${
-                activeTab === tab
-                  ? 'bg-white/10 text-white font-bold'
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="flex items-center gap-6 font-mono text-[9px] text-white/20">
+          <span>SCALE: 1 PAGE = 12 METERS</span>
+          <span>UNIT: METERS OF DRAMATIC TENSION</span>
         </div>
       </div>
 
-      {/* ─── WORKSPACE CONTENT AREA ─── */}
-      <div className="min-h-[420px] grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-white/[0.06]">
-        {/* LEFT COLUMN: ACTIVE VIEW */}
-        <div className="lg:col-span-8 p-6 lg:p-8 flex flex-col overflow-y-auto max-h-[500px]">
-          {activeTab === 'editor' && (
-            <div className="font-mono text-xs md:text-sm text-white/80 leading-relaxed max-w-xl mx-auto space-y-6 select-text">
-              {/* Scene Heading */}
-              <div className="text-white font-bold tracking-wide uppercase select-all">
-                {selectedScene.slug}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* LEFT PANEL: SVG CONTOUR MAP (Topography Visual) */}
+        <div className="lg:col-span-7 flex flex-col items-center justify-center relative">
+          
+          {/* Elevation crosshair markers */}
+          <div className="absolute top-0 left-0 font-mono text-[8px] text-white/10">N 59° 56\' 23"</div>
+          <div className="absolute bottom-0 right-0 font-mono text-[8px] text-white/10">E 10° 45\' 18"</div>
+          
+          <div className="w-full max-w-[460px] aspect-square relative flex items-center justify-center border border-white/[0.03] bg-black/10 rounded-full">
+            
+            {/* Concentric Topographic Contours (SVGs) */}
+            <svg className="absolute inset-0 w-full h-full p-6 text-white/[0.04]" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+              {/* Outer Contour Ring 1 */}
+              <path d="M 50 2 C 78 2, 98 22, 98 50 C 98 78, 78 98, 50 98 C 22 98, 2 78, 2 50 C 2 22, 22 2 Z" strokeWidth="0.15" />
+              
+              {/* Contour Ring 2 */}
+              <path d="M 50 12 C 72 12, 88 28, 88 50 C 88 72, 72 88, 50 88 C 28 88, 12 72, 12 50 C 12 28, 28 12, 50 12 Z" strokeWidth="0.15" />
+              
+              {/* Contour Ring 3 */}
+              <path d="M 50 24 C 65 24, 76 35, 76 50 C 76 65, 65 76, 50 76 C 35 76, 24 65, 24 50 C 24 35, 35 24, 50 24 Z" strokeWidth="0.15" strokeDasharray="1 1" />
+              
+              {/* Inner Contour Ring 4 (High Ridge) */}
+              <path d="M 50 36 C 58 36, 64 42, 64 50 C 64 58, 58 64, 50 64 C 42 64, 36 58, 36 50 C 36 42, 42 36, 50 36 Z" strokeWidth="0.2" />
 
-              {/* Action */}
-              <div className="pl-0 text-white/60 text-justify">
-                {selectedScene.desc}
-              </div>
+              {/* Peak Summit Ring */}
+              <path d="M 50 44 C 53 44, 56 47, 56 50 C 56 53, 53 56, 50 56 C 47 56, 44 53, 44 50 C 44 47, 47 44, 50 44 Z" strokeWidth="0.3" stroke="rgba(var(--brand-500), 0.2)" />
+              
+              {/* Crosshair Center */}
+              <line x1="50" y1="48" x2="50" y2="52" stroke="rgb(var(--brand-500))" strokeWidth="0.4" />
+              <line x1="48" y1="50" x2="52" y2="50" stroke="rgb(var(--brand-500))" strokeWidth="0.4" />
+            </svg>
 
-              {/* Character & Dialogue */}
-              {selectedScene.characters.length > 0 && (
-                <div className="space-y-4">
-                  <div className="text-center w-full max-w-[200px] mx-auto text-white font-bold uppercase tracking-wider">
-                    {selectedScene.characters[0]}
-                  </div>
-                  <div className="max-w-[320px] mx-auto text-white/70 text-left">
-                    We're nearly locked. The telescope alignments are fluctuating. Something's wrong.
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+            {/* Interactive Beat Coordinates */}
+            {STORY_BEATS.map((beat, idx) => {
+              // Placing beats in a spiral-like ascent towards the peak
+              const angles = [210, 310, 45, 120];
+              const radii = [42, 30, 20, 9]; // Distances from center (50, 50)
+              const angleRad = (angles[idx] * Math.PI) / 180;
+              const x = 50 + radii[idx] * Math.cos(angleRad);
+              const y = 50 + radii[idx] * Math.sin(angleRad);
 
-          {activeTab === 'corkboard' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
-              {SCENES.map((scene, idx) => (
+              const isActive = beat.id === activeBeatId;
+
+              return (
                 <button
-                  key={scene.id}
-                  onClick={() => setSelectedSceneIndex(idx)}
-                  className={`p-5 text-left border rounded transition-all duration-300 relative group flex flex-col justify-between h-[110px] ${
-                    selectedSceneIndex === idx
-                      ? 'border-brand-500 bg-brand-500/5'
-                      : 'border-white/[0.06] bg-white/[0.01] hover:border-white/20'
-                  }`}
-                  style={{ borderColor: selectedSceneIndex === idx ? 'rgb(var(--brand-500))' : undefined }}
+                  key={beat.id}
+                  onClick={() => setActiveBeatId(beat.id)}
+                  className="absolute group transition-all duration-300"
+                  style={{
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
                 >
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[9px] font-mono tracking-widest text-white/30">{scene.num}</span>
-                      <span className="text-[8px] font-mono px-1.5 py-0.5 rounded border border-white/10 text-white/40">
-                        {scene.time}
-                      </span>
-                    </div>
-                    <h4 className="text-[11px] font-black uppercase text-white tracking-wide truncate">
-                      {scene.slug}
-                    </h4>
-                  </div>
-                  <p className="text-[9px] text-white/45 truncate mt-2">{scene.desc}</p>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {activeTab === 'shots' && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-mono text-[10px] border-collapse">
-                <thead>
-                  <tr className="border-b border-white/[0.08] text-white/30 uppercase tracking-widest">
-                    <th className="py-2 px-3">Shot</th>
-                    <th className="py-2 px-3">Size</th>
-                    <th className="py-2 px-3">Angle</th>
-                    <th className="py-2 px-3">Description</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.04] text-white/60">
-                  {selectedScene.shots.map((shot) => (
-                    <tr key={shot.num} className="hover:bg-white/[0.02]">
-                      <td className="py-2.5 px-3 text-white font-bold" style={{ color: 'rgb(var(--brand-500))' }}>{shot.num}</td>
-                      <td className="py-2.5 px-3">{shot.size}</td>
-                      <td className="py-2.5 px-3">{shot.angle}</td>
-                      <td className="py-2.5 px-3 text-white/50">{shot.desc}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {activeTab === 'timeline' && (
-            <div className="flex flex-col h-full justify-between">
-              {/* Tension Curve visualization (Swiss/Geneva map style) */}
-              <div className="relative w-full h-[180px] border border-white/[0.04] bg-black/20 rounded overflow-hidden flex items-end">
-                {/* SVG Curve */}
-                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="rgba(var(--brand-500), 0.05)" />
-                      <stop offset="100%" stopColor="rgba(var(--brand-500), 0.3)" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d={`M 0 180 
-                       L 0 ${180 - SCENES[0].tension} 
-                       C 50 ${180 - SCENES[0].tension}, 100 ${180 - SCENES[1].tension}, 200 ${180 - SCENES[1].tension}
-                       C 300 ${180 - SCENES[1].tension}, 400 ${180 - SCENES[2].tension}, 500 ${180 - SCENES[2].tension}
-                       C 600 ${180 - SCENES[2].tension}, 700 ${180 - SCENES[3].tension}, 800 ${180 - SCENES[3].tension}
-                       L 800 180 Z`}
-                    fill="url(#gradient)"
-                    stroke="rgb(var(--brand-500))"
-                    strokeWidth="1.5"
-                    style={{ transition: 'all 0.5s ease' }}
+                  {/* Glowing Node ring */}
+                  <span
+                    className={`absolute inset-0 rounded-full border transition-transform duration-300 scale-150 ${
+                      isActive
+                        ? 'border-brand-500 animate-ping opacity-75'
+                        : 'border-white/10 group-hover:scale-[2] group-hover:border-white/30'
+                    }`}
+                    style={{ borderColor: isActive ? 'rgb(var(--brand-500))' : undefined }}
                   />
-                  {/* Scene coordinate nodes */}
-                  {SCENES.map((scene, idx) => {
-                    const xCoord = `${(idx / (SCENES.length - 1)) * 90 + 5}%`;
-                    const yCoord = 180 - scene.tension;
-                    return (
-                      <g key={scene.id} className="cursor-pointer" onClick={() => setSelectedSceneIndex(idx)}>
-                        <circle
-                          cx={xCoord}
-                          cy={yCoord}
-                          r={selectedSceneIndex === idx ? '6' : '4'}
-                          fill={selectedSceneIndex === idx ? 'rgb(var(--brand-500))' : '#fff'}
-                          stroke="rgb(var(--brand-500))"
-                          strokeWidth="2"
-                        />
-                        <text
-                          x={xCoord}
-                          y={yCoord - 12}
-                          textAnchor="middle"
-                          fill="#fff"
-                          className="text-[9px] font-mono font-bold"
-                          opacity={selectedSceneIndex === idx ? 1 : 0.4}
-                        >
-                          {scene.num}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-              </div>
+                  
+                  {/* Inner Node Dot */}
+                  <span
+                    className={`block w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      isActive ? 'bg-brand-500 scale-125' : 'bg-white/40 group-hover:bg-white'
+                    }`}
+                    style={{ background: isActive ? 'rgb(var(--brand-500))' : undefined }}
+                  />
 
-              {/* Data vis metrics */}
-              <div className="grid grid-cols-3 gap-4 mt-6 border-t border-white/[0.04] pt-4">
-                <div>
-                  <span className="block text-[8px] font-mono uppercase tracking-widest text-white/30">tension_level</span>
-                  <span className="text-xl font-bold text-white font-mono">{selectedScene.tension}%</span>
-                </div>
-                <div>
-                  <span className="block text-[8px] font-mono uppercase tracking-widest text-white/30">pace_frequency</span>
-                  <span className="text-xl font-bold text-white font-mono">0.42 Hz</span>
-                </div>
-                <div>
-                  <span className="block text-[8px] font-mono uppercase tracking-widest text-white/30">rhythm_metric</span>
-                  <span className="text-xl font-bold text-white font-mono">STABLE</span>
-                </div>
-              </div>
-            </div>
-          )}
+                  {/* Tiny label offset */}
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[9px] text-white/30 font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    {beat.name}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* Aesthetic coordinate trails connecting nodes */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none text-white/[0.02]" viewBox="0 0 100 100" fill="none">
+              <path d="M 13.6 71 L 27 27 L 64 36 L 54.5 42" stroke="currentColor" strokeWidth="0.2" strokeDasharray="0.5 0.5" />
+            </svg>
+          </div>
+          
+          {/* Quick Act indicators under map */}
+          <div className="flex justify-between w-full mt-6 px-4">
+            {STORY_BEATS.map((beat) => (
+              <button
+                key={beat.id}
+                onClick={() => setActiveBeatId(beat.id)}
+                className={`font-mono text-[8px] uppercase tracking-wider transition-all duration-300 ${
+                  beat.id === activeBeatId
+                    ? 'text-brand-500 font-bold'
+                    : 'text-white/20 hover:text-white/40'
+                }`}
+                style={{ color: beat.id === activeBeatId ? 'rgb(var(--brand-500))' : undefined }}
+              >
+                {beat.name}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* RIGHT COLUMN: DETAIL/SCHEMATIC PANEL */}
-        <div className="lg:col-span-4 p-6 lg:p-8 flex flex-col justify-between bg-black/20">
+        {/* RIGHT PANEL: TECHNICAL READOUTS (Helvetica / Swiss Map Aesthetic) */}
+        <div className="lg:col-span-5 flex flex-col justify-between border border-white/[0.05] bg-white/[0.01] p-6 rounded-md min-h-[360px]">
           <div>
-            <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Scene properties</span>
-              <span className="text-[10px] font-mono text-brand-500 font-bold" style={{ color: 'rgb(var(--brand-500))' }}>
-                #{selectedScene.num}
+            {/* Act Header */}
+            <div className="flex items-center justify-between border-b border-white/[0.05] pb-3 mb-5">
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/30">NARRATIVE REGION</span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] font-bold" style={{ color: 'rgb(var(--brand-500))' }}>
+                {activeBeat.act}
               </span>
             </div>
 
-            {/* Scene Dropdown mock selector */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[8px] font-mono uppercase tracking-widest text-white/30 mb-1">active_scene</label>
-                <div className="flex border border-white/[0.08] rounded px-3 py-2 justify-between items-center text-[10px] font-mono text-white/80 bg-white/[0.02]">
-                  <span className="truncate">{selectedScene.slug}</span>
-                  <span className="text-[8px] text-white/30">▼</span>
-                </div>
+            {/* Readouts List */}
+            <div className="space-y-4 font-mono text-[10px]">
+              <div className="grid grid-cols-3 gap-2">
+                <span className="text-white/30 uppercase tracking-wider">elevation_alt</span>
+                <span className="col-span-2 text-white/80">{activeBeat.intensity}</span>
               </div>
-
-              {/* Breakdown Tags / Elements */}
-              <div>
-                <label className="block text-[8px] font-mono uppercase tracking-widest text-white/30 mb-2">tagged_breakdown_elements</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedScene.props.length > 0 ? (
-                    selectedScene.props.map((p) => (
-                      <span key={p} className="px-2 py-0.5 text-[9px] font-mono border border-white/[0.04] bg-white/[0.02] text-white/50 rounded">
-                        {p}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[10px] font-mono text-white/20 italic">No elements tagged</span>
-                  )}
-                </div>
+              <div className="grid grid-cols-3 gap-2">
+                <span className="text-white/30 uppercase tracking-wider">milestone_pg</span>
+                <span className="col-span-2 text-white/80">Page {activeBeat.page} of 120</span>
               </div>
+              <div className="grid grid-cols-3 gap-2 border-b border-white/[0.03] pb-4">
+                <span className="text-white/30 uppercase tracking-wider">telemetry</span>
+                <span className="col-span-2 text-white/50">{activeBeat.log}</span>
+              </div>
+            </div>
 
-              {/* Characters */}
-              <div>
-                <label className="block text-[8px] font-mono uppercase tracking-widest text-white/30 mb-2">cast_in_scene</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedScene.characters.length > 0 ? (
-                    selectedScene.characters.map((c) => (
-                      <span key={c} className="px-2 py-0.5 text-[9px] font-mono border border-brand-500/20 bg-brand-500/5 text-brand-400 rounded"
-                        style={{
-                          borderColor: 'rgba(var(--brand-500), 0.2)',
-                          background: 'rgba(var(--brand-500), 0.05)',
-                          color: 'rgb(var(--brand-400))'
-                        }}
-                      >
-                        {c}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[10px] font-mono text-white/20 italic">Silent scene</span>
-                  )}
-                </div>
+            {/* Script Excerpt / Topography slice */}
+            <div className="mt-5">
+              <label className="block font-mono text-[8px] uppercase tracking-[0.25em] text-white/35 mb-2">TERRAIN EXCERPT</label>
+              <div className="bg-black/40 border border-white/[0.03] p-4 rounded font-mono text-[10px] text-white/70 leading-relaxed whitespace-pre-wrap select-text h-[130px] overflow-y-auto">
+                {activeBeat.excerpt}
               </div>
             </div>
           </div>
 
-          {/* Interactive Scene Selector dots at bottom right */}
-          <div className="mt-8 pt-4 border-t border-white/[0.06] flex items-center justify-between">
-            <span className="text-[8px] font-mono uppercase tracking-widest text-white/30">navigate_scenes</span>
-            <div className="flex gap-1.5">
-              {SCENES.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedSceneIndex(idx)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    selectedSceneIndex === idx
-                      ? 'bg-brand-500'
-                      : 'bg-white/10 hover:bg-white/30'
-                  }`}
-                  style={{ background: selectedSceneIndex === idx ? 'rgb(var(--brand-500))' : undefined }}
-                />
-              ))}
+          {/* Compass / Elevation Index decoration */}
+          <div className="mt-6 pt-4 border-t border-white/[0.05] flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-4 h-4 border border-white/20 rounded-full flex items-center justify-center animate-spin" style={{ animationDuration: '40s' }}>
+                <span className="w-px h-2 bg-brand-500" style={{ background: 'rgb(var(--brand-500))' }} />
+              </div>
+              <span className="font-mono text-[8px] uppercase tracking-widest text-white/30">AZIMUTH N-12°</span>
             </div>
+            <span className="font-mono text-[8px] text-white/25">PAGE GRADIENT INDEX: ACTIVE</span>
           </div>
         </div>
       </div>
