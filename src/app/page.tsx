@@ -4,7 +4,6 @@ import { SiteVersion } from '@/components/SiteVersion';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { InteractivePreview } from '@/components/InteractivePreview';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
 
@@ -322,8 +321,8 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════════ INTERACTIVE WORKSPACE PREVIEW ═════════════ */}
-        <section className="relative max-w-screen-xl mx-auto px-6 md:px-8 py-16 md:py-24">
+        {/* ═══════════════════ THE PHILOSOPHY / REASONING ═════════════ */}
+        <section className="relative max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
           <div className="relative">
             {/* Corner brackets */}
             <div className="absolute -top-3 -left-3 w-6 h-6 border-l border-t border-white/10" />
@@ -331,15 +330,40 @@ export default async function LandingPage() {
             <div className="absolute -bottom-3 -left-3 w-6 h-6 border-l border-b border-white/10" />
             <div className="absolute -bottom-3 -right-3 w-6 h-6 border-r border-b border-white/10" />
 
-            {/* Cross at center top */}
-            <Cross className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-white/10" />
-
-            <InteractivePreview />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-8 md:p-12 bg-white/[0.01]">
+              <div className="lg:col-span-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <Mono className="text-white/20">01.0</Mono>
+                  <div className="w-6 h-px bg-white/10" />
+                  <Mono className="text-white/25">STATEMENT</Mono>
+                </div>
+                <h3 className="text-lg font-black uppercase tracking-wider text-white">
+                  WHY WE BUILT THIS.
+                </h3>
+              </div>
+              <div className="lg:col-span-8 flex flex-col gap-6">
+                <p className="text-[13px] text-white/50 leading-[2.2] font-light">
+                  Most modern screenwriting software locks your words behind restrictive paywalls, recurring monthly subscriptions, 
+                  or proprietary file formats. We believe the tools to tell stories should be universally accessible. Screenplay Studio 
+                  was built from a simple premise: a writer needs focus, collaborative speed, and absolute ownership of their files.
+                </p>
+                <p className="text-[13px] text-white/35 leading-[2.2] font-light">
+                  This software is, and will always remain, completely free and open-source. There are no limits on script counts, 
+                  no restricted export formats, and no paywalls on basic creation. We sustain development entirely through voluntary 
+                  community support and professional hosting services. You focus on the page; we will keep the platform open.
+                </p>
+                <div className="flex items-center gap-6 mt-2 font-mono text-[9px] text-white/20">
+                  <span>NO EXPORT LOCKS</span>
+                  <span>NO PAYWALLS</span>
+                  <span>100% OPEN SOURCE</span>
+                </div>
+              </div>
+            </div>
 
             {/* Annotations */}
             <div className="flex justify-between mt-3">
-              <Mono className="text-white/10">fig. 01 — Interactive workspace preview</Mono>
-              <Mono className="text-white/10">Active module & tension index</Mono>
+              <Mono className="text-white/10">fig. 01 — Philosophy slice</Mono>
+              <Mono className="text-white/10">Northem Development · Manifesto</Mono>
             </div>
           </div>
         </section>
