@@ -164,9 +164,9 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
     const tick = () => {
       setNodes((currentNodes) => {
         // Physics constants
-        const gravity = 0.015;
+        const gravity = 0.004; // Drastically reduced so nodes can spread out
         const repulsion = 4000;
-        const springLength = 120;
+        const springLength = 200; // Increased to let connections breathe
         const springStrength = 0.04;
         const friction = 0.8;
 
