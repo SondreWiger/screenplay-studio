@@ -208,7 +208,7 @@ class StubQueryBuilder {
         // Unknown method — return a function that returns the target for chaining
         return () => receiver;
       },
-    });
+    }) as StubQueryBuilder & Record<string, (...args: unknown[]) => StubQueryBuilder>;
   }
 }
 

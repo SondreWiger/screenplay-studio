@@ -28,7 +28,7 @@ export function useCrossToolSync(projectId: string) {
           schema: 'public',
           table: 'script_elements',
         },
-        async (payload) => {
+        async (payload: { new: ScriptElement }) => {
           const element = payload.new as ScriptElement;
           if (element.last_edited_by === user.id) return;
 
@@ -75,7 +75,7 @@ async function syncCharacterFromScript(
     .from('scripts').select('id').eq('project_id', projectId);
   if (!scriptRes?.length) return;
 
-  const scriptIds = scriptRes.map(s => s.id);
+  const scriptIds = scriptRes.map((s: { id: string }) => s.id);
   const { count } = await supabase
     .from('script_elements')
     .select('id', { count: 'exact', head: true })

@@ -123,8 +123,8 @@ export async function notifyProjectMembers({
       .eq('id', projectId)
       .single();
 
-    const userIds = new Set(members.map((m) => m.user_id));
-    if (project?.created_by) userIds.add(project.created_by);
+    const userIds = new Set((members as { user_id: string }[]).map((m) => m.user_id));
+    if (project?.created_by) userIds.add(project.created_by as string);
     userIds.delete(actorId); // Don't notify actor
 
     const promises = Array.from(userIds).map((userId) =>
@@ -170,7 +170,7 @@ export async function notifyConversationMembers({
 
     if (!members) return;
 
-    const promises = members.map((m) =>
+    const promises = (members as { user_id: string }[]).map((m) =>
       sendNotification({
         userId: m.user_id,
         type: 'direct_message',

@@ -164,7 +164,7 @@ export function useNotifications(userId: string | undefined) {
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
-        async (payload) => {
+        async (payload: { new: { id: string } }) => {
           try {
             // Fetch the full notification with actor profile joined
             const { data } = await supabase

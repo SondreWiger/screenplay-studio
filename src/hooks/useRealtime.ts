@@ -30,7 +30,7 @@ export function useRealtime(projectId: string) {
           schema: 'public',
           table: 'script_elements',
         },
-        (payload) => {
+        (payload: { eventType: string; new: ScriptElement | undefined; old: Record<string, unknown> }) => {
           // Ignore changes made by the current user — we already update state locally
           const newRecord = payload.new as ScriptElement | undefined;
           if (newRecord && newRecord.last_edited_by === user.id) return;
@@ -74,7 +74,7 @@ export function useRealtime(projectId: string) {
         }
         setOnlineUsers(users);
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED' && user) {
           const raw = window.location.pathname.split('/').pop() || '';
           const page = raw === projectId || raw === '' ? 'overview' : raw;

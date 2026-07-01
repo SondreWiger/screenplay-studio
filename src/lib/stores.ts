@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
 import { clearLocalUser, isLocalMode, isElectronMode } from '@/lib/supabase/electron-client';
-import { loadProjectFromDisk } from '@/lib/local-files';
+import { loadProjectFromDisk, listLocalProjects } from '@/lib/local-files';
 import { putCached, deleteCached, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById, pendingSyncCount } from '@/lib/offline/db';
 import { offlineUpsert, offlineDelete } from '@/lib/offline/sync';
 import logger from '@/lib/logger';
@@ -325,10 +325,10 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         .eq('project_id', projectId)
         .order('version', { ascending: false });
       if (error || data === null) throw error || new Error('fetch failed');
-      const scripts = data || [];
+      const scripts = (data || []) as Script[];
       set({ scripts });
       if (scripts.length > 0) {
-        const active = scripts.find((s) => s.is_active) || scripts[0];
+        const active = scripts.find((s: Script) => s.is_active) || scripts[0];
         set({ currentScript: active });
       } else {
         set({ currentScript: null, elements: [] });

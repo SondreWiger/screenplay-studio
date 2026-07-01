@@ -46,9 +46,9 @@ export function useSidebarLayout(projectId: string, userId: string | undefined, 
     if (!data || data.length === 0) { setLoading(false); return; }
 
     // Resolve priority: user+project > null+project > user+null
-    const userProject = data.find(r => r.user_id === userId && r.project_id === projectId);
-    const projectDefault = data.find(r => r.user_id === null && r.project_id === projectId);
-    const userGlobal = data.find(r => r.user_id === userId && r.project_id === null);
+    const userProject = data.find((r: { user_id: string | null; project_id: string | null; layout: SidebarLayout }) => r.user_id === userId && r.project_id === projectId);
+    const projectDefault = data.find((r: { user_id: string | null; project_id: string | null; layout: SidebarLayout }) => r.user_id === null && r.project_id === projectId);
+    const userGlobal = data.find((r: { user_id: string | null; project_id: string | null; layout: SidebarLayout }) => r.user_id === userId && r.project_id === null);
 
     let resolved: { layout: SidebarLayout; scope: SaveScope } | null = null;
 

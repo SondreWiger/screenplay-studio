@@ -91,7 +91,7 @@ export function useAuth() {
         // after the form-login or after onAuthStateChange fires, which hasn't
         // happened yet on the landing page after a callback redirect).
         const { data: { user: authUser }, error: authError } = await withTimeout(
-          supabase.auth.getUser(),
+          supabase.auth.getUser() as PromiseLike<{ data: { user: { id: string; email?: string; user_metadata: Record<string, unknown> } | null }; error: { message: string } | null }>,
           6_000,
           'getUser'
         ).catch(() => ({ data: { user: null as null }, error: new Error('timeout') }));
@@ -111,7 +111,7 @@ export function useAuth() {
 
         // Auth user exists — fetch profile (with timeout)
         const { data: profile } = await withTimeout(
-          supabase.from('profiles').select('*').eq('id', authUser.id).single(),
+          supabase.from('profiles').select('*').eq('id', authUser.id).single() as PromiseLike<{ data: Profile | null; error: null }>,
           5_000,
           'fetchProfile'
         );
@@ -181,7 +181,7 @@ export function useAuth() {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: string, session: { user: { id: string; user_metadata: Record<string, unknown>; email?: string } } | null) => {
         if (event === 'INITIAL_SESSION') return; // Already handled above
 
         // When offline, Supabase token refresh fails and fires SIGNED_OUT.
@@ -208,7 +208,7 @@ export function useAuth() {
           try { sessionStorage.setItem('ss_session_active', '1'); } catch {}
           try {
             const { data: profile } = await withTimeout(
-              supabase.from('profiles').select('*').eq('id', session.user.id).single(),
+              supabase.from('profiles').select('*').eq('id', session.user.id).single() as PromiseLike<{ data: Profile | null; error: null }>,
               5_000,
               'onAuthChange:fetchProfile'
             );
