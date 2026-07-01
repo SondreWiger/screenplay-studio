@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { isElectronMode } from '@/lib/supabase/electron-client';
 import { useProjectStore, useScriptStore } from '@/lib/stores';
-import { saveProjectToDisk } from '@/lib/local-files';
+import { saveProjectToDisk, loadProjectFromDisk } from '@/lib/local-files';
 
 export function useAutoSave() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -14,14 +14,27 @@ export function useAutoSave() {
     if (!isElectronMode() || savingRef.current) return;
     
     const { currentProject } = useProjectStore.getState();
-    const { scripts, elements } = useScriptStore.getState();
+    const { scripts, elements, currentScript, _isInitialLoad } = useScriptStore.getState();
     
     if (!currentProject) return;
+    if (_isInitialLoad) return;
 
     savingRef.current = true;
     try {
+      // Merge elements: replace current script's elements, keep other scripts' elements from disk
+      let elementsToSave = elements;
+      if (currentScript) {
+        const existingDisk = await loadProjectFromDisk(currentProject.id);
+        if (existingDisk?.elements) {
+          const otherScriptsElements = existingDisk.elements.filter(
+            e => e.script_id !== currentScript.id
+          );
+          elementsToSave = [...otherScriptsElements, ...elements];
+        }
+      }
+
       console.log('[auto-save] Saving project:', currentProject.id, currentProject.title);
-      await saveProjectToDisk(currentProject, scripts, elements);
+      await saveProjectToDisk(currentProject, scripts, elementsToSave);
       setLastSaved(new Date());
       console.log('[auto-save] Project saved successfully');
 

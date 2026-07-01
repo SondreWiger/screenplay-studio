@@ -205,6 +205,7 @@ interface ScriptState {
   selectedElementId: string | null;
   loading: boolean;
   saving: boolean;
+  _isInitialLoad: boolean;
   // Undo / Redo
   _undoStack: ScriptElement[][];
   _redoStack: ScriptElement[][];
@@ -248,6 +249,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   selectedElementId: null,
   loading: true,
   saving: false,
+  _isInitialLoad: false,
   _undoStack: [],
   _redoStack: [],
   _lastHistoryPush: 0,
@@ -293,7 +295,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
   fetchScripts: async (projectId: string) => {
     // Clear immediately so stale data from a previous project is never shown.
-    set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [] });
+    // Flag prevents autosave from writing empty data during load.
+    set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [], _isInitialLoad: true });
     try {
       if (isLocalMode() || !navigator.onLine) {
         if (isElectronMode()) {
@@ -364,7 +367,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 
   fetchElements: async (scriptId: string) => {
-    set({ loading: true });
+    set({ loading: true, _isInitialLoad: true });
     try {
       if (isLocalMode() || !navigator.onLine) {
         if (isElectronMode()) {
@@ -374,14 +377,14 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
             if (diskData?.elements) {
               const elements = diskData.elements.filter(e => e.script_id === scriptId);
               elements.sort((a, b) => a.sort_order - b.sort_order);
-              set({ elements, loading: false });
+              set({ elements, loading: false, _isInitialLoad: false });
               return;
             }
           }
         }
         const elements = await getCachedByScript(scriptId) as unknown as ScriptElement[];
         elements.sort((a, b) => a.sort_order - b.sort_order);
-        set({ elements, loading: false });
+        set({ elements, loading: false, _isInitialLoad: false });
         return;
       }
       const supabase = createClient();
@@ -391,7 +394,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         .eq('script_id', scriptId)
         .order('sort_order', { ascending: true });
       if (error || data === null) throw error || new Error('fetch failed');
-      set({ elements: data || [], loading: false });
+      set({ elements: data || [], loading: false, _isInitialLoad: false });
     } catch {
       // Network error — fall back to cache
       try {
@@ -402,17 +405,17 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
             if (diskData?.elements) {
               const elements = diskData.elements.filter(e => e.script_id === scriptId);
               elements.sort((a, b) => a.sort_order - b.sort_order);
-              set({ elements, loading: false });
+              set({ elements, loading: false, _isInitialLoad: false });
               return;
             }
           }
         }
         const elements = await getCachedByScript(scriptId) as unknown as ScriptElement[];
         elements.sort((a, b) => a.sort_order - b.sort_order);
-        set({ elements, loading: false });
+        set({ elements, loading: false, _isInitialLoad: false });
       } catch {
         logger.error('ScriptStore', 'Error fetching elements (cache fallback failed)');
-        set({ elements: [], loading: false });
+        set({ elements: [], loading: false, _isInitialLoad: false });
       }
     }
   },
