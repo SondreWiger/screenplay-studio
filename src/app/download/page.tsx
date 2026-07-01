@@ -93,12 +93,7 @@ function detectOSAndArch(): { os: Platform; macArch: MacArch } {
   if (ua.includes('mac')) os = 'macos';
   else if (ua.includes('win')) os = 'windows';
 
-  let macArch: MacArch = 'arm64';
-  if (ua.includes('mac') && (ua.includes('x86_64') || ua.includes('intel'))) {
-    macArch = 'x64';
-  }
-
-  return { os, macArch };
+  return { os, macArch: 'arm64' };
 }
 
 export default function DownloadPage() {
