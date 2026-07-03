@@ -146,6 +146,7 @@ export async function updateSession(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let supabase: any = null;
   let user: { id: string } | null = null;
+  let authTimedOut = false;
 
   if (!isLocalMode) {
     supabase = createServerClient(
@@ -169,16 +170,30 @@ export async function updateSession(request: NextRequest) {
       }
     );
 
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-    user = authUser;
+    // Wrap getUser() with a 3s timeout so the middleware doesn't hang when offline.
+    // If the network is unavailable, we treat the user as unauthenticated
+    // but allow the page to render (client-side auth will handle it).
+    try {
+      const getUserPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('getUser timeout')), 3000)
+      );
+      const {
+        data: { user: authUser },
+      } = await Promise.race([getUserPromise, timeoutPromise]);
+      user = authUser;
+    } catch {
+      // Network timeout or error — proceed without auth.
+      // Client-side auth (useAuth) will handle offline restoration.
+      user = null;
+      authTimedOut = true;
+    }
 
     // Ban / IP ban enforcement
     const enforcementExemptPaths = ['/banned', '/suspended', '/auth/', '/api/auth/', '/_next/', '/favicon.ico'];
     const isEnforcementExempt = enforcementExemptPaths.some(p => pathname.startsWith(p));
 
-    if (!isEnforcementExempt) {
+    if (!isEnforcementExempt && !authTimedOut) {
       const { data: ipBan } = await supabase
         .from('banned_ips')
         .select('id, reason')
@@ -312,7 +327,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   );
 
-  if (isProtected && !user && !isLocalMode) {
+  if (isProtected && !user && !isLocalMode && !authTimedOut) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     url.searchParams.set('redirect', request.nextUrl.pathname);

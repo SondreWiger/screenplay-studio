@@ -61,7 +61,12 @@
   "nsis": {
     "oneClick": false,
     "perMachine": false,
-    "allowToChangeInstallationDirectory": true
+    "allowToChangeInstallationDirectory": false,
+    "unicode": true,
+    "deleteAppDataOnUninstall": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Screenplay Studio"
   },
   "linux": {
     "target": [
@@ -72,5 +77,11 @@
     ],
     "icon": "build",
     "category": "AudioVideo"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "SondreWiger",
+    "repo": "screenplay-studio",
+    "releaseType": "release"
   }
 }

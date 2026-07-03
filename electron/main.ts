@@ -117,16 +117,30 @@ async function createWindow() {
          loadAppUrl(url);
        }, 100);
      } else {
-       // Start server immediately without blocking window show
-       startLocalServer().then((serverUrl) => {
-         const url = `${serverUrl}/`;
-         console.log('Local server started at', serverUrl);
-         loadAppUrl(url);
-       }).catch((err) => {
-         console.error('Failed to start local server, falling back to remote:', err);
-         const url = `${WEB_URL}/`;
-         loadAppUrl(url);
-       });
+     // Start server immediately without blocking window show
+        startLocalServer().then((serverUrl) => {
+          const url = `${serverUrl}/`;
+          console.log('Local server started at', serverUrl);
+          loadAppUrl(url);
+        }).catch((err) => {
+          console.error('Failed to start local server:', err);
+          // Show offline error page instead of falling back to remote URL
+          const offlineHtml = `<!DOCTYPE html>
+<html><head><style>
+body{margin:0;padding:0;background:#070710;display:flex;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:white}
+.box{text-align:center;max-width:400px;padding:40px}
+h1{font-size:20px;margin-bottom:12px}
+p{font-size:14px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:24px}
+button{background:#FF5F1F;color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer}
+button:hover{opacity:0.9}
+</style></head><body>
+<div class="box">
+  <h1>Unable to Start</h1>
+  <p>The local server failed to start. This may be due to a corrupted installation or missing files. Please try restarting the app, or reinstall from the download page.</p>
+  <button onclick="location.reload()">Retry</button>
+</div></body></html>`;
+          mainWindow?.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(offlineHtml)}`);
+        });
      }
 
 }

@@ -27,7 +27,12 @@ export async function getSiteSettings(): Promise<Record<string, string>> {
   }
   try {
     const supabase = makeAnonClient();
-    const { data } = await supabase.from('site_settings').select('key,value');
+    // 3s timeout — prevents generateMetadata from blocking SSR when offline
+    const queryPromise = supabase.from('site_settings').select('key,value');
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('site_settings timeout')), 3000)
+    );
+    const { data } = await Promise.race([queryPromise, timeoutPromise]);
     const result: Record<string, string> = {};
     (data ?? []).forEach((row: { key: string; value: string }) => {
       result[row.key] = row.value;
