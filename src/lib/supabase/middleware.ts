@@ -4,9 +4,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 // In-memory rate limiter
 // Tracks request counts per IP per window
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 120; // 120 req/min for normal users
-const RATE_LIMIT_AUTH_MAX = 30; // 30 auth attempts per minute
-const RATE_LIMIT_API_MAX = 60; // 60 API calls per minute
+const RATE_LIMIT_MAX_REQUESTS = 500; // 500 req/min for normal page loads
+const RATE_LIMIT_AUTH_MAX = 100; // 100 auth requests per minute (page loads + attempts)
+const RATE_LIMIT_AUTH_POST_MAX = 20; // 20 actual auth POST submissions per minute (login/register forms)
+const RATE_LIMIT_API_MAX = 200; // 200 API calls per minute
 
 interface RateEntry {
   count: number;
@@ -111,30 +112,64 @@ export async function updateSession(request: NextRequest) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
-  // Rate limiting
-  let maxRequests = RATE_LIMIT_MAX_REQUESTS;
-  let limitKey = `general:${ip}`;
+  // Rate limiting — skip entirely for local/Electron requests
+  // All requests from the embedded Next.js server come from localhost
+  const isLocalRequest = ip === 'unknown' || ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
 
-  if (pathname.startsWith('/auth/')) {
-    maxRequests = RATE_LIMIT_AUTH_MAX;
-    limitKey = `auth:${ip}`;
-  } else if (pathname.startsWith('/api/')) {
-    maxRequests = RATE_LIMIT_API_MAX;
-    limitKey = `api:${ip}`;
-  }
+  if (!isLocalRequest) {
+    let maxRequests = RATE_LIMIT_MAX_REQUESTS;
+    let limitKey = `general:${ip}`;
 
-  const rateResult = checkRateLimit(limitKey, maxRequests);
-  if (!rateResult.allowed) {
-    const retryAfter = Math.ceil((rateResult.resetAt - Date.now()) / 1000);
-    return new NextResponse('Too Many Requests', {
-      status: 429,
-      headers: {
-        'Retry-After': String(retryAfter),
-        'X-RateLimit-Limit': String(maxRequests),
-        'X-RateLimit-Remaining': '0',
-        'X-RateLimit-Reset': String(rateResult.resetAt),
-      },
-    });
+    if (pathname.startsWith('/auth/')) {
+      maxRequests = RATE_LIMIT_AUTH_MAX;
+      limitKey = `auth:${ip}`;
+    } else if (pathname.startsWith('/api/')) {
+      maxRequests = RATE_LIMIT_API_MAX;
+      limitKey = `api:${ip}`;
+    }
+
+    const rateResult = checkRateLimit(limitKey, maxRequests);
+    if (!rateResult.allowed) {
+      const retryAfter = Math.ceil((rateResult.resetAt - Date.now()) / 1000);
+      return new NextResponse(JSON.stringify({
+        error: 'Too Many Requests',
+        message: `Rate limit exceeded. Please try again in ${retryAfter} seconds.`,
+        retryAfter,
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': String(retryAfter),
+          'X-RateLimit-Limit': String(maxRequests),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(rateResult.resetAt),
+        },
+      });
+    }
+
+    // Separate, tighter limit for actual auth form submissions (POST only)
+    // This catches brute-force login attempts while allowing page navigation
+    if (pathname.startsWith('/auth/') && request.method === 'POST') {
+      const postKey = `auth-post:${ip}`;
+      const postResult = checkRateLimit(postKey, RATE_LIMIT_AUTH_POST_MAX);
+      if (!postResult.allowed) {
+        const retryAfter = Math.ceil((postResult.resetAt - Date.now()) / 1000);
+        return new NextResponse(JSON.stringify({
+          error: 'Too Many Requests',
+          message: `Too many login attempts. Please try again in ${retryAfter} seconds.`,
+          retryAfter,
+        }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(RATE_LIMIT_AUTH_POST_MAX),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(postResult.resetAt),
+          },
+        });
+      }
+    }
   }
   let supabaseResponse = NextResponse.next({ request });
 
@@ -306,9 +341,8 @@ export async function updateSession(request: NextRequest) {
     ].join('; ')
   );
 
-  // Rate limit headers
-  supabaseResponse.headers.set('X-RateLimit-Limit', String(maxRequests));
-  supabaseResponse.headers.set('X-RateLimit-Remaining', String(rateResult.remaining));
+  // Rate limit headers (only when rate limiting was applied)
+  // maxRequests and rateResult are set inside the !isLocalRequest block above
 
   // Helper: create a redirect that preserves any refreshed auth cookies
   function redirectWithCookies(url: URL) {
