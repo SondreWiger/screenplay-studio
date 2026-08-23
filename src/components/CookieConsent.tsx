@@ -131,23 +131,23 @@ export function CookieConsentBanner() {
         <div className="flex items-center gap-2 flex-wrap">
           {showDetails ? (
             <button onClick={handleSavePreferences}
-              className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors">
+              className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors tap-h">
               Save Preferences
             </button>
           ) : (
             <>
               <button onClick={handleAcceptAll}
-                className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors">
+                className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors tap-h">
                 Accept All
               </button>
               <button onClick={handleAcceptNecessary}
-                className="px-4 py-2 bg-surface-700 hover:bg-surface-600 text-surface-300 rounded-lg text-xs font-medium transition-colors">
+                className="px-4 py-2 bg-surface-700 hover:bg-surface-600 text-surface-300 rounded-lg text-xs font-medium transition-colors tap-h">
                 Necessary Only
               </button>
             </>
           )}
           <button onClick={() => setShowDetails(!showDetails)}
-            className="px-4 py-2 text-surface-400 hover:text-white text-xs font-medium transition-colors">
+            className="px-4 py-2 text-surface-400 hover:text-white text-xs font-medium transition-colors tap-h">
             {showDetails ? 'Hide Details' : 'Customize'}
           </button>
         </div>

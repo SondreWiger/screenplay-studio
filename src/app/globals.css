@@ -1057,6 +1057,152 @@ a:active:not(:disabled) {
 }
 
 /* ============================================================
+   PHONE LAYER — systemic touch/mobile behaviour
+   ------------------------------------------------------------
+   Applies everywhere rather than per-page, so a route added later
+   inherits correct phone behaviour without anyone remembering to
+   wire it up. Paired with `viewportFit: 'cover'` in app/layout.tsx.
+   ============================================================ */
+
+:root {
+  /* Named so components can reference insets without repeating env(). */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* Rotating a phone must not resize the text. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Utilities for anything pinned to an edge. A fixed header that ignores
+   the inset sits under the Dynamic Island; a fixed footer sits under the
+   home indicator. */
+.safe-pt { padding-top: var(--safe-top); }
+.safe-pb { padding-bottom: var(--safe-bottom); }
+.safe-pl { padding-left: var(--safe-left); }
+.safe-pr { padding-right: var(--safe-right); }
+.safe-px { padding-left: var(--safe-left); padding-right: var(--safe-right); }
+.safe-inset { padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left); }
+
+/* Wide content — tables, code, timelines — scrolls inside its own box so the
+   page body never scrolls sideways. */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 767px) {
+  /* iOS Safari zooms the whole page when a focused field's text is under
+     16px, and there is no way to zoom back out programmatically. The only
+     real fix is to never trip it. Screenplay elements are excluded — they
+     carry deliberate point sizes and their own pinch-zoom handling. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
+  }
+
+  /* Kill the 300ms tap delay and the grey flash that makes a web app feel
+     like a web page. */
+  a, button, [role="button"], input, select, textarea, summary, label[for] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Apple's minimum target, as an opt-in utility rather than a blanket
+     `button { … }` rule. A global rule here would out-specify Tailwind's
+     display utilities (`button:not(.x)` beats `.flex`) and would stretch
+     colour swatches, segmented controls and icon grids that are small on
+     purpose. Applied to the controls that need it instead. */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Height-only variant, for controls that already lay themselves out (full
+     width buttons, stacked banner actions) and just sit too short. Leaves
+     `display` and `width` alone, so it cannot disturb a grid. */
+  .tap-h { min-height: 44px; }
+
+  /* The app's shared button classes are padding-sized, so a minimum height
+     lifts every one of them to target without touching any layout. These are
+     safe to do globally precisely because they are shared components rather
+     than ad-hoc Tailwind on a one-off element. */
+  .ss-btn-orange,
+  .ss-btn-ghost,
+  .btn-primary,
+  .btn-ghost {
+    min-height: 44px;
+  }
+
+  /* Checkboxes and radios are safe to enlarge unconditionally — they have no
+     intrinsic layout role beyond their own box, and the native ones are well
+     under the minimum. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 24px;
+    min-width: 24px;
+  }
+
+  /* `100vh` on mobile Safari measures the viewport *without* the browser
+     chrome, so a full-height layout overflows and the bottom is unreachable.
+     `100dvh` tracks the visible area as the bar shows and hides. */
+  @supports (height: 100dvh) {
+    .min-h-screen { min-height: 100dvh; }
+    .h-screen { height: 100dvh; }
+  }
+
+  /* Content sitting under the fixed project header has to clear both the
+     header and whatever the notch takes. Kept as one utility so the two
+     numbers can never drift apart. */
+  .pt-mobile-header { padding-top: calc(3rem + var(--safe-top)); }
+
+  /* Scrolling a modal must not drag the page behind it. */
+  [role="dialog"],
+  .modal-scroll {
+    overscroll-behavior: contain;
+  }
+
+  /* Nothing should be able to push the page sideways. */
+  img, video, iframe, table, pre {
+    max-width: 100%;
+  }
+
+  /* Tables are the usual culprit — give them their own scroller. */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+}
+
+/* A phone held sideways puts the notch on one edge. Landscape-only, because
+   the insets are zero in portrait and the padding would just waste width. */
+@media (max-width: 926px) and (orientation: landscape) {
+  .safe-landscape-x {
+    padding-left: max(var(--safe-left), 0.75rem);
+    padding-right: max(var(--safe-right), 0.75rem);
+  }
+}
+
+/* Coarse pointers get no hover states — on touch they stick after a tap and
+   look like a stuck selection. */
+@media (hover: none) {
+  a:hover, button:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
    PAGE LAYOUT — Unified page structure utilities
    ============================================================ */
 

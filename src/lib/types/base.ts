@@ -402,6 +402,7 @@ export interface ReviewAnnotation {
 export interface ProjectShareLink {
   id: string;
   project_id: string;
+  script_id: string | null;
   created_by: string;
   name: string;
   token: string;

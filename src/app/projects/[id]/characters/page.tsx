@@ -47,14 +47,6 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     fetchCharacters();
   }, [params.id]);
 
-  // Auto-sync characters from script on first load
-  useEffect(() => {
-    if (!loading && !hasSynced.current && canEdit) {
-      hasSynced.current = true;
-      handleAutoSync();
-    }
-  }, [loading]);
-
   const fetchCharacters = async () => {
     try {
       const supabase = createClient();
@@ -79,8 +71,13 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     if (!canEdit) return;
     const ok = await confirm({ message: t('characters.delete_confirm'), variant: 'danger', confirmLabel: 'Delete' }); if (!ok) return;
     const supabase = createClient();
-    await supabase.from('characters').delete().eq('id', id);
-    setCharacters(characters.filter((c) => c.id !== id));
+    const { error } = await supabase.from('characters').delete().eq('id', id);
+    if (error) {
+      console.error('Delete error:', error);
+      toast.error('Could not delete character: ' + error.message);
+      return;
+    }
+    setCharacters(prev => prev.filter((c) => c.id !== id));
     if (selectedCharacter?.id === id) setSelectedCharacter(null);
   };
 
@@ -95,8 +92,14 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     
     setLoading(true);
     const supabase = createClient();
-    await supabase.from('characters').delete().in('id', selectedIds);
-    setCharacters(characters.filter((c) => !selectedIds.includes(c.id)));
+    const { error } = await supabase.from('characters').delete().in('id', selectedIds);
+    if (error) {
+      console.error('Bulk delete error:', error);
+      toast.error('Could not delete characters: ' + error.message);
+      setLoading(false);
+      return;
+    }
+    setCharacters(prev => prev.filter((c) => !selectedIds.includes(c.id)));
     setSelectedIds([]);
     setLoading(false);
   };

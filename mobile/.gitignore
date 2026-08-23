@@ -1,0 +1,16 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+.DS_Store
+
+# Xcode writes per-user scheme management into the project bundle
+ScreenplayStudio.xcodeproj/project.xcworkspace/xcuserdata/
+ScreenplayStudio.xcodeproj/xcuserdata/
+
+# Secrets.plist is committed on purpose: it holds only the public, RLS-scoped
+# anon key that the website already ships to browsers. If you ever add a key
+# that is not safe in a client binary, it does not belong in this file — it
+# belongs behind a server route.

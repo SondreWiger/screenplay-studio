@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useProjectStore } from '@/lib/stores';
+import { useProjectStore, useScriptStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import type { ProjectShareLink } from '@/lib/types';
 import { useTranslation } from '@/components/TranslationProvider';
@@ -37,6 +37,7 @@ interface LinkForm {
   is_invite: boolean;
   invite_role: 'viewer' | 'commenter' | 'editor';
   expires_at: string;
+  script_id: string | null;
 }
 
 const BLANK_FORM: LinkForm = {
@@ -53,6 +54,7 @@ const BLANK_FORM: LinkForm = {
   is_invite: false,
   invite_role: 'viewer',
   expires_at: '',
+  script_id: null,
 };
 
 // Helpers
@@ -75,6 +77,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
   const projectId = params.id;
   const { user } = useAuth();
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
+  const { scripts } = useScriptStore();
   const { t } = useTranslation();
 
   const [links, setLinks]                   = useState<ProjectShareLink[]>([]);
@@ -123,6 +126,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
       ...form.perms,
       is_invite: form.is_invite,
       invite_role: form.invite_role,
+      script_id: (form.perms.can_view_script || form.perms.can_view_scenes) ? form.script_id : null,
       is_active: true,
       ...(form.expires_at ? { expires_at: new Date(form.expires_at).toISOString() } : {}),
     });
@@ -316,6 +320,23 @@ export default function SharePage({ params }: { params: { id: string } }) {
                   })}
                 </div>
               </Field>
+
+              {(form.perms.can_view_script || form.perms.can_view_scenes) && scripts.length > 0 && (
+                <Field label="Script Version">
+                  <select
+                    value={form.script_id || ''}
+                    onChange={(e) => setForm((f) => ({ ...f, script_id: e.target.value || null }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/70 focus:bg-white/8 transition-colors"
+                  >
+                    <option value="">Default (Active Script)</option>
+                    {scripts.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.title || `Version ${s.version}`}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
 
               <div className="border-t border-white/[0.06]" />
 

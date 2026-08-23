@@ -65,13 +65,15 @@ export async function GET(
   if (link.can_view_script) {
     contentFetches.push(
       (async () => {
-        const { data: scripts } = await admin
-          .from('scripts')
-          .select('id, title, version')
-          .eq('project_id', link.project_id)
-          .eq('is_active', true)
-          .limit(1)
-          .single();
+        let scriptQuery = admin.from('scripts').select('id, title, version').eq('project_id', link.project_id);
+        
+        if (link.script_id) {
+          scriptQuery = scriptQuery.eq('id', link.script_id);
+        } else {
+          scriptQuery = scriptQuery.eq('is_active', true);
+        }
+
+        const { data: scripts } = await scriptQuery.limit(1).single();
 
         if (scripts) {
           const { data: elements } = await admin
@@ -102,11 +104,13 @@ export async function GET(
   if (link.can_view_scenes) {
     contentFetches.push(
       (async () => {
-        const { data } = await admin
-          .from('scenes')
-          .select('id, scene_number, scene_heading, location_type, location_name, time_of_day, synopsis, page_count, estimated_duration_minutes, notes, sort_order')
-          .eq('project_id', link.project_id)
-          .order('sort_order', { ascending: true });
+        let sceneQuery = admin.from('scenes').select('*').eq('project_id', link.project_id).order('sort_order', { ascending: true });
+        
+        if (link.script_id) {
+          sceneQuery = sceneQuery.or(`script_id.eq.${link.script_id},script_id.is.null`);
+        }
+
+        const { data } = await sceneQuery;
         scenes = data ?? [];
       })()
     );

@@ -969,7 +969,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       {/* Mobile header */}
       {!zenMode && (
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden"
+      <div className="fixed top-0 left-0 right-0 z-40 md:hidden safe-pt safe-px"
         style={{ backgroundColor: 'rgb(var(--surface-950))', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)' }}
       >
         {/* Gradient top line on mobile too */}
@@ -977,7 +977,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
         <div className="flex items-center justify-between px-3 py-2.5">
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/8 transition-colors"
+            className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/8 transition-colors tap-target"
+            aria-label="Open project menu"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
@@ -1010,7 +1011,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             onClick={() => setMobileMenuOpen(false)}
           />
           <aside
-            className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col md:hidden animate-slide-right"
+            className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col md:hidden animate-slide-right safe-pt safe-pb safe-pl"
             style={{ background: 'rgb(var(--surface-950))', borderRight: '1px solid rgb(var(--brand-900) / 0.4)' }}
           >
             {sidebarContent(true)}
@@ -1032,7 +1033,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       )}
 
       {/* Main Content */}
-      <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-12 md:pt-0')}>
+      <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-mobile-header md:pt-0')}>
         <ErrorBoundary>
           {children}
         </ErrorBoundary>

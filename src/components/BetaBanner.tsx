@@ -57,7 +57,7 @@ export function BetaBanner() {
           </Link>
           <button
             onClick={dismiss}
-            className="p-1 rounded-md text-surface-500 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1 rounded-md text-surface-500 hover:text-white hover:bg-white/10 transition-colors tap-target"
             aria-label="Dismiss beta notice"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

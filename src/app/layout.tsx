@@ -27,6 +27,11 @@ export const viewport: Viewport = {
   themeColor: '#070710',
   width: 'device-width',
   initialScale: 1,
+  // Let the page paint into the notch and home-indicator areas; the
+  // `.safe-*` utilities in globals.css pad the elements that must clear them.
+  viewportFit: 'cover',
+  // Deliberately not capping maximumScale or setting userScalable: false —
+  // blocking pinch-zoom breaks the page for anyone who needs to magnify it.
 };
 
 export async function generateMetadata(): Promise<Metadata> {
