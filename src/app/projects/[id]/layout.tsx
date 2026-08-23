@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { isFeatureEnabled } from '@/lib/feature-flags';
-import { useProjectStore, usePresenceStore } from '@/lib/stores';
+import { useProjectStore, usePresenceStore, useScriptStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
 import { useCrossToolSync } from '@/hooks/useCrossToolSync';
 import { Avatar, LoadingPage, KeyboardShortcuts, Modal, Input, Textarea, Button, toast } from '@/components/ui';
@@ -57,6 +57,7 @@ export default function ProjectLayout({
   const searchParams = useSearchParams();
   const isPopout = searchParams?.get('popout') === '1';
   const { currentProject, setCurrentProject, members, setMembers } = useProjectStore();
+  const { scripts, currentScript, setCurrentScript, fetchScripts } = useScriptStore();
   const { onlineUsers } = usePresenceStore();
   const { updatePresence } = useRealtime(params.id);
   useCrossToolSync(params.id);
@@ -312,7 +313,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       // If offline or local mode, continue to fetchProjectData() to load from local cache
     }
     fetchProjectData();
-  }, [params.id, user, authLoading]);
+    fetchScripts(params.id);
+  }, [params.id, user, authLoading, fetchScripts]);
 
   useEffect(() => {
     if (user && params.id) {
@@ -628,6 +630,21 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   </span>
                 )}
               </div>
+              {scripts.length > 0 && (mobile || !sidebarCollapsed) && (
+                <div className="mt-2">
+                  <select 
+                    value={currentScript?.id || ''} 
+                    onChange={(e) => setCurrentScript(scripts.find(s => s.id === e.target.value) || null)}
+                    className="bg-surface-800/80 border border-surface-700 text-white text-[10px] font-medium rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-brand-500 w-full transition-colors hover:bg-surface-700 cursor-pointer"
+                  >
+                    {scripts.map(s => (
+                      <option key={s.id} value={s.id}>
+                        {s.title || `Version ${s.version}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 

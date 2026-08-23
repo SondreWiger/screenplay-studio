@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore, useScriptStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn, formatDate, formatTime } from '@/lib/utils';
-import { useProjectStore } from '@/lib/stores';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { ScheduleEvent, Scene, Location as Loc, ScheduleEventType } from '@/lib/types';
 
@@ -48,8 +47,10 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [dayViewDate, setDayViewDate] = useState(new Date());
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const { members, currentProject } = useProjectStore();
+  const { currentScript } = useScriptStore();
 
-  useEffect(() => { fetchData(); }, [params.id]);
+  useEffect(() => { fetchData(); }, [params.id, currentScript?.id]);
 
   // Realtime: keep schedule/scenes/characters in sync
   useEffect(() => {
@@ -65,7 +66,6 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   // Role awareness
-  const { members, currentProject } = useProjectStore();
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
@@ -75,7 +75,9 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
       const supabase = createClient();
       const [evRes, scRes, loRes, chRes] = await Promise.all([
         supabase.from('production_schedule').select('*').eq('project_id', params.id).order('start_time'),
-        supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
+        currentScript 
+          ? supabase.from('scenes').select('*').eq('project_id', params.id).or(`script_id.eq.${currentScript.id},script_id.is.null`).order('sort_order')
+          : supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
         supabase.from('locations').select('*').eq('project_id', params.id).order('name'),
         supabase.from('characters').select('id,name').eq('project_id', params.id),
       ]);

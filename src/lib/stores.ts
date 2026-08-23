@@ -287,7 +287,12 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 
   setScripts: (scripts) => set({ scripts }),
-  setCurrentScript: (script) => set({ currentScript: script }),
+  setCurrentScript: (script) => {
+    set({ currentScript: script });
+    if (script) {
+      try { localStorage.setItem(`ss-active-script-${script.project_id}`, script.id); } catch {}
+    }
+  },
   setElements: (elements) => set({ elements }),
   setSelectedElementId: (id) => set({ selectedElementId: id }),
   setSaving: (saving) => set({ saving }),
@@ -306,7 +311,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
             scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
             set({ scripts });
             if (scripts.length > 0) {
-              const active = scripts.find((s) => s.is_active) || scripts[0];
+              const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
+              const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
               set({ currentScript: active });
             }
             return;
@@ -316,7 +322,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
         set({ scripts });
         if (scripts.length > 0) {
-          const active = scripts.find((s) => s.is_active) || scripts[0];
+          const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
+          const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
           set({ currentScript: active });
         }
         return;
@@ -331,7 +338,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
       const scripts = (data || []) as Script[];
       set({ scripts });
       if (scripts.length > 0) {
-        const active = scripts.find((s: Script) => s.is_active) || scripts[0];
+        const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
+        const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
         set({ currentScript: active });
       } else {
         set({ currentScript: null, elements: [] });
@@ -346,7 +354,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
             scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
             set({ scripts });
             if (scripts.length > 0) {
-              const active = scripts.find((s) => s.is_active) || scripts[0];
+              const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
+              const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
               set({ currentScript: active });
             }
             return;
@@ -356,7 +365,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
         set({ scripts });
         if (scripts.length > 0) {
-          const active = scripts.find((s) => s.is_active) || scripts[0];
+          const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
+          const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
           set({ currentScript: active });
         }
       } catch {

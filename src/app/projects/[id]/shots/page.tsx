@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useProjectStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore, useScriptStore } from '@/lib/stores';
 import Link from 'next/link';
-import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Shot, Scene, ShotType, ShotMovement } from '@/lib/types';
@@ -39,6 +39,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const { currentScript } = useScriptStore();
   const [shots, setShots] = useState<Shot[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,14 +47,16 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
   const [showEditor, setShowEditor] = useState(false);
   const [filterScene, setFilterScene] = useState<string>('all');
 
-  useEffect(() => { fetchData(); }, [params.id]);
+  useEffect(() => { fetchData(); }, [params.id, currentScript?.id]);
 
   const fetchData = async () => {
     try {
       const supabase = createClient();
-      const [shotsRes, scenesRes] = await Promise.all([
+      const [scenesRes, shotsRes] = await Promise.all([
+        currentScript 
+          ? supabase.from('scenes').select('*').eq('project_id', params.id).or(`script_id.eq.${currentScript.id},script_id.is.null`).order('sort_order')
+          : supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
         supabase.from('shots').select('*').eq('project_id', params.id).order('sort_order'),
-        supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
       ]);
       if (shotsRes.error) console.error('Shots fetch error:', shotsRes.error.message);
       if (scenesRes.error) console.error('Scenes fetch error:', scenesRes.error.message);

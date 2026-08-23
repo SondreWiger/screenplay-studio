@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { SkeletonList } from '@/components/ui';
+import { useScriptStore } from '@/lib/stores';
 
 interface Scene {
   id: string;
@@ -34,6 +35,7 @@ interface Scene {
   weather_required: string | null;
   special_equipment: string[];
   notes: string | null;
+  script_id: string | null;
 }
 
 interface Character { id: string; name: string }
@@ -85,89 +87,77 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
   const [groupBy, setGroupBy]       = useState<'none' | 'time_of_day' | 'location_type'>('none');
   const [showCompleted, setShowCompleted] = useState(true);
   const [expanded, setExpanded]     = useState<Set<string>>(new Set());
-  // Script-derived cast data: charName(upper) → scene IDs they speak in
   const [scriptCharToScenes, setScriptCharToScenes] = useState<Map<string, string[]>>(new Map());
-  // Estimated page counts from script element density (heading → elem count)
   const [headingElemCount, setHeadingElemCount] = useState<Map<string, number>>(new Map());
+  const { currentScript } = useScriptStore();
+
+  const fetchData = async () => {
+    const supabase = createClient();
+    setLoading(true);
+
+    const scenesQuery = currentScript 
+      ? supabase.from('scenes').select('*').eq('project_id', params.id).or(`script_id.eq.${currentScript.id},script_id.is.null`).order('sort_order', { ascending: true })
+      : supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order', { ascending: true });
+
+    const [sceneRes, charRes, locRes] = await Promise.all([
+      scenesQuery,
+      supabase.from('characters').select('id,name').eq('project_id', params.id),
+      supabase.from('locations').select('id,name').eq('project_id', params.id),
+    ]);
+    
+    const rawScenes = (sceneRes.data as unknown as Scene[]) ?? [];
+    setScenes(rawScenes);
+    setCharacters((charRes.data as Character[]) ?? []);
+    setLocations((locRes.data as Location[]) ?? []);
+
+    const scriptIds = currentScript ? [currentScript.id] : ((await supabase.from('scripts').select('id').eq('project_id', params.id)).data ?? []).map((s) => s.id);
+
+    type RawEl = { element_type: string; content: string; sort_order: number };
+    let rawElements: RawEl[] = [];
+    if (scriptIds.length > 0) {
+      const { data: elData } = await supabase
+        .from('script_elements')
+        .select('element_type, content, sort_order')
+        .in('script_id', scriptIds)
+        .order('sort_order', { ascending: true });
+      rawElements = (elData ?? []) as RawEl[];
+    }
+
+    const hToChars  = new Map<string, Set<string>>();
+    const hToElems  = new Map<string, number>();
+    let curH: string | null = null;
+    for (const el of rawElements) {
+      if (el.element_type === 'scene_heading') {
+        curH = (el.content || '').trim().toUpperCase();
+        if (!hToChars.has(curH)) hToChars.set(curH, new Set());
+        hToElems.set(curH, (hToElems.get(curH) ?? 0) + 1);
+      } else if (curH) {
+        hToElems.set(curH, (hToElems.get(curH) ?? 0) + 1);
+        if (el.element_type === 'character') {
+          const name = (el.content || '').replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
+          if (name) hToChars.get(curH)!.add(name);
+        }
+      }
+    }
+    setHeadingElemCount(hToElems);
+
+    const charToScenes  = new Map<string, string[]>();
+    for (const scene of rawScenes) {
+      const heading = (scene.scene_heading || '').trim().toUpperCase();
+      if (!heading) continue;
+      const chars = Array.from(hToChars.get(heading) ?? []);
+      for (const ch of chars) {
+        if (!charToScenes.has(ch)) charToScenes.set(ch, []);
+        charToScenes.get(ch)!.push(scene.id);
+      }
+    }
+    setScriptCharToScenes(charToScenes);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const load = async () => {
-      const supabase = createClient();
-      const [sceneRes, charRes, locRes] = await Promise.all([
-        supabase
-          .from('scenes')
-          .select([
-            'id','scene_number','scene_heading','location_type','location_name',
-            'location_id','time_of_day','page_count','estimated_duration_minutes',
-            'is_completed','synopsis','sort_order',
-            'cast_ids','extras_count','props','costumes','makeup_notes',
-            'special_effects','stunts','vehicles','animals','sound_notes',
-            'music_cues','vfx_notes','mood','weather_required','special_equipment','notes',
-          ].join(','))
-          .eq('project_id', params.id)
-          .order('sort_order', { ascending: true }),
-        supabase.from('characters').select('id,name').eq('project_id', params.id),
-        supabase.from('locations').select('id,name').eq('project_id', params.id),
-      ]);
-      const rawScenes = (sceneRes.data as unknown as Scene[]) ?? [];
-      setScenes(rawScenes);
-      setCharacters((charRes.data as Character[]) ?? []);
-      setLocations((locRes.data as Location[]) ?? []);
-
-      // Fetch & parse script elements
-      const scriptsRes = await supabase.from('scripts').select('id').eq('project_id', params.id);
-      const scriptIds = ((scriptsRes.data as { id: string }[] | null) ?? []).map((s) => s.id);
-
-      type RawEl = { element_type: string; content: string; sort_order: number };
-      let rawElements: RawEl[] = [];
-      if (scriptIds.length > 0) {
-        const { data: elData } = await supabase
-          .from('script_elements')
-          .select('element_type, content, sort_order')
-          .in('script_id', scriptIds)
-          .order('sort_order', { ascending: true });
-        rawElements = (elData ?? []) as RawEl[];
-      }
-
-      // Walk elements: track scene heading → characters + element count
-      const hToChars  = new Map<string, Set<string>>();
-      const hToElems  = new Map<string, number>();
-      let curH: string | null = null;
-      for (const el of rawElements) {
-        if (el.element_type === 'scene_heading') {
-          curH = (el.content || '').trim().toUpperCase();
-          if (!hToChars.has(curH)) hToChars.set(curH, new Set());
-          hToElems.set(curH, (hToElems.get(curH) ?? 0) + 1);
-        } else if (curH) {
-          hToElems.set(curH, (hToElems.get(curH) ?? 0) + 1);
-          if (el.element_type === 'character') {
-            const name = (el.content || '').replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
-            if (name) hToChars.get(curH)!.add(name);
-          }
-        }
-      }
-      setHeadingElemCount(hToElems);
-
-      // Map heading → scene IDs using scene.scene_heading text
-      const charToScenes  = new Map<string, string[]>();
-      const sceneToChars  = new Map<string, string[]>();
-      for (const scene of rawScenes) {
-        const heading = (scene.scene_heading || '').trim().toUpperCase();
-        if (!heading) continue;
-        const chars = Array.from(hToChars.get(heading) ?? []);
-        if (chars.length === 0) continue;
-        sceneToChars.set(scene.id, chars);
-        for (const ch of chars) {
-          if (!charToScenes.has(ch)) charToScenes.set(ch, []);
-          charToScenes.get(ch)!.push(scene.id);
-        }
-      }
-      setScriptCharToScenes(charToScenes);
-
-      setLoading(false);
-    };
-    load();
-  }, [params.id]);
+    fetchData();
+  }, [params.id, currentScript?.id]);
 
   const charById = useMemo(() =>
     Object.fromEntries(characters.map((c) => [c.id, c.name])), [characters]);
@@ -183,7 +173,6 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
     const totalMins    = displayScenes.reduce((a, s) => a + (s.estimated_duration_minutes ?? 0), 0);
     const vfxScenes    = displayScenes.filter((s) => s.vfx_notes).length;
     const stuntScenes  = displayScenes.filter((s) => s.stunts).length;
-    const extrasTotal  = displayScenes.reduce((a, s) => a + (s.extras_count ?? 0), 0);
     const allProps     = Array.from(new Set(displayScenes.flatMap((s) => s.props ?? [])));
     const allCostumes  = Array.from(new Set(displayScenes.flatMap((s) => s.costumes ?? [])));
     const allSfx       = Array.from(new Set(displayScenes.flatMap((s) => s.special_effects ?? [])));

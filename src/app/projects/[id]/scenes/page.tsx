@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, SkeletonList, toast } from '@/components/ui';
+import { useScriptStore } from '@/lib/stores';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -37,6 +38,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = currentUserRole !== 'viewer';
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const { currentScript } = useScriptStore();
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -48,7 +50,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
 
   const hasSynced = useRef(false);
 
-  useEffect(() => { fetchData(); }, [params.id]);
+  useEffect(() => { fetchData(); }, [params.id, currentScript?.id]);
 
   // Auto-sync scenes from script on first load
   useEffect(() => {
@@ -62,7 +64,9 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     try {
       const supabase = createClient();
       const [scenesRes, locsRes, charsRes] = await Promise.all([
-        supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
+        currentScript 
+          ? supabase.from('scenes').select('*').eq('project_id', params.id).or(`script_id.eq.${currentScript.id},script_id.is.null`).order('sort_order')
+          : supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
         supabase.from('locations').select('*').eq('project_id', params.id),
         supabase.from('characters').select('*').eq('project_id', params.id).order('name'),
       ]);
@@ -81,15 +85,12 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     setSyncing(true);
     try {
       const supabase = createClient();
-      const { data: scripts } = await supabase
-        .from('scripts').select('id').eq('project_id', params.id);
-      if (!scripts || scripts.length === 0) { setSyncing(false); return; }
+      if (!currentScript) { setSyncing(false); return; }
 
-      const scriptIds = scripts.map(s => s.id);
       const { data: elements } = await supabase
         .from('script_elements')
         .select('*')
-        .in('script_id', scriptIds)
+        .eq('script_id', currentScript.id)
         .eq('element_type', 'scene_heading')
         .eq('is_omitted', false)
         .order('sort_order');
