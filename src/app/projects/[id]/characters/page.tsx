@@ -27,6 +27,10 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const [showEditor, setShowEditor] = useState(false);
   const [filter, setFilter] = useState<'all' | 'protagonist' | 'antagonist' | 'main' | 'supporting' | 'minor' | 'all_leads' | 'needs_setup'>('all');
   const [syncing, setSyncing] = useState(false);
+  
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showBulkEditor, setShowBulkEditor] = useState(false);
+
 
   const hasSynced = useRef(false);
 
@@ -62,6 +66,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
         .order('sort_order', { ascending: true });
       if (error) console.error('Characters fetch error:', error.message);
       setCharacters(data || []);
+      setSelectedIds([]);
     } catch (err) {
       console.error('Unexpected error fetching characters:', err);
       setCharacters([]);
@@ -77,6 +82,23 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     await supabase.from('characters').delete().eq('id', id);
     setCharacters(characters.filter((c) => c.id !== id));
     if (selectedCharacter?.id === id) setSelectedCharacter(null);
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!canEdit || selectedIds.length === 0) return;
+    const ok = await confirm({ message: `Are you sure you want to delete ${selectedIds.length} characters?`, variant: 'danger', confirmLabel: 'Delete All' }); 
+    if (!ok) return;
+    
+    setLoading(true);
+    const supabase = createClient();
+    await supabase.from('characters').delete().in('id', selectedIds);
+    setCharacters(characters.filter((c) => !selectedIds.includes(c.id)));
+    setSelectedIds([]);
+    setLoading(false);
   };
 
   // Auto-sync: detect character names from script and create placeholders
@@ -239,11 +261,34 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
             <Card
               key={character.id}
               hover
-              className="overflow-hidden cursor-pointer"
-              onClick={() => router.push(`/projects/${params.id}/characters/${character.id}`)}
+              className={cn("overflow-hidden cursor-pointer relative", selectedIds.includes(character.id) && "ring-2 ring-brand-500")}
+              onClick={(e) => {
+                if (selectedIds.length > 0) {
+                  e.preventDefault();
+                  toggleSelection(character.id);
+                } else {
+                  router.push(`/projects/${params.id}/characters/${character.id}`);
+                }
+              }}
             >
+              {canEdit && (
+                <div 
+                  className="absolute top-3 right-3 z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelection(character.id);
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(character.id)}
+                    onChange={() => {}}
+                    className="w-5 h-5 rounded border-surface-600 bg-surface-800/50 text-brand-500 focus:ring-brand-500 cursor-pointer"
+                  />
+                </div>
+              )}
               <div className="p-5">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 pr-8">
                   <Avatar
                     src={character.actor_photo_url ?? character.avatar_url}
                     name={character.name}
@@ -312,7 +357,44 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
         onDelete={handleDelete}
         canEdit={canEdit}
       />
+      />
       <ConfirmDialog />
+
+      {/* Bulk Action Bar */}
+      {selectedIds.length > 0 && canEdit && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 bg-surface-800 border border-surface-700 rounded-full shadow-xl shadow-black/50 animate-in slide-in-from-bottom-10 fade-in">
+          <span className="text-sm font-medium text-white px-2">
+            {selectedIds.length} selected
+          </span>
+          <div className="w-px h-5 bg-surface-700" />
+          <Button variant="secondary" size="sm" onClick={() => setSelectedIds(filtered.map(c => c.id))}>
+            Select All
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setShowBulkEditor(true)}>
+            Edit Role & Color
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleBulkDelete}>
+            Delete
+          </Button>
+          <div className="w-px h-5 bg-surface-700" />
+          <button onClick={() => setSelectedIds([])} className="text-surface-400 hover:text-white p-1 rounded-full hover:bg-surface-700 transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
+
+      {/* Bulk Editor Modal */}
+      <BulkCharacterEditor
+        isOpen={showBulkEditor}
+        onClose={() => setShowBulkEditor(false)}
+        selectedIds={selectedIds}
+        projectId={params.id}
+        onSaved={() => {
+          fetchCharacters();
+          setShowBulkEditor(false);
+          setSelectedIds([]);
+        }}
+      />
     </div>
   );
 }
@@ -690,6 +772,107 @@ function CharacterEditor({
             {character ? 'Save Changes' : 'Create Character'}
           </Button>}
         </div>
+      </div>
+    </Modal>
+  );
+}
+
+// Bulk Character Editor Modal
+
+function BulkCharacterEditor({
+  isOpen,
+  onClose,
+  selectedIds,
+  projectId,
+  onSaved,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedIds: string[];
+  projectId: string;
+  onSaved: () => void;
+}) {
+  const [role, setRole] = useState('');
+  const [color, setColor] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    if (!role && !color) {
+      onClose();
+      return;
+    }
+    
+    setLoading(true);
+    const supabase = createClient();
+    const updates: any = {};
+    if (role) {
+      updates.role = role;
+      updates.is_main = ['protagonist', 'antagonist', 'main'].includes(role);
+    }
+    if (color) {
+      updates.color = color;
+    }
+    
+    await supabase.from('characters').update(updates).in('id', selectedIds).eq('project_id', projectId);
+    
+    setLoading(false);
+    onSaved();
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setRole('');
+      setColor('');
+    }
+  }, [isOpen]);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Edit ${selectedIds.length} Characters`} size="md">
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-surface-300 mb-2">Character Role (Leave empty to keep unchanged)</label>
+          <div className="flex flex-wrap gap-1.5">
+            {ROLE_OPTIONS.map((r) => (
+              <button
+                key={r.value}
+                type="button"
+                onClick={() => setRole(role === r.value ? '' : r.value)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors',
+                  role === r.value
+                    ? `${r.activeText} ${r.activeBg} ${r.activeBorder}`
+                    : 'text-surface-400 bg-surface-800/50 border-surface-700 hover:border-surface-500 hover:text-white'
+                )}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-surface-300 mb-1.5">Character Color (Leave empty to keep unchanged)</label>
+          <div className="flex gap-2 flex-wrap">
+            {['#ef4444', '#f97316', '#f59e0b', '#22c55e', '#14b8a6', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899'].map((c) => (
+              <button
+                key={c}
+                onClick={() => setColor(color === c ? '' : c)}
+                className={cn(
+                  'w-8 h-8 rounded-full transition-transform',
+                  color === c && 'ring-2 ring-white ring-offset-2 ring-offset-surface-900 scale-110'
+                )}
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-surface-800">
+        <Button variant="ghost" onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSave} loading={loading}>
+          Save Changes
+        </Button>
       </div>
     </Modal>
   );
