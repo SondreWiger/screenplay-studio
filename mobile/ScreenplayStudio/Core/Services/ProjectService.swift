@@ -2,13 +2,32 @@ import Foundation
 
 /// Reads and writes for `projects`.
 ///
-/// Row-level security already restricts `projects` to ones the signed-in user
-/// owns or is a member of, so these queries never filter by user themselves.
+/// We explicitly filter by user ID here because platform admins have an RLS policy 
+/// that allows them to read all projects. Without this filter, admins would see 
+/// every single project on the platform in their regular app view.
 enum ProjectService {
 
     static func fetchAll() async throws -> [Project] {
+        guard let session = await Supabase.shared.currentSession else { return [] }
+        let userID = session.user.id
+        
+        let membershipsQuery = PostgrestQuery("project_members")
+            .select("project_id")
+            .eq("user_id", userID)
+        
+        struct Membership: Decodable { let project_id: String }
+        let memberships: [Membership] = (try? await Supabase.shared.execute(membershipsQuery)) ?? []
+        let memberIDs = memberships.map(\.project_id)
+        
+        var orFilter = "created_by.eq.\(userID)"
+        if !memberIDs.isEmpty {
+            let inList = memberIDs.joined(separator: ",")
+            orFilter += ",id.in.(\(inList))"
+        }
+        
         let query = PostgrestQuery("projects")
             .select()
+            .or(orFilter)
             .order("updated_at", ascending: false)
         return try await Supabase.shared.execute(query)
     }
