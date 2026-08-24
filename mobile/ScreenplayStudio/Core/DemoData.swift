@@ -13,6 +13,13 @@ import Foundation
 /// real decoding, caching and error paths all still run.
 enum DemoData {
 
+    /// `-ss-keychain-test` runs the keychain round-trip on launch and prints the
+    /// result, which is the only way to tell a silent storage failure from a
+    /// session that was never saved.
+    static var runsKeychainTest: Bool {
+        ProcessInfo.processInfo.arguments.contains("-ss-keychain-test")
+    }
+
     static var isActive: Bool {
         ProcessInfo.processInfo.arguments.contains("-ss-demo")
     }
@@ -79,6 +86,10 @@ enum DemoData {
         case "characters":          json = characters
         case "production_schedule": json = schedule
         case "locations":           json = locations
+        case "shoot_gear":          json = shootGear
+        case "gear_checkouts":      json = gearCheckouts
+        case "project_documents":   json = projectDocuments
+        case "project_folders":     json = projectFolders
         default:                    json = "[]"
         }
         return Data(json.utf8)
@@ -344,6 +355,100 @@ enum DemoData {
         """
     }
 
+    // MARK: - Gear
+
+    private static var shootGear: String {
+        """
+        [
+          {"id":"gg000000-0000-4000-8000-000000000001","project_id":"\(projectA)",
+           "name":"ARRI ALEXA Mini LF","category":"Camera","quantity":1,"unit":"body",
+           "ownership":"rented","vendor":"Storyline Studios","daily_rate":1200,"total_cost":18000,
+           "shoot_day_id":null,"notes":"LPL mount. Sensor mode: Open Gate.","status":"confirmed",
+           "created_by":"\(userID)","created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"gg000000-0000-4000-8000-000000000002","project_id":"\(projectA)",
+           "name":"Signature Prime 40mm T1.8","category":"Lenses","quantity":1,"unit":"lens",
+           "ownership":"rented","vendor":"Storyline Studios","daily_rate":350,"total_cost":5250,
+           "shoot_day_id":null,"notes":null,"status":"confirmed",
+           "created_by":"\(userID)","created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"gg000000-0000-4000-8000-000000000003","project_id":"\(projectA)",
+           "name":"Signature Prime 75mm T1.8","category":"Lenses","quantity":1,"unit":"lens",
+           "ownership":"rented","vendor":"Storyline Studios","daily_rate":350,"total_cost":5250,
+           "shoot_day_id":null,"notes":null,"status":"confirmed",
+           "created_by":"\(userID)","created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"gg000000-0000-4000-8000-000000000004","project_id":"\(projectA)",
+           "name":"ARRI SkyPanel S60-C","category":"Lighting","quantity":3,"unit":"fixture",
+           "ownership":"rented","vendor":"Grip & Light AS","daily_rate":120,"total_cost":5400,
+           "shoot_day_id":null,"notes":"Bring diffusion frames.","status":"pending",
+           "created_by":"\(userID)","created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"gg000000-0000-4000-8000-000000000005","project_id":"\(projectA)",
+           "name":"Sennheiser MKH 416","category":"Sound","quantity":2,"unit":"mic",
+           "ownership":"owned","vendor":null,"daily_rate":null,"total_cost":null,
+           "shoot_day_id":null,"notes":"Wind gags packed.","status":"confirmed",
+           "created_by":"\(userID)","created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"gg000000-0000-4000-8000-000000000006","project_id":"\(projectA)",
+           "name":"OConnor 2575 Fluid Head","category":"Grip","quantity":1,"unit":"head",
+           "ownership":"provided","vendor":null,"daily_rate":null,"total_cost":null,
+           "shoot_day_id":null,"notes":null,"status":"confirmed",
+           "created_by":"\(userID)","created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"gg000000-0000-4000-8000-000000000007","project_id":"\(projectA)",
+           "name":"DIT Station — MacBook Pro + Hedge Canister","category":"Post / DIT","quantity":1,"unit":"kit",
+           "ownership":"owned","vendor":null,"daily_rate":null,"total_cost":null,
+           "shoot_day_id":null,"notes":"Run dual-card offload after each setup.","status":"confirmed",
+           "created_by":"\(userID)","created_at":"\(now)","updated_at":"\(now)"}
+        ]
+        """
+    }
+
+    private static var gearCheckouts: String {
+        """
+        [
+          {"id":"gc000000-0000-4000-8000-000000000001","gear_id":"gg000000-0000-4000-8000-000000000001",
+           "project_id":"\(projectA)","checked_out_by":"\(userID)",
+           "checked_out_by_name":"Erik (1st AC)","checked_out_at":"\(offsetDay(0, hour: 7))",
+           "returned_at":null,"notes":"Prepping for quay shoot."},
+          {"id":"gc000000-0000-4000-8000-000000000002","gear_id":"gg000000-0000-4000-8000-000000000005",
+           "project_id":"\(projectA)","checked_out_by":"\(userID)",
+           "checked_out_by_name":"Kari (Boom Op)","checked_out_at":"\(offsetDay(0, hour: 7))",
+           "returned_at":null,"notes":null}
+        ]
+        """
+    }
+
+    // MARK: - Documents & Folders
+
+    private static let folderA = "ff000000-0000-4000-8000-000000000001"
+
+    private static var projectFolders: String {
+        """
+        [
+          {"id":"\(folderA)","project_id":"\(projectA)","name":"Research",
+           "parent_id":null,"sort_order":0,"created_by":"\(userID)","created_at":"\(now)"}
+        ]
+        """
+    }
+
+    private static var projectDocuments: String {
+        """
+        [
+          {"id":"dd000000-0000-4000-8000-000000000001","project_id":"\(projectA)",
+           "folder_id":null,"title":"Treatment — v2","document_type":"treatment",
+           "content":"A lighthouse keeper's daughter walks a frozen shore and finds a body in the ice.\\n\\nThe only witness is a man she left behind twenty years ago.\\n\\nThe Long Winter is a slow-burn thriller set against the absolute isolation of a Norwegian lighthouse station. Shot on 35mm-flavoured digital, it lives in the space between duty and guilt.",
+           "is_pinned":true,"last_edited_by":"\(userID)","created_by":"\(userID)",
+           "created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"dd000000-0000-4000-8000-000000000002","project_id":"\(projectA)",
+           "folder_id":null,"title":"Director's Notes — Day 4","document_type":"script_notes",
+           "content":"The quay scene is the hinge. Everything before this is Maren alone; everything after is Maren and Johan. The transition has to land.\\n\\nKeep the police launch small in frame until the last moment. Let the audience feel the distance before we close it.\\n\\nRack focus on 3B — commit to it. If it doesn't work we'll cut around it.",
+           "is_pinned":false,"last_edited_by":"\(userID)","created_by":"\(userID)",
+           "created_at":"\(now)","updated_at":"\(now)"},
+          {"id":"dd000000-0000-4000-8000-000000000003","project_id":"\(projectA)",
+           "folder_id":"\(folderA)","title":"Lighthouse reference — Slettnes","document_type":"research",
+           "content":"Slettnes fyr (71°05'N) — the northernmost mainland lighthouse in the world. Built 1905.\\n\\nKeeper's quarters are modest. Stone and timber. The lamp room is copper-clad inside.\\n\\nUseful for set design reference. The proportions of the kitchen and the stairwell are close to what we need.",
+           "is_pinned":false,"last_edited_by":"\(userID)","created_by":"\(userID)",
+           "created_at":"\(now)","updated_at":"\(now)"}
+        ]
+        """
+    }
+
     // MARK: - Screen routing
     //
     // `-ss-route <name>` jumps straight to a screen on launch, which is how each
@@ -398,6 +503,15 @@ enum DemoData {
         case "characters":
             router.open(project)
             router.push(.characters)
+        case "slate":
+            router.open(project)
+            router.push(.slate)
+        case "documents":
+            router.open(project)
+            router.push(.documents)
+        case "gear":
+            router.open(project)
+            router.push(.gear)
         default:
             break
         }

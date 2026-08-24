@@ -5,8 +5,8 @@ struct Shot: Codable, Identifiable, Hashable {
     var projectID: String
     var sceneID: String?
     var shotNumber: String?
-    var shotType: ShotType?
-    var shotMovement: ShotMovement?
+    @Lenient var shotType: ShotType?
+    @Lenient var shotMovement: ShotMovement?
     var lens: String?
     var description: String?
     var dialogueRef: String?

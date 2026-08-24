@@ -16,6 +16,37 @@ final class ProjectsViewModel: ObservableObject {
     @Published var statusFilter: ProjectStatus?
 
     private var hasLoadedFromCache = false
+    private var liveTask: Task<Void, Never>?
+
+    deinit { liveTask?.cancel() }
+
+    /// Live project changes. Requires `projects` to be in the
+    /// `supabase_realtime` publication — see
+    /// `supabase/migration_realtime_mobile.sql`. Until that runs this simply
+    /// receives nothing; pull-to-refresh and the foreground refresh still work.
+    func startLiveUpdates() {
+        guard liveTask == nil else { return }
+        liveTask = Task { [weak self] in
+            let stream = await RealtimeClient.shared.changes(table: "projects")
+            for await change in stream {
+                guard let self else { return }
+                await self.applyLive(change)
+            }
+        }
+    }
+
+    func stopLiveUpdates() {
+        liveTask?.cancel()
+        liveTask = nil
+    }
+
+    private func applyLive(_ change: RealtimeChange) {
+        let changed = LiveMerge.apply(change, to: &projects) { a, b in
+            (a.updatedAt ?? .distantPast) > (b.updatedAt ?? .distantPast)
+        }
+        guard changed else { return }
+        Task { await LocalCache.shared.save(projects, for: LocalCache.Key.projects) }
+    }
 
     var filteredProjects: [Project] {
         var result = projects

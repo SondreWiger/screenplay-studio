@@ -5,7 +5,7 @@ struct Script: Codable, Identifiable, Hashable {
     var projectID: String
     var title: String
     var version: Int?
-    var revisionColor: RevisionColor?
+    @Lenient var revisionColor: RevisionColor?
     var isActive: Bool?
     var locked: Bool?
     var lockedBy: String?
@@ -35,7 +35,7 @@ struct ScriptElement: Codable, Identifiable, Hashable {
     var content: String
     var sortOrder: Int
     var sceneNumber: String?
-    var revisionColor: RevisionColor?
+    @Lenient var revisionColor: RevisionColor?
     var isRevised: Bool?
     var isOmitted: Bool?
     var createdAt: Date?

@@ -474,6 +474,8 @@ function CharacterEditor({
     cast_member_id: null as string | null,
     actor_photo_url: '',
     color: randomColor(),
+    stats: {} as Record<string, string>,
+    abilities: [] as string[],
   });
   const [traitInput, setTraitInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -504,6 +506,8 @@ function CharacterEditor({
         cast_member_id: character.cast_member_id || null,
         actor_photo_url: character.actor_photo_url || '',
         color: character.color || randomColor(),
+        stats: character.stats || {},
+        abilities: character.abilities || [],
       });
     } else {
       setForm({
@@ -511,6 +515,7 @@ function CharacterEditor({
         motivation: '', arc: '', appearance: '', personality_traits: [], quirks: '',
         voice_notes: '', is_main: false, role: '', first_appearance: '', cast_actor: '',
         cast_notes: '', cast_member_id: null, actor_photo_url: '', color: randomColor(),
+        stats: {}, abilities: [],
       });
     }
     setActiveTab('basic');
@@ -567,7 +572,7 @@ function CharacterEditor({
     <Modal isOpen={isOpen} onClose={onClose} title={character ? `Edit: ${character.name}` : 'New Character'} size="xl">
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-surface-800 rounded-lg p-1">
-        {['basic', 'story', 'appearance', 'casting'].map((tab) => (
+        {['basic', 'story', 'appearance', 'casting', 'stats'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -757,6 +762,36 @@ function CharacterEditor({
               placeholder="https://… (auto-filled when linking a cast member)"
             />
             <Textarea label="Casting Notes" value={form.cast_notes} onChange={(e) => setForm({ ...form, cast_notes: e.target.value })} rows={3} placeholder="Casting requirements, alternatives..." />
+          </>
+        )}
+
+        {activeTab === 'stats' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-surface-300 mb-2">Abilities</label>
+              <Textarea 
+                value={form.abilities.join('\n')} 
+                onChange={(e) => setForm({ ...form, abilities: e.target.value.split('\n').filter(a => a.trim()) })} 
+                rows={4} 
+                placeholder="Enter abilities, one per line..." 
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-surface-300 mb-2">Stats (JSON Format for now)</label>
+              <Textarea 
+                value={JSON.stringify(form.stats, null, 2) === '{}' ? '' : JSON.stringify(form.stats, null, 2)} 
+                onChange={(e) => {
+                  try {
+                    const parsed = e.target.value.trim() ? JSON.parse(e.target.value) : {};
+                    setForm({ ...form, stats: parsed });
+                  } catch (err) {
+                    // Ignore parse errors while typing, ideally we'd show an error state
+                  }
+                }} 
+                rows={4} 
+                placeholder='{"STR": "10", "DEX": "15"}' 
+              />
+            </div>
           </>
         )}
       </div>

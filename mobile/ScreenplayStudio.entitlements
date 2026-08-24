@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Gives the app its own keychain access group so the auth session can be
+	  stored. Without this (or an automatically-signed build with a development
+	  team selected) every keychain write fails with errSecMissingEntitlement
+	  and the app silently forgets the login on every launch.
+
+	  $(AppIdentifierPrefix) resolves to the team prefix at signing time.
+	-->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)no.northem.screenplaystudio</string>
+	</array>
+</dict>
+</plist>

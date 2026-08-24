@@ -258,4 +258,145 @@ enum ProductionService {
             .order("name")
         return try await Supabase.shared.execute(query)
     }
+
+    // MARK: - Documents
+
+    static func fetchDocuments(projectID: String) async throws -> [ProjectDocument] {
+        let query = PostgrestQuery("project_documents")
+            .select()
+            .eq("project_id", projectID)
+            .order("updated_at", ascending: false)
+        return try await Supabase.shared.execute(query)
+    }
+
+    static func fetchFolders(projectID: String) async throws -> [ProjectFolder] {
+        let query = PostgrestQuery("project_folders")
+            .select()
+            .eq("project_id", projectID)
+            .order("sort_order")
+        return try await Supabase.shared.execute(query)
+    }
+
+    static func createDocument(_ doc: NewDocument) async throws -> ProjectDocument? {
+        let query = try PostgrestQuery("project_documents").insert([doc])
+        let rows: [ProjectDocument] = try await Supabase.shared.execute(query)
+        return rows.first
+    }
+
+    static func updateDocumentContent(id: String, content: String, editedBy: String?) async throws {
+        let body: [String: JSONValue] = [
+            "content": .string(content),
+            "last_edited_by": editedBy.map { .string($0) } ?? .null,
+            "updated_at": .string(PostgresDate.string(from: Date())),
+        ]
+        let query = try PostgrestQuery("project_documents")
+            .eq("id", id)
+            .update(body, returning: false)
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
+
+    static func updateDocumentTitle(id: String, title: String) async throws {
+        let body: [String: JSONValue] = [
+            "title": .string(title),
+            "updated_at": .string(PostgresDate.string(from: Date())),
+        ]
+        let query = try PostgrestQuery("project_documents")
+            .eq("id", id)
+            .update(body, returning: false)
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
+
+    static func deleteDocument(id: String) async throws {
+        let query = PostgrestQuery("project_documents").eq("id", id).delete()
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
+
+    static func createFolder(_ folder: NewFolder) async throws -> ProjectFolder? {
+        let query = try PostgrestQuery("project_folders").insert([folder])
+        let rows: [ProjectFolder] = try await Supabase.shared.execute(query)
+        return rows.first
+    }
+
+    static func deleteFolder(id: String) async throws {
+        let query = PostgrestQuery("project_folders").eq("id", id).delete()
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
+
+    // MARK: - Gear
+
+    static func fetchGear(projectID: String) async throws -> [GearItem] {
+        let query = PostgrestQuery("shoot_gear")
+            .select()
+            .eq("project_id", projectID)
+            .order("category")
+            .order("name")
+        return try await Supabase.shared.execute(query)
+    }
+
+    static func createGear(_ item: NewGearItem) async throws -> GearItem? {
+        let query = try PostgrestQuery("shoot_gear").insert([item])
+        let rows: [GearItem] = try await Supabase.shared.execute(query)
+        return rows.first
+    }
+
+    static func updateGear(id: String, fields: [String: JSONValue]) async throws {
+        var body = fields
+        body["updated_at"] = .string(PostgresDate.string(from: Date()))
+        let query = try PostgrestQuery("shoot_gear")
+            .eq("id", id)
+            .update(body, returning: false)
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
+
+    static func deleteGear(id: String) async throws {
+        let query = PostgrestQuery("shoot_gear").eq("id", id).delete()
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
+
+    static func cycleGearStatus(id: String, next: GearStatus) async throws {
+        let body: [String: JSONValue] = [
+            "status": .string(next.rawValue),
+            "updated_at": .string(PostgresDate.string(from: Date())),
+        ]
+        let query = try PostgrestQuery("shoot_gear")
+            .eq("id", id)
+            .update(body, returning: false)
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
+
+    // MARK: - Gear Checkouts
+
+    static func fetchCheckouts(gearID: String) async throws -> [GearCheckout] {
+        let query = PostgrestQuery("gear_checkouts")
+            .select()
+            .eq("gear_id", gearID)
+            .order("checked_out_at", ascending: false)
+        return try await Supabase.shared.execute(query)
+    }
+
+    static func fetchActiveCheckouts(projectID: String) async throws -> [GearCheckout] {
+        let query = PostgrestQuery("gear_checkouts")
+            .select()
+            .eq("project_id", projectID)
+            .is("returned_at", "null")
+            .order("checked_out_at", ascending: false)
+        return try await Supabase.shared.execute(query)
+    }
+
+    static func checkoutGear(_ checkout: NewGearCheckout) async throws -> GearCheckout? {
+        let query = try PostgrestQuery("gear_checkouts").insert([checkout])
+        let rows: [GearCheckout] = try await Supabase.shared.execute(query)
+        return rows.first
+    }
+
+    static func returnGear(checkoutID: String) async throws {
+        let body: [String: JSONValue] = [
+            "returned_at": .string(PostgresDate.string(from: Date())),
+        ]
+        let query = try PostgrestQuery("gear_checkouts")
+            .eq("id", checkoutID)
+            .update(body, returning: false)
+        try await Supabase.shared.executeIgnoringResult(query)
+    }
 }
+

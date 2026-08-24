@@ -40,6 +40,7 @@ const CATEGORIES: { value: IdeaCategory; label: string }[] = [
   { value: 'sound', label: 'Sound' }, { value: 'location', label: 'Location' },
   { value: 'prop', label: 'Prop' }, { value: 'costume', label: 'Costume' },
   { value: 'effect', label: 'Effect' }, { value: 'theme', label: 'Theme' },
+  { value: 'feature', label: 'Feature' }, { value: 'worldbuilding', label: 'Worldbuilding' },
   { value: 'other', label: 'Other' },
 ];
 

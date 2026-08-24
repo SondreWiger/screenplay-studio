@@ -49,6 +49,10 @@ actor Supabase {
         config = SupabaseConfig.current
     }
 
+    /// Connection details for the realtime socket, which needs the project URL
+    /// and anon key rather than a bearer token.
+    func realtimeConfig() -> SupabaseConfig? { config }
+
     var isConfigured: Bool {
         #if DEBUG
         if DemoData.isActive { return true }
@@ -63,18 +67,20 @@ actor Supabase {
     var isSignedIn: Bool { authSession != nil }
 
     private static func loadStoredSession() -> AuthSession? {
-        guard let data = KeychainStore.get(sessionKeychainAccount) else { return nil }
-        return try? JSONDecoder().decode(AuthSession.self, from: data)
+        SessionStore.load()
     }
 
     private func store(_ session: AuthSession?) {
         authSession = session
-        if let session, let data = try? JSONEncoder().encode(session) {
-            KeychainStore.set(data, for: Self.sessionKeychainAccount)
+        if let session {
+            SessionStore.save(session)
         } else {
-            KeychainStore.delete(Self.sessionKeychainAccount)
+            SessionStore.clear()
         }
     }
+
+    /// Where the session is actually being kept, for Diagnostics.
+    func sessionBacking() -> String { SessionStore.backing }
 
     // MARK: - Auth
 
@@ -216,14 +222,56 @@ actor Supabase {
     // MARK: - PostgREST transport
 
     /// Executes a built query and decodes the rows.
+    ///
+    /// If the array as a whole fails to decode, each row is retried on its own
+    /// and the bad ones are skipped rather than losing the good ones. A schema
+    /// that has moved on from this build should cost the user one row, not the
+    /// whole screen — and the skip is recorded so it can be found later.
     func execute<T: Decodable>(_ query: PostgrestQuery) async throws -> [T] {
         let data = try await executeRaw(query)
         guard !data.isEmpty else { return [] }
+
         do {
-            return try JSONDecoder.supabase.decode([T].self, from: data)
+            let rows = try JSONDecoder.supabase.decode([T].self, from: data)
+            await Diagnostics.shared.record(query.table, "loaded \(rows.count) row(s)")
+            return rows
         } catch {
-            throw SupabaseError.decoding("\(T.self): \(error)")
+            let salvaged = salvage(T.self, from: data)
+            if salvaged.rows.isEmpty && salvaged.failed > 0 {
+                await Diagnostics.shared.record(
+                    query.table,
+                    "every row failed to decode — \(error)",
+                    isFailure: true
+                )
+                throw SupabaseError.decoding("\(T.self): \(error)")
+            }
+            await Diagnostics.shared.record(
+                query.table,
+                "loaded \(salvaged.rows.count), skipped \(salvaged.failed) unreadable row(s)",
+                isFailure: salvaged.failed > 0
+            )
+            return salvaged.rows
         }
+    }
+
+    /// Decodes an array one element at a time, keeping what it can.
+    private func salvage<T: Decodable>(_ type: T.Type, from data: Data) -> (rows: [T], failed: Int) {
+        guard let elements = try? JSONSerialization.jsonObject(with: data) as? [Any] else {
+            return ([], 0)
+        }
+        var rows: [T] = []
+        var failed = 0
+        for element in elements {
+            guard
+                let elementData = try? JSONSerialization.data(withJSONObject: element),
+                let row = try? JSONDecoder.supabase.decode(T.self, from: elementData)
+            else {
+                failed += 1
+                continue
+            }
+            rows.append(row)
+        }
+        return (rows, failed)
     }
 
     /// Executes a query expected to return exactly one row.
@@ -302,6 +350,11 @@ actor Supabase {
                 let error = SupabaseError.http(
                     status: http.statusCode,
                     message: Self.errorMessage(from: data, status: http.statusCode)
+                )
+                await Diagnostics.shared.record(
+                    request.url?.path ?? "request",
+                    "HTTP \(http.statusCode) — \(Self.errorMessage(from: data, status: http.statusCode))",
+                    isFailure: true
                 )
                 guard error.isRetryable else { throw error }
                 lastError = error

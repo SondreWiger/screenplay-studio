@@ -56,11 +56,38 @@ targets iOS 17.0 and up. iPhone only.
 | **Shot list** | Grouped by scene, with a one-tap take counter for use while rolling. |
 | **Schedule** | An agenda of shoot days, call times and locations. |
 | **Characters** | Cast list with leads and casting. |
+| **Slate** | A working clapperboard. Point it at a shot and every clap logs a take onto the shot list. |
 | **Today** | What's on today across every active project. |
 
 Tools that stayed on the web — budget, call sheets, storyboards, rundowns,
 prompter, the broadcast and audio-drama suites — are the ones that genuinely
 need a large screen. Settings links out to them.
+
+## Live updates
+
+Changes made anywhere — the web app, another phone, a collaborator — arrive
+without a refresh. `Core/Networking/RealtimeClient.swift` speaks the Phoenix
+channel protocol directly over `URLSessionWebSocketTask`: one socket, many
+topics, 25-second heartbeats, and reconnection with exponential backoff.
+
+Screens subscribe with an `AsyncStream` inside `.task`, so the subscription
+tears itself down when the screen goes away and there is no unsubscribe to
+forget.
+
+Four tables are already in the `supabase_realtime` publication and work
+immediately: **script_elements, scenes, shots, production_schedule**.
+
+`projects`, `characters` and `locations` are **not** published yet. The app
+already subscribes to them; run this once to switch them on:
+
+```sql
+-- supabase/migration_realtime_mobile.sql
+```
+
+In the editor the merge rule is deliberately narrow: a remote change is never
+applied to the element holding the caret, or to one with an unsent local edit.
+Those are the only two cases where the local copy is more current than the
+server's, and overwriting either would delete something just typed.
 
 ## Configuration
 
@@ -119,6 +146,28 @@ merging upward, and self-sizing inside a scroll view.
 - Every interactive control is at least 44×44pt, all text scales with Dynamic
   Type through to the accessibility sizes, and controls carry VoiceOver labels,
   hints and selected-state traits.
+
+## When something doesn't sync
+
+**Settings → Diagnostics** shows the project host, whether a session exists and
+whether its token is valid, connectivity, queued writes, and a rolling log of
+every request with its outcome. "Run a live fetch" hits each table with the
+current session and reports per-table results.
+
+This exists because an empty list has several causes that look identical from
+the outside: zero rows returned, a row-level-security rejection, a decode
+failure, or a request that never went out. The log names which.
+
+Two robustness measures back it up:
+
+* **Unknown enum values decode to nil instead of throwing** (`Lenient`). The
+  live database has drifted a long way from `supabase/FULL.sql` — `projects`
+  alone carries 60+ columns that schema doesn't mention. Without this, one row
+  with a status added after the app shipped would blank an entire screen, and
+  it would look exactly like a sync failure.
+* **A row that still fails to decode is skipped, not fatal.** `execute` retries
+  the array element by element and keeps what it can, recording how many it
+  dropped.
 
 ## Demo mode
 

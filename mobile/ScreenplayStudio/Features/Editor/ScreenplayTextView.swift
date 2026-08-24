@@ -81,7 +81,17 @@ struct ScreenplayTextView: UIViewRepresentable {
     /// as on `typingAttributes` — otherwise alignment and leading only apply to
     /// text typed after the view appears.
     private func attributes() -> [NSAttributedString.Key: Any] {
-        let font = Self.screenplayFont(size: fontSize, bold: elementType.isBold)
+        var font = Self.screenplayFont(size: fontSize, bold: elementType.isBold)
+
+        // Apply italic trait for parenthetical, notes, synopsis.
+        if elementType.isItalic {
+            if let descriptor = font.fontDescriptor.withSymbolicTraits(
+                font.fontDescriptor.symbolicTraits.union(.traitItalic)
+            ) {
+                font = UIFont(descriptor: descriptor, size: 0)
+            }
+        }
+
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = Self.nsAlignment(for: elementType.alignment)
         // Courier at 12pt sets 12pt leading in the web app (`line-height: 1`);
@@ -90,7 +100,7 @@ struct ScreenplayTextView: UIViewRepresentable {
 
         return [
             .font: font,
-            .foregroundColor: UIColor(Theme.textPrimary),
+            .foregroundColor: UIColor(elementType.textColor),
             .paragraphStyle: paragraph,
         ]
     }

@@ -22,9 +22,38 @@ final class ShotsViewModel: ObservableObject {
 
     private let projectID: String
     private var hasLoaded = false
+    private var liveTask: Task<Void, Never>?
 
     init(projectID: String) {
         self.projectID = projectID
+    }
+
+    deinit { liveTask?.cancel() }
+
+    func startLiveUpdates() {
+        guard liveTask == nil else { return }
+        liveTask = Task { [weak self, projectID] in
+            let stream = await RealtimeClient.shared.changes(
+                table: "shots", filter: "project_id=eq.\(projectID)"
+            )
+            for await change in stream {
+                guard let self else { return }
+                await self.applyLive(change)
+            }
+        }
+    }
+
+    func stopLiveUpdates() {
+        liveTask?.cancel()
+        liveTask = nil
+    }
+
+    private func applyLive(_ change: RealtimeChange) {
+        let changed = LiveMerge.apply(change, to: &shots) { a, b in
+            (a.sortOrder ?? 0) < (b.sortOrder ?? 0)
+        }
+        guard changed else { return }
+        Task { await LocalCache.shared.save(shots, for: LocalCache.Key.shots(projectID)) }
     }
 
     private var sceneLookup: [String: ProductionScene] {

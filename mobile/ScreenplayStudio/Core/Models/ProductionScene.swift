@@ -9,9 +9,9 @@ struct ProductionScene: Codable, Identifiable, Hashable {
     var scriptID: String?
     var sceneNumber: String?
     var sceneHeading: String?
-    var locationType: SceneLocationType?
+    @Lenient var locationType: SceneLocationType?
     var locationName: String?
-    var timeOfDay: SceneTime?
+    @Lenient var timeOfDay: SceneTime?
     var synopsis: String?
     var pageCount: Double?
     var estimatedDurationMinutes: Int?

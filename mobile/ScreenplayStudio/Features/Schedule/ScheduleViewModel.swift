@@ -11,9 +11,36 @@ final class ScheduleViewModel: ObservableObject {
 
     private let projectID: String
     private var hasLoaded = false
+    private var liveTask: Task<Void, Never>?
 
     init(projectID: String) {
         self.projectID = projectID
+    }
+
+    deinit { liveTask?.cancel() }
+
+    func startLiveUpdates() {
+        guard liveTask == nil else { return }
+        liveTask = Task { [weak self, projectID] in
+            let stream = await RealtimeClient.shared.changes(
+                table: "production_schedule", filter: "project_id=eq.\(projectID)"
+            )
+            for await change in stream {
+                guard let self else { return }
+                await self.applyLive(change)
+            }
+        }
+    }
+
+    func stopLiveUpdates() {
+        liveTask?.cancel()
+        liveTask = nil
+    }
+
+    private func applyLive(_ change: RealtimeChange) {
+        let changed = LiveMerge.apply(change, to: &events) { $0.startTime < $1.startTime }
+        guard changed else { return }
+        Task { await LocalCache.shared.save(events, for: LocalCache.Key.schedule(projectID)) }
     }
 
     /// Events grouped into shooting days, oldest first, past days optional.

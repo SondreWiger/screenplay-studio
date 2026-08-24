@@ -243,6 +243,7 @@ export const SCRIPT_TYPE_OPTIONS: { value: ScriptType; label: string; descriptio
   { value: 'podcast', label: 'Podcast & Audio Drama', description: 'Scripted radio plays, audio dramas & podcasts — BBC, US Radio, STARC formats', icon: 'headphones' },
   { value: 'youtube', label: 'YouTube Video', description: 'Long-form video content with hooks & CTAs', icon: 'play' },
   { value: 'tiktok', label: 'TikTok / Reels / Shorts', description: 'Short-form vertical video content', icon: 'phone' },
+  { value: 'videogame', label: 'Video Game', description: 'Interactive storytelling, branching dialogue, worldbuilding', icon: 'gamepad' },
 ];
 
 // Audio-drama-specific format options shown in step 1 when podcast/audio drama type is selected

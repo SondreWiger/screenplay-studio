@@ -100,40 +100,121 @@ final class ProjectHubViewModel: ObservableObject {
     func refresh() async {
         // All five run concurrently — five sequential round trips on a cellular
         // connection is roughly a second of staring at a half-empty screen.
-        async let scriptsTask = ScriptService.fetchScripts(projectID: projectID)
-        async let scenesTask = ProductionService.fetchScenes(projectID: projectID)
-        async let shotsTask = ProductionService.fetchShots(projectID: projectID)
-        async let charactersTask = ProductionService.fetchCharacters(projectID: projectID)
-        async let eventsTask = ProductionService.fetchSchedule(projectID: projectID)
+        //
+        // Each result is applied on its own. An earlier version awaited them as
+        // one tuple, which meant a single failing table threw away the other
+        // four: if the schedule fetch was rejected, the script list vanished
+        // too and the hub offered to create a script the project already had.
+        async let scriptsTask = fetched { try await ScriptService.fetchScripts(projectID: self.projectID) }
+        async let scenesTask = fetched { try await ProductionService.fetchScenes(projectID: self.projectID) }
+        async let shotsTask = fetched { try await ProductionService.fetchShots(projectID: self.projectID) }
+        async let charactersTask = fetched { try await ProductionService.fetchCharacters(projectID: self.projectID) }
+        async let eventsTask = fetched { try await ProductionService.fetchSchedule(projectID: self.projectID) }
 
+        let (newScripts, newScenes, newShots, newCharacters, newEvents) =
+            await (scriptsTask, scenesTask, shotsTask, charactersTask, eventsTask)
+
+        let cache = LocalCache.shared
+        var failures: [String] = []
+
+        switch newScripts {
+        case .success(let rows):
+            scripts = rows
+            await cache.save(rows, for: LocalCache.Key.scripts(projectID))
+        case .failure(let error):
+            failures.append("scripts: \(message(for: error))")
+        }
+
+        switch newScenes {
+        case .success(let rows):
+            scenes = rows
+            await cache.save(rows, for: LocalCache.Key.scenes(projectID))
+        case .failure(let error):
+            failures.append("scenes: \(message(for: error))")
+        }
+
+        switch newShots {
+        case .success(let rows):
+            shots = rows
+            await cache.save(rows, for: LocalCache.Key.shots(projectID))
+        case .failure(let error):
+            failures.append("shots: \(message(for: error))")
+        }
+
+        switch newCharacters {
+        case .success(let rows):
+            characters = rows
+            await cache.save(rows, for: LocalCache.Key.characters(projectID))
+        case .failure(let error):
+            failures.append("characters: \(message(for: error))")
+        }
+
+        switch newEvents {
+        case .success(let rows):
+            events = rows
+            await cache.save(rows, for: LocalCache.Key.schedule(projectID))
+        case .failure(let error):
+            failures.append("schedule: \(message(for: error))")
+        }
+
+        errorMessage = failures.isEmpty ? nil : failures.joined(separator: "\n")
+    }
+
+    /// Runs a fetch and captures the outcome instead of letting it cancel its
+    /// siblings. Cancellation is not a failure — the screen simply went away.
+    private func fetched<T>(_ work: @escaping () async throws -> [T]) async -> Result<[T], Error> {
         do {
-            let (fetchedScripts, fetchedScenes, fetchedShots, fetchedCharacters, fetchedEvents) =
-                try await (scriptsTask, scenesTask, shotsTask, charactersTask, eventsTask)
-
-            scripts = fetchedScripts
-            scenes = fetchedScenes
-            shots = fetchedShots
-            characters = fetchedCharacters
-            events = fetchedEvents
-            errorMessage = nil
-
-            let cache = LocalCache.shared
-            await cache.save(fetchedScripts, for: LocalCache.Key.scripts(projectID))
-            await cache.save(fetchedScenes, for: LocalCache.Key.scenes(projectID))
-            await cache.save(fetchedShots, for: LocalCache.Key.shots(projectID))
-            await cache.save(fetchedCharacters, for: LocalCache.Key.characters(projectID))
-            await cache.save(fetchedEvents, for: LocalCache.Key.schedule(projectID))
-
+            return .success(try await work())
         } catch is CancellationError {
-            // Navigated away.
+            return .failure(CancellationError())
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    private func message(for error: Error) -> String {
+        if error is CancellationError { return "cancelled" }
+        return (error as? SupabaseError)?.errorDescription ?? error.localizedDescription
+    }
+
+    /// Remembers which draft was last opened, so the hub reopens the same one.
+    func remember(_ script: Script) {
+        UserDefaults.standard.set(script.id, forKey: "ss.lastScript.\(projectID)")
+        objectWillChange.send()
+    }
+
+    /// Creates an additional draft alongside the existing ones.
+    func createDraft(title: String, ownerID: String) async -> Script? {
+        do {
+            guard let created = try await ScriptService.createScript(
+                projectID: projectID, title: title, ownerID: ownerID
+            ) else { return nil }
+            scripts.insert(created, at: 0)
+            await LocalCache.shared.save(scripts, for: LocalCache.Key.scripts(projectID))
+            remember(created)
+            Haptics.success()
+            return created
         } catch {
             errorMessage = (error as? SupabaseError)?.errorDescription ?? error.localizedDescription
+            Haptics.error()
+            return nil
         }
     }
 
     /// Creates the first script so the editor always has something to open.
     func ensureScript(ownerID: String, projectTitle: String) async -> Script? {
         if let existing = activeScript { return existing }
+
+        // Ask the server before creating anything. If the earlier load failed,
+        // the local list being empty says nothing about whether the project
+        // already has a draft — and creating a second empty one would be worse
+        // than showing an error.
+        if let remote = try? await ScriptService.fetchScripts(projectID: projectID), !remote.isEmpty {
+            scripts = remote
+            await LocalCache.shared.save(remote, for: LocalCache.Key.scripts(projectID))
+            return activeScript
+        }
+
         do {
             let created = try await ScriptService.createScript(
                 projectID: projectID, title: projectTitle, ownerID: ownerID

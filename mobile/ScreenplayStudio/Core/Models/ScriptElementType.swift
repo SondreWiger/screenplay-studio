@@ -258,6 +258,51 @@ enum ScriptElementType: Hashable, Codable {
         }
     }
 
+    var isItalic: Bool {
+        switch self {
+        case .parenthetical, .note, .synopsis: return true
+        default: return false
+        }
+    }
+
+    // MARK: - Editor colouring (mirrors .sp-dark in globals.css)
+
+    /// Per-element text colour for the dark-mode editor, matching the web app's
+    /// `.sp-dark` CSS selectors in `src/app/globals.css`.
+    var textColor: Color {
+        switch self {
+        case .sceneHeading:   return Theme.textPrimary           // bold white stands out
+        case .action:         return Theme.textSecondary          // slightly dimmer than headings
+        case .character:      return Color(hex: 0xFCBA64)        // warm amber — brand 300
+        case .dialogue:       return Color(hex: 0xE0E0E0)        // soft white
+        case .parenthetical:  return Color(hex: 0xB0B0CC)        // companion to dialogue
+        case .transition:     return Theme.textTertiary           // right-aligned, muted
+        case .shot:           return Color(hex: 0x06B6D4)        // cyan-500
+        case .note:           return Color(hex: 0x8888AA)        // muted, styled with left border
+        case .act, .actBreak: return Color(hex: 0xFBBF24)        // amber-400
+        case .sfxCue:         return Color(hex: 0x38BDF8)        // sky-400
+        case .musicCue:       return Color(hex: 0xA78BFA)        // violet-400
+        case .ambienceCue:    return Color(hex: 0x34D399)        // emerald-400
+        case .soundCue:       return Color(hex: 0x38BDF8)        // sky-400
+        case .announcer:      return Color(hex: 0xE0E0E0)
+        case .lyrics, .lyric: return Color(hex: 0xA78BFA)        // violet-400
+        case .songTitle:      return Color(hex: 0xFBBF24)        // amber-400
+        case .section:        return Theme.textPrimary
+        case .synopsis:       return Theme.textTertiary
+        default:              return Theme.textPrimary
+        }
+    }
+
+    /// An optional accent bar drawn on the left edge of the element row,
+    /// matching the web's `border-left` styling for notes and similar types.
+    var leftAccentColor: Color? {
+        switch self {
+        case .note:     return Color(hex: 0x555555)
+        case .synopsis: return Color(hex: 0x3B82F6).opacity(0.5)
+        default:        return nil
+        }
+    }
+
     /// Space above the element, in points at the base 12pt Courier size.
     var spacingAbove: CGFloat {
         switch self {

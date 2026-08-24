@@ -56,6 +56,8 @@ export interface Character {
   avatar_url: string | null;
   color: string;
   is_main: boolean;
+  stats: Record<string, string> | null;
+  abilities: string[] | null;
   /**
    * Narrative role/importance. One of:
    * 'protagonist' | 'antagonist' | 'main' | 'supporting' | 'minor' | 'ensemble'

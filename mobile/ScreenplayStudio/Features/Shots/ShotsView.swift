@@ -107,7 +107,11 @@ struct ShotsView: View {
                 )
             }
         }
-        .task { await model.loadIfNeeded() }
+        .task {
+            await model.loadIfNeeded()
+            model.startLiveUpdates()
+        }
+        .onDisappear { model.stopLiveUpdates() }
     }
 
     private var rowInsets: EdgeInsets {

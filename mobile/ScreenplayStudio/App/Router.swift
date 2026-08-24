@@ -72,4 +72,7 @@ enum ProjectRoute: Hashable {
     case shots
     case schedule
     case characters
+    case slate
+    case documents
+    case gear
 }

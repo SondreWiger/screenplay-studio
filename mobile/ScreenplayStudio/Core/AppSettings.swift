@@ -33,6 +33,12 @@ final class AppSettings: ObservableObject {
         willSet { objectWillChange.send() }
     }
 
+    /// Play a sound when the slate is clapped. Off by default on set is a
+    /// matter of taste, so it is a switch rather than an assumption.
+    @AppStorage("ss.settings.slateSound") var slateSoundEnabled = true {
+        willSet { objectWillChange.send() }
+    }
+
     /// Last project opened, so launching goes straight back to work.
     @AppStorage("ss.settings.lastProjectID") var lastProjectID: String = "" {
         willSet { objectWillChange.send() }

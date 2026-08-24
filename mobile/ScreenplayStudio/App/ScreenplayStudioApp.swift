@@ -18,6 +18,11 @@ struct ScreenplayStudioApp: App {
                 .tint(Theme.accent)
                 .preferredColorScheme(.dark)
                 .task {
+                    #if DEBUG
+                    if DemoData.runsKeychainTest {
+                        print("[SS] keychain self-test: \(KeychainStore.selfTest())")
+                    }
+                    #endif
                     await auth.bootstrap()
                     Haptics.prepare()
                 }

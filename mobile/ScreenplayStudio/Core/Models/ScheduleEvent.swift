@@ -6,7 +6,7 @@ struct ScheduleEvent: Codable, Identifiable, Hashable {
     var projectID: String
     var title: String
     var description: String?
-    var eventType: ScheduleEventType?
+    @Lenient var eventType: ScheduleEventType?
     var startTime: Date
     var endTime: Date
     var allDay: Bool?
@@ -89,7 +89,7 @@ struct ProductionLocation: Codable, Identifiable, Hashable {
     var projectID: String
     var name: String
     var address: String?
-    var locationType: SceneLocationType?
+    @Lenient var locationType: SceneLocationType?
     var contactName: String?
     var contactPhone: String?
     var isConfirmed: Bool?

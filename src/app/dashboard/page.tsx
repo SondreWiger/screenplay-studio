@@ -1519,6 +1519,7 @@ function NewProjectModal({
       else if (isAudioOrPodcast) finalProjectType = 'podcast';
       else if (scriptType === 'youtube') finalProjectType = 'youtube';
       else if (scriptType === 'tiktok') finalProjectType = 'tiktok';
+      else if (scriptType === 'videogame') finalProjectType = 'videogame';
       else finalProjectType = 'film';
 
       const projectId = crypto.randomUUID();
@@ -1700,9 +1701,14 @@ function NewProjectModal({
                 type="button"
                 onClick={() => {
                   setScriptType(opt.value);
-                  setProjectType('film');
+                  if (opt.value === 'youtube' || opt.value === 'tiktok' || opt.value === 'videogame' || opt.value === 'podcast' || opt.value === 'audio_drama') {
+                     setProjectType(opt.value as ProjectType);
+                  } else {
+                     setProjectType('film');
+                  }
                   if (opt.value === 'podcast') setFormat('starc_standard');
                   else if (opt.value === 'episodic') setFormat('series');
+                  else if (opt.value === 'videogame') setFormat('game');
                   else setFormat('feature');
                 }}
                 className={`text-left p-4 rounded-xl border-2 transition-colors ${

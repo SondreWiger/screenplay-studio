@@ -10,6 +10,7 @@ struct ProjectHubView: View {
     @StateObject private var model: ProjectHubViewModel
 
     @State private var isOpeningEditor = false
+    @State private var isShowingDrafts = false
 
     init(project: Project) {
         self.project = project
@@ -44,6 +45,17 @@ struct ProjectHubView: View {
         }
         .navigationDestination(for: ProjectRoute.self) { route in
             destination(for: route)
+        }
+        .sheet(isPresented: $isShowingDrafts) {
+            DraftsSheet(
+                scripts: model.scripts,
+                currentScriptID: model.activeScript?.id,
+                onSelect: { script in
+                    model.remember(script)
+                    router.push(.editor(scriptID: script.id, scriptTitle: script.title))
+                },
+                onCreate: { createDraft() }
+            )
         }
     }
 
@@ -147,6 +159,52 @@ struct ProjectHubView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .contextMenu {
+                    Button {
+                        isShowingDrafts = true
+                    } label: {
+                        Label(
+                            model.scripts.count > 1
+                                ? "All \(model.scripts.count) drafts"
+                                : "Drafts",
+                            systemImage: "doc.on.doc"
+                        )
+                    }
+                }
+
+                // A project with more than one draft says so, and offers them —
+                // otherwise the extra versions are unreachable from the phone.
+                if model.scripts.count > 1 {
+                    Button {
+                        Haptics.tap()
+                        isShowingDrafts = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "doc.on.doc")
+                                .font(.caption)
+                            Text("\(model.scripts.count) drafts on this project")
+                                .font(.subheadline.weight(.medium))
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .foregroundStyle(Theme.textSecondary)
+                        .padding(.horizontal, 14)
+                        .frame(minHeight: Theme.minTouchTarget)
+                        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                NavigationLink(value: ProjectRoute.documents) {
+                    ToolRow(
+                        symbol: "doc.richtext",
+                        tint: Color(hex: 0x14B8A6),
+                        title: "Documents",
+                        subtitle: "Notes, treatments, outlines & more"
+                    )
+                }
+                .buttonStyle(.plain)
 
                 NavigationLink(value: ProjectRoute.scenes) {
                     ToolRow(
@@ -184,6 +242,16 @@ struct ProjectHubView: View {
                 }
                 .buttonStyle(.plain)
 
+                NavigationLink(value: ProjectRoute.gear) {
+                    ToolRow(
+                        symbol: "shippingbox",
+                        tint: Color(hex: 0xF97316),
+                        title: "Gear",
+                        subtitle: "Equipment tracking & checkout"
+                    )
+                }
+                .buttonStyle(.plain)
+
                 NavigationLink(value: ProjectRoute.characters) {
                     ToolRow(
                         symbol: "person.2",
@@ -192,6 +260,16 @@ struct ProjectHubView: View {
                         subtitle: model.characterCount == 0
                             ? "Add your cast of characters"
                             : "\(model.characterCount) character\(model.characterCount == 1 ? "" : "s")"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink(value: ProjectRoute.slate) {
+                    ToolRow(
+                        symbol: "camera.aperture",
+                        tint: Color(hex: 0xF59E0B),
+                        title: "Slate",
+                        subtitle: "Clapperboard — marks takes onto the shot list"
                     )
                 }
                 .buttonStyle(.plain)
@@ -223,11 +301,29 @@ struct ProjectHubView: View {
             ScheduleView(projectID: project.id, projectTitle: project.title)
         case .characters:
             CharactersView(projectID: project.id)
+        case .slate:
+            SlateView(projectID: project.id, projectTitle: project.title)
+        case .documents:
+            DocumentsView(projectID: project.id)
+        case .gear:
+            GearView(projectID: project.id)
         }
     }
 
     /// Opening the editor may need to create the project's first draft, so the
     /// push happens after an await rather than through a `NavigationLink`.
+    private func createDraft() {
+        guard let ownerID = auth.userID else { return }
+        isOpeningEditor = true
+        Task {
+            let title = "\(project.title) — draft \(model.scripts.count + 1)"
+            let created = await model.createDraft(title: title, ownerID: ownerID)
+            isOpeningEditor = false
+            guard let created else { return }
+            router.push(.editor(scriptID: created.id, scriptTitle: created.title))
+        }
+    }
+
     private func openEditor() {
         if let script = model.activeScript {
             router.push(.editor(scriptID: script.id, scriptTitle: script.title))

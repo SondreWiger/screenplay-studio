@@ -8,7 +8,7 @@ struct Project: Codable, Identifiable, Hashable {
     var genre: [String]?
     var format: String?
     var targetLengthMinutes: Int?
-    var status: ProjectStatus?
+    @Lenient var status: ProjectStatus?
     var posterURL: String?
     var coverURL: String?
     var createdBy: String

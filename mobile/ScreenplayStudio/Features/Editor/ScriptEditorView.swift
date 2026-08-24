@@ -202,6 +202,7 @@ struct ScriptEditorView: View {
         }
         .task {
             await model.load(ownerID: auth.userID)
+            model.startLiveUpdates()
             #if DEBUG
             // `-ss-route editor-typing` opens with a line already focused, so the
             // keyboard bar can be checked in the simulator without tapping.
@@ -212,6 +213,7 @@ struct ScriptEditorView: View {
             #endif
         }
         .onDisappear {
+            model.stopLiveUpdates()
             Task { await model.flushImmediately() }
         }
         .alert(
@@ -283,34 +285,55 @@ private struct ElementRow: View {
         VStack(alignment: .leading, spacing: 0) {
             Color.clear.frame(height: element.elementType.spacingAbove * 0.6)
 
-            ZStack(alignment: alignmentForPlaceholder) {
-                if text.isEmpty {
-                    Text(element.elementType.placeholder)
-                        .font(Font(ScreenplayTextView.screenplayFont(
-                            size: fontSize, bold: element.elementType.isBold
-                        )))
-                        .foregroundStyle(Theme.textTertiary.opacity(0.55))
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
+            HStack(alignment: .top, spacing: 0) {
+                // Scene-number badge for scene headings.
+                if element.elementType == .sceneHeading,
+                   let num = element.sceneNumber?.nonEmpty {
+                    Text(num)
+                        .font(.system(size: max(9, fontSize * 0.7), weight: .bold, design: .monospaced))
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: fontSize * 2, height: fontSize * 1.6)
+                        .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .padding(.trailing, 6)
+                        .accessibilityLabel("Scene \(num)")
                 }
 
-                ScreenplayTextView(
-                    text: $text,
-                    elementType: element.elementType,
-                    fontSize: fontSize,
-                    isFocused: isFocused,
-                    onHeightChange: onHeightChange,
-                    onReturn: onReturn,
-                    onBackspaceAtStart: onBackspaceAtStart,
-                    onFocusChange: { $0 ? onFocus() : onBlur() }
-                )
-                .frame(height: height)
+                ZStack(alignment: alignmentForPlaceholder) {
+                    if text.isEmpty {
+                        Text(element.elementType.placeholder)
+                            .font(Font(ScreenplayTextView.screenplayFont(
+                                size: fontSize, bold: element.elementType.isBold
+                            )))
+                            .foregroundStyle(element.elementType.textColor.opacity(0.3))
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+
+                    ScreenplayTextView(
+                        text: $text,
+                        elementType: element.elementType,
+                        fontSize: fontSize,
+                        isFocused: isFocused,
+                        onHeightChange: onHeightChange,
+                        onReturn: onReturn,
+                        onBackspaceAtStart: onBackspaceAtStart,
+                        onFocusChange: { $0 ? onFocus() : onBlur() }
+                    )
+                    .frame(height: height)
+                }
             }
             .padding(.leading, leadingInset)
             .padding(.trailing, trailingInset)
         }
         .padding(.vertical, 1)
         .background(alignment: .leading) {
+            if let accentColor = element.elementType.leftAccentColor {
+                // Persistent accent bar for notes and similar types.
+                RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                    .fill(accentColor)
+                    .frame(width: 2.5)
+                    .offset(x: -10)
+            }
             // A left rule marks the focused line without moving anything.
             if isFocused {
                 RoundedRectangle(cornerRadius: 1.5, style: .continuous)

@@ -39,6 +39,7 @@ function filmNav(p: string, isEpisodic: boolean, isViewer: boolean): NavCategory
         { label: 'Beat Sheet', href: `${p}/beat-sheet`, icon: 'beat-sheet', always: true },
         { label: 'Notes Rounds', href: `${p}/notes-rounds`, icon: 'notes-rounds', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
+        { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },
       ],
     },
@@ -231,6 +232,7 @@ function audioDramaNav(p: string): NavCategory[] {
         { label: 'Arc Planner', href: `${p}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
+        { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
       ],
     },
     {
@@ -324,6 +326,7 @@ function stagePlayNav(p: string, isViewer: boolean): NavCategory[] {
         { label: 'Notes Rounds', href: `${p}/notes-rounds`, icon: 'notes-rounds', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
+        { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
       ],
     },
     {
@@ -419,6 +422,7 @@ function contentCreatorNav(p: string): NavCategory[] {
       items: [
         { label: 'Script', href: `${p}/script`, icon: 'script', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
+        { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },
       ],
     },

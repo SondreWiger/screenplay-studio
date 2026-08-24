@@ -74,7 +74,11 @@ struct ScenesView: View {
                 )
             }
         }
-        .task { await model.loadIfNeeded() }
+        .task {
+            await model.loadIfNeeded()
+            model.startLiveUpdates()
+        }
+        .onDisappear { model.stopLiveUpdates() }
     }
 
     // MARK: - Summary

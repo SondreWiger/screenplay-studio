@@ -38,10 +38,60 @@ final class EditorViewModel: ObservableObject {
     private var pendingDeletes: Set<String> = []
 
     private var flushTask: Task<Void, Never>?
+    private var liveTask: Task<Void, Never>?
+
+    /// True while a collaborator's edit is arriving, so the banner can say so.
+    @Published private(set) var lastRemoteEditAt: Date?
 
     init(projectID: String, scriptID: String) {
         self.projectID = projectID
         self.scriptID = scriptID
+    }
+
+    deinit { liveTask?.cancel() }
+
+    // MARK: - Live collaboration
+
+    /// Applies element changes from other people as they happen.
+    ///
+    /// The safety rule is narrow and strict: never touch the element the caret
+    /// is in, and never touch one with an edit of our own still queued. Those
+    /// are the only two cases where the local copy is more current than the
+    /// server's, and overwriting either would delete something the user just
+    /// typed.
+    func startLiveUpdates() {
+        guard liveTask == nil else { return }
+        liveTask = Task { [weak self, scriptID] in
+            let stream = await RealtimeClient.shared.changes(
+                table: "script_elements", filter: "script_id=eq.\(scriptID)"
+            )
+            for await change in stream {
+                guard let self else { return }
+                await self.applyLive(change)
+            }
+        }
+    }
+
+    func stopLiveUpdates() {
+        liveTask?.cancel()
+        liveTask = nil
+    }
+
+    private func applyLive(_ change: RealtimeChange) {
+        let changed = LiveMerge.apply(
+            change,
+            to: &elements,
+            skip: { [weak self] id in
+                guard let self else { return true }
+                return id == self.focusedElementID
+                    || self.pendingPatches[id] != nil
+                    || self.pendingInserts[id] != nil
+            },
+            sort: { $0.sortOrder < $1.sortOrder }
+        )
+        guard changed else { return }
+        lastRemoteEditAt = Date()
+        Task { await LocalCache.shared.save(elements, for: LocalCache.Key.elements(scriptID)) }
     }
 
     // MARK: - Derived

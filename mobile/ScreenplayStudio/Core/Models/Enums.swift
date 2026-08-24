@@ -371,3 +371,129 @@ enum RevisionColor: String, Codable, CaseIterable, Identifiable {
         }
     }
 }
+
+// MARK: - gear_category
+
+enum GearCategory: String, Codable, CaseIterable, Identifiable {
+    case camera = "Camera"
+    case lenses = "Lenses"
+    case lighting = "Lighting"
+    case grip = "Grip"
+    case sound = "Sound"
+    case artDept = "Art Dept"
+    case costume = "Costume"
+    case hairMakeup = "Hair & Makeup"
+    case locations = "Locations"
+    case transport = "Transport"
+    case postDIT = "Post / DIT"
+    case other = "Other"
+
+    var id: String { rawValue }
+
+    var label: String { rawValue }
+
+    var symbol: String {
+        switch self {
+        case .camera:     return "camera"
+        case .lenses:     return "circle.circle"
+        case .lighting:   return "lightbulb"
+        case .grip:       return "wrench.and.screwdriver"
+        case .sound:      return "waveform"
+        case .artDept:    return "paintbrush"
+        case .costume:    return "tshirt"
+        case .hairMakeup: return "scissors"
+        case .locations:  return "map"
+        case .transport:  return "car"
+        case .postDIT:    return "externaldrive"
+        case .other:      return "shippingbox"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .camera:     return Theme.accent
+        case .lenses:     return Color(hex: 0x8B5CF6)
+        case .lighting:   return Color(hex: 0xFBBF24)
+        case .grip:       return Color(hex: 0x78716C)
+        case .sound:      return Color(hex: 0x06B6D4)
+        case .artDept:    return Color(hex: 0xEC4899)
+        case .costume:    return Color(hex: 0xA78BFA)
+        case .hairMakeup: return Color(hex: 0xF472B6)
+        case .locations:  return Color(hex: 0x22C55E)
+        case .transport:  return Color(hex: 0x3B82F6)
+        case .postDIT:    return Color(hex: 0x14B8A6)
+        case .other:      return Theme.textTertiary
+        }
+    }
+}
+
+// MARK: - gear_ownership
+
+enum GearOwnership: String, Codable, CaseIterable, Identifiable {
+    case owned
+    case rented
+    case provided
+    case tbc
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .owned:    return "Owned"
+        case .rented:   return "Rented"
+        case .provided: return "Provided"
+        case .tbc:      return "TBC"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .owned:    return Theme.success
+        case .rented:   return Color(hex: 0x3B82F6)
+        case .provided: return Color(hex: 0x8B5CF6)
+        case .tbc:      return Theme.textTertiary
+        }
+    }
+}
+
+// MARK: - gear_status
+
+enum GearStatus: String, Codable, CaseIterable, Identifiable {
+    case confirmed
+    case pending
+    case cancelled
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .confirmed: return "Confirmed"
+        case .pending:   return "Pending"
+        case .cancelled: return "Cancelled"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .confirmed: return Theme.success
+        case .pending:   return Theme.warning
+        case .cancelled: return Theme.danger
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .confirmed: return "checkmark.circle.fill"
+        case .pending:   return "clock"
+        case .cancelled: return "xmark.circle.fill"
+        }
+    }
+
+    var next: GearStatus {
+        switch self {
+        case .pending:   return .confirmed
+        case .confirmed: return .cancelled
+        case .cancelled: return .pending
+        }
+    }
+}

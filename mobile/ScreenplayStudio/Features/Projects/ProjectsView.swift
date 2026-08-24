@@ -6,6 +6,7 @@ struct ProjectsView: View {
     @StateObject private var model = ProjectsViewModel()
 
     @State private var isPresentingNewProject = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ScrollView {
@@ -60,7 +61,16 @@ struct ProjectsView: View {
                 )
             }
         }
-        .task { await model.loadIfNeeded() }
+        .task {
+            await model.loadIfNeeded()
+            model.startLiveUpdates()
+        }
+        // Coming back to the app is the moment someone expects to see what
+        // changed while they were away.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { await model.refresh(showSpinner: false) }
+        }
         .alert(
             "Something went wrong",
             isPresented: Binding(

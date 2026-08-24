@@ -184,6 +184,24 @@ struct SettingsView: View {
             .listRowBackground(Theme.card)
             .accessibilityElement(children: .combine)
 
+            NavigationLink {
+                DiagnosticsView()
+            } label: {
+                HStack {
+                    Text("Diagnostics")
+                        .font(.body)
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    if pendingCount > 0 {
+                        Text("\(pendingCount)")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(Theme.warning)
+                    }
+                }
+                .frame(minHeight: Theme.minTouchTarget - 10)
+            }
+            .listRowBackground(Theme.card)
+
             Button {
                 clearCache()
             } label: {
