@@ -6,7 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Input, Textarea, Card, Modal } from '@/components/ui';
 import { useTranslation } from '@/components/TranslationProvider';
 import { WorldEntity, WorldEntityCategory, WorldEntityRelationship } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
+
 import { cn } from '@/lib/utils';
 
 const CATEGORIES: { value: WorldEntityCategory; label: string; icon: string }[] = [
@@ -63,7 +63,7 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
   const handleCreateEntity = async () => {
     if (!canEdit) return;
     const newEntity: WorldEntity = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       project_id: params.id,
       name: 'New ' + activeCategory,
       category: activeCategory,
