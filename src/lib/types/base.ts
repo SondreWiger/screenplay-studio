@@ -58,6 +58,7 @@ export type SystemRole = 'writer' | 'moderator' | 'admin';
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
 export type TicketCategory = 'general' | 'bug' | 'abuse' | 'content_report' | 'feature_request';
+export type WorldEntityCategory = 'lore' | 'faction' | 'location' | 'magic' | 'species' | 'item' | 'event' | 'character' | 'other';
 
 export const LANGUAGE_OPTIONS = [
   { value: 'en', label: 'English' },
@@ -699,4 +700,30 @@ export interface ScriptElement {
   last_edited_by: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface WorldEntity {
+  id: string;
+  project_id: string;
+  name: string;
+  category: WorldEntityCategory;
+  content: string;
+  properties: Record<string, any>;
+  tags: string[];
+  avatar_url: string | null;
+  color: string;
+  parent_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorldEntityRelationship {
+  id: string;
+  project_id: string;
+  source_id: string;
+  target_id: string;
+  relationship_type: string;
+  description: string | null;
+  created_at: string;
 }
