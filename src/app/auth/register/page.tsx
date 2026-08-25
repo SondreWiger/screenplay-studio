@@ -41,7 +41,6 @@ function RegisterForm() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [honeypot, setHoneypot] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,9 +56,6 @@ function RegisterForm() {
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Honeypot — bots fill this, real users never see it
-    if (honeypot) return;
 
     // Read from the DOM so password-manager autofill is captured even
     // if React's onChange never fired (autofill doesn't always trigger it)
@@ -271,19 +267,6 @@ function RegisterForm() {
           </div>
 
           <form onSubmit={handleRegister} noValidate className="space-y-5">
-            {/* Honeypot — hidden from real users, catches bots */}
-            <div className="absolute -top-[9999px] -left-[9999px]" aria-hidden="true">
-              <input
-                type="text"
-                name="hidden_field"
-                tabIndex={-1}
-                autoComplete="off"
-                inputMode="none"
-                value={honeypot}
-                onChange={(e) => setHoneypot(e.target.value)}
-                style={{ pointerEvents: 'none' }}
-              />
-            </div>
 
             {error && (
               <div
