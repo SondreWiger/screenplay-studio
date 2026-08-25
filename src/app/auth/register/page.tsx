@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { validatePassword } from '@/lib/auth/password';
+import { validatePassword } from '@/lib/security';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { sendWelcomeEmailAction } from '@/lib/email-actions';
 import logger from '@/lib/logger';
