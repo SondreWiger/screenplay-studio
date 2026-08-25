@@ -36,7 +36,8 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const { hasAccess } = useFeatureFlags();
   const { t } = useTranslation();
-  const googleAuthEnabled = hasAccess('google_auth_enabled');
+  // const googleAuthEnabled = hasAccess('google_auth_enabled');
+  const googleAuthEnabled = false;
   
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -114,6 +115,12 @@ function RegisterForm() {
         password: formPassword,
         options: {
           data: { full_name: formName },
+          // Without this, the confirmation email points at whatever Site URL is
+          // configured in Supabase rather than the route that exchanges the
+          // code for a session. Confirming would land the user on a page that
+          // ignores the code, leaving them signed out and the account looking
+          // broken.
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=%2Fdashboard`,
         },
       });
 
@@ -154,6 +161,9 @@ function RegisterForm() {
       // Sync state to match what was actually submitted (handles autofill).
       setEmail(formEmail);
       setSuccessEmail(formEmail);
+      // Every other exit from this handler clears it; this one didn't, so the
+      // form stayed in its submitting state behind the success screen.
+      setLoading(false);
     } catch (err: unknown) {
       setError(friendlyAuthError(err instanceof Error ? err.message : 'Something went wrong. Please try again.'));
       setLoading(false);
@@ -167,7 +177,9 @@ function RegisterForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback?redirect=/dashboard`,
+          // /api/auth/callback does not exist — the code-exchange route is
+          // /auth/callback. Signing in with Google previously landed on a 404.
+          redirectTo: `${window.location.origin}/auth/callback?redirect=%2Fdashboard`,
         },
       });
       if (error) throw error;

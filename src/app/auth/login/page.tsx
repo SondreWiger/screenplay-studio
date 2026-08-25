@@ -41,7 +41,8 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const { hasAccess } = useFeatureFlags();
-  const googleAuthEnabled = hasAccess('google_auth_enabled');
+  // const googleAuthEnabled = hasAccess('google_auth_enabled');
+  const googleAuthEnabled = false;
   
   const redirect = searchParams.get('redirect') || '/dashboard';
   const [loading, setLoading] = useState(false);
@@ -108,7 +109,11 @@ function LoginForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback?redirect=${redirect}`,
+          // The code-exchange route lives at /auth/callback. /api/auth/callback
+          // does not exist, so Google sent everyone to a 404 and no session was
+          // ever created. The redirect target is encoded so paths with their own
+          // query strings survive the round trip.
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
         },
       });
       if (error) throw error;
