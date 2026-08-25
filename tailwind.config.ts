@@ -40,6 +40,10 @@ const config: Config = {
         screenplay: ['var(--font-courier-prime)', 'Courier New', 'Courier', 'monospace'],
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
       },
+      transitionTimingFunction: {
+        'spring': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',

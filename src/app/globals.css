@@ -7,17 +7,17 @@
 @layer base {
   /* ── Surface color CSS variables ────────────────────────── */
   :root {
-    --surface-50: 244 244 252;
-    --surface-100: 234 234 245;
-    --surface-200: 212 212 232;
-    --surface-300: 176 176 204;
-    --surface-400: 136 136 170;
-    --surface-500: 92 92 122;
-    --surface-600: 58 58 86;
-    --surface-700: 36 36 58;
-    --surface-800: 24 24 40;
-    --surface-900: 15 15 28;
-    --surface-950: 7 7 16;
+    --surface-50: 250 250 250;
+    --surface-100: 244 244 245;
+    --surface-200: 228 228 231;
+    --surface-300: 212 212 216;
+    --surface-400: 161 161 170;
+    --surface-500: 113 113 122;
+    --surface-600: 82 82 91;
+    --surface-700: 63 63 70;
+    --surface-800: 39 39 42;
+    --surface-900: 24 24 27;
+    --surface-950: 9 9 11;
   }
 
   /* ── Accent color CSS variables ────────────────────────── */
@@ -189,10 +189,10 @@
   [data-theme="soft"] * {
     border-color: #1a1a2e;
   }
-  /* Global colour softening: desaturate + brighten every neon/vibrant colour */
+  /* Global colour softening: slightly dim the contrast for a pro feel */
   [data-theme="soft"] html {
-    filter: saturate(0.45) brightness(1.15);
-    transition: filter 0.3s ease;
+    filter: saturate(0.85);
+    transition: filter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   /* Keep toasts/modals inside portals readable (they render outside html hierarchy) */
   [data-theme="soft"] [data-radix-portal] {
@@ -208,7 +208,7 @@
   }
 
   body {
-    @apply bg-surface-950 text-white antialiased;
+    @apply bg-surface-950 text-surface-50 antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
@@ -800,8 +800,8 @@
 
   /* ── Sidebar nav link — the star of the show ─────────── */
   .sidebar-link {
-    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400;
-    @apply transition-all duration-150 relative overflow-hidden;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-surface-400;
+    @apply transition-all duration-300 ease-spring relative overflow-hidden;
   }
   @media (max-width: 767px) {
     .sidebar-link {
@@ -811,8 +811,7 @@
     }
   }
   .sidebar-link:hover {
-    @apply text-white;
-    background: rgb(255 255 255 / 0.05);
+    @apply text-surface-50 bg-surface-800/40;
   }
   /* The left accent bar */
   .sidebar-link::before {
@@ -833,9 +832,7 @@
     opacity: 0.4;
   }
   .sidebar-link.active {
-    color: white;
-    font-weight: 600;
-    background: linear-gradient(90deg, rgb(var(--brand-600) / 0.18) 0%, transparent 100%);
+    @apply text-surface-50 font-semibold bg-surface-800/80;
   }
   .sidebar-link.active::before {
     transform: scaleY(1);

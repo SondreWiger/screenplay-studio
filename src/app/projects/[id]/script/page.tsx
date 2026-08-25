@@ -1997,10 +1997,10 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             <div className="flex items-center gap-0.5 flex-wrap min-w-0">
               {elementCycle.map((type) => (
                 <button key={type} onClick={() => handleToolbarAdd(type)}
-                  className={cn('px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors duration-150 whitespace-nowrap',
+                  className={cn('px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all duration-300 ease-spring whitespace-nowrap',
                     activeElementType === type
-                      ? 'bg-brand-600/20 text-brand-500 ring-1 ring-brand-500/30 shadow-sm'
-                      : 'text-surface-400 hover:text-white hover:bg-surface-800/80'
+                      ? 'bg-brand-500/20 text-brand-500 ring-1 ring-brand-500/30 shadow-sm'
+                      : 'text-surface-400 hover:text-surface-50 hover:bg-surface-800'
                   )} title={`Add ${ELEMENT_LABELS[type]}`}>
                   {ELEMENT_LABELS[type]}
                 </button>
@@ -2047,7 +2047,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 onClick={() => undoScript()}
                 disabled={_undoStack.length === 0}
-                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
+                className="p-2 md:p-1.5 rounded-xl text-surface-500 hover:text-surface-50 hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                 title={`Undo (Cmd+Z)${_undoStack.length > 0 ? ` · ${_undoStack.length} step${_undoStack.length > 1 ? 's' : ''}` : ''}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
@@ -2055,7 +2055,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 onClick={() => redoScript()}
                 disabled={_redoStack.length === 0}
-                className="p-2 md:p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
+                className="p-2 md:p-1.5 rounded-xl text-surface-500 hover:text-surface-50 hover:bg-surface-800/80 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                 title={`Redo (Cmd+Shift+Z)${_redoStack.length > 0 ? ` · ${_redoStack.length} step${_redoStack.length > 1 ? 's' : ''}` : ''}`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
@@ -2065,12 +2065,12 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
 
           {/* Center: Navigation & Comments */}
-          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title={`${t('script.search')} (Cmd+F)`}>
+          <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title={`${t('script.search')} (Cmd+F)`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
           <button
             onClick={() => setShowCommentPanel(!showCommentPanel)}
-            className={cn('p-2 md:p-1.5 rounded-md transition-colors duration-150 relative min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showCommentPanel ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring relative min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showCommentPanel ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title="Comments"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
@@ -2080,19 +2080,19 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               </span>
             )}
           </button>
-          <button onClick={() => titlePageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150" title="Scroll to Title Page">
+          <button onClick={() => titlePageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="p-2 md:p-1.5 rounded-xl text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center" title="Scroll to Title Page">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14" /></svg>
           </button>
 
           <div className="w-px h-4 bg-surface-800 mx-1" />
 
           {/* Right: Export & Tools */}
-          <button onClick={handleExportPDF} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150" title={`${t('script.export_pdf')} (Cmd+P)`}>
+          <button onClick={handleExportPDF} className="p-2 md:p-1.5 rounded-xl text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center" title={`${t('script.export_pdf')} (Cmd+P)`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
           </button>
           {/* Import / Export dropdown */}
           <div className="relative">
-            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-1.5 rounded-md transition-colors duration-150', showImportExport ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Import / Export">
+            <button ref={importExportRef} onClick={() => setShowImportExport(!showImportExport)} className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showImportExport ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Import / Export">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             </button>
             {showImportExport && (
@@ -2169,7 +2169,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           {canLock && currentScript && (
             <button
               onClick={handleToggleLock}
-              className={cn('p-1.5 rounded-md transition-colors duration-150',
+              className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center',
                 currentScript.locked
                   ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/20'
                   : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
@@ -2189,7 +2189,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               <button
                 ref={revisionColorPickerRef}
                 onClick={() => setShowRevisionColorPicker(!showRevisionColorPicker)}
-                className={cn('p-1.5 rounded-md transition-colors duration-150 flex items-center gap-1', showRevisionColorPicker ? 'bg-surface-800/80' : 'hover:bg-surface-800/80')}
+                className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring flex items-center gap-1 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 justify-center', showRevisionColorPicker ? 'bg-surface-800/80' : 'hover:bg-surface-800/80')}
                 title={`Revision colour: ${currentScript.revision_color || 'white'}`}
               >
                 <span
@@ -2229,16 +2229,16 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               )}
             </div>
           )}
-          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-colors duration-150" title={t('script.draft_snapshot')}>
+          <button onClick={handleSaveDraft} disabled={savingDraft} className="p-2 md:p-1.5 rounded-xl text-surface-500 hover:text-white hover:bg-surface-800/80 disabled:opacity-50 transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center" title={t('script.draft_snapshot')}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
           </button>
-          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-1.5 rounded-md transition-colors duration-150', showDrafts ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
+          <button onClick={() => setShowDrafts(!showDrafts)} className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showDrafts ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title="Draft Timeline">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </button>
           {/* Format Guide Button (for content creators) */}
           {isContentCreator && (
             <button onClick={() => setShowFormatIntro(true)}
-              className="p-1.5 rounded-md text-surface-500 hover:text-white hover:bg-surface-800/80 transition-colors duration-150"
+              className="p-2 md:p-1.5 rounded-xl text-surface-500 hover:text-white hover:bg-surface-800/80 transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
               title="Format Guide">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>
@@ -2247,7 +2247,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <div className="relative">
             <button
               onClick={() => setShowVersionPanel(!showVersionPanel)}
-              className={cn('relative p-1.5 rounded-md transition-colors duration-150',
+              className={cn('relative p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center',
                 showVersionPanel ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80'
               )}
               title="Story Versions"
@@ -2264,14 +2264,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </div>
           {/* Zen Mode */}
           <button onClick={() => toggleZenMode(!zenMode)}
-            className={cn('p-1.5 rounded-md transition-colors duration-150', zenMode ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', zenMode ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title={zenMode ? 'Exit Zen mode (Esc)' : 'Zen mode — script only (⌘⌥Z)'}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.5 12.5h15M12 4.5v15M7.5 7.5l9 9M16.5 7.5l-9 9" /></svg>
           </button>
           {/* Display Settings */}
           <div className="relative">
             <button ref={displaySettingsRef} onClick={() => setShowDisplaySettings(!showDisplaySettings)}
-              className={cn('p-1.5 rounded-md transition-colors duration-150', showDisplaySettings ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+              className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showDisplaySettings ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
               title="Display Settings">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
             </button>
@@ -2383,7 +2383,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           </div>
           {/* Dark Mode Toggle */}
           <button onClick={() => setDarkMode(!darkMode)}
-            className={cn('p-1.5 rounded-md transition-colors duration-150', darkMode ? 'text-yellow-400 hover:bg-surface-800/80' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
+            className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', darkMode ? 'text-yellow-400 hover:bg-surface-800/80' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')}
             title={darkMode ? 'Light Mode' : 'Dark Mode'}>
             {darkMode ? (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -2838,7 +2838,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   handleToolbarAdd(type);
                 }
               }}
-                className={cn('shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[44px]',
+                className={cn('shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-colors min-h-[44px]',
                   activeElementType === type
                     ? 'bg-brand-600 text-white shadow-sm'
                     : 'text-surface-400 bg-surface-800/60 active:bg-surface-700'
@@ -2877,7 +2877,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       });
                     }
                   }
-                }} className="shrink-0 px-2.5 py-1.5 rounded-md text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
+                }} className="shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
                   {shortcut}
                 </button>
               ))}
@@ -2912,7 +2912,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       });
                     }
                   }
-                }} className="shrink-0 px-2.5 py-1.5 rounded-md text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
+                }} className="shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
                   {shortcut}
                 </button>
               ))}
@@ -3012,7 +3012,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     type="button"
                     onClick={() => applyZenElementType(type)}
                     className={cn(
-                      'shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors whitespace-nowrap',
+                      'shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors whitespace-nowrap',
                       activeElementType === type
                         ? 'bg-brand-600 text-white shadow-sm'
                         : 'text-surface-400 hover:text-white hover:bg-white/5',

@@ -978,11 +978,9 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       {/* Mobile header */}
       {!zenMode && (
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden safe-pt safe-px"
-        style={{ backgroundColor: 'rgb(var(--surface-950))', borderBottom: '1px solid rgb(var(--brand-900) / 0.5)' }}
-      >
+      <div className="fixed top-0 left-0 right-0 z-40 md:hidden safe-pt safe-px bg-surface-950/80 backdrop-blur-md border-b border-surface-800">
         {/* Gradient top line on mobile too */}
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--brand-500) / 0.4), transparent)' }} />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/20 to-transparent" />
         <div className="flex items-center justify-between px-3 py-2.5">
           <button
             onClick={() => setMobileMenuOpen(true)}
@@ -1020,8 +1018,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             onClick={() => setMobileMenuOpen(false)}
           />
           <aside
-            className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col md:hidden animate-slide-right safe-pt safe-pb safe-pl"
-            style={{ background: 'rgb(var(--surface-950))', borderRight: '1px solid rgb(var(--brand-900) / 0.4)' }}
+            className="fixed inset-y-0 left-0 w-72 z-50 flex flex-col md:hidden animate-slide-right safe-pt safe-pb safe-pl bg-surface-950 border-r border-surface-800"
           >
             {sidebarContent(true)}
           </aside>
@@ -1032,10 +1029,9 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       {!zenMode && (
       <aside
         className={cn(
-          'hidden md:flex flex-col transition-[width] duration-300',
+          'hidden md:flex flex-col transition-[width] duration-300 ease-spring bg-surface-950 border-r border-surface-800',
           sidebarCollapsed ? 'w-14' : 'w-60'
         )}
-        style={{ background: 'rgb(var(--surface-950))', borderRight: '1px solid rgb(var(--brand-900) / 0.35)' }}
       >
         {sidebarContent(false)}
       </aside>

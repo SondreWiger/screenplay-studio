@@ -470,7 +470,7 @@ function DashboardContent() {
     <div className="min-h-screen bg-surface-950" id="main-content">
       {/* Top Bar */}
       <header
-        className="sticky top-0 z-40 bg-surface-950" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        className="sticky top-0 z-40 bg-surface-950/80 backdrop-blur-md border-b border-surface-800"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -508,7 +508,7 @@ function DashboardContent() {
                 {user?.role === 'admin' || user?.id === ADMIN_UID ? 'Admin' : 'Mod Panel'}
               </Link>
             )}
-            <Link href="/dashboard/import" className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg border border-surface-600 bg-surface-800/80 text-white hover:bg-surface-700 hover:border-surface-500 shadow-sm transition-colors">
+            <Link href="/dashboard/import" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-surface-700 bg-surface-800 text-surface-50 hover:bg-surface-700 hover:border-surface-600 shadow-sm transition-all duration-300 ease-spring">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
               </svg>
@@ -516,7 +516,7 @@ function DashboardContent() {
             </Link>
             <Button onClick={() => setShowNewProject(true)}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
               New Project
             </Button>
@@ -535,7 +535,7 @@ function DashboardContent() {
               {showUserMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border border-surface-700 bg-surface-900 shadow-2xl py-1.5">
+                  <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-surface-800 bg-surface-900/90 backdrop-blur-md shadow-lg shadow-black/20 py-1.5 animate-scale-in origin-top-right">
                     <div className="px-4 py-2.5 border-b border-surface-800">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-white truncate">{user?.display_name || user?.full_name || 'User'}</p>
@@ -706,7 +706,7 @@ function DashboardContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('dashboard.search_projects')}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-700 bg-surface-900 text-sm text-white placeholder:text-surface-500 focus:border-brand-500 focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-surface-800 bg-surface-900/50 backdrop-blur-sm text-sm text-surface-50 placeholder:text-surface-500 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all duration-300 ease-spring"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -739,9 +739,9 @@ function DashboardContent() {
                 <Link
                   key={rp.id}
                   href={`/projects/${rp.id}`}
-                  className="flex-shrink-0 group flex items-center gap-2.5 bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 hover:border-surface-600 rounded-xl px-3 py-2.5 transition-colors"
+                  className="flex-shrink-0 group flex items-center gap-2.5 bg-surface-900/40 hover:bg-surface-800/60 border border-surface-800/50 hover:border-surface-600/50 rounded-2xl px-3 py-2.5 transition-all duration-300 ease-spring backdrop-blur-md hover:-translate-y-0.5 hover:shadow-lg shadow-sm"
                 >
-                  <div className="relative w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="relative w-8 h-8 rounded-xl bg-surface-800 flex items-center justify-center shrink-0 overflow-hidden">
                     <span className="text-sm font-bold text-surface-400">{(rp.title || '?')[0].toUpperCase()}</span>
                     {rp.cover_url && (
                       <img src={rp.cover_url} alt="" loading="lazy" className="absolute inset-0 w-full h-full rounded-lg object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget).style.display = 'none'; }} />
@@ -764,7 +764,7 @@ function DashboardContent() {
           <span className="text-xs text-surface-500">({filteredProjects.length}{searchQuery || filterStatus !== 'all' ? ` of ${projects.length}` : ''})</span>
           <div className="ml-auto flex items-center gap-3">
             {/* Grid / List toggle */}
-            <div className="flex items-center gap-0.5 bg-surface-800 rounded-lg p-0.5 border border-surface-700">
+            <div className="flex items-center gap-0.5 bg-surface-900/50 backdrop-blur-sm rounded-xl p-0.5 border border-surface-800">
               <button
                 onClick={() => toggleViewMode('grid')}
                 title="Grid view"
@@ -1246,7 +1246,7 @@ function ProjectCard({
   if (viewMode === 'list') {
     return (
       <div
-        className={cn('relative group transition-colors duration-150', isDragging && 'opacity-40 cursor-grabbing')}
+        className={cn('relative group transition-all duration-300 ease-spring', isDragging && 'opacity-40 cursor-grabbing')}
         draggable
         onDragStart={e => { e.dataTransfer.setData('projectId', project.id); e.dataTransfer.effectAllowed = 'move'; setDraggingProjectId(project.id); }}
         onDragEnd={() => setDraggingProjectId(null)}
@@ -1263,9 +1263,9 @@ function ProjectCard({
             } catch { /* ignore */ }
           }}
         >
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-surface-800 bg-surface-900/50 hover:border-surface-700 hover:bg-surface-800/50 transition-colors group">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-2xl border border-surface-800/50 bg-surface-900/40 backdrop-blur-sm hover:border-surface-600/50 hover:bg-surface-800/50 transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:shadow-lg shadow-sm group">
             {/* Thumbnail */}
-            <div className="relative w-10 h-10 rounded-lg bg-surface-800 overflow-hidden flex-shrink-0">
+            <div className="relative w-10 h-10 rounded-xl bg-surface-800 flex items-center justify-center shrink-0 overflow-hidden">
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-lg font-bold text-surface-600">{project.title[0]}</span>
               </div>
@@ -1335,7 +1335,7 @@ function ProjectCard({
 
   return (
     <div
-      className={cn('relative group transition-colors duration-150', isDragging && 'opacity-40 scale-95 cursor-grabbing')}
+      className={cn('relative group transition-all duration-300 ease-spring', isDragging && 'opacity-40 scale-95 cursor-grabbing')}
       draggable
       onDragStart={e => {
         e.dataTransfer.setData('projectId', project.id);

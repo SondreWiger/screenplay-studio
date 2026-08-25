@@ -14,16 +14,16 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'text-white shadow-lg hover:-translate-y-px hover:shadow-brand-500/20 active:translate-y-0',
-      secondary: 'border border-surface-600 bg-surface-800/80 text-white hover:bg-surface-700 hover:border-surface-500 shadow-sm',
-      ghost: 'text-surface-400 hover:text-white hover:bg-white/8',
-      danger: 'bg-red-600 text-white hover:bg-red-500 shadow-md shadow-red-900/30 hover:-translate-y-px',
-      outline: 'border border-surface-600 text-surface-300 hover:border-brand-500/60 hover:text-white hover:bg-white/4',
+      primary: 'text-white bg-brand-500 hover:bg-brand-600 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
+      secondary: 'border border-surface-700 bg-surface-800 text-surface-50 hover:bg-surface-700 hover:border-surface-600 shadow-sm active:scale-[0.98]',
+      ghost: 'text-surface-400 hover:text-surface-50 hover:bg-surface-800/50 active:scale-[0.98]',
+      danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white shadow-sm hover:-translate-y-px active:scale-[0.98]',
+      outline: 'border border-surface-700 text-surface-300 hover:border-brand-500/50 hover:text-surface-50 hover:bg-brand-500/10 active:scale-[0.98]',
     };
     const sizes = {
-      sm: 'px-3 py-1.5 text-xs font-semibold',
-      md: 'px-4 py-2.5 text-sm font-semibold',
-      lg: 'px-6 py-3 text-base font-bold',
+      sm: 'px-3 py-1.5 text-xs font-medium',
+      md: 'px-4 py-2 text-sm font-medium',
+      lg: 'px-6 py-3 text-base font-semibold',
       icon: 'p-2',
     };
 
@@ -31,10 +31,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
-          variant === 'primary' && 'bg-gradient-to-r from-brand-600 to-brand-500',
+          'inline-flex items-center justify-center gap-2 rounded-xl transition-all duration-300 ease-spring',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950',
+          'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
           variants[variant],
           sizes[size],
           className
@@ -79,12 +78,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
-              'border-surface-700/80 placeholder:text-surface-600',
-              'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
-              'transition-colors duration-200',
+              'w-full rounded-xl border bg-surface-900/50 px-4 py-2.5 text-sm text-surface-50 font-medium backdrop-blur-sm',
+              'border-surface-800 placeholder:text-surface-500',
+              'focus:border-brand-500/50 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:bg-surface-900',
+              'transition-all duration-300 ease-spring',
               icon && 'pl-10',
-              error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
+              error && 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20',
               className
             )}
             {...props}
@@ -114,11 +113,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           className={cn(
-            'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
-            'border-surface-700/80 placeholder:text-surface-600 resize-none',
-            'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
-            'transition-colors duration-200',
-            error && 'border-red-500/70 focus:border-red-500 focus:ring-red-500/20',
+            'w-full rounded-xl border bg-surface-900/50 px-4 py-2.5 text-sm text-surface-50 font-medium backdrop-blur-sm',
+            'border-surface-800 placeholder:text-surface-500 resize-none',
+            'focus:border-brand-500/50 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:bg-surface-900',
+            'transition-all duration-300 ease-spring',
+            error && 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20',
             className
           )}
           {...props}
@@ -148,11 +147,11 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={cn(
-            'w-full rounded-lg border bg-surface-900/80 px-4 py-3 text-sm text-white font-medium',
-            'border-surface-700/80',
-            'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
-            'transition-colors duration-200',
-            error && 'border-red-500/70',
+            'w-full rounded-xl border bg-surface-900/50 px-4 py-2.5 text-sm text-surface-50 font-medium backdrop-blur-sm',
+            'border-surface-800',
+            'focus:border-brand-500/50 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:bg-surface-900',
+            'transition-all duration-300 ease-spring',
+            error && 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20',
             className
           )}
           {...props}
@@ -179,11 +178,11 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', size = 'sm', className }: BadgeProps) {
   const variants = {
-    default: 'bg-surface-700/80 border border-surface-600/50 text-surface-300',
-    success: 'bg-green-500/15 border border-green-500/30 text-green-400',
-    warning: 'bg-yellow-500/15 border border-yellow-500/30 text-yellow-300',
-    error: 'bg-red-500/15 border border-red-500/30 text-red-400',
-    info: 'bg-blue-500/15 border border-blue-500/30 text-blue-400',
+    default: 'bg-surface-800/80 border border-surface-700 text-surface-300',
+    success: 'bg-green-500/10 border border-green-500/20 text-green-400',
+    warning: 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-300',
+    error: 'bg-red-500/10 border border-red-500/20 text-red-400',
+    info: 'bg-blue-500/10 border border-blue-500/20 text-blue-400',
   };
   const sizes = {
     sm: 'px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
@@ -215,9 +214,9 @@ export function Card({ children, className, hover = false, onClick }: CardProps)
   return (
     <div
       className={cn(
-        'rounded-xl border transition-colors duration-200',
-        'border-surface-800/80 bg-surface-900/60 backdrop-blur-sm',
-        hover && 'hover:border-surface-600/80 hover:bg-surface-800/60 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/20 cursor-pointer',
+        'rounded-2xl border transition-all duration-300 ease-spring',
+        'border-surface-800/50 bg-surface-900/40 backdrop-blur-md shadow-sm',
+        hover && 'hover:border-surface-600/50 hover:bg-surface-800/50 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer',
         onClick && 'cursor-pointer',
         className
       )}
