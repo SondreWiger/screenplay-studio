@@ -37,6 +37,7 @@ const PROJECT_TYPE_MAP: Record<ScriptType, ProjectType> = {
   audio_drama: 'audio_drama',
   youtube: 'youtube',
   tiktok: 'tiktok',
+  videogame: 'videogame',
 };
 
 const ACCEPTED = '.fdx,.fountain,.txt,.starc';

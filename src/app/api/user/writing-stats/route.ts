@@ -47,9 +47,8 @@ export async function GET() {
     const sessions = workSessionsRes.data ?? [];
 
     // Count words from script elements
-    function countWords(text: string): number {
-      return text ? text.trim().split(/\s+/).filter(Boolean).length : 0;
-    }
+    const countWords = (text: string): number =>
+      text ? text.trim().split(/\s+/).filter(Boolean).length : 0;
 
     const now = new Date();
     const todayStart = new Date(now);

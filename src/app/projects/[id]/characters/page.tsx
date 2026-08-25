@@ -8,6 +8,7 @@ import { cn, randomColor } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { toast } from 'sonner';
 import type { Character } from '@/lib/types';
 import { useTranslation } from '@/components/TranslationProvider';
 
@@ -359,7 +360,6 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
         }}
         onDelete={handleDelete}
         canEdit={canEdit}
-      />
       />
       <ConfirmDialog />
 

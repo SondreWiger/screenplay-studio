@@ -173,6 +173,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
     const totalMins    = displayScenes.reduce((a, s) => a + (s.estimated_duration_minutes ?? 0), 0);
     const vfxScenes    = displayScenes.filter((s) => s.vfx_notes).length;
     const stuntScenes  = displayScenes.filter((s) => s.stunts).length;
+    const extrasTotal  = displayScenes.reduce((a, s) => a + (s.extras_count ?? 0), 0);
     const allProps     = Array.from(new Set(displayScenes.flatMap((s) => s.props ?? [])));
     const allCostumes  = Array.from(new Set(displayScenes.flatMap((s) => s.costumes ?? [])));
     const allSfx       = Array.from(new Set(displayScenes.flatMap((s) => s.special_effects ?? [])));

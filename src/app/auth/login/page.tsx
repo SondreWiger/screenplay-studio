@@ -40,8 +40,8 @@ export default function LoginPage() {
 function LoginForm() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
-  const { hasFeature } = useFeatureFlags();
-  const googleAuthEnabled = hasFeature('google_auth_enabled');
+  const { hasAccess } = useFeatureFlags();
+  const googleAuthEnabled = hasAccess('google_auth_enabled');
   
   const redirect = searchParams.get('redirect') || '/dashboard';
   const [loading, setLoading] = useState(false);

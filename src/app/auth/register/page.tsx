@@ -34,9 +34,9 @@ function friendlyAuthError(msg: string): string {
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { hasFeature } = useFeatureFlags();
+  const { hasAccess } = useFeatureFlags();
   const { t } = useTranslation();
-  const googleAuthEnabled = hasFeature('google_auth_enabled');
+  const googleAuthEnabled = hasAccess('google_auth_enabled');
   
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
