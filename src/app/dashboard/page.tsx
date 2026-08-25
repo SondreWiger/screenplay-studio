@@ -1251,7 +1251,18 @@ function ProjectCard({
         onDragStart={e => { e.dataTransfer.setData('projectId', project.id); e.dataTransfer.effectAllowed = 'move'; setDraggingProjectId(project.id); }}
         onDragEnd={() => setDraggingProjectId(null)}
       >
-        <Link href={`/projects/${project.id}`}>
+        <Link 
+          href={`/projects/${project.id}`}
+          onClick={(e) => {
+            try {
+              const lastPath = localStorage.getItem(`last_project_tab_${project.id}`);
+              if (lastPath) {
+                e.preventDefault();
+                window.location.href = lastPath; // We use window.location here for simplicity, but a router push is better
+              }
+            } catch { /* ignore */ }
+          }}
+        >
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-surface-800 bg-surface-900/50 hover:border-surface-700 hover:bg-surface-800/50 transition-colors group">
             {/* Thumbnail */}
             <div className="relative w-10 h-10 rounded-lg bg-surface-800 overflow-hidden flex-shrink-0">
@@ -1333,7 +1344,18 @@ function ProjectCard({
       }}
       onDragEnd={() => setDraggingProjectId(null)}
     >
-      <Link href={`/projects/${project.id}`}>
+      <Link 
+        href={`/projects/${project.id}`}
+        onClick={(e) => {
+          try {
+            const lastPath = localStorage.getItem(`last_project_tab_${project.id}`);
+            if (lastPath) {
+              e.preventDefault();
+              window.location.href = lastPath;
+            }
+          } catch { /* ignore */ }
+        }}
+      >
         <Card hover className="overflow-hidden group">
           <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center">

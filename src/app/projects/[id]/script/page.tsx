@@ -1276,11 +1276,14 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
             ${titlePage.author ? `<div class="tp-author">${titlePage.author}</div>` : ''}
             ${titlePage.source ? `<div class="tp-source">${titlePage.source}</div>` : ''}
           </div>
-          <div class="title-bottom">
-            ${(titlePage.company_logo_url || titlePage.company_name) ? `<div class="tp-company">${titlePage.company_logo_url ? `<img src="${titlePage.company_logo_url}" class="tp-company-logo" alt="" />` : ''}${titlePage.company_name ? `<div class="tp-company-name">${titlePage.company_name}</div>` : ''}</div>` : ''}
-            ${titlePage.draft_date ? `<div class="tp-info">${titlePage.draft_date}</div>` : ''}
-            ${titlePage.contact ? `<div class="tp-info">${titlePage.contact}</div>` : ''}
-            ${titlePage.copyright ? `<div class="tp-info">${titlePage.copyright}</div>` : ''}
+          <div class="title-bottom" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+            <div class="title-bottom-left">
+              ${(titlePage.company_logo_url || titlePage.company_name) ? `<div class="tp-company">${titlePage.company_logo_url ? `<img src="${titlePage.company_logo_url}" class="tp-company-logo" alt="" />` : ''}${titlePage.company_name ? `<div class="tp-company-name">${titlePage.company_name}</div>` : ''}</div>` : ''}
+              ${titlePage.draft_date ? `<div class="tp-info">${titlePage.draft_date}</div>` : ''}
+              ${titlePage.contact ? `<div class="tp-info">${titlePage.contact}</div>` : ''}
+              ${titlePage.copyright ? `<div class="tp-info">${titlePage.copyright}</div>` : ''}
+            </div>
+            ${titlePage.notes ? `<div class="title-bottom-right" style="text-align: right; font-size: 10pt; max-width: 160pt; white-space: pre-wrap;">${titlePage.notes}</div>` : ''}
           </div>
         </div>
       </div>
@@ -2454,7 +2457,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     value={currentScript.title_page_data?.title ?? ''}
                     placeholder="TITLE"
                     className={cn(
-                      'text-2xl font-black uppercase tracking-wide text-center w-full',
+                      'text-2xl font-black uppercase tracking-wide text-center w-full print:text-black',
                       darkMode ? 'text-white placeholder:text-surface-700' : 'text-black placeholder:text-gray-300',
                     )}
                     onSave={(v) => saveTitlePageField('title', v)}
@@ -2463,7 +2466,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     value={currentScript.title_page_data?.credit ?? ''}
                     placeholder="Written by"
                     className={cn(
-                      'text-sm text-center w-full mt-6',
+                      'text-sm text-center w-full mt-6 print:text-black',
                       darkMode ? 'text-surface-400 placeholder:text-surface-700' : 'text-gray-600 placeholder:text-gray-300',
                     )}
                     onSave={(v) => saveTitlePageField('credit', v)}
@@ -2472,7 +2475,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     value={currentScript.title_page_data?.author ?? ''}
                     placeholder="Author Name"
                     className={cn(
-                      'text-sm text-center w-full',
+                      'text-sm text-center w-full print:text-black',
                       darkMode ? 'text-surface-400 placeholder:text-surface-700' : 'text-gray-600 placeholder:text-gray-300',
                     )}
                     onSave={(v) => saveTitlePageField('author', v)}
@@ -2481,7 +2484,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     value={currentScript.title_page_data?.source ?? ''}
                     placeholder="Based on…"
                     className={cn(
-                      'text-xs italic text-center w-full mt-3',
+                      'text-xs italic text-center w-full mt-3 print:text-black',
                       darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-400 placeholder:text-gray-300',
                     )}
                     onSave={(v) => saveTitlePageField('source', v)}
@@ -2504,7 +2507,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       value={currentScript.title_page_data?.company_name ?? ''}
                       placeholder="Production Company"
                       className={cn(
-                        'text-[11px] font-semibold',
+                        'text-[11px] font-semibold print:text-black',
                         darkMode ? 'text-surface-400 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
                       )}
                       onSave={(v) => saveTitlePageField('company_name', v)}
@@ -2513,7 +2516,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       value={currentScript.title_page_data?.draft_date ?? ''}
                       placeholder="Draft Date"
                       className={cn(
-                        'text-[11px]',
+                        'text-[11px] print:text-black',
                         darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
                       )}
                       onSave={(v) => saveTitlePageField('draft_date', v)}
@@ -2522,7 +2525,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       value={currentScript.title_page_data?.contact ?? ''}
                       placeholder="Contact Info"
                       className={cn(
-                        'text-[11px]',
+                        'text-[11px] print:text-black',
                         darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
                       )}
                       onSave={(v) => saveTitlePageField('contact', v)}
@@ -2531,7 +2534,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       value={currentScript.title_page_data?.copyright ?? ''}
                       placeholder="© Copyright"
                       className={cn(
-                        'text-[11px]',
+                        'text-[11px] print:text-black',
                         darkMode ? 'text-surface-500 placeholder:text-surface-700' : 'text-gray-500 placeholder:text-gray-300',
                       )}
                       onSave={(v) => saveTitlePageField('copyright', v)}
@@ -2542,7 +2545,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       value={currentScript.title_page_data?.notes ?? ''}
                       placeholder="Notes…"
                       className={cn(
-                        'text-[10px] text-right',
+                        'text-[10px] text-right print:text-black',
                         darkMode ? 'text-surface-600 placeholder:text-surface-700' : 'text-gray-400 placeholder:text-gray-300',
                       )}
                       onSave={(v) => saveTitlePageField('notes', v)}

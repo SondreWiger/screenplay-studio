@@ -115,6 +115,15 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
+  // Save the current project route so Dashboard can reopen the last active tab
+  useEffect(() => {
+    if (params.id && pathname && !pathname.endsWith(`/projects/${params.id}`)) {
+      try {
+        localStorage.setItem(`last_project_tab_${params.id}`, pathname);
+      } catch { /* ignore */ }
+    }
+  }, [pathname, params.id]);
+
   // Quick Access shortcuts (personal, localStorage)
   type Shortcut = { id: string; type: 'script' | 'document'; title: string };
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);

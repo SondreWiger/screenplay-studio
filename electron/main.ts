@@ -21,6 +21,27 @@ let mainWindow: BrowserWindow | null = null;
 let menuSetup = false;
 let updaterSetup = false;
 
+// Store file path if app is launched by double-clicking a file
+let fileToOpen: string | null = null;
+
+// macOS: Handle 'open-file' event (fires when app is already open, or before ready)
+app.on('open-file', (event, filePath) => {
+  event.preventDefault();
+  if (mainWindow && mainWindow.isReady()) {
+    mainWindow.webContents.send('open-external-file', filePath);
+  } else {
+    fileToOpen = filePath;
+  }
+});
+
+// Windows / Linux: Parse process.argv for file paths on launch
+if (process.defaultApp === false && process.argv.length >= 2) {
+  const arg = process.argv[1];
+  if (arg && arg !== '.' && !arg.startsWith('--')) {
+    fileToOpen = arg;
+  }
+}
+
 // Auto-save interval handle
 let autoSaveInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -40,6 +61,7 @@ async function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'Screenplay Studio',
+    icon: path.join(__dirname, '../../build/icon.png'),
     titleBarStyle: isMac ? 'hiddenInset' : 'default',
     trafficLightPosition: isMac ? { x: 16, y: 16 } : undefined,
     webPreferences: {
@@ -197,6 +219,9 @@ function loadAppUrl(url: string) {
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url === 'about:blank' || url === '') {
+      return { action: 'allow' };
+    }
     shell.openExternal(url);
     return { action: 'deny' };
   });
@@ -247,6 +272,12 @@ function loadAppUrl(url: string) {
           mainWindow.webContents.send('auto-save-tick');
         }
       }, 30_000);
+    }
+
+    // ── Open external file if app was launched with one ────────
+    if (fileToOpen && mainWindow) {
+      mainWindow.webContents.send('open-external-file', fileToOpen);
+      fileToOpen = null;
     }
   });
 }
@@ -346,10 +377,16 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
+  app.on('second-instance', (event, commandLine) => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
+
+      // Check if second instance was launched with a file (Windows/Linux)
+      const fileArg = commandLine.find(arg => arg && arg !== '.' && !arg.startsWith('--'));
+      if (fileArg && mainWindow.isReady()) {
+        mainWindow.webContents.send('open-external-file', fileArg);
+      }
     }
   });
 

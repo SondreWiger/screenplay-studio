@@ -41,6 +41,7 @@ export interface ElectronAPI {
   onAutoSaveTick: (callback: () => void) => () => void;
   getPreferenceSync: (key: string) => any;
   setPreference: (key: string, value: any) => Promise<void>;
+  onExternalFileOpen: (callback: (filePath: string) => void) => () => void;
 }
 
 contextBridge.exposeInMainWorld('electron', {
@@ -100,4 +101,11 @@ contextBridge.exposeInMainWorld('electron', {
   },
   getPreferenceSync: (key: string) => ipcRenderer.sendSync('electron:get-preference-sync', key),
   setPreference: (key: string, value: any) => ipcRenderer.invoke('electron:set-preference', key, value),
+  onExternalFileOpen: (callback: (filePath: string) => void) => {
+    const fn = (_event: unknown, filePath: string) => callback(filePath);
+    ipcRenderer.on('open-external-file', fn);
+    return () => {
+      ipcRenderer.removeListener('open-external-file', fn);
+    };
+  },
 } satisfies ElectronAPI);

@@ -8,7 +8,8 @@
     "buildResources": "build"
   },
   "files": [
-    "electron/dist/**/*"
+    "electron/dist/**/*",
+    "build/icon.png"
   ],
   "extraResources": [
     {
