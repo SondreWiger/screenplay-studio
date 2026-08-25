@@ -109,10 +109,22 @@ const nextConfig = {
       },
       {
         // ── Immutable cache for hashed Next.js static assets ─
-        // _next/static chunks have content-hashed names — safe to cache forever
+        // Production chunks have content-hashed names, so caching them forever
+        // is safe — a new build simply requests new URLs.
+        //
+        // Dev chunks do NOT: the filenames are stable across rebuilds, so
+        // `immutable` tells the browser never to revalidate and it keeps
+        // serving whatever JS it saw first. Edits stop appearing and errors
+        // from since-deleted code keep being thrown, which looks like the fix
+        // "not working" rather than a caching problem. Dev must revalidate.
         source: '/_next/static/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          {
+            key: 'Cache-Control',
+            value: process.env.NODE_ENV === 'production'
+              ? 'public, max-age=31536000, immutable'
+              : 'no-cache, no-store, must-revalidate',
+          },
         ],
       },
       {

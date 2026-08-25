@@ -7,7 +7,7 @@
 //     explicit version bump forces old caches to be purged even if the rest of
 //     the SW logic is identical.
 
-const CACHE_VERSION = 'ss-v9';   // bumped — resilient pre-cache, offline reload fix
+const CACHE_VERSION = 'ss-v10';  // bumped — dev origins bypass the worker entirely
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE  = `${CACHE_VERSION}-dynamic`;
 
@@ -72,6 +72,22 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-http requests (chrome-extension://, etc.)
   if (!url.protocol.startsWith('http')) return;
+
+  // Never intercept anything on a local dev origin.
+  //
+  // `/_next/static/*` is served cache-first below, which is correct in
+  // production because those filenames are content-hashed — a new build
+  // requests new URLs. Dev builds reuse the same filenames across rebuilds, so
+  // cache-first would serve the first JS the browser ever saw and keep serving
+  // it: edits stop appearing and errors from since-deleted code keep throwing.
+  if (
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1' ||
+    url.hostname === '[::1]' ||
+    url.hostname.endsWith('.local')
+  ) {
+    return; // let the browser fetch it normally
+  }
 
   // Skip cross-origin requests entirely — let the browser handle them directly.
   // The SW's fetch() is governed by connect-src CSP which only allows same-origin

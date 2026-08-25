@@ -11,6 +11,25 @@ export function ServiceWorkerRegistration() {
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
+    if (process.env.NODE_ENV === 'development') {
+      // The worker serves /_next/static/* cache-first. In production that is
+      // safe because those filenames are content-hashed, so a new build asks
+      // for new URLs. In development the filenames are stable across rebuilds,
+      // so cache-first pins the browser to whatever JS it saw first — edits
+      // stop appearing, and errors from deleted code keep being thrown.
+      //
+      // Tear down anything left over from a previous run so a developer who is
+      // already stuck gets unstuck on the next reload rather than having to
+      // find this in DevTools.
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => registration.unregister());
+      });
+      caches?.keys().then((names) => {
+        names.filter((n) => n.startsWith('ss-')).forEach((n) => caches.delete(n));
+      });
+      return;
+    }
+
     navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
