@@ -242,6 +242,28 @@ async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
   }
 }
 
+/**
+ * The project whose scripts were most recently requested.
+ *
+ * `fetchScripts` has four independent sources (Supabase, Electron disk, the
+ * offline cache, and the cache fallback after a network error) and they resolve
+ * at very different speeds. Opening project A, then B, then A again can land the
+ * responses out of order, leaving `currentScript` pointing at one project while
+ * the editor shows another's elements. Every write checks this first and drops
+ * results that belong to a project the user has already navigated away from.
+ */
+let latestScriptsRequest: string | null = null;
+
+/** Picks which draft to open: the one last opened, else the active one, else the newest. */
+function pickActiveScript(projectId: string, scripts: Script[]): Script | null {
+  if (scripts.length === 0) return null;
+  let savedId: string | null = null;
+  try { savedId = localStorage.getItem(`ss-active-script-${projectId}`); } catch { /* ssr */ }
+  return (savedId ? scripts.find((s) => s.id === savedId) : null)
+    ?? scripts.find((s) => s.is_active)
+    ?? scripts[0];
+}
+
 export const useScriptStore = create<ScriptState>((set, get) => ({
   scripts: [],
   currentScript: null,
@@ -299,6 +321,9 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   setLoading: (loading) => set({ loading }),
 
   fetchScripts: async (projectId: string) => {
+    // Claim this request so slower in-flight fetches for other projects know
+    // they have been superseded and must not write their results.
+    latestScriptsRequest = projectId;
     // Clear immediately so stale data from a previous project is never shown.
     // Flag prevents autosave from writing empty data during load.
     set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [], _isInitialLoad: true });
@@ -309,23 +334,15 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
           if (diskData?.scripts) {
             const scripts = diskData.scripts;
             scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-            set({ scripts });
-            if (scripts.length > 0) {
-              const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
-              const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
-              set({ currentScript: active });
-            }
+            if (latestScriptsRequest !== projectId) return;
+            set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
             return;
           }
         }
         const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
         scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-        set({ scripts });
-        if (scripts.length > 0) {
-          const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
-          const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
-          set({ currentScript: active });
-        }
+        if (latestScriptsRequest !== projectId) return;
+        set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
         return;
       }
       const supabase = createClient();
@@ -336,14 +353,9 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         .order('version', { ascending: false });
       if (error || data === null) throw error || new Error('fetch failed');
       const scripts = (data || []) as Script[];
-      set({ scripts });
-      if (scripts.length > 0) {
-        const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
-        const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
-        set({ currentScript: active });
-      } else {
-        set({ currentScript: null, elements: [] });
-      }
+      if (latestScriptsRequest !== projectId) return;
+      const active = pickActiveScript(projectId, scripts);
+      set(active ? { scripts, currentScript: active } : { scripts, currentScript: null, elements: [] });
     } catch {
       // Network error — fall back to cache
       try {
@@ -352,23 +364,15 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
           if (diskData?.scripts) {
             const scripts = diskData.scripts;
             scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-            set({ scripts });
-            if (scripts.length > 0) {
-              const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
-              const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
-              set({ currentScript: active });
-            }
+            if (latestScriptsRequest !== projectId) return;
+            set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
             return;
           }
         }
         const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
         scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-        set({ scripts });
-        if (scripts.length > 0) {
-          const savedId = localStorage.getItem(`ss-active-script-${projectId}`);
-          const active = (savedId ? scripts.find((s: Script) => s.id === savedId) : null) || scripts.find((s: Script) => s.is_active) || scripts[0];
-          set({ currentScript: active });
-        }
+        if (latestScriptsRequest !== projectId) return;
+        set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
       } catch {
         logger.error('ScriptStore', 'Error fetching scripts (cache fallback failed)');
         set({ scripts: [] });

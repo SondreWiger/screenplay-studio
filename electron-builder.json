@@ -2,14 +2,15 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "fun.screenplaystudio.app",
   "productName": "Screenplay Studio",
-  "copyright": "Copyright © 2024 Nordhem Development",
+  "copyright": "Copyright \u00a9 2024 Nordhem Development",
   "directories": {
     "output": "public/downloads",
     "buildResources": "build"
   },
   "files": [
     "electron/dist/**/*",
-    "build/icon.png"
+    "build/icon.png",
+    "build/icons/**/*"
   ],
   "extraResources": [
     {
@@ -31,7 +32,10 @@
     "target": [
       {
         "target": "dmg",
-        "arch": ["x64", "arm64"]
+        "arch": [
+          "x64",
+          "arm64"
+        ]
       }
     ],
     "darkModeSupport": true,
@@ -42,8 +46,16 @@
   },
   "dmg": {
     "contents": [
-      { "x": 130, "y": 220 },
-      { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
     ],
     "window": {
       "width": 540,
@@ -54,7 +66,9 @@
     "target": [
       {
         "target": "nsis",
-        "arch": ["x64"]
+        "arch": [
+          "x64"
+        ]
       }
     ],
     "icon": "build/icon.png"
@@ -73,10 +87,12 @@
     "target": [
       {
         "target": "AppImage",
-        "arch": ["x64"]
+        "arch": [
+          "x64"
+        ]
       }
     ],
-    "icon": "build",
+    "icon": "build/icons",
     "category": "AudioVideo"
   },
   "publish": {

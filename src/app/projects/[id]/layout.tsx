@@ -23,7 +23,7 @@ import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ShortcutPicker } from '@/components/sidebar/ShortcutPicker';
 import { cn } from '@/lib/utils';
-import { PAGE_LABELS, getPageSection } from '@/lib/pageLabels';
+import { PAGE_LABELS, getPageSection, getPageLabelKey } from '@/lib/pageLabels';
 import { getNavCategories, type NavItem, type NavCategory } from '@/lib/navCategories';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
 import type { UserRole, UserPresence, SidebarSection } from '@/lib/types';
@@ -327,7 +327,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
   useEffect(() => {
     if (user && params.id) {
-      updatePresence(getPageSection(pathname, params.id));
+      updatePresence(getPageLabelKey(pathname, params.id));
     }
   }, [pathname]);
 
@@ -350,14 +350,14 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   // Browser tab title
   useEffect(() => {
     if (!currentProject) return;
-    const pageKey = getPageSection(pathname, params.id);
+    const pageKey = getPageLabelKey(pathname, params.id);
     const pageLabel = PAGE_LABELS[pageKey] || pageKey;
     document.title = `${pageLabel} — ${currentProject.title} — Screenplay Studio`;
     return () => { document.title = 'Screenplay Studio'; };
   }, [pathname, currentProject?.title, params.id]);
 
   // Discord Rich Presence via PreMiD
-  const currentPageSlug = getPageSection(pathname, params.id);
+  const currentPageSlug = getPageLabelKey(pathname, params.id);
   const currentToolLabel = PAGE_LABELS[currentPageSlug] ?? 'Overview';
   usePreMiD({
     projectName: currentProject?.title ?? null,
@@ -587,7 +587,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const icons = sidebarIcons;
 
   // Active page label for mobile header
-  const currentPage = getPageSection(pathname, params.id);
+  const currentPage = getPageLabelKey(pathname, params.id);
   const pageLabel = PAGE_LABELS[currentPage] || currentProject.title;
 
   // Sidebar content — shared between desktop and mobile
@@ -932,7 +932,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
               <NotificationBell />
               <PopoutButton
                 projectId={params.id}
-                pageLabel={PAGE_LABELS[getPageSection(pathname, params.id)]}
+                pageLabel={PAGE_LABELS[getPageLabelKey(pathname, params.id)]}
               />
               <button
                 onClick={() => setShowCustomiser(true)}
