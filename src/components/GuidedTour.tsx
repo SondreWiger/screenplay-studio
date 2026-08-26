@@ -720,7 +720,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: init
         {/* Body */}
         <div className="px-8 pt-8 pb-5">
           {current.eyebrow && (
-            <p className="text-[9px] font-black uppercase tracking-[0.22em] mb-5 text-center"
+            <p className="text-[11px] font-semibold uppercase tracking-[0.04em] mb-5 text-center"
               style={{ color: accent }}>
               {current.eyebrow}
             </p>
@@ -728,7 +728,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: init
 
           <div className="mb-6">{current.icon}</div>
 
-          <h2 className="text-[1.3rem] font-black text-white mb-3 text-center leading-snug">
+          <h2 className="text-[1.3rem] font-semibold text-white mb-3 text-center leading-snug">
             {current.title}
           </h2>
           <p className="text-sm text-surface-400 leading-relaxed text-center max-w-[420px] mx-auto">
@@ -740,7 +740,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: init
               {current.tips.map((tip, i) => (
                 <li key={i} className="flex items-start gap-3 text-[13px] text-surface-300 leading-relaxed">
                   <span
-                    className="mt-px w-5 h-5 min-w-[1.25rem] rounded-full flex items-center justify-center text-[9px] font-black"
+                    className="mt-px w-5 h-5 min-w-[1.25rem] rounded-full flex items-center justify-center text-[11px] font-semibold"
                     style={{ background: `${accent}22`, color: accent }}
                   >
                     {i + 1}

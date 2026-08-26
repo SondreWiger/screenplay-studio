@@ -215,9 +215,9 @@ export default function OnboardingPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-                <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+                <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
               </div>
-              <span className="text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+              <span className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em]">
                 Step {step + 1} of {TOTAL_STEPS}
               </span>
             </div>
@@ -231,7 +231,7 @@ export default function OnboardingPage() {
           <ProgressDots current={step} total={TOTAL_STEPS} />
           <div className="flex items-center gap-2 mt-2">
             <span className="text-sm">{STEP_ICONS[step]}</span>
-            <span className="text-xs font-medium text-white/50 uppercase tracking-wider">{STEP_LABELS[step]}</span>
+            <span className="text-xs font-medium text-white/50 uppercase tracking-[0.04em]">{STEP_LABELS[step]}</span>
           </div>
         </div>
       </div>
@@ -256,7 +256,7 @@ export default function OnboardingPage() {
                     <span className="text-sm">✨</span>
                   </div>
                 </div>
-                <h1 className="text-4xl sm:text-5xl font-black text-white mb-3 tracking-tight">
+                <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 tracking-tight">
                   Your story starts<br /> <span style={{ color: '#FF5F1F' }}>here</span>
                 </h1>
                 <p className="text-surface-400 max-w-md mx-auto text-sm leading-relaxed">
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
 
               <div className="max-w-sm mx-auto space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-semibold text-surface-400 uppercase tracking-[0.04em] mb-2">
                     What should we call you?
                   </label>
                   <Input
@@ -302,7 +302,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">🎯</div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">How will you use the platform?</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">How will you use the platform?</h2>
                 <p className="text-surface-400 text-sm">We&apos;ll tailor the sidebar and tools to match your workflow.</p>
               </div>
 
@@ -334,10 +334,10 @@ export default function OnboardingPage() {
                       {selected && (
                         <div className="mt-3 pt-3 border-t border-brand-500/10">
                           <div className="flex flex-wrap gap-2">
-                            {showCommunity && <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🌐 Community</span>}
-                            {showProductionTools && <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🎥 Production</span>}
-                            {showCollaboration && <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">👥 Collab</span>}
-                            {showAccountability && <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🔥 Streaks</span>}
+                            {showCommunity && <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🌐 Community</span>}
+                            {showProductionTools && <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🎥 Production</span>}
+                            {showCollaboration && <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">👥 Collab</span>}
+                            {showAccountability && <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">🔥 Streaks</span>}
                           </div>
                         </div>
                       )}
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">📝</div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">What format do you write in?</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">What format do you write in?</h2>
                 <p className="text-surface-400 text-sm">We&apos;ll set the default formatting for new projects.</p>
               </div>
 
@@ -390,7 +390,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">✨</div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">Pick your style</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Pick your style</h2>
                 <p className="text-surface-400 text-sm max-w-md mx-auto">
                   Choose how the editor looks. You can change this later in settings.
                 </p>
@@ -448,7 +448,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">🎨</div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">Customize your workspace</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Customize your workspace</h2>
                 <p className="text-surface-400 text-sm">Toggle features on or off. Hidden items are always one click away under &quot;More Tools&quot;.</p>
               </div>
 
@@ -503,7 +503,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">🏆</div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">Turn writing into a game</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Turn writing into a game</h2>
                 <p className="text-surface-400 text-sm max-w-sm mx-auto">
                   Earn XP for every word, build streaks, level up, and unlock profile rewards.
                 </p>
@@ -520,16 +520,16 @@ export default function OnboardingPage() {
                       )}
                       {/* Timeline dot */}
                       <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-surface-800 border-2 border-brand-500/30 flex items-center justify-center">
-                        <span className="text-[10px]">{lvl.icon}</span>
+                        <span className="text-[11px]">{lvl.icon}</span>
                       </div>
                       <div className="bg-surface-900/50 rounded-xl border border-surface-800/50 p-3 hover:border-surface-700/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-[10px] font-mono text-brand-500 font-bold">LVL {lvl.level}</span>
+                            <span className="text-[11px] font-mono text-brand-500 font-bold">LVL {lvl.level}</span>
                             <h4 className="text-sm font-semibold text-white">{lvl.title}</h4>
                           </div>
                           {lvl.unlock && (
-                            <span className="text-[10px] px-2 py-1 rounded-full bg-brand-500/10 text-brand-500 font-medium whitespace-nowrap">
+                            <span className="text-[11px] px-2 py-1 rounded-full bg-brand-500/10 text-brand-500 font-medium whitespace-nowrap">
                               Unlocks: {lvl.unlock}
                             </span>
                           )}
@@ -555,7 +555,7 @@ export default function OnboardingPage() {
                     <h3 className={`text-sm font-bold ${gamificationChoice === true ? 'text-brand-500' : 'text-white'}`}>
                       Yes, let&apos;s go!
                     </h3>
-                    <p className="text-[10px] text-surface-500 mt-0.5">Earn XP, badges & profile effects</p>
+                    <p className="text-[11px] text-surface-500 mt-0.5">Earn XP, badges & profile effects</p>
                   </button>
                   <button
                     onClick={() => setGamificationChoice(false)}
@@ -569,10 +569,10 @@ export default function OnboardingPage() {
                     <h3 className={`text-sm font-bold ${gamificationChoice === false ? 'text-white' : 'text-surface-300'}`}>
                       Not for me
                     </h3>
-                    <p className="text-[10px] text-surface-500 mt-0.5">XP still collected silently</p>
+                    <p className="text-[11px] text-surface-500 mt-0.5">XP still collected silently</p>
                   </button>
                 </div>
-                <p className="text-[10px] text-surface-600 text-center mt-3">
+                <p className="text-[11px] text-surface-600 text-center mt-3">
                   Change this anytime in Settings → Gamification
                 </p>
               </div>
@@ -583,7 +583,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-4xl mb-3">🤝</div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">Working with a team?</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Working with a team?</h2>
                 <p className="text-surface-400 text-sm max-w-sm mx-auto">
                   Create a company to collaborate, share projects, and manage roles together.
                 </p>
@@ -620,7 +620,7 @@ export default function OnboardingPage() {
                 {wantsCompany && (
                   <div className="animate-slide-up space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Company Name</label>
+                      <label className="block text-xs font-semibold text-surface-400 uppercase tracking-[0.04em] mb-2">Company Name</label>
                       <Input
                         type="text"
                         value={companyName}

@@ -57,7 +57,7 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
             Dashboard
           </Link>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-[10px] font-bold text-white">D</div>
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-[11px] font-bold text-white">D</div>
             <span className="text-white text-sm font-semibold tracking-tight">Dev Portal</span>
           </div>
         </div>
@@ -82,12 +82,12 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
                 <span className={active ? 'text-violet-400' : 'text-white/40'}>{item.icon}</span>
                 <span className="flex-1">{item.label}</span>
                 {item.badge && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold uppercase tracking-wide border border-emerald-500/20">
+                  <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold uppercase tracking-wide border border-emerald-500/20">
                     {item.badge}
                   </span>
                 )}
                 {item.adminOnly && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-400 font-semibold uppercase tracking-wide border border-red-500/20">
+                  <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-400 font-semibold uppercase tracking-wide border border-red-500/20">
                     Admin
                   </span>
                 )}
@@ -98,7 +98,7 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         <div className="mt-auto px-2">
-          <div className="text-[10px] text-white/20 leading-relaxed">
+          <div className="text-[11px] text-white/20 leading-relaxed">
             <span className="block font-mono">dev.screenplay.studio</span>
             <span className="block">Internal tools</span>
           </div>

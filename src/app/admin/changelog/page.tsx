@@ -278,7 +278,7 @@ export default function AdminChangelogPage() {
           </div>
           <button
             onClick={() => { setShowNewRelease(true); setCreateError(''); }}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:-translate-y-px"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-[0.04em] text-white transition-transform hover:-translate-y-px"
             style={{ background: ORANGE }}
           >
             + New Release
@@ -290,7 +290,7 @@ export default function AdminChangelogPage() {
 
         {/* ─── Left panel: releases list ──────────────────────────── */}
         <div className="w-72 shrink-0 flex flex-col gap-2 overflow-y-auto pr-2">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mb-1">
+          <p className="text-[11px] uppercase tracking-[0.04em] text-white/55 mb-1">
             {releases.length} releases
           </p>
           {releases.map(r => (
@@ -306,16 +306,16 @@ export default function AdminChangelogPage() {
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-mono text-sm font-bold text-white/90">v{r.version}</span>
-                <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider', STATUS_STYLES[r.status])}>
+                <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-[0.04em]', STATUS_STYLES[r.status])}>
                   {r.status}
                 </span>
               </div>
               <p className="text-xs text-white/50 truncate">{r.title}</p>
               <div className="flex items-center gap-2 mt-1.5">
-                <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold uppercase', RELEASE_TYPE_BADGE[r.release_type])}>
+                <span className={cn('text-[11px] px-1.5 py-0.5 rounded font-medium uppercase', RELEASE_TYPE_BADGE[r.release_type])}>
                   {r.release_type}
                 </span>
-                <span className="text-[9px] text-white/25">
+                <span className="text-[11px] text-white/25">
                   {r.feature_count + r.improvement_count + r.fix_count} changes
                 </span>
               </div>
@@ -335,11 +335,11 @@ export default function AdminChangelogPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-black text-white">v{selectedRelease.version}</h1>
-                    <span className={cn('text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider', STATUS_STYLES[selectedRelease.status])}>
+                    <h1 className="text-2xl font-bold text-white">v{selectedRelease.version}</h1>
+                    <span className={cn('text-[11px] font-medium px-2 py-1 rounded uppercase tracking-[0.04em]', STATUS_STYLES[selectedRelease.status])}>
                       {selectedRelease.status}
                     </span>
-                    <span className={cn('text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider', RELEASE_TYPE_BADGE[selectedRelease.release_type])}>
+                    <span className={cn('text-[11px] font-medium px-2 py-1 rounded uppercase tracking-[0.04em]', RELEASE_TYPE_BADGE[selectedRelease.release_type])}>
                       {selectedRelease.release_type}
                     </span>
                   </div>
@@ -361,7 +361,7 @@ export default function AdminChangelogPage() {
                     <button
                       onClick={() => handlePublish(selectedRelease.version)}
                       disabled={!!publishing}
-                      className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:-translate-y-px disabled:opacity-50"
+                      className="px-4 py-2 text-xs font-medium uppercase tracking-[0.04em] text-white transition-transform hover:-translate-y-px disabled:opacity-50"
                       style={{ background: '#16a34a' }}
                     >
                       {publishing === selectedRelease.version ? 'Publishing…' : '✓ Publish'}
@@ -370,7 +370,7 @@ export default function AdminChangelogPage() {
                   {selectedRelease.status === 'draft' && (
                     <button
                       onClick={() => handleDeleteRelease(selectedRelease.id, selectedRelease.version)}
-                      className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-red-400 border border-red-900/40 hover:bg-red-950/30 transition-colors"
+                      className="px-3 py-2 text-xs font-medium uppercase tracking-[0.04em] text-red-400 border border-red-900/40 hover:bg-red-950/30 transition-colors"
                     >
                       Delete
                     </button>
@@ -387,7 +387,7 @@ export default function AdminChangelogPage() {
               {/* Entries */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-[11px] font-mono uppercase tracking-widest text-white/30">
+                  <h2 className="text-[11px] uppercase tracking-[0.04em] text-white/55">
                     {selectedEntries.length} entries
                   </h2>
                   {selectedRelease.status === 'draft' && (
@@ -412,7 +412,7 @@ export default function AdminChangelogPage() {
                         className="flex items-start gap-3 p-3 border border-white/5 hover:border-white/10 transition-colors group"
                       >
                         <div className="w-24 shrink-0">
-                          <span className={cn('text-[10px] font-bold uppercase', TYPE_STYLES[entry.entry_type])}>
+                          <span className={cn('text-[11px] font-medium uppercase', TYPE_STYLES[entry.entry_type])}>
                             {entry.entry_type}
                           </span>
                         </div>
@@ -422,9 +422,9 @@ export default function AdminChangelogPage() {
                             <p className="text-xs text-white/35 mt-0.5 line-clamp-2">{entry.description}</p>
                           )}
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[9px] font-mono text-white/20 uppercase">{entry.area}</span>
+                            <span className="text-[11px] text-white/55 uppercase">{entry.area}</span>
                             {!entry.is_public && (
-                              <span className="text-[9px] text-yellow-500/60 uppercase font-bold">internal</span>
+                              <span className="text-[11px] text-yellow-500/60 uppercase font-medium">internal</span>
                             )}
                           </div>
                         </div>
@@ -450,11 +450,11 @@ export default function AdminChangelogPage() {
       {showNewRelease && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.85)' }}>
           <div className="w-full max-w-lg border p-6 space-y-4" style={{ background: '#0d0d1a', borderColor: 'rgba(255,255,255,0.08)' }}>
-            <h2 className="text-base font-black text-white uppercase tracking-wide">New Draft Release</h2>
+            <h2 className="text-base font-semibold text-white uppercase tracking-wide">New Draft Release</h2>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Version *</label>
+                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Version *</label>
                 <input
                   type="text"
                   value={newVersion}
@@ -464,7 +464,7 @@ export default function AdminChangelogPage() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Title *</label>
+                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Title *</label>
                 <input
                   type="text"
                   value={newTitle}
@@ -474,7 +474,7 @@ export default function AdminChangelogPage() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Summary</label>
+                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Summary</label>
                 <textarea
                   value={newSummary}
                   onChange={e => setNewSummary(e.target.value)}
@@ -484,7 +484,7 @@ export default function AdminChangelogPage() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Release Type</label>
+                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Release Type</label>
                 <select
                   value={newReleaseType}
                   onChange={e => setNewReleaseType(e.target.value as ReleaseType)}
@@ -501,14 +501,14 @@ export default function AdminChangelogPage() {
               <button
                 onClick={handleCreateRelease}
                 disabled={creating}
-                className="flex-1 py-2.5 text-xs font-black uppercase tracking-wider text-white disabled:opacity-50"
+                className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] text-white disabled:opacity-50"
                 style={{ background: ORANGE }}
               >
                 {creating ? 'Creating…' : 'Create Draft'}
               </button>
               <button
                 onClick={() => { setShowNewRelease(false); setCreateError(''); }}
-                className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/50 border border-white/10 hover:border-white/20 transition-colors"
+                className="px-4 py-2.5 text-xs font-medium uppercase tracking-[0.04em] text-white/50 border border-white/10 hover:border-white/20 transition-colors"
               >
                 Cancel
               </button>
@@ -521,13 +521,13 @@ export default function AdminChangelogPage() {
       {showNewEntry && selectedRelease && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.85)' }}>
           <div className="w-full max-w-xl border p-6 space-y-4" style={{ background: '#0d0d1a', borderColor: 'rgba(255,255,255,0.08)' }}>
-            <h2 className="text-base font-black text-white uppercase tracking-wide">
+            <h2 className="text-base font-semibold text-white uppercase tracking-wide">
               Add Entry — v{selectedRelease.version}
             </h2>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Title *</label>
+                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Title *</label>
                 <input
                   type="text"
                   value={eTitle}
@@ -537,7 +537,7 @@ export default function AdminChangelogPage() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Description</label>
+                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Description</label>
                 <textarea
                   value={eDesc}
                   onChange={e => setEDesc(e.target.value)}
@@ -548,7 +548,7 @@ export default function AdminChangelogPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Type</label>
+                  <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Type</label>
                   <select
                     value={eType}
                     onChange={e => setEType(e.target.value as EntryType)}
@@ -558,7 +558,7 @@ export default function AdminChangelogPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Area</label>
+                  <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Area</label>
                   <select
                     value={eArea}
                     onChange={e => setEArea(e.target.value as Area)}
@@ -585,14 +585,14 @@ export default function AdminChangelogPage() {
               <button
                 onClick={handleAddEntry}
                 disabled={savingEntry}
-                className="flex-1 py-2.5 text-xs font-black uppercase tracking-wider text-white disabled:opacity-50"
+                className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] text-white disabled:opacity-50"
                 style={{ background: ORANGE }}
               >
                 {savingEntry ? 'Adding…' : 'Add Entry'}
               </button>
               <button
                 onClick={() => { setShowNewEntry(false); setEntryError(''); }}
-                className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white/50 border border-white/10 hover:border-white/20 transition-colors"
+                className="px-4 py-2.5 text-xs font-medium uppercase tracking-[0.04em] text-white/50 border border-white/10 hover:border-white/20 transition-colors"
               >
                 Cancel
               </button>

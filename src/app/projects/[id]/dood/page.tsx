@@ -175,7 +175,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-full">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-black text-white">Day Out of Days</h1>
+          <h1 className="text-xl font-bold text-white">Day Out of Days</h1>
           <p className="text-sm text-surface-400 mt-0.5 hidden md:block">Click a cell to cycle through SW / W / WF / SWF / H / T / F</p>
           <p className="text-sm text-surface-400 mt-0.5 md:hidden">Tap a cell to cycle status</p>
         </div>
@@ -243,15 +243,15 @@ export default function DOODPage({ params }: { params: { id: string } }) {
                       const isComplete = dayComplete[day];
                       return (
                         <div key={day} className="flex flex-col items-center gap-1">
-                          <div className={cn('text-[9px] font-mono text-surface-500 text-center', isComplete && 'text-green-400')}>
+                          <div className={cn('text-[11px] font-mono text-surface-500 text-center', isComplete && 'text-green-400')}>
                             D{i + 1}
                           </div>
-                          <div className="text-[9px] text-surface-600 text-center font-mono">{day.slice(5)}</div>
+                          <div className="text-[11px] text-surface-600 text-center font-mono">{day.slice(5)}</div>
                           <button
                             onClick={() => cycleStatus(char, day)}
                             disabled={!canEdit || saving}
                             className={cn(
-                              'w-14 h-10 rounded-lg font-black text-xs transition-colors border',
+                              'w-14 h-10 rounded-lg font-semibold text-xs transition-colors border',
                               status
                                 ? cn(meta.bg, meta.color, 'border-transparent')
                                 : 'bg-surface-800/40 border-surface-700/60 text-surface-600',
@@ -280,22 +280,22 @@ export default function DOODPage({ params }: { params: { id: string } }) {
             <table className="text-xs border-collapse">
               <thead>
                 <tr className="bg-surface-800/80 border-b border-surface-700/40">
-                  <th className="sticky left-0 bg-surface-800/90 z-10 px-4 py-3 text-left text-surface-400 font-bold uppercase tracking-wider min-w-[160px]">
+                  <th className="sticky left-0 bg-surface-800/90 z-10 px-4 py-3 text-left text-surface-400 font-medium uppercase tracking-[0.04em] min-w-[160px]">
                     Character
                   </th>
                   {shootDays.map((day, i) => (
                     <th key={day} className={cn('px-2 py-3 text-center text-surface-400 font-mono font-bold whitespace-nowrap min-w-[80px]', dayComplete[day] && 'bg-green-500/5')}>
-                      <div className="text-[10px] text-surface-500 flex items-center justify-center gap-1">
+                      <div className="text-[11px] text-surface-500 flex items-center justify-center gap-1">
                         Day {i + 1}
                         {dayComplete[day] && <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" title="All scheduled" />}
                       </div>
                       <div>{day.slice(5)}</div>
                       {canEdit && (
-                        <button onClick={() => removeShootDay(day)} className="text-surface-700 hover:text-red-400 text-[10px] mt-0.5 block mx-auto">×</button>
+                        <button onClick={() => removeShootDay(day)} className="text-surface-700 hover:text-red-400 text-[11px] mt-0.5 block mx-auto">×</button>
                       )}
                     </th>
                   ))}
-                  <th className="px-3 py-3 text-center text-surface-400 font-bold text-[10px] uppercase tracking-wider">Days</th>
+                  <th className="px-3 py-3 text-center text-surface-400 font-medium text-[11px] uppercase tracking-[0.04em]">Days</th>
                 </tr>
               </thead>
               <tbody>

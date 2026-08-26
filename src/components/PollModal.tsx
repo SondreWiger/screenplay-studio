@@ -161,7 +161,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
         <div className="flex items-center justify-between px-5 pt-4 pb-3 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-lg">📊</span>
-            <span className="text-xs text-white/40 font-medium uppercase tracking-wider">
+            <span className="text-xs text-white/40 font-medium uppercase tracking-[0.04em]">
               {step === 0 ? 'Survey' : step > questions.length ? 'Done' : `Question ${step} of ${questions.length}`}
             </span>
           </div>

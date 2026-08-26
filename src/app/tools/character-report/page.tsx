@@ -72,22 +72,22 @@ export default function CharacterReportPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-1 rounded-full bg-brand-500" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">{chars.length} CHARACTERS — {fileName}</span>
+                <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">{chars.length} CHARACTERS — {fileName}</span>
               </div>
               <GhostButton onClick={download}>Download Report</GhostButton>
             </div>
             <div className="p-6 bg-white/[0.02] border border-white/6">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-4">DIALOGUE DISTRIBUTION</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55 mb-4">DIALOGUE DISTRIBUTION</p>
               <div className="space-y-2">
                 {chars.slice(0, 15).map(c => {
                   const pct = (c.lines / (chars[0]?.lines || 1)) * 100;
                   return (
                     <div key={c.name} className="flex items-center gap-3">
-                      <span className="text-[10px] text-white/40 w-24 truncate text-right font-mono">{c.name}</span>
+                      <span className="text-[11px] text-white/40 w-24 truncate text-right font-mono">{c.name}</span>
                       <div className="flex-1 h-3 bg-white/[0.04] overflow-hidden">
                         <div className="h-full bg-brand-500 transition-all duration-300" style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="text-[10px] text-white/30 w-8 text-right font-mono">{c.lines}</span>
+                      <span className="text-[11px] text-white/30 w-8 text-right font-mono">{c.lines}</span>
                     </div>
                   );
                 })}
@@ -98,7 +98,7 @@ export default function CharacterReportPage() {
                 <thead>
                   <tr className="border-b border-white/6">
                     {['Character', 'Lines', 'Words', 'Avg', 'Par.'].map(h => (
-                      <th key={h} className={`text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono px-4 py-3 ${h !== 'Character' ? 'text-right' : 'text-left'}`}>{h}</th>
+                      <th key={h} className={`text-[11px] font-bold uppercase tracking-[0.2em] text-white/20 px-4 py-3 ${h !== 'Character' ? 'text-right' : 'text-left'}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>

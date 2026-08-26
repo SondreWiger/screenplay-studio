@@ -119,7 +119,7 @@ export default function NotificationsPage() {
           <div className="space-y-6">
             {groups.map((group) => (
               <div key={group.label}>
-                <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 px-1">
+                <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2 px-1">
                   {group.label}
                 </h3>
                 <Card className="divide-y divide-surface-800 overflow-hidden">

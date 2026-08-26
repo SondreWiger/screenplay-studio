@@ -61,7 +61,7 @@ function PageHeaderInner({
         {/* Title */}
         <h1
           className={cn(
-            'font-black text-white leading-none tracking-tight',
+            'font-semibold text-white leading-none tracking-tight',
             large
               ? 'text-3xl md:text-5xl'
               : 'text-2xl md:text-3xl',
@@ -80,7 +80,7 @@ function PageHeaderInner({
 
         {/* Meta */}
         {meta && (
-          <p className="mt-2 text-[10px] font-mono text-white/20 uppercase tracking-wider">
+          <p className="mt-2 text-[11px] text-white/55 uppercase tracking-[0.04em]">
             {meta}
           </p>
         )}
@@ -119,7 +119,7 @@ export function SectionHeader({ eyebrow, title, actions, className }: SectionHea
           </div>
         )}
         <h2
-          className="text-lg font-black text-white"
+          className="text-lg font-bold text-white"
           style={{ letterSpacing: '-0.02em' }}
         >
           {title}
@@ -161,7 +161,7 @@ export function EmptySlate({ label, title, description, action, icon }: EmptySla
           <div className="w-3 h-px" style={{ background: ORANGE }} />
         </div>
       )}
-      <h3 className="text-lg font-black text-white mb-2" style={{ letterSpacing: '-0.02em' }}>
+      <h3 className="text-lg font-bold text-white mb-2" style={{ letterSpacing: '-0.02em' }}>
         {title}
       </h3>
       {description && (

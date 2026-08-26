@@ -154,7 +154,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
   if (view === 'edit') return (
     <div className="p-4 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-xl font-black text-white">{selected ? 'Edit' : `New ${activeTab === 'camera' ? 'Camera' : 'Sound'} Report`}</h1>
+        <h1 className="text-xl font-bold text-white">{selected ? 'Edit' : `New ${activeTab === 'camera' ? 'Camera' : 'Sound'} Report`}</h1>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => setView('list')}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
@@ -200,7 +200,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
               className="px-3 py-1.5 text-xs bg-surface-700/60 hover:bg-surface-700 border border-surface-600 rounded-lg text-orange-400 font-medium transition-colors">+ Add Take</button>
           </div>
           <table className="w-full text-xs">
-            <thead className="bg-surface-800/40 text-surface-500 text-[10px] uppercase tracking-widest">
+            <thead className="bg-surface-800/40 text-surface-500 text-[11px] uppercase tracking-[0.04em]">
               <tr>
                 {['Scene', 'Setup', 'Take', 'Lens', 'f/', 'Filter', 'Focus', 'I/E', 'Type', '✓ Circle', 'Notes', ''].map((h) => (
                   <th key={h} className="px-2 py-2.5 text-left whitespace-nowrap font-semibold">{h}</th>
@@ -263,7 +263,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
               className="px-3 py-1.5 text-xs bg-surface-700/60 hover:bg-surface-700 border border-surface-600 rounded-lg text-orange-400 font-medium transition-colors">+ Add Take</button>
           </div>
           <table className="w-full text-xs">
-            <thead className="bg-surface-800/40 text-surface-500 text-[10px] uppercase tracking-widest">
+            <thead className="bg-surface-800/40 text-surface-500 text-[11px] uppercase tracking-[0.04em]">
               <tr>
                 {['Roll', 'Scene', 'Take', 'Track 1', 'Track 2', 'Wild Track', 'Notes', ''].map((h) => (
                   <th key={h} className="px-2 py-2.5 text-left font-semibold whitespace-nowrap">{h}</th>
@@ -320,7 +320,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
     <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-black text-white">Camera &amp; Sound Reports</h1>
+          <h1 className="text-xl font-bold text-white">Camera &amp; Sound Reports</h1>
           <p className="text-sm text-surface-400 mt-0.5">Daily roll reports for camera and sound departments.</p>
         </div>
         {canEdit && (

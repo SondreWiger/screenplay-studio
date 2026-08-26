@@ -281,7 +281,7 @@ export default function ModerationPage() {
               </svg>
             </Link>
             <div>
-              <h1 className="text-xl font-black flex items-center gap-2">
+              <h1 className="text-xl font-bold flex items-center gap-2">
                 <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
@@ -402,7 +402,7 @@ export default function ModerationPage() {
               {tab.label}
               {tab.count > 0 && (
                 <span className={cn(
-                  'px-1.5 py-0.5 rounded text-[10px] font-bold',
+                  'px-1.5 py-0.5 rounded text-[11px] font-bold',
                   tab.key === 'flags' && pendingFlags.length > 0
                     ? 'bg-red-500/20 text-red-400'
                     : 'bg-surface-800 text-surface-400'
@@ -442,7 +442,7 @@ export default function ModerationPage() {
                   {/* Header row */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className={cn('px-2 py-0.5 rounded text-xs font-bold uppercase border', SEVERITY_COLORS[flag.severity])}>
+                      <span className={cn('px-2 py-0.5 rounded text-xs font-medium uppercase border', SEVERITY_COLORS[flag.severity])}>
                         {flag.severity}
                       </span>
                       <span className={cn('px-2 py-0.5 rounded text-xs font-medium', STATUS_COLORS[flag.status])}>
@@ -454,7 +454,7 @@ export default function ModerationPage() {
                       <span className="text-xs text-surface-500">{timeAgo(flag.detected_at)}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-surface-600 font-mono">{flag.id.slice(0, 8)}</span>
+                      <span className="text-[11px] text-surface-600 font-mono">{flag.id.slice(0, 8)}</span>
                     </div>
                   </div>
 
@@ -657,7 +657,7 @@ export default function ModerationPage() {
                         <p className="text-sm font-medium text-white truncate">{p.title}</p>
                         <Badge variant="default" size="sm">{(p.status || '').replace(/_/g, ' ')}</Badge>
                         {p.format && (
-                          <span className="text-[10px] text-surface-500 bg-surface-800 px-1.5 py-0.5 rounded">{p.format}</span>
+                          <span className="text-[11px] text-surface-500 bg-surface-800 px-1.5 py-0.5 rounded">{p.format}</span>
                         )}
                       </div>
                       <p className="text-xs text-surface-500 truncate">{p.logline || 'No logline'}</p>
@@ -668,7 +668,7 @@ export default function ModerationPage() {
                       {owner?.avatar_url ? (
                         <img src={owner.avatar_url} alt="" className="w-6 h-6 rounded-full" loading="lazy" />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-surface-700 flex items-center justify-center text-[10px] text-surface-400">
+                        <div className="w-6 h-6 rounded-full bg-surface-700 flex items-center justify-center text-[11px] text-surface-400">
                           {(owner?.display_name || owner?.email)?.[0]?.toUpperCase() || '?'}
                         </div>
                       )}
@@ -676,11 +676,11 @@ export default function ModerationPage() {
                         <p className="text-xs text-surface-300">
                           {owner?.display_name || owner?.full_name || 'Unknown'}
                         </p>
-                        <p className="text-[10px] text-surface-500">{owner?.email}</p>
+                        <p className="text-[11px] text-surface-500">{owner?.email}</p>
                       </div>
                       {/* Moderation warning */}
                       {isFlaggedUser && (
-                        <span className="ml-1 flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 text-[10px] font-bold" title={`Status: ${owner.moderation_status} | ${owner.moderation_flags} flag(s)`}>
+                        <span className="ml-1 flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 text-[11px] font-bold" title={`Status: ${owner.moderation_status} | ${owner.moderation_flags} flag(s)`}>
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                           </svg>
@@ -707,7 +707,7 @@ export default function ModerationPage() {
 
                     {/* Timestamp */}
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] text-surface-500">{timeAgo(p.updated_at)}</p>
+                      <p className="text-[11px] text-surface-500">{timeAgo(p.updated_at)}</p>
                     </div>
                   </div>
                 );
@@ -742,7 +742,7 @@ export default function ModerationPage() {
                         </span>
                         <span className="text-xs text-surface-500">{timeAgo(ev.captured_at)}</span>
                       </div>
-                      <span className="text-[10px] text-surface-600 font-mono" title="SHA-256 integrity hash">
+                      <span className="text-[11px] text-surface-600 font-mono" title="SHA-256 integrity hash">
                         Hash: {ev.content_hash.slice(0, 16)}…
                       </span>
                     </div>

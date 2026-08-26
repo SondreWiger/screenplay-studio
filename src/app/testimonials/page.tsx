@@ -138,8 +138,8 @@ function TestimonialModal({
           style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex-1 min-w-0">
             <StarRow rating={t.rating} size={16} />
-            <h2 className="text-lg font-black text-white mt-2 leading-snug">{t.title}</h2>
-            <p className="text-[11px] text-white/30 mt-1 font-mono uppercase tracking-widest">
+            <h2 className="text-lg font-bold text-white mt-2 leading-snug">{t.title}</h2>
+            <p className="text-[11px] text-white/55 mt-1 uppercase tracking-[0.04em]">
               {t.display_name ?? 'Anonymous'} · {timeAgo(t.created_at)}
             </p>
           </div>
@@ -153,7 +153,7 @@ function TestimonialModal({
         <div className="flex-1 overflow-y-auto">
           {/* Quote */}
           <div className="px-6 py-6">
-            <div className="text-4xl font-black leading-none mb-4" style={{ color: ORANGE }}>"</div>
+            <div className="text-4xl font-bold leading-none mb-4" style={{ color: ORANGE }}>"</div>
             <p className="text-sm text-white/60 leading-[1.9] whitespace-pre-wrap">{t.body}</p>
           </div>
 
@@ -172,7 +172,7 @@ function TestimonialModal({
               <ChevronUp size={15} />
               {voteCount} {voteCount === 1 ? 'vote' : 'votes'}
             </button>
-            <span className="text-[10px] text-white/20 font-mono uppercase tracking-widest">
+            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">
               {t.comment_count} comment{t.comment_count !== 1 ? 's' : ''}
             </span>
           </div>
@@ -181,7 +181,7 @@ function TestimonialModal({
           {comments.length > 0 && (
             <div className="px-6 pb-6 space-y-4"
               style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '1.5rem' }}>
-              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25 flex items-center gap-2">
+              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 flex items-center gap-2">
                 <MessageSquare size={11} /> Discussion
               </p>
               {comments.map(c => (
@@ -194,7 +194,7 @@ function TestimonialModal({
                       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                       {c.content}
                     </div>
-                    <p className="text-[10px] text-white/20 mt-1">{timeAgo(c.created_at)}</p>
+                    <p className="text-[11px] text-white/20 mt-1">{timeAgo(c.created_at)}</p>
                   </div>
                 </div>
               ))}
@@ -205,7 +205,7 @@ function TestimonialModal({
           <div className="px-6 pb-6" style={{ borderTop: comments.length > 0 ? 'none' : '1px solid rgba(255,255,255,0.07)', paddingTop: comments.length > 0 ? 0 : '1.5rem' }}>
             {user?.id === 'f0e0c4a4-0833-4c64-b012-15829c087c77' ? (
               <div className="flex gap-3">
-                <div className="w-7 h-7 shrink-0 flex items-center justify-center text-[11px] font-black text-white mt-1"
+                <div className="w-7 h-7 shrink-0 flex items-center justify-center text-[11px] font-semibold text-white mt-1"
                   style={{ background: ORANGE }}>
                   {(user.full_name || user.email || '?')[0].toUpperCase()}
                 </div>
@@ -221,7 +221,7 @@ function TestimonialModal({
                   <button
                     onClick={handleComment}
                     disabled={submitting || !text.trim()}
-                    className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white disabled:opacity-30 transition-opacity"
+                    className="px-4 py-2 text-xs font-medium uppercase tracking-[0.04em] text-white disabled:opacity-30 transition-opacity"
                     style={{ background: ORANGE }}
                   >
                     {submitting ? 'Posting…' : 'Post'}
@@ -288,25 +288,25 @@ export default function TestimonialsPage() {
         <div className="max-w-screen-xl mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
+            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
           <div className="hidden sm:flex items-center gap-6">
-            <Link href="/testimonials" className="text-[11px] font-mono uppercase tracking-widest font-bold" style={{ color: ORANGE }}>Reviews</Link>
-            <Link href="/feedback" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Feedback</Link>
-            <Link href="/changelog" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Changelog</Link>
+            <Link href="/testimonials" className="text-[11px] uppercase tracking-[0.04em] font-medium" style={{ color: ORANGE }}>Reviews</Link>
+            <Link href="/feedback" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Feedback</Link>
+            <Link href="/changelog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Changelog</Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Dashboard</Link>
-                <button onClick={() => signOut()} className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Sign Out</button>
+                <Link href="/dashboard" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Dashboard</Link>
+                <button onClick={() => signOut()} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign Out</button>
                 <div className="flex items-center">
                   {user.avatar_url ? (
                     <img src={user.avatar_url} alt="" className="w-6 h-6 rounded-full" loading="lazy" />
                   ) : (
-                    <div className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white" style={{ background: ORANGE }}>
+                    <div className="w-6 h-6 flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: ORANGE }}>
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
                     </div>
                   )}
@@ -314,8 +314,8 @@ export default function TestimonialsPage() {
               </>
             ) : (
               <>
-                <Link href="/auth/login" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Sign In</Link>
-                <Link href="/auth/register" className="text-[10px] font-black uppercase tracking-widest text-white px-4 py-2" style={{ background: ORANGE }}>
+                <Link href="/auth/login" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign In</Link>
+                <Link href="/auth/register" className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white px-4 py-2" style={{ background: ORANGE }}>
                   Get Started
                 </Link>
               </>
@@ -332,10 +332,10 @@ export default function TestimonialsPage() {
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-4 h-px shrink-0" style={{ background: ORANGE }} />
-              <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">Writer Reviews</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">Writer Reviews</span>
             </div>
             <h1
-              className="font-black text-white leading-[0.92]"
+              className="font-semibold text-white leading-[0.92]"
               style={{ fontSize: 'clamp(3rem, 9vw, 8rem)', letterSpacing: '-0.03em' }}
             >
               WHAT WRITERS<br />ARE SAYING.
@@ -352,7 +352,7 @@ export default function TestimonialsPage() {
               <div className="text-right">
                 {/* Massive avg number */}
                 <div
-                  className="font-black leading-none tabular-nums"
+                  className="font-semibold leading-none tabular-nums"
                   style={{ fontSize: 'clamp(5rem, 12vw, 10rem)', color: ORANGE, letterSpacing: '-0.04em' }}
                 >
                   {avg.toFixed(1)}
@@ -360,7 +360,7 @@ export default function TestimonialsPage() {
                 <div className="flex items-center justify-end gap-1.5 mt-2">
                   <StarRow rating={Math.round(avg)} size={18} />
                 </div>
-                <p className="text-[10px] text-white/25 font-mono uppercase tracking-widest mt-2">
+                <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mt-2">
                   avg from {rated.length} review{rated.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -378,7 +378,7 @@ export default function TestimonialsPage() {
                         filterStar !== null && filterStar !== star ? 'opacity-30' : 'opacity-100'
                       )}
                     >
-                      <span className="text-[10px] font-mono text-white/40 w-3 text-right">{star}</span>
+                      <span className="text-[11px] text-white/60 w-3 text-right">{star}</span>
                       <Star size={9} fill={ORANGE} stroke={ORANGE} />
                       <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
                         <div
@@ -386,7 +386,7 @@ export default function TestimonialsPage() {
                           style={{ width: `${pct}%`, background: ORANGE }}
                         />
                       </div>
-                      <span className="text-[10px] font-mono text-white/25 w-3">{count}</span>
+                      <span className="text-[11px] text-white/60 w-3">{count}</span>
                     </button>
                   );
                 })}
@@ -406,7 +406,7 @@ export default function TestimonialsPage() {
         <button
           onClick={() => setFilterStar(null)}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors',
+            'flex items-center gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] transition-colors',
             filterStar === null
               ? 'text-white'
               : 'text-white/30 hover:text-white/60'
@@ -423,7 +423,7 @@ export default function TestimonialsPage() {
               key={s}
               onClick={() => setFilterStar(filterStar === s ? null : s)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors',
+                'flex items-center gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] transition-colors',
                 filterStar === s
                   ? 'text-white'
                   : 'text-white/30 hover:text-white/60'
@@ -437,7 +437,7 @@ export default function TestimonialsPage() {
 
         <Link
           href="/feedback?submit=testimonial"
-          className="ml-auto text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 hover:text-white/60 transition-colors pb-0.5"
+          className="ml-auto text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors pb-0.5"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}
         >
           Leave a review →
@@ -449,7 +449,7 @@ export default function TestimonialsPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${ORANGE} transparent transparent transparent` }} />
-            <p className="text-[10px] font-mono text-white/25 uppercase tracking-widest">Loading reviews…</p>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Loading reviews…</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
@@ -498,7 +498,7 @@ export default function TestimonialsPage() {
 
                     {/* Index number */}
                     <span
-                      className="text-[10px] font-black font-mono opacity-30 group-hover:opacity-100 transition-opacity duration-150 block mb-4"
+                      className="text-[11px] font-semibold font-mono opacity-30 group-hover:opacity-100 transition-opacity duration-150 block mb-4"
                       style={{ color: ORANGE }}
                     >
                       {String(i + 1).padStart(2, '0')}
@@ -509,7 +509,7 @@ export default function TestimonialsPage() {
 
                     {/* Quote mark */}
                     <div
-                      className="mt-3 text-3xl font-black leading-none opacity-20 group-hover:opacity-60 transition-opacity duration-150"
+                      className="mt-3 text-3xl font-bold leading-none opacity-20 group-hover:opacity-60 transition-opacity duration-150"
                       style={{ color: ORANGE }}
                     >
                       "
@@ -527,16 +527,16 @@ export default function TestimonialsPage() {
                     >
                       <div className="flex items-center gap-2">
                         <div
-                          className="w-5 h-5 flex items-center justify-center text-[9px] font-black text-white shrink-0"
+                          className="w-5 h-5 flex items-center justify-center text-[11px] font-semibold text-white shrink-0"
                           style={{ background: ORANGE + '44' }}
                         >
                           {(t.display_name ?? 'A')[0].toUpperCase()}
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/25">
+                        <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">
                           {t.display_name ?? 'Anonymous'}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-[10px] text-white/20 font-mono shrink-0">
+                      <div className="flex items-center gap-2.5 text-[11px] text-white/20 font-mono shrink-0">
                         {t.comment_count > 0 && (
                           <span className="flex items-center gap-1">
                             <MessageSquare size={9} />{t.comment_count}
@@ -567,9 +567,9 @@ export default function TestimonialsPage() {
                 backgroundSize: '20px 20px',
               }}
             />
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/60 mb-4 relative z-10">Used Screenplay Studio?</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/60 mb-4 relative z-10">Used Screenplay Studio?</p>
             <h2
-              className="font-black text-white relative z-10"
+              className="font-semibold text-white relative z-10"
               style={{ fontSize: 'clamp(1.8rem, 5vw, 3.5rem)', letterSpacing: '-0.03em', lineHeight: 0.9 }}
             >
               LEAVE YOUR REVIEW
@@ -579,7 +579,7 @@ export default function TestimonialsPage() {
             </p>
             <Link
               href="/feedback?submit=testimonial"
-              className="relative z-10 inline-block px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-80"
+              className="relative z-10 inline-block px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-80"
               style={{ background: 'rgba(0,0,0,0.35)' }}
             >
               Write a Review
@@ -593,9 +593,9 @@ export default function TestimonialsPage() {
         <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 flex items-center justify-center" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest">Screenplay Studio</span>
+            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Studio</span>
           </div>
           <div className="flex flex-wrap items-center gap-6">
             {[
@@ -610,7 +610,7 @@ export default function TestimonialsPage() {
                 href={l.href}
                 target={(l as any).external ? '_blank' : undefined}
                 rel={(l as any).external ? 'noopener noreferrer' : undefined}
-                className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors"
+                className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors"
               >
                 {l.label}
               </Link>
@@ -618,7 +618,7 @@ export default function TestimonialsPage() {
             <SiteVersion light />
             <span className="text-white/10">·</span>
             <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] text-brand-500/40 hover:text-brand-500/80 transition-colors">
+              className="text-[11px] uppercase tracking-[0.04em] text-brand-500/40 hover:text-brand-500/80 transition-colors">
               Northem ♥
             </a>
           </div>

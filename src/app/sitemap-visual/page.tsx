@@ -223,7 +223,7 @@ function Badge({ type }: { type: string }) {
   const style = badgeColors[type];
   if (!style) return null;
   return (
-    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${style.bg} ${style.text}`}>
+    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium ${style.bg} ${style.text}`}>
       {style.label}
     </span>
   );
@@ -279,7 +279,7 @@ export default function VisualSitemapPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <Link href="/" className="text-sm text-surface-400 hover:text-white transition-colors mb-4 inline-block">&larr; Back to home</Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">Sitemap</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Sitemap</h1>
           <p className="text-surface-400 mt-2">Complete map of all {total} pages on Screenplay Studio.</p>
           <div className="flex flex-wrap gap-3 mt-4">
             {Object.entries(badgeColors).map(([key, val]) => (

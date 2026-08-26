@@ -81,7 +81,7 @@ export default function CompanyBlogPage() {
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-black text-white">{company.name} Blog</h1>
+              <h1 className="text-2xl font-bold text-white">{company.name} Blog</h1>
               {company.tagline && <p className="text-sm text-surface-400 mt-0.5">{company.tagline}</p>}
             </div>
           </div>
@@ -130,12 +130,12 @@ export default function CompanyBlogPage() {
                   )}
                   <div className="p-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400 font-bold">PINNED</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400 font-bold">PINNED</span>
                       {post.tags.map((tag) => (
-                        <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400">{tag}</span>
+                        <span key={tag} className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400">{tag}</span>
                       ))}
                     </div>
-                    <h2 className="text-xl font-black text-white group-hover:text-brand-500 transition-colors">{post.title}</h2>
+                    <h2 className="text-xl font-bold text-white group-hover:text-brand-500 transition-colors">{post.title}</h2>
                     {post.excerpt && <p className="text-sm text-surface-400 mt-2 line-clamp-2">{post.excerpt}</p>}
                     <div className="flex items-center gap-3 mt-4 text-xs text-surface-500">
                       <span>{(post as any).author?.display_name || 'Unknown'}</span>

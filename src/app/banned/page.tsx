@@ -23,7 +23,7 @@ function BannedContent() {
           </svg>
         </div>
 
-        <h1 className="text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
+        <h1 className="text-3xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
           {isIpBan ? 'Access Denied' : t('banned.title')}
         </h1>
 

@@ -72,24 +72,24 @@ export default function BlogPage() {
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
+            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
 
           <div className="flex items-center gap-6">
             <span className="ss-label" style={{ color: '#FF5F1F' }}>Blog</span>
-            <Link href="/community" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+            <Link href="/community" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
               Community
             </Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+                <Link href="/dashboard" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
                   Dashboard
                 </Link>
-                <button onClick={handleSignOut} className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+                <button onClick={handleSignOut} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
                   Sign Out
                 </button>
                 <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export default function BlogPage() {
                     <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" loading="lazy" />
                   ) : (
                     <div
-                      className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white"
+                      className="w-6 h-6 flex items-center justify-center text-[11px] font-semibold text-white"
                       style={{ background: '#FF5F1F' }}
                     >
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -107,7 +107,7 @@ export default function BlogPage() {
               </>
             ) : (
               <>
-                <Link href="/auth/login?redirect=/blog" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+                <Link href="/auth/login?redirect=/blog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
                   Sign In
                 </Link>
                 <Link href="/auth/register?redirect=/blog" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>
@@ -125,7 +125,7 @@ export default function BlogPage() {
           <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
           <span className="ss-label">Publishing</span>
         </div>
-        <h1 className="font-black text-white" style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)', letterSpacing: '-0.04em', lineHeight: 0.88 }}>
+        <h1 className="font-semibold text-white" style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)', letterSpacing: '-0.04em', lineHeight: 0.88 }}>
           THE STUDIO BLOG
         </h1>
         <p className="mt-6 text-base text-white/30 max-w-2xl leading-relaxed">
@@ -173,7 +173,7 @@ export default function BlogPage() {
             <span className="ss-label">Empty</span>
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
-          <h2 className="text-2xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>NO POSTS YET</h2>
+          <h2 className="text-2xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>NO POSTS YET</h2>
           <p className="text-sm text-white/30">Check back soon for updates.</p>
         </div>
       )}
@@ -200,7 +200,7 @@ export default function BlogPage() {
                   </div>
                 ) : (
                   <div className="aspect-[16/10] flex items-center justify-center" style={{ background: 'rgba(255,95,31,0.05)', border: '1px solid rgba(255,95,31,0.15)' }}>
-                    <span className="font-black text-white/10 text-5xl" style={{ letterSpacing: '-0.04em' }}>BLOG</span>
+                    <span className="font-bold text-white/10 text-5xl" style={{ letterSpacing: '-0.04em' }}>BLOG</span>
                   </div>
                 )}
                 <div>
@@ -211,7 +211,7 @@ export default function BlogPage() {
                       <span key={tag} className="ss-tag" style={{ fontSize: '9px' }}>{tag}</span>
                     ))}
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-black text-white group-hover:text-white/70 transition-colors leading-tight" style={{ letterSpacing: '-0.03em' }}>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white group-hover:text-white/70 transition-colors leading-tight" style={{ letterSpacing: '-0.03em' }}>
                     {featured.title}
                   </h2>
                   {featured.excerpt && (
@@ -223,7 +223,7 @@ export default function BlogPage() {
                     {featured.author?.avatar_url ? (
                       <img src={featured.author.avatar_url} alt={featured.author.full_name || 'Author avatar'} className="w-6 h-6" loading="lazy" />
                     ) : (
-                      <div className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{ background: '#FF5F1F' }}>
+                      <div className="w-6 h-6 flex items-center justify-center text-[11px] font-semibold text-white shrink-0" style={{ background: '#FF5F1F' }}>
                         {(featured.author?.full_name || 'A')[0]}
                       </div>
                     )}
@@ -264,7 +264,7 @@ export default function BlogPage() {
                         </div>
                       ) : (
                         <div className="aspect-[16/10] flex items-center justify-center mb-5" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                          <span className="font-black text-white/5 text-3xl" style={{ letterSpacing: '-0.04em' }}>SS</span>
+                          <span className="font-bold text-white/5 text-3xl" style={{ letterSpacing: '-0.04em' }}>SS</span>
                         </div>
                       )}
                       <div className="flex flex-wrap gap-1.5 mb-3">
@@ -272,7 +272,7 @@ export default function BlogPage() {
                           <span key={tag} className="ss-tag" style={{ fontSize: '9px', padding: '0.15rem 0.5rem' }}>{tag}</span>
                         ))}
                       </div>
-                      <h3 className="text-base font-black text-white group-hover:text-white/60 transition-colors leading-snug mb-2" style={{ letterSpacing: '-0.02em' }}>
+                      <h3 className="text-base font-semibold text-white group-hover:text-white/60 transition-colors leading-snug mb-2" style={{ letterSpacing: '-0.02em' }}>
                         {post.title}
                       </h3>
                       {post.excerpt && (
@@ -280,7 +280,7 @@ export default function BlogPage() {
                           {post.excerpt}
                         </p>
                       )}
-                      <time className="block mt-4 text-[10px] font-mono text-white/20 uppercase tracking-wider">
+                      <time className="block mt-4 text-[11px] text-white/55 uppercase tracking-[0.04em]">
                         {post.published_at ? formatDate(post.published_at) : ''}
                       </time>
                     </article>
@@ -302,7 +302,7 @@ export default function BlogPage() {
             <div className="flex items-center gap-3 mb-12">
               <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
               <span className="ss-label">Archive</span>
-              <h2 className="text-lg font-black text-white" style={{ letterSpacing: '-0.02em' }}>TIMELINE</h2>
+              <h2 className="text-lg font-bold text-white" style={{ letterSpacing: '-0.02em' }}>TIMELINE</h2>
             </div>
             <div className="relative">
               {/* Vertical line */}
@@ -315,10 +315,10 @@ export default function BlogPage() {
                       className="absolute left-0.5 top-1.5 w-3 h-3 transition-colors duration-200"
                       style={{ background: idx === 0 ? '#FF5F1F' : 'rgba(255,255,255,0.12)' }}
                     />
-                    <time className="block text-[10px] font-mono text-white/20 uppercase tracking-wider mb-1">
+                    <time className="block text-[11px] text-white/55 uppercase tracking-[0.04em] mb-1">
                       {post.published_at ? formatDate(post.published_at) : ''}
                     </time>
-                    <h3 className="text-sm font-black text-white/60 group-hover:text-white transition-colors" style={{ letterSpacing: '-0.01em' }}>
+                    <h3 className="text-sm font-semibold text-white/60 group-hover:text-white transition-colors" style={{ letterSpacing: '-0.01em' }}>
                       {post.title}
                     </h3>
                     {post.excerpt && (
@@ -360,7 +360,7 @@ export default function BlogPage() {
                     <span className="ss-label" style={{ color: '#FF5F1F' }}>What&rsquo;s New</span>
                   </div>
                   <h2
-                    className="font-black text-white leading-tight"
+                    className="font-semibold text-white leading-tight"
                     style={{ fontSize: 'clamp(1.5rem, 4vw, 2.75rem)', letterSpacing: '-0.035em' }}
                   >
                     SEE THE FULL
@@ -374,7 +374,7 @@ export default function BlogPage() {
 
                 <div className="shrink-0 flex items-center gap-3">
                   <span
-                    className="inline-flex items-center gap-2 px-5 py-2.5 font-mono text-xs uppercase tracking-widest font-bold transition-colors duration-200"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-[0.04em] font-medium transition-colors duration-200"
                     style={{ background: '#FF5F1F', color: '#fff' }}
                   >
                     View Changelog
@@ -392,9 +392,9 @@ export default function BlogPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest">Screenplay Studio</span>
+            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Studio</span>
           </div>
           <div className="flex items-center gap-6">
             {[
@@ -408,7 +408,7 @@ export default function BlogPage() {
                 href={l.href}
                 target={l.external ? '_blank' : undefined}
                 rel={l.external ? 'noopener noreferrer' : undefined}
-                className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors"
+                className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors"
               >
                 {l.label}
               </Link>
@@ -419,7 +419,7 @@ export default function BlogPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

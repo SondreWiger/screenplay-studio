@@ -184,7 +184,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">{t('characters.title')}</h1>
+          <h1 className="text-2xl font-bold text-white">{t('characters.title')}</h1>
           <p className="text-sm text-surface-400 mt-1">
             {characters.length} characters in this project
             {characters.filter(needsSetup).length > 0 && (
@@ -424,7 +424,7 @@ function RoleBadge({ role, isMain }: { role: string | null | undefined; isMain: 
   if (!meta) return null;
   return (
     <span className={cn(
-      'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
+      'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border',
       meta.activeText, meta.activeBg, meta.activeBorder,
     )}>
       {meta.label}
@@ -739,7 +739,7 @@ function CharacterEditor({
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white truncate">{member.name}</p>
                           {member.character_roles?.length > 0 && (
-                            <p className="text-[10px] text-surface-500 truncate">{member.character_roles.join(', ')}</p>
+                            <p className="text-[11px] text-surface-500 truncate">{member.character_roles.join(', ')}</p>
                           )}
                         </div>
                       </button>

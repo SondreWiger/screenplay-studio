@@ -91,13 +91,13 @@ export default function ForgotPasswordPage() {
             <span className="ss-label">{t('auth.reset_link_sent')}</span>
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
-          <h1 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>{t('auth.check_email')}</h1>
+          <h1 className="text-2xl font-semibold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>{t('auth.check_email')}</h1>
           <p className="text-sm text-white/35 mb-8 leading-relaxed">
             {t('auth.reset_check_inbox')}{' '}
             <span className="text-white font-mono">{sentEmail}</span>,
             {t('auth.reset_check_spam')}
           </p>
-          <Link href="/auth/login" className="text-[11px] font-mono uppercase tracking-widest hover:opacity-60 transition-opacity" style={{ color: '#FF5F1F' }}>
+          <Link href="/auth/login" className="text-xs font-medium hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
             {t('auth.back_to_signin')}
           </Link>
         </div>
@@ -121,9 +121,9 @@ export default function ForgotPasswordPage() {
         <div className="flex items-center gap-3 mb-10">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-9 h-9 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/50 transition-colors">
+            <span className="text-xs font-medium text-white/45 group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
               <span className="ss-label">{t('auth.password_reset')}</span>
             </div>
-            <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>{t('auth.password_reset')}</h1>
+            <h1 className="text-2xl font-semibold text-white" style={{ letterSpacing: '-0.03em' }}>{t('auth.password_reset')}</h1>
             <p className="mt-1 text-sm text-white/30">
               {t('auth.reset_instruction')}
             </p>
@@ -175,7 +175,7 @@ export default function ForgotPasswordPage() {
           </form>
 
           <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <p className="text-[11px] font-mono text-white/25 uppercase tracking-widest">
+            <p className="text-xs text-white/50">
               <Link href="/auth/login" className="hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
                 {t('auth.remember_it')}
               </Link>

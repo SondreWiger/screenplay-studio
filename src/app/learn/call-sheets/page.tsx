@@ -5,7 +5,7 @@ export default function CallSheetsModule() {
     <div className="space-y-12 pb-24">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-white mb-4">Call Sheets</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Call Sheets</h1>
         <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
           Organise your shoot day. Call Sheets tell your cast and crew where to be, when to be there, and what they'll be doing.
         </p>

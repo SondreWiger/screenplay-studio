@@ -223,7 +223,7 @@ export default function LicensesPage() {
       {/* Header */}
       <div className="border-b border-surface-800/60 sticky top-0 z-10 backdrop-blur-xl" style={{ backgroundColor: 'rgba(7,7,16,0.92)' }}>
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/" className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center text-xs font-black text-white shrink-0">
+          <Link href="/" className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center text-xs font-semibold text-white shrink-0">
             SS
           </Link>
           <div className="flex-1 min-w-0">
@@ -306,7 +306,7 @@ export default function LicensesPage() {
           <section key={cat.id}>
             <div className="flex items-center gap-3 mb-6">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold"
                 style={{ backgroundColor: `${cat.color}22`, color: cat.color, border: `1px solid ${cat.color}44` }}
               >
                 {cat.icon}
@@ -322,11 +322,11 @@ export default function LicensesPage() {
                 <div key={lic.id} className="rounded-xl border border-surface-800/60 overflow-hidden" style={{ backgroundColor: 'rgba(15,15,28,0.6)' }}>
                   <div className="px-5 py-4 border-b border-surface-800/60 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${lic.tagColor}`}>{lic.tag}</span>
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${lic.tagColor}`}>{lic.tag}</span>
                       <h3 className="text-sm font-bold text-white">{lic.name}</h3>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <code className="text-[10px] font-mono bg-surface-800 text-surface-300 px-2 py-0.5 rounded">{lic.badge}</code>
+                      <code className="text-[11px] font-mono bg-surface-800 text-surface-300 px-2 py-0.5 rounded">{lic.badge}</code>
                       {(lic as any).ccUrl && (
                         <a
                           href={(lic as any).ccUrl}
@@ -344,7 +344,7 @@ export default function LicensesPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {lic.details.map((d) => (
                         <div key={d.label} className="rounded-lg bg-surface-900/60 px-3 py-2.5">
-                          <p className="text-[10px] text-surface-500 font-medium mb-0.5">{d.label}</p>
+                          <p className="text-[11px] text-surface-500 font-medium mb-0.5">{d.label}</p>
                           <p className="text-xs text-surface-200">{d.value}</p>
                         </div>
                       ))}

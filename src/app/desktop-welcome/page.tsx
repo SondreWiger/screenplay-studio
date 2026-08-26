@@ -184,7 +184,7 @@ export default function DesktopWelcome() {
         </div>
 
         <div className="w-full">
-          <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-4 px-2">
+          <h2 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-4 px-2">
             Recent Scripts
           </h2>
           {recentProjects.length > 0 ? (

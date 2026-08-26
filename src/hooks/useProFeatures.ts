@@ -6,13 +6,12 @@ import { useAuthStore } from '@/lib/stores';
 import { PRO_LIMITS, type Subscription, type TeamLicense } from '@/lib/types';
 
 // useProFeatures — DaVinci Resolve model
-// Free is fully functional. All previous Pro features are now free.
-// Studio tier adds big-production tools (multi-project portfolio,
-// production accounting, rights management, distribution, etc.).
+// Free is fully functional; nothing is taken away to make Pro.
+// Pro adds the production tool suite (portfolio, production accounting,
+// rights management, distribution, etc.) — see lib/pro-tools/tools.ts.
 
 interface ProFeatures {
   isPro: boolean;
-  isStudio: boolean;
   subscription: Subscription | null;
   loading: boolean;
   // Limits
@@ -45,12 +44,10 @@ export function useProFeatures(): ProFeatures {
   const [loading, setLoading] = useState(true);
   const [proGatingEnabled, setProGatingEnabled] = useState(false);
 
-  // Studio overrides everything
-  const isStudio = user?.is_studio === true;
   // If pro gating is disabled globally, every user is treated as Pro
-  const isProByAccount = user?.is_pro === true || isStudio;
+  const isProByAccount = user?.is_pro === true;
   const isPro = !proGatingEnabled || isProByAccount;
-  const limits = isStudio ? PRO_LIMITS.studio : isPro ? PRO_LIMITS.pro : PRO_LIMITS.free;
+  const limits = isPro ? PRO_LIMITS.pro : PRO_LIMITS.free;
 
   const fetchSubscription = useCallback(async () => {
     if (!user) { setLoading(false); return; }
@@ -125,7 +122,6 @@ export function useProFeatures(): ProFeatures {
 
   return {
     isPro,
-    isStudio,
     subscription,
     loading,
     storageLimit: user?.storage_limit_bytes ?? limits.storage_bytes,

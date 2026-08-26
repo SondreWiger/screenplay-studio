@@ -218,10 +218,10 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
             <div key={col.status} className={cn('flex flex-col rounded-lg min-h-0 flex-none w-64', col.bg)}>
               {/* Column header */}
               <div className={cn('flex items-center justify-between px-3 py-2 border-b border-white/5 flex-shrink-0')}>
-                <span className={cn('text-xs font-bold uppercase tracking-wider', col.color)}>
+                <span className={cn('text-xs font-medium uppercase tracking-[0.04em]', col.color)}>
                   {col.label}
                 </span>
-                <span className="text-[10px] text-surface-600 bg-surface-900/60 px-1.5 py-0.5 rounded-full">
+                <span className="text-[11px] text-surface-600 bg-surface-900/60 px-1.5 py-0.5 rounded-full">
                   {colStories.length}
                 </span>
               </div>
@@ -243,10 +243,10 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
                     >
                       {/* Type badge + priority */}
                       <div className="flex items-center justify-between mb-2">
-                        <span className={cn('text-[10px] font-bold text-white px-1.5 py-0.5 rounded uppercase', TYPE_BADGE[story.story_type])}>
+                        <span className={cn('text-[11px] font-medium text-white px-1.5 py-0.5 rounded uppercase', TYPE_BADGE[story.story_type])}>
                           {typeInfo?.abbr || story.story_type}
                         </span>
-                        <span className={cn('text-[10px] font-medium', prio.color)}>{prio.label}</span>
+                        <span className={cn('text-[11px] font-medium', prio.color)}>{prio.label}</span>
                       </div>
 
                       {/* Title */}
@@ -255,14 +255,14 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
                       </p>
 
                       {/* Duration + Assignee */}
-                      <div className="flex items-center justify-between text-[10px] text-surface-500">
+                      <div className="flex items-center justify-between text-[11px] text-surface-500">
                         <span>{story.estimated_duration ? formatBroadcastDuration(story.estimated_duration) : '—'}</span>
                         {assignee && <span className="text-surface-400 truncate max-w-[80px]">@{assignee}</span>}
                       </div>
 
                       {/* Source chip */}
                       {story.source && (
-                        <div className="mt-1.5 text-[9px] text-surface-600 bg-surface-800 px-1.5 py-0.5 rounded inline-block uppercase tracking-wide">
+                        <div className="mt-1.5 text-[11px] text-surface-400 bg-surface-800 px-1.5 py-0.5 rounded inline-block uppercase tracking-wide">
                           {story.source}
                         </div>
                       )}
@@ -273,7 +273,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
                           <button
                             key={target.status}
                             onClick={() => moveStory(story, target.status)}
-                            className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold uppercase transition-colors', target.color, 'bg-surface-800 hover:bg-surface-700')}
+                            className={cn('text-[11px] px-1.5 py-0.5 rounded font-medium uppercase transition-colors', target.color, 'bg-surface-800 hover:bg-surface-700')}
                           >
                             → {target.label.split(' ')[0]}
                           </button>

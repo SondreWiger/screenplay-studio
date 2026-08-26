@@ -205,15 +205,15 @@ export default function ContestsPage() {
                   <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide', PHASE_STYLE[phase])}>
+                        <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded-full uppercase tracking-wide', PHASE_STYLE[phase])}>
                           {PHASE_LABEL[phase]}
                         </span>
-                        {contest.prize && <span className="text-[10px] text-amber-400/70">🏅 {contest.prize}</span>}
-                        <span className="text-[10px] text-white/25">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
+                        {contest.prize && <span className="text-[11px] text-amber-400/70">🏅 {contest.prize}</span>}
+                        <span className="text-[11px] text-white/25">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
                       </div>
                       <h3 className="text-sm font-bold mb-1">{contest.title}</h3>
                       {contest.description && <p className="text-xs text-white/50 line-clamp-2">{contest.description}</p>}
-                      <div className="flex gap-4 mt-1.5 text-[10px] text-white/25">
+                      <div className="flex gap-4 mt-1.5 text-[11px] text-white/25">
                         <span>Opens {new Date(contest.starts_at).toLocaleDateString()}</span>
                         <span>Closes {new Date(contest.ends_at).toLocaleDateString()}</span>
                         {contest.voting_ends_at && <span>Vote by {new Date(contest.voting_ends_at).toLocaleDateString()}</span>}
@@ -228,7 +228,7 @@ export default function ContestsPage() {
                         </button>
                       )}
                       {myEntry && (
-                        <span className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: accent + '22', color: accent }}>
+                        <span className="text-[11px] px-2 py-1 rounded-lg font-medium" style={{ background: accent + '22', color: accent }}>
                           ✓ Entered
                         </span>
                       )}
@@ -247,12 +247,12 @@ export default function ContestsPage() {
                 {entries.length > 0 && (
                   <div className="border-t border-white/5 px-3 py-2.5 space-y-1.5">
                     <div className="flex items-center justify-between mb-1.5">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/30">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/55">
                         {phase === 'completed' ? 'Final Results' : phase === 'voting' ? 'Vote for your favourite' : 'Entries'}
                       </p>
                       {entries.length > 3 && (
                         <button onClick={() => setExpanded(isExp ? null : contest.id)}
-                          className="text-[10px] text-white/40 hover:text-white/70">
+                          className="text-[11px] text-white/40 hover:text-white/70">
                           {isExp ? 'Show less ↑' : `See all ${entries.length} ↓`}
                         </button>
                       )}
@@ -271,7 +271,7 @@ export default function ContestsPage() {
                         <Avatar src={entry.user?.avatar_url} name={entry.user?.full_name ?? undefined} size="sm" className="shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-white/90 truncate">{entry.title ?? 'Untitled entry'}</p>
-                          <p className="text-[10px] text-white/30">{entry.user?.full_name ?? 'Anonymous'}</p>
+                          <p className="text-[11px] text-white/30">{entry.user?.full_name ?? 'Anonymous'}</p>
                         </div>
                         <button
                           onClick={() => canVote && toggleVote(entry)}

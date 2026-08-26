@@ -260,7 +260,7 @@ function NodeCard({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={ic} />
         </svg>
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] text-white/50 font-medium uppercase tracking-wider leading-none mb-1">
+          <div className="text-[11px] text-white/50 font-medium uppercase tracking-[0.04em] leading-none mb-1">
             {NODE_LABEL[node.type]}
           </div>
           <div className="text-sm font-semibold text-white leading-snug break-words">
@@ -848,7 +848,7 @@ export function ArcMindmap({
         <div className="flex-1" />
         {/* Zoom controls */}
         <button onClick={() => setZoom((z) => Math.min(z + 0.15, MAX_ZOOM))} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white flex items-center justify-center text-lg leading-none transition-colors">+</button>
-        <div className="text-[9px] text-white/30 font-mono">{Math.round(zoom * 100)}%</div>
+        <div className="text-[11px] text-white/30 font-mono">{Math.round(zoom * 100)}%</div>
         <button onClick={() => setZoom((z) => Math.max(z - 0.15, MIN_ZOOM))} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white flex items-center justify-center text-lg leading-none transition-colors">−</button>
         <button onClick={zoomToFit} title="Fit all nodes" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -967,7 +967,7 @@ export function ArcMindmap({
                     >
                       <div className="flex justify-center">
                         <span
-                          className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white"
+                          className="px-2 py-0.5 rounded-full text-[11px] font-medium text-white"
                           style={{ background: def.color + 'dd', fontSize: 10 }}
                         >
                           {edge.label || def.label}
@@ -1067,7 +1067,7 @@ export function ArcMindmap({
       <aside className="w-64 shrink-0 border-l border-white/5 bg-black/30 flex flex-col overflow-y-auto z-10">
         {/* Toolbar / header */}
         <div className="p-3 border-b border-white/5 flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">Arc Planner</span>
+          <span className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em]">Arc Planner</span>
           <div className="flex items-center gap-1">
             {/* Undo / Redo */}
             <button
@@ -1124,7 +1124,7 @@ export function ArcMindmap({
 
         {/* Edge type selector */}
         <div className="p-3 border-b border-white/5">
-          <p className="text-[10px] text-white/30 uppercase tracking-wider mb-2">New connection type</p>
+          <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">New connection type</p>
           <div className="space-y-1">
             {(Object.keys(EDGE_DEFS) as EdgeType[]).map((t) => {
               const def = EDGE_DEFS[t];
@@ -1185,7 +1185,7 @@ export function ArcMindmap({
                   ['Delete / ⌫', 'Remove selected'],
                   ['⌘ S', 'Save'],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between text-[10px]">
+                  <div key={k} className="flex justify-between text-[11px]">
                     <span className="text-white/30">{v}</span>
                     <kbd className="px-1 bg-white/5 rounded text-white/20 font-mono">{k}</kbd>
                   </div>
@@ -1196,7 +1196,7 @@ export function ArcMindmap({
         </div>
 
         {/* Stats footer */}
-        <div className="p-3 border-t border-white/5 flex justify-between text-[10px] text-white/30">
+        <div className="p-3 border-t border-white/5 flex justify-between text-[11px] text-white/30">
           <span>{nodes.length} nodes</span>
           <span>{edges.length} edges</span>
           <span>{episodes.length} episodes</span>
@@ -1232,7 +1232,7 @@ function PropertiesPanel({
           </svg>
         </span>
         <div>
-          <div className="text-[10px] text-white/40 uppercase tracking-wider">{NODE_LABEL[node.type]}</div>
+          <div className="text-[11px] text-white/40 uppercase tracking-[0.04em]">{NODE_LABEL[node.type]}</div>
           <div className="text-xs font-semibold text-white truncate max-w-[140px]">{node.label}</div>
         </div>
       </div>
@@ -1240,7 +1240,7 @@ function PropertiesPanel({
       {canEdit ? (
         <>
           <div>
-            <label className="block text-[10px] text-white/40 mb-1">Label</label>
+            <label className="block text-[11px] text-white/40 mb-1">Label</label>
             <input
               className="w-full px-2 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:border-white/30 focus:outline-none"
               value={node.label}
@@ -1248,7 +1248,7 @@ function PropertiesPanel({
             />
           </div>
           <div>
-            <label className="block text-[10px] text-white/40 mb-1">Notes / Body</label>
+            <label className="block text-[11px] text-white/40 mb-1">Notes / Body</label>
             <textarea
               className="w-full px-2 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:border-white/30 focus:outline-none resize-none"
               rows={4}
@@ -1258,7 +1258,7 @@ function PropertiesPanel({
             />
           </div>
           <div>
-            <label className="block text-[10px] text-white/40 mb-2">Accent colour</label>
+            <label className="block text-[11px] text-white/40 mb-2">Accent colour</label>
             <div className="flex flex-wrap gap-1.5">
               {Object.values(NODE_COLORS).filter((v, i, a) => a.indexOf(v) === i).map((c) => (
                 <button
@@ -1274,7 +1274,7 @@ function PropertiesPanel({
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <label className="text-[10px] text-white/40">Locked</label>
+            <label className="text-[11px] text-white/40">Locked</label>
             <button
               onClick={() => updateNode(node.id, 'locked', !node.locked)}
               className={cn(
@@ -1319,12 +1319,12 @@ function EdgePropertiesPanel({
         <svg width="28" height="8">
           <line x1="0" y1="4" x2="28" y2="4" stroke={def.color} strokeWidth="2" strokeDasharray={def.dash ?? ''} strokeLinecap="round" />
         </svg>
-        <div className="text-[10px] text-white/40 uppercase tracking-wider">{def.label}</div>
+        <div className="text-[11px] text-white/40 uppercase tracking-[0.04em]">{def.label}</div>
       </div>
       {canEdit ? (
         <>
           <div>
-            <label className="block text-[10px] text-white/40 mb-1">Label (optional)</label>
+            <label className="block text-[11px] text-white/40 mb-1">Label (optional)</label>
             <input
               className="w-full px-2 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:border-white/30 focus:outline-none"
               value={edge.label ?? ''}
@@ -1333,7 +1333,7 @@ function EdgePropertiesPanel({
             />
           </div>
           <div>
-            <label className="block text-[10px] text-white/40 mb-1">Connection type</label>
+            <label className="block text-[11px] text-white/40 mb-1">Connection type</label>
             <div className="space-y-1">
               {(Object.keys(EDGE_DEFS) as EdgeType[]).map((t) => (
                 <button

@@ -91,7 +91,7 @@ function SectionHeader({ icon: Icon, label, accent, subtitle }: { icon: React.El
         <Icon size={20} />
       </div>
       <div>
-        <h2 className="text-xl font-black text-white tracking-tight">{label}</h2>
+        <h2 className="text-xl font-bold text-white tracking-tight">{label}</h2>
         {subtitle && <p className="text-sm text-surface-400 mt-0.5">{subtitle}</p>}
       </div>
     </div>
@@ -102,7 +102,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (
     <div>
       <div className="flex items-baseline gap-2 mb-1.5">
-        <label className="text-xs font-bold text-surface-300 uppercase tracking-wider">{label}</label>
+        <label className="text-xs font-medium text-surface-300 uppercase tracking-[0.04em]">{label}</label>
         {hint && <span className="text-xs text-surface-500">{hint}</span>}
       </div>
       {children}
@@ -314,13 +314,13 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
         <div className="px-4 pt-5 pb-4 border-b border-surface-800">
           <div className="flex items-center gap-1.5 mb-1">
             <Sparkles size={11} className="text-amber-400" />
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Series Bible</span>
+            <span className="text-[11px] font-medium text-amber-400 uppercase tracking-[0.04em]">Series Bible</span>
           </div>
           <p className="text-xs text-surface-400 truncate leading-snug">{currentProject?.title || 'Untitled'}</p>
           <div className="mt-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-surface-500">Completion</span>
-              <span className="text-[10px] font-bold text-surface-400">{progressPct}%</span>
+              <span className="text-[11px] text-surface-500">Completion</span>
+              <span className="text-[11px] font-bold text-surface-400">{progressPct}%</span>
             </div>
             <div className="h-1 rounded-full bg-surface-700 overflow-hidden">
               <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-[width] duration-500" style={{ width: `${progressPct}%` }} />
@@ -408,19 +408,19 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
             <div className="space-y-5">
               <SectionHeader icon={Globe} label="World Building" accent="#38bdf8" subtitle="Setting, rules, atmosphere, and visual language of your world." />
               <FieldCard>
-                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Map size={12} className="text-sky-400" /><span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">Setting &amp; World</span></div>
+                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Map size={12} className="text-sky-400" /><span className="text-[11px] font-medium text-sky-400 uppercase tracking-[0.04em]">Setting &amp; World</span></div>
                 <Textarea value={f.world ?? ''} onChange={e => setForm({ ...f, world: e.target.value })} rows={5} placeholder="Time period, geography, society, history — where does this world exist and what shaped it?" readOnly={!canEdit} />
               </FieldCard>
               <FieldCard>
-                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Shield size={12} className="text-sky-400" /><span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">Rules of the World</span></div>
+                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Shield size={12} className="text-sky-400" /><span className="text-[11px] font-medium text-sky-400 uppercase tracking-[0.04em]">Rules of the World</span></div>
                 <Textarea value={f.rules_of_world ?? ''} onChange={e => setForm({ ...f, rules_of_world: e.target.value })} rows={5} placeholder="Laws, constraints, unique mechanics — whatever governs this world." readOnly={!canEdit} />
               </FieldCard>
               <FieldCard>
-                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Eye size={12} className="text-sky-400" /><span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">Atmosphere</span></div>
+                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Eye size={12} className="text-sky-400" /><span className="text-[11px] font-medium text-sky-400 uppercase tracking-[0.04em]">Atmosphere</span></div>
                 <Textarea value={f.atmosphere ?? ''} onChange={e => setForm({ ...f, atmosphere: e.target.value })} rows={3} placeholder="Mood, texture, feel — what is the emotional register?" readOnly={!canEdit} />
               </FieldCard>
               <FieldCard>
-                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Film size={12} className="text-sky-400" /><span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">Visual Style</span></div>
+                <div className="flex items-center gap-2 pb-1 border-b border-surface-700/40"><Film size={12} className="text-sky-400" /><span className="text-[11px] font-medium text-sky-400 uppercase tracking-[0.04em]">Visual Style</span></div>
                 <Textarea value={f.visual_style ?? ''} onChange={e => setForm({ ...f, visual_style: e.target.value })} rows={3} placeholder="Color palette, camera language, lighting, visual references." readOnly={!canEdit} />
               </FieldCard>
             </div>
@@ -548,7 +548,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 <div key={c.id} className="bg-surface-800/40 border border-surface-700/50 rounded-xl overflow-hidden">
                   <div className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none" onClick={() => toggleArc(c.id)}>
                     <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-black text-emerald-400">{(c.name || '?')[0].toUpperCase()}</span>
+                      <span className="text-xs font-semibold text-emerald-400">{(c.name || '?')[0].toUpperCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-white truncate">{c.name || <span className="text-surface-500 italic font-normal">Unnamed</span>}</p>
@@ -600,7 +600,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
               {f.episode_breakdown.map((ep, idx) => (
                 <div key={ep.id} className="bg-surface-800/40 border border-surface-700/50 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-700/40" style={{ background: '#818cf812' }}>
-                    <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">Episode {idx + 1}</span>
+                    <span className="text-xs font-semibold text-indigo-400 uppercase tracking-[0.04em]">Episode {idx + 1}</span>
                     {canEdit && <button onClick={() => removeEpisode(ep.id)} className="text-surface-600 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>}
                   </div>
                   <div className="p-4 space-y-3">
@@ -651,7 +651,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
               {f.custom_sections.map((cs, idx) => (
                 <div key={cs.id} className="bg-surface-800/40 border border-surface-700/50 rounded-xl overflow-hidden">
                   <div className="flex items-center gap-2 px-4 py-2.5 border-b border-surface-700/40" style={{ background: '#f472b612' }}>
-                    <span className="text-[10px] font-black text-pink-400 uppercase tracking-widest mr-1">#{idx + 1}</span>
+                    <span className="text-[11px] font-semibold text-pink-400 uppercase tracking-[0.04em] mr-1">#{idx + 1}</span>
                     {canEdit
                       ? <input value={cs.title} onChange={e => updateCustom(cs.id, 'title', e.target.value)} className="flex-1 bg-transparent text-sm font-bold text-white placeholder-surface-500 focus:outline-none" placeholder="Section title…" />
                       : <span className="flex-1 text-sm font-bold text-white">{cs.title || 'Custom Section'}</span>}

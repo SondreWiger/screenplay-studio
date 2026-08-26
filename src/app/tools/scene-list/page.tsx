@@ -68,7 +68,7 @@ export default function SceneListPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-1 rounded-full bg-brand-500" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">{scenes.length} SCENES — {fileName}</span>
+                <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">{scenes.length} SCENES — {fileName}</span>
               </div>
               <GhostButton onClick={download}>Download List</GhostButton>
             </div>
@@ -77,7 +77,7 @@ export default function SceneListPage() {
                 <thead>
                   <tr className="border-b border-white/6">
                     {['#', 'Scene Heading', 'Location', 'Time', 'Words', 'Pages'].map(h => (
-                      <th key={h} className={`text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono px-4 py-3 ${['Words', 'Pages'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
+                      <th key={h} className={`text-[11px] font-bold uppercase tracking-[0.2em] text-white/20 px-4 py-3 ${['Words', 'Pages'].includes(h) ? 'text-right' : 'text-left'}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>

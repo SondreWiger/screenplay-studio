@@ -40,10 +40,10 @@ export function LevelUpCelebration({ level, unlocks, onDismiss }: Props) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-brand-500/60 mb-0.5">
+            <p className="text-[11px] uppercase tracking-[0.04em] text-brand-500/60 mb-0.5">
               Level up!
             </p>
-            <p className="text-lg font-black text-white">Level {level}</p>
+            <p className="text-lg font-bold text-white">Level {level}</p>
             <p className="text-sm text-brand-500 font-medium">{title}</p>
 
             {unlocks.length > 0 && (

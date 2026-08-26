@@ -67,7 +67,7 @@ export function NotificationBellInner() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-500 text-white text-[10px] font-bold px-1 shadow-lg shadow-brand-500/30">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-500 text-white text-[11px] font-bold px-1 shadow-lg shadow-brand-500/30">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -159,7 +159,7 @@ function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; o
             </button>
           </div>
           {push.permission === 'denied' && (
-            <p className="text-[10px] text-red-400 mt-1">
+            <p className="text-[11px] text-red-400 mt-1">
               Notifications blocked — enable in browser settings
             </p>
           )}
@@ -207,7 +207,7 @@ export function NotificationRow({
         {n.actor?.avatar_url ? (
           <img src={n.actor.avatar_url} alt={n.actor.full_name || 'User'} className="w-9 h-9 rounded-lg object-cover" loading="lazy" />
         ) : (
-          <span className="font-semibold text-[10px] leading-none">{icon.label}</span>
+          <span className="font-semibold text-[11px] leading-none">{icon.label}</span>
         )}
       </div>
 
@@ -244,7 +244,7 @@ export function NotificationRow({
           <CompanyInviteActions notification={n} />
         )}
 
-        <p className="text-[10px] text-surface-500 mt-1">
+        <p className="text-[11px] text-surface-500 mt-1">
           {showDate ? new Date(n.created_at).toLocaleDateString() + ' · ' : ''}
           {timeAgo(n.created_at)}
         </p>

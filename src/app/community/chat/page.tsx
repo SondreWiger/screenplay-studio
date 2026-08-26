@@ -194,7 +194,7 @@ export default function ChatPage() {
           'hidden md:block'
         )}>
           <div className="p-4">
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Channels</h3>
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-3">Channels</h3>
             <div className="space-y-0.5">
               {channels.map((ch) => (
                 <button
@@ -220,7 +220,7 @@ export default function ChatPage() {
           <div className="fixed inset-0 z-40 flex md:hidden">
             <div className="w-60 bg-surface-900 shadow-xl border-r border-white/10 overflow-y-auto">
               <div className="p-4">
-                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Channels</h3>
+                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-3">Channels</h3>
                 <div className="space-y-0.5">
                   {channels.map((ch) => (
                     <button
@@ -280,7 +280,7 @@ export default function ChatPage() {
               return (
                 <div key={msg.id} className={cn('group', !compact && i > 0 && 'mt-4')}>
                   {msg.is_pinned && (
-                    <div className="flex items-center gap-1 text-[10px] text-amber-600 mb-1 ml-12">
+                    <div className="flex items-center gap-1 text-[11px] text-amber-600 mb-1 ml-12">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V5z" /><path d="M8 12a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" /><path d="M9 14a1 1 0 011-1h0a1 1 0 110 2h0a1 1 0 01-1-1z" /></svg>
                       Pinned
                     </div>
@@ -305,13 +305,13 @@ export default function ChatPage() {
                           <span className="text-sm font-semibold text-white">
                             {author?.full_name || author?.email || 'Unknown'}
                           </span>
-                          <span className="text-[10px] text-white/50">{timeAgo(msg.created_at)}</span>
+                          <span className="text-[11px] text-white/50">{timeAgo(msg.created_at)}</span>
                         </div>
                       )}
 
                       {/* Reply indicator */}
                       {msg.reply_to_id && (
-                        <div className="flex items-center gap-1 text-[10px] text-white/50 mb-1 border-l-2 border-white/10 pl-2">
+                        <div className="flex items-center gap-1 text-[11px] text-white/50 mb-1 border-l-2 border-white/10 pl-2">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                           Reply
                         </div>
@@ -332,7 +332,7 @@ export default function ChatPage() {
                       ) : (
                         <p className="text-sm text-white/70 whitespace-pre-wrap break-words">
                           <FormattedChatText content={msg.content} />
-                          {msg.edited_at && <span className="text-[10px] text-white/50 ml-1">(edited)</span>}
+                          {msg.edited_at && <span className="text-[11px] text-white/50 ml-1">(edited)</span>}
                         </p>
                       )}
                     </div>

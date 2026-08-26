@@ -44,10 +44,10 @@ export function GamificationOptIn() {
         <div className="h-0.5 bg-gradient-to-r from-transparent via-brand-500 to-transparent" />
 
         <div className="p-5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-brand-500/60 mb-1">
+          <p className="text-[11px] uppercase tracking-[0.04em] text-brand-500/60 mb-1">
             One quick question
           </p>
-          <h2 className="text-xl font-black text-white mb-1">
+          <h2 className="text-xl font-bold text-white mb-1">
             Want to gamify your writing? 🎮
           </h2>
           <p className="text-sm text-white/50 leading-relaxed mb-4">

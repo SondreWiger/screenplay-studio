@@ -28,16 +28,16 @@ function ScriptPreview({ colors }: { colors: ThemeColors }) {
       <div className="p-6 mx-4 my-4 rounded-lg" style={{ background: '#fff' }}>
         <div className="font-mono text-[11px] leading-relaxed" style={{ color: '#111' }}>
           <p className="text-center font-bold text-[13px] mb-4" style={{ color: '#000' }}>UNTITLED SCREENPLAY</p>
-          <p className="text-center text-[10px] mb-6" style={{ color: '#555' }}>Written by Author Name</p>
+          <p className="text-center text-[11px] mb-6" style={{ color: '#555' }}>Written by Author Name</p>
 
-          <p className="uppercase font-bold mt-4 mb-1" style={{ color: '#000' }}>INT. OFFICE - DAY</p>
+          <p className="uppercase font-medium mt-4 mb-1" style={{ color: '#000' }}>INT. OFFICE - DAY</p>
           <p className="mb-3" style={{ color: '#222' }}>A dimly lit workspace. Monitors cast blue light across scattered papers.</p>
 
-          <p className="uppercase text-right font-bold mt-3 mb-1" style={{ color: '#000' }}>ALEX</p>
+          <p className="uppercase text-right font-medium mt-3 mb-1" style={{ color: '#000' }}>ALEX</p>
           <p className="text-center italic mb-1" style={{ color: '#333' }}>(staring at screen)</p>
           <p className="text-center mb-3" style={{ color: '#222' }}>We need to finish this before the deadline.</p>
 
-          <p className="uppercase text-right font-bold mt-3" style={{ color: '#000' }}>SARAH</p>
+          <p className="uppercase text-right font-medium mt-3" style={{ color: '#000' }}>SARAH</p>
           <p className="text-center mb-1 italic" style={{ color: '#333' }}>(nodding)</p>
           <p className="text-center" style={{ color: '#222' }}>I&apos;m almost done with the color system.</p>
         </div>
@@ -234,7 +234,7 @@ export function ThemeEditor() {
         <div className="w-[320px] border-l overflow-y-auto p-5 space-y-6 flex-shrink-0" style={{ background: theme.colors.bgSurface, borderColor: theme.colors.border }}>
           {/* UI Colors */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.colors.textMuted }}>Interface</h3>
+            <h3 className="text-xs font-medium uppercase tracking-[0.04em] mb-3" style={{ color: theme.colors.textMuted }}>Interface</h3>
             <div className="space-y-3">
               {groups.ui.map((f) => (
                 <ColorField
@@ -249,7 +249,7 @@ export function ThemeEditor() {
 
           {/* Text Colors */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.colors.textMuted }}>Text</h3>
+            <h3 className="text-xs font-medium uppercase tracking-[0.04em] mb-3" style={{ color: theme.colors.textMuted }}>Text</h3>
             <div className="space-y-3">
               {groups.text.map((f) => (
                 <ColorField
@@ -264,7 +264,7 @@ export function ThemeEditor() {
 
           {/* Script Colors */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.colors.textMuted }}>Script Editor</h3>
+            <h3 className="text-xs font-medium uppercase tracking-[0.04em] mb-3" style={{ color: theme.colors.textMuted }}>Script Editor</h3>
             <div className="space-y-3">
               {groups.script.map((f) => (
                 <ColorField
@@ -280,12 +280,12 @@ export function ThemeEditor() {
           {/* Share URL */}
           {shareUrl && (
             <div className="pt-4 border-t" style={{ borderColor: theme.colors.border }}>
-              <h3 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.colors.textMuted }}>Share URL</h3>
+              <h3 className="text-xs font-medium uppercase tracking-[0.04em] mb-2" style={{ color: theme.colors.textMuted }}>Share URL</h3>
               <div className="flex gap-1">
                 <input
                   readOnly
                   value={shareUrl}
-                  className="flex-1 bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-[10px] text-surface-300 font-mono focus:outline-none"
+                  className="flex-1 bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-[11px] text-surface-300 font-mono focus:outline-none"
                   onClick={(e) => (e.target as HTMLInputElement).select()}
                 />
                 <button
@@ -301,7 +301,7 @@ export function ThemeEditor() {
 
           {/* Publish to Store */}
           <div className="pt-4 border-t" style={{ borderColor: theme.colors.border }}>
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.colors.textMuted }}>Publish to Store</h3>
+            <h3 className="text-xs font-medium uppercase tracking-[0.04em] mb-3" style={{ color: theme.colors.textMuted }}>Publish to Store</h3>
             <div className="space-y-2">
               <input
                 type="text"
@@ -329,7 +329,7 @@ export function ThemeEditor() {
               <button
                 onClick={handlePublish}
                 disabled={publishing || !publishName.trim()}
-                className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40"
+                className="w-full py-2 rounded-lg text-xs font-medium uppercase tracking-[0.04em] transition-all disabled:opacity-40"
                 style={{ background: theme.colors.brand, color: '#fff' }}
               >
                 {publishing ? 'Publishing...' : 'Publish Theme'}
@@ -339,7 +339,7 @@ export function ThemeEditor() {
 
           {/* Presets */}
           <div className="pt-4 border-t" style={{ borderColor: theme.colors.border }}>
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.colors.textMuted }}>Presets</h3>
+            <h3 className="text-xs font-medium uppercase tracking-[0.04em] mb-3" style={{ color: theme.colors.textMuted }}>Presets</h3>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { name: 'Default', colors: DEFAULT_THEME.colors },
@@ -360,7 +360,7 @@ export function ThemeEditor() {
                     <div className="w-3 h-3 rounded-sm" style={{ background: preset.colors.bgBase }} />
                     <div className="w-3 h-3 rounded-sm" style={{ background: preset.colors.scriptBg }} />
                   </div>
-                  <span className="text-[10px] font-medium" style={{ color: theme.colors.textSecondary }}>{preset.name}</span>
+                  <span className="text-[11px] font-medium" style={{ color: theme.colors.textSecondary }}>{preset.name}</span>
                 </button>
               ))}
             </div>

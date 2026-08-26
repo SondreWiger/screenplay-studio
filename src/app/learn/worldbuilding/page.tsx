@@ -5,7 +5,7 @@ export default function WorldbuildingModule() {
     <div className="space-y-12 pb-24">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-white mb-4">Worldbuilding</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Worldbuilding</h1>
         <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
           Flesh out your universe. The Worldbuilding tool is your central repository for characters, locations, items, and lore, keeping all your contextual information organised and accessible.
         </p>

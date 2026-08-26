@@ -107,7 +107,7 @@ export function FocusTimer({
     >
       {/* Header */}
       <div className="flex items-center justify-between w-full">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-surface-500">
+        <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">
           {phase === 'work' ? '🎯 Focus' : '☕ Break'}
         </span>
         <button
@@ -173,7 +173,7 @@ export function FocusTimer({
           />
         ))}
         {sessions > 0 && (
-          <span className="text-[10px] text-surface-500 ml-1">{sessions} done</span>
+          <span className="text-[11px] text-surface-500 ml-1">{sessions} done</span>
         )}
       </div>
     </div>

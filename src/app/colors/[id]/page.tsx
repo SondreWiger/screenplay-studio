@@ -61,11 +61,11 @@ function MiniScriptPreview({ colors }: { colors: any }) {
         ))}
       </div>
       <div className="p-5 mx-3 my-3 rounded-lg" style={{ background: '#fff' }}>
-        <div className="font-mono text-[10px] leading-relaxed" style={{ color: '#111' }}>
+        <div className="font-mono text-[11px] leading-relaxed" style={{ color: '#111' }}>
           <p className="text-center font-bold text-[12px] mb-3" style={{ color: '#000' }}>UNTITLED</p>
-          <p className="uppercase font-bold mt-3 mb-1" style={{ color: '#000' }}>INT. OFFICE - DAY</p>
+          <p className="uppercase font-medium mt-3 mb-1" style={{ color: '#000' }}>INT. OFFICE - DAY</p>
           <p className="mb-2" style={{ color: '#222' }}>A workspace. Monitors glow.</p>
-          <p className="uppercase text-right font-bold mt-2" style={{ color: '#000' }}>ALEX</p>
+          <p className="uppercase text-right font-medium mt-2" style={{ color: '#000' }}>ALEX</p>
           <p className="text-center" style={{ color: '#222' }}>Done.</p>
         </div>
       </div>
@@ -294,7 +294,7 @@ export default function ThemeDetailPage() {
                 <div key={comment.id} className="border-t border-surface-800 pt-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-white">{comment.user_name || 'Anonymous'}</span>
-                    <span className="text-[10px] text-surface-500">{timeAgo(comment.created_at)}</span>
+                    <span className="text-[11px] text-surface-500">{timeAgo(comment.created_at)}</span>
                   </div>
                   <p className="text-sm text-surface-300">{comment.content}</p>
                 </div>

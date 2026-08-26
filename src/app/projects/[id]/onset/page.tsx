@@ -88,7 +88,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
       {/* Header - compact for mobile */}
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-black text-white flex items-center gap-2">
+          <h1 className="text-xl font-bold text-white flex items-center gap-2">
             <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /></svg>
             On Set
           </h1>
@@ -193,7 +193,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                         ) : (
                           <>
                             <span className="text-lg font-bold leading-none">{shot.shot_number || '•'}</span>
-                            <span className="text-[9px] mt-0.5 opacity-60">TAP</span>
+                            <span className="text-[11px] mt-0.5 opacity-60">TAP</span>
                           </>
                         )}
                       </button>
@@ -203,13 +203,13 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <Badge size="sm" variant="info">{shot.shot_type.replace('_', ' ')}</Badge>
                           <Badge size="sm">{shot.shot_movement.replace('_', ' ')}</Badge>
-                          {shot.lens && <span className="text-[10px] text-surface-500">{shot.lens}</span>}
+                          {shot.lens && <span className="text-[11px] text-surface-500">{shot.lens}</span>}
                         </div>
                         {shot.description && (
                           <p className="text-xs text-surface-400 mt-1 line-clamp-2">{shot.description}</p>
                         )}
                         {scene && (
-                          <p className="text-[10px] text-surface-600 mt-1">
+                          <p className="text-[11px] text-surface-600 mt-1">
                             Scene {scene.scene_number} — {scene.location_name || scene.scene_heading}
                           </p>
                         )}
@@ -228,7 +228,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                         )}
                       >
                         <span className="text-lg font-bold leading-none">{shot.takes_completed}</span>
-                        <span className="text-[9px] mt-0.5 opacity-60">/{shot.takes_needed}</span>
+                        <span className="text-[11px] mt-0.5 opacity-60">/{shot.takes_needed}</span>
                       </button>
                     </div>
                   </div>
@@ -279,8 +279,8 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                           <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                         ) : (
                           <>
-                            <span className="text-xl font-black leading-none">{scene.scene_number || '?'}</span>
-                            <span className="text-[9px] mt-0.5 opacity-60">WRAP</span>
+                            <span className="text-xl font-bold leading-none">{scene.scene_number || '?'}</span>
+                            <span className="text-[11px] mt-0.5 opacity-60">WRAP</span>
                           </>
                         )}
                       </button>
@@ -299,10 +299,10 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                             <div className="flex-1 h-1.5 rounded-full bg-surface-800 overflow-hidden">
                               <div className="h-full rounded-full bg-blue-500 transition-[width]" style={{ width: `${sceneShotsComplete / sceneShots.length * 100}%` }} />
                             </div>
-                            <span className="text-[10px] text-surface-500 shrink-0">{sceneShotsComplete}/{sceneShots.length} shots</span>
+                            <span className="text-[11px] text-surface-500 shrink-0">{sceneShotsComplete}/{sceneShots.length} shots</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-3 mt-1 text-[10px] text-surface-600">
+                        <div className="flex items-center gap-3 mt-1 text-[11px] text-surface-600">
                           {scene.page_count > 0 && <span>{scene.page_count} pgs</span>}
                           {scene.cast_ids.length > 0 && <span>{scene.cast_ids.length} cast</span>}
                           {scene.estimated_duration_minutes && <span>~{scene.estimated_duration_minutes}m</span>}

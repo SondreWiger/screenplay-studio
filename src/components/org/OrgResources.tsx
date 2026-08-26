@@ -108,7 +108,7 @@ export function OrgResources({ companyId, userId, canManage }: Props) {
       {/* Pinned Section */}
       {pinned.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">📌 Pinned</h3>
+          <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">📌 Pinned</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pinned.map(r => <ResourceCard key={r.id} resource={r} canManage={canManage} userId={userId}
               onPin={() => togglePin(r.id, r.is_pinned)} onDelete={() => deleteResource(r.id)} />)}
@@ -175,12 +175,12 @@ function ResourceCard({ resource, canManage, userId, onPin, onDelete }: {
         </a>
       )}
       <div className="flex items-center gap-2 flex-wrap mt-auto">
-        {resource.category && <span className="text-[10px] bg-surface-800 px-2 py-0.5 rounded text-surface-400">{resource.category}</span>}
+        {resource.category && <span className="text-[11px] bg-surface-800 px-2 py-0.5 rounded text-surface-400">{resource.category}</span>}
         {(resource.tags || []).map(t => (
-          <span key={t} className="text-[10px] bg-surface-800/50 px-1.5 py-0.5 rounded text-surface-500">#{t}</span>
+          <span key={t} className="text-[11px] bg-surface-800/50 px-1.5 py-0.5 rounded text-surface-500">#{t}</span>
         ))}
       </div>
-      <span className="text-[10px] text-surface-600">{new Date(resource.created_at).toLocaleDateString()}</span>
+      <span className="text-[11px] text-surface-600">{new Date(resource.created_at).toLocaleDateString()}</span>
     </Card>
   );
 }

@@ -205,7 +205,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
         {/* Quick presets */}
         {sources.length === 0 && (
           <div className="px-4 pt-4">
-            <p className="text-xs text-surface-500 mb-2 uppercase tracking-wider font-bold">Quick presets</p>
+            <p className="text-xs text-surface-500 mb-2 uppercase tracking-[0.04em] font-medium">Quick presets</p>
             <div className="flex flex-wrap gap-2">
               {[
                 { label: '🎨 Color Bars', name: 'Color Bars', short_name: 'CBARS', type: 'web_feed' as BroadcastSourceType, url: '/colorbar' },
@@ -234,7 +234,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
               <div className="w-16 h-9 rounded flex-shrink-0 overflow-hidden" style={{ background: 'linear-gradient(to right,#c0c0c0 14%,#c0c000 28%,#00c0c0 42%,#00c000 57%,#c000c0 71%,#c00000 85%,#0000c0)' }} />
               <div>
                 <p className="text-xs text-white font-medium">SMPTE Color Bars</p>
-                <p className="text-[10px] text-surface-500">Built-in test signal source (/colorbar)</p>
+                <p className="text-[11px] text-surface-500">Built-in test signal source (/colorbar)</p>
               </div>
               <button
                 onClick={async () => {
@@ -261,7 +261,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
           ) : (
             Array.from(grouped.entries()).map(([type, items]) => (
               <div key={type} className="mb-6">
-                <h3 className="text-xs font-bold text-surface-500 uppercase mb-2 flex items-center gap-2">
+                <h3 className="text-xs font-medium text-surface-500 uppercase mb-2 flex items-center gap-2">
                   <span className={cn('w-2 h-2 rounded-full', SOURCE_TYPE_COLORS[type] || 'bg-surface-600')} />
                   {type.replace(/_/g, ' ')} ({items.length})
                 </h3>
@@ -293,7 +293,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                         {source.thumbnail_url ? (
                           <img src={source.thumbnail_url} alt="" className="w-full h-full object-cover rounded" loading="lazy" />
                         ) : (
-                          <span className="text-white/60 text-[10px] font-bold uppercase">
+                          <span className="text-white/60 text-[11px] font-medium uppercase">
                             {source.short_name || source.source_type.replace(/_/g, ' ')}
                           </span>
                         )}
@@ -302,12 +302,12 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                       <div className="text-sm font-medium text-white truncate">{source.name}</div>
                       <div className="flex items-center gap-2 mt-1">
                         {source.protocol && (
-                          <span className="text-[10px] text-surface-500">
+                          <span className="text-[11px] text-surface-500">
                             {PROTOCOL_LABELS[source.protocol]}
                           </span>
                         )}
-                        {source.is_primary && <span className="text-[9px] text-amber-400 font-bold">PRIMARY</span>}
-                        {!source.is_active && <span className="text-[9px] text-surface-600">INACTIVE</span>}
+                        {source.is_primary && <span className="text-[11px] text-amber-400 font-bold">PRIMARY</span>}
+                        {!source.is_active && <span className="text-[11px] text-surface-600">INACTIVE</span>}
                       </div>
                     </button>
                   ))}
@@ -355,22 +355,22 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                   ) : selectedSource.protocol === 'ndi' || selectedSource.source_type === 'ndi' ? (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">NDI SOURCE</div>
-                      <div className="text-white/30 text-[10px]">Requires NDI bridge</div>
+                      <div className="text-white/30 text-[11px]">Requires NDI bridge</div>
                     </>
                   ) : selectedSource.protocol === 'srt' || selectedSource.source_type === 'srt' ? (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">SRT STREAM</div>
-                      <div className="text-white/30 text-[10px]">Requires SRT ingest</div>
+                      <div className="text-white/30 text-[11px]">Requires SRT ingest</div>
                     </>
                   ) : selectedSource.protocol === 'webrtc' ? (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">WebRTC</div>
-                      <div className="text-white/30 text-[10px]">Requires WebRTC bridge</div>
+                      <div className="text-white/30 text-[11px]">Requires WebRTC bridge</div>
                     </>
                   ) : (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">{(selectedSource.short_name || selectedSource.source_type).toUpperCase()}</div>
-                      <div className="text-white/30 text-[10px]">{selectedSource.protocol ? `${selectedSource.protocol.toUpperCase()} signal` : 'No signal'}</div>
+                      <div className="text-white/30 text-[11px]">{selectedSource.protocol ? `${selectedSource.protocol.toUpperCase()} signal` : 'No signal'}</div>
                     </>
                   )}
                 </div>
@@ -379,7 +379,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
 
             {/* Tally control */}
             <div>
-              <div className="text-[10px] text-surface-500 uppercase mb-1">Tally</div>
+              <div className="text-[11px] text-surface-500 uppercase mb-1">Tally</div>
               <div className="flex gap-1">
                 {(['off', 'preview', 'program'] as BroadcastTallyState[]).map(state => (
                   <button
@@ -480,7 +480,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="p-2 bg-surface-900 rounded">
-      <div className="text-[10px] text-surface-500 uppercase">{label}</div>
+      <div className="text-[11px] text-surface-500 uppercase">{label}</div>
       <div className="text-surface-200 capitalize">{value}</div>
     </div>
   );

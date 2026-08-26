@@ -33,7 +33,7 @@ export function QuoteCard({ quote, onEdit, onDelete, isOwner }: QuoteCardProps) 
             &mdash; {quote.said_by}
           </span>
           {dateStr && (
-            <span className="text-[10px] text-surface-500 shrink-0">{dateStr}</span>
+            <span className="text-[11px] text-surface-500 shrink-0">{dateStr}</span>
           )}
         </div>
 
@@ -70,17 +70,17 @@ export function QuoteCard({ quote, onEdit, onDelete, isOwner }: QuoteCardProps) 
       {(quote.context || quote.location || quote.group_name || quote.group) && (
         <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2.5 border-t border-surface-800/40">
           {quote.group && (
-            <span className="text-[10px] font-semibold tracking-wider px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 flex items-center gap-1">
+            <span className="text-[11px] font-semibold tracking-wider px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 flex items-center gap-1">
               {quote.group.emoji} {quote.group.name}
             </span>
           )}
           {!quote.group && quote.group_name && (
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400">
               {quote.group_name}
             </span>
           )}
           {quote.context && (
-            <span className="text-[10px] text-surface-500 flex items-center gap-1">
+            <span className="text-[11px] text-surface-500 flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
@@ -88,7 +88,7 @@ export function QuoteCard({ quote, onEdit, onDelete, isOwner }: QuoteCardProps) 
             </span>
           )}
           {quote.location && (
-            <span className="text-[10px] text-surface-500 flex items-center gap-1">
+            <span className="text-[11px] text-surface-500 flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />

@@ -33,7 +33,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 function statusBadge(status: string) {
   return (
-    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold', STATUS_COLORS[status] || STATUS_COLORS.uncast)}>
+    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold', STATUS_COLORS[status] || STATUS_COLORS.uncast)}>
       {STATUS_LABELS[status] || 'Uncast'}
     </span>
   );
@@ -251,7 +251,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
         {(['uncast', 'auditioning', 'cast', 'confirmed'] as const).map(s => (
           <Card key={s} className={cn('p-3 text-center border-surface-800/80 cursor-pointer transition-colors', filter === s && 'ring-1 ring-white/20')} onClick={() => setFilter(filter === s ? 'all' : s)}>
             <p className="text-xl font-bold text-white">{stats[s] || 0}</p>
-            <p className="text-[10px] text-surface-500 mt-0.5 capitalize">{s}</p>
+            <p className="text-[11px] text-surface-500 mt-0.5 capitalize">{s}</p>
           </Card>
         ))}
       </div>
@@ -379,7 +379,7 @@ function VoiceCastEditorModal({
         <Textarea label="Character Description / Role" value={description} onChange={e => setDescription(e.target.value)} rows={2} readOnly={!canEdit} />
 
         <div className="border-t border-surface-800 pt-4 space-y-4">
-          <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Voice Casting</h3>
+          <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Voice Casting</h3>
           <Input
             label="Voice Actor / Performer"
             placeholder="e.g. Emma Clarke"

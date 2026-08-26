@@ -374,14 +374,14 @@ export default function SEOPage() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={cn('text-3xl font-black', seoResult.color)}>{seoResult.score}</span>
+                <span className={cn('text-3xl font-bold', seoResult.color)}>{seoResult.score}</span>
                 <span className="text-xs text-surface-400">/ 100</span>
               </div>
             </div>
             
             <div>
               <div className="flex items-center gap-2">
-                <span className={cn('text-4xl font-black', seoResult.color)}>{seoResult.grade}</span>
+                <span className={cn('text-4xl font-bold', seoResult.color)}>{seoResult.grade}</span>
                 <span className="text-surface-400 text-lg">SEO Score</span>
               </div>
               <p className="text-surface-400 text-sm mt-1">

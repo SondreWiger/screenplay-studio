@@ -63,7 +63,7 @@ export default function BillingPage() {
 
   return (
     <div className="space-y-6">
-        <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>Billing & Subscription</h1>
+        <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>Billing & Subscription</h1>
 
         {/* Current Plan */}
         <Card className="p-6 mb-6">

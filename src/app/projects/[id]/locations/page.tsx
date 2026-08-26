@@ -158,7 +158,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
     <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white">Locations</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Locations</h1>
           <p className="text-xs sm:text-sm text-surface-400 mt-1">
             {locations.filter((l) => l.is_confirmed).length} confirmed / {locations.length} total
             {locations.filter(needsSetup).length > 0 && (

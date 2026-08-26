@@ -273,13 +273,13 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
       case 'action':
         return <p key={el.id} className="text-surface-200 whitespace-pre-wrap leading-relaxed">{el.content}</p>;
       case 'character':
-        return <p key={el.id} className="text-white font-bold text-center mt-3 uppercase tracking-wide">{el.content}</p>;
+        return <p key={el.id} className="text-white font-medium text-center mt-3 uppercase tracking-wide">{el.content}</p>;
       case 'parenthetical':
-        return <p key={el.id} className="text-surface-400 text-center italic text-[10px]">{el.content}</p>;
+        return <p key={el.id} className="text-surface-400 text-center italic text-[11px]">{el.content}</p>;
       case 'dialogue':
         return <p key={el.id} className="text-surface-100 mx-8 leading-relaxed">{el.content}</p>;
       case 'transition':
-        return <p key={el.id} className="text-surface-500 text-right uppercase text-[10px] tracking-wider mt-2">{el.content}</p>;
+        return <p key={el.id} className="text-surface-500 text-right uppercase text-[11px] tracking-[0.04em] mt-2">{el.content}</p>;
       default:
         return <p key={el.id} className="text-surface-400">{el.content}</p>;
     }
@@ -501,7 +501,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
       {/* ── Day list sidebar ── */}
       <div className="w-56 shrink-0 border-r border-surface-800 flex flex-col">
         <div className="px-4 py-3 border-b border-surface-800 flex items-center justify-between">
-          <span className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Shoot Days</span>
+          <span className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Shoot Days</span>
           {canEdit && (
             <button onClick={handleAddDay} className="text-surface-500 hover:text-brand-500 p-1 rounded transition-colors" title="Add day">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -528,7 +528,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   <span className={cn('text-sm font-medium', selectedDayId === day.id ? 'text-white' : 'text-surface-300')}>
                     Day {day.day_number}
                   </span>
-                  <span className={cn('text-[10px] px-1.5 py-0.5 rounded border', DAY_STATUS_COLOR[day.status])}>
+                  <span className={cn('text-[11px] px-1.5 py-0.5 rounded border', DAY_STATUS_COLOR[day.status])}>
                     {DAY_STATUS_LABEL[day.status].slice(0, 3)}
                   </span>
                 </div>
@@ -662,13 +662,13 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   { label: 'Location', value: selectedDay.location || 'TBD' },
                 ].map(({ label, value }) => (
                   <div key={label} className="px-3 py-2 rounded-xl bg-surface-900 border border-surface-800">
-                    <p className="text-[10px] text-surface-500 uppercase tracking-wider">{label}</p>
+                    <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">{label}</p>
                     <p className="text-sm font-medium text-white mt-0.5">{value}</p>
                   </div>
                 ))}
                 {selectedDay.notes && (
                   <div className="px-3 py-2 rounded-xl bg-surface-900 border border-surface-800 flex-1 min-w-[200px]">
-                    <p className="text-[10px] text-surface-500 uppercase tracking-wider">Notes</p>
+                    <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">Notes</p>
                     <p className="text-sm text-surface-300 mt-0.5 whitespace-pre-wrap">{selectedDay.notes}</p>
                   </div>
                 )}
@@ -678,7 +678,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
             {/* ── Scenes section ── */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Scenes — {selectedDay.scenes.length}</h3>
+                <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Scenes — {selectedDay.scenes.length}</h3>
                 {canEdit && (
                   <button onClick={() => setShowAddScene(true)} className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -708,7 +708,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                           )}>
                           {el.scene_number && <span className="text-surface-500 mr-1.5">#{el.scene_number}</span>}
                           {el.content}
-                          {selectedDay.scenes.some(s => s.scene_element_id === el.id) && <span className="ml-2 text-[10px] text-surface-600">Already added</span>}
+                          {selectedDay.scenes.some(s => s.scene_element_id === el.id) && <span className="ml-2 text-[11px] text-surface-600">Already added</span>}
                         </button>
                       ))}
                   </div>
@@ -739,7 +739,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
             {/* ── Cast section ── */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Cast Called — {selectedDay.cast.length}</h3>
+                <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Cast Called — {selectedDay.cast.length}</h3>
                 {canEdit && (
                   <button onClick={() => setShowAddCast(!showAddCast)} className="text-xs text-brand-500 hover:underline flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -790,7 +790,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
             {/* ── Gear section ── */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Gear — {selectedDay.gear.length} items</h3>
+                <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Gear — {selectedDay.gear.length} items</h3>
                 {canEdit && (
                   <div className="flex items-center gap-2">
                     <button onClick={() => { setShowNewGearInline(true); setShowAssignGear(false); }} className="text-xs text-brand-500 hover:underline flex items-center gap-1">
@@ -898,7 +898,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
             {selectedDay.scenes.length > 0 && allScriptElements.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">
+                  <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">
                     Script Pages (Sides)
                   </h3>
                   <span className="text-[11px] text-surface-600">Included in print export</span>
@@ -910,7 +910,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       <div key={scene.id} className="rounded-xl border border-surface-800 overflow-hidden">
                         <div className="bg-surface-900/60 px-4 py-2 border-b border-surface-800 flex items-center gap-2">
                           {scene.scene_number && <span className="text-[11px] font-mono text-surface-500 shrink-0">#{scene.scene_number}</span>}
-                          <span className="text-xs font-bold text-brand-500 uppercase tracking-wide">{scene.scene_heading}</span>
+                          <span className="text-xs font-medium text-brand-500 uppercase tracking-wide">{scene.scene_heading}</span>
                         </div>
                         <div className="px-5 py-3 font-mono text-[11px] leading-relaxed space-y-0.5 max-h-80 overflow-y-auto">
                           {content.length === 0 ? (

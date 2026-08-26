@@ -152,7 +152,7 @@ export default function ProjectQuotesPage({ params }: { params: { id: string } }
         <div className="flex items-center gap-1">
           <button
             onClick={() => toggleSort('created_at')}
-            className={`px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-colors ${
+            className={`px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-lg transition-colors ${
               sortBy === 'created_at' ? 'bg-brand-500/15 text-brand-400' : 'text-surface-500 hover:text-surface-300 hover:bg-surface-800/80'
             }`}
           >
@@ -160,7 +160,7 @@ export default function ProjectQuotesPage({ params }: { params: { id: string } }
           </button>
           <button
             onClick={() => toggleSort('said_by')}
-            className={`px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-colors ${
+            className={`px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-lg transition-colors ${
               sortBy === 'said_by' ? 'bg-brand-500/15 text-brand-400' : 'text-surface-500 hover:text-surface-300 hover:bg-surface-800/80'
             }`}
           >
@@ -186,7 +186,7 @@ export default function ProjectQuotesPage({ params }: { params: { id: string } }
 
       {/* Count */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-surface-500">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-surface-500">
           {loading ? 'Loading...' : `${quotes.length} quote${quotes.length !== 1 ? 's' : ''}`}
         </p>
       </div>

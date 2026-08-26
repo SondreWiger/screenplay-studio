@@ -1,29 +1,29 @@
-// Studio suite — tool definitions.
+// Pro tool suite — tool definitions.
 //
-// Each entry drives a full page at /projects/[id]/studio/<slug>. Slugs must
+// Each entry drives a full page at /projects/[id]/pro/<slug>. Slugs must
 // match the hrefs in `getNavCategories` (lib/navCategories.ts) and the icons
 // must exist in `sidebarIcons` (components/sidebar/SidebarIcons.tsx).
-// `tests/studio-registry.test.ts` enforces both.
+// `tests/pro-tools-registry.test.ts` enforces both.
 
-import type { StudioStatus, StudioTool } from './types';
+import type { ProToolStatus, ProTool } from './types';
 
 // Reusable status sets -------------------------------------------------------
 
-const PIPELINE: StudioStatus[] = [
+const PIPELINE: ProToolStatus[] = [
   { value: 'not_started', label: 'Not started', tone: 'neutral' },
   { value: 'in_progress', label: 'In progress', tone: 'info' },
   { value: 'blocked', label: 'Blocked', tone: 'bad' },
   { value: 'done', label: 'Done', tone: 'good' },
 ];
 
-const APPROVAL: StudioStatus[] = [
+const APPROVAL: ProToolStatus[] = [
   { value: 'draft', label: 'Draft', tone: 'neutral' },
   { value: 'submitted', label: 'Submitted', tone: 'info' },
   { value: 'approved', label: 'Approved', tone: 'good' },
   { value: 'rejected', label: 'Rejected', tone: 'bad' },
 ];
 
-const BOOKING: StudioStatus[] = [
+const BOOKING: ProToolStatus[] = [
   { value: 'enquiry', label: 'Enquiry', tone: 'neutral' },
   { value: 'held', label: 'Held', tone: 'warn' },
   { value: 'confirmed', label: 'Confirmed', tone: 'good' },
@@ -45,10 +45,10 @@ const DUE = {
   column: true, align: 'right' as const, hideBelow: 'md' as const,
 };
 
-export const STUDIO_TOOLS: StudioTool[] = [
+export const PRO_TOOLS: ProTool[] = [
   // ── Money ────────────────────────────────────────────────────────────────
   {
-    slug: 'portfolio', icon: 'portfolio', flag: 'studio_portfolio',
+    slug: 'portfolio', icon: 'portfolio', flag: 'pro_portfolio',
     label: 'Portfolio', tagline: 'Every title on the slate, in one view.',
     group: 'Money', noun: 'title', titleLabel: 'Title', titlePlaceholder: 'Project or title name',
     statuses: [
@@ -78,7 +78,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     starters: ['Untitled Feature', 'Series — Season 1'],
   },
   {
-    slug: 'accounting', icon: 'accounting', flag: 'studio_accounting',
+    slug: 'accounting', icon: 'accounting', flag: 'pro_accounting',
     label: 'Production Accounting', tagline: 'Purchase orders, invoices and cost report lines.',
     group: 'Money', noun: 'cost line', titleLabel: 'Description', titlePlaceholder: 'What was purchased',
     statuses: [
@@ -88,6 +88,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'disputed', label: 'Disputed', tone: 'bad' },
     ],
     groupBy: 'account',
+    related: ['vendors', 'departments', 'equipment'],
     fields: [
       { key: 'account', label: 'Account', type: 'select', column: true,
         options: ['Above the Line', 'Production', 'Post-Production', 'Other', 'Contingency'] },
@@ -106,7 +107,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'greenlight', icon: 'greenlight', flag: 'studio_greenlight',
+    slug: 'greenlight', icon: 'greenlight', flag: 'pro_greenlight',
     label: 'Greenlight & Financing', tagline: 'Track the money from first conversation to signed.',
     group: 'Money', noun: 'source', titleLabel: 'Source', titlePlaceholder: 'Financier, fund or broadcaster',
     statuses: [
@@ -117,6 +118,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'passed', label: 'Passed', tone: 'bad' },
     ],
     groupBy: 'source_type',
+    related: ['accounting', 'tax-incentives', 'distribution'],
     fields: [
       { key: 'source_type', label: 'Type', type: 'select', column: true,
         options: ['Equity', 'Soft money', 'Pre-sale', 'Gap', 'Grant', 'Broadcaster', 'Deferral'] },
@@ -133,7 +135,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'tax-incentives', icon: 'tax-incentives', flag: 'studio_tax_incentives',
+    slug: 'tax-incentives', icon: 'tax-incentives', flag: 'pro_tax_incentives',
     label: 'Tax Incentives', tagline: 'Rebates, credits and the paperwork each one needs.',
     group: 'Money', noun: 'incentive', titleLabel: 'Incentive', titlePlaceholder: 'e.g. Norwegian incentive scheme',
     statuses: APPROVAL,
@@ -153,7 +155,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'crowdfunding', icon: 'crowdfunding', flag: 'studio_crowdfunding',
+    slug: 'crowdfunding', icon: 'crowdfunding', flag: 'pro_crowdfunding',
     label: 'Crowdfunding', tagline: 'Tiers, backers and the rewards you owe them.',
     group: 'Money', noun: 'tier', titleLabel: 'Reward tier', titlePlaceholder: 'e.g. Executive Producer credit',
     statuses: [
@@ -178,7 +180,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'box-office', icon: 'box-office', flag: 'studio_box_office',
+    slug: 'box-office', icon: 'box-office', flag: 'pro_box_office',
     label: 'Box Office & Revenue', tagline: 'Revenue by window, territory and platform.',
     group: 'Money', noun: 'revenue line', titleLabel: 'Line', titlePlaceholder: 'e.g. UK theatrical — week 1',
     statuses: [
@@ -206,7 +208,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
 
   // ── Legal & Rights ───────────────────────────────────────────────────────
   {
-    slug: 'rights', icon: 'rights', flag: 'studio_rights',
+    slug: 'rights', icon: 'rights', flag: 'pro_rights',
     label: 'Rights & Clearances', tagline: 'Nothing reaches picture lock uncleared.',
     group: 'Legal & Rights', noun: 'clearance', titleLabel: 'Item', titlePlaceholder: 'What needs clearing',
     statuses: [
@@ -217,11 +219,13 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'denied', label: 'Denied', tone: 'bad' },
     ],
     groupBy: 'rights_type',
+    related: ['music-sound', 'legal', 'post-production'],
     fields: [
       { key: 'rights_type', label: 'Type', type: 'select', column: true,
         options: ['Music', 'Footage', 'Artwork', 'Trademark', 'Location', 'Likeness', 'Underlying work', 'Other'] },
       { key: 'rights_holder', label: 'Rights holder', type: 'text', column: true, hideBelow: 'md' },
-      { key: 'scene', label: 'Scene / timecode', type: 'text', column: true, hideBelow: 'lg' },
+      { key: 'scene', label: 'Scene', type: 'ref', refSource: 'scenes', column: true, hideBelow: 'lg' },
+      { key: 'timecode', label: 'Timecode', type: 'text', placeholder: '00:14:22' },
       { key: 'territory', label: 'Territory', type: 'text', placeholder: 'World' },
       { key: 'term', label: 'Term', type: 'text', placeholder: 'In perpetuity' },
       { key: 'fee', label: 'Fee', type: 'currency', column: true, align: 'right' },
@@ -236,7 +240,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     starters: ['Needle drop — opening titles', 'Archive footage — act two'],
   },
   {
-    slug: 'legal', icon: 'legal', flag: 'studio_legal',
+    slug: 'legal', icon: 'legal', flag: 'pro_legal',
     label: 'Legal & Contracts', tagline: 'Every agreement, who signed and what is outstanding.',
     group: 'Legal & Rights', noun: 'contract', titleLabel: 'Agreement', titlePlaceholder: 'e.g. Director’s agreement',
     statuses: [
@@ -247,6 +251,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'terminated', label: 'Terminated', tone: 'bad' },
     ],
     groupBy: 'contract_type',
+    related: ['rights', 'talent', 'vendors'],
     fields: [
       { key: 'contract_type', label: 'Type', type: 'select', column: true,
         options: ['Talent', 'Crew', 'Option', 'Writer', 'Location', 'Vendor', 'Distribution', 'NDA', 'Other'] },
@@ -265,7 +270,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'compliance', icon: 'compliance', flag: 'studio_compliance',
+    slug: 'compliance', icon: 'compliance', flag: 'pro_compliance',
     label: 'Insurance & Compliance', tagline: 'Certificates, policies and risk sign-off.',
     group: 'Legal & Rights', noun: 'policy', titleLabel: 'Policy / requirement',
     titlePlaceholder: 'e.g. General liability',
@@ -294,7 +299,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'broadcast-compliance', icon: 'broadcast-compliance', flag: 'studio_broadcast_compliance',
+    slug: 'broadcast-compliance', icon: 'broadcast-compliance', flag: 'pro_broadcast_compliance',
     label: 'Broadcast Compliance', tagline: 'Delivery specs, classification and editorial notes.',
     group: 'Legal & Rights', noun: 'check', titleLabel: 'Requirement', titlePlaceholder: 'e.g. Loudness — EBU R128',
     statuses: PIPELINE,
@@ -315,7 +320,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'sustainability', icon: 'sustainability', flag: 'studio_sustainability',
+    slug: 'sustainability', icon: 'sustainability', flag: 'pro_sustainability',
     label: 'Sustainability', tagline: 'Carbon actions and the numbers behind the green stamp.',
     group: 'Legal & Rights', noun: 'action', titleLabel: 'Action', titlePlaceholder: 'e.g. Replace diesel gennies',
     statuses: PIPELINE,
@@ -337,7 +342,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
 
   // ── People ───────────────────────────────────────────────────────────────
   {
-    slug: 'crew-portal', icon: 'crew-portal', flag: 'studio_crew_portal',
+    slug: 'crew-portal', icon: 'crew-portal', flag: 'pro_crew_portal',
     label: 'Crew Portal', tagline: 'Onboarding, paperwork and start dates per crew member.',
     group: 'People', noun: 'crew member', titleLabel: 'Name', titlePlaceholder: 'Crew member name',
     statuses: [
@@ -347,6 +352,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'wrapped', label: 'Wrapped', tone: 'accent' },
     ],
     groupBy: 'department',
+    related: ['departments', 'travel', 'catering'],
     fields: [
       { key: 'department', label: 'Department', type: 'select', column: true,
         options: ['Production', 'Camera', 'Grip & Electric', 'Art', 'Costume', 'Hair & Make-up', 'Sound', 'Post', 'VFX', 'Locations', 'Transport', 'Other'] },
@@ -365,7 +371,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'departments', icon: 'departments', flag: 'studio_departments',
+    slug: 'departments', icon: 'departments', flag: 'pro_departments',
     label: 'Departments', tagline: 'Heads of department, budgets and headcount.',
     group: 'People', noun: 'department', titleLabel: 'Department', titlePlaceholder: 'e.g. Camera',
     statuses: [
@@ -390,7 +396,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'talent', icon: 'talent', flag: 'studio_talent_mgmt',
+    slug: 'talent', icon: 'talent', flag: 'pro_talent_mgmt',
     label: 'Talent Management', tagline: 'Offers, agents, deals and availability.',
     group: 'People', noun: 'talent', titleLabel: 'Performer', titlePlaceholder: 'Performer name',
     statuses: [
@@ -400,8 +406,9 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'attached', label: 'Attached', tone: 'good' },
       { value: 'passed', label: 'Passed', tone: 'bad' },
     ],
+    related: ['legal', 'travel', 'extras'],
     fields: [
-      { key: 'role', label: 'Role', type: 'text', column: true },
+      { key: 'role', label: 'Character', type: 'ref', refSource: 'characters', column: true },
       { key: 'agency', label: 'Agency', type: 'text', column: true, hideBelow: 'md' },
       { key: 'agent', label: 'Agent', type: 'text', hideBelow: 'lg' },
       { key: 'quote', label: 'Quote', type: 'currency', column: true, align: 'right' },
@@ -417,12 +424,12 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'extras', icon: 'extras', flag: 'studio_extras',
+    slug: 'extras', icon: 'extras', flag: 'pro_extras',
     label: 'Extras & Background', tagline: 'Background casting calls, sizes and call times.',
     group: 'People', noun: 'call', titleLabel: 'Background call', titlePlaceholder: 'e.g. Café patrons — day 4',
     statuses: BOOKING,
     fields: [
-      { key: 'shoot_day', label: 'Shoot day', type: 'text', column: true },
+      { key: 'shoot_day', label: 'Shoot day', type: 'ref', refSource: 'shoot_days', column: true },
       { key: 'count', label: 'Number required', type: 'number', column: true, align: 'right' },
       { key: 'call_time', label: 'Call time', type: 'text', column: true, align: 'right', hideBelow: 'md' },
       { key: 'wardrobe', label: 'Wardrobe note', type: 'text', hideBelow: 'lg' },
@@ -438,11 +445,12 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'travel', icon: 'travel', flag: 'studio_travel',
+    slug: 'travel', icon: 'travel', flag: 'pro_travel',
     label: 'Travel & Accommodation', tagline: 'Flights, hotels and ground for cast and crew.',
     group: 'People', noun: 'booking', titleLabel: 'Traveller', titlePlaceholder: 'Who is travelling',
     statuses: BOOKING,
     groupBy: 'booking_type',
+    related: ['crew-portal', 'talent', 'catering'],
     fields: [
       { key: 'booking_type', label: 'Type', type: 'select', column: true,
         options: ['Flight', 'Train', 'Hotel', 'Car hire', 'Ground transport', 'Per diem'] },
@@ -460,12 +468,12 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'catering', icon: 'catering', flag: 'studio_catering',
+    slug: 'catering', icon: 'catering', flag: 'pro_catering',
     label: 'Catering & Craft', tagline: 'Meals, headcounts and dietary requirements per day.',
     group: 'People', noun: 'meal', titleLabel: 'Service', titlePlaceholder: 'e.g. Day 3 — lunch',
     statuses: BOOKING,
     fields: [
-      { key: 'shoot_day', label: 'Shoot day', type: 'text', column: true },
+      { key: 'shoot_day', label: 'Shoot day', type: 'ref', refSource: 'shoot_days', column: true },
       { key: 'meal', label: 'Meal', type: 'select', column: true,
         options: ['Breakfast', 'Lunch', 'Dinner', 'Craft', 'Second meal'] },
       { key: 'headcount', label: 'Headcount', type: 'number', column: true, align: 'right' },
@@ -484,7 +492,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
 
   // ── Production ───────────────────────────────────────────────────────────
   {
-    slug: 'locations', icon: 'scouting', flag: 'studio_location_scouting',
+    slug: 'locations', icon: 'scouting', flag: 'pro_location_scouting',
     label: 'Location Scouting', tagline: 'Recces, permits and what each place costs.',
     group: 'Production', noun: 'location', titleLabel: 'Location', titlePlaceholder: 'Place name',
     statuses: [
@@ -494,6 +502,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'locked', label: 'Locked', tone: 'good' },
       { value: 'rejected', label: 'Rejected', tone: 'bad' },
     ],
+    related: ['safety', 'travel', 'vendors'],
     fields: [
       { key: 'scenes', label: 'Scenes', type: 'text', column: true, placeholder: '12, 14, 30' },
       { key: 'address', label: 'Address', type: 'textarea' },
@@ -512,7 +521,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'vendors', icon: 'vendors', flag: 'studio_vendor_mgmt',
+    slug: 'vendors', icon: 'vendors', flag: 'pro_vendor_mgmt',
     label: 'Vendor Management', tagline: 'Suppliers, contacts, terms and spend.',
     group: 'Production', noun: 'vendor', titleLabel: 'Vendor', titlePlaceholder: 'Company name',
     statuses: [
@@ -539,7 +548,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'equipment', icon: 'equipment', flag: 'studio_equipment',
+    slug: 'equipment', icon: 'equipment', flag: 'pro_equipment',
     label: 'Equipment Rentals', tagline: 'Kit out, kit back, and what it costs per day.',
     group: 'Production', noun: 'rental', titleLabel: 'Item', titlePlaceholder: 'e.g. ARRI Alexa 35 body',
     statuses: [
@@ -550,6 +559,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'damaged', label: 'Damaged', tone: 'bad' },
     ],
     groupBy: 'category',
+    related: ['vendors', 'accounting', 'departments'],
     fields: [
       { key: 'category', label: 'Category', type: 'select', column: true,
         options: ['Camera', 'Lenses', 'Lighting', 'Grip', 'Sound', 'Power', 'Data', 'Other'] },
@@ -569,7 +579,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'safety', icon: 'stunts', flag: 'studio_stunts_safety',
+    slug: 'safety', icon: 'stunts', flag: 'pro_stunts_safety',
     label: 'Stunts & Safety', tagline: 'Risk assessments, stunt breakdowns and sign-off.',
     group: 'Production', noun: 'assessment', titleLabel: 'Activity', titlePlaceholder: 'e.g. Car chase — scene 44',
     statuses: [
@@ -579,13 +589,14 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'signed_off', label: 'Signed off', tone: 'good' },
     ],
     groupBy: 'risk_level',
+    related: ['locations', 'crew-portal', 'compliance'],
     fields: [
       { key: 'risk_level', label: 'Risk', type: 'select', column: true,
         options: ['Low', 'Medium', 'High', 'Extreme'] },
       { key: 'hazard', label: 'Hazard', type: 'textarea', placeholder: 'What could go wrong' },
       { key: 'mitigation', label: 'Mitigation', type: 'textarea', placeholder: 'Controls in place' },
       { key: 'coordinator', label: 'Coordinator', type: 'text', column: true, hideBelow: 'md' },
-      { key: 'scene', label: 'Scene', type: 'text', column: true, hideBelow: 'lg' },
+      { key: 'scene', label: 'Scene', type: 'ref', refSource: 'scenes', column: true, hideBelow: 'lg' },
       { key: 'medic_required', label: 'Medic on set', type: 'checkbox' },
       DUE, NOTES,
     ],
@@ -598,7 +609,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     starters: ['Working at height', 'Vehicle work', 'Firearms / armoury'],
   },
   {
-    slug: 'script-supervising', icon: 'script-supervising', flag: 'studio_script_supervising',
+    slug: 'script-supervising', icon: 'script-supervising', flag: 'pro_script_supervising',
     label: 'Script Supervising', tagline: 'Continuity notes, takes and coverage per scene.',
     group: 'Production', noun: 'note', titleLabel: 'Scene / slate', titlePlaceholder: 'e.g. 24A / take 3',
     statuses: [
@@ -608,7 +619,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'reshoot', label: 'Reshoot', tone: 'bad' },
     ],
     fields: [
-      { key: 'shoot_day', label: 'Shoot day', type: 'text', column: true },
+      { key: 'shoot_day', label: 'Shoot day', type: 'ref', refSource: 'shoot_days', column: true },
       { key: 'takes', label: 'Takes', type: 'number', column: true, align: 'right' },
       { key: 'printed', label: 'Circled takes', type: 'text', column: true, align: 'right', hideBelow: 'md' },
       { key: 'screen_time', label: 'Screen time', type: 'text', hideBelow: 'lg', placeholder: '1:20' },
@@ -625,11 +636,12 @@ export const STUDIO_TOOLS: StudioTool[] = [
 
   // ── Post & Delivery ──────────────────────────────────────────────────────
   {
-    slug: 'post-production', icon: 'post-production', flag: 'studio_post_production',
+    slug: 'post-production', icon: 'post-production', flag: 'pro_post_production',
     label: 'Post-Production', tagline: 'The post schedule from ingest to deliverable.',
     group: 'Post & Delivery', noun: 'task', titleLabel: 'Task', titlePlaceholder: 'e.g. Picture lock',
     statuses: PIPELINE,
     groupBy: 'stage',
+    related: ['vfx-tracking', 'music-sound', 'archival'],
     fields: [
       { key: 'stage', label: 'Stage', type: 'select', column: true,
         options: ['Ingest', 'Assembly', 'Offline', 'Online', 'Colour', 'Sound', 'Mix', 'Deliverables'] },
@@ -648,7 +660,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'vfx-tracking', icon: 'vfx-tracking', flag: 'studio_vfx_tracking',
+    slug: 'vfx-tracking', icon: 'vfx-tracking', flag: 'pro_vfx_tracking',
     label: 'VFX Tracking', tagline: 'Shot-level VFX status, vendor and version.',
     group: 'Post & Delivery', noun: 'shot', titleLabel: 'Shot ID', titlePlaceholder: 'e.g. SEQ010_0120',
     statuses: [
@@ -660,11 +672,12 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'omitted', label: 'Omitted', tone: 'bad' },
     ],
     groupBy: 'vfx_type',
+    related: ['post-production', 'script-supervising', 'accounting'],
     fields: [
       { key: 'vfx_type', label: 'Type', type: 'select', column: true,
         options: ['Clean-up', 'Comp', 'CG', 'Matte painting', 'Set extension', 'Simulation', 'Screen replacement', 'Other'] },
       { key: 'vendor', label: 'Vendor', type: 'text', column: true, hideBelow: 'md' },
-      { key: 'scene', label: 'Scene', type: 'text', column: true, hideBelow: 'lg' },
+      { key: 'scene', label: 'Scene', type: 'ref', refSource: 'scenes', column: true, hideBelow: 'lg' },
       { key: 'version', label: 'Version', type: 'text', column: true, align: 'right', hideBelow: 'lg', placeholder: 'v004' },
       { key: 'frames', label: 'Frames', type: 'number', align: 'right' },
       { key: 'bid_cost', label: 'Bid', type: 'currency', column: true, align: 'right' },
@@ -678,7 +691,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'music-sound', icon: 'music-sound', flag: 'studio_music_sound',
+    slug: 'music-sound', icon: 'music-sound', flag: 'pro_music_sound',
     label: 'Music & Sound', tagline: 'Cue sheet, licences and the sound deliverables.',
     group: 'Post & Delivery', noun: 'cue', titleLabel: 'Cue / track', titlePlaceholder: 'e.g. Main title theme',
     statuses: [
@@ -688,6 +701,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'delivered', label: 'Delivered', tone: 'good' },
     ],
     groupBy: 'cue_type',
+    related: ['rights', 'post-production', 'legal'],
     fields: [
       { key: 'cue_type', label: 'Type', type: 'select', column: true,
         options: ['Score', 'Source', 'Needle drop', 'Library', 'SFX', 'Foley', 'ADR'] },
@@ -706,7 +720,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'multilang', icon: 'multilang', flag: 'studio_multilang',
+    slug: 'multilang', icon: 'multilang', flag: 'pro_multilang',
     label: 'Localisation', tagline: 'Subtitles, dubs and territory language deliverables.',
     group: 'Post & Delivery', noun: 'version', titleLabel: 'Language', titlePlaceholder: 'e.g. Norwegian subtitles',
     statuses: PIPELINE,
@@ -727,7 +741,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'distribution', icon: 'distribution', flag: 'studio_distribution',
+    slug: 'distribution', icon: 'distribution', flag: 'pro_distribution',
     label: 'Distribution Pipeline', tagline: 'Sales agents, platforms and delivery windows.',
     group: 'Post & Delivery', noun: 'deal', titleLabel: 'Partner', titlePlaceholder: 'Distributor or platform',
     statuses: [
@@ -739,6 +753,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'passed', label: 'Passed', tone: 'bad' },
     ],
     groupBy: 'channel',
+    related: ['festival', 'multilang', 'box-office'],
     fields: [
       { key: 'channel', label: 'Channel', type: 'select', column: true,
         options: ['Theatrical', 'SVOD', 'AVOD', 'TVOD', 'Broadcast', 'Educational', 'Festival', 'Sales agent'] },
@@ -756,7 +771,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'archival', icon: 'archival', flag: 'studio_archival',
+    slug: 'archival', icon: 'archival', flag: 'pro_archival',
     label: 'Archival', tagline: 'Masters, LTO sets and where every element lives.',
     group: 'Post & Delivery', noun: 'asset', titleLabel: 'Asset', titlePlaceholder: 'e.g. Graded master ProRes 4444',
     statuses: [
@@ -766,6 +781,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'missing', label: 'Missing', tone: 'bad' },
     ],
     groupBy: 'asset_type',
+    related: ['wrap', 'post-production', 'rights'],
     fields: [
       { key: 'asset_type', label: 'Type', type: 'select', column: true,
         options: ['Camera original', 'Master', 'Audio stems', 'Project files', 'VFX elements', 'Documents', 'Stills'] },
@@ -784,11 +800,12 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'wrap', icon: 'wrap', flag: 'studio_wrap',
+    slug: 'wrap', icon: 'wrap', flag: 'pro_wrap',
     label: 'Wrap & Completion', tagline: 'The closing checklist — returns, reports and final payments.',
     group: 'Post & Delivery', noun: 'item', titleLabel: 'Wrap item', titlePlaceholder: 'e.g. Return camera package',
     statuses: PIPELINE,
     groupBy: 'area',
+    related: ['archival', 'accounting', 'equipment'],
     fields: [
       { key: 'area', label: 'Area', type: 'select', column: true,
         options: ['Equipment', 'Locations', 'Accounts', 'Legal', 'Crew', 'Archive', 'Deliverables'] },
@@ -807,7 +824,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
 
   // ── Audience ─────────────────────────────────────────────────────────────
   {
-    slug: 'festival', icon: 'festival', flag: 'studio_festival',
+    slug: 'festival', icon: 'festival', flag: 'pro_festival',
     label: 'Festival Strategy', tagline: 'Deadlines, fees and where the film has been accepted.',
     group: 'Audience', noun: 'submission', titleLabel: 'Festival', titlePlaceholder: 'Festival name',
     statuses: [
@@ -818,6 +835,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { value: 'screened', label: 'Screened', tone: 'accent' },
     ],
     groupBy: 'tier',
+    related: ['distribution', 'marketing', 'multilang'],
     fields: [
       { key: 'tier', label: 'Tier', type: 'select', column: true,
         options: ['A-list', 'Major', 'Regional', 'Genre', 'Student', 'Online'] },
@@ -836,11 +854,12 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'marketing', icon: 'marketing', flag: 'studio_marketing',
+    slug: 'marketing', icon: 'marketing', flag: 'pro_marketing',
     label: 'Marketing & PR', tagline: 'Campaign beats, assets and press coverage.',
     group: 'Audience', noun: 'activity', titleLabel: 'Activity', titlePlaceholder: 'e.g. Teaser trailer drop',
     statuses: PIPELINE,
     groupBy: 'channel',
+    related: ['festival', 'newsletter', 'distribution'],
     fields: [
       { key: 'channel', label: 'Channel', type: 'select', column: true,
         options: ['Trailer', 'Social', 'Press', 'Poster', 'Stills', 'EPK', 'Screening', 'Paid media', 'Partnership'] },
@@ -858,7 +877,7 @@ export const STUDIO_TOOLS: StudioTool[] = [
     ],
   },
   {
-    slug: 'newsletter', icon: 'newsletter', flag: 'studio_newsletter',
+    slug: 'newsletter', icon: 'newsletter', flag: 'pro_newsletter',
     label: 'Production Newsletter', tagline: 'Issues for cast, crew, investors and backers.',
     group: 'Audience', noun: 'issue', titleLabel: 'Issue', titlePlaceholder: 'e.g. Week 3 — production update',
     statuses: [
@@ -883,21 +902,164 @@ export const STUDIO_TOOLS: StudioTool[] = [
       { label: 'Recipients reached', kind: 'sum', field: 'recipients' },
     ],
   },
+  {
+    slug: 'dailies', icon: 'dailies', flag: 'pro_dailies',
+    label: 'Dailies', tagline: 'What was shot, who has seen it, and what it needs.',
+    group: 'Post & Delivery', noun: 'roll', titleLabel: 'Roll / card', titlePlaceholder: 'e.g. A007_0421_C012',
+    related: ['script-supervising', 'post-production', 'archival'],
+    statuses: [
+      { value: 'ingested', label: 'Ingested', tone: 'neutral' },
+      { value: 'synced', label: 'Synced', tone: 'info' },
+      { value: 'circulated', label: 'Circulated', tone: 'warn' },
+      { value: 'approved', label: 'Approved', tone: 'good' },
+      { value: 'flagged', label: 'Flagged', tone: 'bad' },
+    ],
+    fields: [
+      { key: 'shoot_day', label: 'Shoot day', type: 'ref', refSource: 'shoot_days', column: true },
+      { key: 'camera', label: 'Camera', type: 'text', column: true, hideBelow: 'md' },
+      { key: 'clips', label: 'Clips', type: 'number', column: true, align: 'right' },
+      { key: 'duration', label: 'Runtime', type: 'text', column: true, align: 'right', hideBelow: 'lg' },
+      { key: 'size_gb', label: 'Size (GB)', type: 'number', align: 'right' },
+      { key: 'backed_up', label: 'Backed up (two copies)', type: 'checkbox' },
+      NOTES,
+    ],
+    stats: [
+      { label: 'Rolls', kind: 'count' },
+      { label: 'Clips', kind: 'sum', field: 'clips' },
+      { label: 'Approved', kind: 'status', status: 'approved' },
+      { label: 'Flagged', kind: 'status', status: 'flagged' },
+    ],
+  },
+  {
+    slug: 'deliverables', icon: 'deliverables', flag: 'pro_deliverables',
+    label: 'Delivery Checklist', tagline: 'Everything the distributor asks for, ticked off.',
+    group: 'Post & Delivery', noun: 'deliverable', titleLabel: 'Deliverable', titlePlaceholder: 'e.g. Textless master',
+    related: ['distribution', 'multilang', 'archival'],
+    statuses: PIPELINE,
+    groupBy: 'category',
+    fields: [
+      { key: 'category', label: 'Category', type: 'select', column: true,
+        options: ['Picture', 'Audio', 'Text', 'Artwork', 'Legal', 'Metadata', 'Publicity'] },
+      { key: 'recipient', label: 'Recipient', type: 'text', column: true, hideBelow: 'md' },
+      { key: 'spec', label: 'Spec', type: 'text', hideBelow: 'lg', placeholder: 'ProRes 4444 XQ, 24fps' },
+      OWNER, DUE,
+      { key: 'delivered_on', label: 'Delivered', type: 'date', column: true, align: 'right', hideBelow: 'lg' },
+      NOTES,
+    ],
+    stats: [
+      { label: 'Deliverables', kind: 'count' },
+      { label: 'Delivered', kind: 'status', status: 'done' },
+      { label: 'Blocked', kind: 'status', status: 'blocked' },
+      { label: 'Recipients', kind: 'distinct', field: 'recipient' },
+    ],
+    starters: ['Textless master', 'M&E audio stems', 'Closed captions', 'Key art'],
+  },
+  {
+    slug: 'unions', icon: 'unions', flag: 'pro_unions',
+    label: 'Unions & Guilds', tagline: 'Signatory status, minimums and the filings each one wants.',
+    group: 'People', noun: 'agreement', titleLabel: 'Union / guild', titlePlaceholder: 'e.g. Norsk Skuespillerforbund',
+    related: ['crew-portal', 'talent', 'legal'],
+    statuses: APPROVAL,
+    fields: [
+      { key: 'agreement', label: 'Agreement', type: 'text', column: true, placeholder: 'Low budget theatrical' },
+      { key: 'covered', label: 'Covered roles', type: 'text', column: true, hideBelow: 'md' },
+      { key: 'minimum', label: 'Daily minimum', type: 'currency', column: true, align: 'right' },
+      { key: 'fringes', label: 'Fringes', type: 'percent', column: true, align: 'right', hideBelow: 'lg' },
+      { key: 'rep', label: 'Representative', type: 'text', hideBelow: 'lg' },
+      DUE, NOTES,
+    ],
+    stats: [
+      { label: 'Agreements', kind: 'count' },
+      { label: 'Approved', kind: 'status', status: 'approved' },
+      { label: 'Outstanding', kind: 'status', status: 'submitted' },
+      { label: 'Avg minimum', kind: 'sum', field: 'minimum', format: 'currency' },
+    ],
+  },
+  {
+    slug: 'residuals', icon: 'residuals', flag: 'pro_residuals',
+    label: 'Residuals & Royalties', tagline: 'Who is owed what, once the film starts earning.',
+    group: 'Money', noun: 'entitlement', titleLabel: 'Participant', titlePlaceholder: 'Name or company',
+    related: ['box-office', 'greenlight', 'legal'],
+    statuses: [
+      { value: 'accruing', label: 'Accruing', tone: 'neutral' },
+      { value: 'due', label: 'Due', tone: 'warn' },
+      { value: 'paid', label: 'Paid', tone: 'good' },
+      { value: 'disputed', label: 'Disputed', tone: 'bad' },
+    ],
+    groupBy: 'basis',
+    fields: [
+      { key: 'basis', label: 'Basis', type: 'select', column: true,
+        options: ['Net profit', 'Gross', 'Adjusted gross', 'Residual', 'Royalty', 'Deferral'] },
+      { key: 'role', label: 'Role', type: 'text', column: true, hideBelow: 'md' },
+      { key: 'share', label: 'Share', type: 'percent', column: true, align: 'right' },
+      { key: 'accrued', label: 'Accrued', type: 'currency', column: true, align: 'right' },
+      { key: 'paid_to_date', label: 'Paid to date', type: 'currency', column: true, align: 'right', hideBelow: 'lg' },
+      NOTES,
+    ],
+    stats: [
+      { label: 'Participants', kind: 'count' },
+      { label: 'Accrued', kind: 'sum', field: 'accrued', format: 'currency' },
+      { label: 'Paid', kind: 'sum', field: 'paid_to_date', format: 'currency' },
+      { label: 'Due now', kind: 'status', status: 'due' },
+    ],
+  },
+  {
+    slug: 'screenings', icon: 'screenings', flag: 'pro_screenings',
+    label: 'Test Screenings', tagline: 'Audience reaction, scores and what the cut changed.',
+    group: 'Audience', noun: 'screening', titleLabel: 'Screening', titlePlaceholder: 'e.g. Cut 3 — friends & family',
+    related: ['marketing', 'festival', 'post-production'],
+    statuses: [
+      { value: 'planned', label: 'Planned', tone: 'neutral' },
+      { value: 'scheduled', label: 'Scheduled', tone: 'info' },
+      { value: 'held', label: 'Held', tone: 'good' },
+      { value: 'cancelled', label: 'Cancelled', tone: 'bad' },
+    ],
+    fields: [
+      { key: 'cut', label: 'Cut', type: 'text', column: true, placeholder: 'Assembly / rough / fine' },
+      { key: 'venue', label: 'Venue', type: 'text', column: true, hideBelow: 'md' },
+      { key: 'screening_date', label: 'Date', type: 'date', column: true, align: 'right' },
+      { key: 'attendance', label: 'Attendance', type: 'number', column: true, align: 'right', hideBelow: 'lg' },
+      { key: 'score', label: 'Score', type: 'percent', column: true, align: 'right' },
+      { key: 'takeaways', label: 'Takeaways', type: 'textarea', placeholder: 'What the room told you' },
+      NOTES,
+    ],
+    stats: [
+      { label: 'Screenings', kind: 'count' },
+      { label: 'Held', kind: 'status', status: 'held' },
+      { label: 'Total attendance', kind: 'sum', field: 'attendance' },
+      { label: 'Venues', kind: 'distinct', field: 'venue' },
+    ],
+  },
 ];
 
 /** Lookup by URL slug. */
-export const STUDIO_TOOLS_BY_SLUG: Record<string, StudioTool> = Object.fromEntries(
-  STUDIO_TOOLS.map((t) => [t.slug, t])
+export const PRO_TOOLS_BY_SLUG: Record<string, ProTool> = Object.fromEntries(
+  PRO_TOOLS.map((t) => [t.slug, t])
 );
 
-export function getStudioTool(slug: string): StudioTool | undefined {
-  return STUDIO_TOOLS_BY_SLUG[slug];
+export function getProTool(slug: string): ProTool | undefined {
+  return PRO_TOOLS_BY_SLUG[slug];
+}
+
+/**
+ * Tools to offer as onward links from `tool`. Uses the explicit `related` list
+ * when the useful next step is in another group, otherwise the tool's own
+ * group — so every tool always has somewhere sensible to go.
+ */
+export function relatedTools(tool: ProTool, limit = 3): ProTool[] {
+  const slugs = tool.related?.length
+    ? tool.related
+    : PRO_TOOLS.filter((t) => t.group === tool.group && t.slug !== tool.slug).map((t) => t.slug);
+  return slugs
+    .map((slug) => PRO_TOOLS_BY_SLUG[slug])
+    .filter((t): t is ProTool => Boolean(t) && t.slug !== tool.slug)
+    .slice(0, limit);
 }
 
 /** Tools bucketed by their `group`, in registry order. */
-export function studioToolsByGroup(): { group: string; tools: StudioTool[] }[] {
-  const groups: { group: string; tools: StudioTool[] }[] = [];
-  for (const tool of STUDIO_TOOLS) {
+export function proToolsByGroup(): { group: string; tools: ProTool[] }[] {
+  const groups: { group: string; tools: ProTool[] }[] = [];
+  for (const tool of PRO_TOOLS) {
     const existing = groups.find((g) => g.group === tool.group);
     if (existing) existing.tools.push(tool);
     else groups.push({ group: tool.group, tools: [tool] });

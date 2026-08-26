@@ -558,9 +558,9 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
       )}>
         <div className="p-3 border-b border-surface-800">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-surface-500 uppercase tracking-wider flex items-center gap-2">
+            <span className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] flex items-center gap-2">
               Documents
-              <span className="flex items-center gap-1 text-[9px] text-green-500 normal-case tracking-normal font-normal">
+              <span className="flex items-center gap-1 text-[11px] text-green-500 normal-case tracking-normal font-normal">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                 Live
               </span>
@@ -578,7 +578,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
           </div>
 
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-1 text-[10px] text-surface-500 mb-2 flex-wrap">
+          <div className="flex items-center gap-1 text-[11px] text-surface-500 mb-2 flex-wrap">
             <button onClick={() => setCurrentFolder(null)} className="hover:text-white transition-colors">
               Root
             </button>
@@ -625,13 +625,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   currentDoc?.id === doc.id ? 'bg-brand-600/10 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
                 )}
               >
-                <span className="shrink-0 text-[9px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[doc.doc_type]}</span>
+                <span className="shrink-0 text-[11px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[doc.doc_type]}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
-                    {doc.is_pinned && <span className="text-[8px]">PIN</span>}
+                    {doc.is_pinned && <span className="text-[11px]">PIN</span>}
                     <span className="truncate">{doc.title}</span>
                   </div>
-                  <span className="text-[10px] text-surface-600">
+                  <span className="text-[11px] text-surface-600">
                     {doc.word_count} words &middot; {new Date(doc.updated_at).toLocaleDateString()}
                   </span>
                 </div>
@@ -662,11 +662,11 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
           <div className="grid grid-cols-2 gap-2 text-center">
             <div>
               <p className="text-lg font-bold text-white">{documents.length}</p>
-              <p className="text-[10px] text-surface-500">Documents</p>
+              <p className="text-[11px] text-surface-500">Documents</p>
             </div>
             <div>
               <p className="text-lg font-bold text-white">{folders.length}</p>
-              <p className="text-[10px] text-surface-500">Folders</p>
+              <p className="text-[11px] text-surface-500">Folders</p>
             </div>
           </div>
         </div>
@@ -698,23 +698,23 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   disabled={!canEdit}
                 />
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] text-surface-500">{DOCUMENT_TYPE_LABELS[currentDoc.doc_type]}</span>
-                  <span className="text-[10px] text-surface-600">&middot;</span>
-                  <span className="text-[10px] text-surface-500">
+                  <span className="text-[11px] text-surface-500">{DOCUMENT_TYPE_LABELS[currentDoc.doc_type]}</span>
+                  <span className="text-[11px] text-surface-600">&middot;</span>
+                  <span className="text-[11px] text-surface-500">
                     {(currentDoc.content || '').split(/\s+/).filter(Boolean).length} words
                   </span>
                   {saving ? (
-                    <span className="flex items-center gap-1 text-[10px] text-surface-500">
+                    <span className="flex items-center gap-1 text-[11px] text-surface-500">
                       <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" /> Saving
                     </span>
                   ) : lastSaved && (
-                    <span className="flex items-center gap-1 text-[10px] text-surface-600">
+                    <span className="flex items-center gap-1 text-[11px] text-surface-600">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Saved
                     </span>
                   )}
                   {/* Remote collaborator indicators */}
                   {remoteEditors.filter((e) => e.docId === currentDoc?.id).map((editor) => (
-                    <span key={editor.userId} className="flex items-center gap-1 text-[10px] text-brand-500 animate-pulse">
+                    <span key={editor.userId} className="flex items-center gap-1 text-[11px] text-brand-500 animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
                       {editor.name} editing
                     </span>
@@ -751,7 +751,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                   </svg>
                   {docVersions.length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[11px] font-bold text-white flex items-center justify-center px-0.5">
                       {docVersions.length}
                     </span>
                   )}
@@ -766,7 +766,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
                   {docCommentCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[11px] font-bold text-white flex items-center justify-center px-0.5">
                       {docCommentCount}
                     </span>
                   )}
@@ -833,7 +833,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                   <div className="p-3 border-b border-surface-800 flex items-center justify-between">
                     <span className="text-xs font-semibold text-white">Comments</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-surface-500">{comments.filter(c => !c.is_resolved).length} open</span>
+                      <span className="text-[11px] text-surface-500">{comments.filter(c => !c.is_resolved).length} open</span>
                       <button onClick={() => setShowComments(false)} className="text-surface-500 hover:text-white transition-colors">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
@@ -845,7 +845,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                     <div className="p-3 border-b border-surface-800/60 space-y-2">
                       {selectedText && (
                         <div className="px-2 py-1.5 bg-surface-800/60 rounded-lg border-l-2 border-brand-500/60">
-                          <p className="text-[10px] text-surface-500 mb-0.5">Commenting on:</p>
+                          <p className="text-[11px] text-surface-500 mb-0.5">Commenting on:</p>
                           <p className="text-[11px] text-surface-300 italic line-clamp-2">&ldquo;{selectedText}&rdquo;</p>
                         </div>
                       )}
@@ -875,7 +875,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-surface-600">⌘↵ to post</span>
+                        <span className="text-[11px] text-surface-600">⌘↵ to post</span>
                         <button
                           onClick={handleAddComment}
                           disabled={!commentText.trim() || addingComment}
@@ -904,7 +904,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                         )}>
                           {comment.selected_text && (
                             <div className="mb-2 px-2 py-1 bg-surface-800/40 rounded border-l-2 border-brand-500/40">
-                              <p className="text-[10px] text-surface-400 italic line-clamp-2">&ldquo;{comment.selected_text}&rdquo;</p>
+                              <p className="text-[11px] text-surface-400 italic line-clamp-2">&ldquo;{comment.selected_text}&rdquo;</p>
                             </div>
                           )}
                           <p className="text-xs text-surface-200 leading-relaxed whitespace-pre-wrap">
@@ -916,28 +916,28 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                           </p>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] text-surface-500">
+                              <span className="text-[11px] text-surface-500">
                                 {(comment as any).author?.display_name || (comment as any).author?.email?.split('@')[0] || 'User'}
                               </span>
-                              <span className="text-[10px] text-surface-600">·</span>
-                              <span className="text-[10px] text-surface-600">
+                              <span className="text-[11px] text-surface-600">·</span>
+                              <span className="text-[11px] text-surface-600">
                                 {new Date(comment.created_at).toLocaleDateString()}
                               </span>
                               {comment.is_resolved && (
-                                <span className="text-[10px] text-emerald-500">✓ Resolved</span>
+                                <span className="text-[11px] text-emerald-500">✓ Resolved</span>
                               )}
                             </div>
                             {!comment.is_resolved && canEdit && (
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => handleResolveComment(comment.id)}
-                                  className="text-[10px] text-surface-500 hover:text-emerald-400 transition-colors"
+                                  className="text-[11px] text-surface-500 hover:text-emerald-400 transition-colors"
                                   title="Mark resolved"
                                 >✓</button>
                                 {comment.author_id === user?.id && (
                                   <button
                                     onClick={() => handleDeleteComment(comment.id)}
-                                    className="text-[10px] text-surface-500 hover:text-red-400 transition-colors"
+                                    className="text-[11px] text-surface-500 hover:text-red-400 transition-colors"
                                     title="Delete"
                                   >✕</button>
                                 )}
@@ -1019,7 +1019,7 @@ function NewDocumentModal({ isOpen, onClose, onCreate }: {
                     : 'border-surface-700 text-surface-400 hover:border-surface-600 hover:text-white'
                 )}
               >
-                <span className="text-[10px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[key]}</span>
+                <span className="text-[11px] font-mono font-bold text-surface-400">{DOCUMENT_TYPE_ICONS[key]}</span>
                 <span>{label}</span>
               </button>
             ))}

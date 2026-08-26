@@ -415,7 +415,7 @@ export default function AdminLegalPage() {
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               Back to Admin
             </Link>
-            <h1 className="text-2xl font-black tracking-tight">Legal Blog Management</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Legal Blog Management</h1>
             <p className="text-sm text-surface-400 mt-1">
               Manage policy updates, TOS changes, security advisories and more.
             </p>
@@ -492,7 +492,7 @@ export default function AdminLegalPage() {
                       <Badge variant="warning" size="sm">Draft</Badge>
                     )}
                     {post.notify_users && !post.email_sent && post.published && (
-                      <span className="text-[10px] text-yellow-400/80 bg-yellow-500/10 px-2 py-0.5 rounded">📧 pending</span>
+                      <span className="text-[11px] text-yellow-400/80 bg-yellow-500/10 px-2 py-0.5 rounded">📧 pending</span>
                     )}
                   </div>
                   <h3 className="text-sm font-medium text-white group-hover:text-red-400 transition-colors truncate">
@@ -556,7 +556,7 @@ export default function AdminLegalPage() {
                 <Badge variant={SEVERITY_BADGE[draft.severity]}>{draft.severity}</Badge>
                 <Badge variant="default">{CATEGORY_LABELS[draft.category as LegalCategory] ?? draft.category}</Badge>
               </div>
-              <h2 className="text-2xl font-black text-white">{draft.title || 'Untitled'}</h2>
+              <h2 className="text-2xl font-bold text-white">{draft.title || 'Untitled'}</h2>
               {draft.summary && (
                 <p className="text-surface-300 text-sm leading-relaxed border-l-2 border-red-500/50 pl-4 italic">{draft.summary}</p>
               )}
@@ -649,7 +649,7 @@ export default function AdminLegalPage() {
                   {draft.sections.map((section, idx) => (
                     <div key={idx} className="rounded-lg border border-surface-800 bg-surface-900/30 p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] text-surface-500 font-mono bg-surface-800 px-2 py-0.5 rounded">
+                        <span className="text-[11px] text-surface-500 font-mono bg-surface-800 px-2 py-0.5 rounded">
                           Section {idx + 1}
                         </span>
                         <div className="flex-1" />

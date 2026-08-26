@@ -273,7 +273,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
           </Link>
           <span className="text-white/20">/</span>
           <h1 className="text-sm font-semibold text-white truncate">{session.title}</h1>
-          <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0 ${STATUS_COLOR[session.status]}`}>
+          <span className={`text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-0.5 rounded-full flex-shrink-0 ${STATUS_COLOR[session.status]}`}>
             {session.status}
           </span>
         </div>
@@ -315,7 +315,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
               <h2 className="text-sm font-semibold text-white mb-4">Poll details</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-wider">Title</label>
+                  <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Title</label>
                   <input
                     type="text"
                     value={editTitle}
@@ -324,7 +324,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-wider">
+                  <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">
                     Preface <span className="normal-case text-white/20">(displayed on the intro page)</span>
                   </label>
                   <textarea
@@ -488,7 +488,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
               /* Individual question review */
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs text-white/30 uppercase tracking-wider">
+                  <p className="text-xs text-white/55 uppercase tracking-[0.04em]">
                     Question {reviewStep + 1} of {questions.length}
                   </p>
                   <div className="flex gap-2">
@@ -693,17 +693,17 @@ function QuestionCard({
         <div className="flex-1 min-w-0">
           <p className="text-sm text-white font-medium leading-snug">{question.question_text}</p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="text-[10px] bg-white/8 text-white/40 px-1.5 py-0.5 rounded">
+            <span className="text-[11px] bg-white/8 text-white/40 px-1.5 py-0.5 rounded">
               {QUESTION_TYPES.find((t) => t.value === question.question_type)?.label ?? question.question_type}
             </span>
             {!question.is_required && (
-              <span className="text-[10px] text-white/25">optional</span>
+              <span className="text-[11px] text-white/25">optional</span>
             )}
             {Array.isArray(question.options) && (
-              <span className="text-[10px] text-white/25">{question.options.length} options</span>
+              <span className="text-[11px] text-white/25">{question.options.length} options</span>
             )}
             {question.is_approved && (
-              <span className="text-[10px] text-emerald-400">✓ approved</span>
+              <span className="text-[11px] text-emerald-400">✓ approved</span>
             )}
           </div>
         </div>
@@ -748,7 +748,7 @@ function QuestionForm({
       <h3 className="text-sm font-semibold text-white mb-4">{title}</h3>
       <div className="space-y-4">
         <div>
-          <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-wider">Question</label>
+          <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Question</label>
           <input
             type="text"
             value={qText}
@@ -758,7 +758,7 @@ function QuestionForm({
           />
         </div>
         <div>
-          <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-wider">Type</label>
+          <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Type</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {QUESTION_TYPES.map((t) => (
               <button
@@ -771,14 +771,14 @@ function QuestionForm({
                 }`}
               >
                 <p className="text-xs font-semibold">{t.label}</p>
-                <p className="text-[10px] text-white/30 mt-0.5">{t.desc}</p>
+                <p className="text-[11px] text-white/30 mt-0.5">{t.desc}</p>
               </button>
             ))}
           </div>
         </div>
         {needsOptions && (
           <div>
-            <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-wider">
+            <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">
               Options <span className="normal-case text-white/20">(one per line)</span>
             </label>
             <textarea

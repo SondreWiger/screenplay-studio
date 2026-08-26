@@ -145,9 +145,9 @@ function LoginForm() {
               className="w-9 h-9 flex items-center justify-center shrink-0"
               style={{ background: '#FF5F1F' }}
             >
-              <span className="font-black text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest group-hover:text-white/50 transition-colors">
+            <span className="text-xs font-medium text-white/45 group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
@@ -161,7 +161,7 @@ function LoginForm() {
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
               <span className="ss-label">Authentication</span>
             </div>
-            <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+            <h1 className="text-2xl font-semibold text-white" style={{ letterSpacing: '-0.03em' }}>
               {t('auth.welcome_back')}
             </h1>
           </div>
@@ -207,7 +207,7 @@ function LoginForm() {
             <div className="flex justify-end">
               <Link
                 href="/auth/forgot-password"
-                className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors"
+                className="text-xs text-white/50 hover:text-white/75 transition-colors"
               >
                 {t('auth.forgot_password')}
               </Link>
@@ -227,7 +227,7 @@ function LoginForm() {
             <div className="mt-6 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-white/10" />
-                <span className="text-[10px] uppercase tracking-widest text-white/30 font-mono">Or</span>
+                <span className="text-xs text-white/45">Or</span>
                 <div className="h-px flex-1 bg-white/10" />
               </div>
               <button
@@ -263,13 +263,13 @@ function LoginForm() {
                   createLocalUser();
                   window.location.href = redirect;
                 }}
-                className="w-full mb-4 h-10 flex items-center justify-center text-[11px] font-mono uppercase tracking-widest text-white/40 hover:text-white/70 transition-colors border hover:border-white/20"
+                className="w-full mb-4 h-10 flex items-center justify-center text-sm text-white/55 hover:text-white/80 transition-colors border hover:border-white/20"
                 style={{ borderColor: 'rgba(255,255,255,0.1)' }}
               >
                 Use without account
               </button>
             )}
-            <p className="text-[11px] font-mono text-white/25 uppercase tracking-widest">
+            <p className="text-xs text-white/50">
               <Link href="/auth/register" className="hover:opacity-70 transition-opacity" style={{ color: '#FF5F1F' }}>
                 {t('auth.no_account')}
               </Link>

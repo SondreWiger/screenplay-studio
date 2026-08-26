@@ -10,15 +10,15 @@ export default function PrivacyPolicyPage() {
     <div>
       <div className="max-w-4xl">
         <div className="mb-10">
-          <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Privacy</p>
-          <h1 className="text-3xl font-black text-white tracking-tight">Privacy Policy</h1>
+          <p className="text-xs font-medium text-red-400 uppercase tracking-[0.04em] mb-3">Privacy</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Privacy Policy</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: June 24, 2026</p>
           <p className="text-xs text-surface-600 mt-1">Previous version: March 18, 2026 ,  <a href="mailto:privacy@screenplaystudio.fun" className="hover:text-red-400 transition-colors">Request prior version</a></p>
         </div>
 
         {/* Table of Contents */}
         <nav className="mb-12 rounded-lg bg-surface-900/50 border border-surface-800/60 p-6">
-          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-wider mb-4">Table of Contents</h2>
+          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-[0.04em] mb-4">Table of Contents</h2>
           <ol className="list-decimal list-inside space-y-1 text-surface-300 text-sm columns-1 sm:columns-2 gap-8">
             <li><a href="#introduction" className="hover:text-red-400 transition-colors">Introduction &amp; Data Controller</a></li>
             <li><a href="#data-collected" className="hover:text-red-400 transition-colors">Data We Collect</a></li>

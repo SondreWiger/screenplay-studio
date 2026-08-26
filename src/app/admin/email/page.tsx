@@ -361,7 +361,7 @@ export default function AdminEmailPage() {
               </svg>
             </Link>
             <div>
-              <h1 className="text-xl font-black flex items-center gap-2">
+              <h1 className="text-xl font-bold flex items-center gap-2">
                 <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -387,7 +387,7 @@ export default function AdminEmailPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                'flex-1 min-w-[140px] px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors duration-200',
+                'flex-1 min-w-[140px] px-4 py-2.5 rounded-lg text-xs font-medium uppercase tracking-wide transition-colors duration-200',
                 activeTab === tab.key
                   ? 'bg-surface-700 text-white shadow-md'
                   : 'text-surface-500 hover:text-surface-200 hover:bg-surface-800/60'
@@ -516,7 +516,7 @@ export default function AdminEmailPage() {
                       onChange={() => toggleUserSelection(u.id)}
                       className="rounded border-surface-600 text-brand-500 focus:ring-brand-500/30 bg-surface-800"
                     />
-                    <div className="w-7 h-7 rounded-full bg-surface-700 flex items-center justify-center text-[10px] text-surface-400 shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-surface-700 flex items-center justify-center text-[11px] text-surface-400 shrink-0">
                       {(u.display_name || u.full_name || u.email)?.[0]?.toUpperCase() || '?'}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -527,9 +527,9 @@ export default function AdminEmailPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {u.is_pro && (
-                        <span className="text-[10px] font-bold text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded">PRO</span>
+                        <span className="text-[11px] font-bold text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded">PRO</span>
                       )}
-                      <span className="text-[10px] text-surface-600">{userProjectCounts[u.id] || 0} projects</span>
+                      <span className="text-[11px] text-surface-600">{userProjectCounts[u.id] || 0} projects</span>
                     </div>
                   </label>
                 ))}
@@ -540,7 +540,7 @@ export default function AdminEmailPage() {
 
         <div className="rounded-xl border border-surface-800 bg-surface-900/60 p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider">Email Composer</h2>
+            <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Email Composer</h2>
             <select
               value={selectedTemplate}
               onChange={(e) => {
@@ -628,7 +628,7 @@ export default function AdminEmailPage() {
         </div>
 
         <div className="rounded-xl border border-surface-800 bg-surface-900/60 p-6">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Email History</h2>
+          <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em] mb-4">Email History</h2>
           {emailLog.length === 0 ? (
             <p className="text-sm text-surface-500 text-center py-8">No emails sent yet</p>
           ) : (
@@ -636,10 +636,10 @@ export default function AdminEmailPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-surface-800">
-                    <th className="text-left py-2 px-3 text-[10px] font-bold text-surface-500 uppercase tracking-wider">Date</th>
-                    <th className="text-left py-2 px-3 text-[10px] font-bold text-surface-500 uppercase tracking-wider">Subject</th>
-                    <th className="text-left py-2 px-3 text-[10px] font-bold text-surface-500 uppercase tracking-wider">Recipients</th>
-                    <th className="text-left py-2 px-3 text-[10px] font-bold text-surface-500 uppercase tracking-wider">Sent By</th>
+                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Date</th>
+                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Subject</th>
+                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Recipients</th>
+                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Sent By</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -664,7 +664,7 @@ export default function AdminEmailPage() {
 
       {batches.length > 0 && (
         <div className="rounded-xl border border-surface-800 bg-surface-900/60 p-6">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Email Batches</h2>
+          <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em] mb-4">Email Batches</h2>
           <p className="text-xs text-surface-500 mb-4">Bulk emails are sent in batches of 100/day. A cron job processes one batch per day.</p>
           <div className="space-y-3">
             {batches.map((b: any) => {
@@ -680,7 +680,7 @@ export default function AdminEmailPage() {
                       </p>
                     </div>
                     <span className={cn(
-                      'text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0',
+                      'text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0',
                       b.status === 'completed' ? 'bg-green-500/15 text-green-400' :
                       b.status === 'pending' ? 'bg-yellow-500/15 text-yellow-400' :
                       'bg-surface-700 text-surface-400'
@@ -694,7 +694,7 @@ export default function AdminEmailPage() {
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <p className="text-[10px] text-surface-500">{b.sent_count} sent · {b.failed_count} failed · {b.total_recipients - b.sent_count - b.failed_count} remaining</p>
+                  <p className="text-[11px] text-surface-500">{b.sent_count} sent · {b.failed_count} failed · {b.total_recipients - b.sent_count - b.failed_count} remaining</p>
                 </div>
               );
             })}
@@ -723,7 +723,7 @@ export default function AdminEmailPage() {
                 </div>
               )}
               <div className="mt-8 pt-4 border-t border-gray-200 text-center">
-                <p className="text-[10px] text-gray-400">Sent via Screenplay Studio</p>
+                <p className="text-[11px] text-gray-400">Sent via Screenplay Studio</p>
               </div>
             </div>
             <p className="text-xs text-surface-500 text-center mt-4">

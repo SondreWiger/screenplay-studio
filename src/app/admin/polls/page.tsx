@@ -98,7 +98,7 @@ export default function AdminPollsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${STATUS_COLOR[s.status] ?? 'bg-white/10 text-white/40'}`}>
+                    <span className={`text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-0.5 rounded-full ${STATUS_COLOR[s.status] ?? 'bg-white/10 text-white/40'}`}>
                       {s.status}
                     </span>
                     {s.questions && (
@@ -115,9 +115,9 @@ export default function AdminPollsPage() {
                     <p className="text-xl font-bold text-white">{s.response_count}</p>
                   ) : null}
                   {(s.status === 'published' || s.status === 'closed') && (
-                    <p className="text-[10px] text-white/30">responses</p>
+                    <p className="text-[11px] text-white/30">responses</p>
                   )}
-                  <p className="text-[10px] text-white/20 mt-1">{formatDate(s.created_at)}</p>
+                  <p className="text-[11px] text-white/20 mt-1">{formatDate(s.created_at)}</p>
                 </div>
               </div>
             </Link>
@@ -133,7 +133,7 @@ export default function AdminPollsPage() {
             <h2 className="text-lg font-bold text-white mb-5">New Poll</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-wider">Title</label>
+                <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Title</label>
                 <input
                   type="text"
                   value={newTitle}
@@ -143,7 +143,7 @@ export default function AdminPollsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-wider">Preface <span className="normal-case text-white/20">(optional intro shown to users)</span></label>
+                <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Preface <span className="normal-case text-white/20">(optional intro shown to users)</span></label>
                 <textarea
                   rows={3}
                   value={newPreface}

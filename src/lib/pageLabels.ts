@@ -32,8 +32,8 @@ export const PAGE_LABELS: Record<string, string> = {
   'production-team': 'Production Team',
   rehearsal: 'Rehearsal',
 
-  // Studio suite (see lib/studio/tools.ts) — 'locations' is already mapped above
-  studio: 'Studio',
+  // Pro tool suite (see lib/pro-tools/tools.ts) — 'locations' is already mapped above
+  pro: 'Pro Tools',
   portfolio: 'Portfolio',
   accounting: 'Production Accounting',
   rights: 'Rights & Clearances',
@@ -65,6 +65,11 @@ export const PAGE_LABELS: Record<string, string> = {
   equipment: 'Equipment Rentals',
   wrap: 'Wrap & Completion',
   newsletter: 'Production Newsletter',
+  dailies: 'Dailies',
+  deliverables: 'Delivery Checklist',
+  unions: 'Unions & Guilds',
+  residuals: 'Residuals & Royalties',
+  screenings: 'Test Screenings',
 };
 
 export function getPageSection(pathname: string, projectId: string): string {
@@ -76,13 +81,13 @@ export function getPageSection(pathname: string, projectId: string): string {
 }
 
 /**
- * Like getPageSection, but resolves Studio tools to their own slug so
- * `/projects/x/studio/rights` reads as "Rights & Clearances" rather than "Studio".
+ * Like getPageSection, but resolves Pro tools to their own slug so
+ * `/projects/x/pro/rights` reads as "Rights & Clearances" rather than "Pro Tools".
  */
 export function getPageLabelKey(pathname: string, projectId: string): string {
   const section = getPageSection(pathname, projectId);
-  if (section !== 'studio') return section;
-  const prefix = `/projects/${projectId}/studio/`;
+  if (section !== 'pro') return section;
+  const prefix = `/projects/${projectId}/pro/`;
   if (!pathname.startsWith(prefix)) return section;
   const slug = pathname.slice(prefix.length).split('?')[0].split('#')[0].split('/')[0];
   return slug && PAGE_LABELS[slug] ? slug : section;

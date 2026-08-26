@@ -104,7 +104,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelP
   // Full panel
   return (
     <div className="flex flex-col gap-5 p-4 text-sm">
-      <h3 className="text-xs font-bold uppercase tracking-widest text-surface-500">Script Stats</h3>
+      <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-surface-500">Script Stats</h3>
 
       {/* Core numbers */}
       <div className="grid grid-cols-2 gap-3">
@@ -119,7 +119,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelP
             className="flex flex-col gap-0.5 p-3 rounded-lg bg-surface-800 border border-surface-700"
           >
             <span className="text-lg font-bold text-surface-100 leading-none">{s.value}</span>
-            <span className="text-[10px] text-surface-500 uppercase tracking-wider">{s.label}</span>
+            <span className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">{s.label}</span>
           </div>
         ))}
       </div>
@@ -146,7 +146,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelP
             }}
           />
         </div>
-        <div className="flex items-center gap-3 text-[10px] text-surface-600">
+        <div className="flex items-center gap-3 text-[11px] text-surface-600">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-sm inline-block" style={{ background: 'var(--theme-brand, #FF5F1F)' }} />
             Dialogue
@@ -161,7 +161,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelP
       {/* Top characters */}
       {stats.topCharacters.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-surface-500">
+          <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">
             Most Lines
           </p>
           <div className="flex flex-col gap-2">

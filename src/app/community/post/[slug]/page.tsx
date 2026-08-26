@@ -335,7 +335,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         </nav>
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="text-6xl mb-4">🔍</div>
-          <h1 className="text-3xl font-black text-white mb-2">Post not found</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Post not found</h1>
           <p className="text-white/40">This post may have been removed or doesn&apos;t exist.</p>
           <Link href="/community" className="mt-8 px-6 py-3 bg-brand-600 text-white font-medium rounded-lg">Browse Community</Link>
         </div>
@@ -390,7 +390,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             </div>
           )}
 
-          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">{post.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{post.title}</h1>
           {post.description && <p className="mt-3 text-lg text-white/40">{post.description}</p>}
 
           {/* Author & meta */}
@@ -642,7 +642,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                           <span>{timeAgo(distro.created_at)}</span>
                         </div>
                       </div>
-                      <span className="px-2 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded-full">Distro</span>
+                      <span className="px-2 py-0.5 text-[11px] font-semibold text-blue-700 bg-blue-50 rounded-full">Distro</span>
                     </div>
                   </div>
                 ))}
@@ -690,7 +690,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             {filmSubmitted ? (
               <div className="text-center py-8">
                 <div className="text-5xl mb-4">🎬</div>
-                <h3 className="text-xl font-black text-white mb-2">Film Submitted!</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Film Submitted!</h3>
                 <p className="text-sm text-white/40 mb-6">Your film has been sent for review. You&apos;ll be notified once it&apos;s approved.</p>
                 <button onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}
                   className="px-6 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-600 transition-colors">
@@ -770,7 +770,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>
@@ -811,7 +811,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
             {comment.author?.avatar_url ? (
               <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-brand-500 transition-colors')} loading="lazy" />
             ) : (
-              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[9px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-brand-500 transition-colors')}>
+              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[11px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-brand-500 transition-colors')}>
                 {(comment.author?.full_name || '?')[0]}
               </div>
             )}
@@ -819,11 +819,11 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Link href={`/u/${comment.author?.username || comment.author?.id || ''}`} className={cn(isRoot ? 'text-sm' : 'text-xs', 'font-semibold text-white/90 hover:text-brand-500 transition-colors')}>{comment.author?.full_name || 'Anonymous'}</Link>
-              {comment.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>🔰 Moderator</span>}
-              {comment.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>🛡️ Admin</span>}
-              <span className="text-[10px] text-white/50">{timeAgo(comment.created_at)}</span>
+              {comment.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>🔰 Moderator</span>}
+              {comment.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>🛡️ Admin</span>}
+              <span className="text-[11px] text-white/50">{timeAgo(comment.created_at)}</span>
               {comment.comment_type === 'suggestion' && (
-                <span className="px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 rounded">Suggestion</span>
+                <span className="px-1.5 py-0.5 text-[11px] font-semibold text-amber-700 bg-amber-50 rounded">Suggestion</span>
               )}
             </div>
             <p className={cn(isRoot ? 'text-sm' : 'text-xs', 'text-white/70 mt-1 whitespace-pre-wrap')}>{comment.content}</p>
@@ -841,12 +841,12 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
                   onClick={() => onDelete(comment.id)}
                   className="text-xs text-red-400 hover:text-red-600 transition-colors flex items-center gap-1"
                 >
-                  {user.id !== comment.author_id && <span className="text-[9px] font-semibold text-amber-600">MOD</span>}
+                  {user.id !== comment.author_id && <span className="text-[11px] font-semibold text-amber-600">MOD</span>}
                   Delete
                 </button>
               )}
               {replies.length > 0 && (
-                <button onClick={() => setCollapsed(!collapsed)} className="text-[10px] text-white/50 hover:text-white/70 transition-colors">
+                <button onClick={() => setCollapsed(!collapsed)} className="text-[11px] text-white/50 hover:text-white/70 transition-colors">
                   {collapsed ? `Show ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}` : replies.length > 2 ? `Hide replies` : ''}
                 </button>
               )}

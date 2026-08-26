@@ -25,7 +25,7 @@ function resolveBadge(item: (UserBadge & { badge?: Badge }) | Badge): Badge | nu
 }
 
 const SIZE_CLASSES: Record<BadgeSize, string> = {
-  xs: 'text-[10px] px-1 py-[1px] gap-0.5 rounded',
+  xs: 'text-[11px] px-1 py-[1px] gap-0.5 rounded',
   sm: 'text-[11px] px-1.5 py-[1px] gap-0.5 rounded',
   md: 'text-xs px-2 py-0.5 gap-1 rounded-md',
 };

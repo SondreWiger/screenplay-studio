@@ -121,7 +121,7 @@ function QuizLesson({
                          'bg-red-500/10 border-red-500/30',
         )}>
           <div>
-            <div className={cn('text-3xl font-black', score === 100 ? 'text-emerald-400' : score >= 70 ? 'text-amber-400' : 'text-red-400')}>
+            <div className={cn('text-3xl font-bold', score === 100 ? 'text-emerald-400' : score >= 70 ? 'text-amber-400' : 'text-red-400')}>
               {score}%
             </div>
             <div className="text-sm text-white/50 mt-0.5">
@@ -152,7 +152,7 @@ function QuizLesson({
                          'bg-red-500/10 border-red-500/30',
         )}>
           <div>
-            <div className={cn('text-3xl font-black', score === 100 ? 'text-emerald-400' : score >= 70 ? 'text-amber-400' : 'text-red-400')}>
+            <div className={cn('text-3xl font-bold', score === 100 ? 'text-emerald-400' : score >= 70 ? 'text-amber-400' : 'text-red-400')}>
               {score}%
             </div>
             <div className="text-sm text-white/50 mt-0.5">
@@ -239,7 +239,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
       </div>
       {submitted && q.explanation && (
         <div className="mt-4 ml-9 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white/60">
-          <span className="text-white/40 font-semibold uppercase tracking-wider text-[9px] block mb-1">Explanation</span>
+          <span className="text-white/40 font-semibold uppercase tracking-[0.04em] text-[11px] block mb-1">Explanation</span>
           {q.explanation}
         </div>
       )}
@@ -268,8 +268,8 @@ function ScriptEditorLesson({
       {/* Instructions */}
       <div className="p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-brand-500 text-xs font-bold uppercase tracking-wider">Task</span>
-          {content.locked && <span className="text-[9px] text-white/30 uppercase tracking-wider bg-white/5 px-1.5 py-0.5 rounded">Read Only</span>}
+          <span className="text-brand-500 text-xs font-medium uppercase tracking-[0.04em]">Task</span>
+          {content.locked && <span className="text-[11px] text-white/55 uppercase tracking-[0.04em] bg-white/5 px-1.5 py-0.5 rounded">Read Only</span>}
         </div>
         <p className="text-sm text-white/70 leading-relaxed">{content.instructions}</p>
       </div>
@@ -278,13 +278,13 @@ function ScriptEditorLesson({
       <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-surface-950">
         {/* Editor header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06] bg-white/[0.03]">
-          <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Screenplay Editor</span>
+          <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Editor</span>
           <div className="flex items-center gap-2">
             {content.expected_keywords && content.expected_keywords.length > 0 && (
               <div className="flex items-center gap-1">
                 {content.expected_keywords.map(kw => (
                   <span key={kw} className={cn(
-                    'px-1.5 py-0.5 text-[9px] rounded font-mono',
+                    'px-1.5 py-0.5 text-[11px] rounded font-mono',
                     text.toLowerCase().includes(kw.toLowerCase())
                       ? 'bg-emerald-500/20 text-emerald-400'
                       : 'bg-white/5 text-white/30',
@@ -311,10 +311,10 @@ function ScriptEditorLesson({
 
         {/* Line count */}
         <div className="px-4 py-2 border-t border-white/[0.06] bg-white/[0.03] flex items-center justify-between">
-          <span className="text-[10px] font-mono text-white/20">{text.split('\n').length} lines</span>
+          <span className="text-[11px] text-white/20">{text.split('\n').length} lines</span>
           {!content.locked && hasKeywords && !existingCompletion && (
             <button onClick={onComplete}
-              className="px-3 py-1.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors">
+              className="px-3 py-1.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors">
               Mark Complete ✓
             </button>
           )}
@@ -372,10 +372,10 @@ function ArcEditorLesson({
       {/* Instructions */}
       <div className="p-4 rounded-xl bg-brand-500/5 border border-brand-500/20">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-brand-500 text-xs font-bold uppercase tracking-wider">
+          <span className="text-brand-500 text-xs font-medium uppercase tracking-[0.04em]">
             {content.locked ? 'Example' : 'Task'}
           </span>
-          {content.locked && <span className="text-[9px] text-white/30 uppercase tracking-wider bg-white/5 px-1.5 py-0.5 rounded">Read Only</span>}
+          {content.locked && <span className="text-[11px] text-white/55 uppercase tracking-[0.04em] bg-white/5 px-1.5 py-0.5 rounded">Read Only</span>}
         </div>
         <p className="text-sm text-white/70 leading-relaxed">{content.instructions}</p>
       </div>
@@ -411,10 +411,10 @@ function ExampleLesson({ content }: { content: LessonContentExample }) {
       )}
       <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-surface-950">
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06] bg-white/[0.03]">
-          <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+          <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">
             {content.language === 'fountain' ? 'Screenplay Example' : content.language}
           </span>
-          <span className="text-[10px] text-white/20">{lines.length} lines</span>
+          <span className="text-[11px] text-white/20">{lines.length} lines</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs font-mono">
@@ -431,7 +431,7 @@ function ExampleLesson({ content }: { content: LessonContentExample }) {
                       <FountainLine text={line} lang={content.language} />
                     </td>
                     {note && (
-                      <td className="py-0.5 px-3 text-[10px] text-brand-500/70 italic whitespace-nowrap">
+                      <td className="py-0.5 px-3 text-[11px] text-brand-500/70 italic whitespace-nowrap">
                         ← {note}
                       </td>
                     )}
@@ -484,11 +484,11 @@ function ProgressSidebar({
     <div className="flex flex-col h-full overflow-hidden">
       {/* Course header in sidebar */}
       <div className="p-4 border-b border-white/[0.06]">
-        <div className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">{course.type === 'system' ? 'Official Course' : 'Community Course'}</div>
+        <div className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-1">{course.type === 'system' ? 'Official Course' : 'Community Course'}</div>
         <h2 className="text-sm font-bold text-white leading-snug">{course.title}</h2>
         {enrollment && (
           <div className="mt-3">
-            <div className="flex items-center justify-between text-[10px] text-white/40 mb-1">
+            <div className="flex items-center justify-between text-[11px] text-white/40 mb-1">
               <span>Progress</span>
               <span className="text-white/60">{enrollment.progress_percent}%</span>
             </div>
@@ -504,7 +504,7 @@ function ProgressSidebar({
         {sections.map(sec => (
           <div key={sec.id} className="mb-1">
             <div className="px-4 py-2">
-              <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">{sec.title}</span>
+              <span className="text-[11px] font-medium text-white/55 uppercase tracking-[0.04em]">{sec.title}</span>
             </div>
             {(sec.lessons || []).map(lesson => {
               const done = completedIds.has(lesson.id);
@@ -533,7 +533,7 @@ function ProgressSidebar({
                   <div className="min-w-0">
                     <span className="block leading-snug line-clamp-2">{lesson.title}</span>
                     <span className={cn(
-                      'text-[9px] uppercase tracking-wider mt-0.5 block',
+                      'text-[11px] uppercase tracking-[0.04em] mt-0.5 block',
                       active ? 'text-brand-500/70' : 'text-white/25',
                     )}>
                       {LESSON_TYPE_LABEL[lesson.lesson_type]} · {lesson.xp_reward} XP
@@ -754,7 +754,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
             </svg>
           </button>
 
-          <Link href="/community/courses" className="text-[10px] font-mono text-white/30 hover:text-white/60 transition-colors uppercase tracking-wider">
+          <Link href="/community/courses" className="text-[11px] text-white/55 hover:text-white/60 transition-colors uppercase tracking-[0.04em]">
             ← Courses
           </Link>
 
@@ -778,18 +778,18 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xl">{LESSON_TYPE_ICON[activeLesson.lesson_type]}</span>
-                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
+                  <span className="text-[11px] text-white/40 uppercase tracking-[0.04em]">
                     {LESSON_TYPE_LABEL[activeLesson.lesson_type]}
                   </span>
-                  <span className="text-[10px] text-brand-500/70">+{activeLesson.xp_reward} XP</span>
+                  <span className="text-[11px] text-brand-500/70">+{activeLesson.xp_reward} XP</span>
                   {completedIds.has(activeLesson.id) && (
-                    <span className="flex items-center gap-1 text-[10px] text-emerald-400 ml-auto">
+                    <span className="flex items-center gap-1 text-[11px] text-emerald-400 ml-auto">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
                       Completed
                     </span>
                   )}
                 </div>
-                <h2 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>{activeLesson.title}</h2>
+                <h2 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>{activeLesson.title}</h2>
               </div>
 
               {/* Lesson body */}
@@ -874,7 +874,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm bg-surface-950 rounded-xl border border-brand-500/20 p-8 text-center shadow-2xl">
             <div className="text-4xl mb-3">🎉</div>
-            <h3 className="text-xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Complete!</h3>
+            <h3 className="text-xl font-bold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Complete!</h3>
             <p className="text-sm text-white/50 mb-2">You earned <span className="text-brand-500 font-bold">+{course.xp_reward} XP</span></p>
             <p className="text-sm text-white/60 mb-6">How would you rate this course?</p>
             <div className="flex items-center justify-center gap-2 mb-6">

@@ -335,7 +335,7 @@ export default function RevisionsPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">🔄</div>
-          <h2 className="text-xl font-black text-white mb-2">Revisions & Comparisons</h2>
+          <h2 className="text-xl font-bold text-white mb-2">Revisions & Comparisons</h2>
           <p className="text-sm text-surface-400 mb-6">Track every revision with industry-standard color coding. Compare any two drafts side by side.</p>
           <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
         </Card>
@@ -353,7 +353,7 @@ export default function RevisionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-white">Revisions</h1>
+            <h1 className="text-2xl font-bold text-white">Revisions</h1>
             <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">
@@ -485,7 +485,7 @@ export default function RevisionsPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-mono text-surface-400 bg-surface-800 px-2 py-0.5 rounded">v{rev.version}</span>
                         <span
-                          className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                          className="text-[11px] px-2 py-0.5 rounded-full font-medium"
                           style={{ backgroundColor: colorHex + '20', color: colorHex }}
                         >
                           {getColorName(rev.revision_color)}
@@ -557,7 +557,7 @@ export default function RevisionsPage() {
 
       {/* Color Legend */}
       <Card className="p-4">
-        <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Industry Revision Colors</h4>
+        <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em] mb-3">Industry Revision Colors</h4>
         <div className="flex flex-wrap gap-3">
           {REVISION_COLORS.map((rc) => (
             <div key={rc.value} className="flex items-center gap-1.5">

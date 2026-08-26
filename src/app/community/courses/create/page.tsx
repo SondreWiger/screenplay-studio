@@ -42,7 +42,7 @@ function TextForm({ value, onChange }: { value: LessonContentText; onChange: (v:
         className="w-full bg-white/[0.04] border border-white/10 rounded-xl font-mono text-sm text-white/80 p-4 outline-none focus:border-white/30 resize-y"
         placeholder="# Lesson Title&#10;&#10;Your content here. **Bold**, *italic*, `code`, > blockquote&#10;&#10;## Sub-heading"
       />
-      <p className="text-[10px] text-white/25">Supports Markdown headings, bold, italic, inline code, blockquotes, lists, and links.</p>
+      <p className="text-[11px] text-white/25">Supports Markdown headings, bold, italic, inline code, blockquotes, lists, and links.</p>
     </div>
   );
 }
@@ -64,7 +64,7 @@ function VideoForm({ value, onChange }: { value: LessonContentVideo; onChange: (
           className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white/80 px-4 py-2.5 outline-none focus:border-white/30"
         />
         {value.embed_url && (
-          <p className="text-[10px] text-white/30 mt-1">Detected provider: {value.provider}</p>
+          <p className="text-[11px] text-white/30 mt-1">Detected provider: {value.provider}</p>
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -132,7 +132,7 @@ function QuizForm({ value, onChange }: { value: LessonContentQuiz; onChange: (v:
       {value.questions.map((q, qi) => (
         <div key={q.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">Question {qi + 1}</span>
+            <span className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em]">Question {qi + 1}</span>
             <button onClick={() => removeQ(q.id)} className="text-xs text-red-400/60 hover:text-red-400 transition-colors">Remove</button>
           </div>
           <textarea
@@ -143,7 +143,7 @@ function QuizForm({ value, onChange }: { value: LessonContentQuiz; onChange: (v:
             className="w-full bg-white/[0.04] border border-white/10 rounded-lg text-sm text-white/80 px-3 py-2 outline-none focus:border-white/30 resize-none"
           />
           <div className="space-y-1.5">
-            <p className="text-[10px] text-white/30 uppercase tracking-wider">Answer Choices <span className="text-brand-500">— click radio to mark correct</span></p>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Answer Choices <span className="text-brand-500">— click radio to mark correct</span></p>
             {q.options.map(opt => (
               <div key={opt.id} className="flex items-center gap-2">
                 <button
@@ -169,7 +169,7 @@ function QuizForm({ value, onChange }: { value: LessonContentQuiz; onChange: (v:
             )}
           </div>
           <div>
-            <label className="block text-[10px] text-white/30 uppercase tracking-wider mb-1">Explanation (shown after answer)</label>
+            <label className="block text-[11px] text-white/55 uppercase tracking-[0.04em] mb-1">Explanation (shown after answer)</label>
             <input
               value={q.explanation ?? ''}
               onChange={e => updateQ(q.id, { explanation: e.target.value })}
@@ -330,7 +330,7 @@ function ExampleForm({ value, onChange }: { value: LessonContentExample; onChang
         />
       </div>
       <div>
-        <p className="text-xs text-white/50 mb-2 uppercase tracking-wider">Annotations (appear next to line)</p>
+        <p className="text-xs text-white/50 mb-2 uppercase tracking-[0.04em]">Annotations (appear next to line)</p>
         <div className="flex gap-2 mb-2">
           <input type="number" value={annLine} onChange={e => setAnnLine(e.target.value)} placeholder="Line #" className="w-20 bg-white/[0.04] border border-white/10 rounded-lg text-sm text-white/80 px-3 py-1.5 outline-none" />
           <input value={annNote} onChange={e => setAnnNote(e.target.value)} placeholder="Annotation text..." className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg text-sm text-white/80 px-3 py-1.5 outline-none" />
@@ -503,7 +503,7 @@ export default function CreateCoursePage() {
       {/* Nav */}
       <nav className="sticky top-14 z-30 backdrop-blur-xl border-b border-white/[0.07]" style={{ background: 'rgba(7,7,16,0.95)' }}>
         <div className="max-w-5xl mx-auto px-6 flex items-center gap-4 h-14">
-          <Link href="/community/courses" className="text-[10px] font-mono text-white/30 hover:text-white/60 transition-colors uppercase tracking-wider">← Courses</Link>
+          <Link href="/community/courses" className="text-[11px] text-white/55 hover:text-white/60 transition-colors uppercase tracking-[0.04em]">← Courses</Link>
           <span className="text-white/10">|</span>
           <h1 className="text-sm font-bold text-white">Create Course</h1>
 
@@ -515,7 +515,7 @@ export default function CreateCoursePage() {
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
                   step === s ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/60',
                 )}>
-                <span className="w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[9px]">{i+1}</span>
+                <span className="w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[11px]">{i+1}</span>
                 {s === 'meta' ? 'Details' : 'Build'}
               </button>
             ))}
@@ -528,29 +528,29 @@ export default function CreateCoursePage() {
           // Step 1: Course metadata
           <div className="max-w-2xl space-y-6">
             <div>
-              <h2 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
+              <h2 className="text-2xl font-bold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
               <p className="text-sm text-white/40">Fill in the basic information about your course.</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Title *</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Title *</label>
                 <input value={title} onChange={e => setTitle(e.target.value)}
                   placeholder="Introduction to Screenplay Formatting"
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-base font-semibold text-white px-4 py-3 outline-none focus:border-brand-500/40 placeholder-white/20"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Short Description (for card)</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Short Description (for card)</label>
                 <input value={shortDesc} onChange={e => setShortDesc(e.target.value)}
                   placeholder="Learn the rules of professional screenplay formatting."
                   maxLength={100}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-4 py-2.5 outline-none focus:border-white/30 placeholder-white/20"
                 />
-                <p className="text-[10px] text-white/25 mt-1">{shortDesc.length}/100</p>
+                <p className="text-[11px] text-white/25 mt-1">{shortDesc.length}/100</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Full Description</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Full Description</label>
                 <textarea value={description} onChange={e => setDescription(e.target.value)}
                   rows={5} placeholder="A detailed description of what students will learn..."
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white/80 px-4 py-3 outline-none focus:border-white/30 resize-none placeholder-white/20"
@@ -559,7 +559,7 @@ export default function CreateCoursePage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Difficulty</label>
+                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Difficulty</label>
                   <select value={difficulty} onChange={e => setDifficulty(e.target.value as CourseDifficulty)}
                     className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-3 py-2.5 outline-none focus:border-white/30">
                     <option value="beginner">Beginner</option>
@@ -568,19 +568,19 @@ export default function CreateCoursePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">XP Reward</label>
+                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">XP Reward</label>
                   <input type="number" value={xpReward} onChange={e => setXpReward(+e.target.value)}
                     className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-3 py-2.5 outline-none focus:border-white/30" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Est. Minutes</label>
+                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Est. Minutes</label>
                   <input type="number" value={estMins} onChange={e => setEstMins(+e.target.value)}
                     className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-3 py-2.5 outline-none focus:border-white/30" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Tags</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Tags</label>
                 <div className="flex gap-2">
                   <input value={tagInput} onChange={e => setTagInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && tagInput.trim()) { setTags(t => [...t, tagInput.trim()]); setTagInput(''); e.preventDefault(); } }}
@@ -601,7 +601,7 @@ export default function CreateCoursePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Thumbnail URL (optional)</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Thumbnail URL (optional)</label>
                 <input value={thumbnail} onChange={e => setThumbnail(e.target.value)}
                   placeholder="https://..."
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white/80 px-4 py-2.5 outline-none focus:border-white/30 placeholder-white/20"
@@ -624,7 +624,7 @@ export default function CreateCoursePage() {
           <div className="space-y-6">
             <div className="flex items-end justify-between">
               <div>
-                <h2 className="text-xl font-black text-white mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
+                <h2 className="text-xl font-bold text-white mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
                 <p className="text-sm text-white/40">Build your sections and lessons.</p>
               </div>
               <div className="flex items-center gap-2">
@@ -662,7 +662,7 @@ export default function CreateCoursePage() {
                       <span className="text-sm">{LESSON_TYPE_OPTIONS.find(t => t.value === lesson.lesson_type)?.icon}</span>
                       <div className="flex-1 min-w-0">
                         <span className="text-sm text-white/80 block truncate">{lesson.title}</span>
-                        <span className="text-[10px] text-white/30">{LESSON_TYPE_OPTIONS.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
+                        <span className="text-[11px] text-white/30">{LESSON_TYPE_OPTIONS.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
                       </div>
                       <button onClick={() => openEditLesson(sec.id, lesson)}
                         className="text-xs text-white/40 hover:text-white/80 transition-colors px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg">
@@ -738,7 +738,7 @@ export default function CreateCoursePage() {
 
               {/* Lesson type picker */}
               <div>
-                <label className="block text-xs text-white/50 mb-2 uppercase tracking-wider">Lesson Type</label>
+                <label className="block text-xs text-white/50 mb-2 uppercase tracking-[0.04em]">Lesson Type</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {LESSON_TYPE_OPTIONS.map(opt => (
                     <button key={opt.value}
@@ -752,7 +752,7 @@ export default function CreateCoursePage() {
                       <span className="text-lg leading-none">{opt.icon}</span>
                       <div>
                         <div className="text-xs font-semibold text-white">{opt.label}</div>
-                        <div className="text-[10px] text-white/40 mt-0.5 leading-snug">{opt.desc}</div>
+                        <div className="text-[11px] text-white/40 mt-0.5 leading-snug">{opt.desc}</div>
                       </div>
                     </button>
                   ))}
@@ -761,7 +761,7 @@ export default function CreateCoursePage() {
 
               {/* Content form */}
               <div>
-                <label className="block text-xs text-white/50 mb-2 uppercase tracking-wider">Content</label>
+                <label className="block text-xs text-white/50 mb-2 uppercase tracking-[0.04em]">Content</label>
                 {editingLesson.lesson.lesson_type === 'text' && (
                   <TextForm
                     value={editingLesson.lesson.content as unknown as LessonContentText}

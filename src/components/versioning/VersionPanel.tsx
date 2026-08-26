@@ -139,7 +139,7 @@ function VersionRow({
         <button
           onClick={() => isTaggedOnAll ? onUntag?.() : onTag?.()}
           className={cn(
-            'shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wide transition-colors',
+            'shrink-0 px-1.5 py-0.5 rounded text-[11px] font-semibold tracking-wide transition-colors',
             isTaggedOnAll
               ? 'bg-brand-500/20 text-brand-500 hover:bg-brand-500/30'
               : 'bg-surface-700/60 text-surface-400 hover:bg-surface-700 hover:text-white',
@@ -164,7 +164,7 @@ function VersionRow({
           onBlur={() => setConfirming(false)}
           title={confirming ? 'Click again to confirm' : `Delete "${displayName}"`}
           className={cn(
-            'shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
+            'shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-colors',
             confirming
               ? 'opacity-100 bg-red-500/20 text-red-400 hover:bg-red-500/30'
               : 'opacity-0 group-hover/row:opacity-100 text-surface-600 hover:text-red-400',
@@ -257,7 +257,7 @@ export function VersionPanel({
           </svg>
           <span className="text-[11px] font-semibold text-white tracking-wide">Versions</span>
           {versions.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-surface-800 text-surface-500 text-[9px] font-mono tabular-nums">
+            <span className="px-1.5 py-0.5 rounded-full bg-surface-800 text-surface-500 text-[11px] font-mono tabular-nums">
               {versions.length}
             </span>
           )}
@@ -295,7 +295,7 @@ export function VersionPanel({
             </svg>
             <p className="text-[11px] text-surface-500">No versions yet.</p>
             {mode === 'script' && (
-              <p className="text-[10px] text-surface-700 leading-relaxed">
+              <p className="text-[11px] text-surface-700 leading-relaxed">
                 Use <span className="font-mono text-surface-600">Group/Name</span> to nest versions inside groups.
               </p>
             )}
@@ -305,12 +305,12 @@ export function VersionPanel({
             {versions.length > 1 && (
               <div className="flex items-center gap-2 px-2 pb-2 border-b border-surface-800/40 mb-1">
                 <button onClick={() => onChange({ ...config, disabled: [] })}
-                  className="text-[10px] text-surface-600 hover:text-surface-300 transition-colors">show all</button>
+                  className="text-[11px] text-surface-600 hover:text-surface-300 transition-colors">show all</button>
                 <span className="text-surface-800">·</span>
                 <button onClick={() => onChange({ ...config, disabled: [...versions] })}
-                  className="text-[10px] text-surface-600 hover:text-surface-300 transition-colors">hide all</button>
+                  className="text-[11px] text-surface-600 hover:text-surface-300 transition-colors">hide all</button>
                 {config.disabled.length > 0 && (
-                  <span className="ml-auto text-[10px] text-surface-700 tabular-nums">{config.disabled.length} hidden</span>
+                  <span className="ml-auto text-[11px] text-surface-700 tabular-nums">{config.disabled.length} hidden</span>
                 )}
               </div>
             )}
@@ -352,7 +352,7 @@ export function VersionPanel({
                       )}>
                         {prefix}
                       </span>
-                      <span className="text-[9px] text-surface-700 shrink-0 tabular-nums font-mono">{allInGroup.length}</span>
+                      <span className="text-[11px] text-surface-700 shrink-0 tabular-nums font-mono">{allInGroup.length}</span>
                     </button>
                     <Toggle checked={groupAllEnabled} onChange={() => toggleGroup(allInGroup)} small />
                   </div>
@@ -422,7 +422,7 @@ export function VersionPanel({
             type="button"
             onClick={handleCreate}
             disabled={!newName.trim()}
-            className="shrink-0 px-2.5 py-1.5 rounded-md bg-brand-500 hover:bg-brand-500/90 text-white text-[10px] font-semibold disabled:opacity-30 transition-colors"
+            className="shrink-0 px-2.5 py-1.5 rounded-md bg-brand-500 hover:bg-brand-500/90 text-white text-[11px] font-semibold disabled:opacity-30 transition-colors"
           >
             {mode === 'script' ? 'Add' : 'Insert'}
           </button>
@@ -434,7 +434,7 @@ export function VersionPanel({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] text-surface-400">Faded instead of hidden</p>
-            <p className="text-[10px] text-surface-700 mt-0.5">Show disabled as low opacity</p>
+            <p className="text-[11px] text-surface-700 mt-0.5">Show disabled as low opacity</p>
           </div>
           <Toggle checked={config.showFaded} onChange={() => onChange({ ...config, showFaded: !config.showFaded })} />
         </div>

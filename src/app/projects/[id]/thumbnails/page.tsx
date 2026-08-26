@@ -148,7 +148,7 @@ export default function ThumbnailsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">Thumbnails</h1>
+          <h1 className="text-2xl font-bold text-white">Thumbnails</h1>
           <p className="text-surface-400 text-sm mt-1">
             Design and A/B test thumbnail variants for your video
           </p>

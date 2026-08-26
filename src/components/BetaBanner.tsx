@@ -39,7 +39,7 @@ export function BetaBanner() {
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
           {/* Beta badge */}
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-brand-500/20 text-brand-400 border border-brand-500/30 shrink-0">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-[0.04em] bg-brand-500/20 text-brand-400 border border-brand-500/30 shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
             Beta
           </span>

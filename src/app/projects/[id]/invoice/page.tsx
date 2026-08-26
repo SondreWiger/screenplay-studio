@@ -125,7 +125,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3 print:hidden">
         <div>
-          <h1 className="text-xl font-black text-white">Invoice Generator</h1>
+          <h1 className="text-xl font-bold text-white">Invoice Generator</h1>
           <p className="text-sm text-surface-400 mt-0.5">
             {totalHours.toFixed(2)} hrs across {sortedDates.length} days
           </p>
@@ -155,7 +155,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
       {/* Settings panel (hidden on print) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 print:hidden">
         <Card className="p-4 space-y-3">
-          <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Your Info</p>
+          <p className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Your Info</p>
           {([
             ['freelancerName',    'Your Name'],
             ['freelancerEmail',   'Your Email'],
@@ -171,7 +171,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
           ))}
         </Card>
         <Card className="p-4 space-y-3">
-          <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Client Info</p>
+          <p className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Client Info</p>
           {([
             ['clientCompany', 'Client Company'],
             ['clientName',    'Client Name'],
@@ -187,7 +187,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
           ))}
         </Card>
         <Card className="p-4 space-y-3">
-          <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Invoice Details</p>
+          <p className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Invoice Details</p>
           <div className="grid grid-cols-2 gap-2">
             <input
               value={settings.invoiceNumber}
@@ -222,7 +222,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
           />
         </Card>
         <Card className="p-4 space-y-3">
-          <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Notes</p>
+          <p className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Notes</p>
           <textarea
             value={settings.notes}
             onChange={(e) => setField('notes', e.target.value)}
@@ -242,7 +242,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         {/* Invoice header */}
         <div className="flex justify-between items-start mb-10">
           <div>
-            <div className="text-3xl font-black text-white tracking-tight">INVOICE</div>
+            <div className="text-3xl font-bold text-white tracking-tight">INVOICE</div>
             <div className="text-white/40 mt-1 text-sm">{settings.invoiceNumber}</div>
           </div>
           <div className="text-right text-sm text-white/70">
@@ -259,7 +259,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         {/* Bill to + dates */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 mb-10">
           <div>
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Bill To</div>
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-[0.04em] mb-2">Bill To</div>
             <div className="font-semibold">{settings.clientCompany || settings.clientName || '—'}</div>
             {settings.clientCompany && settings.clientName && (
               <div className="text-white/60 text-sm">{settings.clientName}</div>
@@ -267,7 +267,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
             {settings.clientEmail && <div className="text-white/40 text-sm">{settings.clientEmail}</div>}
           </div>
           <div className="text-right">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Details</div>
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-[0.04em] mb-2">Details</div>
             <div className="text-sm">
               <span className="text-white/40">Date: </span>
               <span>{fmtDate(today)}</span>
@@ -288,11 +288,11 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         <table className="w-full text-sm mb-8 border-collapse min-w-[400px]">
           <thead>
             <tr className="border-b-2 border-white/15">
-              <th className="text-left py-2 text-xs font-bold text-white/40 uppercase tracking-wider">Date</th>
-              <th className="text-left py-2 text-xs font-bold text-white/40 uppercase tracking-wider">Description</th>
-              <th className="text-right py-2 text-xs font-bold text-white/40 uppercase tracking-wider">Hours</th>
-              <th className="text-right py-2 text-xs font-bold text-white/40 uppercase tracking-wider">Rate</th>
-              <th className="text-right py-2 text-xs font-bold text-white/40 uppercase tracking-wider">Amount</th>
+              <th className="text-left py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Date</th>
+              <th className="text-left py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Description</th>
+              <th className="text-right py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Hours</th>
+              <th className="text-right py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Rate</th>
+              <th className="text-right py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -337,7 +337,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         {/* Notes */}
         {settings.notes && (
           <div className="border-t border-white/10 pt-6">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Notes</div>
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-[0.04em] mb-2">Notes</div>
             <p className="text-white/60 text-sm whitespace-pre-line">{settings.notes}</p>
           </div>
         )}

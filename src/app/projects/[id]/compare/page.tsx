@@ -224,7 +224,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
             </svg>
             Back to Script
           </Link>
-          <h1 className="text-2xl font-black text-white">Compare Versions</h1>
+          <h1 className="text-2xl font-bold text-white">Compare Versions</h1>
           <p className="text-sm text-surface-400 mt-1">
             {currentProject?.title || 'Project'} &bull; Side-by-side diff
           </p>
@@ -250,16 +250,16 @@ export default function ComparePage({ params }: { params: { id: string } }) {
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-black text-green-400">{diffs.stats.added}</p>
-          <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mt-1">Words Added</p>
+          <p className="text-2xl font-bold text-green-400">{diffs.stats.added}</p>
+          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mt-1">Words Added</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-black text-red-400">{diffs.stats.removed}</p>
-          <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mt-1">Words Removed</p>
+          <p className="text-2xl font-bold text-red-400">{diffs.stats.removed}</p>
+          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mt-1">Words Removed</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-black text-yellow-400">{diffs.stats.modified}</p>
-          <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mt-1">Words Modified</p>
+          <p className="text-2xl font-bold text-yellow-400">{diffs.stats.modified}</p>
+          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mt-1">Words Modified</p>
         </Card>
       </div>
 
@@ -282,7 +282,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-surface-800/60">
                 <div className="p-4">
-                  <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">
+                  <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">
                     {leftScript ? `v${leftScript.version}` : 'Left'}
                   </p>
                   <p className="text-sm text-surface-300 leading-relaxed whitespace-pre-wrap">
@@ -298,7 +298,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
                   </p>
                 </div>
                 <div className="p-4">
-                  <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">
+                  <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">
                     {rightScript ? `v${rightScript.version}` : 'Right'}
                   </p>
                   <p className="text-sm text-surface-300 leading-relaxed whitespace-pre-wrap">

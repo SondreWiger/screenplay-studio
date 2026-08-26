@@ -107,15 +107,15 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span>{pc.icon}</span>
-                    {ann.is_pinned && <span className="text-[10px] text-yellow-400">📌 Pinned</span>}
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: pc.color + '20', color: pc.color }}>
+                    {ann.is_pinned && <span className="text-[11px] text-yellow-400">📌 Pinned</span>}
+                    <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: pc.color + '20', color: pc.color }}>
                       {pc.label}
                     </span>
                     {!isRead && <span className="w-2 h-2 rounded-full bg-brand-500" />}
                   </div>
                   <h3 className="font-semibold text-white text-base">{ann.title}</h3>
                   <p className="text-sm text-surface-400 mt-2 whitespace-pre-wrap">{ann.content}</p>
-                  <span className="text-[10px] text-surface-600 mt-3 block">{new Date(ann.created_at).toLocaleString()}</span>
+                  <span className="text-[11px] text-surface-600 mt-3 block">{new Date(ann.created_at).toLocaleString()}</span>
                 </div>
                 {canManage && (
                   <div className="flex gap-1 shrink-0">

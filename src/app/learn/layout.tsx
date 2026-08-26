@@ -11,7 +11,7 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
             <span className="text-brand-500">❖</span>
             Screenplay Studio
           </h2>
-          <p className="text-xs text-surface-400 mt-1 uppercase tracking-wider font-semibold">Learning Hub</p>
+          <p className="text-xs text-surface-400 mt-1 uppercase tracking-[0.04em] font-semibold">Learning Hub</p>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -22,7 +22,7 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
           </nav>
           
           <div>
-            <h3 className="px-3 text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">Core Tools</h3>
+            <h3 className="px-3 text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">Core Tools</h3>
             <nav className="space-y-1">
               <Link href="/learn/script-editor" className="flex items-center px-3 py-2 text-sm font-medium rounded-xl text-surface-300 hover:text-white hover:bg-surface-800/50 transition-colors">
                 <span className="mr-3 text-lg opacity-70">✎</span> Script Editor
@@ -37,7 +37,7 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div>
-            <h3 className="px-3 text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">Production</h3>
+            <h3 className="px-3 text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">Production</h3>
             <nav className="space-y-1">
               <Link href="/learn/shot-list" className="flex items-center px-3 py-2 text-sm font-medium rounded-xl text-surface-300 hover:text-white hover:bg-surface-800/50 transition-colors">
                 <span className="mr-3 text-lg opacity-70">🎥</span> Shot List
@@ -52,7 +52,7 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div>
-            <h3 className="px-3 text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">Reference</h3>
+            <h3 className="px-3 text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">Reference</h3>
             <nav className="space-y-1">
               <Link href="/learn/keybinds" className="flex items-center px-3 py-2 text-sm font-medium rounded-xl text-surface-300 hover:text-white hover:bg-surface-800/50 transition-colors">
                 <span className="mr-3 text-lg opacity-70">⌨️</span> Keyboard Shortcuts

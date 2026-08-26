@@ -414,7 +414,7 @@ export default function LocationMap({ projectId, locations, canEdit }: LocationM
       {/* ── Routes list sidebar ── */}
       {routes.length > 0 && (
         <div className="border-t border-surface-800 p-3 bg-surface-900 max-h-[160px] overflow-y-auto">
-          <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Routes</h4>
+          <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em] mb-2">Routes</h4>
           <div className="space-y-1">
             {routes.map((r) => (
               <div key={r.id} className="flex items-center justify-between text-sm text-surface-300 py-1">

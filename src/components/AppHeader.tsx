@@ -121,11 +121,11 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
               className="w-8 h-8 flex items-center justify-center"
               style={{ background: '#FF5F1F' }}
             >
-              <span className="text-white font-black text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="text-white font-semibold text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
             <div className="hidden sm:flex flex-col leading-none">
-              <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white">Screenplay</span>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-white/40">Studio</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white">Screenplay</span>
+              <span className="text-[11px] uppercase tracking-[0.04em] text-white/40">Studio</span>
             </div>
           </Link>
 
@@ -142,7 +142,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                   <button
                     key={link.href}
                     onClick={() => openExternal(link.external!)}
-                    className="relative px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest transition-colors duration-150 text-white/40 hover:text-white/70"
+                    className="relative px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] transition-colors duration-150 text-white/40 hover:text-white/70"
                   >
                     <span className="relative">{link.label}</span>
                   </button>
@@ -154,7 +154,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                   href={disabled ? '#' : link.href}
                   onClick={(e) => { if (disabled) e.preventDefault(); }}
                   className={cn(
-                    'relative px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest transition-colors duration-150',
+                    'relative px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] transition-colors duration-150',
                     disabled
                       ? 'text-white/15 cursor-not-allowed'
                       : active
@@ -183,7 +183,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
           {isLocalMode() && (
             <Link
               href="/auth/login"
-              className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-150 hover:-translate-y-px mr-2"
+              className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all duration-150 hover:-translate-y-px mr-2"
               style={{ background: '#FF5F1F' }}
             >
               Sign In
@@ -235,8 +235,8 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                 <div className="px-4 py-3.5 relative overflow-hidden"
                   style={{ background: 'rgba(255,95,31,0.08)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
                 >
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-brand-500 mb-1">Signed in as</p>
-                  <p className="text-sm font-black text-white truncate" style={{ letterSpacing: '-0.02em' }}>{user?.full_name || 'Your Account'}</p>
+                  <p className="text-[11px] uppercase tracking-[0.04em] text-brand-500 mb-1">Signed in as</p>
+                  <p className="text-sm font-semibold text-white truncate" style={{ letterSpacing: '-0.02em' }}>{user?.full_name || 'Your Account'}</p>
                   <p className="text-[11px] text-white/40 truncate mt-0.5">{user?.email}</p>
                 </div>
 
@@ -272,8 +272,8 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                       <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
                     </div>
                     <div>
-                      <p className="text-xs font-black text-brand-500" style={{ letterSpacing: '-0.02em' }}>UPGRADE TO PRO</p>
-                      <p className="text-[10px] font-mono text-white/40">Unlock all features</p>
+                      <p className="text-xs font-semibold text-brand-500" style={{ letterSpacing: '-0.02em' }}>UPGRADE TO PRO</p>
+                      <p className="text-[11px] font-mono text-white/40">Unlock all features</p>
                     </div>
                     <svg className="w-3.5 h-3.5 text-white/30 group-hover:text-brand-500 ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </Link>

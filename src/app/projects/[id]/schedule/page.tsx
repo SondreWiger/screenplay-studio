@@ -131,7 +131,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-white">Production Schedule</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-white">Production Schedule</h1>
           <p className="text-sm text-surface-400 mt-1">{events.length} events scheduled</p>
         </div>
         <div className="flex gap-3">
@@ -154,7 +154,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
         {EVENT_TYPES.map((t) => (
           <div key={t.value} className="flex items-center gap-1.5">
             <div className={cn('w-2 h-2 md:w-2.5 md:h-2.5 rounded-full', t.color)} />
-            <span className="text-[10px] md:text-xs text-surface-400">{t.label}</span>
+            <span className="text-[11px] md:text-xs text-surface-400">{t.label}</span>
           </div>
         ))}
       </div>
@@ -200,12 +200,12 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                           return (
                             <div key={ev.id}
                               onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setShowEditor(true); }}
-                              className={cn('text-[10px] px-1.5 py-0.5 rounded truncate text-white/90', evType?.color || 'bg-surface-600')}>
+                              className={cn('text-[11px] px-1.5 py-0.5 rounded truncate text-white/90', evType?.color || 'bg-surface-600')}>
                               {ev.title}
                             </div>
                           );
                         })}
-                        {dayEvents.length > 3 && <span className="text-[10px] text-surface-500 pl-1">+{dayEvents.length - 3} more</span>}
+                        {dayEvents.length > 3 && <span className="text-[11px] text-surface-500 pl-1">+{dayEvents.length - 3} more</span>}
                       </div>
                     </>
                   )}
@@ -253,7 +253,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
                         {scene && <span>Sc. {scene.scene_number}</span>}
                         {loc && <span>{loc.name}</span>}
                         {scene && scene.cast_ids.length > 0 && (
-                          <span className="text-[10px] text-surface-500 truncate max-w-[180px]">
+                          <span className="text-[11px] text-surface-500 truncate max-w-[180px]">
                             {scene.cast_ids.map((cid: string) => charNameMap[cid]).filter(Boolean).join(', ')}
                           </span>
                         )}
@@ -339,7 +339,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
       {/* All-day events */}
       {dayEvents.filter(e => e.all_day).length > 0 && (
         <div className="px-4 py-2 border-b border-surface-800 bg-surface-800/30">
-          <p className="text-[10px] uppercase text-surface-500 font-medium mb-1">All Day</p>
+          <p className="text-[11px] uppercase text-surface-500 font-medium mb-1">All Day</p>
           <div className="flex flex-wrap gap-1">
             {dayEvents.filter(e => e.all_day).map(ev => {
               const evType = EVENT_TYPES.find(t => t.value === ev.event_type);
@@ -372,7 +372,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
           <div key={hour} className="flex border-b border-surface-800/50 relative" style={{ height: 64 }}>
             {/* Time label */}
             <div className="w-16 shrink-0 px-2 pt-1 text-right">
-              <span className="text-[10px] text-surface-500 font-medium">
+              <span className="text-[11px] text-surface-500 font-medium">
                 {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
               </span>
             </div>
@@ -386,7 +386,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
               <div className="absolute top-1/2 left-0 right-0 border-t border-surface-800/20" />
               {canEdit && (
                 <div className="absolute inset-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-surface-900/[0.02] transition-opacity flex items-center justify-center">
-                  <span className="text-[10px] text-surface-500">+ Add event</span>
+                  <span className="text-[11px] text-surface-500">+ Add event</span>
                 </div>
               )}
             </div>
@@ -408,14 +408,14 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
               style={{ top: pos.top, height: pos.height, minHeight: 24 }}>
               <p className="text-xs font-semibold text-white truncate">{ev.title}</p>
               {pos.height > 36 && (
-                <p className="text-[10px] text-white/70 truncate mt-0.5">
+                <p className="text-[11px] text-white/70 truncate mt-0.5">
                   {formatTime(ev.start_time)} – {formatTime(ev.end_time)}
                   {scene ? ` · Sc. ${scene.scene_number}` : ''}
                   {loc ? ` · ${loc.name}` : ''}
                 </p>
               )}
               {pos.height > 56 && ev.notes && (
-                <p className="text-[10px] text-white/50 truncate mt-0.5">{ev.notes}</p>
+                <p className="text-[11px] text-white/50 truncate mt-0.5">{ev.notes}</p>
               )}
             </button>
           );

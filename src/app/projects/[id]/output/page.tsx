@@ -154,7 +154,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
     <div className="flex flex-col h-[calc(100vh-3rem)] md:h-screen bg-surface-950">
       <div className="flex items-center justify-between px-6 py-3 border-b border-surface-800">
         <div className="flex items-center gap-4">
-          <h1 className="text-sm font-bold text-white uppercase tracking-wider">Output Destinations</h1>
+          <h1 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Output Destinations</h1>
           {liveOutputs.length > 0 && (
             <Badge className="bg-red-600 text-white animate-pulse">
               {liveOutputs.length} LIVE
@@ -202,7 +202,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                         <div className="text-xs text-surface-500">{platform?.label || output.platform}</div>
                       </div>
                     </div>
-                    <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded uppercase', statusColor(output.status))}>
+                    <span className={cn('text-[11px] font-medium px-2 py-0.5 rounded uppercase', statusColor(output.status))}>
                       {output.status}
                     </span>
                   </div>
@@ -241,7 +241,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                   {output.stream_key && (
                     <div className="bg-surface-800 rounded-lg px-3 py-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-surface-500 uppercase">Stream Key</span>
+                        <span className="text-[11px] text-surface-500 uppercase">Stream Key</span>
                         <button
                           onClick={() => {
                             const next = new Set(showStreamKeys);
@@ -249,7 +249,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                             else next.add(output.id);
                             setShowStreamKeys(next);
                           }}
-                          className="text-[10px] text-surface-500 hover:text-white transition-colors"
+                          className="text-[11px] text-surface-500 hover:text-white transition-colors"
                         >
                           {showStreamKeys.has(output.id) ? 'Hide' : 'Show'}
                         </button>
@@ -274,7 +274,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                     <button
                       onClick={() => toggleStream(output)}
                       className={cn(
-                        'flex-1 py-2 text-xs font-bold rounded-lg transition-colors uppercase',
+                        'flex-1 py-2 text-xs font-medium rounded-lg transition-colors uppercase',
                         isLive
                           ? 'bg-red-600 hover:bg-red-500 text-white'
                           : 'bg-green-600 hover:bg-green-500 text-white'
@@ -293,10 +293,10 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                   {/* Flags */}
                   <div className="flex items-center gap-2">
                     {output.is_primary && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400 font-bold">PRIMARY</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400 font-bold">PRIMARY</span>
                     )}
                     {output.auto_start && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-700 text-surface-400">Auto-start</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-surface-700 text-surface-400">Auto-start</span>
                     )}
                   </div>
                 </div>
@@ -335,7 +335,7 @@ export default function OutputPage({ params }: { params: { id: string } }) {
                   )}
                 >
                   <span className="text-lg" style={{ color: p.color }}>{p.icon}</span>
-                  <span className="text-[10px] text-surface-400 truncate w-full text-center">{p.label}</span>
+                  <span className="text-[11px] text-surface-400 truncate w-full text-center">{p.label}</span>
                 </button>
               ))}
             </div>

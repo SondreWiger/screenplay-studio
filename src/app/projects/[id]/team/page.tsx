@@ -161,7 +161,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">{t('team.title')}</h1>
+          <h1 className="text-2xl font-bold text-white">{t('team.title')}</h1>
           <p className="text-sm text-surface-400 mt-1">
             {members.length} member{members.length !== 1 ? 's' : ''}
             {onlineUsers.length > 0 && (
@@ -189,7 +189,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
           const count = members.filter((m) => m.role === r.value).length;
           return (
             <Card key={r.value} className={cn('p-3 text-center', ROLE_BG[r.value])}>
-              <p className={cn('text-2xl font-black', ROLE_COLORS[r.value])}>{count}</p>
+              <p className={cn('text-2xl font-bold', ROLE_COLORS[r.value])}>{count}</p>
               <p className="text-[11px] text-surface-400 mt-0.5">{t(r.labelKey)}{count !== 1 ? 's' : ''}</p>
             </Card>
           );
@@ -312,7 +312,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         <Modal isOpen={true} onClose={() => setEditingMember(null)} title={`Edit ${editingMember.profile?.full_name || 'Member'}`} size="sm">
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-medium text-surface-400 uppercase tracking-wider mb-2">Access Role</p>
+              <p className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em] mb-2">Access Role</p>
               <div className="space-y-2">
                 {ROLES.filter((r) => r.value !== 'owner').map((role) => (
                   <button key={role.value} onClick={() => handleRoleChange(editingMember.id, role.value)}
@@ -332,7 +332,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-surface-400 uppercase tracking-wider mb-2">Production Role</p>
+              <p className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em] mb-2">Production Role</p>
               <select
                 value={editingMember.production_role || ''}
                 onChange={(e) => handleProductionRoleChange(editingMember.id, e.target.value)}
@@ -347,7 +347,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
             </div>
             {(editingMember.production_role === 'actor' || editingMember.production_role === 'extra') && (
               <div>
-                <p className="text-xs font-medium text-surface-400 uppercase tracking-wider mb-2">Character / Role Name</p>
+                <p className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em] mb-2">Character / Role Name</p>
                 {characters.length > 0 ? (
                   <select
                     value={editingMember.character_name || ''}

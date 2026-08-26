@@ -148,7 +148,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
         <div className="bg-surface-900 border border-surface-700 rounded-xl p-10 max-w-sm w-full text-center">
           <CheckCircle2 size={48} className="mx-auto mb-4 text-green-400" />
-          <h2 className="text-xl font-black mb-2">Thanks!</h2>
+          <h2 className="text-xl font-bold mb-2">Thanks!</h2>
           <p className="text-surface-400 text-sm mb-4">
             {type === 'testimonial'
               ? 'Your review has been submitted for approval.'
@@ -171,7 +171,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
         {/* Header */}
         <div className="sticky top-0 bg-surface-900 border-b border-surface-800 px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <h2 className="font-black text-white">{STEP_TITLES[step]}</h2>
+            <h2 className="font-semibold text-white">{STEP_TITLES[step]}</h2>
             <div className="flex items-center gap-1 mt-1.5">
               {[0, 1, 2].map(i => (
                 <div
@@ -222,7 +222,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
             <div className="space-y-5">
               {/* Similar issue detector */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">
+                <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">
                   Title <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -232,7 +232,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                   className="w-full px-4 py-3 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm placeholder-surface-500 focus:outline-none focus:border-surface-500"
                   maxLength={200}
                 />
-                <div className="text-right text-[10px] text-surface-600 mt-0.5">{title.length}/200</div>
+                <div className="text-right text-[11px] text-surface-600 mt-0.5">{title.length}/200</div>
               </div>
 
               {/* Similar items warning */}
@@ -240,7 +240,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                 <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle size={14} className="text-amber-400 shrink-0" />
-                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wide">
+                    <span className="text-xs font-medium text-amber-400 uppercase tracking-wide">
                       {checkingSimilar ? 'Checking for similar issues…' : `${similar.length} similar issue${similar.length !== 1 ? 's' : ''} found`}
                     </span>
                   </div>
@@ -254,7 +254,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                             <ChevronUp size={12} className="text-surface-500 shrink-0" />
                             <span className="text-xs text-surface-400">{s.vote_count}</span>
                             <span className="text-xs text-white flex-1 line-clamp-1">{s.title}</span>
-                            <span className="text-[10px] text-surface-500 uppercase tracking-wide">{s.status}</span>
+                            <span className="text-[11px] text-surface-500 uppercase tracking-wide">{s.status}</span>
                           </a>
                         ))}
                       </div>
@@ -274,7 +274,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">
+                <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">
                   {type === 'testimonial' ? 'Your Review' : 'Description'} <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -296,7 +296,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
               {type === 'bug_report' && (
                 <div className="space-y-4 pl-3 border-l-2" style={{ borderColor: '#ef444433' }}>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">Steps to Reproduce</label>
+                    <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">Steps to Reproduce</label>
                     <textarea
                       value={stepsToReproduce}
                       onChange={e => setStepsToReproduce(e.target.value)}
@@ -307,12 +307,12 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">Expected</label>
+                      <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">Expected</label>
                       <textarea value={expectedBehavior} onChange={e => setExpectedBehavior(e.target.value)} rows={2}
                         placeholder="What should happen?" className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-xl text-white text-xs placeholder-surface-500 focus:outline-none focus:border-surface-500 resize-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">Actual</label>
+                      <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">Actual</label>
                       <textarea value={actualBehavior} onChange={e => setActualBehavior(e.target.value)} rows={2}
                         placeholder="What happens instead?" className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-xl text-white text-xs placeholder-surface-500 focus:outline-none focus:border-surface-500 resize-none" />
                     </div>
@@ -326,7 +326,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
               {/* Feature-specific */}
               {type === 'feature_request' && (
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">Use Case</label>
+                  <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">Use Case</label>
                   <textarea value={useCase} onChange={e => setUseCase(e.target.value)} rows={2}
                     placeholder="When would you use this? Who would benefit?"
                     className="w-full px-4 py-3 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm placeholder-surface-500 focus:outline-none focus:border-surface-500 resize-y" />
@@ -337,7 +337,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
               {type === 'testimonial' && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-2">Rating</label>
+                    <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-2">Rating</label>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map(r => (
                         <button key={r} onClick={() => setRating(r)}
@@ -358,12 +358,12 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
               {!user && (
                 <div className="pt-2 border-t border-surface-800 grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">Your Name</label>
+                    <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">Your Name</label>
                     <input value={authorName} onChange={e => setAuthorName(e.target.value)} placeholder="Optional"
                       className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm placeholder-surface-500 focus:outline-none focus:border-surface-500" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-surface-400 mb-1.5">Email</label>
+                    <label className="block text-xs font-medium uppercase tracking-[0.04em] text-surface-400 mb-1.5">Email</label>
                     <input value={authorEmail} onChange={e => setAuthorEmail(e.target.value)} type="email" placeholder="For update notifications"
                       className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm placeholder-surface-500 focus:outline-none focus:border-surface-500" />
                   </div>
@@ -377,7 +377,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
             <div className="space-y-4">
               <div className="rounded-xl border border-surface-700 bg-surface-800 p-4 space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-widest text-surface-500">
+                  <span className="text-xs font-medium uppercase tracking-[0.04em] text-surface-500">
                     {TYPES.find(t => t.value === type)?.label}
                   </span>
                 </div>

@@ -38,7 +38,7 @@ export const metadata: Metadata = {
    ════════════════════════════════════════════════════════════ */
 
 function Mono({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <span className={`font-mono text-[9px] uppercase tracking-[0.25em] ${className}`}>{children}</span>;
+  return <span className={`text-[11px] uppercase tracking-[0.04em] ${className}`}>{children}</span>;
 }
 
 function Cross({ className = '' }: { className?: string }) {
@@ -80,7 +80,7 @@ async function TestimonialsRow() {
         >
           <div className="flex items-center gap-3 mb-6">
             <div
-              className="w-8 h-8 flex items-center justify-center text-[10px] font-black text-white"
+              className="w-8 h-8 flex items-center justify-center text-[11px] font-semibold text-white"
               style={{ background: 'rgb(var(--brand-500))' }}
             >
               {(t.display_name ?? 'A')[0].toUpperCase()}
@@ -88,7 +88,7 @@ async function TestimonialsRow() {
             <div>
               <Mono className="text-white/30 block">{t.display_name ?? 'Anonymous'}</Mono>
               {t.rating && (
-                <div className="text-[10px] mt-0.5" style={{ color: 'rgb(var(--brand-500))' }}>
+                <div className="text-[11px] mt-0.5" style={{ color: 'rgb(var(--brand-500))' }}>
                   {'●'.repeat(t.rating)}{'○'.repeat(5 - t.rating)}
                 </div>
               )}
@@ -184,14 +184,14 @@ export default async function LandingPage() {
         <div className="max-w-screen-xl mx-auto px-6 md:px-8 h-14 flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-3">
             <div
-              className="w-8 h-8 flex items-center justify-center text-[8px] font-black text-white shrink-0"
+              className="w-8 h-8 flex items-center justify-center text-[11px] font-semibold text-white shrink-0"
               style={{ background: 'rgb(var(--brand-500))' }}
             >
               SS
             </div>
             <div className="leading-none hidden sm:block">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Screenplay</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'rgb(var(--brand-500))' }}>Studio</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">Screenplay</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgb(var(--brand-500))' }}>Studio</p>
             </div>
           </Link>
 
@@ -200,7 +200,7 @@ export default async function LandingPage() {
               <Link
                 key={href}
                 href={href}
-                className="hidden md:inline-block px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/25 hover:text-white/70 transition-colors duration-300"
+                className="hidden md:inline-block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/70 transition-colors duration-300"
               >
                 {label}
               </Link>
@@ -209,7 +209,7 @@ export default async function LandingPage() {
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="ml-3 inline-flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-200 hover:-translate-y-px"
+                className="ml-3 inline-flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all duration-200 hover:-translate-y-px"
                 style={{ background: 'rgb(var(--brand-500))' }}
               >
                 Dashboard <span>→</span>
@@ -218,13 +218,13 @@ export default async function LandingPage() {
               <>
                 <Link
                   href="/auth/login"
-                  className="hidden md:inline-block px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/25 hover:text-white/70 transition-colors duration-300"
+                  className="hidden md:inline-block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/70 transition-colors duration-300"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="ml-2 inline-flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all duration-200 hover:-translate-y-px"
+                  className="ml-2 inline-flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all duration-200 hover:-translate-y-px"
                   style={{ background: 'rgb(var(--brand-500))' }}
                 >
                   Start Free <span>→</span>
@@ -258,7 +258,7 @@ export default async function LandingPage() {
           <div className="relative" aria-hidden="true">
             {/* Background number watermark */}
             <div
-              className="absolute -top-10 -right-4 text-[20rem] font-black leading-none pointer-events-none select-none hidden lg:block"
+              className="absolute -top-10 -right-4 text-[20rem] font-semibold leading-none pointer-events-none select-none hidden lg:block"
               style={{ color: 'rgba(255,255,255,0.015)' }}
             >
               SS
@@ -310,7 +310,7 @@ export default async function LandingPage() {
             <div className="md:col-span-4 flex flex-col items-start md:items-end justify-end gap-3">
               <Link
                 href={isLoggedIn ? '/dashboard' : '/auth/register'}
-                className="group inline-flex items-center gap-3 px-8 py-4 text-[10px] font-black uppercase tracking-[0.18em] text-white transition-all duration-200 hover:-translate-y-0.5"
+                className="group inline-flex items-center gap-3 px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all duration-200 hover:-translate-y-0.5"
                 style={{ background: 'rgb(var(--brand-500))', boxShadow: '0 12px 48px rgba(var(--brand-500), 0.15)' }}
               >
                 {isLoggedIn ? 'Open Dashboard' : 'Start Writing — Free'}
@@ -337,7 +337,7 @@ export default async function LandingPage() {
                   <div className="w-6 h-px bg-white/10" />
                   <Mono className="text-white/25">STATEMENT</Mono>
                 </div>
-                <h3 className="text-lg font-black uppercase tracking-wider text-white">
+                <h3 className="text-lg font-semibold uppercase tracking-[0.04em] text-white">
                   WHY WE BUILT THIS.
                 </h3>
               </div>
@@ -352,7 +352,7 @@ export default async function LandingPage() {
                   no restricted export formats, and no paywalls on basic creation. We sustain development entirely through voluntary 
                   community support and professional hosting services. You focus on the page; we will keep the platform open.
                 </p>
-                <div className="flex items-center gap-6 mt-2 font-mono text-[9px] text-white/20">
+                <div className="flex items-center gap-6 mt-2 font-mono text-[11px] text-white/20">
                   <span>NO EXPORT LOCKS</span>
                   <span>NO PAYWALLS</span>
                   <span>100% OPEN SOURCE</span>
@@ -387,15 +387,15 @@ export default async function LandingPage() {
                 }}
               >
                 <span
-                  className="block font-black tracking-tight text-white leading-none mb-2"
+                  className="block font-semibold tracking-tight text-white leading-none mb-2"
                   style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}
                 >
                   {s.num}
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.25em] block mb-1" style={{ color: 'rgb(var(--brand-500))' }}>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.04em] block mb-1" style={{ color: 'rgb(var(--brand-500))' }}>
                   {s.label}
                 </span>
-                <span className="text-[10px] text-white/15">{s.sub}</span>
+                <span className="text-[11px] text-white/15">{s.sub}</span>
               </div>
             ))}
           </div>
@@ -412,7 +412,7 @@ export default async function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12">
             <div className="md:col-span-8">
               <h2
-                className="font-black text-white"
+                className="font-semibold text-white"
                 style={{ fontSize: 'clamp(2.5rem, 7vw, 6rem)', letterSpacing: '-0.04em', lineHeight: 0.9 }}
               >
                 WHAT<br />
@@ -423,7 +423,7 @@ export default async function LandingPage() {
             <div className="md:col-span-4 flex items-end">
               <Link
                 href="/testimonials"
-                className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 hover:text-white/60 transition-colors duration-300 border-b border-white/10 pb-0.5"
+                className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors duration-300 border-b border-white/10 pb-0.5"
               >
                 See all reviews →
               </Link>
@@ -446,7 +446,7 @@ export default async function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-16">
             <div className="lg:col-span-7">
               <h2
-                className="font-black text-white"
+                className="font-semibold text-white"
                 style={{ fontSize: 'clamp(2.5rem, 7vw, 6rem)', letterSpacing: '-0.04em', lineHeight: 0.9 }}
               >
                 THE FULL<br />
@@ -472,7 +472,7 @@ export default async function LandingPage() {
               >
                 {/* Number */}
                 <div className="col-span-2 md:col-span-1 py-5 px-4">
-                  <span className="font-mono text-[10px] font-bold group-hover:opacity-100 opacity-30 transition-opacity duration-300" style={{ color: 'rgb(var(--brand-500))' }}>
+                  <span className="font-mono text-[11px] font-bold group-hover:opacity-100 opacity-30 transition-opacity duration-300" style={{ color: 'rgb(var(--brand-500))' }}>
                     {tool.n}
                   </span>
                 </div>
@@ -482,14 +482,14 @@ export default async function LandingPage() {
 
                 {/* Name */}
                 <div className="col-span-6 md:col-span-5 py-5 px-4">
-                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.1em] text-white/40 group-hover:text-white transition-colors duration-300">
+                  <span className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.1em] text-white/40 group-hover:text-white transition-colors duration-300">
                     {tool.name}
                   </span>
                 </div>
 
                 {/* Sub */}
                 <div className="col-span-4 md:col-span-5 py-5 px-4 text-right md:text-left">
-                  <span className="text-[10px] text-white/15 font-mono group-hover:text-white/30 transition-colors duration-300">
+                  <span className="text-[11px] text-white/15 font-mono group-hover:text-white/30 transition-colors duration-300">
                     {tool.sub}
                   </span>
                 </div>
@@ -512,7 +512,7 @@ export default async function LandingPage() {
             ].map(tag => (
               <span
                 key={tag}
-                className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/15 border border-white/[0.04]
+                className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white/15 border border-white/[0.04]
                   hover:text-white/50 hover:border-white/10 transition-all duration-300 cursor-default"
               >
                 {tag}
@@ -546,11 +546,11 @@ export default async function LandingPage() {
             <div className="relative z-10 p-10 md:p-16 lg:p-20">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
                 <div className="md:col-span-8">
-                  <span className="text-[9px] font-black uppercase tracking-[0.28em] text-black/30 block mb-6">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-black/30 block mb-6">
                     Open Studio · Start Now
                   </span>
                   <h2
-                    className="font-black text-black"
+                    className="font-semibold text-black"
                     style={{ fontSize: 'clamp(3.5rem, 10vw, 9rem)', letterSpacing: '-0.04em', lineHeight: 0.85 }}
                   >
                     {isLoggedIn
@@ -562,13 +562,13 @@ export default async function LandingPage() {
                 <div className="md:col-span-4 flex flex-col items-start md:items-end gap-3">
                   <Link
                     href={isLoggedIn ? '/dashboard' : '/auth/register'}
-                    className="group inline-flex items-center gap-3 px-10 py-5 text-[10px] font-black uppercase tracking-[0.18em] bg-black text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl"
+                    className="group inline-flex items-center gap-3 px-10 py-5 text-[11px] font-semibold uppercase tracking-[0.04em] bg-black text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl"
                   >
                     {isLoggedIn ? 'Open Dashboard' : 'Create Free Account'}
                     <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                   </Link>
                   {!isLoggedIn && (
-                    <span className="text-[9px] font-mono text-black/25 tracking-wider">
+                    <span className="text-[11px] font-mono text-black/25 tracking-wider">
                       100% FREE · NO CREDIT CARD
                     </span>
                   )}
@@ -591,7 +591,7 @@ export default async function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
             <div className="md:col-span-6">
               <h2
-                className="font-black text-white"
+                className="font-semibold text-white"
                 style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)', letterSpacing: '-0.03em', lineHeight: 0.92 }}
               >
                 BUILT BY A<br />
@@ -610,7 +610,7 @@ export default async function LandingPage() {
                 href="https://ko-fi.com/northemdevelopment"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-3 px-6 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all duration-200 hover:-translate-y-px w-fit"
+                className="group inline-flex items-center gap-3 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all duration-200 hover:-translate-y-px w-fit"
                 style={{ background: '#FF5E5B' }}
               >
                 <span>♥</span>
@@ -632,7 +632,7 @@ export default async function LandingPage() {
           </div>
 
           <h2
-            className="font-black text-white mb-12"
+            className="font-semibold text-white mb-12"
             style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: '-0.03em', lineHeight: 0.92 }}
           >
             EVERYTHING<br />
@@ -672,7 +672,7 @@ export default async function LandingPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
               <div
-                className="w-5 h-5 flex items-center justify-center text-[7px] font-black text-white"
+                className="w-5 h-5 flex items-center justify-center text-[11px] font-semibold text-white"
                 style={{ background: 'rgb(var(--brand-500))' }}
               >
                 SS
@@ -700,7 +700,7 @@ export default async function LandingPage() {
                 <a
                   key={href}
                   href={href}
-                  className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/10 hover:text-white/40 transition-colors duration-300"
+                  className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/10 hover:text-white/40 transition-colors duration-300"
                 >
                   {label}
                 </a>
@@ -710,7 +710,7 @@ export default async function LandingPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors duration-300"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors duration-300"
               style={{ color: 'rgba(var(--brand-500), 0.5)' }}
             >
               Northem Development ♥ Oslo

@@ -105,14 +105,14 @@ export function CookieConsentBanner() {
             <label className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-medium text-white">Necessary</span>
-                <p className="text-[10px] text-surface-500">Required for the app to function. Cannot be disabled.</p>
+                <p className="text-[11px] text-surface-500">Required for the app to function. Cannot be disabled.</p>
               </div>
               <input type="checkbox" checked disabled className="rounded border-surface-600 bg-surface-700 text-brand-500" />
             </label>
             <label className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-medium text-white">Analytics</span>
-                <p className="text-[10px] text-surface-500">Help us understand how you use the app.</p>
+                <p className="text-[11px] text-surface-500">Help us understand how you use the app.</p>
               </div>
               <input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)}
                 className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />
@@ -120,7 +120,7 @@ export function CookieConsentBanner() {
             <label className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-medium text-white">Marketing</span>
-                <p className="text-[10px] text-surface-500">Personalized recommendations and offers.</p>
+                <p className="text-[11px] text-surface-500">Personalized recommendations and offers.</p>
               </div>
               <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)}
                 className="rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500" />

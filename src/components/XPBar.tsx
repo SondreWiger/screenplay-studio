@@ -45,12 +45,12 @@ export function XPBar({
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5">
           <span
-            className={`text-xs font-black text-brand-500 ${glowClass}`}
+            className={`text-xs font-semibold text-brand-500 ${glowClass}`}
           >
             Lvl {level}
           </span>
           {showTitle && (
-            <span className="text-[10px] font-mono uppercase tracking-widest text-white/30">
+            <span className="text-[11px] uppercase tracking-[0.04em] text-white/55">
               {title}
             </span>
           )}
@@ -58,11 +58,11 @@ export function XPBar({
 
         <div className="flex items-center gap-2">
           {showMultiplier && multiplier > 1 && (
-            <span className="text-[9px] font-black text-brand-500 bg-brand-500/10 px-1.5 py-0.5 rounded-full border border-brand-500/20 animate-pulse">
+            <span className="text-[11px] font-semibold text-brand-500 bg-brand-500/10 px-1.5 py-0.5 rounded-full border border-brand-500/20 animate-pulse">
               {multiplier}× XP
             </span>
           )}
-          <span className="text-[10px] text-white/25 font-mono">
+          <span className="text-[11px] text-white/25 font-mono">
             {xpTotal.toLocaleString()} XP
           </span>
         </div>
@@ -80,7 +80,7 @@ export function XPBar({
 
       {level < 100 && (
         <div className="flex justify-end mt-0.5">
-          <span className="text-[9px] text-white/20 font-mono">
+          <span className="text-[11px] text-white/20 font-mono">
             {(xpForNextLevel - xpTotal).toLocaleString()} XP to next level
           </span>
         </div>

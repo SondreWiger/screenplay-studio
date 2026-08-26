@@ -192,7 +192,7 @@ export function MentionTextarea({
                   <img src={s.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" loading="lazy" />
                 ) : (
                   <div
-                    className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-black text-white"
+                    className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[11px] font-semibold text-white"
                     style={{ background: '#FF5F1F' }}
                   >
                     {handle[0]?.toUpperCase()}
@@ -203,7 +203,7 @@ export function MentionTextarea({
                     {s.display_name || s.username}
                   </p>
                   {s.username && (
-                    <p className="text-[10px] text-white/40 font-mono truncate">@{s.username}</p>
+                    <p className="text-[11px] text-white/40 font-mono truncate">@{s.username}</p>
                   )}
                 </div>
               </button>

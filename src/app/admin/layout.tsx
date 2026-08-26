@@ -178,7 +178,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <nav className="flex-1 overflow-y-auto p-3 space-y-4">
           {NAV_SECTIONS.map((section) => (
             <div key={section.label}>
-              <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-[0.12em] font-semibold">
+              <p className="px-3 py-1 text-[11px] text-surface-400 uppercase tracking-[0.04em] font-semibold">
                 {section.label}
               </p>
               <div className="space-y-0.5">

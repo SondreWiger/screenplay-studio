@@ -53,7 +53,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
         <div className="text-center">
-          <p className="text-white/30 text-sm uppercase tracking-widest font-mono mb-3">Creator not found</p>
+          <p className="text-white/55 text-sm uppercase tracking-[0.04em] mb-3">Creator not found</p>
           <Link href="/" className="text-brand-500 text-sm hover:underline">Go to Screenplay Studio →</Link>
         </div>
       </div>
@@ -84,15 +84,15 @@ export default function RefLandingPage({ params }: { params: { username: string 
       <nav className="relative z-10 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <div className="max-w-screen-lg mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0" style={{ background: ORANGE }}>
+            <div className="w-7 h-7 flex items-center justify-center text-[11px] font-semibold text-white shrink-0" style={{ background: ORANGE }}>
               SS
             </div>
             <div className="leading-none">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/70">SCREENPLAY</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: ORANGE }}>STUDIO</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/70">SCREENPLAY</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.04em]" style={{ color: ORANGE }}>STUDIO</p>
             </div>
           </Link>
-          <Link href="/auth/register" className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white" style={{ background: ORANGE }}>
+          <Link href="/auth/register" className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-white" style={{ background: ORANGE }}>
             Join Free →
           </Link>
         </div>
@@ -102,7 +102,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
         {/* Creator hero */}
         <section className="max-w-screen-lg mx-auto px-6 pt-20 pb-16 text-center">
           {/* Avatar */}
-          <div className="w-20 h-20 mx-auto mb-5 rounded-full overflow-hidden border-2 flex items-center justify-center text-2xl font-black text-white" style={{ borderColor: ORANGE, background: 'rgba(255,95,31,0.15)' }}>
+          <div className="w-20 h-20 mx-auto mb-5 rounded-full overflow-hidden border-2 flex items-center justify-center text-2xl font-bold text-white" style={{ borderColor: ORANGE, background: 'rgba(255,95,31,0.15)' }}>
             {avatarUrl ? (
               <Image src={avatarUrl} alt={displayName} width={80} height={80} className="w-full h-full object-cover" />
             ) : (
@@ -110,10 +110,10 @@ export default function RefLandingPage({ params }: { params: { username: string 
             )}
           </div>
 
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] mb-2" style={{ color: ORANGE }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.04em] mb-2" style={{ color: ORANGE }}>
             Creator Invite
           </p>
-          <h1 className="font-black text-white mb-3" style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', letterSpacing: '-0.03em', lineHeight: 0.95 }}>
+          <h1 className="font-semibold text-white mb-3" style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', letterSpacing: '-0.03em', lineHeight: 0.95 }}>
             {displayName.toUpperCase()}<br />
             <span style={{ color: 'rgba(255,255,255,0.3)' }}>WANTS YOU TO</span><br />
             WRITE BETTER.
@@ -131,14 +131,14 @@ export default function RefLandingPage({ params }: { params: { username: string 
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 border text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white hover:border-white/30 transition-colors"
+                  className="px-3 py-1.5 border text-[11px] font-semibold uppercase tracking-[0.04em] text-white/50 hover:text-white hover:border-white/30 transition-colors"
                   style={{ borderColor: 'rgba(255,255,255,0.12)' }}
                 >
                   {s.icon}
                 </a>
               ))}
               {username && (
-                <Link href={`/u/${username}`} className="px-3 py-1.5 border text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white hover:border-white/30 transition-colors" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
+                <Link href={`/u/${username}`} className="px-3 py-1.5 border text-[11px] font-semibold uppercase tracking-[0.04em] text-white/50 hover:text-white hover:border-white/30 transition-colors" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
                   PROFILE
                 </Link>
               )}
@@ -149,13 +149,13 @@ export default function RefLandingPage({ params }: { params: { username: string 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href={`/auth/register?ref=${params.username}`}
-              className="inline-flex items-center gap-2 px-8 py-4 text-[11px] font-black uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all hover:-translate-y-0.5"
               style={{ background: ORANGE }}
             >
               Create Free Account
               <span>→</span>
             </Link>
-            <span className="text-[9px] font-mono text-white/20 tracking-wider uppercase">No credit card · Free forever</span>
+            <span className="text-[11px] text-white/55 tracking-[0.04em] uppercase">No credit card · Free forever</span>
           </div>
         </section>
 
@@ -180,9 +180,9 @@ export default function RefLandingPage({ params }: { params: { username: string 
               >
                 <div className="absolute left-0 top-0 bottom-0 w-0.5 origin-top scale-y-0 transition-transform duration-200" style={{ background: ORANGE }} />
                 <div className="flex items-start gap-4">
-                  <span className="text-[10px] font-black font-mono shrink-0 pt-0.5 opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: ORANGE }}>{f.n}</span>
+                  <span className="text-[11px] font-semibold font-mono shrink-0 pt-0.5 opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: ORANGE }}>{f.n}</span>
                   <div>
-                    <h3 className="text-[10px] font-black uppercase leading-tight mb-2 text-white/50 group-hover:text-white transition-colors" style={{ letterSpacing: '0.1em' }}>{f.title}</h3>
+                    <h3 className="text-[11px] font-semibold uppercase leading-tight mb-2 text-white/50 group-hover:text-white transition-colors" style={{ letterSpacing: '0.1em' }}>{f.title}</h3>
                     <p className="text-[11px] text-white/20 leading-relaxed group-hover:text-white/40 transition-colors">{f.desc}</p>
                   </div>
                 </div>
@@ -194,7 +194,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
           <div className="mt-12 text-center">
             <Link
               href={`/auth/register?ref=${params.username}`}
-              className="inline-flex items-center gap-2 px-10 py-5 text-[11px] font-black uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5 hover:shadow-2xl"
+              className="inline-flex items-center gap-2 px-10 py-5 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all hover:-translate-y-0.5 hover:shadow-2xl"
               style={{ background: ORANGE }}
             >
               Get Started Free
@@ -205,7 +205,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
       </main>
 
       <footer className="relative z-10 border-t py-6 text-center" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-        <p className="text-[9px] font-mono text-white/15 uppercase tracking-widest">
+        <p className="text-[11px] text-white/15 uppercase tracking-[0.04em]">
           Screenplay Studio · Northem Development · Oslo, Norway
         </p>
       </footer>

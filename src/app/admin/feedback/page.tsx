@@ -123,7 +123,7 @@ function AdminNoteEditor({ item, onSaved }: { item: FeedbackItem; onSaved: (note
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Internal Note</label>
+      <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Internal Note</label>
       <Textarea
         value={note}
         onChange={e => setNote(e.target.value)}
@@ -155,7 +155,7 @@ function TagEditor({ item, onSaved }: { item: FeedbackItem; onSaved: (tags: stri
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Tags (comma separated)</label>
+      <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Tags (comma separated)</label>
       <Input value={raw} onChange={e => setRaw(e.target.value)} placeholder="ui, auth, performance…" className="text-sm" />
       <Button size="sm" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save Tags'}</Button>
     </div>
@@ -211,7 +211,7 @@ function SimilarSearch({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Link Duplicate / Related</label>
+      <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Link Duplicate / Related</label>
       <Input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by title…" className="text-sm" />
       {results.length > 0 && (
         <div className="flex flex-col gap-1">
@@ -363,7 +363,7 @@ function DetailDrawer({
           {/* Quick status / priority row */}
           <div className="flex flex-wrap gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Status</label>
+              <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Status</label>
               <select
                 value={item.status}
                 onChange={e => patch({ status: e.target.value as FStatus })}
@@ -375,7 +375,7 @@ function DetailDrawer({
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Priority</label>
+              <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Priority</label>
               <select
                 value={item.priority}
                 onChange={e => patch({ priority: e.target.value as FPriority })}
@@ -387,7 +387,7 @@ function DetailDrawer({
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Visibility</label>
+              <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Visibility</label>
               <select
                 value={item.is_public ? 'public' : 'private'}
                 onChange={e => patch({ is_public: e.target.value === 'public' })}
@@ -399,7 +399,7 @@ function DetailDrawer({
             </div>
             {item.type === 'testimonial' && (
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Approved</label>
+                <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Approved</label>
                 <button
                   onClick={() => patch({ is_approved: !item.is_approved })}
                   className={cn(
@@ -417,14 +417,14 @@ function DetailDrawer({
 
           {/* Body */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500 block mb-1">Description</label>
+            <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 block mb-1">Description</label>
             <p className="text-sm text-surface-300 whitespace-pre-wrap">{item.body}</p>
           </div>
 
           {/* Bug-specific fields */}
           {item.type === 'bug_report' && (item.steps_to_reproduce || item.expected_behavior || item.actual_behavior || item.browser_info) && (
             <div className="space-y-3 border border-surface-800 rounded-lg p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Bug Details</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Bug Details</p>
               {item.steps_to_reproduce && (
                 <div>
                   <p className="text-[11px] text-surface-500 mb-1">Steps to Reproduce</p>
@@ -461,7 +461,7 @@ function DetailDrawer({
           {/* Feature use case */}
           {item.type === 'feature_request' && item.use_case && (
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-surface-500 block mb-1">Use Case</label>
+              <label className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 block mb-1">Use Case</label>
               <p className="text-sm text-surface-300 whitespace-pre-wrap">{item.use_case}</p>
             </div>
           )}
@@ -489,7 +489,7 @@ function DetailDrawer({
 
           {similarLinks.length > 0 && (
             <div className="space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Linked Items</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Linked Items</p>
               {similarLinks.map(l => l.similar && (
                 <Link
                   key={l.id}
@@ -497,7 +497,7 @@ function DetailDrawer({
                   className="flex items-center gap-2 text-sm text-blue-400 hover:underline"
                 >
                   {TYPE_META[l.similar.type].emoji} {l.similar.title}
-                  <span className={cn('text-[10px] px-1.5 py-0.5 rounded border', STATUS_META[l.similar.status].color)}>
+                  <span className={cn('text-[11px] px-1.5 py-0.5 rounded border', STATUS_META[l.similar.status].color)}>
                     {STATUS_META[l.similar.status].label}
                   </span>
                 </Link>
@@ -507,7 +507,7 @@ function DetailDrawer({
 
           {/* Admin timeline */}
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-surface-500 mb-3">Admin Timeline</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 mb-3">Admin Timeline</p>
             {loadingComments ? (
               <div className="flex justify-center py-4"><LoadingSpinner /></div>
             ) : comments.length === 0 ? (
@@ -525,8 +525,8 @@ function DetailDrawer({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className={cn('text-[11px] font-semibold', meta.color)}>{meta.label}</span>
-                          <span className="text-[10px] text-surface-600">{timeAgo(c.created_at)}</span>
-                          {!c.is_public && <span className="text-[9px] px-1 py-0.5 rounded bg-surface-800 text-surface-500 uppercase tracking-wide">internal</span>}
+                          <span className="text-[11px] text-surface-600">{timeAgo(c.created_at)}</span>
+                          {!c.is_public && <span className="text-[11px] px-1 py-0.5 rounded bg-surface-800 text-surface-500 uppercase tracking-wide">internal</span>}
                         </div>
                         {c.comment_type === 'status_change' && c.metadata && (
                           <p className="text-[11px] text-surface-500 mb-1">
@@ -546,7 +546,7 @@ function DetailDrawer({
 
           {/* Add comment form */}
           <div className="border border-surface-800 rounded-lg p-4 space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-surface-500">Add Timeline Entry</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Add Timeline Entry</p>
             <div className="flex gap-3">
               <div className="flex flex-col gap-1 flex-1">
                 <label className="text-[11px] text-surface-500">Type</label>
@@ -706,7 +706,7 @@ export default function AdminFeedbackPage() {
           ))}
 
           <div className="mt-4 pt-4 border-t border-surface-800">
-            <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider font-medium">Tools</p>
+            <p className="px-3 py-1 text-[11px] text-surface-400 uppercase tracking-[0.04em] font-medium">Tools</p>
             <Link href="/admin/legal" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
               Legal Blog
@@ -766,7 +766,7 @@ export default function AdminFeedbackPage() {
           ].map(s => (
             <div key={s.label} className="bg-surface-900 border border-surface-800 rounded-xl p-4">
               <p className={cn('text-2xl font-bold', s.color)}>{s.value}</p>
-              <p className="text-[11px] text-surface-500 uppercase tracking-widest mt-0.5">{s.label}</p>
+              <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em] mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -830,13 +830,13 @@ export default function AdminFeedbackPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-surface-800 bg-surface-900/50">
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-surface-500 w-8"></th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-surface-500">Title</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-surface-500 hidden md:table-cell">Author</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-surface-500">Status</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-surface-500 hidden lg:table-cell">Priority</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-surface-500 hidden lg:table-cell">Votes</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-surface-500 hidden xl:table-cell">Submitted</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 w-8"></th>
+                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Title</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden md:table-cell">Author</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Status</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden lg:table-cell">Priority</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden lg:table-cell">Votes</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden xl:table-cell">Submitted</th>
                   <th className="px-4 py-3 w-8"></th>
                 </tr>
               </thead>
@@ -862,7 +862,7 @@ export default function AdminFeedbackPage() {
                       {item.tags.length > 0 && (
                         <div className="flex gap-1 mt-1 flex-wrap">
                           {item.tags.slice(0, 3).map(t => (
-                            <span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500">{t}</span>
+                            <span key={t} className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500">{t}</span>
                           ))}
                         </div>
                       )}

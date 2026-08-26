@@ -122,7 +122,7 @@ export function QuoteForm({ initial, groups, sharedGroups, onSubmit, onCancel }:
             ))}
           </select>
           {groupId && (
-            <p className="text-[10px] text-surface-500 mt-1">
+            <p className="text-[11px] text-surface-500 mt-1">
               Anyone in this group can see and add quotes.
             </p>
           )}

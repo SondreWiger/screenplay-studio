@@ -162,7 +162,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-black text-white">Submission Tracker</h1>
+          <h1 className="text-xl font-bold text-white">Submission Tracker</h1>
           <p className="text-sm text-surface-400 mt-0.5">{submissions.length} total submissions</p>
         </div>
         {canEdit && (
@@ -186,7 +186,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
               filterStatus === status ? cfg.color + ' ring-1 ring-inset ring-current/30' : 'bg-surface-800/40 border-surface-700/40 hover:bg-surface-800/70',
             )}
           >
-            <div className="text-xl font-black text-white">{counts[status] ?? 0}</div>
+            <div className="text-xl font-bold text-white">{counts[status] ?? 0}</div>
             <div className="text-xs text-surface-400 mt-0.5">{cfg.label}</div>
           </button>
         ))}
@@ -222,14 +222,14 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-white text-sm">{s.recipient_name}</span>
-                    <span className="text-[10px] text-surface-500 bg-surface-800 rounded px-1.5 py-0.5">
+                    <span className="text-[11px] text-surface-500 bg-surface-800 rounded px-1.5 py-0.5">
                       {TYPE_LABELS[s.recipient_type]}
                     </span>
-                    <span className={cn('text-[10px] px-2 py-0.5 rounded-full border font-medium', cfg.color)}>
+                    <span className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium', cfg.color)}>
                       {cfg.label}
                     </span>
                     {overdue && (
-                      <span className="text-[10px] text-orange-400 font-medium">⚠ Follow-up overdue</span>
+                      <span className="text-[11px] text-orange-400 font-medium">⚠ Follow-up overdue</span>
                     )}
                   </div>
                   {s.notes && <p className="text-xs text-surface-500 mt-0.5 truncate">{s.notes}</p>}

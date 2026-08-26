@@ -105,7 +105,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">Shot List</h1>
+          <h1 className="text-2xl font-bold text-white">Shot List</h1>
           <p className="text-sm text-surface-400 mt-1">{completed}/{shots.length} shots completed</p>
         </div>
         <Link href={`/projects/${params.id}/script`}>

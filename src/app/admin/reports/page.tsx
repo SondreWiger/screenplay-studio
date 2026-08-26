@@ -433,7 +433,7 @@ export default function ReportsPage() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Admin
           </Link>
-          <h1 className="text-2xl font-black text-white">Content Reports &amp; Moderation</h1>
+          <h1 className="text-2xl font-bold text-white">Content Reports &amp; Moderation</h1>
           <p className="text-sm text-surface-400 mt-1">Review reports, moderate content, and track actions</p>
         </div>
         <Button onClick={loadAll} variant="secondary" size="sm">
@@ -451,7 +451,7 @@ export default function ReportsPage() {
         ].map((s) => (
           <Card key={s.label} className="p-4">
             <p className="text-xs text-surface-400 mb-1">{s.label}</p>
-            <p className={cn('text-2xl font-black', s.color)}>
+            <p className={cn('text-2xl font-bold', s.color)}>
               {'isText' in s ? s.value : (s.value as number).toLocaleString()}
             </p>
           </Card>

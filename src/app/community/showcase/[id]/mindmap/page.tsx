@@ -205,7 +205,7 @@ export default function DeepDiveMindmapPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">🧠</div>
-        <h1 className="text-2xl font-black">Mind Map Unavailable</h1>
+        <h1 className="text-2xl font-bold">Mind Map Unavailable</h1>
         <p className="text-white/40">{error || 'Something went wrong.'}</p>
         <Link href={`/community/showcase/${params.id}`} className="mt-4 px-5 py-2.5 text-sm font-medium text-black bg-purple-500 hover:bg-purple-400 rounded-lg transition-colors">
           Back to Project
@@ -228,7 +228,7 @@ export default function DeepDiveMindmapPage() {
               <span className="text-sm font-medium">Back to {project.title}</span>
             </Link>
             <div className="flex items-center gap-2 ml-4">
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-400 bg-purple-500/10 rounded-full border border-purple-500/20">
+              <span className="px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.04em] text-purple-400 bg-purple-500/10 rounded-full border border-purple-500/20">
                 Deep Dive
               </span>
               <span className="text-xs text-white/40">Mind Map — Read Only</span>
@@ -472,7 +472,7 @@ export default function DeepDiveMindmapPage() {
 
       {/* Legend */}
       <div className="absolute bottom-6 right-6 bg-[#1a1a2e]/80 backdrop-blur-sm border border-white/5 rounded-lg px-3 py-2 z-20">
-        <p className="text-[10px] text-white/50">Scroll to zoom &middot; Drag to pan &middot; Click nodes for details</p>
+        <p className="text-[11px] text-white/50">Scroll to zoom &middot; Drag to pan &middot; Click nodes for details</p>
       </div>
     </div>
   );

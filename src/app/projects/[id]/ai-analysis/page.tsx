@@ -496,8 +496,8 @@ function StatCard({ label, value, sub, icon }: { label: string; value: string | 
     <Card className="p-4">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs text-surface-400 uppercase tracking-wider">{label}</p>
-          <p className="text-2xl font-black text-white mt-1">{value}</p>
+          <p className="text-xs text-surface-400 uppercase tracking-[0.04em]">{label}</p>
+          <p className="text-2xl font-bold text-white mt-1">{value}</p>
           {sub && <p className="text-xs text-surface-500 mt-0.5">{sub}</p>}
         </div>
         {icon && <span className="text-2xl">{icon}</span>}
@@ -518,7 +518,7 @@ function ProgressRing({ value, max, label, color }: { value: number; max: number
             fill="none" stroke="currentColor" strokeWidth="3" className={color}
             strokeDasharray={`${pct}, 100`} strokeLinecap="round" />
         </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">{pct}%</span>
+        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white">{pct}%</span>
       </div>
       <div>
         <p className="text-sm text-white font-medium">{value}/{max}</p>
@@ -611,7 +611,7 @@ export default function AIAnalysisPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">📊</div>
-          <h2 className="text-xl font-black text-white mb-2">Script Analysis</h2>
+          <h2 className="text-xl font-bold text-white mb-2">Script Analysis</h2>
           <p className="text-sm text-surface-400 mb-6">Get in-depth computational analysis of your screenplay — dialogue breakdown, pacing, scene metrics, and production readiness.</p>
           <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
         </Card>
@@ -651,7 +651,7 @@ export default function AIAnalysisPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-white">Script Analysis</h1>
+          <h1 className="text-2xl font-bold text-white">Script Analysis</h1>
           <p className="text-sm text-surface-400 mt-1">Computed from {overview.totalElements.toLocaleString()} script elements</p>
         </div>
         <Button onClick={loadAnalysis}>
@@ -717,7 +717,7 @@ export default function AIAnalysisPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Avg Scene Length</h4>
-              <p className="text-xl font-black text-white">
+              <p className="text-xl font-bold text-white">
                 {sceneAnalyses.length > 0 ? (overview.totalWords / sceneAnalyses.length).toFixed(0) : 0} words
               </p>
               <p className="text-xs text-surface-500 mt-1">
@@ -728,7 +728,7 @@ export default function AIAnalysisPage() {
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Top Character</h4>
               {characterDialogues.length > 0 ? (
                 <>
-                  <p className="text-xl font-black text-white">{characterDialogues[0].name}</p>
+                  <p className="text-xl font-bold text-white">{characterDialogues[0].name}</p>
                   <p className="text-xs text-surface-500 mt-1">{characterDialogues[0].wordCount.toLocaleString()} dialogue words</p>
                 </>
               ) : (
@@ -737,7 +737,7 @@ export default function AIAnalysisPage() {
             </Card>
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Speakers per Scene</h4>
-              <p className="text-xl font-black text-white">{avgSpeakersPerScene}</p>
+              <p className="text-xl font-bold text-white">{avgSpeakersPerScene}</p>
               <p className="text-xs text-surface-500 mt-1">average speaking characters</p>
             </Card>
           </div>
@@ -873,7 +873,7 @@ export default function AIAnalysisPage() {
 
             {categories.map(cat => (
               <div key={cat}>
-                <h4 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3">{cat}</h4>
+                <h4 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-3">{cat}</h4>
                 <div className="space-y-3">
                   {feedbackItems.filter(f => f.category === cat).map((item, idx) => (
                     <Card key={idx} className={`p-4 border ${severityColors[item.severity]}`}>
@@ -920,8 +920,8 @@ export default function AIAnalysisPage() {
                   const colors = { error: 'text-red-400 bg-red-500/10 border-red-500/20', warning: 'text-amber-400 bg-amber-500/10 border-amber-500/20', info: 'text-blue-400 bg-blue-500/10 border-blue-500/20' };
                   return (
                     <Card key={sev} className={`p-3 text-center border ${colors[sev]}`}>
-                      <p className={`text-xl font-black ${colors[sev].split(' ')[0]}`}>{count}</p>
-                      <p className="text-xs text-surface-500 uppercase tracking-wider mt-0.5">{sev === 'error' ? 'Errors' : sev === 'warning' ? 'Warnings' : 'Suggestions'}</p>
+                      <p className={`text-xl font-bold ${colors[sev].split(' ')[0]}`}>{count}</p>
+                      <p className="text-xs text-surface-500 uppercase tracking-[0.04em] mt-0.5">{sev === 'error' ? 'Errors' : sev === 'warning' ? 'Warnings' : 'Suggestions'}</p>
                     </Card>
                   );
                 })}
@@ -939,14 +939,14 @@ export default function AIAnalysisPage() {
                   return (
                     <Card key={idx} className={`p-4 border ${borderColors[issue.severity]}`}>
                       <div className="flex items-start gap-3">
-                        <div className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider shrink-0 mt-0.5 ${badgeColors[issue.severity]}`}>
+                        <div className={`px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-[0.04em] shrink-0 mt-0.5 ${badgeColors[issue.severity]}`}>
                           {issue.severity}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="text-sm font-semibold text-white">{issue.title}</h4>
                             {issue.lineRef && (
-                              <span className="text-[10px] text-surface-600 font-mono">L{issue.lineRef}</span>
+                              <span className="text-[11px] text-surface-600 font-mono">L{issue.lineRef}</span>
                             )}
                           </div>
                           <p className="text-xs text-surface-400 mb-2">{issue.detail}</p>
@@ -1039,7 +1039,7 @@ export default function AIAnalysisPage() {
                     {characterDialogues.slice(0, 5).map((cd, i) => (
                       <div key={cd.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-500 text-[10px] flex items-center justify-center font-bold">{i + 1}</span>
+                          <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-500 text-[11px] flex items-center justify-center font-bold">{i + 1}</span>
                           <span className="text-sm text-surface-200">{cd.name}</span>
                         </div>
                         <span className="text-xs text-surface-400">{cd.wordCount.toLocaleString()} words</span>
@@ -1053,7 +1053,7 @@ export default function AIAnalysisPage() {
                     {[...characterDialogues].reverse().slice(0, 5).map((cd, i) => (
                       <div key={cd.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-surface-700 text-surface-400 text-[10px] flex items-center justify-center font-bold">{characterDialogues.length - i}</span>
+                          <span className="w-5 h-5 rounded-full bg-surface-700 text-surface-400 text-[11px] flex items-center justify-center font-bold">{characterDialogues.length - i}</span>
                           <span className="text-sm text-surface-200">{cd.name}</span>
                         </div>
                         <span className="text-xs text-surface-400">{cd.wordCount.toLocaleString()} words</span>
@@ -1224,7 +1224,7 @@ export default function AIAnalysisPage() {
                 );
               })}
             </div>
-            <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+            <div className="flex justify-between text-[11px] text-surface-600 mt-1">
               <span>Scene 1</span>
               <span>Scene {sceneAnalyses.length}</span>
             </div>
@@ -1233,17 +1233,17 @@ export default function AIAnalysisPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Dialogue-Heavy Scenes</h4>
-              <p className="text-2xl font-black text-amber-400">{dialogueHeavyScenes.length}</p>
+              <p className="text-2xl font-bold text-amber-400">{dialogueHeavyScenes.length}</p>
               <p className="text-xs text-surface-500">&gt;50% dialogue by word count</p>
             </Card>
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Action-Heavy Scenes</h4>
-              <p className="text-2xl font-black text-blue-400">{actionHeavyScenes.length}</p>
+              <p className="text-2xl font-bold text-blue-400">{actionHeavyScenes.length}</p>
               <p className="text-xs text-surface-500">≤50% dialogue by word count</p>
             </Card>
             <Card className="p-4">
               <h4 className="text-xs font-semibold text-surface-400 uppercase mb-2">Avg Scene Words</h4>
-              <p className="text-2xl font-black text-white">
+              <p className="text-2xl font-bold text-white">
                 {sceneAnalyses.length > 0 ? Math.round(overview.totalWords / sceneAnalyses.length) : 0}
               </p>
               <p className="text-xs text-surface-500">
@@ -1355,7 +1355,7 @@ export default function AIAnalysisPage() {
                 );
               })}
             </div>
-            <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+            <div className="flex justify-between text-[11px] text-surface-600 mt-1">
               <span>Scene 1</span>
               <span>Scene {sceneAnalyses.length}</span>
             </div>

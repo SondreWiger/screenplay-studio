@@ -219,7 +219,7 @@ export default function SecuritySettingsPage() {
 
   return (
     <div className="space-y-6">
-        <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>Security & Privacy</h1>
+        <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>Security & Privacy</h1>
 
         {message && (
           <div className={`px-4 py-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-900/40 text-green-300 border border-green-800' : 'bg-red-900/40 text-red-300 border border-red-800'}`}>
@@ -296,7 +296,7 @@ export default function SecuritySettingsPage() {
                 <div className="space-y-3">
                   {securityEvents.map((ev) => (
                     <div key={ev.id} className="flex items-start gap-3 p-3 rounded-lg bg-surface-950 border border-surface-800">
-                      <div className={`mt-0.5 text-xs font-bold uppercase ${severityColor(ev.severity)}`}>
+                      <div className={`mt-0.5 text-xs font-medium uppercase ${severityColor(ev.severity)}`}>
                         {ev.severity}
                       </div>
                       <div className="flex-1 min-w-0">

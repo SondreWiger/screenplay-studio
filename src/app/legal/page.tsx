@@ -70,7 +70,7 @@ export default function LegalCenterPage() {
     <div>
       {/* Hero */}
       <section className="pb-10">
-        <h1 className="text-3xl font-black text-white tracking-tight sm:text-4xl">Legal Center</h1>
+        <h1 className="text-3xl font-bold text-white tracking-tight sm:text-4xl">Legal Center</h1>
         <p className="mt-4 text-base text-surface-400 leading-relaxed max-w-2xl">
           Transparency matters to us. Browse our policies and legal documents to understand
           how Screenplay Studio operates and safeguards your rights.
@@ -136,7 +136,7 @@ export default function LegalCenterPage() {
           style={{ background: 'rgba(255,95,31,0.04)', border: '1px solid rgba(255,95,31,0.12)' }}
         >
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-mono uppercase tracking-widest text-white/30 mb-1">Platform Operator</p>
+            <p className="text-[11px] uppercase tracking-[0.04em] text-white/55 mb-1">Platform Operator</p>
             <a
               href="https://development.northem.no/"
               target="_blank"

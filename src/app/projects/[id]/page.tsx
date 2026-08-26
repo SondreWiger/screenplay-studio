@@ -99,11 +99,11 @@ function WorkTimeCard({ projectId }: { projectId: string }) {
           <div className="grid grid-cols-2 gap-4 mb-5">
             <div>
               <p className="stat-label">My time</p>
-              <p className="text-3xl font-black text-white leading-tight mt-1">{formatWorkSeconds(data.my_total_seconds)}</p>
+              <p className="text-3xl font-bold text-white leading-tight mt-1">{formatWorkSeconds(data.my_total_seconds)}</p>
             </div>
             <div>
               <p className="stat-label">Team total</p>
-              <p className="text-3xl font-black text-white leading-tight mt-1">{formatWorkSeconds(data.team_total_seconds)}</p>
+              <p className="text-3xl font-bold text-white leading-tight mt-1">{formatWorkSeconds(data.team_total_seconds)}</p>
             </div>
           </div>
 
@@ -119,7 +119,7 @@ function WorkTimeCard({ projectId }: { projectId: string }) {
                 )}
               </div>
               <MiniSparkline values={dailyValues} color="#6366f1" />
-              <div className="flex justify-between text-[10px] text-surface-600 mt-0.5">
+              <div className="flex justify-between text-[11px] text-surface-600 mt-0.5">
                 <span>{data.daily[0]?.date.slice(5)}</span>
                 <span>{data.daily[data.daily.length - 1]?.date.slice(5)}</span>
               </div>
@@ -129,7 +129,7 @@ function WorkTimeCard({ projectId }: { projectId: string }) {
           {/* Context breakdown */}
           {ctxEntries.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] text-surface-500 uppercase tracking-wider">Where you worked</p>
+              <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">Where you worked</p>
               {ctxEntries.map(([ctx, secs]) => (
                 <div key={ctx}>
                   <div className="flex justify-between text-xs mb-0.5">
@@ -488,7 +488,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
             )}
             <div className="flex flex-wrap items-center gap-2 mt-4">
               <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium uppercase tracking-wide"
                 style={{ background: statusColor + '18', color: statusColor, border: `1px solid ${statusColor}35` }}
               >
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor }} />
@@ -624,7 +624,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
             <div className="card-row group hover:cursor-pointer">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-black transition-transform"
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-semibold transition-transform"
                 style={{ background: stat.color + '18', color: stat.color }}
               >
                 {typeof stat.value === 'number' ? stat.value : <span className="text-xs">{stat.value}</span>}
@@ -671,7 +671,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
             {activity.length > 0 && (
               <button
                 onClick={() => setActivityExpanded((v) => !v)}
-                className="text-[10px] font-bold uppercase tracking-wider text-surface-600 hover:text-white transition-colors"
+                className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-400 hover:text-white transition-colors"
               >
                 {activityExpanded ? 'Show less' : `Show all (${activity.length})`}
               </button>

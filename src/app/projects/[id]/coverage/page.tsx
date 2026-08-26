@@ -155,7 +155,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
   if (view === 'edit') return (
     <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-black text-white">{selected ? 'Edit Coverage' : 'New Coverage Report'}</h1>
+        <h1 className="text-xl font-bold text-white">{selected ? 'Edit Coverage' : 'New Coverage Report'}</h1>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => setView('list')}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
@@ -227,7 +227,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
               <button key={r}
                 onClick={() => setForm({ ...f, recommendation: f.recommendation === r ? '' : r })}
                 className={cn(
-                  'flex-1 py-3 rounded-xl border-2 font-black text-sm uppercase tracking-wider transition-colors',
+                  'flex-1 py-3 rounded-xl border-2 font-semibold text-sm uppercase tracking-[0.04em] transition-colors',
                   f.recommendation === r ? REC_META[r].color : 'border-surface-700 text-surface-500 hover:border-surface-600',
                 )}
               >
@@ -247,7 +247,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
     return (
       <div className="p-6 max-w-3xl print:p-0">
         <div className="flex items-center justify-between mb-6 print:hidden">
-          <h1 className="text-xl font-black text-white">Coverage Report</h1>
+          <h1 className="text-xl font-bold text-white">Coverage Report</h1>
           <div className="flex gap-2">
             <Button onClick={() => window.print()}>Print / Save PDF</Button>
             <Button variant="ghost" onClick={() => setView('list')}>Back</Button>
@@ -255,34 +255,34 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
         </div>
         <div className="bg-white text-gray-900 rounded-xl p-8 space-y-6 print:rounded-none print:shadow-none">
           <div className="border-b pb-4">
-            <h2 className="text-2xl font-black">{selected.script_title ?? 'Untitled'}</h2>
+            <h2 className="text-2xl font-bold">{selected.script_title ?? 'Untitled'}</h2>
             <p className="text-sm text-gray-500 mt-1">
               {selected.reader_name && <>Reader: <strong>{selected.reader_name}</strong> &nbsp;·&nbsp;</>}
               {selected.draft_date && <>Draft: {selected.draft_date}</>}
             </p>
             {selected.recommendation && (
-              <span className="mt-3 inline-block px-4 py-1.5 rounded font-black text-sm uppercase tracking-widest border-2" style={{ borderColor: selected.recommendation === 'recommend' ? '#16a34a' : selected.recommendation === 'consider' ? '#d97706' : '#dc2626', color: selected.recommendation === 'recommend' ? '#15803d' : selected.recommendation === 'consider' ? '#b45309' : '#b91c1c' }}>
+              <span className="mt-3 inline-block px-4 py-1.5 rounded font-semibold text-sm uppercase tracking-[0.04em] border-2" style={{ borderColor: selected.recommendation === 'recommend' ? '#16a34a' : selected.recommendation === 'consider' ? '#d97706' : '#dc2626', color: selected.recommendation === 'recommend' ? '#15803d' : selected.recommendation === 'consider' ? '#b45309' : '#b91c1c' }}>
                 {rec.label}
               </span>
             )}
           </div>
           {selected.logline && (
-            <div><h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Logline</h3><p className="italic text-gray-800">{selected.logline}</p></div>
+            <div><h3 className="text-xs font-medium uppercase tracking-[0.04em] text-gray-400 mb-1">Logline</h3><p className="italic text-gray-800">{selected.logline}</p></div>
           )}
           {selected.short_synopsis && (
-            <div><h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Short Synopsis</h3><p className="text-gray-700 whitespace-pre-wrap">{selected.short_synopsis}</p></div>
+            <div><h3 className="text-xs font-medium uppercase tracking-[0.04em] text-gray-400 mb-1">Short Synopsis</h3><p className="text-gray-700 whitespace-pre-wrap">{selected.short_synopsis}</p></div>
           )}
           {selected.full_synopsis && (
-            <div><h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Full Synopsis</h3><p className="text-gray-700 whitespace-pre-wrap">{selected.full_synopsis}</p></div>
+            <div><h3 className="text-xs font-medium uppercase tracking-[0.04em] text-gray-400 mb-1">Full Synopsis</h3><p className="text-gray-700 whitespace-pre-wrap">{selected.full_synopsis}</p></div>
           )}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Category Grades</h3>
+            <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-gray-400 mb-3">Category Grades</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {GRADE_FIELDS.map(({ key, label }) => {
                 const grade = selected[key] as Grade;
                 return (
                   <div key={key} className="border rounded-lg p-2 text-center">
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{label}</p>
+                    <p className="text-[11px] uppercase tracking-[0.04em] text-gray-400 mb-1">{label}</p>
                     <p className="font-bold text-sm capitalize">{grade || '—'}</p>
                   </div>
                 );
@@ -290,7 +290,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
             </div>
           </div>
           {selected.comments && (
-            <div><h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Comments</h3><p className="text-gray-700 whitespace-pre-wrap">{selected.comments}</p></div>
+            <div><h3 className="text-xs font-medium uppercase tracking-[0.04em] text-gray-400 mb-1">Comments</h3><p className="text-gray-700 whitespace-pre-wrap">{selected.comments}</p></div>
           )}
         </div>
       </div>
@@ -301,7 +301,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-black text-white">Script Coverage</h1>
+          <h1 className="text-xl font-bold text-white">Script Coverage</h1>
           <p className="text-sm text-surface-400 mt-0.5">Reader reports with graded categories and recommendations.</p>
         </div>
         {canEdit && <Button onClick={openNew}>+ New Coverage</Button>}
@@ -328,7 +328,7 @@ export default function CoveragePage({ params }: { params: { id: string } }) {
                     <div className="flex items-center gap-3 mb-1 flex-wrap">
                       <p className="text-sm font-semibold text-white">{c.script_title ?? 'Untitled'}</p>
                       {c.recommendation && (
-                        <span className={cn('text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider border', recMeta.color)}>
+                        <span className={cn('text-[11px] px-2 py-0.5 rounded font-semibold uppercase tracking-[0.04em] border', recMeta.color)}>
                           {recMeta.label}
                         </span>
                       )}

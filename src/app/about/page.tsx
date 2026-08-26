@@ -47,7 +47,7 @@ function Rule() {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+    <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">
       {children}
     </span>
   );
@@ -96,9 +96,9 @@ export default async function AboutPage() {
         <div className="max-w-screen-lg mx-auto px-6 h-12 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-xs" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-xs" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-xs font-black text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
+            <span className="text-xs font-semibold text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
           </Link>
           <div className="flex items-center gap-5">
             <Link href="/" className="text-xs text-white/35 hover:text-white/70 transition-colors">Home</Link>
@@ -116,7 +116,7 @@ export default async function AboutPage() {
         <section className="max-w-screen-lg mx-auto px-6 pt-20 pb-16">
           <Eyebrow>About</Eyebrow>
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6"
             style={{ letterSpacing: '-0.04em', lineHeight: 1.05 }}
           >
             MADE FOR WRITERS.
@@ -137,7 +137,7 @@ export default async function AboutPage() {
           <Eyebrow>The Why</Eyebrow>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mb-5" style={{ letterSpacing: '-0.03em' }}>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-5" style={{ letterSpacing: '-0.03em' }}>
                 The standard setup is worse than it needs to be
               </h2>
               <div className="space-y-4 text-sm sm:text-base text-white/50 leading-relaxed">
@@ -192,7 +192,7 @@ export default async function AboutPage() {
         {/* ── Timeline ───────────────────────────────────────── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16">
           <Eyebrow>History</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-10" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-10" style={{ letterSpacing: '-0.03em' }}>
             How we got here
           </h2>
           <div className="relative">
@@ -203,7 +203,7 @@ export default async function AboutPage() {
                 <div key={t.year} className="flex gap-6 sm:gap-10 items-start">
                   <div className="shrink-0 w-20 text-right">
                     <span
-                      className="text-sm font-black"
+                      className="text-sm font-semibold"
                       style={{ color: i === TIMELINE.length - 1 ? ORANGE : 'rgba(255,255,255,0.35)' }}
                     >
                       {t.year}
@@ -226,7 +226,7 @@ export default async function AboutPage() {
         {/* ── What's next ────────────────────────────────────── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16">
           <Eyebrow>Roadmap</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-5" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-5" style={{ letterSpacing: '-0.03em' }}>
             Where we are going
           </h2>
           <p className="text-sm text-white/45 max-w-2xl leading-relaxed mb-8">
@@ -242,7 +242,7 @@ export default async function AboutPage() {
               'A documented API so you can connect Screenplay Studio to whatever pipeline you already use',
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 text-xs text-white/45 leading-relaxed">
-                <span className="mt-0.5 shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black text-white" style={{ background: ORANGE + '30', color: ORANGE }}>
+                <span className="mt-0.5 shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: ORANGE + '30', color: ORANGE }}>
                   {i + 1}
                 </span>
                 {item}
@@ -257,7 +257,7 @@ export default async function AboutPage() {
         {oss && (
         <section className="max-w-screen-lg mx-auto px-6 py-16">
           <Eyebrow>Contributors · Open Source</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
             Built by the community
           </h2>
           <p className="text-sm text-white/40 max-w-xl leading-relaxed mb-8">
@@ -265,7 +265,7 @@ export default async function AboutPage() {
           </p>
           <ContributorsList />
           <div className="mt-8">
-            <Link href="/contribute" className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider transition-colors hover:opacity-80" style={{ color: ORANGE }}>
+            <Link href="/contribute" className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.04em] transition-colors hover:opacity-80" style={{ color: ORANGE }}>
               Want to contribute? →
             </Link>
           </div>
@@ -276,14 +276,14 @@ export default async function AboutPage() {
 
         {/* ── CTA ────────────────────────────────────────────── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl sm:text-4xl font-black text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
             Just try it.
           </h2>
           <p className="text-sm text-white/40 mb-8">Free. No card. No time limit.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/register"
-              className="px-6 py-3 text-sm font-black text-white uppercase tracking-tight transition-opacity hover:opacity-90"
+              className="px-6 py-3 text-sm font-semibold text-white uppercase tracking-tight transition-opacity hover:opacity-90"
               style={{ background: ORANGE }}
             >
               Get Started Free
@@ -304,14 +304,14 @@ export default async function AboutPage() {
         <div className="max-w-screen-lg mx-auto px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
             <span className="text-xs text-white/20">
               {oss ? 'Screenplay Studio — open-source & free' : 'Screenplay Studio'}
             </span>
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Shoutout to</p>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Shoutout to</p>
             <div className="flex flex-wrap items-center gap-3">
               <a href="https://sergioedup.com/" target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -328,7 +328,7 @@ export default async function AboutPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/60 hover:text-brand-500"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/60 hover:text-brand-500"
             >
               Northem Development ♥ Oslo
             </a>

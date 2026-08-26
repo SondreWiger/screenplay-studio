@@ -257,13 +257,13 @@ export function CommunityScriptInfoPanel({
           {/* Format badges */}
           <div className="flex items-center gap-2 mb-4">
             <span
-              className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border"
+              className="px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wide border"
               style={{ background: '#FF5F1F14', color: '#FF8F5F', borderColor: '#FF5F1F28' }}
             >
               {formatLabel}
             </span>
             {stats.isStructured && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border border-white/[0.07] text-white/25">
+              <span className="px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wide border border-white/[0.07] text-white/55">
                 Structured
               </span>
             )}
@@ -272,32 +272,32 @@ export function CommunityScriptInfoPanel({
           {/* Stats grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
             <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
-              <p className="text-[10px] text-white/25 uppercase tracking-wide">Words</p>
+              <p className="text-[11px] text-white/55 uppercase tracking-wide">Words</p>
               <p className="text-xl font-bold text-white/80 mt-0.5">{stats.wordCount.toLocaleString()}</p>
             </div>
             <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
-              <p className="text-[10px] text-white/25 uppercase tracking-wide">Pages (~)</p>
+              <p className="text-[11px] text-white/55 uppercase tracking-wide">Pages (~)</p>
               <p className="text-xl font-bold text-white/80 mt-0.5">~{stats.pageEstimate}</p>
             </div>
             {stats.isStructured ? (
               <>
                 <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
-                  <p className="text-[10px] text-white/25 uppercase tracking-wide">Scenes</p>
+                  <p className="text-[11px] text-white/55 uppercase tracking-wide">Scenes</p>
                   <p className="text-xl font-bold text-white/80 mt-0.5">{stats.sceneCount}</p>
                 </div>
                 <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
-                  <p className="text-[10px] text-white/25 uppercase tracking-wide">Characters</p>
+                  <p className="text-[11px] text-white/55 uppercase tracking-wide">Characters</p>
                   <p className="text-xl font-bold text-white/80 mt-0.5">{stats.charCount}</p>
                 </div>
               </>
             ) : (
               <>
                 <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
-                  <p className="text-[10px] text-white/25 uppercase tracking-wide">Read time</p>
+                  <p className="text-[11px] text-white/55 uppercase tracking-wide">Read time</p>
                   <p className="text-xl font-bold text-white/80 mt-0.5">~{stats.readingTimeMin}m</p>
                 </div>
                 <div className="bg-surface-950 border border-white/[0.07] rounded-lg px-3 py-2.5">
-                  <p className="text-[10px] text-white/25 uppercase tracking-wide">Format</p>
+                  <p className="text-[11px] text-white/55 uppercase tracking-wide">Format</p>
                   <p className="text-base font-bold text-white/70 mt-0.5 truncate">{formatLabel}</p>
                 </div>
               </>
@@ -343,7 +343,7 @@ export function CommunityScriptInfoPanel({
               <div className="h-full transition-[width]" style={{ width: `${stats.dialoguePct}%`, background: '#FF5F1F55' }} />
               <div className="h-full" style={{ width: `${100 - stats.dialoguePct}%`, background: '#3b82f635' }} />
             </div>
-            <div className="flex justify-between text-[10px] mt-1">
+            <div className="flex justify-between text-[11px] mt-1">
               <span style={{ color: '#FF8F5F70' }}>{stats.dialoguePct}% Dialogue ({stats.dialogueWords.toLocaleString()}w)</span>
               <span className="text-blue-400/40">{100 - stats.dialoguePct}% Action ({stats.actionWords.toLocaleString()}w)</span>
             </div>
@@ -592,7 +592,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{title}</p>
               {stats.isStructured && (
-                <p className="text-[10px] text-white/40 truncate">
+                <p className="text-[11px] text-white/40 truncate">
                   {scenes.length} scenes · ~{stats.pageEstimate} pages · ~{stats.readingTimeMin} min read
                 </p>
               )}
@@ -641,9 +641,9 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
               </>
             )}
             <div className="flex items-center gap-0.5 ml-1">
-              <button onClick={() => setFontSize(s => Math.max(9, s - 1))} className="px-1.5 py-1 text-[10px] text-white/40 hover:text-white rounded border border-white/10 transition">A−</button>
-              <span className="text-[10px] text-white/25 w-5 text-center tabular-nums">{fontSize}</span>
-              <button onClick={() => setFontSize(s => Math.min(18, s + 1))} className="px-1.5 py-1 text-[10px] text-white/40 hover:text-white rounded border border-white/10 transition">A+</button>
+              <button onClick={() => setFontSize(s => Math.max(9, s - 1))} className="px-1.5 py-1 text-[11px] text-white/40 hover:text-white rounded border border-white/10 transition">A−</button>
+              <span className="text-[11px] text-white/25 w-5 text-center tabular-nums">{fontSize}</span>
+              <button onClick={() => setFontSize(s => Math.min(18, s + 1))} className="px-1.5 py-1 text-[11px] text-white/40 hover:text-white rounded border border-white/10 transition">A+</button>
             </div>
           </div>
         </div>
@@ -660,7 +660,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                 <button
                   key={key}
                   onClick={() => setSidebarTab(key)}
-                  className={`flex-1 py-2.5 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+                  className={`flex-1 py-2.5 text-[11px] font-medium uppercase tracking-[0.04em] transition-colors ${
                     sidebarTab === key
                       ? 'text-brand-400 border-b-2 border-brand-500'
                       : 'text-white/40 hover:text-white/60'
@@ -697,7 +697,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold tabular-nums shrink-0 w-6 text-center ${isActive ? 'text-brand-400' : 'text-white/25'}`}>
+                            <span className={`text-[11px] font-bold tabular-nums shrink-0 w-6 text-center ${isActive ? 'text-brand-400' : 'text-white/25'}`}>
                               {scene.number}
                             </span>
                             <span className={`text-xs truncate ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>
@@ -706,12 +706,12 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                           </div>
                           <div className="flex items-center gap-2 mt-0.5 ml-8">
                             {scene.setting && (
-                              <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
+                              <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${
                                 scene.setting.startsWith('INT') ? 'bg-blue-500/10 text-blue-400' : 'bg-green-500/10 text-green-400'
                               }`}>{scene.setting}</span>
                             )}
-                            {scene.timeOfDay && <span className="text-[9px] text-white/20">{scene.timeOfDay}</span>}
-                            <span className="text-[9px] text-white/15 ml-auto">{scene.lineCount} lines</span>
+                            {scene.timeOfDay && <span className="text-[11px] text-white/20">{scene.timeOfDay}</span>}
+                            <span className="text-[11px] text-white/15 ml-auto">{scene.lineCount} lines</span>
                           </div>
                         </button>
                       );
@@ -737,14 +737,14 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     {filteredChars.map((char, i) => (
                       <div key={char.name} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition">
                         <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
                           style={{ backgroundColor: char.color + '20', color: char.color }}
                         >
                           {i + 1}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-medium text-white/70 truncate">{char.name}</p>
-                          <p className="text-[10px] text-white/25">{char.lineCount} lines · {char.dialogueWords} words</p>
+                          <p className="text-[11px] text-white/25">{char.lineCount} lines · {char.dialogueWords} words</p>
                         </div>
                         <div className="w-14 h-1.5 bg-white/[0.04] rounded-full overflow-hidden shrink-0">
                           <div
@@ -775,7 +775,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                       ] : []),
                     ].map(({ label, value }) => (
                       <div key={label} className="bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2.5">
-                        <p className="text-[10px] text-white/25 uppercase tracking-wider">{label}</p>
+                        <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">{label}</p>
                         <p className="text-lg font-bold text-white/75 mt-0.5">{value}</p>
                       </div>
                     ))}
@@ -783,12 +783,12 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
 
                   {stats.isStructured && stats.wordCount > 0 && (
                     <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
-                      <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Dialogue vs Action</p>
+                      <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Dialogue vs Action</p>
                       <div className="h-2.5 rounded-full overflow-hidden bg-white/[0.04] flex mb-1.5">
                         <div className="h-full" style={{ width: `${stats.dialoguePct}%`, background: '#FF5F1F55' }} />
                         <div className="h-full" style={{ width: `${100 - stats.dialoguePct}%`, background: '#3b82f635' }} />
                       </div>
-                      <div className="flex justify-between text-[10px]">
+                      <div className="flex justify-between text-[11px]">
                         <span style={{ color: '#FF8F5F70' }}>{stats.dialoguePct}% Dialogue</span>
                         <span className="text-blue-400/40">{100 - stats.dialoguePct}% Action</span>
                       </div>
@@ -797,7 +797,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
 
                   {scenes.length > 0 && (
                     <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
-                      <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Scene Breakdown</p>
+                      <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Scene Breakdown</p>
                       <div className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-blue-400/70">🏠 Interior</span>
@@ -812,7 +812,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                   )}
 
                   <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
-                    <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Keyboard</p>
+                    <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Keyboard</p>
                     {[
                       { key: 'Esc', desc: 'Close reader' },
                       { key: 'T', desc: 'Toggle sidebar' },
@@ -820,8 +820,8 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                       { key: 'K', desc: 'Prev scene' },
                     ].map(({ key, desc }) => (
                       <div key={key} className="flex items-center gap-2 mb-1">
-                        <kbd className="text-[10px] font-mono bg-white/[0.06] text-white/50 px-1.5 py-0.5 rounded">{key}</kbd>
-                        <span className="text-[10px] text-white/40">{desc}</span>
+                        <kbd className="text-[11px] font-mono bg-white/[0.06] text-white/50 px-1.5 py-0.5 rounded">{key}</kbd>
+                        <span className="text-[11px] text-white/40">{desc}</span>
                       </div>
                     ))}
                   </div>
@@ -843,10 +843,10 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                           onClick={() => setActiveAnnotationLine(a.line_ref)}
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] font-semibold" style={{ color: '#FF8F5F' }}>
+                            <span className="text-[11px] font-semibold" style={{ color: '#FF8F5F' }}>
                               {a.author?.full_name || 'User'}
                             </span>
-                            <span className="text-[10px] text-white/20">line {a.line_ref}</span>
+                            <span className="text-[11px] text-white/20">line {a.line_ref}</span>
                           </div>
                           <p className="text-xs text-white/55 leading-relaxed">{a.content}</p>
                         </div>
@@ -866,22 +866,22 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
             <div className="mb-8">
               <div className="flex flex-wrap items-center gap-3 mb-3">
                 <span
-                  className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border"
+                  className="px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.04em] rounded-full border"
                   style={{ color: '#FF8F5F', background: '#FF5F1F14', borderColor: '#FF5F1F28' }}
                 >
                   Community Script
                 </span>
-                <span className="text-[10px] text-white/20 uppercase tracking-widest">Read-Only</span>
+                <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Read-Only</span>
                 {canAnnotate && (
                   <span
-                    className="px-2 py-0.5 text-[10px] font-medium rounded-full border"
+                    className="px-2 py-0.5 text-[11px] font-medium rounded-full border"
                     style={{ color: '#FF5F1F80', borderColor: '#FF5F1F25', background: '#FF5F1F06' }}
                   >
                     ✏️ Hover any line to annotate
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl font-black tracking-tight">{title}</h1>
+              <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
             </div>
 
             {/* Script "paper" */}
@@ -935,7 +935,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     {lineAnnotations.length > 0 && (
                       <button
                         onClick={() => setActiveAnnotationLine(isAnnotationActive ? null : lineRef)}
-                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white z-10"
+                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white z-10"
                         style={{ background: '#FF5F1F', opacity: 0.9 }}
                         title={`${lineAnnotations.length} annotation${lineAnnotations.length > 1 ? 's' : ''}`}
                       >
@@ -947,7 +947,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     {canAnnotate && !isAnnotating && lineAnnotations.length === 0 && (
                       <button
                         onClick={() => { setAnnotatingLine(lineRef); setAnnotationText(''); }}
-                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full border border-dashed flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full border border-dashed flex items-center justify-center text-[11px] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         style={{ borderColor: '#FF5F1F50', color: '#FF5F1F70', background: '#FF5F1F08' }}
                       >
                         +
@@ -957,7 +957,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     {/* Scene number */}
                     {isScene && showSceneNumbers && el.scene_number && (
                       <span
-                        className={`absolute -left-14 top-0.5 text-[10px] font-bold select-none tabular-nums ${darkScript ? 'text-white/20' : 'text-gray-400'}`}
+                        className={`absolute -left-14 top-0.5 text-[11px] font-bold select-none tabular-nums ${darkScript ? 'text-white/20' : 'text-gray-400'}`}
                       >
                         {el.scene_number}
                       </span>
@@ -1007,7 +1007,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                       >
                         {lineAnnotations.map(a => (
                           <div key={a.id}>
-                            <span className="text-[10px] font-semibold" style={{ color: '#FF8F5F' }}>
+                            <span className="text-[11px] font-semibold" style={{ color: '#FF8F5F' }}>
                               {a.author?.full_name || 'User'}
                             </span>
                             <p className="text-xs mt-0.5" style={{ color: darkScript ? 'rgb(var(--surface-200))' : '#555' }}>
@@ -1019,7 +1019,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                         {canAnnotate && annotatingLine !== lineRef && (
                           <button
                             onClick={() => { setAnnotatingLine(lineRef); setAnnotationText(''); }}
-                            className="text-[10px] mt-1 transition-colors"
+                            className="text-[11px] mt-1 transition-colors"
                             style={{ color: '#FF5F1F70' }}
                           >
                             + Reply
@@ -1043,7 +1043,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     {lineAnnotations.length > 0 && (
                       <button
                         onClick={() => setActiveAnnotationLine(isAnnotationActive ? null : lineRef)}
-                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white z-10"
+                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white z-10"
                         style={{ background: '#FF5F1F' }}
                       >
                         {lineAnnotations.length}
@@ -1052,7 +1052,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                     {canAnnotate && !isAnnotating && lineAnnotations.length === 0 && (
                       <button
                         onClick={() => { setAnnotatingLine(lineRef); setAnnotationText(''); }}
-                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full border border-dashed flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        className="absolute -right-10 top-0.5 w-6 h-6 rounded-full border border-dashed flex items-center justify-center text-[11px] opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         style={{ borderColor: '#FF5F1F50', color: '#FF5F1F70', background: '#FF5F1F08' }}
                       >
                         +
@@ -1098,7 +1098,7 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
                       >
                         {lineAnnotations.map(a => (
                           <div key={a.id}>
-                            <span className="text-[10px] font-semibold" style={{ color: '#FF8F5F' }}>
+                            <span className="text-[11px] font-semibold" style={{ color: '#FF8F5F' }}>
                               {a.author?.full_name || 'User'}
                             </span>
                             <p className="text-xs mt-0.5" style={{ color: darkScript ? 'rgb(var(--surface-200))' : '#555' }}>
@@ -1122,10 +1122,10 @@ function CommunityScriptReaderModal({ content, title, postId, user, onClose }: R
           {/* Footer */}
           <footer className="border-t border-white/[0.04] py-6 px-6 mt-8">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <span className="text-[10px] text-white/20">Screenplay Studio — Community</span>
+              <span className="text-[11px] text-white/20">Screenplay Studio — Community</span>
               <button
                 onClick={onClose}
-                className="text-[10px] text-white/40 hover:text-brand-400 transition-colors"
+                className="text-[11px] text-white/40 hover:text-brand-400 transition-colors"
               >
                 Close reader ×
               </button>

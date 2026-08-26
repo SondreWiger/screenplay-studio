@@ -70,9 +70,9 @@ function CommentThread({ comment, allComments, depth, canEdit, userId, projectId
             </Badge>
           )}
           {comment.is_resolved && <Badge size="sm" variant="success">Resolved</Badge>}
-          <span className="text-[10px] text-surface-600">{timeAgo(comment.created_at)}</span>
+          <span className="text-[11px] text-surface-600">{timeAgo(comment.created_at)}</span>
           {replies.length > 0 && (
-            <button onClick={() => setCollapsed(!collapsed)} className="text-[10px] text-surface-500 hover:text-white ml-auto">
+            <button onClick={() => setCollapsed(!collapsed)} className="text-[11px] text-surface-500 hover:text-white ml-auto">
               {collapsed ? `+${replies.length} replies` : ''}
             </button>
           )}
@@ -319,7 +319,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white">Comments</h1>
+          <h1 className="text-2xl font-bold text-white">Comments</h1>
           <p className="text-sm text-surface-400 mt-1">
             {comments.length} comment{comments.length !== 1 ? 's' : ''}
             {scriptCommentCount > 0 && <span className="text-brand-500"> &bull; {scriptCommentCount} on script</span>}
@@ -385,7 +385,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
               <div key={comment.id}>
                 {el && (
                   <div className="flex items-center gap-2 px-3 pt-2 pb-0.5">
-                    <span className="text-[9px] uppercase font-semibold tracking-wider text-brand-500">
+                    <span className="text-[11px] uppercase font-semibold tracking-[0.04em] text-brand-500">
                       {ELEMENT_LABELS[el.element_type] || 'Element'}
                     </span>
                     <span className="text-xs text-surface-400 truncate max-w-md">{el.content || 'Empty'}</span>

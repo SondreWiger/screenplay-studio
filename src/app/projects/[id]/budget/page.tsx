@@ -228,7 +228,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
         {/* Description + vendor + due */}
         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => openEditor(item)}>
           <div className="flex items-center gap-2">
-            {item.is_income && <span className="text-[10px] font-semibold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded">INCOME</span>}
+            {item.is_income && <span className="text-[11px] font-semibold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded">INCOME</span>}
             <p className="text-sm text-white truncate">{item.description}</p>
           </div>
           <div className="flex items-center gap-2 mt-0.5">
@@ -266,7 +266,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
               <button
                 onClick={(e) => { e.stopPropagation(); handleTogglePaid(item); }}
                 className={cn(
-                  'px-2 py-0.5 text-[10px] font-semibold rounded-full transition-colors',
+                  'px-2 py-0.5 text-[11px] font-semibold rounded-full transition-colors',
                   item.is_paid
                     ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20'
                     : 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20'
@@ -284,7 +284,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
               <button
                 onClick={(e) => { e.stopPropagation(); handleTogglePaid(item); }}
                 className={cn(
-                  'px-2 py-0.5 text-[10px] font-semibold rounded-full transition-colors',
+                  'px-2 py-0.5 text-[11px] font-semibold rounded-full transition-colors',
                   item.is_paid
                     ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20'
                     : isOverdue
@@ -321,7 +321,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white">Budget</h1>
+          <h1 className="text-2xl font-bold text-white">Budget</h1>
           <p className="text-sm text-surface-400 mt-0.5">
             {items.length} line item{items.length !== 1 ? 's' : ''}
             {overdueCount > 0 && <span className="text-red-400 ml-2">· {overdueCount} overdue</span>}
@@ -351,8 +351,8 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
       {/* ---- Summary Cards ---- */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <Card className="p-4">
-          <p className="text-[11px] font-medium text-green-500/80 uppercase tracking-wider mb-1">Income</p>
-          <p className="text-xl font-black text-green-400">{formatCurrency(totalIncomeActual)}</p>
+          <p className="text-[11px] font-medium text-green-500/80 uppercase tracking-[0.04em] mb-1">Income</p>
+          <p className="text-xl font-bold text-green-400">{formatCurrency(totalIncomeActual)}</p>
           <p className="text-xs text-surface-500 mt-1">
             {incomeItems.length} source{incomeItems.length !== 1 ? 's' : ''}
             {totalIncomeEstimated > 0 && totalIncomeEstimated !== totalIncomeActual && (
@@ -361,16 +361,16 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-[11px] font-medium text-red-500/80 uppercase tracking-wider mb-1">Expenses</p>
-          <p className="text-xl font-black text-white">{formatCurrency(totalExpenseActual)}</p>
+          <p className="text-[11px] font-medium text-red-500/80 uppercase tracking-[0.04em] mb-1">Expenses</p>
+          <p className="text-xl font-bold text-white">{formatCurrency(totalExpenseActual)}</p>
           {totalExpenseEstimated > 0 && (
             <Progress value={Math.min(budgetUsedPct, 100)} max={100} showPercent={false}
               color={budgetUsedPct > 100 ? '#ef4444' : budgetUsedPct > 80 ? '#f59e0b' : '#10b981'} className="mt-2" />
           )}
         </Card>
         <Card className="p-4">
-          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-wider mb-1">Net Balance</p>
-          <p className={cn('text-xl font-black', netActual >= 0 ? 'text-green-400' : 'text-red-400')}>
+          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-1">Net Balance</p>
+          <p className={cn('text-xl font-bold', netActual >= 0 ? 'text-green-400' : 'text-red-400')}>
             {netActual >= 0 ? '+' : ''}{formatCurrency(netActual)}
           </p>
           <p className="text-xs text-surface-500 mt-1">
@@ -378,14 +378,14 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-wider mb-1">Payment</p>
+          <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-1">Payment</p>
           <div className="flex items-baseline gap-2 mt-0.5">
             <span className="text-sm font-semibold text-green-400">{formatCurrency(totalPaid)}</span>
-            <span className="text-[10px] text-surface-500">paid</span>
+            <span className="text-[11px] text-surface-500">paid</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-semibold text-amber-400">{formatCurrency(totalUnpaid)}</span>
-            <span className="text-[10px] text-surface-500">outstanding</span>
+            <span className="text-[11px] text-surface-500">outstanding</span>
           </div>
         </Card>
       </div>
@@ -407,13 +407,13 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
             {categoryBreakdown.slice(0, 6).map((cat) => (
               <div key={cat.value} className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                <span className="text-[10px] text-surface-400">
+                <span className="text-[11px] text-surface-400">
                   {cat.label} {Math.round((cat.estimated / totalExpenseEstimated) * 100)}%
                 </span>
               </div>
             ))}
             {categoryBreakdown.length > 6 && (
-              <span className="text-[10px] text-surface-500">+{categoryBreakdown.length - 6} more</span>
+              <span className="text-[11px] text-surface-500">+{categoryBreakdown.length - 6} more</span>
             )}
           </div>
         </div>
@@ -509,13 +509,13 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
                     <p className="text-sm font-medium text-green-400/70">
                       {formatCurrency(filteredIncome.reduce((s, i) => s + (i.estimated_amount || 0), 0))}
                     </p>
-                    <p className="text-[10px] text-surface-500">expected</p>
+                    <p className="text-[11px] text-surface-500">expected</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-green-400">
                       {formatCurrency(filteredIncome.reduce((s, i) => s + (i.actual_amount || 0), 0))}
                     </p>
-                    <p className="text-[10px] text-surface-500">received</p>
+                    <p className="text-[11px] text-surface-500">received</p>
                   </div>
                   <svg className={cn('w-4 h-4 text-surface-500 transition-transform', expandedCats.has('__income__') ? 'rotate-180' : '')}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -527,7 +527,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
               {expandedCats.has('__income__') && (
                 <div className="border-t border-green-500/10">
                   {/* Column headers */}
-                  <div className="flex items-center px-4 py-2 text-[10px] font-medium uppercase tracking-wider text-surface-500 border-b border-surface-800/50 bg-surface-900/50">
+                  <div className="flex items-center px-4 py-2 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 border-b border-surface-800/50 bg-surface-900/50">
                     <div className="flex-1">Source</div>
                     <div className="w-14 text-center hidden sm:block">Qty</div>
                     <div className="w-24 text-right hidden sm:block">Expected</div>
@@ -578,13 +578,13 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
                   <div className="flex items-center gap-5">
                     <div className="text-right hidden sm:block">
                       <p className="text-sm font-medium text-surface-300">{formatCurrency(group.estimated)}</p>
-                      <p className="text-[10px] text-surface-500">estimated</p>
+                      <p className="text-[11px] text-surface-500">estimated</p>
                     </div>
                     <div className="text-right">
                       <p className={cn('text-sm font-medium', catOver ? 'text-red-400' : 'text-white')}>
                         {formatCurrency(group.actual)}
                       </p>
-                      <p className="text-[10px] text-surface-500">actual</p>
+                      <p className="text-[11px] text-surface-500">actual</p>
                     </div>
                     <div className="text-right hidden sm:block w-20">
                       <p className={cn('text-xs font-medium', catOver ? 'text-red-400' : 'text-green-400')}>
@@ -602,7 +602,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
                 {isExpanded && (
                   <div className="border-t border-surface-800">
                     {/* Column headers */}
-                    <div className="flex items-center px-4 py-2 text-[10px] font-medium uppercase tracking-wider text-surface-500 border-b border-surface-800/50 bg-surface-900/50">
+                    <div className="flex items-center px-4 py-2 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 border-b border-surface-800/50 bg-surface-900/50">
                       <div className="flex-1">Item</div>
                       <div className="w-14 text-center hidden sm:block">Qty</div>
                       <div className="w-24 text-right hidden sm:block">Estimated</div>

@@ -361,7 +361,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">Actors & Actresses</h1>
+          <h1 className="text-2xl font-bold text-white">Actors & Actresses</h1>
           <p className="text-sm text-surface-400 mt-1">
             {stats.totalActors} cast member{stats.totalActors !== 1 ? 's' : ''} · {stats.signed} contracted · {formatCurrency(stats.totalOwed)} outstanding
           </p>
@@ -435,10 +435,10 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <span className={cn('text-[9px] px-2 py-0.5 rounded-full border font-medium', meta.color)}>{meta.label}</span>
-                      {actor.pay_amount && <span className="text-[9px] text-surface-400">{formatPay(actor)}</span>}
-                      {owed > 0 && <span className="text-[9px] text-yellow-400">{formatCurrency(owed)} owed</span>}
-                      {docs > 0 && <span className="text-[9px] text-surface-500">{docs} doc{docs !== 1 ? 's' : ''}</span>}
+                      <span className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium', meta.color)}>{meta.label}</span>
+                      {actor.pay_amount && <span className="text-[11px] text-surface-400">{formatPay(actor)}</span>}
+                      {owed > 0 && <span className="text-[11px] text-yellow-400">{formatCurrency(owed)} owed</span>}
+                      {docs > 0 && <span className="text-[11px] text-surface-500">{docs} doc{docs !== 1 ? 's' : ''}</span>}
                     </div>
                   </button>
                 );
@@ -464,11 +464,11 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                         <p className="text-sm text-surface-400">{selected.character_roles.join(' · ')}</p>
                       )}
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <span className={cn('text-[9px] px-2 py-0.5 rounded-full border font-medium', contractStatusMeta(selected.contract_status).color)}>
+                        <span className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium', contractStatusMeta(selected.contract_status).color)}>
                           {contractStatusMeta(selected.contract_status).label}
                         </span>
                         {selected.pay_amount && (
-                          <span className="text-[10px] text-surface-400 font-medium">{formatPay(selected)}</span>
+                          <span className="text-[11px] text-surface-400 font-medium">{formatPay(selected)}</span>
                         )}
                       </div>
                     </div>
@@ -501,19 +501,19 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                       {selected.bio && <p className="text-sm text-surface-300 leading-relaxed">{selected.bio}</p>}
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         {selected.email && (
-                          <div><p className="text-[10px] text-surface-600 uppercase tracking-wider mb-0.5">Email</p>
+                          <div><p className="text-[11px] text-surface-400 uppercase tracking-[0.04em] mb-0.5">Email</p>
                           <a href={`mailto:${selected.email}`} className="text-brand-500 hover:underline">{selected.email}</a></div>
                         )}
                         {selected.phone && (
-                          <div><p className="text-[10px] text-surface-600 uppercase tracking-wider mb-0.5">Phone</p>
+                          <div><p className="text-[11px] text-surface-400 uppercase tracking-[0.04em] mb-0.5">Phone</p>
                           <a href={`tel:${selected.phone}`} className="text-surface-200">{selected.phone}</a></div>
                         )}
                         {selected.pay_amount && (
-                          <div><p className="text-[10px] text-surface-600 uppercase tracking-wider mb-0.5">Pay Rate</p>
+                          <div><p className="text-[11px] text-surface-400 uppercase tracking-[0.04em] mb-0.5">Pay Rate</p>
                           <p className="text-surface-200 font-semibold">{formatPay(selected)}</p></div>
                         )}
                         {selected.availability && (
-                          <div><p className="text-[10px] text-surface-600 uppercase tracking-wider mb-0.5">Availability</p>
+                          <div><p className="text-[11px] text-surface-400 uppercase tracking-[0.04em] mb-0.5">Availability</p>
                           <p className="text-surface-200">{selected.availability}</p></div>
                         )}
                       </div>
@@ -521,11 +521,11 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                       <div className="grid grid-cols-2 gap-3 pt-3 border-t border-surface-800">
                         <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 p-3 text-center">
                           <p className="text-lg font-bold text-yellow-300">{formatCurrency(actorOwed(selected.id))}</p>
-                          <p className="text-[10px] text-surface-500 mt-0.5">Outstanding</p>
+                          <p className="text-[11px] text-surface-500 mt-0.5">Outstanding</p>
                         </div>
                         <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-3 text-center">
                           <p className="text-lg font-bold text-green-300">{formatCurrency(actorPaid(selected.id))}</p>
-                          <p className="text-[10px] text-surface-500 mt-0.5">Paid to date</p>
+                          <p className="text-[11px] text-surface-500 mt-0.5">Paid to date</p>
                         </div>
                       </div>
                       {selected.notes && (
@@ -556,23 +556,23 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <p className="text-sm font-medium text-white">{doc.title}</p>
-                                  <span className="text-[9px] text-surface-500 border border-surface-700 px-1.5 py-0.5 rounded">{dt.label}</span>
-                                  {isExpired && <span className="text-[9px] text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded">Expired</span>}
-                                  {doc.expires_at && !isExpired && <span className="text-[9px] text-surface-500">Expires {new Date(doc.expires_at).toLocaleDateString()}</span>}
+                                  <span className="text-[11px] text-surface-500 border border-surface-700 px-1.5 py-0.5 rounded">{dt.label}</span>
+                                  {isExpired && <span className="text-[11px] text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded">Expired</span>}
+                                  {doc.expires_at && !isExpired && <span className="text-[11px] text-surface-500">Expires {new Date(doc.expires_at).toLocaleDateString()}</span>}
                                 </div>
                                 {doc.notes && <p className="text-xs text-surface-500 mt-0.5">{doc.notes}</p>}
                                 <div className="flex items-center gap-3 mt-1.5">
                                   {doc.file_url && (
                                     <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-                                      className="text-[10px] text-brand-500 hover:underline flex items-center gap-1">
+                                      className="text-[11px] text-brand-500 hover:underline flex items-center gap-1">
                                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                       {doc.file_name ?? 'Open file'}
                                     </a>
                                   )}
                                   {canEdit && (
                                     <>
-                                      <button onClick={() => { setEditingDoc({ ...doc }); setShowDocModal(true); }} className="text-[10px] text-surface-500 hover:text-white transition-colors">Edit</button>
-                                      <button onClick={() => deleteDocument(doc)} className="text-[10px] text-red-400/60 hover:text-red-400 transition-colors">Delete</button>
+                                      <button onClick={() => { setEditingDoc({ ...doc }); setShowDocModal(true); }} className="text-[11px] text-surface-500 hover:text-white transition-colors">Edit</button>
+                                      <button onClick={() => deleteDocument(doc)} className="text-[11px] text-red-400/60 hover:text-red-400 transition-colors">Delete</button>
                                     </>
                                   )}
                                 </div>
@@ -608,10 +608,10 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <p className="text-sm font-bold text-white">{formatCurrency(pay.amount)}</p>
-                                  <span className={cn('text-[9px] px-2 py-0.5 rounded-full font-medium', pm.color)}>{pm.label}</span>
+                                  <span className={cn('text-[11px] px-2 py-0.5 rounded-full font-medium', pm.color)}>{pm.label}</span>
                                 </div>
                                 {pay.description && <p className="text-xs text-surface-400 mt-0.5">{pay.description}</p>}
-                                <div className="flex items-center gap-3 mt-1 text-[10px] text-surface-600 flex-wrap">
+                                <div className="flex items-center gap-3 mt-1 text-[11px] text-surface-600 flex-wrap">
                                   {pay.due_date && <span>Due {new Date(pay.due_date).toLocaleDateString()}</span>}
                                   {pay.period_start && pay.period_end && <span>{new Date(pay.period_start).toLocaleDateString()} – {new Date(pay.period_end).toLocaleDateString()}</span>}
                                   {pay.paid_at && <span className="text-green-400">Paid {new Date(pay.paid_at).toLocaleDateString()}</span>}
@@ -620,14 +620,14 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                               <div className="flex gap-1.5 shrink-0">
                                 {pay.status === 'unpaid' && canEdit && (
                                   <button onClick={() => markPaid(pay.id)} title="Mark paid"
-                                    className="text-[10px] text-green-400 border border-green-500/30 hover:bg-green-500/10 px-2 py-1 rounded transition-colors">
+                                    className="text-[11px] text-green-400 border border-green-500/30 hover:bg-green-500/10 px-2 py-1 rounded transition-colors">
                                     ✓ Paid
                                   </button>
                                 )}
                                 {canEdit && (
                                   <>
-                                    <button onClick={() => { setEditingPay({ ...pay }); setShowPayModal(true); }} className="text-[10px] text-surface-500 hover:text-white transition-colors px-1">Edit</button>
-                                    <button onClick={() => deletePayment(pay)} className="text-[10px] text-red-400/60 hover:text-red-400 transition-colors">✕</button>
+                                    <button onClick={() => { setEditingPay({ ...pay }); setShowPayModal(true); }} className="text-[11px] text-surface-500 hover:text-white transition-colors px-1">Edit</button>
+                                    <button onClick={() => deletePayment(pay)} className="text-[11px] text-red-400/60 hover:text-red-400 transition-colors">✕</button>
                                   </>
                                 )}
                               </div>
@@ -681,25 +681,25 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-bold text-white">{formatCurrency(pay.amount)}</p>
-                        <span className={cn('text-[9px] px-2 py-0.5 rounded-full font-medium', pm.color)}>{pm.label}</span>
+                        <span className={cn('text-[11px] px-2 py-0.5 rounded-full font-medium', pm.color)}>{pm.label}</span>
                         {actor && (
-                          <span className="text-[10px] text-surface-400">{actor.name}</span>
+                          <span className="text-[11px] text-surface-400">{actor.name}</span>
                         )}
                       </div>
                       {pay.description && <p className="text-xs text-surface-500 mt-0.5">{pay.description}</p>}
-                      <div className="flex gap-3 mt-1 text-[10px] text-surface-600">
+                      <div className="flex gap-3 mt-1 text-[11px] text-surface-600">
                         {pay.due_date && <span>Due {new Date(pay.due_date).toLocaleDateString()}</span>}
                         {pay.paid_at && <span className="text-green-400">Paid {new Date(pay.paid_at).toLocaleDateString()}</span>}
                       </div>
                     </div>
                     <div className="flex gap-1.5 shrink-0">
                       {pay.status === 'unpaid' && canEdit && (
-                        <button onClick={() => markPaid(pay.id)} className="text-[10px] text-green-400 border border-green-500/30 hover:bg-green-500/10 px-2 py-1 rounded transition-colors">✓ Mark Paid</button>
+                        <button onClick={() => markPaid(pay.id)} className="text-[11px] text-green-400 border border-green-500/30 hover:bg-green-500/10 px-2 py-1 rounded transition-colors">✓ Mark Paid</button>
                       )}
                       {canEdit && (
                         <>
-                          <button onClick={() => { setEditingPay({ ...pay }); setShowPayModal(true); }} className="text-[10px] text-surface-500 hover:text-white transition-colors px-1">Edit</button>
-                          <button onClick={() => deletePayment(pay)} className="text-[10px] text-red-400/60 hover:text-red-400">✕</button>
+                          <button onClick={() => { setEditingPay({ ...pay }); setShowPayModal(true); }} className="text-[11px] text-surface-500 hover:text-white transition-colors px-1">Edit</button>
+                          <button onClick={() => deletePayment(pay)} className="text-[11px] text-red-400/60 hover:text-red-400">✕</button>
                         </>
                       )}
                     </div>
@@ -726,13 +726,13 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
             <table className="w-full text-sm">
               <thead className="bg-surface-800/60">
                 <tr>
-                  <th className="text-left p-3 text-[10px] font-bold text-surface-400 uppercase tracking-wider">Actor</th>
-                  <th className="text-left p-3 text-[10px] font-bold text-surface-400 uppercase tracking-wider">Role(s)</th>
-                  <th className="text-left p-3 text-[10px] font-bold text-surface-400 uppercase tracking-wider">Rate</th>
-                  <th className="text-left p-3 text-[10px] font-bold text-surface-400 uppercase tracking-wider">Contract</th>
-                  <th className="text-right p-3 text-[10px] font-bold text-surface-400 uppercase tracking-wider">Paid</th>
-                  <th className="text-right p-3 text-[10px] font-bold text-surface-400 uppercase tracking-wider">Owed</th>
-                  <th className="text-center p-3 text-[10px] font-bold text-surface-400 uppercase tracking-wider">Docs</th>
+                  <th className="text-left p-3 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Actor</th>
+                  <th className="text-left p-3 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Role(s)</th>
+                  <th className="text-left p-3 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Rate</th>
+                  <th className="text-left p-3 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Contract</th>
+                  <th className="text-right p-3 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Paid</th>
+                  <th className="text-right p-3 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Owed</th>
+                  <th className="text-center p-3 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Docs</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-800">
@@ -750,13 +750,13 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                           </div>
                           <div>
                             <p className="font-semibold text-white text-xs">{actor.name}</p>
-                            {actor.email && <p className="text-[9px] text-surface-500">{actor.email}</p>}
+                            {actor.email && <p className="text-[11px] text-surface-500">{actor.email}</p>}
                           </div>
                         </div>
                       </td>
                       <td className="p-3 text-xs text-surface-400">{actor.character_roles.join(', ') || '—'}</td>
                       <td className="p-3 text-xs text-surface-300">{formatPay(actor)}</td>
-                      <td className="p-3"><span className={cn('text-[9px] px-2 py-0.5 rounded-full border', meta.color)}>{meta.label}</span></td>
+                      <td className="p-3"><span className={cn('text-[11px] px-2 py-0.5 rounded-full border', meta.color)}>{meta.label}</span></td>
                       <td className="p-3 text-right text-xs text-green-400 font-medium">{paid > 0 ? formatCurrency(paid) : '—'}</td>
                       <td className="p-3 text-right text-xs font-medium">
                         <span className={owed > 0 ? 'text-yellow-400' : 'text-surface-600'}>{owed > 0 ? formatCurrency(owed) : '—'}</span>

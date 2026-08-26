@@ -122,10 +122,10 @@ export function OrgAssignments({ companyId, userId, canManage }: Props) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold text-white">{a.title}</h3>
-                  <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', STATUS_CONFIG[a.status].color)}>
+                  <span className={cn('text-[11px] px-2 py-0.5 rounded-full font-medium', STATUS_CONFIG[a.status].color)}>
                     {STATUS_CONFIG[a.status].label}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">{a.assignment_type}</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-400">{a.assignment_type}</span>
                 </div>
                 {a.description && <p className="text-sm text-surface-400 mt-1">{a.description}</p>}
                 <div className="flex items-center gap-4 mt-2 text-xs text-surface-500">

@@ -67,7 +67,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
   return (
     <div className="p-4 md:p-8 max-w-5xl space-y-6">
       <div className="mb-2">
-        <h1 className="text-2xl font-black text-white">Production War Room</h1>
+        <h1 className="text-2xl font-bold text-white">Production War Room</h1>
         <p className="text-sm text-surface-400 mt-0.5">{currentProject?.title} — live production snapshot</p>
       </div>
 
@@ -81,7 +81,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
           <div className="flex-1">
             <Progress value={pct} showPercent={false} className="h-3" />
           </div>
-          <span className="text-white font-black text-xl tabular-nums">{pct}%</span>
+          <span className="text-white font-bold text-xl tabular-nums">{pct}%</span>
         </div>
         <p className="text-sm text-surface-500 mt-2">{scenes.completed} of {scenes.total} scenes shot</p>
 
@@ -93,7 +93,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
               { label: 'Total', value: scenes.total, color: 'text-white' },
             ].map((s) => (
               <div key={s.label} className="bg-surface-800/50 rounded-lg p-3 text-center">
-                <p className={cn('text-2xl font-black', s.color)}>{s.value}</p>
+                <p className={cn('text-2xl font-bold', s.color)}>{s.value}</p>
                 <p className="text-xs text-surface-500 mt-0.5">{s.label}</p>
               </div>
             ))}
@@ -141,7 +141,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
             <div className="space-y-2">
               {sortedAlerts.slice(0, 5).map((alert) => (
                 <div key={alert.id} className={cn('flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium', riskColor[alert.risk_level] ?? 'text-surface-400 bg-surface-800/50 border-surface-700')}>
-                  <span className="uppercase font-black shrink-0">{alert.risk_level}</span>
+                  <span className="uppercase font-semibold shrink-0">{alert.risk_level}</span>
                   <span className="truncate">{alert.description ?? '—'}</span>
                 </div>
               ))}

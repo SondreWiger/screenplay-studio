@@ -47,11 +47,11 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
               <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.08)' }} />
               <div className="flex items-center gap-2.5">
                 <div className="w-5 h-5 flex items-center justify-center" style={{ background: ORANGE }}>
-                  <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+                  <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
                 </div>
                 <Link
                   href="/legal"
-                  className="text-[11px] font-mono uppercase tracking-widest text-white/50 hover:text-white transition-colors"
+                  className="text-[11px] uppercase tracking-[0.04em] text-white/50 hover:text-white transition-colors"
                 >
                   Legal Center
                 </Link>
@@ -60,7 +60,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center gap-4">
               <Link
                 href="/support"
-                className="text-[11px] font-mono uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
+                className="text-[11px] uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors"
               >
                 Support
               </Link>
@@ -110,9 +110,9 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                 className="mt-8 pt-6 space-y-1.5"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <p className="text-[10px] font-mono text-white/20 uppercase tracking-wider">Last updated</p>
+                <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Last updated</p>
                 <p className="text-[11px] text-white/30">February 2026</p>
-                <p className="text-[10px] font-mono text-white/20 uppercase tracking-wider mt-3">Questions?</p>
+                <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mt-3">Questions?</p>
                 <a
                   href="mailto:legal@screenplaystudio.fun"
                   className="text-[11px] transition-colors"
@@ -124,7 +124,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                 </a>              </div>
                 {/* Northem attribution */}
                 <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-[10px] font-mono text-white/20 uppercase tracking-wider mb-2">Developed by</p>
+                  <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Developed by</p>
                   <a
                     href="https://development.northem.no/"
                     target="_blank"
@@ -138,7 +138,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                   </a>
-                  <p className="text-[10px] text-white/20 mt-0.5">Made with ♥ in Norway</p>
+                  <p className="text-[11px] text-white/20 mt-0.5">Made with ♥ in Norway</p>
                 </div>
             </div>
           </nav>
@@ -155,7 +155,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-3 py-1.5 text-[10px] font-mono uppercase whitespace-nowrap transition-colors"
+                    className="px-3 py-1.5 text-[11px] uppercase whitespace-nowrap transition-colors"
                     style={{
                       color: isActive ? ORANGE : 'rgba(255,255,255,0.3)',
                       background: isActive ? 'rgba(255,95,31,0.08)' : 'transparent',

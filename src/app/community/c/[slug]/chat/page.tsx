@@ -374,7 +374,7 @@ function CommunityChatUI({
           !showSidebar && 'hidden md:flex',
         )}>
           <div className="px-3 py-2.5 flex items-center justify-between border-b border-surface-800/50">
-            <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-wider">Channels</span>
+            <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">Channels</span>
             {isMod && (
               <button onClick={() => setShowCreate(true)}
                 className="p-1 rounded hover:bg-surface-800 text-surface-400 hover:text-white transition-colors"
@@ -401,8 +401,8 @@ function CommunityChatUI({
                     style={{ width: 'calc(100% - 8px)' }}>
                     <span className="text-surface-500 text-sm shrink-0">{channelPrefix(ch.type)}</span>
                     <span className="text-sm truncate flex-1">{ch.name}</span>
-                    {ch.type === 'announcement' && <span className="text-[9px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-400/70 shrink-0">ann</span>}
-                    {ch.type === 'readonly'     && <span className="text-[9px] px-1 py-0.5 rounded bg-surface-800 text-surface-500 shrink-0">ro</span>}
+                    {ch.type === 'announcement' && <span className="text-[11px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-400/70 shrink-0">ann</span>}
+                    {ch.type === 'readonly'     && <span className="text-[11px] px-1 py-0.5 rounded bg-surface-800 text-surface-500 shrink-0">ro</span>}
                   </button>
                 );
               })}
@@ -438,10 +438,10 @@ function CommunityChatUI({
                     <span className="text-surface-500 mr-0.5">{channelPrefix(activeChannel.type)}</span>
                     <h2 className="text-sm font-semibold text-white">{activeChannel.name}</h2>
                     {activeChannel.type === 'announcement' && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold bg-amber-500/10 text-amber-400">Announcements</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full font-semibold bg-amber-500/10 text-amber-400">Announcements</span>
                     )}
                     {activeChannel.type === 'readonly' && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold bg-surface-800 text-surface-500">Read-only</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full font-semibold bg-surface-800 text-surface-500">Read-only</span>
                     )}
                     {isMod && (
                       <button onClick={openEditChannel}
@@ -494,8 +494,8 @@ function CommunityChatUI({
                                 <span className="text-sm font-semibold" style={{ color: isOwn ? accent : '#d1d5db' }}>
                                   {displayName}
                                 </span>
-                                <span className="text-[10px] text-surface-600">{formatTime(msg.created_at)}</span>
-                                {msg.edited_at && <span className="text-[10px] text-surface-600 italic">(edited)</span>}
+                                <span className="text-[11px] text-surface-600">{formatTime(msg.created_at)}</span>
+                                {msg.edited_at && <span className="text-[11px] text-surface-600 italic">(edited)</span>}
                               </div>
                               {editingMsgId === msg.id ? (
                                 <EditBox value={editingMsgContent} onChange={setEditingMsgContent}
@@ -514,7 +514,7 @@ function CommunityChatUI({
                         ) : (
                           <div className="flex items-start gap-3">
                             <div className="w-8 shrink-0 text-center">
-                              <span className="text-[9px] text-surface-700 opacity-0 group-hover:opacity-100 transition-opacity select-none">
+                              <span className="text-[11px] text-surface-700 opacity-0 group-hover:opacity-100 transition-opacity select-none">
                                 {formatTime(msg.created_at)}
                               </span>
                             </div>
@@ -586,7 +586,7 @@ function CommunityChatUI({
         {showMembers && (
           <aside className="w-52 lg:w-56 shrink-0 border-l border-surface-800 flex flex-col bg-surface-950 hidden md:flex">
             <div className="px-3 py-2.5 border-b border-surface-800/50 flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">
                 Members — {members.length}
               </span>
               {loadingMembers && <LoadingSpinner className="w-3 h-3" />}
@@ -597,7 +597,7 @@ function CommunityChatUI({
                 if (roleMembers.length === 0) return null;
                 return (
                   <div key={role}>
-                    <p className={cn('text-[10px] font-bold uppercase tracking-wider mb-1 px-1', ROLE_COLOR[role])}>
+                    <p className={cn('text-[11px] font-medium uppercase tracking-[0.04em] mb-1 px-1', ROLE_COLOR[role])}>
                       {role}s — {roleMembers.length}
                     </p>
                     {roleMembers.map(m => (
@@ -733,7 +733,7 @@ function MsgActions({ isOwn, canDel, onEdit, onDelete, timestamp }: {
 }) {
   return (
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
-      <span className="text-[9px] text-surface-700 mr-1 select-none">{timestamp}</span>
+      <span className="text-[11px] text-surface-700 mr-1 select-none">{timestamp}</span>
       {isOwn && (
         <button onClick={onEdit}
           className="p-1 rounded hover:bg-surface-800 text-surface-600 hover:text-surface-300 transition-colors" title="Edit">

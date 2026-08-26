@@ -186,7 +186,7 @@ export function QuotePanel({ isOpen, onClose, projectId }: QuotePanelProps) {
             <button
               onClick={() => toggleSort('created_at')}
               className={cn(
-                'px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-colors',
+                'px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-lg transition-colors',
                 sortBy === 'created_at' ? 'bg-brand-500/15 text-brand-400' : 'text-surface-500 hover:text-surface-300 hover:bg-surface-800/80'
               )}
             >
@@ -196,7 +196,7 @@ export function QuotePanel({ isOpen, onClose, projectId }: QuotePanelProps) {
             <button
               onClick={() => toggleSort('said_by')}
               className={cn(
-                'px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-colors',
+                'px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] rounded-lg transition-colors',
                 sortBy === 'said_by' ? 'bg-brand-500/15 text-brand-400' : 'text-surface-500 hover:text-surface-300 hover:bg-surface-800/80'
               )}
             >
@@ -234,7 +234,7 @@ export function QuotePanel({ isOpen, onClose, projectId }: QuotePanelProps) {
 
         {/* Header with count */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-surface-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-surface-500">
             {loading ? 'Loading...' : `${totalCount} quote${totalCount !== 1 ? 's' : ''}`}
           </p>
         </div>

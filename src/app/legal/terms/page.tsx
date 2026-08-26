@@ -10,14 +10,14 @@ export default function TermsOfServicePage() {
     <div>
       <div className="max-w-4xl">
         <div className="mb-10">
-          <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Legal Agreement</p>
-          <h1 className="text-3xl font-black text-white tracking-tight">Terms of Service</h1>
+          <p className="text-xs font-medium text-red-400 uppercase tracking-[0.04em] mb-3">Legal Agreement</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Terms of Service</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: June 24, 2026</p>
         </div>
 
         {/* Table of Contents */}
         <nav className="mb-12 rounded-lg bg-surface-900/50 border border-surface-800/60 p-6">
-          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-wider mb-4">Table of Contents</h2>
+          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-[0.04em] mb-4">Table of Contents</h2>
           <ol className="list-decimal list-inside space-y-1.5 text-surface-400 text-[13px] columns-1 sm:columns-2 gap-8">
             <li><a href="#acceptance" className="hover:text-red-400 transition-colors">Acceptance of Terms</a></li>
             <li><a href="#eligibility" className="hover:text-red-400 transition-colors">Eligibility</a></li>

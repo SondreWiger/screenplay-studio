@@ -475,9 +475,9 @@ function DashboardContent() {
         <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <h1 className="text-sm sm:text-base font-black text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
+            <h1 className="text-sm sm:text-base font-semibold text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
@@ -539,7 +539,7 @@ function DashboardContent() {
                     <div className="px-4 py-2.5 border-b border-surface-800">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-white truncate">{user?.display_name || user?.full_name || 'User'}</p>
-                        {user?.is_pro && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 font-semibold">PRO</span>}
+                        {user?.is_pro && <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 font-semibold">PRO</span>}
                       </div>
                       <p className="text-[11px] text-surface-500 truncate">{user?.email}</p>
                     </div>
@@ -632,9 +632,9 @@ function DashboardContent() {
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
               <span className="ss-label">{t('dashboard.title')}</span>
             </div>
-            <h2 className="text-2xl font-black text-white flex items-center gap-2 flex-wrap" style={{ letterSpacing: '-0.03em' }}>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2 flex-wrap" style={{ letterSpacing: '-0.03em' }}>
               {t('dashboard.welcome_back')}{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
-              {user?.is_pro && <span className="text-xs px-2 py-0.5 font-black uppercase tracking-wider" style={{ background: 'rgba(255,95,31,0.12)', color: '#FF5F1F', border: '1px solid rgba(255,95,31,0.2)' }}>Pro</span>}
+              {user?.is_pro && <span className="text-xs px-2 py-0.5 font-semibold uppercase tracking-[0.04em]" style={{ background: 'rgba(255,95,31,0.12)', color: '#FF5F1F', border: '1px solid rgba(255,95,31,0.2)' }}>Pro</span>}
               <StreakBadge />
             </h2>
             <p className="mt-1 text-sm text-white/30">{t('dashboard.your_projects')}</p>
@@ -651,8 +651,8 @@ function DashboardContent() {
                   { label: t('dashboard.done'), value: allP.filter(p => p.status === 'completed').length },
                 ].map((s) => (
                   <div key={s.label} className="text-center">
-                    <p className="text-xl font-black text-white ss-stat-num">{s.value}</p>
-                    <p className="text-[9px] font-mono text-white/25 uppercase tracking-wider">{s.label}</p>
+                    <p className="text-xl font-bold text-white ss-stat-num">{s.value}</p>
+                    <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -731,8 +731,8 @@ function DashboardContent() {
         {recentProjects.length >= 2 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider">{t('dashboard.recently_viewed')}</h3>
-              <button onClick={clearRecent} className="text-[10px] text-surface-600 hover:text-surface-400 transition-colors">{t('dashboard.clear')}</button>
+              <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em]">{t('dashboard.recently_viewed')}</h3>
+              <button onClick={clearRecent} className="text-[11px] text-surface-600 hover:text-surface-400 transition-colors">{t('dashboard.clear')}</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
               {recentProjects.map(rp => (
@@ -749,7 +749,7 @@ function DashboardContent() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-surface-200 group-hover:text-white truncate max-w-[120px] transition-colors">{rp.title}</p>
-                    <p className="text-[10px] text-surface-500">{timeAgo(rp.viewed_at)}</p>
+                    <p className="text-[11px] text-surface-500">{timeAgo(rp.viewed_at)}</p>
                   </div>
                 </Link>
               ))}
@@ -902,21 +902,21 @@ function DashboardContent() {
                         {folder.name}
                       </button>
                     )}
-                    <span className="text-[10px] text-surface-600">({folderProjects.length + childFolders.reduce((acc, c) => acc + filteredProjects.filter(p => p.folder_id === c.id).length, 0)})</span>
+                    <span className="text-[11px] text-surface-600">({folderProjects.length + childFolders.reduce((acc, c) => acc + filteredProjects.filter(p => p.folder_id === c.id).length, 0)})</span>
                     {/* Folder actions */}
                     <div className="ml-1 flex items-center gap-1 opacity-0 group-hover/folder:opacity-100 transition-opacity">
                       <button
                         onClick={() => { setRenamingFolderId(folder.id); setRenamingName(folder.name); }}
-                        className="text-[10px] text-surface-500 hover:text-white px-1.5 py-0.5 rounded hover:bg-surface-800"
+                        className="text-[11px] text-surface-500 hover:text-white px-1.5 py-0.5 rounded hover:bg-surface-800"
                       >Rename</button>
                       <button
                         onClick={() => { setNewSubFolderParentId(newSubFolderParentId === folder.id ? null : folder.id); setNewSubFolderName(''); }}
-                        className="text-[10px] text-surface-500 hover:text-white px-1.5 py-0.5 rounded hover:bg-surface-800"
+                        className="text-[11px] text-surface-500 hover:text-white px-1.5 py-0.5 rounded hover:bg-surface-800"
                         title="Add subfolder"
                       >+ Sub</button>
                       <button
                         onClick={() => deleteFolder(folder.id)}
-                        className="text-[10px] text-surface-600 hover:text-red-400 px-1.5 py-0.5 rounded hover:bg-surface-800"
+                        className="text-[11px] text-surface-600 hover:text-red-400 px-1.5 py-0.5 rounded hover:bg-surface-800"
                       >Delete</button>
                     </div>
                   </div>
@@ -990,10 +990,10 @@ function DashboardContent() {
                                   {child.name}
                                 </button>
                               )}
-                              <span className="text-[10px] text-surface-700">({childProjects.length})</span>
+                              <span className="text-[11px] text-surface-700">({childProjects.length})</span>
                               <div className="ml-1 flex items-center gap-1 opacity-0 group-hover/child:opacity-100 transition-opacity">
-                                <button onClick={() => { setRenamingFolderId(child.id); setRenamingName(child.name); }} className="text-[10px] text-surface-500 hover:text-white px-1 py-0.5 rounded hover:bg-surface-800">Rename</button>
-                                <button onClick={() => deleteFolder(child.id)} className="text-[10px] text-surface-600 hover:text-red-400 px-1 py-0.5 rounded hover:bg-surface-800">Delete</button>
+                                <button onClick={() => { setRenamingFolderId(child.id); setRenamingName(child.name); }} className="text-[11px] text-surface-500 hover:text-white px-1 py-0.5 rounded hover:bg-surface-800">Rename</button>
+                                <button onClick={() => deleteFolder(child.id)} className="text-[11px] text-surface-600 hover:text-red-400 px-1 py-0.5 rounded hover:bg-surface-800">Delete</button>
                               </div>
                             </div>
                             {!childCollapsed && (
@@ -1046,7 +1046,7 @@ function DashboardContent() {
                     <div className={cn('flex items-center gap-2 mb-3 text-sm font-semibold transition-colors', isDragOver ? 'text-white' : 'text-surface-500')}>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
                       {t('dashboard.unfiled')}
-                      <span className="text-[10px] text-surface-700">({unfiled.length})</span>
+                      <span className="text-[11px] text-surface-700">({unfiled.length})</span>
                       {isDragOver && <span className="text-xs text-surface-400 ml-1">← drop to unfile</span>}
                     </div>
                   )}
@@ -1134,7 +1134,7 @@ function DashboardContent() {
                           <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
                           <div className="absolute top-2.5 left-2.5">
                             <div
-                              className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold text-white"
+                              className="w-5 h-5 rounded flex items-center justify-center text-[11px] font-bold text-white"
                               style={{ backgroundColor: company.brand_color || '#6366f1' }}
                               title={company.name}
                             >
@@ -1160,10 +1160,10 @@ function DashboardContent() {
                                 <Badge key={g} size="sm">{g}</Badge>
                               ))}
                               {(project.genre?.length || 0) > 2 && (
-                                <span className="text-[10px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
+                                <span className="text-[11px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
                               )}
                             </div>
-                            <span className="text-[10px] text-surface-600">{timeAgo(project.updated_at)}</span>
+                            <span className="text-[11px] text-surface-600">{timeAgo(project.updated_at)}</span>
                           </div>
                         </div>
                       </Card>
@@ -1196,9 +1196,9 @@ function DashboardContent() {
       <div className="fixed bottom-4 left-4 z-20">
         <button
           onClick={() => setShowShortcuts(true)}
-          className="text-[10px] text-surface-600 hover:text-surface-400 transition-colors flex items-center gap-1.5"
+          className="text-[11px] text-surface-600 hover:text-surface-400 transition-colors flex items-center gap-1.5"
         >
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-surface-800 border border-surface-700 rounded shadow-sm">⌘/</kbd>
+          <kbd className="px-1.5 py-0.5 text-[11px] font-mono bg-surface-800 border border-surface-700 rounded shadow-sm">⌘/</kbd>
           <span>shortcuts</span>
         </button>
       </div>
@@ -1292,7 +1292,7 @@ function ProjectCard({
   documentary: 'Doc',
 } as Record<string, string>)[project.project_type] || project.project_type}</Badge>
               <Badge variant={statusColors[project.status]} size="sm">{project.status.replace('_', ' ')}</Badge>
-              <span className="text-[10px] text-surface-600 hidden sm:inline">{timeAgo(project.updated_at)}</span>
+              <span className="text-[11px] text-surface-600 hidden sm:inline">{timeAgo(project.updated_at)}</span>
             </div>
           </div>
         </Link>
@@ -1309,7 +1309,7 @@ function ProjectCard({
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setMoveMenuProjectId(null)} />
                 <div className="absolute right-0 top-6 z-50 w-44 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 text-xs">
-                  <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">{t('dashboard.move_to_folder')}</div>
+                  <div className="px-3 py-1.5 text-[11px] text-surface-500 uppercase tracking-[0.04em] font-medium border-b border-surface-800 mb-1">{t('dashboard.move_to_folder')}</div>
                   {project.folder_id && (
                     <button onClick={() => moveToFolder(project.id, null)} className="flex items-center gap-2 w-full px-3 py-1.5 text-surface-400 hover:bg-surface-800 hover:text-white">
                       <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1372,7 +1372,7 @@ function ProjectCard({
             </div>
             {currentFolder && (
               <div className="absolute top-2.5 left-2.5">
-                <span className="text-[9px] font-bold text-white/80 px-1.5 py-0.5 rounded" style={{ backgroundColor: currentFolder.color + 'cc' }}>
+                <span className="text-[11px] font-bold text-white/80 px-1.5 py-0.5 rounded" style={{ backgroundColor: currentFolder.color + 'cc' }}>
                   {currentFolder.emoji ? `${currentFolder.emoji} ` : ''}{currentFolder.name}
                 </span>
               </div>
@@ -1405,10 +1405,10 @@ function ProjectCard({
                   <Badge key={g} size="sm">{g}</Badge>
                 ))}
                 {(project.genre?.length || 0) > 2 && (
-                  <span className="text-[10px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
+                  <span className="text-[11px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
                 )}
               </div>
-              <span className="text-[10px] text-surface-600">{timeAgo(project.updated_at)}</span>
+              <span className="text-[11px] text-surface-600">{timeAgo(project.updated_at)}</span>
             </div>
           </div>
         </Card>
@@ -1420,7 +1420,7 @@ function ProjectCard({
           <button
             onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveMenuProjectId(isMenuOpen ? null : project.id); }}
             className={cn(
-              'p-1 rounded text-[10px] transition-colors',
+              'p-1 rounded text-[11px] transition-colors',
               currentFolder ? 'opacity-0 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-100',
               'bg-black/60 text-white hover:bg-black/80',
             )}
@@ -1433,7 +1433,7 @@ function ProjectCard({
             <>
               <div className="fixed inset-0 z-40" onClick={() => setMoveMenuProjectId(null)} />
               <div className="absolute top-6 left-0 z-50 w-44 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 text-xs">
-                <div className="px-3 py-1.5 text-[10px] text-surface-500 uppercase tracking-wider font-bold border-b border-surface-800 mb-1">{t('dashboard.move_to_folder')}</div>
+                <div className="px-3 py-1.5 text-[11px] text-surface-500 uppercase tracking-[0.04em] font-medium border-b border-surface-800 mb-1">{t('dashboard.move_to_folder')}</div>
                 {project.folder_id && (
                   <button onClick={() => moveToFolder(project.id, null)} className="flex items-center gap-2 w-full px-3 py-1.5 text-surface-400 hover:bg-surface-800 hover:text-white">
                     <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1668,7 +1668,7 @@ function NewProjectModal({
           {/* Templates — shown if user has any */}
           {templates.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">{t('new_project.from_template')}</p>
+              <p className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">{t('new_project.from_template')}</p>
               <div className="flex flex-wrap gap-2">
                 {templates.map(t => (
                   <button
@@ -1680,7 +1680,7 @@ function NewProjectModal({
                     <span className="text-sm font-bold text-surface-400">T</span>
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-surface-200 truncate max-w-[120px]">{t.name}</p>
-                      {t.description && <p className="text-[10px] text-surface-500 truncate max-w-[120px]">{t.description}</p>}
+                      {t.description && <p className="text-[11px] text-surface-500 truncate max-w-[120px]">{t.description}</p>}
                     </div>
                   </button>
                 ))}
@@ -1711,9 +1711,9 @@ function NewProjectModal({
               </div>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <h3 className={`text-sm font-semibold ${projectType === 'tv_production' ? 'text-amber-400' : 'text-white'}`}>TV Production</h3>
-                <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold uppercase tracking-wider">Pro</span>
+                <span className="text-[11px] px-1 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium uppercase tracking-[0.04em]">Pro</span>
               </div>
-              <p className="mt-0.5 text-[10px] text-surface-500">Broadcast & studio — rundown, autocue, crew</p>
+              <p className="mt-0.5 text-[11px] text-surface-500">Broadcast & studio — rundown, autocue, crew</p>
             </button>
 
             {/* Standard script-type options */}
@@ -1755,7 +1755,7 @@ function NewProjectModal({
                     ? opt.value === 'podcast' ? 'text-violet-400' : 'text-brand-500'
                     : 'text-white'
                 }`}>{opt.label}</h3>
-                <p className="mt-0.5 text-[10px] text-surface-500">{opt.description}</p>
+                <p className="mt-0.5 text-[11px] text-surface-500">{opt.description}</p>
               </button>
             ))}
           </div>
@@ -1819,7 +1819,7 @@ function NewProjectModal({
                       <img src={m.company.logo_url} alt={m.company.name || 'Company logo'} className="w-4 h-4 rounded object-cover" loading="lazy" />
                     ) : (
                       <div
-                        className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold text-white"
+                        className="w-4 h-4 rounded flex items-center justify-center text-[11px] font-bold text-white"
                         style={{ backgroundColor: m.company.brand_color || '#6366f1' }}
                       >
                         {m.company.name[0]}
@@ -1955,7 +1955,7 @@ function NewProjectModal({
                       }`}
                     >
                       <h3 className={`text-sm font-semibold ${format === opt.value ? 'text-violet-300' : 'text-white'}`}>{opt.label}</h3>
-                      <p className="mt-0.5 text-[10px] text-surface-500">{opt.description}</p>
+                      <p className="mt-0.5 text-[11px] text-surface-500">{opt.description}</p>
                     </button>
                   ))}
                 </div>
@@ -2090,10 +2090,10 @@ function StreakBadge() {
 
   return (
     <span
-      className={`text-xs px-2 py-0.5 font-black uppercase tracking-wider bg-gradient-to-r ${colors} border rounded-full flex items-center gap-1`}
+      className={`text-xs px-2 py-0.5 font-semibold uppercase tracking-[0.04em] bg-gradient-to-r ${colors} border rounded-full flex items-center gap-1`}
       title={`${streak}-day login streak`}
     >
-      <span className="text-[10px] font-bold">{streak}</span>
+      <span className="text-[11px] font-bold">{streak}</span>
       <span className="hidden sm:inline">&nbsp;{label}</span>
     </span>
   );

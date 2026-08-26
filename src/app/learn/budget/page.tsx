@@ -5,7 +5,7 @@ export default function BudgetModule() {
     <div className="space-y-12 pb-24">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-white mb-4">Budget</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Budget</h1>
         <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
           Track your production costs. The Budget tool provides a straightforward way to estimate expenses, track actual spending, and manage your financial resources across different departments.
         </p>
@@ -24,7 +24,7 @@ export default function BudgetModule() {
                 <div className="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">1</div>
                 <div>
                   <h4 className="font-medium text-surface-50 text-sm">Add Item</h4>
-                  <p className="text-xs text-surface-400">Click the <span className="px-1.5 py-0.5 rounded-md bg-surface-800 text-surface-50 text-[10px] font-medium border border-surface-700">+ Add Item</span> button.</p>
+                  <p className="text-xs text-surface-400">Click the <span className="px-1.5 py-0.5 rounded-md bg-surface-800 text-surface-50 text-[11px] font-medium border border-surface-700">+ Add Item</span> button.</p>
                 </div>
               </div>
               <div className="flex gap-3">

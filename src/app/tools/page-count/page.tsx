@@ -46,7 +46,7 @@ export default function PageCountPage() {
         {error && <p className="text-xs text-red-400">{error}</p>}
         {stats && (
           <div className="w-full space-y-6">
-            <p className="text-[10px] text-white/20 text-center font-mono uppercase tracking-widest">Analyzed: {fileName}</p>
+            <p className="text-[11px] text-white/55 text-center uppercase tracking-[0.04em]">Analyzed: {fileName}</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatBox label="Pages" value={stats.totalPages.toString()} sub="est." />
               <StatBox label="Runtime" value={`~${stats.estimatedMinutes}`} sub="minutes" />
@@ -59,8 +59,8 @@ export default function PageCountPage() {
               <StatBox label="Action Pages" value={stats.actionPages.toString()} />
             </div>
             <div className="p-6 text-center bg-white/[0.02] border border-white/6">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-2">INDUSTRY STANDARD</p>
-              <p className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>{stats.totalPages} pages = ~{stats.estimatedMinutes} min</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55 mb-2">INDUSTRY STANDARD</p>
+              <p className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>{stats.totalPages} pages = ~{stats.estimatedMinutes} min</p>
               <p className="text-xs text-white/25 mt-2">One screenplay page ≈ one minute of screen time</p>
             </div>
           </div>

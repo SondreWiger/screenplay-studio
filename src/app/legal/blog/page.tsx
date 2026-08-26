@@ -113,8 +113,8 @@ export default function LegalBlogPage() {
       <div className="max-w-4xl">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Legal Updates</p>
-          <h1 className="text-3xl font-black tracking-tight text-white">
+          <p className="text-xs font-medium text-red-400 uppercase tracking-[0.04em] mb-3">Legal Updates</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">
             Legal Blog
           </h1>
           <p className="mt-2 text-sm text-surface-500">

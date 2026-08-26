@@ -185,8 +185,8 @@ export function Badge({ children, variant = 'default', size = 'sm', className }:
     info: 'bg-blue-500/10 border border-blue-500/20 text-blue-400',
   };
   const sizes = {
-    sm: 'px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-    md: 'px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide',
+    sm: 'px-2 py-0.5 text-[11px] font-medium',
+    md: 'px-2.5 py-1 text-xs font-medium',
   };
 
   return (
@@ -292,7 +292,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         >
           {title && (
             <div className="flex items-center justify-between border-b border-surface-800/80 px-6 py-4">
-              <h2 id="modal-title" className="text-lg font-black text-white tracking-tight">{title}</h2>
+              <h2 id="modal-title" className="text-lg font-semibold text-white tracking-tight">{title}</h2>
               <button
                 onClick={onClose}
                 aria-label="Close"
@@ -327,7 +327,7 @@ export function Avatar({ src, name, size = 'md', color, className, online }: Ava
   React.useEffect(() => { setImgFailed(false); }, [src]);
 
   const sizes = {
-    sm: 'h-7 w-7 text-[10px]',
+    sm: 'h-7 w-7 text-[11px]',
     md: 'h-9 w-9 text-xs',
     lg: 'h-12 w-12 text-sm',
   };
@@ -397,7 +397,7 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
           aria-controls={`${listId}-panel-${tab.id}`}
           onClick={() => onChange(tab.id)}
           className={cn(
-            'flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-wide transition-colors duration-200',
+            'flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-200',
             activeTab === tab.id
               ? 'bg-surface-700 text-white shadow-md'
               : 'text-surface-500 hover:text-surface-200 hover:bg-surface-800/60'
@@ -407,7 +407,7 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
           {tab.icon}
           {tab.label}
           {tab.count !== undefined && (
-            <span className="ml-1 rounded-full bg-surface-600 px-1.5 py-0.5 text-[9px] font-bold">
+            <span className="ml-1 rounded-full bg-surface-600 px-1.5 py-0.5 text-[11px] font-bold">
               {tab.count}
             </span>
           )}
@@ -433,7 +433,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
           {icon}
         </div>
       )}
-      <h3 className="text-xl font-black text-white tracking-tight">{title}</h3>
+      <h3 className="text-xl font-semibold text-white tracking-tight">{title}</h3>
       {description && (
         <p className="mt-2 max-w-sm text-sm text-surface-500 leading-relaxed">{description}</p>
       )}
@@ -545,7 +545,7 @@ export function Progress({ value, max = 100, label, showPercent = true, color, c
     <div className={cn('space-y-1.5', className)}>
       {(label || showPercent) && (
         <div className="flex items-center justify-between">
-          {label && <span className="text-[11px] font-bold uppercase tracking-wider text-surface-500">{label}</span>}
+          {label && <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-400">{label}</span>}
           {showPercent && <span className="text-[11px] font-bold text-surface-400">{percent}%</span>}
         </div>
       )}
@@ -697,7 +697,7 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
         <div className="space-y-5">
           {groups.map((group) => (
             <div key={group.title}>
-              <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">{group.title}</h4>
+              <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em] mb-2">{group.title}</h4>
               <div className="space-y-1.5">
                 {group.shortcuts.map((sc, i) => (
                   <div key={i} className="flex items-center justify-between py-1.5">
@@ -783,8 +783,8 @@ export function StatCard({ label, value, icon, color = 'text-white', trend, clas
     <div className={cn('rounded-xl bg-surface-900/60 border border-surface-800/80 p-4', className)}>
       <div className="flex items-start justify-between">
         <div>
-          <p className={cn('text-2xl font-black tracking-tight', color)}>{value}</p>
-          <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mt-1">{label}</p>
+          <p className={cn('text-2xl font-semibold tracking-tight', color)}>{value}</p>
+          <p className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em] mt-1">{label}</p>
         </div>
         {icon && (
           <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-800/80 text-surface-400">
@@ -794,7 +794,7 @@ export function StatCard({ label, value, icon, color = 'text-white', trend, clas
       </div>
       {trend && (
         <div className={cn(
-          'mt-2 flex items-center gap-1 text-[10px] font-semibold',
+          'mt-2 flex items-center gap-1 text-[11px] font-semibold',
           trend.direction === 'up' ? 'text-green-400' : trend.direction === 'down' ? 'text-red-400' : 'text-surface-500'
         )}>
           {trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '→'} {trend.label}
@@ -858,9 +858,9 @@ interface AlertProps {
 
 export function Alert({ variant = 'info', title, children, onDismiss, className }: AlertProps) {
   const variants = {
-    info:    'bg-blue-500/8  border-blue-500/25  text-blue-300',
+    info:    'bg-blue-500/8 border-blue-500/25 text-blue-300',
     warning: 'bg-amber-500/8 border-amber-500/25 text-amber-300',
-    error:   'bg-red-500/8   border-red-500/25   text-red-300',
+    error:   'bg-red-500/8 border-red-500/25 text-red-300',
     success: 'bg-green-500/8 border-green-500/25 text-green-300',
   };
   const icons = {
@@ -924,7 +924,7 @@ export function Divider({ label, className }: DividerProps) {
     return (
       <div className={cn('flex items-center gap-3', className)}>
         <div className="flex-1 h-px bg-surface-800" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-surface-500">{label}</span>
+        <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-400">{label}</span>
         <div className="flex-1 h-px bg-surface-800" />
       </div>
     );
@@ -993,7 +993,7 @@ export function FilterTabs({ tabs, active, onChange, className }: FilterTabsProp
           {tab.label}
           {tab.count !== undefined && (
             <span className={cn(
-              'ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full',
+              'ml-1.5 text-[11px] px-1.5 py-0.5 rounded-full',
               active === tab.key ? 'bg-brand-500/20' : 'bg-surface-800 text-surface-500'
             )}>
               {tab.count}

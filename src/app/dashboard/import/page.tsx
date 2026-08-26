@@ -299,7 +299,7 @@ export default function BulkImportPage() {
               Dashboard
             </Link>
             <span className="text-surface-600">/</span>
-            <h1 className="text-sm font-bold text-white uppercase tracking-wider">Bulk Import</h1>
+            <h1 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Bulk Import</h1>
           </div>
           {files.length > 0 && (
             <div className="flex items-center gap-3">
@@ -365,7 +365,7 @@ export default function BulkImportPage() {
         {files.length > 0 && (
           <div className="mt-8 space-y-3">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xs font-bold text-surface-400 uppercase tracking-wider">
+              <h2 className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em]">
                 {files.length} File{files.length !== 1 ? 's' : ''} Queued
               </h2>
               <button
@@ -380,7 +380,7 @@ export default function BulkImportPage() {
               <Card key={file.id} className="p-4">
                 <div className="flex items-start gap-4">
                   {/* File icon */}
-                  <div className={`w-10 h-10 flex items-center justify-center rounded-lg shrink-0 text-[10px] font-black uppercase ${
+                  <div className={`w-10 h-10 flex items-center justify-center rounded-lg shrink-0 text-[11px] font-semibold uppercase ${
                     file.format === 'fdx'
                       ? 'bg-blue-500/15 text-blue-400'
                       : file.format === 'starc'
@@ -394,7 +394,7 @@ export default function BulkImportPage() {
                   <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* Title */}
                     <div className="sm:col-span-1">
-                      <label className="block text-[10px] font-mono text-surface-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] text-surface-500 uppercase tracking-[0.04em] mb-1">
                         Project Title
                       </label>
                       <input
@@ -407,7 +407,7 @@ export default function BulkImportPage() {
 
                     {/* Script Type */}
                     <div>
-                      <label className="block text-[10px] font-mono text-surface-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] text-surface-500 uppercase tracking-[0.04em] mb-1">
                         Script Type
                       </label>
                       <select
@@ -424,7 +424,7 @@ export default function BulkImportPage() {
 
                     {/* Format */}
                     <div>
-                      <label className="block text-[10px] font-mono text-surface-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] text-surface-500 uppercase tracking-[0.04em] mb-1">
                         Format
                       </label>
                       <select
@@ -445,11 +445,11 @@ export default function BulkImportPage() {
                   {/* Status + remove */}
                   <div className="flex items-center gap-2 shrink-0">
                     {file.error ? (
-                      <span className="text-[10px] font-mono text-red-400 max-w-[120px] truncate" title={file.error}>
+                      <span className="text-[11px] font-mono text-red-400 max-w-[120px] truncate" title={file.error}>
                         Error
                       </span>
                     ) : (
-                      <span className="text-[10px] font-mono text-surface-500">
+                      <span className="text-[11px] font-mono text-surface-500">
                         {file.elements.length} elements
                         {file.characters && file.characters.length > 0 && (
                           <span className="ml-2 text-purple-400/70">{file.characters.length} chars</span>
@@ -480,17 +480,17 @@ export default function BulkImportPage() {
                 {!file.error && file.titlePage && Object.keys(file.titlePage).length > 0 && (
                   <div className="mt-2 ml-14 flex flex-wrap gap-x-4 gap-y-1">
                     {file.titlePage.author && (
-                      <span className="text-[10px] text-surface-500">
+                      <span className="text-[11px] text-surface-500">
                         by <span className="text-surface-300">{file.titlePage.author}</span>
                       </span>
                     )}
                     {file.titlePage.draft_date && (
-                      <span className="text-[10px] text-surface-500">
+                      <span className="text-[11px] text-surface-500">
                         Draft: <span className="text-surface-300">{file.titlePage.draft_date}</span>
                       </span>
                     )}
                     {file.titlePage.contact && (
-                      <span className="text-[10px] text-surface-500">
+                      <span className="text-[11px] text-surface-500">
                         Contact: <span className="text-surface-300">{file.titlePage.contact}</span>
                       </span>
                     )}

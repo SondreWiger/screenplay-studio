@@ -278,7 +278,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
               <option value="all">All Priority</option>
               {BROADCAST_WIRE_PRIORITY_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
-            <label className="flex items-center gap-1 text-[10px] text-surface-400">
+            <label className="flex items-center gap-1 text-[11px] text-surface-400">
               <input
                 type="checkbox"
                 checked={filter.unused_only}
@@ -326,13 +326,13 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
                   )}
                 >
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className={cn('text-[9px] font-bold px-1 py-0 rounded text-white', priorityOpt?.color || 'bg-surface-700')}>
+                    <span className={cn('text-[11px] font-bold px-1 py-0 rounded text-white', priorityOpt?.color || 'bg-surface-700')}>
                       {priorityOpt?.label || story.priority}
                     </span>
-                    <span className="text-[10px] text-surface-500">{feedName}</span>
-                    {story.category && <span className="text-[10px] text-surface-600">· {story.category}</span>}
-                    {story.is_used && <span className="text-[9px] text-green-500 font-bold">USED</span>}
-                    <span className="text-[10px] text-surface-600 ml-auto">
+                    <span className="text-[11px] text-surface-500">{feedName}</span>
+                    {story.category && <span className="text-[11px] text-surface-600">· {story.category}</span>}
+                    {story.is_used && <span className="text-[11px] text-green-500 font-bold">USED</span>}
+                    <span className="text-[11px] text-surface-600 ml-auto">
                       {story.published_at
                         ? new Date(story.published_at).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })
                         : ''}
@@ -356,7 +356,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
           <div className="p-3 border-b border-surface-800 bg-surface-900/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className={cn(
-                'text-[10px] font-bold px-1.5 py-0.5 rounded text-white',
+                'text-[11px] font-bold px-1.5 py-0.5 rounded text-white',
                 BROADCAST_WIRE_PRIORITY_OPTIONS.find(p => p.value === selectedStory.priority)?.color
               )}>
                 {selectedStory.priority.toUpperCase()}
@@ -395,14 +395,14 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
 
             {selectedStory.summary && (
               <div className="mb-4 p-3 bg-surface-900 border border-surface-800 rounded-lg">
-                <div className="text-[10px] font-bold text-surface-500 uppercase mb-1">Summary</div>
+                <div className="text-[11px] font-medium text-surface-500 uppercase mb-1">Summary</div>
                 <p className="text-sm text-surface-300 leading-relaxed">{selectedStory.summary}</p>
               </div>
             )}
 
             {selectedStory.body && (
               <div className="prose prose-invert prose-sm max-w-none">
-                <div className="text-[10px] font-bold text-surface-500 uppercase mb-1">Full Text</div>
+                <div className="text-[11px] font-medium text-surface-500 uppercase mb-1">Full Text</div>
                 <div
                   className="text-sm text-surface-300 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: selectedStory.body }}
@@ -495,10 +495,10 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-white">{feed.name}</span>
-                    {feed.category && <span className="text-[10px] text-surface-500">{feed.category}</span>}
+                    {feed.category && <span className="text-[11px] text-surface-500">{feed.category}</span>}
                   </div>
-                  <div className="text-[10px] text-surface-500 truncate">{feed.feed_url}</div>
-                  <div className="flex gap-3 mt-1 text-[10px] text-surface-400">
+                  <div className="text-[11px] text-surface-500 truncate">{feed.feed_url}</div>
+                  <div className="flex gap-3 mt-1 text-[11px] text-surface-400">
                     <span>{feed.stories_ingested} ingested</span>
                     <span>Poll: {feed.poll_interval_seconds}s</span>
                     {feed.last_polled_at && (

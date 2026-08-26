@@ -148,10 +148,10 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: sc.color + '20', color: sc.color }}>
+                      <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: sc.color + '20', color: sc.color }}>
                         {sc.label}
                       </span>
-                      {pitch.genre && <span className="text-[10px] text-surface-600">{pitch.genre}</span>}
+                      {pitch.genre && <span className="text-[11px] text-surface-600">{pitch.genre}</span>}
                     </div>
                     <h3 className="font-semibold text-white">{pitch.title}</h3>
                     <p className="text-sm text-surface-400 mt-1">{pitch.logline}</p>
@@ -210,7 +210,7 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
                     {comments.map(c => (
                       <div key={c.id} className="bg-surface-900 rounded p-2">
                         <p className="text-sm text-surface-300">{c.content}</p>
-                        <span className="text-[10px] text-surface-600">{new Date(c.created_at).toLocaleString()}</span>
+                        <span className="text-[11px] text-surface-600">{new Date(c.created_at).toLocaleString()}</span>
                       </div>
                     ))}
                     <div className="flex gap-2">

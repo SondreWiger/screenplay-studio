@@ -103,7 +103,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
           </svg>
         </div>
         <div>
-          <h1 className="text-2xl font-black text-white">Showcase Settings</h1>
+          <h1 className="text-2xl font-bold text-white">Showcase Settings</h1>
           <p className="text-sm text-surface-400">Configure how your project appears in the community showcase.</p>
         </div>
       </div>

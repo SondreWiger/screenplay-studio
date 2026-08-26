@@ -248,7 +248,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-white">Advanced Export</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Advanced Export</h1>
             <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">Branded, production-ready exports in multiple formats.</p>
@@ -334,7 +334,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
               {config.includeCover && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Company / Studio Name</label>
+                    <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Company / Studio Name</label>
                     <input
                       type="text"
                       value={config.coverCompanyName}
@@ -344,7 +344,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Subtitle</label>
+                    <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Subtitle</label>
                     <input
                       type="text"
                       value={config.coverSubtitle}
@@ -354,7 +354,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Contact Info</label>
+                    <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Contact Info</label>
                     <input
                       type="text"
                       value={config.contactInfo}
@@ -364,7 +364,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Draft Label</label>
+                    <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Draft Label</label>
                     <input
                       type="text"
                       value={config.draftLabel}
@@ -374,7 +374,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Logo URL (optional)</label>
+                    <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Logo URL (optional)</label>
                     <input
                       type="url"
                       value={config.coverLogoUrl}
@@ -452,7 +452,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Header Left</label>
+                  <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Header Left</label>
                   <input
                     type="text"
                     value={config.headerLeft}
@@ -462,7 +462,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-surface-500 mb-1">Header Right</label>
+                  <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Header Right</label>
                   <input
                     type="text"
                     value={config.headerRight}
@@ -516,7 +516,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 onChange={e => updateConfig('fontSize', Number(e.target.value))}
                 className="w-full accent-brand-500"
               />
-              <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+              <div className="flex justify-between text-[11px] text-surface-600 mt-1">
                 <span>8pt</span><span>12pt</span><span>16pt</span>
               </div>
             </Card>
@@ -532,7 +532,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     <div className="text-center mb-4">
                       {config.coverLogoUrl && <div className="mb-1 text-[4px] text-gray-400">[Logo]</div>}
                       {config.coverCompanyName && <div className="text-[5px] text-white/40 mb-1">{config.coverCompanyName}</div>}
-                      <div className="text-[8px] font-bold mb-0.5">{currentProject?.title || 'Script Title'}</div>
+                      <div className="text-[11px] font-bold mb-0.5">{currentProject?.title || 'Script Title'}</div>
                       {config.coverSubtitle && <div className="text-[5px] text-white/40">{config.coverSubtitle}</div>}
                       {config.draftLabel && <div className="text-[4px] text-gray-400 mt-1">{config.draftLabel}</div>}
                       <div className="border-b border-white/10 mt-2 mb-2" />
@@ -548,7 +548,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 </div>
                 {config.watermarkEnabled && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none rotate-[-30deg]">
-                    <span className="text-red-200/30 text-2xl font-black uppercase tracking-widest">{config.watermarkText}</span>
+                    <span className="text-red-200/30 text-2xl font-semibold uppercase tracking-[0.04em]">{config.watermarkText}</span>
                   </div>
                 )}
                 {config.pageNumbers && (
@@ -565,7 +565,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 {batchMode ? `Export ${batchFormats.length} format${batchFormats.length !== 1 ? 's' : ''}` : `Export as ${config.format.toUpperCase()}`}
               </Button>
 
-              <div className="text-[10px] text-surface-500 text-center">
+              <div className="text-[11px] text-surface-500 text-center">
                 {batchMode ? batchFormats.map(f => f.toUpperCase()).join(' + ') : `${config.format.toUpperCase()} format`}
                 {config.watermarkEnabled && ' • Watermarked'}
                 {config.includeCover && ' • Cover page'}

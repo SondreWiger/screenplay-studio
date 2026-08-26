@@ -73,7 +73,7 @@ export function SupportButton() {
               <div className="flex-1 min-w-0">
                 <span className="font-medium">Support Tickets</span>
                 {openTicketCount > 0 && (
-                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-brand-500/20 text-brand-500 rounded-full">
+                  <span className="ml-2 px-1.5 py-0.5 text-[11px] font-bold bg-brand-500/20 text-brand-500 rounded-full">
                     {openTicketCount} open
                   </span>
                 )}

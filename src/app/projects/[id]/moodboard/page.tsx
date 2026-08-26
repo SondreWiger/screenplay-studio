@@ -379,7 +379,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               </span>
               {item.title && (
                 <span className={cn(
-                  'text-[10px] mt-1',
+                  'text-[11px] mt-1',
                   isColorLight(item.color || '#dd574e') ? 'text-black/50' : 'text-white/60'
                 )}>
                   {item.title}
@@ -451,7 +451,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
         {item.tags && item.tags.length > 0 && !isCanvas && (
           <div className="absolute bottom-2 left-2 flex gap-1">
             {item.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-surface-300">{tag}</span>
+              <span key={tag} className="text-[11px] px-1.5 py-0.5 rounded bg-black/50 text-surface-300">{tag}</span>
             ))}
           </div>
         )}
@@ -704,7 +704,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Label</label>
+                <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Label</label>
                 <Input
                   value={selectedConnection.label || ''}
                   onChange={(e) => {
@@ -718,7 +718,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Color</label>
+                <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Color</label>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {['#888888', '#dd574e', '#e8863a', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'].map((c) => (
                     <button
@@ -735,7 +735,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Style</label>
+                <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Style</label>
                 <div className="flex gap-1 mt-1">
                   {([{ value: 'solid', label: 'Solid' }, { value: 'dashed', label: 'Dashed' }, { value: 'dotted', label: 'Dotted' }] as const).map((s) => (
                     <button

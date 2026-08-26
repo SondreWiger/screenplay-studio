@@ -199,16 +199,16 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
                   )}
                 >
                   <div className={cn('w-full aspect-video rounded mb-3 flex items-center justify-center', TEMPLATE_COLORS[tpl.template_type] || 'bg-surface-700')}>
-                    <span className="text-white/70 text-xs font-bold uppercase">{tpl.template_type.replace(/_/g, ' ')}</span>
+                    <span className="text-white/70 text-xs font-medium uppercase">{tpl.template_type.replace(/_/g, ' ')}</span>
                   </div>
                   <div className="text-sm font-medium text-white">{tpl.name}</div>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-surface-500">
+                  <div className="flex items-center gap-2 mt-1 text-[11px] text-surface-500">
                     {tpl.cg_channel != null && <span>Ch{tpl.cg_channel}</span>}
                     {tpl.cg_layer != null && <span>L{tpl.cg_layer}</span>}
                     {tpl.cg_template_path && <span className="truncate max-w-[120px]">{tpl.cg_template_path}</span>}
                   </div>
                   <div className="flex gap-1 mt-2">
-                    <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(tpl.id); }} className="text-red-400 text-[10px]">Delete</Button>
+                    <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(tpl.id); }} className="text-red-400 text-[11px]">Delete</Button>
                   </div>
                 </div>
               ))}
@@ -231,15 +231,15 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
                     )}
                   >
                     <span className="text-xs text-surface-500 w-6 text-center font-mono">{i + 1}</span>
-                    <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded text-white', tpl ? TEMPLATE_COLORS[tpl.template_type] || 'bg-surface-700' : 'bg-surface-700')}>
+                    <span className={cn('text-[11px] font-bold px-1.5 py-0.5 rounded text-white', tpl ? TEMPLATE_COLORS[tpl.template_type] || 'bg-surface-700' : 'bg-surface-700')}>
                       {tpl?.template_type.replace(/_/g, ' ').toUpperCase() || '?'}
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-white font-medium">{cue.title}</div>
-                      <div className="text-[10px] text-surface-500">{tpl?.name || 'Unknown template'} · {cue.duration_seconds}s</div>
+                      <div className="text-[11px] text-surface-500">{tpl?.name || 'Unknown template'} · {cue.duration_seconds}s</div>
                     </div>
-                    {isOnAir && <span className="text-[10px] text-red-400 font-bold animate-pulse">ON AIR</span>}
-                    <span className="text-[10px] text-surface-500 uppercase">{cue.status}</span>
+                    {isOnAir && <span className="text-[11px] text-red-400 font-bold animate-pulse">ON AIR</span>}
+                    <span className="text-[11px] text-surface-500 uppercase">{cue.status}</span>
                     <div className="flex gap-1 shrink-0">
                       {isOnAir ? (
                         <Button size="sm" variant="ghost" className="text-red-400" onClick={() => handleSetCueStatus(cue, 'done')}>⏹ Stop</Button>
@@ -291,7 +291,7 @@ export default function GraphicsPage({ params }: { params: { id: string } }) {
             <textarea value={tplForm.fields} onChange={(e) => setTplForm(p => ({ ...p, fields: e.target.value }))}
               className="w-full bg-surface-800 text-white border border-surface-700 rounded-lg px-3 py-2 text-sm font-mono resize-none" rows={4}
               placeholder='[{"key":"line1","label":"Name","type":"text"},{"key":"line2","label":"Title","type":"text"}]' />
-            <p className="text-[10px] text-surface-500 mt-1">Define template fields: key, label, type (text/number/color/image/boolean), default_value.</p>
+            <p className="text-[11px] text-surface-500 mt-1">Define template fields: key, label, type (text/number/color/image/boolean), default_value.</p>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setShowAddTemplate(false)}>Cancel</Button>

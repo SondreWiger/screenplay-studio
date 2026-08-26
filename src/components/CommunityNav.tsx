@@ -66,9 +66,9 @@ export function CommunityNav() {
               className="w-7 h-7 flex items-center justify-center shrink-0"
               style={{ background: '#FF5F1F' }}
             >
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors hidden sm:block">
+            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors hidden sm:block">
               Community
             </span>
           </Link>
@@ -81,7 +81,7 @@ export function CommunityNav() {
                 <Link
                   key={href}
                   href={href}
-                  className="text-[11px] font-mono uppercase tracking-widest transition-colors whitespace-nowrap"
+                  className="text-[11px] uppercase tracking-[0.04em] transition-colors whitespace-nowrap"
                   style={{
                     color: active ? '#FF5F1F' : 'rgba(255,255,255,0.45)',
                     paddingBottom: active ? '2px' : undefined,
@@ -107,7 +107,7 @@ export function CommunityNav() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
                   </svg>
-                  <span className="text-[10px] font-mono uppercase tracking-widest">Dashboard</span>
+                  <span className="text-[11px] uppercase tracking-[0.04em]">Dashboard</span>
                 </Link>
 
                 {/* Context-sensitive CTAs */}
@@ -163,7 +163,7 @@ export function CommunityNav() {
                   </svg>
                   {unreadDMs > 0 && (
                     <span
-                      className="absolute -top-0.5 -right-0.5 min-w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-black text-white px-0.5"
+                      className="absolute -top-0.5 -right-0.5 min-w-4 h-4 flex items-center justify-center rounded-full text-[11px] font-semibold text-white px-0.5"
                       style={{ background: '#FF5F1F' }}
                     >
                       {unreadDMs > 99 ? '99+' : unreadDMs}
@@ -187,7 +187,7 @@ export function CommunityNav() {
                       />
                     ) : (
                       <div
-                        className="w-7 h-7 flex items-center justify-center text-[10px] font-black text-white rounded-full"
+                        className="w-7 h-7 flex items-center justify-center text-[11px] font-semibold text-white rounded-full"
                         style={{ background: '#FF5F1F' }}
                       >
                         {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -202,7 +202,7 @@ export function CommunityNav() {
                 {/* Sign out — desktop */}
                 <button
                   onClick={handleSignOut}
-                  className="text-[10px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors hidden xl:block"
+                  className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors hidden xl:block"
                 >
                   Out
                 </button>
@@ -211,7 +211,7 @@ export function CommunityNav() {
               <>
                 <Link
                   href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
-                  className="text-[11px] font-mono text-white/50 uppercase tracking-widest hover:text-white/70 transition-colors hidden sm:block"
+                  className="text-[11px] text-white/50 uppercase tracking-[0.04em] hover:text-white/70 transition-colors hidden sm:block"
                 >
                   Sign In
                 </Link>
@@ -259,7 +259,7 @@ export function CommunityNav() {
                     href={href}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
-                      'text-[11px] font-mono uppercase tracking-widest py-2.5 px-3 rounded-lg transition-colors',
+                      'text-[11px] uppercase tracking-[0.04em] py-2.5 px-3 rounded-lg transition-colors',
                       active
                         ? 'text-brand-500 bg-brand-500/[0.08]'
                         : 'text-white/50 hover:text-white hover:bg-white/5',
@@ -273,20 +273,20 @@ export function CommunityNav() {
               {user ? (
                 <>
                   <Link href="/messages" onClick={() => setMobileOpen(false)}
-                    className="text-[11px] font-mono uppercase tracking-widest py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">
+                    className="text-[11px] uppercase tracking-[0.04em] py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">
                     Messages
                   </Link>
                   <Link href="/dashboard" onClick={() => setMobileOpen(false)}
-                    className="text-[11px] font-mono uppercase tracking-widest py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">
+                    className="text-[11px] uppercase tracking-[0.04em] py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">
                     Dashboard
                   </Link>
                   <Link href="/community/share" onClick={() => setMobileOpen(false)}
-                    className="text-[11px] font-mono uppercase tracking-widest py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">
+                    className="text-[11px] uppercase tracking-[0.04em] py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">
                     Share Script
                   </Link>
                   <button
                     onClick={() => { setMobileOpen(false); handleSignOut(); }}
-                    className="text-left text-[11px] font-mono uppercase tracking-widest py-2.5 px-3 rounded-lg text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors"
+                    className="text-left text-[11px] uppercase tracking-[0.04em] py-2.5 px-3 rounded-lg text-white/55 hover:text-white/60 hover:bg-white/5 transition-colors"
                   >
                     Sign Out
                   </button>
@@ -295,7 +295,7 @@ export function CommunityNav() {
                 <Link
                   href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                   onClick={() => setMobileOpen(false)}
-                  className="text-[11px] font-mono uppercase tracking-widest py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+                  className="text-[11px] uppercase tracking-[0.04em] py-2.5 px-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors"
                 >
                   Sign In
                 </Link>

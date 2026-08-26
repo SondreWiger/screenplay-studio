@@ -135,14 +135,14 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
       {/* ── Control Bar ──────────────────────────────── */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-surface-950 border-b border-surface-800">
         <div className="flex items-center gap-3">
-          <h1 className="text-xs font-bold text-surface-400 uppercase tracking-wider">Multiviewer</h1>
+          <h1 className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em]">Multiviewer</h1>
           <div className="flex items-center gap-1">
             {(['2x2', '3x3', '4x4', '1+5'] as GridLayout[]).map(l => (
               <button
                 key={l}
                 onClick={() => setLayout(l)}
                 className={cn(
-                  'px-2 py-0.5 text-[10px] font-bold rounded transition-colors',
+                  'px-2 py-0.5 text-[11px] font-bold rounded transition-colors',
                   layout === l ? 'bg-surface-600 text-white' : 'text-surface-500 hover:text-white'
                 )}
               >
@@ -153,19 +153,19 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
           <div className="h-4 w-px bg-surface-700" />
           <button
             onClick={() => setShowLabels(!showLabels)}
-            className={cn('text-[10px] px-2 py-0.5 rounded', showLabels ? 'bg-surface-700 text-white' : 'text-surface-500')}
+            className={cn('text-[11px] px-2 py-0.5 rounded', showLabels ? 'bg-surface-700 text-white' : 'text-surface-500')}
           >
             UMD
           </button>
           <button
             onClick={() => setShowAudioMeters(!showAudioMeters)}
-            className={cn('text-[10px] px-2 py-0.5 rounded', showAudioMeters ? 'bg-surface-700 text-white' : 'text-surface-500')}
+            className={cn('text-[11px] px-2 py-0.5 rounded', showAudioMeters ? 'bg-surface-700 text-white' : 'text-surface-500')}
           >
             Audio
           </button>
         </div>
         <div className="flex items-center gap-4">
-          <div ref={dateRef} className="text-[10px] text-surface-500" />
+          <div ref={dateRef} className="text-[11px] text-surface-500" />
           <div ref={clockRef} className="font-mono text-xl text-red-500 font-bold tabular-nums" />
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
                     )}>
                       {src.short_name || src.name}
                     </div>
-                    <div className="text-[10px] text-surface-600">
+                    <div className="text-[11px] text-surface-600">
                       {src.source_type}
                       {src.protocol && ` • ${src.protocol.toUpperCase()}`}
                     </div>
@@ -230,13 +230,13 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
                   'bg-surface-900/90'
                 )}>
                   <span className={cn(
-                    'text-[10px] font-bold uppercase truncate',
+                    'text-[11px] font-medium uppercase truncate',
                     tally === 'program' || tally === 'preview' ? 'text-white' : 'text-surface-400'
                   )}>
                     {src.name}
                   </span>
                   {tally !== 'off' && (
-                    <span className="text-[8px] font-bold text-white/80 uppercase">
+                    <span className="text-[11px] font-medium text-white/80 uppercase">
                       {tally === 'program' ? 'PGM' : 'PVW'}
                     </span>
                   )}

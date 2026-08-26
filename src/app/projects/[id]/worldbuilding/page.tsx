@@ -136,7 +136,7 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
               )}
             >
               <span className="truncate">{cat.label}</span>
-              <span className="ml-auto text-[10px] bg-surface-800 px-1.5 py-0.5 rounded-full text-surface-400">
+              <span className="ml-auto text-[11px] bg-surface-800 px-1.5 py-0.5 rounded-full text-surface-400">
                 {entities.filter(e => e.category === cat.value).length}
               </span>
             </button>
@@ -146,7 +146,7 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
         {/* Entities List */}
         <div className="w-64 border-r border-surface-800 bg-surface-950 flex flex-col">
           <div className="p-3 border-b border-surface-800 flex justify-between items-center">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider">{CATEGORIES.find(c => c.value === activeCategory)?.label}</h2>
+            <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em]">{CATEGORIES.find(c => c.value === activeCategory)?.label}</h2>
             {canEdit && (
               <Button size="sm" variant="ghost" onClick={handleCreateEntity} className="h-7 w-7 p-0 rounded-full">
                 +

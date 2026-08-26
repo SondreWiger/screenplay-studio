@@ -156,8 +156,8 @@ export default function TranslationsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-medium text-brand-500 uppercase tracking-wider mb-3">Community</p>
-          <h1 className="text-3xl font-black text-white tracking-tight">Translator Hub</h1>
+          <p className="text-xs font-medium text-brand-500 uppercase tracking-[0.04em] mb-3">Community</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Translator Hub</h1>
           <p className="text-surface-400 mt-2 max-w-xl">
             Help translate Screenplay Studio into your language. Suggest translations, vote on the best ones, and make the app accessible to creators worldwide.
           </p>
@@ -193,16 +193,16 @@ export default function TranslationsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <Card className="p-5">
-            <p className="text-xs font-mono text-surface-500 uppercase tracking-wider">Languages</p>
-            <p className="text-2xl font-black text-white mt-1">{languages.length}</p>
+            <p className="text-xs text-surface-500 uppercase tracking-[0.04em]">Languages</p>
+            <p className="text-2xl font-bold text-white mt-1">{languages.length}</p>
           </Card>
           <Card className="p-5">
-            <p className="text-xs font-mono text-surface-500 uppercase tracking-wider">Translation Keys</p>
-            <p className="text-2xl font-black text-white mt-1">{totalKeys}</p>
+            <p className="text-xs text-surface-500 uppercase tracking-[0.04em]">Translation Keys</p>
+            <p className="text-2xl font-bold text-white mt-1">{totalKeys}</p>
           </Card>
           <Card className="p-5">
-            <p className="text-xs font-mono text-surface-500 uppercase tracking-wider">Contributors</p>
-            <p className="text-2xl font-black text-white mt-1">{contributors.length}</p>
+            <p className="text-xs text-surface-500 uppercase tracking-[0.04em]">Contributors</p>
+            <p className="text-2xl font-bold text-white mt-1">{contributors.length}</p>
           </Card>
         </div>
 
@@ -242,14 +242,14 @@ export default function TranslationsPage() {
                               <span className="text-sm text-surface-500">({lang.native_name})</span>
                               <span className="text-xs font-mono text-surface-600 bg-surface-800 px-2 py-0.5 rounded">{lang.code}</span>
                               {lang.status === 'pending' && (
-                                <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">PENDING ADMIN APPROVAL</span>
+                                <span className="text-[11px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">PENDING ADMIN APPROVAL</span>
                               )}
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
                             <div className="text-right">
                               <p className="text-sm font-semibold text-white">{progress[lang.code] || 0}%</p>
-                              <p className="text-[10px] text-surface-500">translated</p>
+                              <p className="text-[11px] text-surface-500">translated</p>
                             </div>
                             <div className="w-24 h-2 bg-surface-800 rounded-full overflow-hidden">
                               <div
@@ -290,7 +290,7 @@ export default function TranslationsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{c.display_name || 'Anonymous'}</p>
-                      <p className="text-[10px] text-surface-500">{c.count} translation{c.count !== 1 ? 's' : ''}</p>
+                      <p className="text-[11px] text-surface-500">{c.count} translation{c.count !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
                 ))}

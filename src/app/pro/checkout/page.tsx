@@ -15,7 +15,7 @@ export default function ProCheckoutPage() {
       <div className="min-h-screen bg-surface-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-2xl animate-pulse">💳</div>
-          <h1 className="text-xl font-black text-white mb-2">Loading...</h1>
+          <h1 className="text-xl font-bold text-white mb-2">Loading...</h1>
         </div>
       </div>
     }>
@@ -90,7 +90,7 @@ function CheckoutContent() {
           <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-2xl animate-pulse">
             💳
           </div>
-          <h1 className="text-xl font-black text-white mb-2">Processing your payment...</h1>
+          <h1 className="text-xl font-bold text-white mb-2">Processing your payment...</h1>
           <p className="text-surface-400 text-sm">Please don&apos;t close this tab.</p>
         </div>
       </div>
@@ -106,7 +106,7 @@ function CheckoutContent() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-2xl">
               ✓
             </div>
-            <h1 className="text-2xl font-black text-white mb-2">Welcome to Pro!</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Welcome to Pro!</h1>
             <p className="text-surface-400 mb-6">
               Your payment was successful. All Pro features are now unlocked.
             </p>
@@ -121,7 +121,7 @@ function CheckoutContent() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-surface-800 flex items-center justify-center text-2xl">
               ✕
             </div>
-            <h1 className="text-2xl font-black text-white mb-2">Payment Cancelled</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Payment Cancelled</h1>
             <p className="text-surface-400 mb-6">
               No worries — you weren&apos;t charged. You can upgrade anytime.
             </p>
@@ -141,7 +141,7 @@ function CheckoutContent() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-red-500/10 flex items-center justify-center text-2xl">
               ⚠
             </div>
-            <h1 className="text-2xl font-black text-white mb-2">Something went wrong</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Something went wrong</h1>
             <p className="text-surface-400 mb-2">{error}</p>
             <p className="text-xs text-surface-600 mb-6">
               If you were charged, please contact support at support@screenplaystudio.dev

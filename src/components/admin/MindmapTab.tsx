@@ -276,12 +276,12 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black text-white">Project Network Overview</h2>
+          <h2 className="text-xl font-bold text-white">Project Network Overview</h2>
           <p className="text-xs text-surface-400 mt-1">
             Glow sizes scale with project volume (scripts) and collaboration activity (active members).
           </p>
         </div>
-        <div className="flex gap-4 font-mono text-[10px] items-center">
+        <div className="flex gap-4 font-mono text-[11px] items-center">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'rgb(var(--brand-500))' }} />
             <span className="text-white/60">PROJECT</span>
@@ -409,7 +409,7 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
                     textAnchor="middle"
                     dy=".3em"
                     fill="#fff"
-                    className="text-[9px] font-mono font-bold select-none pointer-events-none"
+                    className="text-[11px] font-mono font-bold select-none pointer-events-none"
                     opacity={node.size > 20 ? 0.9 : 0}
                   >
                     {node.label.slice(0, 3).toUpperCase()}
@@ -420,7 +420,7 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
                     y={node.size + 16}
                     textAnchor="middle"
                     fill="#fff"
-                    className="text-[10px] font-mono tracking-wider select-none pointer-events-none"
+                    className="text-[11px] font-mono tracking-wider select-none pointer-events-none"
                     opacity={isHovered || isSelected || node.type === 'project' ? 0.9 : 0.4}
                   >
                     {node.label}
@@ -445,36 +445,36 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
                 <div className="flex flex-col gap-6">
                   {/* Header info */}
                   <div className="border-b border-surface-800 pb-3">
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-surface-500">
+                    <span className="text-[11px] uppercase tracking-[0.04em] text-surface-500">
                       {isProj ? 'Project Registry' : 'User Member Registry'}
                     </span>
-                    <h3 className="text-base font-black text-white mt-1 uppercase tracking-wide">
+                    <h3 className="text-base font-semibold text-white mt-1 uppercase tracking-wide">
                       {active?.label}
                     </h3>
                   </div>
 
                   {/* Detail list */}
-                  <div className="space-y-4 font-mono text-[10px]">
+                  <div className="space-y-4 font-mono text-[11px]">
                     {isProj ? (
                       <>
                         <div className="grid grid-cols-3 gap-2">
-                          <span className="text-surface-500 uppercase tracking-wider">format</span>
+                          <span className="text-surface-500 uppercase tracking-[0.04em]">format</span>
                           <span className="col-span-2 text-white/80">{active?.meta.format || '—'}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
-                          <span className="text-surface-500 uppercase tracking-wider">status</span>
+                          <span className="text-surface-500 uppercase tracking-[0.04em]">status</span>
                           <span className="col-span-2 text-white/80">{active?.meta.status?.replace('_', ' ') || '—'}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
-                          <span className="text-surface-500 uppercase tracking-wider">members</span>
+                          <span className="text-surface-500 uppercase tracking-[0.04em]">members</span>
                           <span className="col-span-2 text-brand-400 font-bold">{active?.meta.memberCount} active</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
-                          <span className="text-surface-500 uppercase tracking-wider">scripts</span>
+                          <span className="text-surface-500 uppercase tracking-[0.04em]">scripts</span>
                           <span className="col-span-2 text-white/80">{active?.meta.scriptsCount} draft(s)</span>
                         </div>
                         <div className="border-t border-surface-800/50 pt-4 mt-2">
-                          <span className="block text-[8px] uppercase tracking-widest text-surface-500 mb-1">synopsis / logline</span>
+                          <span className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">synopsis / logline</span>
                           <p className="text-[11px] text-surface-300 leading-relaxed font-light">
                             {active?.meta.logline || 'No logline registered.'}
                           </p>
@@ -483,11 +483,11 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
                     ) : (
                       <>
                         <div className="grid grid-cols-3 gap-2">
-                          <span className="text-surface-500 uppercase tracking-wider">email</span>
+                          <span className="text-surface-500 uppercase tracking-[0.04em]">email</span>
                           <span className="col-span-2 text-white/80">{active?.meta.email}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
-                          <span className="text-surface-500 uppercase tracking-wider">node_type</span>
+                          <span className="text-surface-500 uppercase tracking-[0.04em]">node_type</span>
                           <span className="col-span-2 text-indigo-400 font-bold">USER_PROFILE</span>
                         </div>
                       </>
@@ -503,7 +503,7 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
             </div>
           )}
 
-          <div className="mt-8 pt-4 border-t border-surface-800 flex justify-between font-mono text-[9px] text-surface-500">
+          <div className="mt-8 pt-4 border-t border-surface-800 flex justify-between font-mono text-[11px] text-surface-500">
             <span>GRID_NODE: ACTIVE</span>
             <span>FORCE_INDEX: 0.85</span>
           </div>

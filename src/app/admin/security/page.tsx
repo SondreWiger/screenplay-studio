@@ -408,7 +408,7 @@ export default function SecurityPage() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Admin
           </Link>
-          <h1 className="text-2xl font-black text-white">Security &amp; Audit</h1>
+          <h1 className="text-2xl font-bold text-white">Security &amp; Audit</h1>
           <p className="text-sm text-surface-400 mt-1">Monitor security events, audit trails, and user bans</p>
         </div>
         <Button onClick={loadAll} variant="secondary" size="sm">
@@ -428,7 +428,7 @@ export default function SecurityPage() {
         ].map((s) => (
           <Card key={s.label} className="p-4">
             <p className="text-xs text-surface-400 mb-1">{s.label}</p>
-            <p className={cn('text-2xl font-black', s.color)}>{s.value.toLocaleString()}</p>
+            <p className={cn('text-2xl font-bold', s.color)}>{s.value.toLocaleString()}</p>
           </Card>
         ))}
       </div>

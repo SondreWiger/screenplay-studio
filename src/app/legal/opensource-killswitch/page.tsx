@@ -10,14 +10,14 @@ export default function OpensourceKillswitchPage() {
     <div>
       <div className="max-w-4xl">
         <div className="mb-10">
-          <p className="text-xs font-medium text-red-400 uppercase tracking-wider mb-3">Project Continuity</p>
-          <h1 className="text-3xl font-black text-white tracking-tight">Automated Dead Man&apos;s Switch / Escrow</h1>
+          <p className="text-xs font-medium text-red-400 uppercase tracking-[0.04em] mb-3">Project Continuity</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Automated Dead Man&apos;s Switch / Escrow</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: June 24, 2026</p>
         </div>
 
         {/* Table of Contents */}
         <nav className="mb-12 rounded-lg bg-surface-900/50 border border-surface-800/60 p-6">
-          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-wider mb-4">Table of Contents</h2>
+          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-[0.04em] mb-4">Table of Contents</h2>
           <ol className="list-decimal list-inside space-y-1.5 text-surface-400 text-[13px] columns-1 sm:columns-2 gap-8">
             <li><a href="#what" className="hover:text-red-400 transition-colors">What Is the Dead Man&apos;s Switch</a></li>
             <li><a href="#why" className="hover:text-red-400 transition-colors">Why It Exists</a></li>

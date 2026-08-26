@@ -647,7 +647,7 @@ export default function MessagesClient() {
                           {name}
                         </span>
                         {conv.last_message_at && (
-                          <span className="text-[10px] text-surface-500 shrink-0 ml-2">{timeAgo(conv.last_message_at)}</span>
+                          <span className="text-[11px] text-surface-500 shrink-0 ml-2">{timeAgo(conv.last_message_at)}</span>
                         )}
                       </div>
                       {conv.last_message && (
@@ -660,7 +660,7 @@ export default function MessagesClient() {
                       )}
                     </div>
                     {hasUnread && (
-                      <span className="w-5 h-5 bg-brand-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 bg-brand-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center shrink-0">
                         {conv.unread_count}
                       </span>
                     )}
@@ -773,7 +773,7 @@ export default function MessagesClient() {
                           {showAvatar && (
                             <div className={cn('flex items-center gap-2 mb-0.5', isOwn && 'flex-row-reverse')}>
                               <span className="text-xs font-medium text-surface-400">{msg.sender?.full_name || 'User'}</span>
-                              <span className="text-[10px] text-surface-600">{formatTime(msg.created_at)}</span>
+                              <span className="text-[11px] text-surface-600">{formatTime(msg.created_at)}</span>
                             </div>
                           )}
                           <div className={cn(
@@ -786,7 +786,7 @@ export default function MessagesClient() {
                           </div>
                         </div>
                         {/* Timestamp on hover */}
-                        <span className="text-[10px] text-surface-600 self-end opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <span className="text-[11px] text-surface-600 self-end opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                           {formatTime(msg.created_at)}
                         </span>
                       </div>
@@ -844,7 +844,7 @@ export default function MessagesClient() {
         <div className="space-y-4">
           {/* Current members */}
           <div>
-            <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Current Members ({members.length})</p>
+            <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Current Members ({members.length})</p>
             <div className="flex flex-wrap gap-2">
               {members.map((m) => (
                 <span key={m.user_id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-800 text-surface-300 text-xs rounded-full">
@@ -858,7 +858,7 @@ export default function MessagesClient() {
           {/* Selected new members */}
           {addMemberSelected.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Adding ({addMemberSelected.length})</p>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Adding ({addMemberSelected.length})</p>
               <div className="flex flex-wrap gap-2">
                 {addMemberSelected.map((u) => (
                   <span key={u.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-500/20 text-brand-500 text-xs rounded-full">

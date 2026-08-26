@@ -5,7 +5,7 @@ import { SiteVersion } from '@/components/SiteVersion';
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+    <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">
       {children}
     </span>
   );
@@ -79,24 +79,24 @@ export default function ToolsPage() {
       <nav className="relative z-10 border-b border-white/5">
         <div className="max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-2.5">
-            <div className="w-7 h-7 flex items-center justify-center bg-brand-500 text-[8px] font-black text-white shrink-0">
+            <div className="w-7 h-7 flex items-center justify-center bg-brand-500 text-[11px] font-semibold text-white shrink-0">
               SS
             </div>
             <div className="leading-none">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/80 leading-none">SCREENPLAY</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] leading-none text-brand-500">STUDIO</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/80 leading-none">SCREENPLAY</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.04em] leading-none text-brand-500">STUDIO</p>
             </div>
           </Link>
           <div className="flex items-center gap-5">
-            <Link href="/tools" className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/60 hover:text-white transition-colors">
+            <Link href="/tools" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/60 hover:text-white transition-colors">
               Tools
             </Link>
-            <Link href="/dashboard" className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/30 hover:text-white/70 transition-colors">
+            <Link href="/dashboard" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/70 transition-colors">
               Dashboard
             </Link>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white bg-brand-500 transition-all duration-150 hover:-translate-y-px"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-white bg-brand-500 transition-all duration-150 hover:-translate-y-px"
             >
               Open App
               <span className="transition-transform duration-150">→</span>
@@ -109,7 +109,7 @@ export default function ToolsPage() {
         <section className="max-w-screen-xl mx-auto px-6 pt-20 pb-16">
           <Eyebrow>Tools</Eyebrow>
           <h1
-            className="font-black text-white mb-4"
+            className="font-semibold text-white mb-4"
             style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', letterSpacing: '-0.03em', lineHeight: 0.95 }}
           >
             SCREENPLAY
@@ -159,13 +159,13 @@ export default function ToolsPage() {
         <div className="max-w-screen-xl mx-auto px-6 py-8 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-5 h-5 flex items-center justify-center bg-brand-500">
-              <span className="font-black text-white text-[7px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
             <Label>SCREENPLAY STUDIO</Label>
           </div>
           <div className="flex items-center gap-5">
-            <Link href="/" className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/20 hover:text-white/50 transition-colors">Home</Link>
-            <Link href="/dashboard" className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/20 hover:text-white/50 transition-colors">Dashboard</Link>
+            <Link href="/" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/50 transition-colors">Home</Link>
+            <Link href="/dashboard" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/50 transition-colors">Dashboard</Link>
           </div>
         </div>
       </footer>

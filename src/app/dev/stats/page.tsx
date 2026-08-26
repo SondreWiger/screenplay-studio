@@ -32,7 +32,7 @@ function StatCard({ label, value, sub, color = 'text-white', icon }: StatCardPro
   return (
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-white/40 uppercase tracking-wider font-medium">{label}</span>
+        <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium">{label}</span>
         {icon && <span className="text-white/20">{icon}</span>}
       </div>
       <span className={cn('text-2xl font-bold tabular-nums', color)}>{value}</span>
@@ -44,7 +44,7 @@ function StatCard({ label, value, sub, color = 'text-white', icon }: StatCardPro
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">{title}</h2>
+      <h2 className="text-xs font-semibold text-white/40 uppercase tracking-[0.04em] mb-3">{title}</h2>
       {children}
     </div>
   );
@@ -75,7 +75,7 @@ function SignupSparkline({ data }: { data: { date: string; count: number }[] }) 
   return (
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] text-white/40 uppercase tracking-wider font-medium">Daily signups — last 30 days</span>
+        <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium">Daily signups — last 30 days</span>
         <span className="text-[11px] text-white/30">{data.reduce((a, d) => a + d.count, 0)} total</span>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 80 }} preserveAspectRatio="none">
@@ -100,8 +100,8 @@ function SignupSparkline({ data }: { data: { date: string; count: number }[] }) 
         />
       </svg>
       <div className="flex justify-between mt-1">
-        <span className="text-[10px] text-white/20">{data[0]?.date}</span>
-        <span className="text-[10px] text-white/20">{data[data.length - 1]?.date}</span>
+        <span className="text-[11px] text-white/20">{data[0]?.date}</span>
+        <span className="text-[11px] text-white/20">{data[data.length - 1]?.date}</span>
       </div>
     </div>
   );
@@ -220,14 +220,14 @@ export default function DevStatsPage() {
         {/* ── Breakdowns ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
-            <h3 className="text-[11px] text-white/40 uppercase tracking-wider font-medium mb-4">Script Types</h3>
+            <h3 className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium mb-4">Script Types</h3>
             {(db?.scriptTypeBreakdown ?? []).map((r: any, i: number) => (
               <MiniBar key={r.type} label={r.type} value={r.count} max={db?.scriptTypeBreakdown?.[0]?.count ?? 1} color={colors[i % colors.length]} />
             ))}
             {!db?.scriptTypeBreakdown?.length && <p className="text-white/20 text-xs">No data</p>}
           </div>
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
-            <h3 className="text-[11px] text-white/40 uppercase tracking-wider font-medium mb-4">Project Types</h3>
+            <h3 className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium mb-4">Project Types</h3>
             {(db?.projectTypeBreakdown ?? []).map((r: any, i: number) => (
               <MiniBar key={r.type} label={r.type} value={r.count} max={db?.projectTypeBreakdown?.[0]?.count ?? 1} color={colors[i % colors.length]} />
             ))}

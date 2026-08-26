@@ -174,7 +174,7 @@ export default function CommunityFeedPage() {
                       <div className="flex flex-wrap gap-1.5 mb-1.5">
                         {categories.map(cat => (
                           <span key={cat.id}
-                            className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
+                            className="px-1.5 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide"
                             style={{
                               background: (CATEGORY_COLORS[cat.slug ?? ''] ?? accent) + '22',
                               color: CATEGORY_COLORS[cat.slug ?? ''] ?? accent,
@@ -192,7 +192,7 @@ export default function CommunityFeedPage() {
                         {post.title}
                       </Link>
                       {isMod && post.mod_status && post.mod_status !== 'approved' && (
-                        <span className={cn('text-[9px] font-mono px-1.5 py-0.5 rounded uppercase flex-shrink-0',
+                        <span className={cn('text-[11px] px-1.5 py-0.5 rounded uppercase flex-shrink-0',
                           post.mod_status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400')}>
                           {post.mod_status}
                         </span>
@@ -208,13 +208,13 @@ export default function CommunityFeedPage() {
                     {(post.allow_free_use || post.allow_distros || post.allow_edits) && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {post.allow_free_use && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-emerald-500/15 text-emerald-400">Free to Use</span>
+                          <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-500/15 text-emerald-400">Free to Use</span>
                         )}
                         {post.allow_distros && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-500/15 text-blue-400">Distros Allowed</span>
+                          <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-blue-500/15 text-blue-400">Distros Allowed</span>
                         )}
                         {post.allow_edits && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-purple-500/15 text-purple-400">Open to Edits</span>
+                          <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-purple-500/15 text-purple-400">Open to Edits</span>
                         )}
                       </div>
                     )}
@@ -227,31 +227,31 @@ export default function CommunityFeedPage() {
                           style={{ background: 'rgba(255,255,255,0.1)' }}>
                           {author?.avatar_url
                             ? <img src={author.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                            : <span className="w-full h-full flex items-center justify-center text-[9px]">
+                            : <span className="w-full h-full flex items-center justify-center text-[11px]">
                                 {(author?.full_name ?? '?')[0]}
                               </span>}
                         </div>
                         <span className="text-[11px] text-white/50">{author?.full_name ?? 'Anonymous'}</span>
                         {(author?.role === 'moderator' || author?.role === 'admin') && (
-                          <span className="text-[9px] px-1 py-0.5 rounded font-medium"
+                          <span className="text-[11px] px-1 py-0.5 rounded font-medium"
                             style={{ background: accent + '22', color: accent }}>
                             {author.role === 'admin' ? 'Admin' : 'Mod'}
                           </span>
                         )}
                       </div>
-                      <span className="text-white/20 text-[10px]">·</span>
+                      <span className="text-white/20 text-[11px]">·</span>
                       <span className="text-[11px] text-white/30">{timeAgo(post.created_at!)}</span>
-                      <span className="text-white/20 text-[10px]">·</span>
+                      <span className="text-white/20 text-[11px]">·</span>
                       <span className="text-[11px] text-white/30">💬 {post.comment_count ?? 0}</span>
                       {(post.distro_count ?? 0) > 0 && (
                         <>
-                          <span className="text-white/20 text-[10px]">·</span>
+                          <span className="text-white/20 text-[11px]">·</span>
                           <span className="text-[11px] text-white/30">🔀 {post.distro_count}</span>
                         </>
                       )}
                       {(post.view_count ?? 0) > 0 && (
                         <>
-                          <span className="text-white/20 text-[10px]">·</span>
+                          <span className="text-white/20 text-[11px]">·</span>
                           <span className="text-[11px] text-white/30">👁 {post.view_count}</span>
                         </>
                       )}
@@ -260,7 +260,7 @@ export default function CommunityFeedPage() {
                       {isMod && (
                         <button onClick={() => deletePost(post)}
                           disabled={deletingId === post.id}
-                          className="ml-auto text-[10px] text-red-400/40 hover:text-red-400 transition opacity-0 group-hover:opacity-100 disabled:opacity-30">
+                          className="ml-auto text-[11px] text-red-400/40 hover:text-red-400 transition opacity-0 group-hover:opacity-100 disabled:opacity-30">
                           {deletingId === post.id ? '…' : '🗑'}
                         </button>
                       )}
@@ -286,7 +286,7 @@ export default function CommunityFeedPage() {
       <aside className="w-56 flex-shrink-0 space-y-4 hidden lg:block">
         <div className="rounded-xl p-4 space-y-3"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <h3 className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">About</h3>
+          <h3 className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em]">About</h3>
           {community.description && <p className="text-xs text-white/60 leading-relaxed">{community.description}</p>}
           <div className="flex flex-col gap-1.5">
             <Link href={`/community/c/${community.slug}/about`}

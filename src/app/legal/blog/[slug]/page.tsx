@@ -114,7 +114,7 @@ function renderContent(content: string) {
       return (
         <h2
           key={i}
-          className="mb-4 mt-10 text-xl font-black text-white"
+          className="mb-4 mt-10 text-xl font-bold text-white"
         >
           {trimmed.slice(3)}
         </h2>
@@ -124,7 +124,7 @@ function renderContent(content: string) {
       return (
         <h1
           key={i}
-          className="mb-4 mt-10 text-2xl font-black text-white"
+          className="mb-4 mt-10 text-2xl font-bold text-white"
         >
           {trimmed.slice(2)}
         </h1>
@@ -263,7 +263,7 @@ export default function LegalBlogPostPage() {
         <div className="max-w-4xl">
           <div className="rounded-xl border border-surface-800 bg-surface-900 px-6 py-20 text-center">
             <p className="text-5xl">📄</p>
-            <h1 className="mt-4 text-2xl font-black text-white">
+            <h1 className="mt-4 text-2xl font-bold text-white">
               Post not found
             </h1>
             <p className="mt-2 text-surface-400">
@@ -309,7 +309,7 @@ export default function LegalBlogPostPage() {
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
               {post.title}
             </h1>
 
@@ -350,7 +350,7 @@ export default function LegalBlogPostPage() {
           {relatedPages.length > 0 && (
             <aside className="w-full shrink-0 lg:w-64">
               <div className="sticky top-8 rounded-xl border border-surface-800 bg-surface-900 p-5">
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-surface-500">
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.04em] text-surface-500">
                   Related Pages
                 </h3>
                 <ul className="space-y-2">
@@ -367,7 +367,7 @@ export default function LegalBlogPostPage() {
                 </ul>
 
                 <div className="mt-5 border-t border-surface-800 pt-5">
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-surface-500">
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.04em] text-surface-500">
                     Legal Hub
                   </h3>
                   <ul className="space-y-2">

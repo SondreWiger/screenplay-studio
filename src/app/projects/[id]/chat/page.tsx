@@ -397,7 +397,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
           !showChannelList && 'hidden md:flex',
         )}>
           <div className="px-3 py-2.5 flex items-center justify-between border-b border-surface-800/50">
-            <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-wider">Channels</span>
+            <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">Channels</span>
             {isAdmin && (
               <button
                 onClick={() => setShowCreateChannel(true)}
@@ -433,7 +433,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                     <span className="text-surface-500 text-sm">#</span>
                     <span className="text-sm truncate flex-1">{ch.name}</span>
                     {ch.is_default && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500 shrink-0">default</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500 shrink-0">default</span>
                     )}
                   </button>
                 );
@@ -526,26 +526,26 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                                 <span className={cn('text-sm font-semibold', roleColor)}>
                                   {msg.sender?.full_name || msg.sender?.display_name || 'User'}
                                 </span>
-                                <span className={cn('text-[9px] px-1.5 py-0.5 rounded-full font-medium', roleBadge.color)}>
+                                <span className={cn('text-[11px] px-1.5 py-0.5 rounded-full font-medium', roleBadge.color)}>
                                   {roleBadge.label}
                                 </span>
                                 {prodRole && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-brand-500/20 text-brand-500">
+                                  <span className="text-[11px] px-1.5 py-0.5 rounded-full font-medium bg-brand-500/20 text-brand-500">
                                     {prodRole}
                                   </span>
                                 )}
-                                <span className="text-[10px] text-surface-600">{formatTime(msg.created_at)}</span>
+                                <span className="text-[11px] text-surface-600">{formatTime(msg.created_at)}</span>
                               </div>
                               <p className="text-sm text-surface-200 break-words mt-0.5"><FormattedChatText content={msg.content} /></p>
                             </div>
-                            <span className="text-[10px] text-surface-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0 mt-1">
+                            <span className="text-[11px] text-surface-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0 mt-1">
                               {formatTime(msg.created_at)}
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-start gap-3">
                             <div className="w-8 shrink-0 text-center">
-                              <span className="text-[9px] text-surface-700 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                              <span className="text-[11px] text-surface-700 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                 {formatTime(msg.created_at)}
                               </span>
                             </div>
@@ -598,7 +598,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
         {showMembers && (
           <aside className="w-56 lg:w-60 border-l border-surface-800 flex flex-col bg-surface-950 shrink-0 hidden md:flex">
             <div className="px-3 py-2.5 border-b border-surface-800/50">
-              <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">
                 Members — {members.length}
               </span>
             </div>
@@ -610,7 +610,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
 
                 return (
                   <div key={role} className="mb-3">
-                    <p className={cn('text-[10px] font-bold uppercase tracking-wider mb-1 px-2', ROLE_COLORS[role])}>
+                    <p className={cn('text-[11px] font-medium uppercase tracking-[0.04em] mb-1 px-2', ROLE_COLORS[role])}>
                       {role}s — {roleMembers.length}
                     </p>
                     {roleMembers.map((m) => (
@@ -621,12 +621,12 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                             {m.profile?.full_name || m.profile?.email || 'User'}
                           </p>
                           {m.production_role && (
-                            <p className="text-[10px] text-brand-500 truncate">
+                            <p className="text-[11px] text-brand-500 truncate">
                               {PRODUCTION_ROLES.find((r) => r.value === m.production_role)?.label || m.production_role}
                             </p>
                           )}
                           {!m.production_role && m.job_title && (
-                            <p className="text-[10px] text-surface-600 truncate">{m.job_title}</p>
+                            <p className="text-[11px] text-surface-600 truncate">{m.job_title}</p>
                           )}
                         </div>
                       </div>
@@ -638,7 +638,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
               {/* Also show the project creator if not in members list */}
               {currentProject && !members.some((m) => m.user_id === currentProject.created_by) && (
                 <div className="mb-3">
-                  <p className={cn('text-[10px] font-bold uppercase tracking-wider mb-1 px-2', ROLE_COLORS.owner)}>
+                  <p className={cn('text-[11px] font-medium uppercase tracking-[0.04em] mb-1 px-2', ROLE_COLORS.owner)}>
                     Owner — 1
                   </p>
                   <div className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-900/5">

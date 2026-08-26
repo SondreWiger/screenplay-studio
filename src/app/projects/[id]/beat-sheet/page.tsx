@@ -622,7 +622,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-black text-white">Beat Sheet</h1>
+          <h1 className="text-xl font-bold text-white">Beat Sheet</h1>
           <p className="text-sm text-surface-400 mt-0.5">
             {filledCount}/{beats.length} beats filled · {completedCount}/{beats.length} completed
           </p>
@@ -659,7 +659,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                         deleteCustomFramework(key.replace('custom_', ''));
                       }
                     }}
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[11px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     title="Delete custom framework"
                   >
                     ×
@@ -699,12 +699,12 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
       {/* Visual timeline */}
       <div className="mb-6 rounded-xl border border-surface-800 bg-surface-900/60 p-3 overflow-x-auto">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-bold text-surface-500 uppercase tracking-wider">Timeline</span>
+          <span className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Timeline</span>
         </div>
         {/* Ruler */}
         <div className="relative h-5 mb-1">
           {[0, 25, 50, 75, 100].map((pct) => (
-            <div key={pct} className="absolute text-[9px] text-surface-600 font-mono" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
+            <div key={pct} className="absolute text-[11px] text-surface-600 font-mono" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
               {Math.round((pct / 100) * totalPages)}
             </div>
           ))}
@@ -714,7 +714,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
           {timelineSegments.map(({ beat, start, width, startPage, endPage }) => (
             <div
               key={beat.id}
-              className="absolute top-0 h-full rounded-md cursor-pointer transition-colors duration-150 flex items-center justify-center text-[10px] font-semibold text-white/80 hover:text-white hover:brightness-110"
+              className="absolute top-0 h-full rounded-md cursor-pointer transition-colors duration-150 flex items-center justify-center text-[11px] font-semibold text-white/80 hover:text-white hover:brightness-110"
               style={{
                 left: `${start}%`,
                 width: `${width}%`,
@@ -734,7 +734,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
           ))}
         </div>
         {/* Act labels */}
-        <div className="flex justify-between text-[10px] text-surface-600 mt-1 px-0.5">
+        <div className="flex justify-between text-[11px] text-surface-600 mt-1 px-0.5">
           <span>p. 1</span>
           <span>Act 1</span>
           <span>Act 2</span>
@@ -805,7 +805,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                     </button>
                     {/* Color dot */}
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: beat.color }} />
-                    <span className="text-[9px] text-surface-600 font-mono">p.{page}</span>
+                    <span className="text-[11px] text-surface-600 font-mono">p.{page}</span>
                   </div>
 
                   <div
@@ -814,7 +814,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                   >
                     <div className="flex items-center gap-2 mb-0.5">
                       <h3 className={cn('text-sm font-semibold', isCompleted ? 'text-green-400 line-through' : 'text-white')}>{beat.label}</h3>
-                      <span className="text-[10px] text-surface-600 font-mono shrink-0">{beat.pageHint}</span>
+                      <span className="text-[11px] text-surface-600 font-mono shrink-0">{beat.pageHint}</span>
                       {hasNote && (
                         <Badge size="sm" variant="success">✓</Badge>
                       )}
@@ -831,7 +831,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                           if (!sc) return null;
                           const label = sc.scene_number ? `S${sc.scene_number}` : sc.scene_heading ?? 'Scene';
                           return (
-                            <span key={sid} className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-300 font-medium">
+                            <span key={sid} className="text-[11px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-300 font-medium">
                               {label}
                             </span>
                           );
@@ -868,7 +868,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                     {/* Scene linker */}
                     {projectScenes.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">Linked Scenes</p>
+                        <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Linked Scenes</p>
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {(beatLinkedScenes[beat.id] ?? []).map((sid) => {
                             const sc = projectScenes.find((s) => s.id === sid);
@@ -958,7 +958,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold text-surface-500 uppercase tracking-wider">Beats</p>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em]">Beats</p>
               <Button onClick={addBuilderBeat} variant="ghost" size="sm">+ Add Beat</Button>
             </div>
 
@@ -1012,7 +1012,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                     title="Page %"
                   />
 
-                  <span className="text-[10px] text-surface-500 shrink-0 w-8">%</span>
+                  <span className="text-[11px] text-surface-500 shrink-0 w-8">%</span>
 
                   <button
                     onClick={() => removeBuilderBeat(idx)}

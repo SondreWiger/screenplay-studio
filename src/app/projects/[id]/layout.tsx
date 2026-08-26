@@ -24,7 +24,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ShortcutPicker } from '@/components/sidebar/ShortcutPicker';
 import { cn } from '@/lib/utils';
 import { PAGE_LABELS, getPageSection, getPageLabelKey } from '@/lib/pageLabels';
-import { getNavCategories, type NavItem, type NavCategory } from '@/lib/navCategories';
+import { getNavCategories, getProjectNavFlags, type NavItem, type NavCategory } from '@/lib/navCategories';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
 import type { UserRole, UserPresence, SidebarSection } from '@/lib/types';
 import { useSidebarLayout } from '@/hooks/useSidebarLayout';
@@ -51,7 +51,7 @@ export default function ProjectLayout({
   params: { id: string };
 }) {
   const { user, loading: authLoading } = useAuth();
-  const { isStudio } = useProFeatures();
+  const { isPro } = useProFeatures();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -71,10 +71,10 @@ export default function ProjectLayout({
   const [templateDesc, setTemplateDesc] = useState('');
   const [templatePublic, setTemplatePublic] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
-// Determine if the user has Studio access so we don't collapse Studio sections
+// Determine if the user has Pro access so we don't collapse the Pro Tools section
 const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const defaults = ['Collaboration'];
-  if (!isStudio) defaults.push('Studio');
+  if (!isPro) defaults.push('Pro Tools');
   return new Set(defaults);
 });
   const [showCustomiser, setShowCustomiser] = useState(false);
@@ -256,7 +256,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     'Plan': 'sidebar.plan',
     'Creative': 'sidebar.creative',
     'Finish': 'sidebar.finish',
-    'Studio': 'sidebar.studio',
+    'Pro Tools': 'sidebar.pro_tools',
   };
   const sidebarT = (label: string) => {
     const key = sidebarLabelMap[label];
@@ -507,18 +507,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const showProduction = user?.show_production_tools !== false;
   const showCollab = user?.show_collaboration !== false;
   
-  // Check if this is a content creator project
-  const isContentCreator = ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(currentProject.project_type || '') 
-    || ['youtube', 'tiktok'].includes(currentProject.script_type || '');
-  
-  // Check if this is a TV production project
-  const isTvProduction = currentProject.project_type === 'tv_production';
-  // Check if this is an audio drama project
-  const isAudioDrama = currentProject.project_type === 'audio_drama' || currentProject.script_type === 'audio_drama';
-  // Check if this is a stage play / theatre project
-  const isStagePlay = currentProject.project_type === 'stage_play' || currentProject.script_type === 'stageplay';
-  // Check if this is an episodic series project
-  const isEpisodic = currentProject.script_type === 'episodic';
+  const { isContentCreator, isTvProduction, isAudioDrama, isStagePlay, isEpisodic } =
+    getProjectNavFlags(currentProject, isViewer);
 
   const navCategories = getNavCategories(params.id, {
     isTvProduction, isAudioDrama, isStagePlay, isContentCreator, isEpisodic, isViewer,
@@ -562,8 +552,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     if (item.icon !== 'overview' && item.icon !== 'settings') {
       if (!canUseFeature(item.icon)) return false;
     }
-    // Studio items: visible only to Studio subscribers
-    if (item.studio) return isStudio;
+    // Pro tool suite: visible only to Pro subscribers
+    if (item.pro) return isPro;
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
@@ -573,7 +563,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   // Flat lists for backward compat
   const allItems = effectiveNavCategories.flatMap(c => c.items);
   const visibleItems = allItems.filter(isItemVisible);
-  const hiddenItems = allItems.filter(i => !i.always && !i.studio && !isItemVisible(i));
+  const hiddenItems = allItems.filter(i => !i.always && !i.pro && !isItemVisible(i));
 
   // Only pass to the customiser items that CAN currently appear (pass feature/permission gates).
   // This prevents users from configuring items they'd never actually see.
@@ -602,7 +592,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
         <div className="relative flex items-center gap-3">
           <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="shrink-0 group">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black text-white transition-[box-shadow] duration-200"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-semibold text-white transition-[box-shadow] duration-200"
               style={{
                 background: isTvProduction
                   ? 'linear-gradient(135deg, #d97706, #92400e)'
@@ -631,9 +621,9 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   (currentProject.status === 'development' || currentProject.status === 'pre_production') ? 'bg-amber-400' :
                   (currentProject.status === 'completed' || currentProject.status === 'post_production') ? 'bg-blue-400' : 'bg-surface-500'
                 )} />
-                <p className="text-[10px] font-medium text-surface-500 capitalize">{currentProject.status.replace('_', ' ')}</p>
+                <p className="text-[11px] font-medium text-surface-500 capitalize">{currentProject.status.replace('_', ' ')}</p>
                 {isViewer && (
-                  <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide"
+                  <span className="text-[11px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide"
                     style={{ background: 'rgb(var(--brand-900) / 0.6)', color: 'rgb(var(--brand-400))' }}>
                     View Only
                   </span>
@@ -644,7 +634,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   <select 
                     value={currentScript?.id || ''} 
                     onChange={(e) => setCurrentScript(scripts.find(s => s.id === e.target.value) || null)}
-                    className="bg-surface-800/80 border border-surface-700 text-white text-[10px] font-medium rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-brand-500 w-full transition-colors hover:bg-surface-700 cursor-pointer"
+                    className="bg-surface-800/80 border border-surface-700 text-white text-[11px] font-medium rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-brand-500 w-full transition-colors hover:bg-surface-700 cursor-pointer"
                   >
                     {scripts.map(s => (
                       <option key={s.id} value={s.id}>
@@ -682,7 +672,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   className="w-full flex items-center justify-between px-3 py-1.5 mb-0.5 rounded-lg group transition-colors hover:bg-surface-900/3"
                 >
                   <span className={cn(
-                    'text-[9px] font-black uppercase tracking-[0.2em] transition-colors',
+                    'text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors',
                     hasActivePage ? 'text-brand-500' : 'text-surface-600 group-hover:text-surface-400'
                   )}>
                     {sidebarCatT(cat.category)}
@@ -737,7 +727,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             <div className="mt-1">
               <button
                 onClick={() => setOtherExpanded(v => !v)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-colors text-[10px] font-semibold uppercase tracking-wider group"
+                className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-400 hover:text-surface-300 transition-colors text-[11px] font-semibold uppercase tracking-[0.04em] group"
               >
                 <svg className={cn('w-3 h-3 transition-transform duration-200 shrink-0', otherExpanded && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -746,7 +736,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                 </svg>
                 Other Tools
-                <span className="ml-auto text-[9px] tabular-nums opacity-60">{otherItems.length}</span>
+                <span className="ml-auto text-[11px] tabular-nums opacity-60">{otherItems.length}</span>
               </button>
               {otherExpanded && (
                 <div className="space-y-0.5 mt-0.5">
@@ -791,7 +781,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           <div className="mt-2">
             <button
               onClick={() => setShowMoreTools(!showMoreTools)}
-              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-600 hover:text-surface-300 transition-colors text-[10px] font-semibold uppercase tracking-wider"
+              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-surface-400 hover:text-surface-300 transition-colors text-[11px] font-semibold uppercase tracking-[0.04em]"
             >
               <svg className={cn('w-3 h-3 transition-transform duration-200', showMoreTools && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -821,11 +811,11 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       {(mobile || !sidebarCollapsed) && (
         <div className="border-t border-surface-800/50 px-2 py-2">
           <div className="flex items-center justify-between px-2 mb-1">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-surface-600">Quick Access</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-surface-400">Quick Access</span>
             <button
               ref={shortcutAddBtnRef}
               onClick={(e) => { setPickerAnchorEl(e.currentTarget); setShowShortcutPicker(true); }}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-surface-500 hover:text-brand-500 hover:bg-surface-800 transition-colors text-[10px]"
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-surface-500 hover:text-brand-500 hover:bg-surface-800 transition-colors text-[11px]"
               title="Pin scripts or documents here"
             >
               <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -902,7 +892,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   <Avatar src={p.avatar_url} name={p.full_name || p.email} size="sm" online />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-surface-300 truncate leading-tight">{p.full_name || p.email || 'User'}</p>
-                    <p className="text-[9px] text-green-400 truncate">{pl}</p>
+                    <p className="text-[11px] text-green-400 truncate">{pl}</p>
                   </div>
                 </div>
               );
@@ -991,14 +981,14 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           </button>
           <div className="flex items-center gap-2 min-w-0">
             <div
-              className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black text-white shrink-0"
+              className="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-semibold text-white shrink-0"
               style={{ background: 'linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)))' }}
             >
               {currentProject.title[0].toUpperCase()}
             </div>
             <span className="text-sm font-semibold text-white truncate">{pageLabel}</span>
             {isViewer && (
-              <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide shrink-0"
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide shrink-0"
                 style={{ background: 'rgb(var(--brand-900) / 0.6)', color: 'rgb(var(--brand-400))' }}>
                 View Only
               </span>

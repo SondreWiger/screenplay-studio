@@ -47,7 +47,7 @@ function StatusBadge({ status }: { status: FeedbackStatus }) {
   const m = STATUS_META[status];
   const Icon = m.icon;
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide"
       style={{ background: m.color + '22', color: m.color }}>
       <Icon size={12} />{m.label}
     </span>
@@ -181,25 +181,25 @@ export default function FeedbackItemPage() {
         <div className="max-w-screen-lg mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
+            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
           <div className="hidden sm:flex items-center gap-6">
-            <Link href="/feedback" className="text-[11px] font-mono uppercase tracking-widest font-bold" style={{ color: '#FF5F1F' }}>Feedback</Link>
-            <Link href="/blog" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Blog</Link>
-            <Link href="/community" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Community</Link>
+            <Link href="/feedback" className="text-[11px] uppercase tracking-[0.04em] font-medium" style={{ color: '#FF5F1F' }}>Feedback</Link>
+            <Link href="/blog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Blog</Link>
+            <Link href="/community" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Community</Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Dashboard</Link>
-                <button onClick={() => signOut()} className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Sign Out</button>
+                <Link href="/dashboard" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Dashboard</Link>
+                <button onClick={() => signOut()} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign Out</button>
                 <div className="flex items-center">
                   {user.avatar_url ? (
                     <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-6 h-6 rounded-full" loading="lazy" />
                   ) : (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{ background: '#FF5F1F' }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: '#FF5F1F' }}>
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
                     </div>
                   )}
@@ -207,7 +207,7 @@ export default function FeedbackItemPage() {
               </>
             ) : (
               <>
-                <Link href="/auth/login?redirect=/feedback" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Sign In</Link>
+                <Link href="/auth/login?redirect=/feedback" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign In</Link>
                 <Link href="/auth/register?redirect=/feedback" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>Get Started</Link>
               </>
             )}
@@ -218,7 +218,7 @@ export default function FeedbackItemPage() {
       <div className="flex-1 max-w-screen-lg mx-auto px-6 py-8 w-full">
 
         {/* Breadcrumb */}
-        <Link href="/feedback" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-surface-500 hover:text-white transition-colors mb-6">
+        <Link href="/feedback" className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.04em] text-surface-500 hover:text-white transition-colors mb-6">
           <ArrowLeft size={14} /> Feedback
         </Link>
 
@@ -228,7 +228,7 @@ export default function FeedbackItemPage() {
             {/* Title + badges */}
             <div className="mb-6">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide"
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium uppercase tracking-wide"
                   style={{ background: typeM.color + '22', color: typeM.color }}>
                   <TypeIcon size={12} />{typeM.label}
                 </span>
@@ -237,7 +237,7 @@ export default function FeedbackItemPage() {
                   <span key={t} className="px-2 py-0.5 rounded bg-surface-800 text-surface-400 text-xs font-mono">{t}</span>
                 ))}
               </div>
-              <h1 className="text-2xl font-black leading-snug mb-1">{item.title}</h1>
+              <h1 className="text-2xl font-bold leading-snug mb-1">{item.title}</h1>
               <p className="text-xs text-surface-500">{timeAgo(item.created_at)}{item.author_name ? ` · by ${item.author_name}` : ''}</p>
             </div>
 
@@ -251,7 +251,7 @@ export default function FeedbackItemPage() {
               <div className="mb-6 space-y-3 pl-3 border-l-2 border-red-500/30">
                 {item.steps_to_reproduce && (
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-surface-500 mb-1">Steps to Reproduce</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-surface-500 mb-1">Steps to Reproduce</h3>
                     <pre className="text-sm text-surface-300 whitespace-pre-wrap font-mono bg-surface-900 rounded-lg p-3 text-xs">{item.steps_to_reproduce}</pre>
                   </div>
                 )}
@@ -259,13 +259,13 @@ export default function FeedbackItemPage() {
                   <div className="grid grid-cols-2 gap-3">
                     {item.expected_behavior && (
                       <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3">
-                        <div className="text-xs font-bold text-green-400 mb-1 uppercase tracking-wide">Expected</div>
+                        <div className="text-xs font-medium text-green-400 mb-1 uppercase tracking-wide">Expected</div>
                         <p className="text-xs text-surface-300">{item.expected_behavior}</p>
                       </div>
                     )}
                     {item.actual_behavior && (
                       <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3">
-                        <div className="text-xs font-bold text-red-400 mb-1 uppercase tracking-wide">Actual</div>
+                        <div className="text-xs font-medium text-red-400 mb-1 uppercase tracking-wide">Actual</div>
                         <p className="text-xs text-surface-300">{item.actual_behavior}</p>
                       </div>
                     )}
@@ -287,7 +287,7 @@ export default function FeedbackItemPage() {
             {/* Feature use case */}
             {item.type === 'feature_request' && item.use_case && (
               <div className="mb-6 bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2">Use Case</h3>
+                <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-amber-400 mb-2">Use Case</h3>
                 <p className="text-sm text-surface-300">{item.use_case}</p>
               </div>
             )}
@@ -295,7 +295,7 @@ export default function FeedbackItemPage() {
             {/* Admin Timeline (public team updates) */}
             {comments.filter(c => c.author_id === 'f0e0c4a4-0833-4c64-b012-15829c087c77').length > 0 && (
               <div className="mt-8">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-surface-500 mb-4 flex items-center gap-2">
+                <h2 className="text-xs font-medium uppercase tracking-[0.04em] text-surface-500 mb-4 flex items-center gap-2">
                   <MessageSquare size={12} /> Updates from the team
                 </h2>
                 <div className="space-y-0">
@@ -313,14 +313,14 @@ export default function FeedbackItemPage() {
                         </div>
                         <div className="flex-1 pb-6">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: cs.color }}>{cs.label}</span>
-                            <span className="text-[10px] text-surface-600">{timeAgo(c.created_at)}</span>
+                            <span className="text-[11px] font-medium uppercase tracking-[0.04em]" style={{ color: cs.color }}>{cs.label}</span>
+                            <span className="text-[11px] text-surface-600">{timeAgo(c.created_at)}</span>
                           </div>
                           <div className="bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-sm text-surface-300 leading-relaxed whitespace-pre-wrap">
                             {c.content}
                           </div>
                           {c.metadata?.from_status && c.metadata?.to_status && (
-                            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-surface-600">
+                            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-surface-600">
                               <StatusBadge status={c.metadata.from_status as FeedbackStatus} />
                               <span>→</span>
                               <StatusBadge status={c.metadata.to_status as FeedbackStatus} />
@@ -336,7 +336,7 @@ export default function FeedbackItemPage() {
 
             {/* Community Discussion */}
             <div className="mt-10">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-surface-500 mb-4 flex items-center gap-2">
+              <h2 className="text-xs font-medium uppercase tracking-[0.04em] text-surface-500 mb-4 flex items-center gap-2">
                 <MessageSquare size={12} /> Community Discussion
               </h2>
 
@@ -352,7 +352,7 @@ export default function FeedbackItemPage() {
                         <div className="bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-sm text-surface-300 whitespace-pre-wrap">
                           {c.content}
                         </div>
-                        <p className="text-[10px] text-surface-600 mt-1">{timeAgo(c.created_at)}</p>
+                        <p className="text-[11px] text-surface-600 mt-1">{timeAgo(c.created_at)}</p>
                       </div>
                     </div>
                   ))}
@@ -362,7 +362,7 @@ export default function FeedbackItemPage() {
               {/* Comment form */}
               {user ? (
                 <div className="flex gap-3">
-                  <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black text-white mt-1"
+                  <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-semibold text-white mt-1"
                     style={{ background: '#FF5F1F' }}>
                     {(user.full_name || user.email || '?')[0].toUpperCase()}
                   </div>
@@ -403,7 +403,7 @@ export default function FeedbackItemPage() {
               <button
                 onClick={handleVote}
                 className={cn(
-                  'w-full flex flex-col items-center justify-center py-4 px-4 rounded-xl border-2 font-black transition-colors duration-150 text-3xl mb-2',
+                  'w-full flex flex-col items-center justify-center py-4 px-4 rounded-xl border-2 font-bold transition-colors duration-150 text-3xl mb-2',
                   voted
                     ? 'border-brand-500 bg-brand-500/10 text-brand-500'
                     : 'border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-500 hover:text-white'
@@ -431,12 +431,12 @@ export default function FeedbackItemPage() {
             {/* Metadata */}
             <div className="rounded-xl border border-surface-800 bg-surface-900 p-4 space-y-3 text-xs">
               <div className="flex justify-between">
-                <span className="text-surface-500 uppercase tracking-wide font-bold">Status</span>
+                <span className="text-surface-500 uppercase tracking-wide font-medium">Status</span>
                 <StatusBadge status={item.status} />
               </div>
               <div className="h-px bg-surface-800" />
               <div className="flex justify-between">
-                <span className="text-surface-500 uppercase tracking-wide font-bold">Priority</span>
+                <span className="text-surface-500 uppercase tracking-wide font-medium">Priority</span>
                 <span className={cn('font-bold capitalize', {
                   'text-red-400': item.priority === 'critical',
                   'text-orange-400': item.priority === 'high',
@@ -446,11 +446,11 @@ export default function FeedbackItemPage() {
               </div>
               <div className="h-px bg-surface-800" />
               <div className="flex justify-between">
-                <span className="text-surface-500 uppercase tracking-wide font-bold">Comments</span>
+                <span className="text-surface-500 uppercase tracking-wide font-medium">Comments</span>
                 <span className="text-white">{item.comment_count}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-surface-500 uppercase tracking-wide font-bold">Submitted</span>
+                <span className="text-surface-500 uppercase tracking-wide font-medium">Submitted</span>
                 <span className="text-surface-300">{new Date(item.created_at).toLocaleDateString()}</span>
               </div>
             </div>
@@ -458,7 +458,7 @@ export default function FeedbackItemPage() {
             {/* Similar issues */}
             {similar.length > 0 && (
               <div className="rounded-xl border border-surface-800 bg-surface-900 p-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-surface-500 mb-3">Related Issues</h3>
+                <h3 className="text-xs font-medium uppercase tracking-[0.04em] text-surface-500 mb-3">Related Issues</h3>
                 <div className="space-y-2">
                   {similar.map(s => (
                     <Link key={s.id} href={`/feedback/${s.id}`}
@@ -466,7 +466,7 @@ export default function FeedbackItemPage() {
                       <ChevronUp size={11} className="text-surface-500 mt-0.5 shrink-0" />
                       <div className="min-w-0">
                         <p className="text-xs text-white line-clamp-2 leading-snug">{s.title}</p>
-                        <p className="text-[10px] text-surface-600 mt-0.5">{s.vote_count} votes · {s.status}</p>
+                        <p className="text-[11px] text-surface-600 mt-0.5">{s.vote_count} votes · {s.status}</p>
                       </div>
                     </Link>
                   ))}
@@ -488,9 +488,9 @@ export default function FeedbackItemPage() {
         <div className="max-w-screen-lg mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest">Screenplay Studio</span>
+            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Studio</span>
           </div>
           <div className="flex flex-wrap items-center gap-6">
             {[
@@ -504,7 +504,7 @@ export default function FeedbackItemPage() {
                 href={l.href}
                 target={l.external ? '_blank' : undefined}
                 rel={l.external ? 'noopener noreferrer' : undefined}
-                className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors"
+                className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors"
               >
                 {l.label}
               </Link>
@@ -512,7 +512,7 @@ export default function FeedbackItemPage() {
             <SiteVersion light />
             <span className="text-white/10">·</span>
             <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80">
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80">
               Northem ♥
             </a>
           </div>

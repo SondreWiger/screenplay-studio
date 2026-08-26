@@ -5,7 +5,7 @@ export default function BeatBoardModule() {
     <div className="space-y-12 pb-24">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-white mb-4">Beat Board</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Beat Board</h1>
         <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
           Visualise your story's structure. The Beat Board allows you to organise your ideas into acts, sequences, and beats using a flexible Kanban-style interface.
         </p>

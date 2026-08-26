@@ -1,23 +1,26 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { useStudioRecords } from '@/hooks/useStudioRecords';
+import { useProToolRecords } from '@/hooks/useProToolRecords';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
+import { useProjectRefs, type RefOption } from '@/hooks/useProjectRefs';
 import {
-  computeStats, formatField, matchesQuery, nextStatus, statusMeta, toCSV,
-  TONE_CLASSES, type StudioField, type StudioRecord, type StudioTool,
-} from '@/lib/studio';
+  computeStats, formatField, matchesQuery, nextStatus, refSourcesFor, relatedTools,
+  statusMeta, toCSV, REF_SOURCE_LABEL, REF_SOURCE_ROUTE, TONE_CLASSES,
+  type ProToolField, type ProToolRecord, type ProTool, type RefResolver,
+} from '@/lib/pro-tools';
 
-// The shared UI for every Studio tool. The tool definition supplies the
+// The shared UI for every Pro tool. The tool definition supplies the
 // columns, the form fields, the status set and the summary stats — this
 // component supplies the behaviour.
 
 type FormState = { title: string; status: string; data: Record<string, unknown> };
 
-const emptyForm = (tool: StudioTool): FormState => ({
+const emptyForm = (tool: ProTool): FormState => ({
   title: '',
   status: tool.statuses[0]?.value ?? '',
   data: {},
@@ -29,11 +32,27 @@ const HIDE_CLASS: Record<'md' | 'lg', string> = {
 };
 
 function FieldInput({
-  field, value, onChange,
-}: { field: StudioField; value: unknown; onChange: (v: unknown) => void }) {
+  field, value, onChange, refOptions,
+}: {
+  field: ProToolField;
+  value: unknown;
+  onChange: (v: unknown) => void;
+  refOptions: RefOption[];
+}) {
   const base = 'w-full px-3 py-2 rounded-lg bg-surface-900 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60';
 
   switch (field.type) {
+    case 'ref':
+      return refOptions.length === 0 ? (
+        <p className="text-xs text-surface-500 py-2">
+          No {field.refSource ? REF_SOURCE_LABEL[field.refSource] : 'record'}s in this project yet.
+        </p>
+      ) : (
+        <select value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)} className={base}>
+          <option value="">—</option>
+          {refOptions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+        </select>
+      );
     case 'textarea':
       return (
         <textarea
@@ -95,14 +114,14 @@ function FieldInput({
   }
 }
 
-export function StudioToolShell({ tool, projectId }: { tool: StudioTool; projectId: string }) {
+export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: string }) {
   const { user } = useAuthStore();
   const { currentProject, members } = useProjectStore();
   const role = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit = role !== 'viewer';
 
-  const { records, loading, error, create, update, remove } = useStudioRecords(projectId, tool);
+  const { records, loading, error, create, update, remove } = useProToolRecords(projectId, tool);
 
   useEffect(() => {
     if (error) toast.error(error);
@@ -114,18 +133,26 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(() => emptyForm(tool));
   const [saving, setSaving] = useState(false);
+  const [quickTitle, setQuickTitle] = useState('');
+  const [quickAdding, setQuickAdding] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const quickRef = useRef<HTMLInputElement>(null);
+
+  const refSources = useMemo(() => refSourcesFor(tool), [tool]);
+  const { options: refOptions, resolve } = useProjectRefs(projectId, refSources);
+  const resolveRef: RefResolver = resolve;
 
   const columns = useMemo(() => tool.fields.filter((f) => f.column), [tool]);
   const stats = useMemo(() => computeStats(tool, records), [tool, records]);
 
   const filtered = useMemo(() => records.filter((r) => {
     if (statusFilter !== 'all' && r.status !== statusFilter) return false;
-    return matchesQuery(tool, r, query);
-  }), [records, statusFilter, query, tool]);
+    return matchesQuery(tool, r, query, resolveRef);
+  }), [records, statusFilter, query, tool, resolveRef]);
 
   const grouped = useMemo(() => {
     if (!tool.groupBy) return [{ key: '', rows: filtered }];
-    const map = new Map<string, StudioRecord[]>();
+    const map = new Map<string, ProToolRecord[]>();
     for (const r of filtered) {
       const key = (r.data[tool.groupBy] as string) || 'Unassigned';
       const bucket = map.get(key);
@@ -141,7 +168,7 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
     setShowForm(true);
   };
 
-  const openEdit = (record: StudioRecord) => {
+  const openEdit = (record: ProToolRecord) => {
     setForm({ title: record.title, status: record.status, data: { ...record.data } });
     setEditingId(record.id);
     setShowForm(true);
@@ -168,14 +195,14 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
     setShowForm(false);
   };
 
-  const handleDelete = async (record: StudioRecord) => {
+  const handleDelete = async (record: ProToolRecord) => {
     if (!confirm(`Delete “${record.title}”?`)) return;
     await remove(record.id);
     toast.success('Deleted');
   };
 
   const handleExportCSV = () => {
-    const csv = toCSV(tool, filtered);
+    const csv = toCSV(tool, filtered, resolveRef);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -188,6 +215,52 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
   const addStarter = async (title: string) => {
     await create(title, tool.statuses[0]?.value ?? '', {});
   };
+
+  // Most rows start life as just a name — typing one and pressing Enter beats
+  // opening a modal to fill in one field. Details can be added by editing.
+  const handleQuickAdd = async () => {
+    const title = quickTitle.trim();
+    if (!title || quickAdding) return;
+    setQuickAdding(true);
+    const created = await create(title, tool.statuses[0]?.value ?? '', {});
+    setQuickAdding(false);
+    if (created) {
+      setQuickTitle('');
+      quickRef.current?.focus();
+    }
+  };
+
+  const openNewRef = useRef(openNew);
+  openNewRef.current = openNew;
+
+  // n = new, / = search, both ignored while typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      if (el?.isContentEditable) return;
+      if (e.key === '/') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (e.key === 'n' && canEdit) {
+        e.preventDefault();
+        openNewRef.current();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [canEdit]);
+
+  // Esc closes the form.
+  useEffect(() => {
+    if (!showForm) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowForm(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showForm]);
+
+  const related = useMemo(() => relatedTools(tool), [tool]);
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
@@ -203,8 +276,8 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
           <div className="flex items-center gap-2">
             <span className="text-brand-500 shrink-0">{sidebarIcons[tool.icon]}</span>
             <h1 className="text-lg font-bold text-white truncate">{tool.label}</h1>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30 font-semibold uppercase tracking-wider shrink-0">
-              Studio
+            <span className="text-[11px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30 font-semibold uppercase tracking-[0.04em] shrink-0">
+              Pro
             </span>
           </div>
           <p className="text-sm text-surface-400 mt-0.5 truncate">{tool.tagline}</p>
@@ -234,7 +307,7 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
       <div className="px-6 py-3 grid grid-cols-2 md:grid-cols-4 gap-3 border-b border-surface-800/50 shrink-0">
         {stats.map((s) => (
           <div key={s.label} className="rounded-xl border border-surface-800 bg-surface-900/40 px-3 py-2">
-            <div className="text-[10px] uppercase tracking-wider text-surface-500 truncate">{s.label}</div>
+            <div className="text-[11px] uppercase tracking-[0.04em] text-surface-500 truncate">{s.label}</div>
             <div className="text-lg font-semibold text-white tabular-nums">{s.value}</div>
           </div>
         ))}
@@ -243,10 +316,11 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
       {/* Filters */}
       <div className="px-6 py-2.5 flex items-center gap-2 border-b border-surface-800/50 shrink-0">
         <input
+          ref={searchRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search…"
-          className="text-xs bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1.5 text-surface-200 outline-none focus:border-brand-500/50 w-48"
+          placeholder="Search…  /"
+          className="text-sm bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1.5 text-surface-200 outline-none focus:border-brand-500/50 w-48"
         />
         <select
           value={statusFilter}
@@ -298,22 +372,22 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
             <div key={key || 'all'}>
               {key && (
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-[11px] font-semibold text-surface-500 uppercase tracking-wider">{key}</h2>
-                  <span className="text-[10px] text-surface-700">{rows.length}</span>
+                  <h2 className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">{key}</h2>
+                  <span className="text-[11px] text-surface-700">{rows.length}</span>
                 </div>
               )}
               <div className="rounded-xl border border-surface-800 overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-surface-800 bg-surface-900/60">
-                      <th className="text-left text-[10px] font-medium text-surface-500 uppercase tracking-wider px-4 py-2">
+                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-4 py-2">
                         {tool.titleLabel}
                       </th>
                       {columns.map((f) => (
                         <th
                           key={f.key}
                           className={cn(
-                            'text-[10px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2',
+                            'text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2',
                             f.align === 'right' ? 'text-right' : 'text-left',
                             f.hideBelow && HIDE_CLASS[f.hideBelow],
                           )}
@@ -321,7 +395,7 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
                           {f.label}
                         </th>
                       ))}
-                      <th className="text-left text-[10px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2 w-32">
+                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2 w-32">
                         Status
                       </th>
                       {canEdit && <th className="w-16 px-3 py-2" />}
@@ -353,7 +427,16 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
                                 f.hideBelow && HIDE_CLASS[f.hideBelow],
                               )}
                             >
-                              {formatField(f, record.data[f.key]) || <span className="text-surface-600">—</span>}
+                              {f.type === 'ref' && f.refSource && record.data[f.key] ? (
+                                <Link
+                                  href={`/projects/${projectId}/${REF_SOURCE_ROUTE[f.refSource]}`}
+                                  className="text-brand-500 hover:underline"
+                                >
+                                  {formatField(f, record.data[f.key], resolveRef) || 'Linked'}
+                                </Link>
+                              ) : (
+                                formatField(f, record.data[f.key], resolveRef) || <span className="text-surface-600">—</span>
+                              )}
                             </td>
                           ))}
                           <td className="px-3 py-2.5">
@@ -394,6 +477,53 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
               </div>
             </div>
           ))
+        )}
+
+        {/* Inline quick-add — the fast path for "just get it on the list". */}
+        {canEdit && (
+          <div className="rounded-xl border border-dashed border-surface-800 hover:border-surface-700 transition-colors">
+            <div className="flex items-center gap-2 px-4 py-2.5">
+              <svg className="w-4 h-4 text-surface-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              <input
+                ref={quickRef}
+                value={quickTitle}
+                onChange={(e) => setQuickTitle(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleQuickAdd(); }}
+                placeholder={`Add a ${tool.noun}…`}
+                className="flex-1 bg-transparent text-sm text-white placeholder:text-surface-600 outline-none"
+              />
+              {quickTitle.trim() && (
+                <button
+                  onClick={handleQuickAdd}
+                  disabled={quickAdding}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition-colors disabled:opacity-50"
+                >
+                  {quickAdding ? 'Adding…' : 'Add'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Where to go next — production work rarely stops at one tool. */}
+        {related.length > 0 && (
+          <div className="pt-2 pb-6 border-t border-surface-800/60">
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 mb-2">
+              Related
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {related.map((r) => (
+                <Link
+                  key={r.slug}
+                  href={`/projects/${projectId}/pro/${r.slug}`}
+                  className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border border-surface-800 text-surface-300 hover:text-white hover:border-brand-500/50 transition-colors"
+                >
+                  <span className="text-surface-500 [&_svg]:w-4 [&_svg]:h-4">{sidebarIcons[r.icon]}</span>
+                  {r.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
@@ -441,6 +571,7 @@ export function StudioToolShell({ tool, projectId }: { tool: StudioTool; project
                   <FieldInput
                     field={field}
                     value={form.data[field.key]}
+                    refOptions={field.refSource ? refOptions[field.refSource] ?? [] : []}
                     onChange={(v) => setForm((f) => ({ ...f, data: { ...f.data, [field.key]: v } }))}
                   />
                   {field.hint && <p className="text-[11px] text-surface-600 mt-1">{field.hint}</p>}

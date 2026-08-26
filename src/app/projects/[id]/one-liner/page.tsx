@@ -377,13 +377,13 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 z-10 bg-surface-950 no-print">
               <tr className="border-b border-surface-800">
-                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-wider px-4 py-2.5 w-14">#</th>
-                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2.5 w-16">Int/Ext</th>
-                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2.5">Location</th>
-                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2.5 w-24">Time</th>
-                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2.5">One-liner</th>
-                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2.5 hidden lg:table-cell">Characters</th>
-                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2.5 w-24 no-print">Status</th>
+                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-4 py-2.5 w-14">#</th>
+                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2.5 w-16">Int/Ext</th>
+                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2.5">Location</th>
+                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2.5 w-24">Time</th>
+                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2.5">One-liner</th>
+                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2.5 hidden lg:table-cell">Characters</th>
+                <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2.5 w-24 no-print">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -441,11 +441,11 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
                         <button
                           onClick={() => saveSynopsis(scene.id)}
                           disabled={!!savingSynopsis}
-                          className="text-[10px] px-2 py-1 rounded bg-brand-500 text-white hover:bg-brand-600 transition-colors"
+                          className="text-[11px] px-2 py-1 rounded bg-brand-500 text-white hover:bg-brand-600 transition-colors"
                         >
                           {savingSynopsis === scene.id ? '…' : 'Save'}
                         </button>
-                        <button onClick={() => setEditingSynopsis(null)} className="text-[10px] px-2 py-1 rounded bg-surface-700 text-surface-300 hover:bg-surface-600 transition-colors">
+                        <button onClick={() => setEditingSynopsis(null)} className="text-[11px] px-2 py-1 rounded bg-surface-700 text-surface-300 hover:bg-surface-600 transition-colors">
                           Cancel
                         </button>
                       </div>
@@ -464,12 +464,12 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
                   <td className="px-3 py-2.5 hidden lg:table-cell">
                     <div className="flex flex-wrap gap-1">
                       {scene.characters.slice(0, 4).map(c => (
-                        <span key={c} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-300 border border-surface-700">
+                        <span key={c} className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-300 border border-surface-700">
                           {c}
                         </span>
                       ))}
                       {scene.characters.length > 4 && (
-                        <span className="text-[10px] text-surface-500">+{scene.characters.length - 4}</span>
+                        <span className="text-[11px] text-surface-500">+{scene.characters.length - 4}</span>
                       )}
                     </div>
                   </td>

@@ -455,7 +455,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
       </button>
 
       <div className="mt-10 w-full max-w-sm text-left space-y-3">
-        <p className="text-[11px] text-gray-600 uppercase tracking-widest font-semibold px-1">
+        <p className="text-[11px] text-gray-600 uppercase tracking-[0.04em] font-semibold px-1">
           How it works
         </p>
         {[
@@ -535,12 +535,12 @@ function LinkRow({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium text-white truncate">{link.name}</span>
             {link.is_invite && (
-              <span className="inline-flex items-center text-[10px] font-semibold text-emerald-400 bg-emerald-500/12 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+              <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400 bg-emerald-500/12 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                 Invite · {link.invite_role}
               </span>
             )}
             {expired && (
-              <span className="inline-flex items-center text-[10px] font-semibold text-red-400 bg-red-500/12 border border-red-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+              <span className="inline-flex items-center text-[11px] font-semibold text-red-400 bg-red-500/12 border border-red-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                 Expired
               </span>
             )}
@@ -599,7 +599,7 @@ function LinkRow({
                 key={labelKey}
                 className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full"
               >
-                <span className="text-[10px]">{icon}</span>
+                <span className="text-[11px]">{icon}</span>
                 {t(labelKey)}
               </span>
             ))

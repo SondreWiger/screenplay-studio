@@ -216,7 +216,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
     <div className="flex flex-col h-[calc(100vh-3rem)] md:h-screen bg-black text-white select-none">
       <div className="flex items-center justify-between px-4 py-2 bg-surface-950 border-b border-surface-800">
         <div className="flex items-center gap-4">
-          <h1 className="text-sm font-bold uppercase tracking-wider text-surface-300">Vision Mixer</h1>
+          <h1 className="text-sm font-medium uppercase tracking-[0.04em] text-surface-300">Vision Mixer</h1>
           <div className="flex items-center gap-2">
             {switcherState?.ftb_active && (
               <Badge className="bg-red-600 text-white animate-pulse">FTB</Badge>
@@ -240,7 +240,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
           {/* Preview Monitor */}
           <div className="relative rounded-lg overflow-hidden border-2 border-green-500 bg-surface-950">
             <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
-              <span className="bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Preview</span>
+              <span className="bg-green-600 text-white text-[11px] font-medium px-2 py-0.5 rounded uppercase">Preview</span>
               <span className="text-xs text-white/80 font-mono">{getSourceName(switcherState?.preview_source_id || null)}</span>
             </div>
             <div className="flex items-center justify-center h-full">
@@ -248,13 +248,13 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                 previewSource.connection_url ? (
                   <div className="relative w-full h-full bg-gradient-to-br from-green-950/30 to-surface-950 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-4xl font-black text-green-400/60 mb-2">{previewSource.short_name || previewSource.name}</div>
+                      <div className="text-4xl font-bold text-green-400/60 mb-2">{previewSource.short_name || previewSource.name}</div>
                       <div className="text-xs text-surface-500">{previewSource.source_type} • {previewSource.protocol || 'SDI'}</div>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center">
-                    <div className="text-3xl font-black text-green-400/40">{previewSource.short_name || previewSource.name}</div>
+                    <div className="text-3xl font-bold text-green-400/40">{previewSource.short_name || previewSource.name}</div>
                     <div className="text-xs text-surface-600 mt-1">{previewSource.source_type}</div>
                   </div>
                 )
@@ -271,7 +271,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
           )}>
             <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
               <span className={cn(
-                'text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase',
+                'text-white text-[11px] font-medium px-2 py-0.5 rounded uppercase',
                 switcherState?.ftb_active ? 'bg-red-900 animate-pulse' : 'bg-red-600'
               )}>
                 {switcherState?.ftb_active ? 'FTB' : 'Program'}
@@ -280,14 +280,14 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
             </div>
             <div className="flex items-center justify-center h-full">
               {switcherState?.ftb_active ? (
-                <div className="text-red-800 text-xl font-black animate-pulse">FADE TO BLACK</div>
+                <div className="text-red-800 text-xl font-bold animate-pulse">FADE TO BLACK</div>
               ) : programSource ? (
                 <div className="relative w-full h-full bg-gradient-to-br from-red-950/30 to-surface-950 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-4xl font-black text-red-400/60 mb-2">{programSource.short_name || programSource.name}</div>
+                    <div className="text-4xl font-bold text-red-400/60 mb-2">{programSource.short_name || programSource.name}</div>
                     <div className="text-xs text-surface-500">{programSource.source_type} • {programSource.protocol || 'SDI'}</div>
                     {switcherState?.pip_enabled && switcherState.pip_source_id && (
-                      <div className="mt-2 text-[10px] text-amber-400">PiP: {getSourceName(switcherState.pip_source_id)}</div>
+                      <div className="mt-2 text-[11px] text-amber-400">PiP: {getSourceName(switcherState.pip_source_id)}</div>
                     )}
                   </div>
                 </div>
@@ -302,7 +302,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
           {/* Program Bus */}
           <div className="space-y-1">
             <div className="flex items-center gap-2 px-1">
-              <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Program Bus</span>
+              <span className="text-[11px] font-medium text-red-400 uppercase tracking-[0.04em]">Program Bus</span>
               <div className="flex-1 h-px bg-red-900/40" />
             </div>
             <div className="flex flex-wrap gap-1">
@@ -311,7 +311,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                   key={`pgm-${src.id}`}
                   onClick={() => setProgram(src.id)}
                   className={cn(
-                    'px-3 py-2 text-xs font-bold rounded transition-colors duration-100 min-w-[80px] text-center uppercase',
+                    'px-3 py-2 text-xs font-medium rounded transition-colors duration-100 min-w-[80px] text-center uppercase',
                     switcherState?.program_source_id === src.id
                       ? 'bg-red-600 text-white ring-2 ring-red-400 shadow-lg shadow-red-600/30'
                       : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
@@ -322,7 +322,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
               ))}
               <button
                 onClick={() => updateSwitcher({ program_source_id: null })}
-                className="px-3 py-2 text-xs font-bold rounded bg-surface-900 text-surface-600 hover:bg-surface-800 min-w-[80px] uppercase"
+                className="px-3 py-2 text-xs font-medium rounded bg-surface-900 text-surface-400 hover:bg-surface-800 min-w-[80px] uppercase"
               >
                 BLK
               </button>
@@ -332,7 +332,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
           {/* Preview Bus */}
           <div className="space-y-1">
             <div className="flex items-center gap-2 px-1">
-              <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider">Preview Bus</span>
+              <span className="text-[11px] font-medium text-green-400 uppercase tracking-[0.04em]">Preview Bus</span>
               <div className="flex-1 h-px bg-green-900/40" />
             </div>
             <div className="flex flex-wrap gap-1">
@@ -341,7 +341,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                   key={`pvw-${src.id}`}
                   onClick={() => setPreview(src.id)}
                   className={cn(
-                    'px-3 py-2 text-xs font-bold rounded transition-colors duration-100 min-w-[80px] text-center uppercase',
+                    'px-3 py-2 text-xs font-medium rounded transition-colors duration-100 min-w-[80px] text-center uppercase',
                     switcherState?.preview_source_id === src.id
                       ? 'bg-green-600 text-white ring-2 ring-green-400 shadow-lg shadow-green-600/30'
                       : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
@@ -356,7 +356,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
           <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-start">
             {/* Transition Type */}
             <div className="space-y-2">
-              <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider px-1">Transition Style</div>
+              <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-1">Transition Style</div>
               <div className="grid grid-cols-4 gap-1">
                 {BROADCAST_TRANSITION_TYPES.map(t => (
                   <button
@@ -375,13 +375,13 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
               </div>
               {/* Duration */}
               <div className="flex items-center gap-2 px-1">
-                <span className="text-[10px] text-surface-500">Duration:</span>
+                <span className="text-[11px] text-surface-500">Duration:</span>
                 {[250, 500, 1000, 2000].map(ms => (
                   <button
                     key={ms}
                     onClick={() => updateSwitcher({ transition_duration_ms: ms })}
                     className={cn(
-                      'px-2 py-1 text-[10px] rounded font-mono',
+                      'px-2 py-1 text-[11px] rounded font-mono',
                       switcherState?.transition_duration_ms === ms
                         ? 'bg-surface-600 text-white'
                         : 'bg-surface-800 text-surface-500 hover:text-white'
@@ -395,7 +395,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
 
             {/* T-Bar & Action Buttons */}
             <div className="flex flex-col items-center gap-2 min-w-[120px]">
-              <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider">Control</div>
+              <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Control</div>
               {/* T-Bar */}
               <div className="relative w-8 h-32 bg-surface-800 rounded-full overflow-hidden">
                 <div
@@ -415,14 +415,14 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                 <button
                   onClick={executeTake}
                   disabled={!switcherState?.preview_source_id || transitioning}
-                  className="w-full py-2 bg-red-600 hover:bg-red-500 disabled:bg-surface-800 disabled:text-surface-600 text-white text-xs font-black uppercase rounded transition-colors"
+                  className="w-full py-2 bg-red-600 hover:bg-red-500 disabled:bg-surface-800 disabled:text-surface-400 text-white text-xs font-semibold uppercase rounded transition-colors"
                 >
                   TAKE
                 </button>
                 <button
                   onClick={executeAuto}
                   disabled={!switcherState?.preview_source_id || transitioning}
-                  className="w-full py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-surface-800 disabled:text-surface-600 text-black text-xs font-black uppercase rounded transition-colors"
+                  className="w-full py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-surface-800 disabled:text-surface-400 text-black text-xs font-semibold uppercase rounded transition-colors"
                 >
                   AUTO
                 </button>
@@ -431,7 +431,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
 
             {/* Keyers & FTB */}
             <div className="space-y-2">
-              <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider px-1">Keyers & Output</div>
+              <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-1">Keyers & Output</div>
               <div className="grid grid-cols-2 gap-1">
                 <button
                   onClick={() => updateSwitcher({ dsk_1_on_air: !switcherState?.dsk_1_on_air })}
@@ -482,7 +482,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
               <button
                 onClick={executeFTB}
                 className={cn(
-                  'w-full py-3 text-xs font-black uppercase rounded transition-colors',
+                  'w-full py-3 text-xs font-semibold uppercase rounded transition-colors',
                   switcherState?.ftb_active
                     ? 'bg-red-700 text-white ring-2 ring-red-400 animate-pulse'
                     : 'bg-surface-800 text-surface-400 hover:bg-red-900 hover:text-red-300'
@@ -494,7 +494,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
               <button
                 onClick={() => updateSwitcher({ audio_follow_video: !switcherState?.audio_follow_video })}
                 className={cn(
-                  'w-full py-2 text-[10px] font-bold rounded transition-colors',
+                  'w-full py-2 text-[11px] font-bold rounded transition-colors',
                   switcherState?.audio_follow_video
                     ? 'bg-surface-700 text-green-400'
                     : 'bg-surface-800 text-surface-500'
@@ -507,13 +507,13 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
 
           {sources.length > 0 && (
             <div className="space-y-1 pb-4">
-              <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider px-1">Source Tally</div>
+              <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-1">Source Tally</div>
               <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-1">
                 {sources.map(src => (
                   <div
                     key={`tally-${src.id}`}
                     className={cn(
-                      'text-center py-2 rounded text-[10px] font-bold transition-colors',
+                      'text-center py-2 rounded text-[11px] font-bold transition-colors',
                       src.id === switcherState?.program_source_id
                         ? 'bg-red-600 text-white ring-1 ring-red-400'
                         : src.id === switcherState?.preview_source_id
@@ -522,7 +522,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                     )}
                   >
                     {src.short_name || src.name?.substring(0, 5)}
-                    <div className="text-[8px] mt-0.5 opacity-70">{src.source_type}</div>
+                    <div className="text-[11px] mt-0.5 opacity-70">{src.source_type}</div>
                   </div>
                 ))}
               </div>

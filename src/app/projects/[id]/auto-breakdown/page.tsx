@@ -252,7 +252,7 @@ export default function AutoBreakdownPage() {
             </svg>
             Back to Script
           </Link>
-          <h1 className="text-xl font-black text-white">Auto-Breakdown</h1>
+          <h1 className="text-xl font-bold text-white">Auto-Breakdown</h1>
           <p className="text-sm text-surface-400 mt-0.5">
             {elements.length} script elements loaded
             {scanComplete && <> &middot; {totalItems} items found</>}
@@ -325,10 +325,10 @@ export default function AutoBreakdownPage() {
                   )}
                 >
                   <div className="text-xs font-bold mb-0.5">{meta.icon}</div>
-                  <div className={cn('text-lg font-black', selectedCategory === cat ? meta.color : 'text-white')}>
+                  <div className={cn('text-lg font-bold', selectedCategory === cat ? meta.color : 'text-white')}>
                     {count}
                   </div>
-                  <div className={cn('text-[10px] font-bold uppercase tracking-wider', selectedCategory === cat ? meta.color : 'text-surface-500')}>
+                  <div className={cn('text-[11px] font-medium uppercase tracking-[0.04em]', selectedCategory === cat ? meta.color : 'text-surface-500')}>
                     {meta.label}
                   </div>
                 </button>
@@ -340,7 +340,7 @@ export default function AutoBreakdownPage() {
             <div className="flex-1 min-w-0">
               <div className="rounded-xl border border-surface-800 bg-surface-900/60 overflow-hidden">
                 <div className="px-4 py-3 border-b border-surface-800 flex items-center justify-between">
-                  <span className="text-xs font-bold text-surface-400 uppercase tracking-wider">
+                  <span className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em]">
                     {selectedCategory ? CATEGORY_META[selectedCategory].label : 'All Elements'} ({filteredItems.length})
                   </span>
                   {selectedCategory && (

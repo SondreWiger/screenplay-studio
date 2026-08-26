@@ -85,7 +85,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
   if (notFound || !company) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
-        <h1 className="text-3xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>PAGE NOT FOUND</h1>
+        <h1 className="text-3xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>PAGE NOT FOUND</h1>
         <p className="text-white/40 mb-6 font-mono text-sm">This company page doesn&apos;t exist or isn&apos;t public.</p>
         <Link href="/" className="ss-btn-orange text-sm">
           Go Home
@@ -111,11 +111,11 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
           {company.logo_url ? (
             <img src={company.logo_url} alt={company.name} className="w-20 h-20 rounded-xl mx-auto mb-4 shadow-lg object-cover" loading="lazy" />
           ) : (
-            <div className="w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-3xl font-black text-white bg-white/20 backdrop-blur">
+            <div className="w-20 h-20 rounded-xl mx-auto mb-4 flex items-center justify-center text-3xl font-bold text-white bg-white/20 backdrop-blur">
               {company.name[0]}
             </div>
           )}
-          <h1 className="text-4xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>{company.name}</h1>
+          <h1 className="text-4xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>{company.name}</h1>
           {company.tagline && <p className="text-xl text-white/80">{company.tagline}</p>}
           {company.description && <p className="mt-4 text-white/60 max-w-2xl mx-auto">{company.description}</p>}
           <div className="flex justify-center gap-4 mt-6">
@@ -137,7 +137,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         {/* Projects */}
         {projects.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-2xl font-black text-white mb-6" style={{ letterSpacing: '-0.03em' }}>PROJECTS</h2>
+            <h2 className="text-2xl font-bold text-white mb-6" style={{ letterSpacing: '-0.03em' }}>PROJECTS</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
                 <div key={project.id} className="overflow-hidden hover:opacity-90 transition-opacity" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
@@ -151,7 +151,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                     </div>
                   )}
                   <div className="p-5">
-                    <h3 className="font-black text-white" style={{ letterSpacing: '-0.02em' }}>{project.title}</h3>
+                    <h3 className="font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>{project.title}</h3>
                     {project.logline && <p className="text-sm text-white/40 mt-1 line-clamp-2">{project.logline}</p>}
                     <div className="flex items-center gap-2 mt-3">
                       <span className="text-xs font-mono text-white/30 capitalize">{project.format}</span>
@@ -169,7 +169,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         {/* Team */}
         {members.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-2xl font-black text-white mb-6" style={{ letterSpacing: '-0.03em' }}>OUR TEAM</h2>
+            <h2 className="text-2xl font-bold text-white mb-6" style={{ letterSpacing: '-0.03em' }}>OUR TEAM</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {members.map((m) => {
                 const profile = m.profile as Profile | undefined;
@@ -178,11 +178,11 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt={profile.full_name || profile.username || 'Team member'} className="w-24 h-24 rounded-full mx-auto object-cover" loading="lazy" />
                     ) : (
-                      <div className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-2xl font-black text-white/40 bg-white/10">
+                      <div className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white/40 bg-white/10">
                         {(profile?.display_name || profile?.full_name || '?')[0].toUpperCase()}
                       </div>
                     )}
-                    <h3 className="font-black text-white mt-3" style={{ letterSpacing: '-0.02em' }}>{profile?.display_name || profile?.full_name || 'Team Member'}</h3>
+                    <h3 className="font-semibold text-white mt-3" style={{ letterSpacing: '-0.02em' }}>{profile?.display_name || profile?.full_name || 'Team Member'}</h3>
                     <p className="text-sm text-white/50 font-mono">{m.job_title || m.role}</p>
                     {m.department && <p className="text-xs text-white/30 font-mono">{m.department}</p>}
                     {m.bio && <p className="text-xs text-white/30 mt-1 line-clamp-2">{m.bio}</p>}
@@ -197,7 +197,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
         {blogPosts.length > 0 && (
           <section className="mb-16">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>BLOG</h2>
+              <h2 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>BLOG</h2>
               <Link href={`/company/${company.slug}/blog`} className="text-sm font-medium hover:underline" style={{ color: company.brand_color }}>
                 View all posts →
               </Link>
@@ -216,12 +216,12 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                     </div>
                   )}
                   <div className="p-4">
-                    {post.pinned && <span className="text-[10px] font-mono uppercase tracking-widest text-brand-500 mb-1 block">Pinned</span>}
-                    <h3 className="font-black text-white line-clamp-2" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
+                    {post.pinned && <span className="text-[11px] uppercase tracking-[0.04em] text-brand-500 mb-1 block">Pinned</span>}
+                    <h3 className="font-semibold text-white line-clamp-2" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
                     {post.excerpt && <p className="text-sm text-white/40 mt-1 line-clamp-2">{post.excerpt}</p>}
                     <div className="flex items-center gap-2 mt-3">
                       {post.tags?.length > 0 && post.tags.slice(0, 2).map((tag: string) => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 font-mono uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{tag}</span>
+                        <span key={tag} className="text-[11px] px-2 py-0.5 uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{tag}</span>
                       ))}
                       {post.published_at && (
                         <span className="text-xs font-mono text-white/30 ml-auto">{new Date(post.published_at).toLocaleDateString()}</span>

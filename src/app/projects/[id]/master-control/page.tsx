@@ -181,7 +181,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
       {/* ── Top Bar ──────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-surface-800">
         <div className="flex items-center gap-4">
-          <h1 className="text-sm font-bold text-white uppercase tracking-wider">Master Control</h1>
+          <h1 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Master Control</h1>
           {playingItem && (
             <Badge className="bg-red-600 text-white animate-pulse">ON AIR</Badge>
           )}
@@ -250,7 +250,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
             ) : (
               <table className="w-full text-xs">
                 <thead className="bg-surface-900 sticky top-0">
-                  <tr className="text-surface-500 uppercase text-[10px]">
+                  <tr className="text-surface-500 uppercase text-[11px]">
                     <th className="px-2 py-1.5 text-left w-8">#</th>
                     <th className="px-2 py-1.5 text-left w-16">Status</th>
                     <th className="px-2 py-1.5 text-left w-16">Type</th>
@@ -282,7 +282,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                         <td className="px-2 py-2 text-surface-600 font-mono">{idx + 1}</td>
                         <td className="px-2 py-2">
                           <span className={cn(
-                            'px-1.5 py-0.5 rounded text-[10px] font-bold uppercase',
+                            'px-1.5 py-0.5 rounded text-[11px] font-medium uppercase',
                             isPlaying && 'bg-red-600 text-white',
                             isCued && 'bg-amber-600 text-black',
                             isDone && 'bg-surface-700 text-surface-400',
@@ -294,7 +294,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                         </td>
                         <td className="px-2 py-2">
                           <span
-                            className="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                            className="px-1.5 py-0.5 rounded text-[11px] font-bold"
                             style={{ backgroundColor: typeInfo?.color + '20', color: typeInfo?.color }}
                           >
                             {typeInfo?.label || item.item_type}
@@ -302,8 +302,8 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                         </td>
                         <td className="px-2 py-2 text-white font-medium">
                           {item.title}
-                          {item.loop && <span className="ml-1 text-cyan-400 text-[10px]">↻</span>}
-                          {item.auto_next && <span className="ml-1 text-green-400 text-[10px]">▸</span>}
+                          {item.loop && <span className="ml-1 text-cyan-400 text-[11px]">↻</span>}
+                          {item.auto_next && <span className="ml-1 text-green-400 text-[11px]">▸</span>}
                         </td>
                         <td className="px-2 py-2 text-right font-mono text-surface-400">
                           {formatBroadcastDuration(item.duration_seconds)}
@@ -357,7 +357,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
         <div className="w-1/3 flex flex-col overflow-y-auto">
           {/* Now Playing */}
           <div className="p-4 border-b border-surface-800">
-            <div className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2">
+            <div className="text-[11px] font-medium text-red-400 uppercase tracking-[0.04em] mb-2">
               {playingItem ? 'Now Playing' : 'Stopped'}
             </div>
             {playingItem ? (
@@ -365,7 +365,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                 <div className="text-lg font-bold text-white">{playingItem.title}</div>
                 <div className="flex items-center gap-2">
                   <span
-                    className="px-2 py-0.5 rounded text-[10px] font-bold"
+                    className="px-2 py-0.5 rounded text-[11px] font-bold"
                     style={{
                       backgroundColor: BROADCAST_PLAYOUT_ITEM_TYPES.find(t => t.value === playingItem.item_type)?.color + '20',
                       color: BROADCAST_PLAYOUT_ITEM_TYPES.find(t => t.value === playingItem.item_type)?.color,
@@ -406,7 +406,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
 
           {/* Next Up */}
           <div className="p-4 border-b border-surface-800">
-            <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-2">Next Up</div>
+            <div className="text-[11px] font-medium text-amber-400 uppercase tracking-[0.04em] mb-2">Next Up</div>
             {nextItem ? (
               <div className="flex items-center justify-between">
                 <div>
@@ -425,7 +425,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
 
           {/* Show Progress */}
           <div className="p-4">
-            <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-3">Show Progress</div>
+            <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-3">Show Progress</div>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
                 <span className="text-surface-400">Total Items</span>

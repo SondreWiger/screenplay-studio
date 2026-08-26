@@ -46,42 +46,47 @@ export const ICON_TO_FLAG: Record<string, string> = {
   revisions: 'pro_revisions',
   reports: 'pro_reports',
   casting: 'pro_casting',
-  // Studio tier features
-  portfolio: 'studio_portfolio',
-  accounting: 'studio_accounting',
-  rights: 'studio_rights',
-  distribution: 'studio_distribution',
-  'crew-portal': 'studio_crew_portal',
-  departments: 'studio_departments',
-  compliance: 'studio_compliance',
-  integrations: 'studio_integrations',
-  sso: 'studio_sso',
-  security: 'studio_security',
-  'script-supervising': 'studio_script_supervising',
-  'vfx-tracking': 'studio_vfx_tracking',
-  'music-sound': 'studio_music_sound',
-  talent: 'studio_talent_mgmt',
-  scouting: 'studio_location_scouting',
-  vendors: 'studio_vendor_mgmt',
-  stunts: 'studio_stunts_safety',
-  greenlight: 'studio_greenlight',
-  festival: 'studio_festival',
-  'tax-incentives': 'studio_tax_incentives',
-  multilang: 'studio_multilang',
-  archival: 'studio_archival',
-  'broadcast-compliance': 'studio_broadcast_compliance',
-  'post-production': 'studio_post_production',
-  marketing: 'studio_marketing',
-  legal: 'studio_legal',
-  crowdfunding: 'studio_crowdfunding',
-  'box-office': 'studio_box_office',
-  travel: 'studio_travel',
-  catering: 'studio_catering',
-  sustainability: 'studio_sustainability',
-  extras: 'studio_extras',
-  equipment: 'studio_equipment',
-  wrap: 'studio_wrap',
-  newsletter: 'studio_newsletter',
+  // Pro tool suite (see lib/pro-tools/tools.ts)
+  portfolio: 'pro_portfolio',
+  accounting: 'pro_accounting',
+  rights: 'pro_rights',
+  distribution: 'pro_distribution',
+  'crew-portal': 'pro_crew_portal',
+  departments: 'pro_departments',
+  compliance: 'pro_compliance',
+  integrations: 'pro_integrations',
+  sso: 'pro_sso',
+  security: 'pro_security',
+  'script-supervising': 'pro_script_supervising',
+  'vfx-tracking': 'pro_vfx_tracking',
+  'music-sound': 'pro_music_sound',
+  talent: 'pro_talent_mgmt',
+  scouting: 'pro_location_scouting',
+  vendors: 'pro_vendor_mgmt',
+  stunts: 'pro_stunts_safety',
+  greenlight: 'pro_greenlight',
+  festival: 'pro_festival',
+  'tax-incentives': 'pro_tax_incentives',
+  multilang: 'pro_multilang',
+  archival: 'pro_archival',
+  'broadcast-compliance': 'pro_broadcast_compliance',
+  'post-production': 'pro_post_production',
+  marketing: 'pro_marketing',
+  legal: 'pro_legal',
+  crowdfunding: 'pro_crowdfunding',
+  'box-office': 'pro_box_office',
+  travel: 'pro_travel',
+  catering: 'pro_catering',
+  sustainability: 'pro_sustainability',
+  extras: 'pro_extras',
+  equipment: 'pro_equipment',
+  wrap: 'pro_wrap',
+  newsletter: 'pro_newsletter',
+  dailies: 'pro_dailies',
+  deliverables: 'pro_deliverables',
+  unions: 'pro_unions',
+  residuals: 'pro_residuals',
+  screenings: 'pro_screenings',
 };
 
 /** Resolve an icon key (or direct flag key) to the canonical feature_flags.key */
@@ -116,12 +121,12 @@ export const FeatureGate = React.memo(FeatureGateInner);
  * Returns a function that checks whether a feature (by icon key or flag key) is accessible.
  */
 export function useFeatureAccess() {
-  const { hasAccess, loading, flags, isPro, isStudio } = useFeatureFlags();
+  const { hasAccess, loading, flags, isPro } = useFeatureFlags();
 
   const canUse = (iconOrFlag: string): boolean => {
     if (loading) return true; // optimistic while loading
     return hasAccess(resolveFlag(iconOrFlag));
   };
 
-  return { canUse, loading, flags, isPro, isStudio };
+  return { canUse, loading, flags, isPro };
 }

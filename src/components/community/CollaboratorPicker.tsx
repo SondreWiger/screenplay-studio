@@ -84,7 +84,7 @@ export function CollaboratorPicker({
                   <img src={c.avatar_url} className="w-4 h-4 rounded-full" alt="" loading="lazy" />
                 ) : (
                   <div
-                    className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white"
+                    className="w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-semibold text-white"
                     style={{ background: '#FF5F1F' }}
                   >
                     {handle[0]?.toUpperCase()}
@@ -136,7 +136,7 @@ export function CollaboratorPicker({
                     <img src={p.avatar_url} className="w-6 h-6 rounded-full shrink-0" alt="" loading="lazy" />
                   ) : (
                     <div
-                      className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-black text-white"
+                      className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[11px] font-semibold text-white"
                       style={{ background: '#FF5F1F' }}
                     >
                       {handle[0]?.toUpperCase()}
@@ -147,10 +147,10 @@ export function CollaboratorPicker({
                       {p.display_name || p.username}
                     </p>
                     {p.username && (
-                      <p className="text-[10px] text-white/40 font-mono truncate">@{p.username}</p>
+                      <p className="text-[11px] text-white/40 font-mono truncate">@{p.username}</p>
                     )}
                   </div>
-                  <span className="ml-auto text-[10px] text-brand-500 shrink-0">+ Add</span>
+                  <span className="ml-auto text-[11px] text-brand-500 shrink-0">+ Add</span>
                 </button>
               );
             })}
@@ -159,7 +159,7 @@ export function CollaboratorPicker({
       </div>
 
       {collaborators.length >= maxCollaborators && (
-        <p className="text-[10px] text-white/30 font-mono">
+        <p className="text-[11px] text-white/30 font-mono">
           Max {maxCollaborators} collaborators reached.
         </p>
       )}

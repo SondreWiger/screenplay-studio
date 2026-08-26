@@ -159,8 +159,8 @@ export default function CommunityPage() {
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold uppercase tracking-wider text-white/70">{t('community.weekly_challenge')}</span>
-                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-surface-900/20 rounded-full">{getPhaseLabel(phase)}</span>
+                  <span className="text-xs font-medium uppercase tracking-[0.04em] text-white/70">{t('community.weekly_challenge')}</span>
+                  <span className="px-2 py-0.5 text-[11px] font-semibold bg-surface-900/20 rounded-full">{getPhaseLabel(phase)}</span>
                 </div>
                 <h2 className="text-lg font-bold">{activeChallenge.title.replace('Weekly Challenge: ', '')}</h2>
                 <p className="text-sm text-white/80 mt-1 max-w-lg line-clamp-2">{activeChallenge.description}</p>
@@ -192,13 +192,13 @@ export default function CommunityPage() {
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
               <span className="ss-label">{t('community.title')}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>{t('community.scripts')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>{t('community.scripts')}</h1>
             <p className="text-white/50 text-sm mt-1">{t('community.discover')}</p>
             {user && (
               <div className="flex items-center gap-1 mt-3 p-0.5 rounded-lg w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
                 {(['all', 'yours'] as const).map(m => (
                   <button key={m} onClick={() => setFeedMode(m)}
-                    className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest rounded-md transition-colors"
+                    className="px-3 py-1 text-[11px] uppercase tracking-[0.04em] rounded-md transition-colors"
                     style={feedMode === m ? { background: '#FF5F1F', color: '#fff' } : { color: 'rgba(255,255,255,0.45)' }}>
                     {m === 'all' ? t('community.all_posts') : t('community.your_feed')}
                   </button>
@@ -211,7 +211,7 @@ export default function CommunityPage() {
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className="text-xs md:text-[10px] font-mono uppercase tracking-wider px-3 py-2.5 md:py-1.5 transition-colors min-h-[44px] md:min-h-0"
+                className="text-xs md:text-[11px] uppercase tracking-[0.04em] px-3 py-2.5 md:py-1.5 transition-colors min-h-[44px] md:min-h-0"
               style={{
                   color: sortBy === s ? '#FF5F1F' : 'rgba(255,255,255,0.45)',
                   border: sortBy === s ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
@@ -227,7 +227,7 @@ export default function CommunityPage() {
         <div className="flex gap-8">
           {/* Sidebar — categories */}
           <aside className="hidden lg:block w-56 shrink-0">
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">{t('community.categories')}</h3>
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-3">{t('community.categories')}</h3>
             <div className="space-y-1">
               <button
                 onClick={() => setSelectedCategory(null)}
@@ -269,8 +269,8 @@ export default function CommunityPage() {
             {joinedCommunities.length > 0 && (
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.your_communities')}</p>
-                  <Link href="/community/c" className="text-[10px] text-brand-500 hover:text-brand-400 transition-colors">{t('community.browse')}</Link>
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em]">{t('community.your_communities')}</p>
+                  <Link href="/community/c" className="text-[11px] text-brand-500 hover:text-brand-400 transition-colors">{t('community.browse')}</Link>
                 </div>
                 <div className="space-y-1">
                   {joinedCommunities.slice(0, 8).map(c => (
@@ -287,8 +287,8 @@ export default function CommunityPage() {
             {featuredCourses.length > 0 && (
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('community.courses')}</p>
-                  <Link href="/community/courses" className="text-[10px] text-brand-500 hover:text-brand-400 transition-colors">All →</Link>
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em]">{t('community.courses')}</p>
+                  <Link href="/community/courses" className="text-[11px] text-brand-500 hover:text-brand-400 transition-colors">All →</Link>
                 </div>
                 <div className="space-y-2">
                   {featuredCourses.map(c => {
@@ -298,10 +298,10 @@ export default function CommunityPage() {
                         className="block p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-colors group">
                         <p className="text-xs font-medium text-white/80 group-hover:text-white transition-colors line-clamp-1">{c.title}</p>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <span className={`text-[9px] font-semibold uppercase tracking-wide ${diffColor}`}>{c.difficulty}</span>
-                          <span className="text-[9px] text-white/25">·</span>
-                          <span className="text-[9px] text-brand-500">{c.xp_reward} XP</span>
-                          {c.enrollment_count > 0 && <span className="text-[9px] text-white/25 ml-auto">{c.enrollment_count} {t('community.enrolled')}</span>}
+                          <span className={`text-[11px] font-semibold uppercase tracking-wide ${diffColor}`}>{c.difficulty}</span>
+                          <span className="text-[11px] text-white/25">·</span>
+                          <span className="text-[11px] text-brand-500">{c.xp_reward} XP</span>
+                          {c.enrollment_count > 0 && <span className="text-[11px] text-white/25 ml-auto">{c.enrollment_count} {t('community.enrolled')}</span>}
                         </div>
                       </Link>
                     );
@@ -350,7 +350,7 @@ export default function CommunityPage() {
                             <Link
                               href={`/community/c/${(post as any).sub_community.slug}`}
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-opacity hover:opacity-75"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold transition-opacity hover:opacity-75"
                               style={{
                                 background: ((post as any).sub_community.accent_color ?? '#FF5F1F') + '1a',
                                 color: (post as any).sub_community.accent_color ?? '#FF5F1F',
@@ -365,7 +365,7 @@ export default function CommunityPage() {
                             {post.categories.map((cat) => (
                               <span
                                 key={cat.id}
-                                className="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                                className="px-2 py-0.5 text-[11px] font-semibold rounded-full"
                                 style={{
                                   color: cat.color || '#6b7280',
                                   backgroundColor: (cat.color || '#6b7280') + '15',
@@ -393,14 +393,14 @@ export default function CommunityPage() {
                             {post.author?.avatar_url ? (
                               <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" loading="lazy" />
                             ) : (
-                              <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[8px] font-bold text-white/40">
+                              <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[11px] font-bold text-white/40">
                                 {(post.author?.full_name || '?')[0]}
                               </div>
                             )}
                             <span className="text-white/60 font-medium">{post.author?.full_name || 'Anonymous'}</span>
                           </Link>
-                          {post.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>MOD</span>}
-                          {post.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>ADMIN</span>}
+                          {post.author?.role === 'moderator' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold" style={{backgroundColor:'#22C55E33',color:'#22C55E'}}>MOD</span>}
+                          {post.author?.role === 'admin' && <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold" style={{backgroundColor:'#EF444433',color:'#EF4444'}}>ADMIN</span>}
                           <span>{timeAgo(post.created_at)}</span>
                           <span className="flex items-center gap-1">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -418,19 +418,19 @@ export default function CommunityPage() {
                         {/* Permission badges */}
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {post.allow_free_use && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-green-400 bg-green-500/15 rounded-full">{t('community.free_to_use')}</span>
+                            <span className="px-2 py-0.5 text-[11px] font-semibold text-green-400 bg-green-500/15 rounded-full">{t('community.free_to_use')}</span>
                           )}
                           {post.allow_distros && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-blue-400 bg-blue-500/15 rounded-full">{t('community.distros_allowed')}</span>
+                            <span className="px-2 py-0.5 text-[11px] font-semibold text-blue-400 bg-blue-500/15 rounded-full">{t('community.distros_allowed')}</span>
                           )}
                           {post.allow_edits && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-400 bg-purple-500/15 rounded-full">{t('community.open_to_edits')}</span>
+                            <span className="px-2 py-0.5 text-[11px] font-semibold text-purple-400 bg-purple-500/15 rounded-full">{t('community.open_to_edits')}</span>
                           )}
                           {/* Mod delete */}
                           {user && (user.id === post.author_id || isMod) && (
                             <button
                               onClick={(e) => handleDeletePost(e, post.id)}
-                              className="ml-auto px-2 py-0.5 text-[10px] font-semibold text-red-400 bg-red-500/15 hover:bg-red-500/25 rounded-full transition-colors flex items-center gap-1"
+                              className="ml-auto px-2 py-0.5 text-[11px] font-semibold text-red-400 bg-red-500/15 hover:bg-red-500/25 rounded-full transition-colors flex items-center gap-1"
                             >
                               {user.id !== post.author_id && <span className="text-amber-400">MOD</span>}
                               ✕ Delete
@@ -462,7 +462,7 @@ export default function CommunityPage() {
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setSelectedCategory(null)}
-            className="shrink-0 px-3 py-2.5 md:py-1.5 text-xs md:text-[10px] font-mono uppercase tracking-wider transition-colors min-h-[44px] md:min-h-0"
+            className="shrink-0 px-3 py-2.5 md:py-1.5 text-xs md:text-[11px] uppercase tracking-[0.04em] transition-colors min-h-[44px] md:min-h-0"
             style={{
               color: !selectedCategory ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
               border: !selectedCategory ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
@@ -473,7 +473,7 @@ export default function CommunityPage() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.slug)}
-              className="shrink-0 px-3 py-2.5 md:py-1.5 text-xs md:text-[10px] font-mono uppercase tracking-wider transition-colors min-h-[44px] md:min-h-0"
+              className="shrink-0 px-3 py-2.5 md:py-1.5 text-xs md:text-[11px] uppercase tracking-[0.04em] transition-colors min-h-[44px] md:min-h-0"
               style={{
                 color: selectedCategory === cat.slug ? '#FF5F1F' : 'rgba(255,255,255,0.3)',
                 border: selectedCategory === cat.slug ? '1px solid rgba(255,95,31,0.3)' : '1px solid rgba(255,255,255,0.07)',
@@ -489,13 +489,13 @@ export default function CommunityPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-5 h-5 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/50 uppercase tracking-widest">Screenplay Studio Community</span>
+            <span className="text-[11px] text-white/50 uppercase tracking-[0.04em]">Screenplay Studio Community</span>
           </div>
           <div className="flex items-center gap-6">
             {['/', '/blog', '/community/challenges'].map((href, i) => (
-              <Link key={href} href={href} className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors">
+              <Link key={href} href={href} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
                 {['Home', 'Blog', 'Challenges'][i]}
               </Link>
             ))}

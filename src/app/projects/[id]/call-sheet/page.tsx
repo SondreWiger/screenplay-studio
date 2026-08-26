@@ -169,13 +169,13 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
       <div className="p-8 max-w-4xl mx-auto print:p-0 bg-white text-black">
         <div className="border-b-2 border-black pb-4 mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-black">{currentProject?.title ?? 'Production'}</h1>
+            <h1 className="text-2xl font-bold">{currentProject?.title ?? 'Production'}</h1>
             <h2 className="text-lg font-bold">{selected.title ?? `Call Sheet — ${selected.shoot_date}`}</h2>
             <p className="text-sm text-gray-600">{selected.shoot_date}</p>
           </div>
           <div className="text-right">
             <p className="text-sm font-bold">GENERAL CALL</p>
-            <p className="text-2xl font-black">{selected.general_call ?? '—'}</p>
+            <p className="text-2xl font-bold">{selected.general_call ?? '—'}</p>
           </div>
         </div>
 
@@ -186,7 +186,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
             { label: 'Parking', value: selected.parking },
           ].map(({ label, value }) => value ? (
             <div key={label}>
-              <p className="font-bold text-[10px] uppercase tracking-wider text-gray-500">{label}</p>
+              <p className="font-medium text-[11px] uppercase tracking-[0.04em] text-gray-500">{label}</p>
               <p>{value}</p>
             </div>
           ) : null)}
@@ -201,7 +201,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
         {/* Advanced Schedule */}
         {(selected.advanced_schedule ?? []).filter((r) => r.scene).length > 0 && (
           <div className="mb-6">
-            <h3 className="font-black text-sm uppercase tracking-wider border-b border-black pb-1 mb-2">Advanced Schedule</h3>
+            <h3 className="font-semibold text-sm uppercase tracking-[0.04em] border-b border-black pb-1 mb-2">Advanced Schedule</h3>
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-gray-100">
@@ -226,7 +226,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
         {/* Crew Calls */}
         {(selected.crew_calls ?? []).filter((c) => c.name).length > 0 && (
           <div className="mb-6">
-            <h3 className="font-black text-sm uppercase tracking-wider border-b border-black pb-1 mb-2">Crew Calls</h3>
+            <h3 className="font-semibold text-sm uppercase tracking-[0.04em] border-b border-black pb-1 mb-2">Crew Calls</h3>
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-gray-100">
@@ -250,7 +250,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
 
         {selected.general_notes && (
           <div className="mt-4 p-3 border border-gray-300 rounded text-sm">
-            <p className="font-bold text-[10px] uppercase tracking-wider text-gray-500 mb-1">General Notes</p>
+            <p className="font-medium text-[11px] uppercase tracking-[0.04em] text-gray-500 mb-1">General Notes</p>
             <p className="whitespace-pre-wrap">{selected.general_notes}</p>
           </div>
         )}
@@ -267,7 +267,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
     return (
       <div className="p-4 md:p-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-black text-white">{selected ? 'Edit Call Sheet' : 'New Call Sheet'}</h1>
+          <h1 className="text-xl font-bold text-white">{selected ? 'Edit Call Sheet' : 'New Call Sheet'}</h1>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => setView('list')}>Cancel</Button>
             <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
@@ -317,7 +317,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
             </div>
             {/* Desktop: compact grid rows */}
             <div className="hidden md:block space-y-2">
-              <div className="grid grid-cols-[1fr_1.5fr_1.5fr_0.5fr_0.5fr_1.5rem] gap-2 text-[10px] text-surface-500 font-bold uppercase tracking-wider px-1">
+              <div className="grid grid-cols-[1fr_1.5fr_1.5fr_0.5fr_0.5fr_1.5rem] gap-2 text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] px-1">
                 <span>Scene</span><span>Location</span><span>Cast</span><span>Pages</span><span>Est.</span><span />
               </div>
               {form.advanced_schedule.map((row, i) => (
@@ -339,7 +339,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                   <div className="grid grid-cols-2 gap-2">
                     {([['scene','Scene'],['location','Location'],['cast','Cast']] as const).map(([field, label]) => (
                       <div key={field} className={field === 'cast' ? 'col-span-2' : ''}>
-                        <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">{label}</label>
+                        <label className="text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] mb-1 block">{label}</label>
                         <input value={row[field]} onChange={(e) => updateScheduleRow(i, field, e.target.value)}
                           className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
                       </div>
@@ -347,12 +347,12 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Pages</label>
+                      <label className="text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] mb-1 block">Pages</label>
                       <input value={row.pages} onChange={(e) => updateScheduleRow(i, 'pages', e.target.value)}
                         className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
                     </div>
                     <div>
-                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Est. Time</label>
+                      <label className="text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] mb-1 block">Est. Time</label>
                       <input value={row.est_time} onChange={(e) => updateScheduleRow(i, 'est_time', e.target.value)}
                         placeholder="1h30m" className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
                     </div>
@@ -375,7 +375,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
             </div>
             {/* Desktop: compact grid rows */}
             <div className="hidden md:block space-y-2">
-              <div className="grid grid-cols-[1.5fr_1fr_0.6fr_1.5fr_1.5rem] gap-2 text-[10px] text-surface-500 font-bold uppercase tracking-wider px-1">
+              <div className="grid grid-cols-[1.5fr_1fr_0.6fr_1.5fr_1.5rem] gap-2 text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] px-1">
                 <span>Name</span><span>Department</span><span>Call</span><span>Notes</span><span />
               </div>
               {form.crew_calls.map((row, i) => (
@@ -395,23 +395,23 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                 <div key={i} className="bg-surface-800/40 rounded-lg border border-surface-700/40 p-3 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Name</label>
+                      <label className="text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] mb-1 block">Name</label>
                       <input value={row.name} onChange={(e) => updateCrewCall(i, 'name', e.target.value)}
                         className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
                     </div>
                     <div>
-                      <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Call Time</label>
+                      <label className="text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] mb-1 block">Call Time</label>
                       <input type="time" value={row.call_time} onChange={(e) => updateCrewCall(i, 'call_time', e.target.value)}
                         className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Department</label>
+                    <label className="text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] mb-1 block">Department</label>
                     <input value={row.dept} onChange={(e) => updateCrewCall(i, 'dept', e.target.value)}
                       className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
                   </div>
                   <div>
-                    <label className="text-[10px] text-surface-500 font-bold uppercase tracking-wider mb-1 block">Notes</label>
+                    <label className="text-[11px] text-surface-500 font-medium uppercase tracking-[0.04em] mb-1 block">Notes</label>
                     <input value={row.notes} onChange={(e) => updateCrewCall(i, 'notes', e.target.value)}
                       className="bg-surface-800 border border-surface-700 rounded px-2 py-2 text-xs text-white w-full" />
                   </div>
@@ -438,7 +438,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-black text-white">Call Sheets</h1>
+          <h1 className="text-xl font-bold text-white">Call Sheets</h1>
           <p className="text-sm text-surface-400 mt-0.5">Daily shoot-day documents for the whole crew.</p>
         </div>
         {canEdit && (

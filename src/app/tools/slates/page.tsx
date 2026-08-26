@@ -80,9 +80,9 @@ export default function SlatesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1 h-1 rounded-full bg-brand-500" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">SLATE DETAILS</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">SLATE DETAILS</span>
             </div>
-            <button onClick={extractFromPDF} disabled={extracting} className="text-[10px] font-bold uppercase tracking-[0.12em] underline underline-offset-4 text-brand-500 disabled:opacity-30">
+            <button onClick={extractFromPDF} disabled={extracting} className="text-[11px] font-medium uppercase tracking-[0.04em] underline underline-offset-4 text-brand-500 disabled:opacity-30">
               {extracting ? 'Extracting…' : 'Extract from PDF'}
             </button>
           </div>
@@ -93,7 +93,7 @@ export default function SlatesPage() {
             ))}
             <Field label="Date" value={slate.date} onChange={v => update('date', v)} type="date" />
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">Sound</label>
+              <label className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55 mb-1.5 block">Sound</label>
               <select value={slate.mos ? 'mos' : slate.sound} onChange={e => { if (e.target.value === 'mos') { update('mos', true); } else { update('mos', false); update('sound', e.target.value); } }}
                 className="w-full px-3 py-2 bg-transparent border border-white/10 text-sm text-white/80">
                 <option value="SYNC" className="bg-black">SYNC</option>
@@ -105,7 +105,7 @@ export default function SlatesPage() {
           </div>
 
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">Notes</label>
+            <label className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55 mb-1.5 block">Notes</label>
             <textarea value={slate.notes} onChange={e => update('notes', e.target.value)} rows={2}
               className="w-full px-3 py-2 bg-transparent border border-white/10 text-sm text-white/80 resize-none" />
           </div>
@@ -119,7 +119,7 @@ export default function SlatesPage() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-1 rounded-full bg-brand-500" />
-            <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">PREVIEW</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">PREVIEW</span>
           </div>
           <pre className="p-6 text-xs text-white/60 font-mono whitespace-pre overflow-x-auto leading-relaxed bg-white/[0.02] border border-white/6">
             {generateSlateText()}
@@ -133,7 +133,7 @@ export default function SlatesPage() {
 function Field({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
   return (
     <div>
-      <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1.5 block">{label}</label>
+      <label className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55 mb-1.5 block">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)}
         className="w-full px-3 py-2 bg-transparent border border-white/10 text-sm text-white/80" />
     </div>

@@ -258,10 +258,10 @@ export default function ChallengeDetailPage() {
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-white/50">
+                <span className="text-xs font-medium uppercase tracking-[0.04em] text-white/50">
                   {challenge.challenge_type === 'weekly' ? `Week ${challenge.week_number}, ${challenge.year}` : 'Custom Challenge'}
                 </span>
-                <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full ${
                   phase === 'submissions' ? 'bg-green-500/20 text-green-300' :
                   phase === 'voting' ? 'bg-amber-500/20 text-amber-300' :
                   phase === 'reveal_pending' ? 'bg-purple-500/20 text-purple-300' :
@@ -271,10 +271,10 @@ export default function ChallengeDetailPage() {
                   {getPhaseLabel(phase!)}
                 </span>
               </div>
-              <h1 className="text-2xl font-black">{challenge.title}</h1>
+              <h1 className="text-2xl font-bold">{challenge.title}</h1>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-3xl font-black">{submissions.length}</div>
+              <div className="text-3xl font-bold">{submissions.length}</div>
               <div className="text-xs text-white/50">submissions</div>
             </div>
           </div>
@@ -394,7 +394,7 @@ export default function ChallengeDetailPage() {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-white truncate">{project.title}</p>
-                                    <p className="text-[10px] text-white/50">{project.format} · {project.script_type || 'screenplay'}</p>
+                                    <p className="text-[11px] text-white/50">{project.format} · {project.script_type || 'screenplay'}</p>
                                   </div>
                                   {selectedProject?.id === project.id && (
                                     <svg className="w-4 h-4 text-brand-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
@@ -419,7 +419,7 @@ export default function ChallengeDetailPage() {
                               <div className="rounded-lg border border-white/10 bg-surface-900 p-4 max-h-56 overflow-y-auto">
                                 <div className="flex items-center justify-between mb-2">
                                   <span className="text-xs font-medium text-white/40">{scriptElements.length} elements</span>
-                                  <span className="text-[10px] text-green-600 font-medium">✓ Formatting preserved</span>
+                                  <span className="text-[11px] text-green-600 font-medium">✓ Formatting preserved</span>
                                 </div>
                                 <ScriptContentViewer content={JSON.stringify(scriptElements)} />
                               </div>
@@ -492,13 +492,13 @@ export default function ChallengeDetailPage() {
             {/* Existing submissions (titles only during submission phase) */}
             {submissions.length > 0 && (
               <div className="mt-8">
-                <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">
+                <h3 className="text-sm font-semibold text-white/50 uppercase tracking-[0.04em] mb-3">
                   Submissions ({submissions.length})
                 </h3>
                 <div className="space-y-2">
                   {submissions.map((sub) => (
                     <div key={sub.id} className="flex items-center gap-3 rounded-lg border border-white/07 bg-surface-900 px-4 py-3">
-                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[10px] font-bold text-white/40 shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[11px] font-bold text-white/40 shrink-0">
                         {(sub.author?.full_name || '?')[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -552,7 +552,7 @@ export default function ChallengeDetailPage() {
                           <span className="text-white/60 font-medium">{sub.author?.full_name || 'Anonymous'}</span>
                           <span>•</span>
                           <span>{timeAgo(sub.submitted_at)}</span>
-                          {isOwn && <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 rounded">You</span>}
+                          {isOwn && <span className="px-1.5 py-0.5 text-[11px] font-semibold text-blue-700 bg-blue-50 rounded">You</span>}
                         </div>
                         {sub.description && <p className="text-sm text-white/40 mt-2">{sub.description}</p>}
                       </div>
@@ -599,7 +599,7 @@ export default function ChallengeDetailPage() {
         {phase === 'reveal_pending' && (
           <section className="mb-10 text-center py-16">
             <div className="text-5xl mb-4">⏳</div>
-            <h2 className="text-xl font-black text-white mb-2">Results coming soon!</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Results coming soon!</h2>
             <p className="text-sm text-white/40 mb-4">
               Voting has closed. The results will be revealed in <strong>{timeUntil(challenge.reveal_at)}</strong>.
             </p>
@@ -649,7 +649,7 @@ export default function ChallengeDetailPage() {
                             <h3 className={`text-base font-semibold ${isWinner ? 'text-amber-300' : 'text-white'}`}>
                               {sub.title}
                             </h3>
-                            {isOwn && <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-400 bg-blue-400/10 rounded">You</span>}
+                            {isOwn && <span className="px-1.5 py-0.5 text-[11px] font-semibold text-blue-400 bg-blue-400/10 rounded">You</span>}
                           </div>
                           <div className="flex items-center gap-2 mt-1 text-xs text-white/50">
                             <span className="font-medium text-white/60">{sub.author?.full_name || 'Anonymous'}</span>
@@ -674,7 +674,7 @@ export default function ChallengeDetailPage() {
                           <div className={`text-lg font-bold ${isWinner ? 'text-amber-700' : 'text-white/60'}`}>
                             {sub.vote_count}
                           </div>
-                          <div className="text-[10px] text-white/50 uppercase">votes</div>
+                          <div className="text-[11px] text-white/50 uppercase">votes</div>
                         </div>
                       </div>
                     </div>
@@ -689,7 +689,7 @@ export default function ChallengeDetailPage() {
         {phase === 'upcoming' && (
           <section className="mb-10 text-center py-16">
             <div className="text-5xl mb-4">🚀</div>
-            <h2 className="text-xl font-black text-white mb-2">Challenge starts soon!</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Challenge starts soon!</h2>
             <p className="text-sm text-white/40">
               Submissions open in <strong>{timeUntil(challenge.starts_at)}</strong>
             </p>
@@ -712,7 +712,7 @@ export default function ChallengeDetailPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

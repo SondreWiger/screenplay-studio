@@ -200,7 +200,7 @@ function SupportPage() {
     return (
       <div className="min-h-screen bg-surface-950 flex flex-col items-center justify-center gap-4">
         <div className="text-5xl">🎫</div>
-        <h1 className="text-xl font-black text-white/90">Support Center</h1>
+        <h1 className="text-xl font-bold text-white/90">Support Center</h1>
         <p className="text-sm text-white/40">Sign in to submit or view support tickets.</p>
         <Link href="/auth/login?redirect=/support" className="px-5 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-600 transition-colors">
           Sign In
@@ -261,16 +261,16 @@ function SupportPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-semibold text-white/90 line-clamp-1">{ticket.subject}</p>
-                      <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded border ${STATUS_COLORS[ticket.status]}`}>
+                      <span className={`shrink-0 px-1.5 py-0.5 text-[11px] font-semibold rounded border ${STATUS_COLORS[ticket.status]}`}>
                         {ticket.status.replace('_', ' ')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] text-white/30 capitalize">{ticket.category.replace('_', ' ')}</span>
-                      <span className="text-[10px] text-white/20">·</span>
-                      <span className="text-[10px] text-white/30">{timeAgo(ticket.updated_at)}</span>
+                      <span className="text-[11px] text-white/30 capitalize">{ticket.category.replace('_', ' ')}</span>
+                      <span className="text-[11px] text-white/20">·</span>
+                      <span className="text-[11px] text-white/30">{timeAgo(ticket.updated_at)}</span>
                       {ticket.priority !== 'normal' && (
-                        <span className={`text-[10px] font-semibold capitalize ${PRIORITY_COLORS[ticket.priority]}`}>
+                        <span className={`text-[11px] font-semibold capitalize ${PRIORITY_COLORS[ticket.priority]}`}>
                           {ticket.priority}
                         </span>
                       )}
@@ -350,7 +350,7 @@ function SupportPage() {
                       <h2 className="text-lg font-bold text-white/90">{selectedTicket.subject}</h2>
                       <div className="flex items-center gap-3 mt-1 text-xs text-white/30">
                         <span className="capitalize">{selectedTicket.category.replace('_', ' ')}</span>
-                        <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded border ${STATUS_COLORS[selectedTicket.status]}`}>
+                        <span className={`px-1.5 py-0.5 text-[11px] font-semibold rounded border ${STATUS_COLORS[selectedTicket.status]}`}>
                           {selectedTicket.status.replace('_', ' ')}
                         </span>
                         <span className={`font-semibold capitalize ${PRIORITY_COLORS[selectedTicket.priority]}`}>
@@ -386,9 +386,9 @@ function SupportPage() {
                             {msg.profile?.full_name || 'User'}
                           </span>
                           {msg.is_staff && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold text-blue-700 bg-blue-50 rounded border border-blue-200">STAFF</span>
+                            <span className="px-1.5 py-0.5 text-[11px] font-bold text-blue-700 bg-blue-50 rounded border border-blue-200">STAFF</span>
                           )}
-                          <span className="text-[10px] text-white/30">{timeAgo(msg.created_at)}</span>
+                          <span className="text-[11px] text-white/30">{timeAgo(msg.created_at)}</span>
                         </div>
                         <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                           msg.is_staff
@@ -455,7 +455,7 @@ function SupportPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

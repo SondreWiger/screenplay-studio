@@ -62,9 +62,9 @@ function CourseCard({
         {/* Overlays */}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           {course.type === 'system' && (
-            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-brand-500 text-white rounded-full">Official</span>
+            <span className="px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.04em] bg-brand-500 text-white rounded-full">Official</span>
           )}
-          <span className={cn('px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full', diff.bg, diff.text)}>
+          <span className={cn('px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.04em] rounded-full', diff.bg, diff.text)}>
             {diff.label}
           </span>
         </div>
@@ -110,7 +110,7 @@ function CourseCard({
         {course.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {course.tags.slice(0, 3).map(t => (
-              <span key={t} className="px-1.5 py-0.5 text-[9px] font-medium bg-white/5 text-white/40 rounded">{t}</span>
+              <span key={t} className="px-1.5 py-0.5 text-[11px] font-medium bg-white/5 text-white/40 rounded">{t}</span>
             ))}
           </div>
         )}
@@ -119,7 +119,7 @@ function CourseCard({
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
           <span className="text-xs font-semibold text-brand-500">+{course.xp_reward} XP</span>
           {course.type === 'user' && course.creator && (
-            <Link href={`/u/${course.creator.username || ''}`} className="text-[10px] text-white/30 hover:text-white/60 transition-colors">
+            <Link href={`/u/${course.creator.username || ''}`} className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
               by {course.creator.full_name || 'Anonymous'}
             </Link>
           )}
@@ -228,9 +228,9 @@ export default function CoursesPage() {
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="text-[10px] font-bold text-brand-500 uppercase tracking-widest font-mono">Community</span>
+              <span className="text-[11px] font-medium text-brand-500 uppercase tracking-[0.04em]">Community</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
               SCREENWRITING<br />COURSES
             </h1>
             <p className="text-white/50 text-sm mt-2 max-w-md">
@@ -242,12 +242,12 @@ export default function CoursesPage() {
           {user && enrolledCount > 0 && (
             <div className="flex items-center gap-4 text-center">
               <div className="px-5 py-3 bg-white/[0.04] rounded-xl border border-white/[0.08]">
-                <div className="text-2xl font-black text-white">{enrolledCount}</div>
-                <div className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">Enrolled</div>
+                <div className="text-2xl font-bold text-white">{enrolledCount}</div>
+                <div className="text-[11px] text-white/40 uppercase tracking-[0.04em] mt-0.5">Enrolled</div>
               </div>
               <div className="px-5 py-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
-                <div className="text-2xl font-black text-emerald-400">{completedCount}</div>
-                <div className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">Completed</div>
+                <div className="text-2xl font-bold text-emerald-400">{completedCount}</div>
+                <div className="text-[11px] text-white/40 uppercase tracking-[0.04em] mt-0.5">Completed</div>
               </div>
             </div>
           )}
@@ -259,7 +259,7 @@ export default function CoursesPage() {
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-xl p-1 border border-white/[0.08]">
             {([['all','All'],['system','Official'],['user','Community'],['enrolled','My Courses']] as const).map(([v,label]) => (
               <button key={v} onClick={() => setFilter(v as any)}
-                className={cn('px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-colors',
+                className={cn('px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] rounded-lg transition-colors',
                   filter === v ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/70'
                 )}>
                 {label}
@@ -270,7 +270,7 @@ export default function CoursesPage() {
           <div className="flex items-center gap-1 bg-white/[0.04] rounded-xl p-1 border border-white/[0.08]">
             {([['all','All'],['beginner','Beginner'],['intermediate','Intermediate'],['advanced','Advanced']] as const).map(([v,label]) => (
               <button key={v} onClick={() => setDifficulty(v as any)}
-                className={cn('px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-colors',
+                className={cn('px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] rounded-lg transition-colors',
                   difficulty === v ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'
                 )}>
                 {label}
@@ -280,7 +280,7 @@ export default function CoursesPage() {
 
           {canCreate && (
             <Link href="/community/courses/create"
-              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-[10px] font-mono uppercase tracking-wider bg-brand-500/10 text-brand-500 border border-brand-500/30 rounded-xl hover:bg-brand-500/20 transition-colors">
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-[0.04em] bg-brand-500/10 text-brand-500 border border-brand-500/30 rounded-xl hover:bg-brand-500/20 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Create Course
             </Link>
@@ -298,7 +298,7 @@ export default function CoursesPage() {
               <section>
                 <div className="flex items-center gap-3 mb-5">
                   <span className="text-base">🎓</span>
-                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">Official Courses</h2>
+                  <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Official Courses</h2>
                   <div className="flex-1 h-px bg-white/[0.08]" />
                   <span className="text-xs text-white/30">{systemCourses.length} courses</span>
                 </div>
@@ -315,7 +315,7 @@ export default function CoursesPage() {
               <section>
                 <div className="flex items-center gap-3 mb-5">
                   <span className="text-base">📚</span>
-                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">Community Courses</h2>
+                  <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Community Courses</h2>
                   <div className="flex-1 h-px bg-white/[0.08]" />
                   <span className="text-xs text-white/30">{userCourses.length} courses</span>
                 </div>

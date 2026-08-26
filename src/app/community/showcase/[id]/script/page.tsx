@@ -294,7 +294,7 @@ export default function DeepDiveScriptPage() {
     return (
       <div className="min-h-screen bg-surface-950 text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">{'\u{1F4DC}'}</div>
-        <h1 className="text-2xl font-black">Script Unavailable</h1>
+        <h1 className="text-2xl font-bold">Script Unavailable</h1>
         <p className="text-white/40 text-sm max-w-md text-center">{error || 'Something went wrong.'}</p>
         <Link href={`/community/showcase/${params.id}`} className="mt-4 px-5 py-2.5 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">
           Back to Project
@@ -322,7 +322,7 @@ export default function DeepDiveScriptPage() {
             </Link>
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{script?.title || project.title}</p>
-              <p className="text-[10px] text-white/50 truncate">
+              <p className="text-[11px] text-white/50 truncate">
                 by {project.author?.full_name || 'Unknown'} &middot; {scenes.length} scenes &middot; ~{stats.pageEstimate} pages &middot; ~{stats.readingTimeMin} min read
               </p>
             </div>
@@ -343,9 +343,9 @@ export default function DeepDiveScriptPage() {
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
             </button>
             <div className="flex items-center gap-0.5 ml-1">
-              <button onClick={() => setFontSize(Math.max(9, fontSize - 1))} className="px-1.5 py-1 text-[10px] text-white/40 hover:text-white rounded border border-white/10 transition">A&minus;</button>
-              <span className="text-[10px] text-white/25 w-5 text-center tabular-nums">{fontSize}</span>
-              <button onClick={() => setFontSize(Math.min(18, fontSize + 1))} className="px-1.5 py-1 text-[10px] text-white/40 hover:text-white rounded border border-white/10 transition">A+</button>
+              <button onClick={() => setFontSize(Math.max(9, fontSize - 1))} className="px-1.5 py-1 text-[11px] text-white/40 hover:text-white rounded border border-white/10 transition">A&minus;</button>
+              <span className="text-[11px] text-white/25 w-5 text-center tabular-nums">{fontSize}</span>
+              <button onClick={() => setFontSize(Math.min(18, fontSize + 1))} className="px-1.5 py-1 text-[11px] text-white/40 hover:text-white rounded border border-white/10 transition">A+</button>
             </div>
           </div>
         </div>
@@ -361,7 +361,7 @@ export default function DeepDiveScriptPage() {
                 <button
                   key={tab}
                   onClick={() => setSidebarTab(tab)}
-                  className={`flex-1 py-2.5 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+                  className={`flex-1 py-2.5 text-[11px] font-medium uppercase tracking-[0.04em] transition-colors ${
                     sidebarTab === tab ? 'text-amber-400 border-b-2 border-amber-500' : 'text-white/50 hover:text-white/50'
                   }`}
                 >
@@ -390,7 +390,7 @@ export default function DeepDiveScriptPage() {
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-bold tabular-nums shrink-0 w-6 text-center rounded ${
+                          <span className={`text-[11px] font-bold tabular-nums shrink-0 w-6 text-center rounded ${
                             activeSceneId === scene.id ? 'text-amber-400' : 'text-white/25'
                           }`}>{scene.number}</span>
                           <span className={`text-xs truncate ${activeSceneId === scene.id ? 'text-white' : 'text-white/50 group-hover:text-white/70'}`}>
@@ -399,14 +399,14 @@ export default function DeepDiveScriptPage() {
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 ml-8">
                           {scene.setting && (
-                            <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
+                            <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${
                               scene.setting.startsWith('INT') ? 'bg-blue-500/10 text-blue-400' : 'bg-green-500/10 text-green-400'
                             }`}>{scene.setting}</span>
                           )}
                           {scene.timeOfDay && (
-                            <span className="text-[9px] text-white/20">{scene.timeOfDay}</span>
+                            <span className="text-[11px] text-white/20">{scene.timeOfDay}</span>
                           )}
-                          <span className="text-[9px] text-white/15 ml-auto">{scene.lineCount} lines</span>
+                          <span className="text-[11px] text-white/15 ml-auto">{scene.lineCount} lines</span>
                         </div>
                       </button>
                     ))}
@@ -429,12 +429,12 @@ export default function DeepDiveScriptPage() {
                   <div className="space-y-1">
                     {filteredChars.map((char, i) => (
                       <div key={char.name} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-900/5 transition group">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: char.color + '20', color: char.color }}>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0" style={{ backgroundColor: char.color + '20', color: char.color }}>
                           {i + 1}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-medium text-white/70 group-hover:text-white/90 truncate">{char.name}</p>
-                          <p className="text-[10px] text-white/25">{char.lineCount} lines &middot; {char.dialogueWords} words</p>
+                          <p className="text-[11px] text-white/25">{char.lineCount} lines &middot; {char.dialogueWords} words</p>
                         </div>
                         <div className="w-16 h-1.5 bg-surface-900/5 rounded-full overflow-hidden shrink-0">
                           <div className="h-full rounded-full" style={{
@@ -464,7 +464,7 @@ export default function DeepDiveScriptPage() {
                       { label: 'Script Version', value: `v${script?.version || 1}` },
                     ].map(({ label, value }) => (
                       <div key={label} className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5">
-                        <p className="text-[10px] text-white/25 uppercase tracking-wider">{label}</p>
+                        <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">{label}</p>
                         <p className="text-lg font-bold text-white/80 mt-0.5">{value}</p>
                       </div>
                     ))}
@@ -472,14 +472,14 @@ export default function DeepDiveScriptPage() {
 
                   {/* Dialogue vs Action ratio */}
                   <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
-                    <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Dialogue vs Action</p>
+                    <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Dialogue vs Action</p>
                     <div className="flex items-center gap-2 mb-1">
                       <div className="flex-1 h-3 bg-surface-900/5 rounded-full overflow-hidden flex">
                         <div className="h-full bg-amber-500/60" style={{ width: `${stats.dialoguePct}%` }} />
                         <div className="h-full bg-blue-500/40" style={{ width: `${100 - stats.dialoguePct}%` }} />
                       </div>
                     </div>
-                    <div className="flex justify-between text-[10px]">
+                    <div className="flex justify-between text-[11px]">
                       <span className="text-amber-400/70">{stats.dialoguePct}% Dialogue ({stats.dialogueWords.toLocaleString()}w)</span>
                       <span className="text-blue-400/70">{100 - stats.dialoguePct}% Action ({stats.actionWords.toLocaleString()}w)</span>
                     </div>
@@ -487,7 +487,7 @@ export default function DeepDiveScriptPage() {
 
                   {/* Scene breakdown */}
                   <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
-                    <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Scenes</p>
+                    <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Scenes</p>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-blue-400/70">{'\u{1F3E0}'} Interior</span>
@@ -514,13 +514,13 @@ export default function DeepDiveScriptPage() {
 
                   {/* Top 5 characters */}
                   <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
-                    <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Top Characters</p>
+                    <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Top Characters</p>
                     <div className="space-y-2">
                       {characterStats.slice(0, 5).map((c, i) => (
                         <div key={c.name} className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold w-4 text-center" style={{ color: c.color }}>{i + 1}</span>
+                          <span className="text-[11px] font-bold w-4 text-center" style={{ color: c.color }}>{i + 1}</span>
                           <span className="text-xs text-white/60 flex-1 truncate">{c.name}</span>
-                          <span className="text-[10px] text-white/25 tabular-nums">{c.dialogueWords}w</span>
+                          <span className="text-[11px] text-white/25 tabular-nums">{c.dialogueWords}w</span>
                         </div>
                       ))}
                     </div>
@@ -528,7 +528,7 @@ export default function DeepDiveScriptPage() {
 
                   {/* Keyboard shortcuts */}
                   <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-3">
-                    <p className="text-[10px] text-white/25 uppercase tracking-wider mb-2">Keyboard</p>
+                    <p className="text-[11px] text-white/55 uppercase tracking-[0.04em] mb-2">Keyboard</p>
                     <div className="space-y-1.5">
                       {[
                         { key: 'T', desc: 'Toggle sidebar' },
@@ -536,8 +536,8 @@ export default function DeepDiveScriptPage() {
                         { key: 'K', desc: 'Previous scene' },
                       ].map(({ key, desc }) => (
                         <div key={key} className="flex items-center gap-2">
-                          <kbd className="text-[10px] font-mono bg-surface-900/10 text-white/50 px-1.5 py-0.5 rounded">{key}</kbd>
-                          <span className="text-[10px] text-white/50">{desc}</span>
+                          <kbd className="text-[11px] font-mono bg-surface-900/10 text-white/50 px-1.5 py-0.5 rounded">{key}</kbd>
+                          <span className="text-[11px] text-white/50">{desc}</span>
                         </div>
                       ))}
                     </div>
@@ -554,12 +554,12 @@ export default function DeepDiveScriptPage() {
             {/* Script header card */}
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20">
+                <span className="px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.04em] text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20">
                   Deep Dive
                 </span>
-                <span className="text-[10px] text-white/20 uppercase tracking-widest">Read-Only</span>
+                <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Read-Only</span>
               </div>
-              <h1 className="text-3xl font-black tracking-tight">{script?.title || project.title}</h1>
+              <h1 className="text-3xl font-bold tracking-tight">{script?.title || project.title}</h1>
               <p className="text-sm text-white/40 mt-1">
                 Written by {project.author?.full_name || 'Unknown'}
               </p>
@@ -584,7 +584,7 @@ export default function DeepDiveScriptPage() {
               {hasTitlePage && (
                 <div className={`flex flex-col items-center justify-center mb-12 pb-8 border-b ${darkScript ? 'border-white/10' : 'border-white/10'}`} style={{ minHeight: '300px' }}>
                   <div className="text-center space-y-2">
-                    {titlePage.title && <h2 className="text-2xl font-black uppercase">{titlePage.title}</h2>}
+                    {titlePage.title && <h2 className="text-2xl font-semibold uppercase">{titlePage.title}</h2>}
                     {titlePage.credit && <p className="text-sm">{titlePage.credit}</p>}
                     {titlePage.author && <p className="text-base">{titlePage.author}</p>}
                     {titlePage.source && <p className={`text-sm italic ${darkScript ? 'text-white/40' : ''}`}>{titlePage.source}</p>}
@@ -617,7 +617,7 @@ export default function DeepDiveScriptPage() {
                     style={charColor && !isScene ? { borderLeft: `3px solid ${charColor}`, paddingLeft: '8px', backgroundColor: darkScript ? `${charColor}08` : `${charColor}06` } : undefined}
                   >
                     {sceneNum && showSceneNumbers && (
-                      <span className={`absolute -left-14 top-0.5 text-[10px] font-bold select-none ${darkScript ? 'text-white/20' : 'text-gray-300'}`}>
+                      <span className={`absolute -left-14 top-0.5 text-[11px] font-bold select-none ${darkScript ? 'text-white/20' : 'text-gray-300'}`}>
                         {sceneNum}
                       </span>
                     )}
@@ -638,8 +638,8 @@ export default function DeepDiveScriptPage() {
           {/* Footer */}
           <footer className="border-t border-white/[0.04] py-6 px-6 mt-8">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <span className="text-[10px] text-white/20">Screenplay Studio &mdash; Deep Dive</span>
-              <Link href={`/community/showcase/${params.id}`} className="text-[10px] text-white/50 hover:text-amber-400 transition-colors">
+              <span className="text-[11px] text-white/20">Screenplay Studio &mdash; Deep Dive</span>
+              <Link href={`/community/showcase/${params.id}`} className="text-[11px] text-white/50 hover:text-amber-400 transition-colors">
                 Back to {project.title}
               </Link>
             </div>

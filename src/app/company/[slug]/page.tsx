@@ -247,12 +247,12 @@ export default function CompanyPage() {
             {company.logo_url ? (
               <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" loading="lazy" />
             ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-black text-white">{company.name}</h1>
+              <h1 className="text-2xl font-bold text-white">{company.name}</h1>
               {company.tagline && <p className="text-sm text-surface-400 mt-0.5">{company.tagline}</p>}
             </div>
           </div>
@@ -290,7 +290,7 @@ export default function CompanyPage() {
               ].map((stat) => (
                 <Card key={stat.label} className="p-4 text-center">
                   <span className="text-2xl">{stat.icon}</span>
-                  <p className="text-2xl font-black text-white mt-1">{stat.value}</p>
+                  <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
                   <p className="text-xs text-surface-400">{stat.label}</p>
                 </Card>
               ))}
@@ -325,7 +325,7 @@ export default function CompanyPage() {
                 <div className="space-y-3">
                   {activity.slice(0, 5).map((act) => (
                     <div key={act.id} className="flex items-center gap-3 text-sm">
-                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
                         {(act.profile as Profile | undefined)?.display_name?.[0] || '?'}
                       </div>
                       <p className="text-surface-300">
@@ -364,7 +364,7 @@ export default function CompanyPage() {
                     <p className="text-sm font-medium text-white">{(m.profile as Profile | undefined)?.display_name || (m.profile as Profile | undefined)?.full_name || 'Member'}</p>
                     <p className="text-xs text-surface-400">{m.job_title || m.role} {m.department ? `· ${m.department}` : ''}</p>
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
+                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${
                     m.role === 'owner' ? 'bg-brand-500/20 text-brand-500' :
                     m.role === 'admin' ? 'bg-blue-500/20 text-blue-400' :
                     'bg-surface-700 text-surface-300'
@@ -448,7 +448,7 @@ export default function CompanyPage() {
                         team.can_publish_community && 'Publish',
                         team.can_manage_company && 'Admin',
                       ].filter(Boolean).map((perm) => (
-                        <span key={perm as string} className="px-1.5 py-0.5 text-[10px] rounded bg-surface-800 text-surface-400">{perm}</span>
+                        <span key={perm as string} className="px-1.5 py-0.5 text-[11px] rounded bg-surface-800 text-surface-400">{perm}</span>
                       ))}
                     </div>
                     {canManage && (

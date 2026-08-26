@@ -40,7 +40,7 @@ function Rule() {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+    <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">
       {children}
     </span>
   );
@@ -171,9 +171,9 @@ export default function ComparePage() {
         <div className="max-w-screen-lg mx-auto px-6 h-12 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-xs" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-xs" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-xs font-black text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
+            <span className="text-xs font-semibold text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
           </Link>
           <div className="flex items-center gap-5">
             <Link href="/" className="text-xs text-white/35 hover:text-white/70 transition-colors">Home</Link>
@@ -191,7 +191,7 @@ export default function ComparePage() {
         <section className="max-w-screen-lg mx-auto px-6 pt-20 pb-16">
           <Eyebrow>Comparison</Eyebrow>
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6"
             style={{ letterSpacing: '-0.04em', lineHeight: 1.05 }}
           >
             Screenplay Studio
@@ -210,7 +210,7 @@ export default function ComparePage() {
         {/* ── Feature Comparison Table ── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16">
           <Eyebrow>Feature comparison</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
             Side by side
           </h2>
           <div className="overflow-x-auto">
@@ -249,7 +249,7 @@ export default function ComparePage() {
         {/* ── Why Screenplay Studio wins ── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16">
           <Eyebrow>The difference</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
             What you get with Screenplay Studio
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -290,13 +290,13 @@ export default function ComparePage() {
           <section key={comp.id}>
             <section className="max-w-screen-lg mx-auto px-6 py-16">
               <Eyebrow>vs {comp.name}</Eyebrow>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
                 {comp.name}: {comp.tagline}
               </h2>
               <p className="text-sm text-white/40 mb-6">{comp.price}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-xs font-bold text-white/60 mb-3 uppercase tracking-wider">What {comp.name} does well</p>
+                  <p className="text-xs font-medium text-white/60 mb-3 uppercase tracking-[0.04em]">What {comp.name} does well</p>
                   <ul className="space-y-2">
                     {comp.pros.map((pro) => (
                       <li key={pro} className="flex items-start gap-2 text-xs text-white/45 leading-relaxed">
@@ -307,7 +307,7 @@ export default function ComparePage() {
                   </ul>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white/60 mb-3 uppercase tracking-wider">What Screenplay Studio covers that {comp.name} does not</p>
+                  <p className="text-xs font-medium text-white/60 mb-3 uppercase tracking-[0.04em]">What Screenplay Studio covers that {comp.name} does not</p>
                   <ul className="space-y-2">
                     {comp.cons.map((con) => (
                       <li key={con} className="flex items-start gap-2 text-xs text-white/35 leading-relaxed">
@@ -328,7 +328,7 @@ export default function ComparePage() {
         {/* ── Honest trade-offs ── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16">
           <Eyebrow>Honest trade-offs</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-5" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-5" style={{ letterSpacing: '-0.03em' }}>
             Where Screenplay Studio still lags
           </h2>
           <div className="max-w-2xl space-y-4 text-sm text-white/45 leading-relaxed">
@@ -361,14 +361,14 @@ export default function ComparePage() {
 
         {/* ── CTA ── */}
         <section className="max-w-screen-lg mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl sm:text-4xl font-black text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
             See for yourself.
           </h2>
           <p className="text-sm text-white/40 mb-8">No card. No limit. No watermarks.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/register"
-              className="px-6 py-3 text-sm font-black text-white uppercase tracking-tight transition-opacity hover:opacity-90"
+              className="px-6 py-3 text-sm font-semibold text-white uppercase tracking-tight transition-opacity hover:opacity-90"
               style={{ background: ORANGE }}
             >
               Get Started Free
@@ -389,7 +389,7 @@ export default function ComparePage() {
         <div className="max-w-screen-lg mx-auto px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
             <span className="text-xs text-white/20">Screenplay Studio — free & open source</span>
           </div>
@@ -402,7 +402,7 @@ export default function ComparePage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/60 hover:text-brand-500"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/60 hover:text-brand-500"
             >
               Northem Development ♥ Oslo
             </a>

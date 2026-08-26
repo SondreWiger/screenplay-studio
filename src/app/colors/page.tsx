@@ -52,7 +52,7 @@ function ThemeCard({ theme }: { theme: ThemeRow }) {
             <p className="text-xs text-surface-400 line-clamp-2 mb-3">{theme.description}</p>
           )}
 
-          <div className="flex items-center justify-between text-[10px] text-surface-500">
+          <div className="flex items-center justify-between text-[11px] text-surface-500">
             <span>by {theme.author_name || 'Anonymous'}</span>
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">

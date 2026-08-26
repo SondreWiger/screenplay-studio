@@ -33,8 +33,8 @@ interface CreatorStats {
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-surface-500 mb-1">{label}</p>
-      <p className="text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>{value}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-surface-500 mb-1">{label}</p>
+      <p className="text-3xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>{value}</p>
       {sub && <p className="text-xs text-surface-500 mt-1">{sub}</p>}
     </div>
   );
@@ -179,7 +179,7 @@ export default function CreatorSettingsPage() {
   return (
     <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>Creator Program</h1>
+          <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>Creator Program</h1>
           <p className="text-surface-400 text-sm mt-1">Share your referral link, grow the community, earn when payouts go live.</p>
         </div>
 
@@ -238,7 +238,7 @@ export default function CreatorSettingsPage() {
         {creator?.status === 'pending' && (
           <div className="p-6 rounded-xl border border-amber-500/20 bg-surface-900/60">
             <div className="flex items-center gap-3 mb-3">
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded border text-amber-400 border-amber-500/30 bg-amber-500/10">Under Review</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-1 rounded border text-amber-400 border-amber-500/30 bg-amber-500/10">Under Review</span>
             </div>
             <p className="text-sm text-surface-300">Your application is in the queue. We'll notify you once it's reviewed — usually within a few days.</p>
             <p className="text-xs text-surface-500 mt-2">Applied {new Date(creator.applied_at).toLocaleDateString()}</p>
@@ -249,7 +249,7 @@ export default function CreatorSettingsPage() {
         {creator?.status === 'rejected' && (
           <div className="p-6 rounded-xl border border-red-500/20 bg-surface-900/60">
             <div className="flex items-center gap-3 mb-3">
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded border text-red-400 border-red-500/30 bg-red-500/10">Not Approved</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-1 rounded border text-red-400 border-red-500/30 bg-red-500/10">Not Approved</span>
             </div>
             {creator.rejected_reason && (
               <p className="text-sm text-surface-300 mb-2">{creator.rejected_reason}</p>
@@ -265,7 +265,7 @@ export default function CreatorSettingsPage() {
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-base font-semibold text-white">Your referral link</h2>
-                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border text-emerald-400 border-emerald-500/30 bg-emerald-500/10">Active</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border text-emerald-400 border-emerald-500/30 bg-emerald-500/10">Active</span>
               </div>
               <p className="text-xs text-surface-500 mb-3">Share this link. Anyone who signs up through it counts toward your stats.</p>
               <div className="flex items-center gap-2">
@@ -285,7 +285,7 @@ export default function CreatorSettingsPage() {
             {/* Stats */}
             {stats && (
               <div>
-                <h2 className="text-sm font-semibold text-white mb-3 uppercase tracking-wider">Your Stats</h2>
+                <h2 className="text-sm font-semibold text-white mb-3 uppercase tracking-[0.04em]">Your Stats</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <StatCard label="Link visits" value={stats.total_visits} sub="All time" />
                   <StatCard label="Sign-ups" value={stats.total_signups} sub="All time" />
@@ -314,7 +314,7 @@ export default function CreatorSettingsPage() {
                         </span>
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-mono text-white">{p.amount} NOK</span>
-                          <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                          <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                             p.status === 'paid'
                               ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
                               : 'text-amber-400 border-amber-500/30 bg-amber-500/10'

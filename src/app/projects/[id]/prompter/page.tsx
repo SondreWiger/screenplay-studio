@@ -175,7 +175,7 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
             <div className="w-px h-4 bg-surface-700" />
 
             {/* Speed */}
-            <span className="text-[10px] text-surface-500">Speed:</span>
+            <span className="text-[11px] text-surface-500">Speed:</span>
             <input
               type="range" min="0" max="10" value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}

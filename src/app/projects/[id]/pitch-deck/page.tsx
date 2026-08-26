@@ -203,16 +203,16 @@ export default function PitchDeckPage() {
               )}
             >
               <div>
-                <span className="text-[10px] font-bold tracking-widest uppercase text-surface-500 mb-1 block">Slide {idx + 1}</span>
+                <span className="text-[11px] font-medium tracking-[0.04em] uppercase text-surface-500 mb-1 block">Slide {idx + 1}</span>
                 <span className={cn('text-sm font-medium', activeSlide === slide.id ? 'text-brand-400' : 'text-surface-300 group-hover:text-white')}>{slide.label}</span>
               </div>
             </button>
           ))}
           
           <div className="mt-8 p-4 rounded-xl bg-surface-900 border border-surface-800">
-            <h3 className="text-xs font-bold text-surface-400 uppercase tracking-wider mb-2">Tips</h3>
+            <h3 className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em] mb-2">Tips</h3>
             <p className="text-xs text-surface-500 leading-relaxed mb-3">To edit the content of these slides, update the details in your project settings, synopsis, and character profiles.</p>
-            <p className="text-[10px] text-surface-600 font-mono">Use arrow keys to navigate</p>
+            <p className="text-[11px] text-surface-600 font-mono">Use arrow keys to navigate</p>
           </div>
         </div>
 
@@ -249,7 +249,7 @@ export default function PitchDeckPage() {
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
-                      className="text-7xl font-black text-white mb-6 tracking-tight"
+                      className="text-7xl font-bold text-white mb-6 tracking-tight"
                     >
                       {project.title}
                     </motion.h1>
@@ -263,7 +263,7 @@ export default function PitchDeckPage() {
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.5 }}
-                      className="text-xl text-surface-300 uppercase tracking-widest font-medium"
+                      className="text-xl text-surface-300 uppercase tracking-[0.04em] font-medium"
                     >
                       A {project.genre?.join(' / ') || 'Project'}
                     </motion.p>
@@ -274,22 +274,22 @@ export default function PitchDeckPage() {
               {activeSlide === 'logline' && (
                 <SlideWrapper id="logline">
                   <div className="w-full h-full flex flex-col justify-center max-w-5xl mx-auto">
-                    <h2 className="text-brand-500 font-bold tracking-widest uppercase mb-4">Logline</h2>
+                    <h2 className="text-brand-500 font-medium tracking-[0.04em] uppercase mb-4">Logline</h2>
                     <p className="text-4xl md:text-5xl font-medium text-white leading-tight mb-16">
                       "{project.logline || 'No logline written yet.'}"
                     </p>
                     
                     <div className="grid grid-cols-3 gap-12 pt-12 border-t border-white/10">
                       <div>
-                        <span className="block text-surface-500 uppercase tracking-wider text-sm font-bold mb-2">Format</span>
+                        <span className="block text-surface-500 uppercase tracking-[0.04em] text-sm font-medium mb-2">Format</span>
                         <span className="text-2xl text-white capitalize">{project.format || project.project_type || 'Feature Film'}</span>
                       </div>
                       <div>
-                        <span className="block text-surface-500 uppercase tracking-wider text-sm font-bold mb-2">Genre</span>
+                        <span className="block text-surface-500 uppercase tracking-[0.04em] text-sm font-medium mb-2">Genre</span>
                         <span className="text-2xl text-white">{project.genre?.join(', ') || 'Unspecified'}</span>
                       </div>
                       <div>
-                        <span className="block text-surface-500 uppercase tracking-wider text-sm font-bold mb-2">Target Length</span>
+                        <span className="block text-surface-500 uppercase tracking-[0.04em] text-sm font-medium mb-2">Target Length</span>
                         <span className="text-2xl text-white">{project.target_length_minutes ? `${project.target_length_minutes} min` : 'TBD'}</span>
                       </div>
                     </div>
@@ -300,7 +300,7 @@ export default function PitchDeckPage() {
               {activeSlide === 'synopsis' && (
                 <SlideWrapper id="synopsis">
                   <div className="w-full h-full flex flex-col max-w-6xl mx-auto py-8">
-                    <h2 className="text-brand-500 font-bold tracking-widest uppercase mb-12 text-xl">Synopsis</h2>
+                    <h2 className="text-brand-500 font-medium tracking-[0.04em] uppercase mb-12 text-xl">Synopsis</h2>
                     <div className="prose prose-invert prose-lg max-w-none prose-p:leading-relaxed prose-p:text-surface-200">
                       {project.synopsis ? (
                         project.synopsis.split('\n').map((para, i) => (
@@ -317,7 +317,7 @@ export default function PitchDeckPage() {
               {activeSlide === 'characters' && (
                 <SlideWrapper id="characters">
                   <div className="w-full h-full flex flex-col">
-                    <h2 className="text-brand-500 font-bold tracking-widest uppercase mb-8 text-xl shrink-0">Main Characters</h2>
+                    <h2 className="text-brand-500 font-medium tracking-[0.04em] uppercase mb-8 text-xl shrink-0">Main Characters</h2>
                     <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                         {characters.filter(c => c.is_main || c.role === 'protagonist' || c.role === 'antagonist').map((char, i) => (
@@ -332,7 +332,7 @@ export default function PitchDeckPage() {
                               <Avatar src={char.avatar_url || char.actor_photo_url} name={char.name[0]} size="lg" />
                               <div>
                                 <h3 className="text-xl font-bold text-white">{char.name}</h3>
-                                <p className="text-brand-400 text-sm uppercase tracking-wider">{char.role || 'Main Character'}</p>
+                                <p className="text-brand-400 text-sm uppercase tracking-[0.04em]">{char.role || 'Main Character'}</p>
                               </div>
                             </div>
                             <p className="text-surface-300 text-sm leading-relaxed line-clamp-4">
@@ -352,7 +352,7 @@ export default function PitchDeckPage() {
               {activeSlide === 'vision' && (
                 <SlideWrapper id="vision">
                   <div className="w-full h-full flex flex-col">
-                    <h2 className="text-brand-500 font-bold tracking-widest uppercase mb-8 text-xl">Vision / Tone</h2>
+                    <h2 className="text-brand-500 font-medium tracking-[0.04em] uppercase mb-8 text-xl">Vision / Tone</h2>
                     <div className="flex-1 grid grid-cols-3 gap-4">
                       {moodboardImages.length > 0 ? moodboardImages.map((img, i) => (
                         <motion.div 

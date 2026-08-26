@@ -114,7 +114,7 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
             />
           ) : (
             <div
-              className="w-8 h-8 flex items-center justify-center text-[11px] font-black text-white rounded-full shrink-0"
+              className="w-8 h-8 flex items-center justify-center text-[11px] font-semibold text-white rounded-full shrink-0"
               style={{ background: '#FF5F1F' }}
             >
               {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -124,13 +124,13 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
             <p className="text-[13px] font-semibold text-white leading-tight">
               {user.full_name || user.username || 'My Stats'}
             </p>
-            <p className="text-[10px] text-white/40 font-mono">community stats</p>
+            <p className="text-[11px] text-white/40 font-mono">community stats</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
           <Link
             href={`/u/${user.username || user.id}`}
-            className="text-[10px] font-mono uppercase tracking-widest text-white/40 hover:text-brand-500 transition-colors"
+            className="text-[11px] uppercase tracking-[0.04em] text-white/40 hover:text-brand-500 transition-colors"
             onClick={onClose}
           >
             Profile ↗
@@ -155,10 +155,10 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
             { label: 'Comments', value: totalComments },
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col items-center py-3 gap-0.5">
-              <span className="text-lg font-black text-white tabular-nums">
+              <span className="text-lg font-bold text-white tabular-nums">
                 {value.toLocaleString()}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
+              <span className="text-[11px] uppercase tracking-[0.04em] text-white/40">
                 {label}
               </span>
             </div>
@@ -196,13 +196,13 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
               <p className="text-[13px] text-white/80 group-hover:text-white truncate leading-snug">
                 {p.title || 'Untitled Post'}
               </p>
-              <div className="flex items-center gap-3 mt-1 text-[10px] font-mono text-white/30">
+              <div className="flex items-center gap-3 mt-1 text-[11px] font-mono text-white/30">
                 <span>↑ {p.upvote_count || 0}</span>
                 <span>💬 {p.comment_count || 0}</span>
                 <span>👁 {p.view_count || 0}</span>
                 {p.role === 'collaborator' && (
                   <span
-                    className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold text-green-400"
+                    className="px-1.5 py-0.5 rounded text-[11px] uppercase tracking-[0.04em] font-medium text-green-400"
                     style={{ background: 'rgb(74 222 128 / 0.12)' }}
                   >
                     Collab
@@ -218,12 +218,12 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
       <div className="px-4 py-2.5 border-t border-white/8 flex items-center justify-between">
         <Link
           href="/community"
-          className="text-[10px] font-mono text-white/30 hover:text-white/60 transition-colors"
+          className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors"
           onClick={onClose}
         >
           All posts ↗
         </Link>
-        <span className="text-[10px] font-mono text-white/20">
+        <span className="text-[11px] font-mono text-white/20">
           {posts.length} post{posts.length !== 1 ? 's' : ''}
         </span>
       </div>

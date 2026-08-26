@@ -26,7 +26,7 @@ function Rule() {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+    <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">
       {children}
     </span>
   );
@@ -290,9 +290,9 @@ export default function TutorialsPage() {
         <div className="max-w-screen-lg mx-auto px-6 h-12 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-xs" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-xs" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-xs font-black text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
+            <span className="text-xs font-semibold text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
           </Link>
           <div className="flex items-center gap-5">
             <Link href="/" className="text-xs text-white/35 hover:text-white/70 transition-colors">Home</Link>
@@ -310,7 +310,7 @@ export default function TutorialsPage() {
         <section className="max-w-screen-lg mx-auto px-6 pt-20 pb-10">
           <Eyebrow>Tutorials</Eyebrow>
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6"
             style={{ letterSpacing: '-0.04em', lineHeight: 1.05 }}
           >
             LEARN EVERY TOOL.<br />
@@ -329,7 +329,7 @@ export default function TutorialsPage() {
               <a
                 key={t.id}
                 href={`#${t.id}`}
-                className="text-[11px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-lg transition-colors"
+                className="text-[11px] uppercase tracking-[0.04em] px-3 py-1.5 rounded-lg transition-colors"
                 style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 <span className="mr-1.5">{t.icon}</span>
@@ -350,7 +350,7 @@ export default function TutorialsPage() {
               <div className="flex items-start gap-4 mb-6">
                 <span className="text-3xl">{tutorial.icon}</span>
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
                     {tutorial.title}
                   </h2>
                   <p className="text-sm sm:text-base text-white/50">{tutorial.subtitle}</p>
@@ -376,7 +376,7 @@ export default function TutorialsPage() {
                     />
                     <div className="flex items-start gap-3 pl-3">
                       <span
-                        className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black"
+                        className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold"
                         style={{ background: `${ORANGE}20`, color: ORANGE }}
                       >
                         {i + 1}
@@ -410,7 +410,7 @@ export default function TutorialsPage() {
                 <div className="mt-6">
                   <Link
                     href={tutorial.path}
-                    className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition-colors"
+                    className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.04em] transition-colors"
                     style={{ color: ORANGE }}
                   >
                     Try it now
@@ -430,7 +430,7 @@ export default function TutorialsPage() {
         <Rule />
         <section className="max-w-screen-lg mx-auto px-6 py-16">
           <Eyebrow>Reference</Eyebrow>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
             Keyboard Shortcuts
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -452,7 +452,7 @@ export default function TutorialsPage() {
               >
                 <span className="text-xs text-white/50">{action}</span>
                 <kbd
-                  className="text-[10px] font-mono px-2 py-1 rounded shrink-0"
+                  className="text-[11px] font-mono px-2 py-1 rounded shrink-0"
                   style={{ background: 'rgba(255,255,255,0.08)', color: ORANGE }}
                 >
                   {keys}
@@ -465,7 +465,7 @@ export default function TutorialsPage() {
         {/* ── CTA ────────────────────────────────────────── */}
         <Rule />
         <section className="max-w-screen-lg mx-auto px-6 py-20 text-center">
-          <h2 className="text-3xl sm:text-4xl font-black text-white mb-4" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ letterSpacing: '-0.03em' }}>
             Ready to start?
           </h2>
           <p className="text-sm sm:text-base text-white/40 mb-8 max-w-lg mx-auto">

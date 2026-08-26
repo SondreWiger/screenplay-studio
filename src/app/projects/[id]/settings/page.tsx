@@ -161,7 +161,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-3xl">
-      <h1 className="text-xl sm:text-2xl font-black text-white mb-4 md:mb-8">{t('project.settings')}</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-white mb-4 md:mb-8">{t('project.settings')}</h1>
 
       {/* General settings */}
       <Card className="p-4 sm:p-6 mb-4 sm:mb-6">

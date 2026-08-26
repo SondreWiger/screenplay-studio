@@ -672,7 +672,7 @@ export default function ReportsPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4 font-bold text-surface-400">R</div>
-          <h2 className="text-xl font-black text-white mb-2">Production Reports</h2>
+          <h2 className="text-xl font-bold text-white mb-2">Production Reports</h2>
           <p className="text-sm text-surface-400 mb-6">Generate call sheets, DOOD reports, daily production reports, and more.</p>
           <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
         </Card>
@@ -688,7 +688,7 @@ export default function ReportsPage() {
       <ToastContainer />
 
       <div>
-        <h1 className="text-2xl font-black text-white">Production Reports</h1>
+        <h1 className="text-2xl font-bold text-white">Production Reports</h1>
         <p className="text-sm text-surface-400 mt-1">
           Generate industry-standard production documents from live project data
         </p>
@@ -703,8 +703,8 @@ export default function ReportsPage() {
           { label: 'Cast', value: String(characters.length), sub: `${characters.filter(c => c.is_main).length} leads` },
         ].map(stat => (
           <div key={stat.label} className="bg-surface-900 border border-surface-800 rounded-xl p-4">
-            <p className="text-xs text-surface-500 uppercase tracking-wider">{stat.label}</p>
-            <p className="text-xl font-black text-white mt-1">{stat.value}</p>
+            <p className="text-xs text-surface-500 uppercase tracking-[0.04em]">{stat.label}</p>
+            <p className="text-xl font-bold text-white mt-1">{stat.value}</p>
             <p className="text-xs text-surface-500">{stat.sub}</p>
           </div>
         ))}
@@ -756,7 +756,7 @@ export default function ReportsPage() {
           {/* Call Sheet: date picker */}
           {selectedType === 'call_sheet' && (
             <div className="space-y-2">
-              <label className="text-xs font-medium text-surface-400 uppercase tracking-wider">
+              <label className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em]">
                 Select a Schedule Date
               </label>
               {scheduleEvents.length === 0 ? (
@@ -822,7 +822,7 @@ export default function ReportsPage() {
       {/* ── Generated Reports History ──────────────────────────── */}
       {reports.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-surface-400 uppercase tracking-wider">Generated Reports</h3>
+          <h3 className="text-sm font-semibold text-surface-400 uppercase tracking-[0.04em]">Generated Reports</h3>
           <div className="space-y-2">
             {reports.map((r) => {
               const rtInfo = REPORT_TYPES.find(rt => rt.type === r.type)!;

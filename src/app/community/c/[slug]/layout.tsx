@@ -103,7 +103,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
             </div>
 
             <div className="flex-1 min-w-0 pb-1">
-              <h2 className="text-lg font-black leading-tight" style={{ letterSpacing: '-0.02em' }}>{community.name}</h2>
+              <h2 className="text-lg font-bold leading-tight" style={{ letterSpacing: '-0.02em' }}>{community.name}</h2>
               <p className="text-[11px] text-white/40">c/{community.slug}</p>
             </div>
 

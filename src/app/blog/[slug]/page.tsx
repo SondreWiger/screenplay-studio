@@ -192,7 +192,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
         <nav className="backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="max-w-4xl mx-auto px-6 h-16 flex items-center">
-            <Link href="/blog" className="text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors flex items-center gap-2">
+            <Link href="/blog" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               Back to Blog
             </Link>
@@ -200,9 +200,9 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         </nav>
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-10 h-10 mb-6" style={{ background: '#FF5F1F' }} />
-          <h1 className="text-3xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>POST NOT FOUND</h1>
+          <h1 className="text-3xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>POST NOT FOUND</h1>
           <p className="text-white/40">This post may have been removed or doesn&apos;t exist.</p>
-          <Link href="/blog" className="mt-8 px-6 py-3 text-sm font-black text-white uppercase tracking-wider transition-opacity hover:opacity-80" style={{ background: '#FF5F1F' }}>
+          <Link href="/blog" className="mt-8 px-6 py-3 text-sm font-semibold text-white uppercase tracking-[0.04em] transition-opacity hover:opacity-80" style={{ background: '#FF5F1F' }}>
             Browse all posts
           </Link>
         </div>
@@ -218,20 +218,20 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       {/* Nav */}
       <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/blog" className="text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors flex items-center gap-2">
+          <Link href="/blog" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Blog
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+            <Link href="/" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
               Home
             </Link>
-            <Link href="/community" className="text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+            <Link href="/community" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
               Community
             </Link>
             {user ? (
               <>
-                <button onClick={handleSignOut} className="text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+                <button onClick={handleSignOut} className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
                   Sign Out
                 </button>
                 <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 </div>
               </>
             ) : (
-              <Link href={`/auth/login?redirect=/blog/${params.slug}`} className="text-xs font-mono uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+              <Link href={`/auth/login?redirect=/blog/${params.slug}`} className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
                 Sign In
               </Link>
             )}
@@ -259,12 +259,12 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <header className="pt-16 pb-10">
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags?.map((tag) => (
-                <span key={tag} className="px-3 py-1 text-xs font-mono uppercase tracking-widest text-brand-500" style={{ border: '1px solid rgba(255,95,31,0.35)' }}>
+                <span key={tag} className="px-3 py-1 text-xs uppercase tracking-[0.04em] text-brand-500" style={{ border: '1px solid rgba(255,95,31,0.35)' }}>
                   {tag}
                 </span>
               ))}
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-white leading-tight" style={{ letterSpacing: '-0.03em' }}>
+            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight" style={{ letterSpacing: '-0.03em' }}>
               {post.title}
             </h1>
             {post.excerpt && (
@@ -281,7 +281,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 </div>
               )}
               <div>
-                <p className="text-sm font-black text-white" style={{ letterSpacing: '-0.02em' }}>
+                <p className="text-sm font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
                   {post.author?.full_name || 'Screenplay Studio'}
                 </p>
                 <p className="text-xs font-mono text-white/40">
@@ -319,7 +319,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                       className="scroll-mt-24"
                     >
                       {section.heading && (
-                        <h2 className="text-2xl font-black text-white mb-4 pb-2" style={{ letterSpacing: '-0.03em', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                        <h2 className="text-2xl font-bold text-white mb-4 pb-2" style={{ letterSpacing: '-0.03em', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                           {section.heading}
                         </h2>
                       )}
@@ -341,13 +341,13 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           {/* Tags footer */}
           {post.tags && post.tags.length > 0 && (
             <div className="pt-6 pb-12" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-white/30 mb-3">Tags</p>
+              <p className="text-[11px] uppercase tracking-[0.04em] text-white/55 mb-3">Tags</p>
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <Link
                     key={tag}
                     href={`/blog?tag=${tag}`}
-                    className="px-3 py-1.5 text-xs font-mono uppercase tracking-widest text-white/50 hover:text-brand-500 transition-colors"
+                    className="px-3 py-1.5 text-xs uppercase tracking-[0.04em] text-white/50 hover:text-brand-500 transition-colors"
                     style={{ border: '1px solid rgba(255,255,255,0.1)' }}
                   >
                     {tag}
@@ -360,7 +360,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           {/* Comments section */}
           {post.allow_comments && (
             <section className="pt-12 pb-24" id="comments" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-              <h2 className="text-2xl font-black text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
+              <h2 className="text-2xl font-bold text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
                 COMMENTS
                 {comments.length > 0 && (
                   <span className="ml-2 text-sm font-normal text-white/30">
@@ -442,7 +442,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         {hasToC && (
           <aside className="hidden lg:block absolute right-0 top-0 w-64 pt-80">
             <div className="sticky top-24">
-              <p className="text-[9px] font-mono uppercase tracking-widest text-white/30 mb-4">
+              <p className="text-[11px] uppercase tracking-[0.04em] text-white/55 mb-4">
                 In this post
               </p>
               <nav className="space-y-1">
@@ -453,7 +453,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                       <button
                         key={idx}
                         onClick={() => scrollToSection(idx)}
-                        className={`block w-full text-left text-xs font-mono py-1.5 pl-3 border-l-2 transition-colors uppercase tracking-wide ${
+                        className={`block w-full text-left text-xs py-1.5 pl-3 border-l-2 transition-colors uppercase tracking-wide ${
                           activeSection === idx
                             ? 'border-brand-500 text-brand-500'
                             : 'border-transparent text-white/30 hover:text-white/60'
@@ -472,7 +472,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       {/* Footer */}
       <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgb(var(--surface-950))' }}>
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/blog" className="text-xs font-mono uppercase tracking-widest text-white/30 hover:text-white transition-colors">
+          <Link href="/blog" className="text-xs uppercase tracking-[0.04em] text-white/55 hover:text-white transition-colors">
             ← Back to all posts
           </Link>
           <div className="flex items-center gap-6 text-xs font-mono text-white/30">
@@ -486,7 +486,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>
@@ -533,12 +533,12 @@ function CommentCard({
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-black text-white" style={{ letterSpacing: '-0.02em' }}>{authorName}</span>
+            <span className="text-sm font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>{authorName}</span>
             <span className="text-xs font-mono text-white/30">
               {timeAgo(comment.created_at)}
             </span>
             {comment.is_pinned && (
-              <span className="px-1.5 py-0.5 text-[10px] font-mono text-brand-500" style={{ border: '1px solid rgba(255,95,31,0.4)' }}>
+              <span className="px-1.5 py-0.5 text-[11px] font-mono text-brand-500" style={{ border: '1px solid rgba(255,95,31,0.4)' }}>
                 PINNED
               </span>
             )}
@@ -590,13 +590,13 @@ function CommentCard({
                   {reply.author?.avatar_url ? (
                     <img src={reply.author.avatar_url} alt={reply.author.full_name || 'Reply author avatar'} className="w-6 h-6 rounded-full flex-shrink-0" loading="lazy" />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0">
                       {(reply.author?.full_name || reply.author_name || '?')[0]?.toUpperCase()}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-black text-white" style={{ letterSpacing: '-0.02em' }}>
+                      <span className="text-sm font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
                         {reply.author?.full_name || reply.author_name || 'Anonymous'}
                       </span>
                       <span className="text-xs font-mono text-white/30">{timeAgo(reply.created_at)}</span>

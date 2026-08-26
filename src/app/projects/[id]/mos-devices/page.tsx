@@ -181,7 +181,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
           ) : (
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-surface-900 z-10">
-                <tr className="text-[10px] text-surface-500 uppercase tracking-wider border-b border-surface-800">
+                <tr className="text-[11px] text-surface-500 uppercase tracking-[0.04em] border-b border-surface-800">
                   <th className="px-4 py-2 text-left">Status</th>
                   <th className="px-4 py-2 text-left">Name</th>
                   <th className="px-4 py-2 text-left">Type</th>
@@ -213,7 +213,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
                           <span className={cn('w-2 h-2 rounded-full', status.dot,
                             device.connection_status === 'connected' && 'animate-pulse'
                           )} />
-                          <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', status.bg)}>
+                          <span className={cn('text-[11px] px-1.5 py-0.5 rounded font-medium', status.bg)}>
                             {status.label}
                           </span>
                         </div>
@@ -243,20 +243,20 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={(e) => { e.stopPropagation(); simulateHeartbeat(device); }}
-                            className="text-[10px] px-2 py-1 rounded bg-surface-800 text-surface-400 hover:text-white transition-colors"
+                            className="text-[11px] px-2 py-1 rounded bg-surface-800 text-surface-400 hover:text-white transition-colors"
                             title="Simulate status change"
                           >
                             Ping
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); toggleActive(device); }}
-                            className="text-[10px] px-2 py-1 rounded bg-surface-800 text-surface-400 hover:text-white transition-colors"
+                            className="text-[11px] px-2 py-1 rounded bg-surface-800 text-surface-400 hover:text-white transition-colors"
                           >
                             {device.is_active ? 'Disable' : 'Enable'}
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); deleteDevice(device.id); }}
-                            className="text-[10px] px-2 py-1 rounded text-surface-500 hover:text-red-400 transition-colors"
+                            className="text-[11px] px-2 py-1 rounded text-surface-500 hover:text-red-400 transition-colors"
                           >
                             ✕
                           </button>
@@ -323,7 +323,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
                 )}>
                   {STATUS_COLORS[selectedDevice.connection_status].label}
                   {selectedDevice.last_heartbeat && (
-                    <span className="block text-[10px] opacity-75 mt-0.5">
+                    <span className="block text-[11px] opacity-75 mt-0.5">
                       Last heartbeat: {new Date(selectedDevice.last_heartbeat).toLocaleString('nb-NO')}
                     </span>
                   )}
@@ -341,8 +341,8 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
 
               {/* MOS protocol reference */}
               <div className="pt-2 border-t border-surface-800">
-                <span className="text-[10px] text-surface-500 block mb-2">MOS TCP Ports</span>
-                <div className="space-y-1 text-[10px] text-surface-400">
+                <span className="text-[11px] text-surface-500 block mb-2">MOS TCP Ports</span>
+                <div className="space-y-1 text-[11px] text-surface-400">
                   <div className="flex justify-between">
                     <span>Upper Port (MOS → NCS)</span>
                     <span className="font-mono text-white">{selectedDevice.upper_port}</span>
@@ -355,8 +355,8 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
               </div>
 
               <div className="pt-2 border-t border-surface-800">
-                <span className="text-[10px] text-surface-500 block mb-2">Timestamps</span>
-                <div className="space-y-1 text-[10px] text-surface-400">
+                <span className="text-[11px] text-surface-500 block mb-2">Timestamps</span>
+                <div className="space-y-1 text-[11px] text-surface-400">
                   <div className="flex justify-between">
                     <span>Created</span>
                     <span>{new Date(selectedDevice.created_at).toLocaleString('nb-NO')}</span>
@@ -398,7 +398,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
                   key={t.value}
                   onClick={() => setNewType(t.value)}
                   className={cn(
-                    'p-2 rounded border text-[10px] text-center transition-colors',
+                    'p-2 rounded border text-[11px] text-center transition-colors',
                     newType === t.value
                       ? 'border-brand-500 bg-brand-500/10 text-white'
                       : 'border-surface-700 text-surface-400 hover:border-surface-500'

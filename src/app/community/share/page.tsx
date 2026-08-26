@@ -472,7 +472,7 @@ export default function ShareScriptPage() {
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-black text-white tracking-tight mb-1">Create a Post</h1>
+        <h1 className="text-3xl font-bold text-white tracking-tight mb-1">Create a Post</h1>
         <p className="text-white/35 mb-8 text-sm">Share writing, scripts, or just start a discussion — always posted to a community.</p>
 
         {error && (
@@ -537,7 +537,7 @@ export default function ShareScriptPage() {
               return visible.length > 0 ? (
                 <div className="mt-1.5 rounded-xl overflow-hidden border border-white/10 divide-y divide-white/[0.05] max-h-60 overflow-y-auto bg-surface-900 shadow-2xl">
                   {!communitySearch && subCommunities.length > 0 && (
-                    <p className="px-3 py-1.5 text-[10px] font-semibold text-white/30 uppercase tracking-widest bg-white/[0.03]">Your Communities</p>
+                    <p className="px-3 py-1.5 text-[11px] font-semibold text-white/55 uppercase tracking-[0.04em] bg-white/[0.03]">Your Communities</p>
                   )}
                   {visible.map(c => {
                     const isSelected = selectedCommunities.includes(c.id);
@@ -555,8 +555,8 @@ export default function ShareScriptPage() {
                           {c.name && <p className="text-[11px] text-white/35 truncate">{c.name}{c.member_count ? ` · ${c.member_count} members` : ''}</p>}
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
-                          {isJoined && !communitySearch && <span className="text-[9px] font-bold text-brand-500">JOINED</span>}
-                          {c.posting_mode === 'require_approval' && <span className="text-[9px] text-amber-400/70">approval</span>}
+                          {isJoined && !communitySearch && <span className="text-[11px] font-bold text-brand-500">JOINED</span>}
+                          {c.posting_mode === 'require_approval' && <span className="text-[11px] text-amber-400/70">approval</span>}
                           {isSelected && (
                             <svg className="w-4 h-4 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -731,7 +731,7 @@ export default function ShareScriptPage() {
                                 {p.logline && (
                                   <p className="text-xs text-white/50 mt-0.5 line-clamp-1">{p.logline}</p>
                                 )}
-                                <div className="flex items-center gap-2 mt-1.5 text-[10px] text-white/50">
+                                <div className="flex items-center gap-2 mt-1.5 text-[11px] text-white/50">
                                   <span className="capitalize">{(p.format || '').replace('_', ' ')}</span>
                                   {p.genre?.length > 0 && <span>· {p.genre.slice(0, 2).join(', ')}</span>}
                                   <span>· {formatDate(p.updated_at)}</span>
@@ -787,7 +787,7 @@ export default function ShareScriptPage() {
                             <span className="text-xs font-semibold text-white/70">Screenplay loaded</span>
                             <span className="text-xs text-white/50">({scriptElements.length} elements)</span>
                           </div>
-                          <span className="text-[10px] text-white/50 bg-surface-800 px-2 py-0.5 rounded font-medium">
+                          <span className="text-[11px] text-white/50 bg-surface-800 px-2 py-0.5 rounded font-medium">
                             Formatted screenplay
                           </span>
                         </div>
@@ -852,7 +852,7 @@ export default function ShareScriptPage() {
                       </p>
                       <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
                         {(['fdx', 'fountain', 'txt', 'pdf'] as const).map((fmt) => (
-                          <span key={fmt} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-surface-800 text-white/40 border border-white/10">
+                          <span key={fmt} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-surface-800 text-white/40 border border-white/10">
                             .{fmt}
                             <span className="text-white/25 font-normal normal-case tracking-normal">·</span>
                             <span className="font-normal normal-case tracking-normal">{FORMAT_LABELS[fmt]}</span>
@@ -915,7 +915,7 @@ export default function ShareScriptPage() {
                             <span className="text-xs font-semibold text-white/70">Parsed successfully</span>
                             <span className="text-xs text-white/50">({scriptElements.length} elements)</span>
                           </div>
-                          <span className="text-[10px] text-white/50 bg-surface-800 px-2 py-0.5 rounded font-medium">
+                          <span className="text-[11px] text-white/50 bg-surface-800 px-2 py-0.5 rounded font-medium">
                             Formatted screenplay
                           </span>
                         </div>

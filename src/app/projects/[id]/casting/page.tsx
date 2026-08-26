@@ -430,7 +430,7 @@ export default function CastingPage() {
       <div className="p-6 flex items-center justify-center h-full">
         <Card className="max-w-md p-8 text-center">
           <div className="text-4xl mb-4">🎭</div>
-          <h2 className="text-xl font-black text-white mb-2">Casting</h2>
+          <h2 className="text-xl font-bold text-white mb-2">Casting</h2>
           <p className="text-sm text-surface-400 mb-6">
             Connect characters with team members, assign actors, and track casting status across your project.
           </p>
@@ -450,7 +450,7 @@ export default function CastingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">Casting</h1>
+          <h1 className="text-2xl font-bold text-white">Casting</h1>
           <p className="text-sm text-surface-400 mt-1">
             Connect characters with actors &amp; team members
           </p>
@@ -468,8 +468,8 @@ export default function CastingPage() {
           { label: 'Total Scenes', value: scenes.length, color: 'text-surface-300' },
         ].map((s) => (
           <div key={s.label} className="rounded-lg bg-surface-900 border border-surface-800 p-3 text-center">
-            <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
-            <p className="text-[10px] text-surface-500 uppercase tracking-wide">{s.label}</p>
+            <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-[11px] text-surface-500 uppercase tracking-wide">{s.label}</p>
           </div>
         ))}
       </div>
@@ -513,9 +513,9 @@ export default function CastingPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{link.title}</p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] text-surface-500">{new Date(link.created_at).toLocaleDateString()}</span>
-                    <span className="text-[10px] text-surface-500">{link.view_count} views</span>
-                    <span className="text-[10px] text-amber-400">{submissionCounts[link.id] || 0} submissions</span>
+                    <span className="text-[11px] text-surface-500">{new Date(link.created_at).toLocaleDateString()}</span>
+                    <span className="text-[11px] text-surface-500">{link.view_count} views</span>
+                    <span className="text-[11px] text-amber-400">{submissionCounts[link.id] || 0} submissions</span>
                     {!link.is_active && <Badge variant="default">Inactive</Badge>}
                   </div>
                 </div>
@@ -584,7 +584,7 @@ export default function CastingPage() {
                     <div className="w-6 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: c.color || '#666' }} />
                     <div className="truncate">
                       <p className="font-medium truncate">{c.name}</p>
-                      {c.age && <p className="text-[10px] text-surface-500">{c.age}{c.gender ? ` · ${c.gender}` : ''}</p>}
+                      {c.age && <p className="text-[11px] text-surface-500">{c.age}{c.gender ? ` · ${c.gender}` : ''}</p>}
                     </div>
                   </button>
                 ))}
@@ -618,7 +618,7 @@ export default function CastingPage() {
                       <option value="textarea">Long Text</option>
                       <option value="select">Select</option>
                     </select>
-                    <label className="flex items-center gap-1 text-[10px] text-surface-400 whitespace-nowrap pt-2.5">
+                    <label className="flex items-center gap-1 text-[11px] text-surface-400 whitespace-nowrap pt-2.5">
                       <input type="checkbox" checked={q.required} onChange={() => updateQuestion(idx, 'required', !q.required)} className="accent-amber-500" />
                       Req.
                     </label>
@@ -720,7 +720,7 @@ export default function CastingPage() {
                     {/* Name row */}
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="text-sm font-semibold text-white truncate">{char.name}</h3>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${roleBadgeColor(char)}`}>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium shrink-0 ${roleBadgeColor(char)}`}>
                         {roleLabel(char)}
                       </span>
                     </div>
@@ -777,7 +777,7 @@ export default function CastingPage() {
             {/* Character info header */}
             <div className="flex items-start gap-4">
               <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-black shrink-0"
+                className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shrink-0"
                 style={{
                   backgroundColor: selectedChar.color ? `${selectedChar.color}20` : '#6366f120',
                   color: selectedChar.color || '#6366f1',
@@ -809,7 +809,7 @@ export default function CastingPage() {
                 {selectedChar.personality_traits && selectedChar.personality_traits.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {selectedChar.personality_traits.map((t) => (
-                      <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-300 border border-surface-700">
+                      <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-surface-800 text-surface-300 border border-surface-700">
                         {t}
                       </span>
                     ))}
@@ -880,7 +880,7 @@ export default function CastingPage() {
                 {/* Team member picker */}
                 {showTeamPicker && teamMembers.length > 0 && (
                   <div className="rounded-lg border border-surface-700 bg-surface-800/50 p-2 max-h-48 overflow-y-auto space-y-1">
-                    <p className="text-[10px] text-surface-500 uppercase tracking-wide px-2 py-1">Project Team Members</p>
+                    <p className="text-[11px] text-surface-500 uppercase tracking-wide px-2 py-1">Project Team Members</p>
                     {teamMembers.map((member) => {
                       const memberName = member.profile.full_name || member.profile.display_name || member.profile.email;
                       return (

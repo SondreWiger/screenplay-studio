@@ -218,7 +218,7 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white">Ideas Board</h1>
+          <h1 className="text-2xl font-bold text-white">Ideas Board</h1>
           <p className="text-sm text-surface-400 mt-1">{ideas.length} ideas captured</p>
         </div>
         {canEdit && <Button onClick={() => { setSelectedIdea(null); setShowEditor(true); }}>
@@ -372,13 +372,13 @@ function IdeaCard({
       {(linkedScenes.length > 0 || linkedChars.length > 0) && (
         <div className="flex flex-wrap gap-1 mb-2">
           {linkedScenes.map((s) => (
-            <span key={s.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-500/15 border border-green-500/30 text-green-400 text-[10px] font-medium">
+            <span key={s.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-500/15 border border-green-500/30 text-green-400 text-[11px] font-medium">
               <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4" /></svg>
               {s.scene_number ? `#${s.scene_number}` : s.content.slice(0, 15)}
             </span>
           ))}
           {linkedChars.map((c) => (
-            <span key={c.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium"
+            <span key={c.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[11px] font-medium"
               style={{ backgroundColor: c.color + '20', borderColor: c.color + '50', color: c.color }}>
               {c.name}
             </span>
@@ -390,7 +390,7 @@ function IdeaCard({
         <Badge size="sm">{idea.category}</Badge>
         <div className="flex items-center gap-1">
           {Array.from({ length: 5 }).map((_, i) => (
-            <span key={i} className={cn('text-[8px]', i < idea.priority ? PRIORITY_COLORS[idea.priority] : 'text-surface-700')}>●</span>
+            <span key={i} className={cn('text-[11px]', i < idea.priority ? PRIORITY_COLORS[idea.priority] : 'text-surface-700')}>●</span>
           ))}
         </div>
       </div>
@@ -398,7 +398,7 @@ function IdeaCard({
       {idea.tags && idea.tags.length > 0 && (
         <div className="flex gap-1 mt-2 flex-wrap">
           {idea.tags.slice(0, 3).map((t) => (
-            <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400">{t}</span>
+            <span key={t} className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400">{t}</span>
           ))}
         </div>
       )}
@@ -411,7 +411,7 @@ function IdeaCard({
             <button
               onClick={(e) => { e.stopPropagation(); onOpenMenu(); }}
               className={cn(
-                'text-[10px] px-1.5 py-1 rounded transition-colors',
+                'text-[11px] px-1.5 py-1 rounded transition-colors',
                 showMenu ? 'bg-green-500/20 text-green-400' : 'text-surface-500 hover:text-green-400 hover:bg-green-500/10'
               )}
               title="Link to Scene"
@@ -420,7 +420,7 @@ function IdeaCard({
             </button>
             {showMenu && (
               <div ref={menuRef} className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border border-surface-700 bg-surface-900 shadow-xl p-1 max-h-48 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <p className="text-[10px] font-bold text-surface-500 uppercase px-2 py-1">Scenes</p>
+                <p className="text-[11px] font-medium text-surface-500 uppercase px-2 py-1">Scenes</p>
                 {scenes.length === 0 && <p className="text-xs text-surface-600 px-2 py-1">No scenes in script</p>}
                 {scenes.map((s) => (
                   <button key={s.id} onClick={() => onToggleScene(s.id)}
@@ -431,7 +431,7 @@ function IdeaCard({
                         : 'text-surface-300 hover:bg-surface-800'
                     )}>
                     <span className={cn(
-                      'w-3 h-3 rounded border flex items-center justify-center text-[8px]',
+                      'w-3 h-3 rounded border flex items-center justify-center text-[11px]',
                       idea.linked_scene_ids?.includes(s.id) ? 'bg-green-500 border-green-500 text-white' : 'border-surface-600'
                     )}>
                       {idea.linked_scene_ids?.includes(s.id) && '✓'}
@@ -440,7 +440,7 @@ function IdeaCard({
                   </button>
                 ))}
                 <div className="border-t border-surface-800 mt-1 pt-1">
-                  <p className="text-[10px] font-bold text-surface-500 uppercase px-2 py-1">Characters</p>
+                  <p className="text-[11px] font-medium text-surface-500 uppercase px-2 py-1">Characters</p>
                   {characters.length === 0 && <p className="text-xs text-surface-600 px-2 py-1">No characters yet</p>}
                   {characters.map((c) => (
                     <button key={c.id} onClick={() => onToggleCharacter(c.id)}
@@ -464,14 +464,14 @@ function IdeaCard({
           <div className="relative" data-no-detail>
             <button
               onClick={(e) => { e.stopPropagation(); onOpenImageInput(); }}
-              className="text-[10px] px-1.5 py-1 rounded text-surface-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+              className="text-[11px] px-1.5 py-1 rounded text-surface-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
               title="Add Image"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </button>
             {imageInputIdeaId === idea.id && (
               <div ref={menuRef} className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border border-surface-700 bg-surface-900 shadow-xl p-2" onClick={(e) => e.stopPropagation()}>
-                <p className="text-[10px] font-bold text-surface-500 uppercase mb-1.5">Image URL</p>
+                <p className="text-[11px] font-medium text-surface-500 uppercase mb-1.5">Image URL</p>
                 <input
                   value={imageUrlDraft}
                   onChange={(e) => onImageUrlDraftChange(e.target.value)}
@@ -526,14 +526,14 @@ function IdeaDetailModal({ isOpen, idea, scenes, characters, onClose, onEdit, on
 
         {idea.description && (
           <div>
-            <h4 className="text-xs font-bold text-surface-500 uppercase tracking-wider mb-1">Description</h4>
+            <h4 className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-1">Description</h4>
             <p className="text-sm text-surface-300 whitespace-pre-wrap">{idea.description}</p>
           </div>
         )}
 
         {linkedScenes.length > 0 && (
           <div>
-            <h4 className="text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Linked Scenes</h4>
+            <h4 className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Linked Scenes</h4>
             <div className="flex flex-wrap gap-2">
               {linkedScenes.map((s) => (
                 <span key={s.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-500/15 border border-green-500/30 text-green-400 text-xs font-medium">
@@ -547,7 +547,7 @@ function IdeaDetailModal({ isOpen, idea, scenes, characters, onClose, onEdit, on
 
         {linkedChars.length > 0 && (
           <div>
-            <h4 className="text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Linked Characters</h4>
+            <h4 className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Linked Characters</h4>
             <div className="flex flex-wrap gap-2">
               {linkedChars.map((c) => (
                 <span key={c.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium"
@@ -562,7 +562,7 @@ function IdeaDetailModal({ isOpen, idea, scenes, characters, onClose, onEdit, on
 
         {idea.tags && idea.tags.length > 0 && (
           <div>
-            <h4 className="text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">Tags</h4>
+            <h4 className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Tags</h4>
             <div className="flex gap-1.5 flex-wrap">
               {idea.tags.map((t) => (
                 <span key={t} className="text-xs px-2 py-0.5 rounded bg-surface-800 text-surface-400 border border-surface-700">{t}</span>
@@ -573,7 +573,7 @@ function IdeaDetailModal({ isOpen, idea, scenes, characters, onClose, onEdit, on
 
         {idea.references && idea.references.length > 0 && (
           <div>
-            <h4 className="text-xs font-bold text-surface-500 uppercase tracking-wider mb-2">References</h4>
+            <h4 className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">References</h4>
             <div className="space-y-1">
               {idea.references.map((r, i) => (
                 <a key={i} href={r} target="_blank" rel="noopener noreferrer" className="block text-xs text-blue-400 hover:underline truncate">{r}</a>
@@ -582,7 +582,7 @@ function IdeaDetailModal({ isOpen, idea, scenes, characters, onClose, onEdit, on
           </div>
         )}
 
-        <div className="text-[10px] text-surface-600">
+        <div className="text-[11px] text-surface-600">
           Created {idea.created_at ? timeAgo(idea.created_at) : 'unknown'}
         </div>
 

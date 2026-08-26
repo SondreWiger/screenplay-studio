@@ -245,19 +245,19 @@ export default function GearPage({ params }: { params: { id: string } }) {
           Object.entries(grouped).map(([cat, items]) => (
             <div key={cat}>
               <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-[11px] font-semibold text-surface-500 uppercase tracking-wider">{cat}</h2>
-                <span className="text-[10px] text-surface-700">{items.length}</span>
+                <h2 className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">{cat}</h2>
+                <span className="text-[11px] text-surface-700">{items.length}</span>
               </div>
               <div className="rounded-xl border border-surface-800 overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-surface-800 bg-surface-900/60">
-                      <th className="text-left text-[10px] font-medium text-surface-500 uppercase tracking-wider px-4 py-2">Name</th>
-                      <th className="text-left text-[10px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2 w-16">Qty</th>
-                      <th className="text-left text-[10px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2 w-24">Ownership</th>
-                      <th className="text-left text-[10px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2 hidden md:table-cell">Vendor</th>
-                      <th className="text-right text-[10px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2 w-24 hidden lg:table-cell">Cost</th>
-                      <th className="text-left text-[10px] font-medium text-surface-500 uppercase tracking-wider px-3 py-2 w-28">Status</th>
+                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-4 py-2">Name</th>
+                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2 w-16">Qty</th>
+                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2 w-24">Ownership</th>
+                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2 hidden md:table-cell">Vendor</th>
+                      <th className="text-right text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2 w-24 hidden lg:table-cell">Cost</th>
+                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2 w-28">Status</th>
                       {canEdit && <th className="w-16 px-3 py-2" />}
                     </tr>
                   </thead>
@@ -270,9 +270,9 @@ export default function GearPage({ params }: { params: { id: string } }) {
                             {item.shoot_day_id && (() => {
                               const d = shootDays.find(sd => sd.id === item.shoot_day_id);
                               return d ? (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-500 border border-brand-500/20 font-medium">Day {d.day_number}</span>
+                                <span className="text-[11px] px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-500 border border-brand-500/20 font-medium">Day {d.day_number}</span>
                               ) : (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500 border border-surface-700">Scheduled</span>
+                                <span className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500 border border-surface-700">Scheduled</span>
                               );
                             })()}
                           </div>

@@ -33,7 +33,7 @@ function RoleBadge({ role, isMain }: { role: string | null | undefined; isMain: 
   const meta = role ? ROLE_OPTIONS.find((r) => r.value === role) : isMain ? ROLE_OPTIONS.find((r) => r.value === 'main') : null;
   if (!meta) return null;
   return (
-    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border', meta.activeText, meta.activeBg, meta.activeBorder)}>
+    <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border', meta.activeText, meta.activeBg, meta.activeBorder)}>
       {meta.label}
     </span>
   );
@@ -270,7 +270,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
         <Avatar src={character.actor_photo_url ?? character.avatar_url} name={character.name} size="lg" color={character.color} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h1 className="text-3xl font-black text-white">{character.name}</h1>
+            <h1 className="text-3xl font-bold text-white">{character.name}</h1>
             <RoleBadge role={character.role} isMain={character.is_main} />
           </div>
           {character.full_name && character.full_name !== character.name && (
@@ -400,16 +400,16 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                     <ImageTile url={img.url} alt={img.caption || `Inspo ${idx + 1}`} />
                     {img.caption && (
                       <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
-                        <p className="text-[10px] text-white/90 truncate">{img.caption}</p>
+                        <p className="text-[11px] text-white/90 truncate">{img.caption}</p>
                       </div>
                     )}
                     {canEdit && (
                       <div className="absolute top-1.5 right-1.5" onClick={(e) => e.stopPropagation()}>
                         {confirming ? (
                           <div className="flex items-center gap-1 bg-black/80 rounded-lg px-1.5 py-1 border border-red-500/30">
-                            <span className="text-[9px] text-white/70">Delete?</span>
-                            <button onClick={() => { removeInspoImage(idx); setPendingDelete(null); }} className="text-[9px] text-red-400 hover:text-red-300 font-semibold">Yes</button>
-                            <button onClick={() => setPendingDelete(null)} className="text-[9px] text-surface-400 hover:text-white">No</button>
+                            <span className="text-[11px] text-white/70">Delete?</span>
+                            <button onClick={() => { removeInspoImage(idx); setPendingDelete(null); }} className="text-[11px] text-red-400 hover:text-red-300 font-semibold">Yes</button>
+                            <button onClick={() => setPendingDelete(null)} className="text-[11px] text-surface-400 hover:text-white">No</button>
                           </div>
                         ) : (
                           <button
@@ -432,7 +432,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
 
           {canEdit && (
             <div className="rounded-xl border border-dashed border-surface-700 p-5 space-y-3 bg-surface-800/20">
-              <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Add image</p>
+              <p className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Add image</p>
               <Input
                 value={newInspoUrl}
                 onChange={(e) => setNewInspoUrl(e.target.value)}
@@ -553,7 +553,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7a2 2 0 012-2h3.586a1 1 0 01.707.293L10.707 6.7A1 1 0 0011.414 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
                     </svg>
                     <span className="font-semibold text-white">{folder.name}</span>
-                    <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-semibold border', folderTypeColor[folder.type])}>
+                    <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold border', folderTypeColor[folder.type])}>
                       {folderTypeLabel[folder.type]}
                     </span>
                   </div>
@@ -584,16 +584,16 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                           <ImageTile url={img.url} alt={img.caption || `Ref ${idx + 1}`} />
                           {img.caption && (
                             <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5">
-                              <p className="text-[9px] text-white/80 truncate">{img.caption}</p>
+                              <p className="text-[11px] text-white/80 truncate">{img.caption}</p>
                             </div>
                           )}
                           {canEdit && (
                             <div className="absolute top-1 right-1" onClick={(e) => e.stopPropagation()}>
                               {confirming ? (
                                 <div className="flex items-center gap-1 bg-black/80 rounded-lg px-1.5 py-0.5 border border-red-500/30">
-                                  <span className="text-[9px] text-white/70">Delete?</span>
-                                  <button onClick={() => { removeFolderImage(folder.id, idx); setPendingDelete(null); }} className="text-[9px] text-red-400 hover:text-red-300 font-semibold">Yes</button>
-                                  <button onClick={() => setPendingDelete(null)} className="text-[9px] text-surface-400 hover:text-white">No</button>
+                                  <span className="text-[11px] text-white/70">Delete?</span>
+                                  <button onClick={() => { removeFolderImage(folder.id, idx); setPendingDelete(null); }} className="text-[11px] text-red-400 hover:text-red-300 font-semibold">Yes</button>
+                                  <button onClick={() => setPendingDelete(null)} className="text-[11px] text-surface-400 hover:text-white">No</button>
                                 </div>
                               ) : (
                                 <button
@@ -644,7 +644,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
             <>
               {showNewFolder ? (
                 <div className="rounded-xl border border-surface-700 p-5 space-y-3 bg-surface-800/30">
-                  <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">New folder</p>
+                  <p className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">New folder</p>
                   <Input
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
@@ -730,7 +730,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
                     {/* Arrow + label */}
                     <div className="flex flex-col items-center flex-1 min-w-0">
                       {rel.edge.label && (
-                        <span className="text-[10px] text-surface-400 mb-0.5 truncate max-w-full px-1">{rel.edge.label}</span>
+                        <span className="text-[11px] text-surface-400 mb-0.5 truncate max-w-full px-1">{rel.edge.label}</span>
                       )}
                       <div className="flex items-center gap-1 w-full">
                         <div
@@ -798,7 +798,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">{title}</h3>
+      <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">{title}</h3>
       {children}
     </div>
   );
@@ -946,7 +946,7 @@ function ImageTile({ url, alt }: { url: string; alt: string }) {
       <svg className="w-5 h-5 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
       </svg>
-      <p className="text-[8px] text-surface-500 text-center break-all line-clamp-2 px-1">{url}</p>
+      <p className="text-[11px] text-surface-500 text-center break-all line-clamp-2 px-1">{url}</p>
     </div>
   ) : (
     <img src={url} alt={alt} referrerPolicy="no-referrer" className="w-full h-auto block" loading="lazy" onError={() => setErrored(true)} />

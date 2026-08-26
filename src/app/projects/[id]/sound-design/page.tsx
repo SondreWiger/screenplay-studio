@@ -254,7 +254,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
                 >
                   {tab.label}
                   {tab.count > 0 && (
-                    <span className="ml-1.5 text-[10px] opacity-60">{tab.count}</span>
+                    <span className="ml-1.5 text-[11px] opacity-60">{tab.count}</span>
                   )}
                 </button>
               ))}
@@ -319,7 +319,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
                     className="flex items-start gap-3 p-3 bg-surface-900/60 border border-surface-800/80 rounded-xl hover:border-surface-700 transition-colors group"
                   >
                     <span className={cn(
-                      'shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border mt-0.5',
+                      'shrink-0 px-2 py-0.5 rounded-md text-[11px] font-medium uppercase border mt-0.5',
                       CUE_COLORS[cue.type]
                     )}>
                       {cue.type === 'AMBIENCE' ? 'AMB' : cue.type}
@@ -333,7 +333,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
                       className="shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                       title="Jump to this line in the script"
                     >
-                      <span className="text-[10px] text-surface-500 hover:text-violet-400 transition-colors px-2 py-1 rounded-lg hover:bg-violet-500/10">
+                      <span className="text-[11px] text-surface-500 hover:text-violet-400 transition-colors px-2 py-1 rounded-lg hover:bg-violet-500/10">
                         ↗ Script
                       </span>
                     </Link>
@@ -368,7 +368,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
               rows={28}
               className="w-full bg-surface-900/60 border border-surface-800 rounded-xl p-4 text-sm text-surface-200 placeholder-surface-600 outline-none focus:border-violet-500/40 resize-none font-mono leading-relaxed"
             />
-            <p className="text-[10px] text-surface-600">
+            <p className="text-[11px] text-surface-600">
               Tip: This document is also accessible from the Documents section.
             </p>
           </div>

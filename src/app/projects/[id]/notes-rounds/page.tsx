@@ -254,7 +254,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
         {/* Rounds sidebar */}
         <div className={`${selectedRound ? 'hidden md:flex' : 'flex'} md:flex flex-col w-full md:w-64 border-b md:border-b-0 md:border-r border-surface-800 md:overflow-hidden shrink-0`}>
           <div className="px-4 py-3 border-b border-surface-800">
-            <p className="text-xs font-medium text-surface-500 uppercase tracking-wider">All Rounds</p>
+            <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em]">All Rounds</p>
           </div>
           <div className="flex-1 overflow-y-auto">
             {rounds.length === 0 ? (
@@ -276,7 +276,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <span className="text-xs text-surface-500 font-mono">R{round.round_number}</span>
-                    <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full font-medium', ROUND_STATUS_COLORS[round.status])}>
+                    <span className={cn('text-[11px] px-1.5 py-0.5 rounded-full font-medium', ROUND_STATUS_COLORS[round.status])}>
                       {ROUND_STATUS_LABELS[round.status]}
                     </span>
                   </div>

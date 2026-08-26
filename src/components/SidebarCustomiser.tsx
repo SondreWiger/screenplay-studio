@@ -188,7 +188,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                     />
                   ) : (
                     <span
-                      className={cn('flex-1 text-[11px] font-semibold uppercase tracking-wider cursor-pointer', isUnlabelled ? 'text-surface-600 italic' : 'text-surface-400', 'hover:text-white transition-colors')}
+                      className={cn('flex-1 text-[11px] font-semibold uppercase tracking-[0.04em] cursor-pointer', isUnlabelled ? 'text-surface-600 italic' : 'text-surface-400', 'hover:text-white transition-colors')}
                       onDoubleClick={() => startRenameSection(section)}
                       title="Double-click to rename"
                     >
@@ -295,7 +295,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                                     {/* Backdrop — closes menu when clicking outside */}
                                     <div className="fixed inset-0 z-10" onClick={closeMenus} />
                                     <div className="absolute right-0 top-full mt-1 z-20 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 min-w-[140px]">
-                                      <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider">Move to</p>
+                                      <p className="px-3 py-1 text-[11px] text-surface-400 uppercase tracking-[0.04em]">Move to</p>
                                       {sections.filter(s => s.id !== section.id).map(target => (
                                         <button
                                           key={target.id}
@@ -360,7 +360,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                     className="mt-0.5 accent-brand-500" />
                   <span>
                     <span className="text-xs font-medium text-surface-200 group-hover:text-white transition-colors block">{opt.label}</span>
-                    <span className="text-[10px] text-surface-600">{opt.desc}</span>
+                    <span className="text-[11px] text-surface-600">{opt.desc}</span>
                   </span>
                 </label>
               ))}
@@ -384,7 +384,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                 <>
                   <div className="fixed inset-0 z-10" onClick={closeMenus} />
                   <div className="absolute bottom-full right-0 mb-2 bg-surface-900 border border-surface-700 rounded-xl py-1.5 shadow-xl min-w-[180px] z-20">
-                    <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider">Reset to default</p>
+                    <p className="px-3 py-1 text-[11px] text-surface-400 uppercase tracking-[0.04em]">Reset to default</p>
                     {activeScope === 'user-project' && (
                       <button onClick={() => { handleReset('user-project'); setShowResetMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
                         This project override
@@ -405,7 +405,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
           </div>
 
           {activeScope && (
-            <p className="text-[10px] text-surface-600 text-center">
+            <p className="text-[11px] text-surface-600 text-center">
               Currently using: {activeScope === 'user-project' ? 'project override' : activeScope === 'user-global' ? 'global default' : 'project admin default'}
             </p>
           )}

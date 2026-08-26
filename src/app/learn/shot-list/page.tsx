@@ -5,7 +5,7 @@ export default function ShotListModule() {
     <div className="space-y-12 pb-24">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-white mb-4">Shot List</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Shot List</h1>
         <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
           Translate your script into visual directions. The Shot List tool helps you plan the camera angles, movements, and framing required to bring your scenes to life on set.
         </p>
@@ -23,19 +23,19 @@ export default function ShotListModule() {
             <ul className="grid grid-cols-2 gap-2 text-sm text-surface-300">
               <li className="flex flex-col p-2 bg-surface-800/50 rounded-lg">
                 <span className="font-bold text-white">WS</span>
-                <span className="text-[10px] text-surface-500">Wide Shot</span>
+                <span className="text-[11px] text-surface-500">Wide Shot</span>
               </li>
               <li className="flex flex-col p-2 bg-surface-800/50 rounded-lg">
                 <span className="font-bold text-white">MS</span>
-                <span className="text-[10px] text-surface-500">Medium Shot</span>
+                <span className="text-[11px] text-surface-500">Medium Shot</span>
               </li>
               <li className="flex flex-col p-2 bg-surface-800/50 rounded-lg">
                 <span className="font-bold text-white">CU</span>
-                <span className="text-[10px] text-surface-500">Close Up</span>
+                <span className="text-[11px] text-surface-500">Close Up</span>
               </li>
               <li className="flex flex-col p-2 bg-surface-800/50 rounded-lg">
                 <span className="font-bold text-white">ECU</span>
-                <span className="text-[10px] text-surface-500">Extreme Close Up</span>
+                <span className="text-[11px] text-surface-500">Extreme Close Up</span>
               </li>
             </ul>
           </div>

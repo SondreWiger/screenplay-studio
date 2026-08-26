@@ -42,14 +42,14 @@ export default function CommunityAboutPage() {
       <div className="flex-1 space-y-6">
         {community.long_description && (
           <section>
-            <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest mb-2">About</p>
+            <p className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-2">About</p>
             <p className="text-sm text-white/70 leading-relaxed whitespace-pre-wrap">{community.long_description}</p>
           </section>
         )}
 
         {/* Rules */}
         <section>
-          <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest mb-3">Community Rules</p>
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-3">Community Rules</p>
           {rules.length === 0 ? (
             <p className="text-sm text-white/30 italic">No rules posted yet.</p>
           ) : (
@@ -75,7 +75,7 @@ export default function CommunityAboutPage() {
 
         {/* Meta */}
         <section className="text-xs text-white/30 space-y-1">
-          <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest mb-2">Info</p>
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-2">Info</p>
           <p>Visibility: <span className="text-white/50 capitalize">{community.visibility}</span></p>
           <p>Posting: <span className="text-white/50">{community.posting_mode?.replace(/_/g,' ')}</span></p>
           <p>Created: <span className="text-white/50">{community.created_at ? new Date(community.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}</span></p>
@@ -84,7 +84,7 @@ export default function CommunityAboutPage() {
 
       {/* Sidebar — Staff */}
       <aside className="w-52 flex-shrink-0">
-        <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest mb-3">Staff</p>
+        <p className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-3">Staff</p>
         <div className="space-y-2">
           {staff.length === 0 ? (
             <p className="text-xs text-white/30">No staff listed.</p>
@@ -104,7 +104,7 @@ export default function CommunityAboutPage() {
                   }
                   <div>
                     <p className="text-xs font-medium leading-tight">{u?.full_name ?? 'User'}</p>
-                    <p className="text-[10px] text-white/40 capitalize">{m.role}</p>
+                    <p className="text-[11px] text-white/40 capitalize">{m.role}</p>
                   </div>
                 </div>
               );

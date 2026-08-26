@@ -468,7 +468,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           </Button>
           {activeRundown && (
             <span className={cn(
-              'text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider',
+              'text-xs font-medium px-2 py-0.5 rounded uppercase tracking-[0.04em]',
               BROADCAST_RUNDOWN_STATUS_OPTIONS.find(s => s.value === activeRundown.status)?.color || 'bg-surface-700',
               'text-white'
             )}>
@@ -505,7 +505,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           ) : (
             <>
               {/* Column headers */}
-              <div className="sticky top-0 z-10 grid grid-cols-[28px_60px_60px_1fr_80px_80px_80px_100px_100px_80px] gap-px bg-surface-800 text-[10px] font-bold text-surface-400 uppercase tracking-wider border-b border-surface-700">
+              <div className="sticky top-0 z-10 grid grid-cols-[28px_60px_60px_1fr_80px_80px_80px_100px_100px_80px] gap-px bg-surface-800 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em] border-b border-surface-700">
                 <div className="bg-surface-900 px-1 py-1.5" />
                 <div className="bg-surface-900 px-2 py-1.5">Page</div>
                 <div className="bg-surface-900 px-2 py-1.5">Type</div>
@@ -573,7 +573,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                     {/* Type badge */}
                     <div className="px-1 py-2 flex items-center">
                       <span
-                        className="text-[10px] font-bold px-1.5 py-0.5 rounded text-white"
+                        className="text-[11px] font-bold px-1.5 py-0.5 rounded text-white"
                         style={{ backgroundColor: typeInfo?.color || '#64748b' }}
                       >
                         {typeInfo?.abbr || item.item_type.slice(0, 4).toUpperCase()}
@@ -586,7 +586,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                         {item.title}
                       </span>
                       {item.segment_slug && (
-                        <span className="text-[10px] text-surface-500 font-mono shrink-0">
+                        <span className="text-[11px] text-surface-500 font-mono shrink-0">
                           [{item.segment_slug}]
                         </span>
                       )}
@@ -595,7 +595,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                         const statusInfo = linked ? BROADCAST_STORY_STATUS_OPTIONS.find(o => o.value === linked.status) : null;
                         return linked ? (
                           <span
-                            className={cn('text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0 text-white', statusInfo?.color || 'bg-surface-700')}
+                            className={cn('text-[11px] px-1.5 py-0.5 rounded font-bold shrink-0 text-white', statusInfo?.color || 'bg-surface-700')}
                             title={`Story: ${linked.title}`}
                           >
                             {linked.slug || 'STORY'}
@@ -603,12 +603,12 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                         ) : null;
                       })()}
                       {item.is_float && (
-                        <span className="text-[9px] px-1 py-0.5 bg-amber-900/50 text-amber-400 rounded font-bold shrink-0">
+                        <span className="text-[11px] px-1 py-0.5 bg-amber-900/50 text-amber-400 rounded font-bold shrink-0">
                           FLOAT
                         </span>
                       )}
                       {isOnAir && (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-red-600 text-white rounded font-bold animate-pulse shrink-0">
+                        <span className="text-[11px] px-1.5 py-0.5 bg-red-600 text-white rounded font-bold animate-pulse shrink-0">
                           ON AIR
                         </span>
                       )}
@@ -742,7 +742,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
         <div className="w-72 border-l border-surface-800 bg-surface-900/50 flex flex-col overflow-y-auto hidden lg:flex">
           {/* Show status */}
           <div className={cn('p-4 border-b border-surface-800', isLive && 'bg-red-950/30')}>
-            <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">Show Status</div>
+            <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Show Status</div>
             {isLive ? (
               <>
                 <div className="flex items-center gap-2 mb-2">
@@ -790,7 +790,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           {/* On-Air Item */}
           {isLive && onAirItem && (
             <div className="p-4 border-b border-surface-800 bg-red-950/20">
-              <div className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1">On Air Now</div>
+              <div className="text-[11px] font-medium text-red-400 uppercase tracking-[0.04em] mb-1">On Air Now</div>
               <div className="text-white font-bold text-sm mb-1">{onAirItem.title}</div>
               <div className="flex items-center gap-2 text-xs">
                 <div className={cn(
@@ -813,7 +813,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           {/* Next Up */}
           {isLive && nextPendingItem && (
             <div className="p-4 border-b border-surface-800">
-              <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-1">Next Up</div>
+              <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-1">Next Up</div>
               <div className="text-surface-300 text-sm font-medium">{nextPendingItem.title}</div>
               <div className="text-xs text-surface-500 font-mono mt-1">
                 {formatBroadcastDuration(nextPendingItem.planned_duration)}
@@ -826,7 +826,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
 
           {/* Controls */}
           <div className="p-4 space-y-2">
-            <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">Controls</div>
+            <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Controls</div>
             {activeRundown && activeRundown.status !== 'live' && activeRundown.status !== 'completed' && (
               <Button className="w-full bg-red-600 hover:bg-red-700 text-white" onClick={handleStartShow}>
                 Start Show
@@ -852,7 +852,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
           {/* Quick item context menu for live mode */}
           {isLive && (
             <div className="p-4 border-t border-surface-800">
-              <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">Quick Actions</div>
+              <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Quick Actions</div>
               <div className="space-y-1">
                 {items
                   .filter(i => i.status === 'pending' || i.status === 'standby')
@@ -961,7 +961,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
             {itemForm.story_id && (() => {
               const s = stories.find(st => st.id === itemForm.story_id);
               return s ? (
-                <p className="text-[10px] text-surface-500 mt-1">
+                <p className="text-[11px] text-surface-500 mt-1">
                   Status: {s.status} · Type: {s.story_type}{s.estimated_duration ? ` · ${s.estimated_duration}s` : ''}
                 </p>
               ) : null;
@@ -1015,7 +1015,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
 
           {/* Technical */}
           <div className="border-t border-surface-800 pt-3">
-            <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">Technical</div>
+            <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Technical</div>
             <div className="grid grid-cols-3 gap-3">
               <Input
                 label="Camera"

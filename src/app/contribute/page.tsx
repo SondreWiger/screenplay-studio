@@ -18,7 +18,7 @@ function Rule() {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+    <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">
       {children}
     </span>
   );
@@ -101,7 +101,7 @@ function Code({ children, label }: { children: string; label?: string }) {
           <Label>{label}</Label>
           <button
             onClick={copy}
-            className="text-[9px] font-bold uppercase tracking-[0.15em] transition-colors duration-150"
+            className="text-[11px] font-medium uppercase tracking-[0.04em] transition-colors duration-150"
             style={{ color: copied ? ORANGE : 'rgba(255,255,255,0.2)' }}
           >
             {copied ? 'COPIED ✓' : 'COPY'}
@@ -314,7 +314,7 @@ export default function ContributePage() {
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
         <span className="text-6xl">🔒</span>
         <div className="text-center">
-          <h1 className="text-2xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>Coming soon</h1>
+          <h1 className="text-2xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>Coming soon</h1>
           <p className="text-sm text-white/40 max-w-sm">The open-source section of Screenplay Studio is not yet publicly available.</p>
         </div>
         <Link href="/" className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg" style={{ background: '#FF5F1F' }}>
@@ -342,12 +342,12 @@ export default function ContributePage() {
         <div className="max-w-screen-lg mx-auto px-6 h-12 flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-2.5">
             <div
-              className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0 transition-transform duration-150"
+              className="w-7 h-7 flex items-center justify-center text-[11px] font-semibold text-white shrink-0 transition-transform duration-150"
               style={{ background: ORANGE }}
             >
               SS
             </div>
-            <span className="text-xs font-black text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
+            <span className="text-xs font-semibold text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
           </Link>
           <div className="flex items-center gap-5">
             <Link href="/about" className="text-xs text-white/35 hover:text-white/70 transition-colors">About</Link>
@@ -371,7 +371,7 @@ export default function ContributePage() {
 
           {/* Giant headline with staggered word reveal */}
           <h1
-            className="font-black text-white"
+            className="font-semibold text-white"
             style={{
               fontSize: 'clamp(3.8rem, 13vw, 10rem)',
               letterSpacing: '-0.04em',
@@ -434,7 +434,7 @@ export default function ContributePage() {
                 href="https://github.com/SondreWiger/screenplay-studio"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 px-7 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-transform duration-150 hover:-translate-y-0.5"
+                className="group inline-flex items-center gap-2.5 px-7 py-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-transform duration-150 hover:-translate-y-0.5"
                 style={{ background: ORANGE, boxShadow: `0 8px 40px ${ORANGE}28` }}
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -445,12 +445,12 @@ export default function ContributePage() {
               </a>
               <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center">
-                  <span className="text-xl font-black text-white"><Counter target={42} />+</span>
+                  <span className="text-xl font-bold text-white"><Counter target={42} />+</span>
                   <Label>OPEN ISSUES</Label>
                 </div>
                 <div className="w-px h-8" style={{ background: 'rgba(255,255,255,0.08)' }} />
                 <div className="flex flex-col items-center">
-                  <span className="text-xl font-black" style={{ color: ORANGE }}>∞</span>
+                  <span className="text-xl font-bold" style={{ color: ORANGE }}>∞</span>
                   <Label>GOOD FIRST</Label>
                 </div>
               </div>
@@ -465,7 +465,7 @@ export default function ContributePage() {
               {MARQUEE_ITEMS.map((t, i) => (
                 <span
                   key={i}
-                  className="text-[9px] font-black uppercase tracking-[0.22em] text-black/40 px-5"
+                  className="text-[11px] font-semibold uppercase tracking-[0.04em] text-black/40 px-5"
                 >
                   {t}<span className="ml-5 text-black/20">·</span>
                 </span>
@@ -482,7 +482,7 @@ export default function ContributePage() {
             <Eyebrow>Ways To Contribute</Eyebrow>
             <div className="flex items-end justify-between mb-12">
               <h2
-                className="font-black text-white"
+                className="font-semibold text-white"
                 style={{ fontSize: 'clamp(2rem, 6vw, 5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}
               >
                 WHAT WE<br />
@@ -535,13 +535,13 @@ export default function ContributePage() {
 
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h3
-                        className="text-[11px] font-black uppercase tracking-[0.1em] text-white/50 group-hover:text-white transition-colors duration-200"
+                        className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/50 group-hover:text-white transition-colors duration-200"
                       >
                         {ct.title}
                       </h3>
                       {ct.good_first && (
                         <span
-                          className="shrink-0 text-[8px] font-black uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-md"
+                          className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-md"
                           style={{ background: `${ORANGE}20`, color: ORANGE, border: `1px solid ${ORANGE}30` }}
                         >
                           Good First
@@ -565,7 +565,7 @@ export default function ContributePage() {
           <Reveal>
             <Eyebrow>Step By Step</Eyebrow>
             <h2
-              className="font-black text-white mb-14"
+              className="font-semibold text-white mb-14"
               style={{ fontSize: 'clamp(2rem, 6vw, 5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}
             >
               HOW TO<br />
@@ -586,7 +586,7 @@ export default function ContributePage() {
                   <div className="flex gap-6 md:gap-10 items-start">
                     {/* step number circle */}
                     <div
-                      className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-black border-2 relative z-10"
+                      className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-semibold border-2 relative z-10"
                       style={{
                         background: 'rgb(var(--surface-950))',
                         borderColor: i === 0 ? ORANGE : 'rgba(255,255,255,0.12)',
@@ -599,7 +599,7 @@ export default function ContributePage() {
 
                     <div className="flex-1 min-w-0 -mt-0.5">
                       <h3
-                        className="text-sm font-black text-white uppercase tracking-tight mb-1"
+                        className="text-sm font-semibold text-white uppercase tracking-tight mb-1"
                         style={{ letterSpacing: '-0.01em' }}
                       >
                         {step.title}
@@ -622,7 +622,7 @@ export default function ContributePage() {
             <Eyebrow>Active Needs</Eyebrow>
             <div className="flex items-end justify-between mb-10">
               <h2
-                className="font-black text-white"
+                className="font-semibold text-white"
                 style={{ fontSize: 'clamp(2rem, 6vw, 5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}
               >
                 WHAT WE&apos;RE<br />
@@ -652,19 +652,19 @@ export default function ContributePage() {
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2.5">
                       <span
-                        className="text-[8px] font-black uppercase tracking-[0.12em] px-1.5 py-0.5 rounded-md border"
+                        className="text-[11px] font-semibold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded-md border"
                         style={PRIORITY_STYLE[issue.priority]}
                       >
                         {issue.priority}
                       </span>
                       <span
-                        className="text-[8px] font-bold uppercase tracking-[0.12em] px-1.5 py-0.5 rounded-md border"
+                        className="text-[11px] font-medium uppercase tracking-[0.04em] px-1.5 py-0.5 rounded-md border"
                         style={TYPE_STYLE[issue.type]}
                       >
                         {issue.type}
                       </span>
                     </div>
-                    <p className="text-sm font-black text-white mb-1 group-hover:text-white transition-colors">{issue.label}</p>
+                    <p className="text-sm font-semibold text-white mb-1 group-hover:text-white transition-colors">{issue.label}</p>
                     <p className="text-[11px] text-white/35 leading-relaxed">{issue.desc}</p>
                   </div>
                 </div>
@@ -681,7 +681,7 @@ export default function ContributePage() {
                 href="https://github.com/SondreWiger/screenplay-studio/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group shrink-0 inline-flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-white transition-all duration-150 hover:-translate-y-px border border-white/10 hover:border-white/20"
+                className="group shrink-0 inline-flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all duration-150 hover:-translate-y-px border border-white/10 hover:border-white/20"
               >
                 All GitHub Issues
                 <span className="transition-transform duration-150">→</span>
@@ -697,7 +697,7 @@ export default function ContributePage() {
           <Reveal>
             <Eyebrow>Contribution Rules · Code of Conduct</Eyebrow>
             <h2
-              className="font-black text-white mb-12"
+              className="font-semibold text-white mb-12"
               style={{ fontSize: 'clamp(2rem, 6vw, 5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}
             >
               THE<br />
@@ -719,13 +719,13 @@ export default function ContributePage() {
                       className="w-full flex items-center gap-5 px-6 py-5 text-left group hover:bg-white/[0.025] transition-colors duration-150"
                     >
                       <span
-                        className="text-[10px] font-black font-mono shrink-0 transition-colors duration-150"
+                        className="text-[11px] font-semibold font-mono shrink-0 transition-colors duration-150"
                         style={{ color: open ? ORANGE : 'rgba(255,255,255,0.2)' }}
                       >
                         {rule.n}
                       </span>
                       <span
-                        className="flex-1 text-xs font-black uppercase tracking-[0.1em] transition-colors duration-150"
+                        className="flex-1 text-xs font-semibold uppercase tracking-[0.1em] transition-colors duration-150"
                         style={{ color: open ? '#fff' : 'rgba(255,255,255,0.45)' }}
                       >
                         {rule.title}
@@ -769,7 +769,7 @@ export default function ContributePage() {
           <Reveal>
             <Eyebrow>Recognition · Credits</Eyebrow>
             <h2
-              className="font-black text-white mb-5"
+              className="font-semibold text-white mb-5"
               style={{ fontSize: 'clamp(2rem, 6vw, 5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}
             >
               YOUR NAME<br />
@@ -804,7 +804,7 @@ export default function ContributePage() {
                   style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
                 >
                   <span className="text-3xl mb-4 block">{item.icon}</span>
-                  <h3 className="text-xs font-black text-white uppercase tracking-tight mb-2">{item.title}</h3>
+                  <h3 className="text-xs font-semibold text-white uppercase tracking-tight mb-2">{item.title}</h3>
                   <p className="text-xs text-white/35 leading-relaxed">{item.body}</p>
                 </div>
               </Reveal>
@@ -819,7 +819,7 @@ export default function ContributePage() {
           <Reveal>
             <Eyebrow>People · Credits</Eyebrow>
             <h2
-              className="font-black text-white mb-4"
+              className="font-semibold text-white mb-4"
               style={{ fontSize: 'clamp(1.8rem, 5vw, 4rem)', letterSpacing: '-0.04em', lineHeight: 0.95 }}
             >
               CURRENT<br />
@@ -839,7 +839,7 @@ export default function ContributePage() {
           <Reveal>
             <Eyebrow>Tech Stack · Prerequisites</Eyebrow>
             <h2
-              className="font-black text-white mb-10"
+              className="font-semibold text-white mb-10"
               style={{ fontSize: 'clamp(1.8rem, 5vw, 4rem)', letterSpacing: '-0.04em', lineHeight: 0.95 }}
             >
               WHAT WE&apos;RE<br />BUILT WITH.
@@ -862,8 +862,8 @@ export default function ContributePage() {
                   className="group p-4 rounded-md transition-colors duration-200 hover:bg-white/[0.04] cursor-default"
                   style={{ border: '1px solid rgba(255,255,255,0.07)' }}
                 >
-                  <p className="text-xs font-black text-white/70 group-hover:text-white transition-colors mb-0.5">{t.name}</p>
-                  <p className="text-[10px] text-white/25">{t.note}</p>
+                  <p className="text-xs font-semibold text-white/70 group-hover:text-white transition-colors mb-0.5">{t.name}</p>
+                  <p className="text-[11px] text-white/25">{t.note}</p>
                 </div>
               </Reveal>
             ))}
@@ -910,10 +910,10 @@ export default function ContributePage() {
                 <div>
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-4 h-px bg-black/25" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.28em] text-black/35">Ready · Start Now</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-black/35">Ready · Start Now</span>
                   </div>
                   <h2
-                    className="font-black text-black"
+                    className="font-semibold text-black"
                     style={{ fontSize: 'clamp(3rem, 9vw, 7rem)', letterSpacing: '-0.04em', lineHeight: 0.88 }}
                   >
                     OPEN A<br />PULL<br />REQUEST.
@@ -924,7 +924,7 @@ export default function ContributePage() {
                     href="https://github.com/SondreWiger/screenplay-studio"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2.5 px-10 py-5 text-[10px] font-black uppercase tracking-[0.16em] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-2xl"
+                    className="group inline-flex items-center gap-2.5 px-10 py-5 text-[11px] font-semibold uppercase tracking-[0.04em] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-2xl"
                     style={{ background: '#000', color: '#fff' }}
                   >
                     Fork on GitHub
@@ -934,12 +934,12 @@ export default function ContributePage() {
                     href="https://github.com/SondreWiger/screenplay-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-black/50 hover:text-black transition-colors"
+                    className="group inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.04em] text-black/50 hover:text-black transition-colors"
                   >
                     Browse Good First Issues
                     <span className="transition-transform duration-150">→</span>
                   </a>
-                  <span className="text-[9px] font-mono text-black/30 tracking-wider">
+                  <span className="text-[11px] text-black/30 tracking-wider">
                     ALL SKILL LEVELS · ALL TIMEZONES
                   </span>
                 </div>
@@ -955,7 +955,7 @@ export default function ContributePage() {
         <div className="max-w-screen-lg mx-auto px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
             <span className="text-xs text-white/20">Screenplay Studio — open-source &amp; free forever</span>
           </div>
@@ -976,7 +976,7 @@ export default function ContributePage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

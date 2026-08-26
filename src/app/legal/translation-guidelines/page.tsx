@@ -10,13 +10,13 @@ export default function TranslationGuidelinesPage() {
     <div>
       <div className="max-w-4xl">
         <div className="mb-10">
-          <p className="text-xs font-medium text-orange-400 uppercase tracking-wider mb-3">Community Guidelines</p>
-          <h1 className="text-3xl font-black text-white tracking-tight">Translation Guidelines</h1>
+          <p className="text-xs font-medium text-orange-400 uppercase tracking-[0.04em] mb-3">Community Guidelines</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Translation Guidelines</h1>
           <p className="text-sm text-surface-500 mt-2">Effective: June 17, 2026</p>
         </div>
 
         <nav className="mb-12 rounded-lg bg-surface-900/50 border border-surface-800/60 p-6">
-          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-wider mb-4">Table of Contents</h2>
+          <h2 className="text-sm font-semibold text-surface-300 uppercase tracking-[0.04em] mb-4">Table of Contents</h2>
           <ol className="list-decimal list-inside space-y-1.5 text-surface-400 text-[13px]">
             <li><a href="#overview" className="hover:text-orange-400 transition-colors">Overview</a></li>
             <li><a href="#eligibility" className="hover:text-orange-400 transition-colors">Eligibility</a></li>

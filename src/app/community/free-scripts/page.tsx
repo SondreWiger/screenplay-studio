@@ -106,8 +106,8 @@ export default function FreeScriptsPage() {
         {/* Page header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>FREE-TO-USE SCRIPTS</h1>
-            <p className="text-white/40 mt-1 max-w-xl font-mono text-sm">
+            <h1 className="text-3xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>FREE-TO-USE SCRIPTS</h1>
+            <p className="text-white/60 mt-1 max-w-xl text-sm">
               Scripts shared by writers for filmmakers to produce. Read, adapt, and create — always credit the author.
             </p>
           </div>
@@ -116,7 +116,7 @@ export default function FreeScriptsPage() {
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-widest capitalize transition-colors ${
+                className={`px-3 py-1.5 text-xs uppercase tracking-[0.04em] capitalize transition-colors ${
                   sortBy === s ? 'text-white' : 'text-white/40 hover:text-white'
                 }`}
                 style={sortBy === s ? { background: '#FF5F1F' } : { border: '1px solid rgba(255,255,255,0.1)' }}
@@ -145,8 +145,8 @@ export default function FreeScriptsPage() {
           <div className="flex items-start gap-3">
             <div className="w-6 h-6 shrink-0 mt-0.5" style={{ background: '#FF5F1F' }} />
             <div>
-              <h3 className="text-sm font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>FOR FILMMAKERS</h3>
-              <p className="text-xs font-mono text-white/50 leading-relaxed">
+              <h3 className="text-sm font-semibold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>FOR FILMMAKERS</h3>
+              <p className="text-xs text-white/50 leading-relaxed">
                 All scripts in this section have been explicitly marked as &quot;free to use&quot; by their authors.
                 You may produce films based on these scripts, but you must credit the original writer.
                 Check each script&apos;s details for specific permissions. If you produce something, submit it — the author would love to see!
@@ -158,11 +158,11 @@ export default function FreeScriptsPage() {
         <div className="flex gap-8">
           {/* Category filter sidebar */}
           <aside className="hidden lg:block w-52 shrink-0">
-            <h3 className="text-[9px] font-mono uppercase tracking-widest text-white/50 mb-3">Filter by Category</h3>
+            <h3 className="text-[11px] uppercase tracking-[0.04em] text-white/50 mb-3">Filter by Category</h3>
             <div className="space-y-1">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors ${
+                className={`w-full text-left px-3 py-2 text-xs uppercase tracking-[0.04em] transition-colors ${
                   !selectedCategory ? 'text-brand-500' : 'text-white/40 hover:text-white'
                 }`}
               >
@@ -172,7 +172,7 @@ export default function FreeScriptsPage() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug)}
-                  className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors flex items-center gap-2 ${
+                  className={`w-full text-left px-3 py-2 text-xs uppercase tracking-[0.04em] transition-colors flex items-center gap-2 ${
                     selectedCategory === cat.slug ? 'text-brand-500' : 'text-white/40 hover:text-white'
                   }`}
                 >
@@ -191,8 +191,8 @@ export default function FreeScriptsPage() {
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <div className="w-12 h-12 mb-4 mx-auto" style={{ background: '#FF5F1F', opacity: 0.3 }} />
-                <p className="text-lg font-black text-white mb-2" style={{ letterSpacing: '-0.02em' }}>NO FREE SCRIPTS YET</p>
-                <p className="text-sm font-mono text-white/40 mb-6">
+                <p className="text-lg font-bold text-white mb-2" style={{ letterSpacing: '-0.02em' }}>NO FREE SCRIPTS YET</p>
+                <p className="text-sm text-white/60 mb-6">
                   Be the first to share a script freely with filmmakers!
                 </p>
                 {user && (
@@ -224,7 +224,7 @@ export default function FreeScriptsPage() {
                           {post.categories.map((cat) => (
                             <span
                               key={cat.id}
-                              className="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                              className="px-2 py-0.5 text-[11px] font-semibold rounded-full"
                               style={{
                                 color: cat.color || '#6b7280',
                                 backgroundColor: (cat.color || '#6b7280') + '15',
@@ -236,7 +236,7 @@ export default function FreeScriptsPage() {
                         </div>
                       )}
 
-                      <h3 className="text-base font-black text-white line-clamp-1" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
+                      <h3 className="text-base font-semibold text-white line-clamp-1" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
                       {post.description && (
                         <p className="text-sm text-white/40 mt-1 line-clamp-2">{post.description}</p>
                       )}
@@ -247,7 +247,7 @@ export default function FreeScriptsPage() {
                           {post.author?.avatar_url ? (
                             <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" loading="lazy" />
                           ) : (
-                            <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[8px] font-bold text-white">
+                            <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[11px] font-bold text-white">
                               {(post.author?.full_name || '?')[0]}
                             </div>
                           )}
@@ -271,16 +271,16 @@ export default function FreeScriptsPage() {
                             🎬 {(post as EnrichedPost)._productionCount} production{(post as EnrichedPost)._productionCount !== 1 ? 's' : ''}
                           </span>
                         )}
-                        <span className="ml-auto text-brand-500 font-black">Free to Use</span>
+                        <span className="ml-auto text-brand-500 font-semibold">Free to Use</span>
                       </div>
 
                       {/* Permission badges */}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {post.allow_distros && (
-                          <span className="px-2 py-0.5 text-[10px] font-mono uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>Distros OK</span>
+                          <span className="px-2 py-0.5 text-[11px] uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>Distros OK</span>
                         )}
                         {post.allow_edits && (
-                          <span className="px-2 py-0.5 text-[10px] font-mono uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>Editable</span>
+                          <span className="px-2 py-0.5 text-[11px] uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>Editable</span>
                         )}
                       </div>
                     </div>
@@ -295,8 +295,8 @@ export default function FreeScriptsPage() {
       {/* Footer */}
       <footer className="py-10 px-6 mt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">Screenplay Studio Community</span>
-          <div className="flex items-center gap-6 text-[11px] font-mono uppercase tracking-widest text-white/50">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/40">Screenplay Studio Community</span>
+          <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.04em] text-white/50">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/community" className="hover:text-white transition-colors">Feed</Link>
             <Link href="/community/challenges" className="hover:text-white transition-colors">Challenges</Link>
@@ -307,7 +307,7 @@ export default function FreeScriptsPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

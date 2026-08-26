@@ -154,7 +154,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
   return (
     <div className="p-4 md:p-8 max-w-7xl">
       <div className="mb-6">
-        <h1 className="text-xl font-black text-white">Continuity Sheet</h1>
+        <h1 className="text-xl font-bold text-white">Continuity Sheet</h1>
         <p className="text-sm text-surface-400 mt-0.5">Track costume, hair, makeup, props and wounds per scene per character.</p>
       </div>
 
@@ -220,7 +220,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
 
                       return (
                         <div key={f.key} className="px-4 py-3">
-                          <p className={cn('text-[10px] font-black uppercase tracking-widest mb-1.5', f.color)}>
+                          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.04em] mb-1.5', f.color)}>
                             {f.label}
                           </p>
 
@@ -294,9 +294,9 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-surface-800/40 border-b border-surface-700/40">
-                      <th className="text-left px-3 py-2 text-surface-500 font-bold uppercase tracking-wider w-40">Scene</th>
+                      <th className="text-left px-3 py-2 text-surface-500 font-medium uppercase tracking-[0.04em] w-40">Scene</th>
                       {FIELDS.map((f) => (
-                        <th key={f.key} className={cn('text-left px-3 py-2 font-bold uppercase tracking-wider', f.color)}>{f.label}</th>
+                        <th key={f.key} className={cn('text-left px-3 py-2 font-medium uppercase tracking-[0.04em]', f.color)}>{f.label}</th>
                       ))}
                     </tr>
                   </thead>
@@ -338,8 +338,8 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
                                       className="w-full bg-surface-800 border border-brand-500 rounded px-2 py-1 text-xs text-white resize-none focus:outline-none"
                                     />
                                     <div className="flex gap-1">
-                                      <button onClick={commitEdit} className="px-2 py-0.5 rounded bg-brand-500 text-white text-[10px] font-medium">Save</button>
-                                      <button onClick={() => setEditCell(null)} className="px-2 py-0.5 rounded bg-surface-700 text-surface-300 text-[10px]">Cancel</button>
+                                      <button onClick={commitEdit} className="px-2 py-0.5 rounded bg-brand-500 text-white text-[11px] font-medium">Save</button>
+                                      <button onClick={() => setEditCell(null)} className="px-2 py-0.5 rounded bg-surface-700 text-surface-300 text-[11px]">Cancel</button>
                                     </div>
                                   </div>
                                 ) : (

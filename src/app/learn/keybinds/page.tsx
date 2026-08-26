@@ -5,7 +5,7 @@ export default function KeybindsModule() {
     <div className="space-y-12 pb-24">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-white mb-4">Keybinds & Shortcuts</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Keybinds & Shortcuts</h1>
         <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
           Write at the speed of thought. Screenplay Studio is designed to keep your hands on the keyboard. Mastering these shortcuts will significantly improve your writing flow.
         </p>
@@ -63,7 +63,7 @@ export default function KeybindsModule() {
           </table>
         </div>
         <p className="text-sm text-surface-400 mt-2">
-          <strong>Tip:</strong> Pressing <kbd className="font-mono bg-surface-800 px-1 py-0.5 rounded text-[10px]">Enter</kbd> will intelligently guess the next element type. For example, pressing Enter after a Character element automatically creates a Dialogue element.
+          <strong>Tip:</strong> Pressing <kbd className="font-mono bg-surface-800 px-1 py-0.5 rounded text-[11px]">Enter</kbd> will intelligently guess the next element type. For example, pressing Enter after a Character element automatically creates a Dialogue element.
         </p>
       </section>
 

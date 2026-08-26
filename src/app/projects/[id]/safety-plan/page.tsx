@@ -140,7 +140,7 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
   if (view === 'edit') return (
     <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-black text-white">{selected ? 'Edit Safety Item' : 'New Safety Item'}</h1>
+        <h1 className="text-xl font-bold text-white">{selected ? 'Edit Safety Item' : 'New Safety Item'}</h1>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => setView('list')}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
@@ -224,7 +224,7 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-black text-white">Safety Plan</h1>
+          <h1 className="text-xl font-bold text-white">Safety Plan</h1>
           <p className="text-sm text-surface-400 mt-0.5">Risk assessment and mitigation for each scene.</p>
         </div>
         {canEdit && <Button onClick={openNew}>+ Add Risk</Button>}
@@ -237,12 +237,12 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
             <Card key={r} className={cn('p-3 text-center cursor-pointer border-2 transition-colors',
               filterRisk === r ? 'border-orange-500/50' : 'border-transparent hover:border-surface-600')}
               onClick={() => setFilterRisk(filterRisk === r ? 'all' : r)}>
-              <p className={cn('text-xl font-black', RISK_META[r].color.split(' ')[1])}>{counts[r]}</p>
+              <p className={cn('text-xl font-bold', RISK_META[r].color.split(' ')[1])}>{counts[r]}</p>
               <p className="text-[11px] text-surface-500 capitalize mt-0.5">{r}</p>
             </Card>
           ))}
           <Card className="p-3 text-center">
-            <p className="text-xl font-black text-green-400">{cleared}</p>
+            <p className="text-xl font-bold text-green-400">{cleared}</p>
             <p className="text-[11px] text-surface-500 mt-0.5">Cleared</p>
           </Card>
         </div>
@@ -272,10 +272,10 @@ export default function SafetyPlanPage({ params }: { params: { id: string } }) {
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className={cn('text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border', RISK_META[item.risk_level].color)}>
+                      <span className={cn('text-[11px] px-2 py-0.5 rounded font-medium uppercase tracking-[0.04em] border', RISK_META[item.risk_level].color)}>
                         {RISK_META[item.risk_level].label}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-surface-700/60 text-surface-400 capitalize border border-surface-700">{item.category}</span>
+                      <span className="text-[11px] px-2 py-0.5 rounded bg-surface-700/60 text-surface-400 capitalize border border-surface-700">{item.category}</span>
                       <span className="text-[11px] text-surface-500 truncate">{sceneLabel(item.scene_id)}</span>
                     </div>
                     {item.description && <p className="text-sm text-white font-medium mb-1">{item.description}</p>}

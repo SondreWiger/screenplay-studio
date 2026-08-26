@@ -82,7 +82,7 @@ export default function DeepDiveMoodboardPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">🎨</div>
-        <h1 className="text-2xl font-black">Not Available</h1>
+        <h1 className="text-2xl font-bold">Not Available</h1>
         <p className="text-white/40">{error || 'Something went wrong.'}</p>
         <Link href={`/community/showcase/${params.id}`} className="mt-4 px-5 py-2.5 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">
           Back to Project
@@ -105,10 +105,10 @@ export default function DeepDiveMoodboardPage() {
             <span className="text-sm text-white/40 truncate max-w-[200px]">{project.title}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-pink-400 bg-pink-500/10 rounded-full border border-pink-500/20">
+            <span className="px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.04em] text-pink-400 bg-pink-500/10 rounded-full border border-pink-500/20">
               Moodboard
             </span>
-            <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/50 bg-surface-900/5 rounded-full">
+            <span className="px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.04em] text-white/50 bg-surface-900/5 rounded-full">
               Read-only
             </span>
           </div>
@@ -120,7 +120,7 @@ export default function DeepDiveMoodboardPage() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center gap-3 mb-2">
             <svg className="w-6 h-6 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            <h1 className="text-2xl font-black">Moodboard</h1>
+            <h1 className="text-2xl font-bold">Moodboard</h1>
           </div>
           <p className="text-white/40 text-sm">
             Visual inspiration and references for <span className="text-white/60 font-medium">{project.title}</span>
@@ -226,7 +226,7 @@ export default function DeepDiveMoodboardPage() {
                 {item.tags && item.tags.length > 0 && (
                   <div className="px-3 pb-3 flex flex-wrap gap-1">
                     {item.tags.map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 text-[10px] text-white/50 bg-surface-900/[0.04] rounded-full">{tag}</span>
+                      <span key={tag} className="px-2 py-0.5 text-[11px] text-white/50 bg-surface-900/[0.04] rounded-full">{tag}</span>
                     ))}
                   </div>
                 )}
@@ -262,7 +262,7 @@ export default function DeepDiveMoodboardPage() {
             {selectedItem.item_type === 'color' && selectedItem.color && (
               <div className="h-48 rounded-t-2xl" style={{ backgroundColor: selectedItem.color }}>
                 <div className="flex items-end h-full p-6">
-                  <span className="px-3 py-1 text-sm font-mono bg-black/40 text-white rounded-lg backdrop-blur-sm">{selectedItem.color}</span>
+                  <span className="px-3 py-1 text-sm bg-black/40 text-white rounded-lg backdrop-blur-sm">{selectedItem.color}</span>
                 </div>
               </div>
             )}
@@ -270,7 +270,7 @@ export default function DeepDiveMoodboardPage() {
             {/* Content */}
             <div className="p-6">
               {selectedItem.title && (
-                <h2 className="text-xl font-black text-white/90 mb-2">{selectedItem.title}</h2>
+                <h2 className="text-xl font-bold text-white/90 mb-2">{selectedItem.title}</h2>
               )}
               {selectedItem.content && (
                 <p className="text-sm text-white/50 leading-relaxed whitespace-pre-wrap mb-4">{selectedItem.content}</p>

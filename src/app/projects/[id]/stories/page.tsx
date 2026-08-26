@@ -262,7 +262,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
           {/* Status filter tabs */}
           <div className="flex flex-wrap gap-1">
             <button
-              className={cn('text-[10px] px-2 py-0.5 rounded font-medium transition-colors',
+              className={cn('text-[11px] px-2 py-0.5 rounded font-medium transition-colors',
                 filter.status === 'all' ? 'bg-surface-700 text-white' : 'text-surface-500 hover:text-white')}
               onClick={() => setFilter(prev => ({ ...prev, status: 'all' }))}
             >
@@ -275,7 +275,7 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
               return (
                 <button
                   key={status}
-                  className={cn('text-[10px] px-2 py-0.5 rounded font-medium transition-colors',
+                  className={cn('text-[11px] px-2 py-0.5 rounded font-medium transition-colors',
                     filter.status === status ? `${opt?.color} text-white` : 'text-surface-500 hover:text-white')}
                   onClick={() => setFilter(prev => ({ ...prev, status }))}
                 >
@@ -308,21 +308,21 @@ export default function StoriesPage({ params }: { params: { id: string } }) {
                 >
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', statusOpt?.color)} />
-                    <span className="text-[10px] font-bold text-surface-500 font-mono">{story.slug}</span>
-                    <span className="text-[10px] px-1 py-0 rounded bg-surface-800 text-surface-400 font-mono">
+                    <span className="text-[11px] font-bold text-surface-500 font-mono">{story.slug}</span>
+                    <span className="text-[11px] px-1 py-0 rounded bg-surface-800 text-surface-400 font-mono">
                       {typeOpt?.abbr}
                     </span>
                     {story.priority >= 4 && (
-                      <span className="text-[9px] px-1 py-0 rounded bg-red-900 text-red-300 font-bold">
+                      <span className="text-[11px] px-1 py-0 rounded bg-red-900 text-red-300 font-bold">
                         {story.priority === 5 ? 'FLASH' : 'URG'}
                       </span>
                     )}
                     {isLocked && (
-                      <span className="text-[9px] text-amber-500" title={`Locked by ${getMemberName(story.locked_by)}`}>🔒</span>
+                      <span className="text-[11px] text-amber-500" title={`Locked by ${getMemberName(story.locked_by)}`}>🔒</span>
                     )}
                   </div>
                   <div className="text-sm text-surface-200 font-medium truncate">{story.title}</div>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-surface-500">
+                  <div className="flex items-center gap-2 mt-1 text-[11px] text-surface-500">
                     {story.estimated_duration && (
                       <span>{formatBroadcastDuration(story.estimated_duration)}</span>
                     )}
@@ -445,7 +445,7 @@ Firefighters from six stations were called to the scene at approximately 3:45 th
               <div className="flex items-center gap-3">
                 <span className="font-mono text-xs text-surface-500">{selectedStory.slug}</span>
                 <span className={cn(
-                  'text-[10px] font-bold px-2 py-0.5 rounded text-white',
+                  'text-[11px] font-bold px-2 py-0.5 rounded text-white',
                   BROADCAST_STORY_STATUS_OPTIONS.find(s => s.value === selectedStory.status)?.color
                 )}>
                   {selectedStory.status.replace('_', ' ').toUpperCase()}
@@ -479,7 +479,7 @@ Firefighters from six stations were called to the scene at approximately 3:45 th
             <div className="flex-1 overflow-y-auto">
               {/* Meta info */}
               <div className="p-4 border-b border-surface-800 bg-surface-900/30">
-                <h1 className="text-xl font-black text-white mb-2">{selectedStory.title}</h1>
+                <h1 className="text-xl font-bold text-white mb-2">{selectedStory.title}</h1>
                 <div className="flex flex-wrap gap-3 text-xs text-surface-400">
                   <span>Type: <strong className="text-surface-300">{BROADCAST_STORY_TYPES.find(t => t.value === selectedStory.story_type)?.label}</strong></span>
                   {selectedStory.estimated_duration && (
@@ -496,7 +496,7 @@ Firefighters from six stations were called to the scene at approximately 3:45 th
               <div className="p-4">
                 {selectedStory.script_text ? (
                   <div className="bg-surface-900 border border-surface-800 rounded-lg p-6">
-                    <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-3">Script / Prompter Text</div>
+                    <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-3">Script / Prompter Text</div>
                     <pre className="text-base text-surface-200 font-serif leading-relaxed whitespace-pre-wrap">
                       {selectedStory.script_text}
                     </pre>
@@ -512,7 +512,7 @@ Firefighters from six stations were called to the scene at approximately 3:45 th
               {/* Version history */}
               {versions.length > 0 && (
                 <div className="p-4 border-t border-surface-800">
-                  <div className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2">Version History</div>
+                  <div className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Version History</div>
                   <div className="space-y-1">
                     {versions.map(v => (
                       <div key={v.id} className="flex items-center gap-3 text-xs text-surface-400 py-1">

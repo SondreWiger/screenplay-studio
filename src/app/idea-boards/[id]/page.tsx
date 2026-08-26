@@ -448,11 +448,11 @@ export default function BoardPage({ params }: { params: { id: string } }) {
                   onChange={e => setTitleDraft(e.target.value)}
                   onBlur={saveTitle}
                   onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') { setEditingTitle(false); setTitleDraft(board.title); } }}
-                  className="w-full text-3xl font-black text-white bg-transparent border-b border-surface-600 focus:outline-none focus:border-white pb-1"
+                  className="w-full text-3xl font-bold text-white bg-transparent border-b border-surface-600 focus:outline-none focus:border-white pb-1"
                 />
               ) : (
                 <h1
-                  className={cn('text-3xl font-black text-white leading-tight', isOwner && 'cursor-text hover:text-white/80 transition-colors')}
+                  className={cn('text-3xl font-bold text-white leading-tight', isOwner && 'cursor-text hover:text-white/80 transition-colors')}
                   onClick={() => isOwner && setEditingTitle(true)}
                   title={isOwner ? 'Click to rename' : undefined}
                 >
@@ -486,13 +486,13 @@ export default function BoardPage({ params }: { params: { id: string } }) {
         {(childBoards.length > 0 || isEditor) && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-surface-600">
+              <p className="text-[11px] uppercase tracking-[0.04em] text-surface-400">
                 Sub-boards{childBoards.length > 0 ? ` · ${childBoards.length}` : ''}
               </p>
               {isEditor && (
                 <button
                   onClick={() => setShowCreateSub(true)}
-                  className="text-[10px] font-mono uppercase tracking-widest text-surface-600 hover:text-white border border-surface-800 hover:border-surface-600 px-2 py-1 rounded-lg transition-colors"
+                  className="text-[11px] uppercase tracking-[0.04em] text-surface-400 hover:text-white border border-surface-800 hover:border-surface-600 px-2 py-1 rounded-lg transition-colors"
                 >
                   + New
                 </button>
@@ -559,7 +559,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
         {/* ── Add node toolbar ── */}
         {isEditor && (
           <div className="mt-6 pt-4 border-t border-surface-800">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-surface-600 mb-3">Add block</p>
+            <p className="text-[11px] uppercase tracking-[0.04em] text-surface-400 mb-3">Add block</p>
             <div className="flex flex-wrap gap-2">
               {[
                 { type: 'heading' as NodeType, icon: 'H', label: 'Heading' },
@@ -600,7 +600,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
         <div className="space-y-4">
           {/* Owner */}
           <div>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-surface-500 mb-2">Owner</p>
+            <p className="text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-2">Owner</p>
             <div className="flex items-center gap-3 p-2 rounded-lg bg-surface-900">
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
                 style={{ background: board.color }}>
@@ -609,14 +609,14 @@ export default function BoardPage({ params }: { params: { id: string } }) {
               <span className="text-sm text-white">
                 {board.owner_id === user?.id ? (user?.full_name || 'You') : 'Board owner'}
               </span>
-              <span className="ml-auto text-[10px] text-surface-500 font-mono">owner</span>
+              <span className="ml-auto text-[11px] text-surface-500 font-mono">owner</span>
             </div>
           </div>
 
           {/* Other members */}
           {members.length > 0 && (
             <div>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-surface-500 mb-2">Members</p>
+              <p className="text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-2">Members</p>
               <div className="space-y-1">
                 {members.map(m => (
                   <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg bg-surface-900">
@@ -626,7 +626,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{m.profiles?.full_name || 'Unknown'}</p>
                     </div>
-                    <span className="text-[10px] text-surface-500 font-mono shrink-0">{m.role}</span>
+                    <span className="text-[11px] text-surface-500 font-mono shrink-0">{m.role}</span>
                     {isOwner && (
                       <button
                         onClick={() => removeMember(m.id)}
@@ -647,7 +647,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
           {/* Invite form */}
           {isOwner && (
             <div className="pt-2 border-t border-surface-800">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-surface-500 mb-3">Invite someone</p>
+              <p className="text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-3">Invite someone</p>
               <div className="flex gap-2">
                 <Input
                   placeholder="Email address"
@@ -947,7 +947,7 @@ function NodeBlock({
         )}
         {pct !== null && (
           <span
-            className="text-[10px] font-mono tabular-nums shrink-0"
+            className="text-[11px] font-mono tabular-nums shrink-0"
             style={{ color: pct === 100 ? '#10b981' : '#4b5563' }}
           >
             {pct}%
@@ -1180,7 +1180,7 @@ function NodeControls({
           <>
             <div className="fixed inset-0 z-10" onClick={() => setAddMenuOpen(false)} />
             <div className="absolute right-0 top-full mt-1 z-20 bg-surface-900 border border-surface-700 rounded-xl shadow-xl py-1.5 min-w-[130px]">
-              <p className="px-3 py-1 text-[10px] text-surface-600 uppercase tracking-wider">Insert below</p>
+              <p className="px-3 py-1 text-[11px] text-surface-400 uppercase tracking-[0.04em]">Insert below</p>
               {(['heading', 'text', 'checklist', 'divider', 'project_link'] as NodeType[]).map(t => (
                 <button
                   key={t}

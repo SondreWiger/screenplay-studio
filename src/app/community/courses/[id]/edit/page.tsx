@@ -99,7 +99,7 @@ function LessonContentForm({ type, value, onChange }: {
         {v.questions.map((q: QuizQuestion, qi: number) => (
           <div key={q.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">Q{qi+1}</span>
+              <span className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em]">Q{qi+1}</span>
               <button onClick={() => removeQ(q.id)} className="text-xs text-red-400/50 hover:text-red-400">Remove</button>
             </div>
             <textarea value={q.text} onChange={e => updateQ(q.id, { text: e.target.value })} rows={2}
@@ -347,7 +347,7 @@ export default function CourseEditPage() {
       {/* Page sub-nav */}
       <div className="sticky top-14 z-30 backdrop-blur-xl border-b border-white/[0.07]" style={{ background: 'rgba(7,7,16,0.95)' }}>
         <div className="max-w-5xl mx-auto px-6 flex items-center gap-4 h-12">
-          <Link href={`/community/courses/${courseId}`} className="text-[10px] font-mono text-white/30 hover:text-white/60 transition-colors uppercase tracking-wider">← Back</Link>
+          <Link href={`/community/courses/${courseId}`} className="text-[11px] text-white/55 hover:text-white/60 transition-colors uppercase tracking-[0.04em]">← Back</Link>
           <span className="text-white/10">|</span>
           <h1 className="text-sm font-bold text-white truncate">{title || 'Edit Course'}</h1>
 
@@ -355,7 +355,7 @@ export default function CourseEditPage() {
             {(['meta','build'] as const).map((s, i) => (
               <button key={s} onClick={() => setStep(s)}
                 className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors', step === s ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/60')}>
-                <span className="w-3.5 h-3.5 rounded-full bg-current/20 flex items-center justify-center text-[9px]">{i+1}</span>
+                <span className="w-3.5 h-3.5 rounded-full bg-current/20 flex items-center justify-center text-[11px]">{i+1}</span>
                 {s === 'meta' ? 'Details' : 'Build'}
               </button>
             ))}
@@ -368,29 +368,29 @@ export default function CourseEditPage() {
           // Step 1: metadata
           <div className="max-w-2xl space-y-6">
             <div>
-              <h2 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
+              <h2 className="text-2xl font-bold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
               <p className="text-sm text-white/40">Update the information about your course.</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Title *</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Title *</label>
                 <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Course title…"
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-base font-semibold text-white px-4 py-3 outline-none focus:border-brand-500/40" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Short Description</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Short Description</label>
                 <input value={shortDesc} onChange={e => setShortDesc(e.target.value)} maxLength={100}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-4 py-2.5 outline-none focus:border-white/30" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Full Description</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Full Description</label>
                 <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white/80 px-4 py-3 outline-none focus:border-white/30 resize-none" />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Difficulty</label>
+                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Difficulty</label>
                   <select value={difficulty} onChange={e => setDifficulty(e.target.value as CourseDifficulty)}
                     className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-3 py-2.5 outline-none">
                     <option value="beginner">Beginner</option>
@@ -399,18 +399,18 @@ export default function CourseEditPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">XP Reward</label>
+                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">XP Reward</label>
                   <input type="number" value={xpReward} onChange={e => setXpReward(+e.target.value)}
                     className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-3 py-2.5 outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Est. Minutes</label>
+                  <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Est. Minutes</label>
                   <input type="number" value={estMins} onChange={e => setEstMins(+e.target.value)}
                     className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-3 py-2.5 outline-none" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Tags</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Tags</label>
                 <div className="flex gap-2 mb-2">
                   <input value={tagInput} onChange={e => setTagInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && tagInput.trim()) { setTags(t => [...t, tagInput.trim()]); setTagInput(''); e.preventDefault(); } }}
@@ -426,7 +426,7 @@ export default function CourseEditPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">Thumbnail URL</label>
+                <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Thumbnail URL</label>
                 <input value={thumbnail} onChange={e => setThumbnail(e.target.value)} placeholder="https://…"
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white/80 px-4 py-2.5 outline-none" />
               </div>
@@ -444,9 +444,9 @@ export default function CourseEditPage() {
           <div className="space-y-5">
             <div className="flex items-end justify-between flex-wrap gap-3">
               <div>
-                <h2 className="text-xl font-black text-white mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
+                <h2 className="text-xl font-bold text-white mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
                 <div className="flex items-center gap-3 text-xs">
-                  <span className={cn('px-2 py-0.5 rounded border font-medium uppercase tracking-wider', status === 'published' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-white/15 text-white/40')}>
+                  <span className={cn('px-2 py-0.5 rounded border font-medium uppercase tracking-[0.04em]', status === 'published' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-white/15 text-white/40')}>
                     {status}
                   </span>
                   <span className="text-white/30">{sections.reduce((n, s) => n + s.lessons.length, 0)} lessons</span>
@@ -467,7 +467,7 @@ export default function CourseEditPage() {
             {sections.map((sec, si) => (
               <div key={sec.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
-                  <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-500 text-[10px] font-bold flex items-center justify-center shrink-0">{si+1}</span>
+                  <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-500 text-[11px] font-bold flex items-center justify-center shrink-0">{si+1}</span>
                   <input value={sec.title} onChange={e => updateSection(sec.id, { title: e.target.value })}
                     className="flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder-white/20" placeholder="Section Title" />
                   <button onClick={() => removeSection(sec.id)} className="text-xs text-red-400/50 hover:text-red-400 transition-colors">Remove</button>
@@ -478,7 +478,7 @@ export default function CourseEditPage() {
                       <span className="text-sm">{LESSON_TYPES.find(t => t.value === lesson.lesson_type)?.icon}</span>
                       <div className="flex-1 min-w-0">
                         <span className="text-sm text-white/80 block truncate">{lesson.title}</span>
-                        <span className="text-[10px] text-white/30">{LESSON_TYPES.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
+                        <span className="text-[11px] text-white/30">{LESSON_TYPES.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
                       </div>
                       <button onClick={() => setEditingLesson({ secId: sec.id, lesson: { ...lesson } })}
                         className="text-xs text-white/40 hover:text-white/80 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg transition-colors">Edit</button>
@@ -540,7 +540,7 @@ export default function CourseEditPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-white/50 mb-2 uppercase tracking-wider">Lesson Type</label>
+                <label className="block text-xs text-white/50 mb-2 uppercase tracking-[0.04em]">Lesson Type</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {LESSON_TYPES.map(opt => (
                     <button key={opt.value}
@@ -549,7 +549,7 @@ export default function CourseEditPage() {
                       <span className="text-lg leading-none">{opt.icon}</span>
                       <div>
                         <div className="text-xs font-semibold text-white">{opt.label}</div>
-                        <div className="text-[10px] text-white/40 leading-snug">{opt.desc}</div>
+                        <div className="text-[11px] text-white/40 leading-snug">{opt.desc}</div>
                       </div>
                     </button>
                   ))}
@@ -557,7 +557,7 @@ export default function CourseEditPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-white/50 mb-2 uppercase tracking-wider">Content</label>
+                <label className="block text-xs text-white/50 mb-2 uppercase tracking-[0.04em]">Content</label>
                 <LessonContentForm
                   type={editingLesson.lesson.lesson_type}
                   value={editingLesson.lesson.content}

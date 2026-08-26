@@ -53,9 +53,9 @@ interface StatBoxProps {
 export function StatBox({ label, value, sub }: StatBoxProps) {
   return (
     <div className="border border-white/6 p-4 text-center">
-      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 font-mono mb-1">{label}</p>
-      <p className="text-xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>{value}</p>
-      {sub && <p className="text-[10px] text-white/20 mt-0.5">{sub}</p>}
+      <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55 mb-1">{label}</p>
+      <p className="text-xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>{value}</p>
+      {sub && <p className="text-[11px] text-white/20 mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -65,7 +65,7 @@ export function OrangeButton({ onClick, disabled, children }: { onClick: () => v
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-white bg-brand-500 transition-all duration-150 hover:-translate-y-px disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0"
+      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.04em] text-white bg-brand-500 transition-all duration-150 hover:-translate-y-px disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0"
     >
       {children}
     </button>
@@ -76,7 +76,7 @@ export function GhostButton({ onClick, children }: { onClick: () => void; childr
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-white/50 border border-white/10 transition-colors hover:text-white hover:bg-white/[0.03]"
+      className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-white/50 border border-white/10 transition-colors hover:text-white hover:bg-white/[0.03]"
     >
       {children}
     </button>

@@ -167,7 +167,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-black text-white">Session Complete</h1>
+          <h1 className="text-xl font-bold text-white">Session Complete</h1>
           <p className="text-sm text-surface-400 mt-0.5">Total runtime: <span className="text-orange-400 font-bold text-base">{fmt(totalElapsed)}</span></p>
         </div>
         <div className="flex gap-2">
@@ -188,7 +188,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
       <Card className="overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-surface-800/60 text-surface-400 text-[11px] uppercase tracking-wider">
+            <tr className="bg-surface-800/60 text-surface-400 text-[11px] uppercase tracking-[0.04em]">
               <th className="px-4 py-2 text-left">#</th>
               <th className="px-4 py-2 text-left">Scene</th>
               <th className="px-4 py-2 text-right">Time</th>
@@ -205,8 +205,8 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
               </tr>
             ))}
             <tr className="border-t-2 border-orange-500/30 bg-orange-500/5">
-              <td colSpan={2} className="px-4 py-2.5 text-orange-300 font-bold text-xs uppercase tracking-wider">Total</td>
-              <td className="px-4 py-2.5 text-right font-mono font-black text-orange-400 text-base">{fmt(totalElapsed)}</td>
+              <td colSpan={2} className="px-4 py-2.5 text-orange-300 font-medium text-xs uppercase tracking-[0.04em]">Total</td>
+              <td className="px-4 py-2.5 text-right font-mono font-semibold text-orange-400 text-base">{fmt(totalElapsed)}</td>
             </tr>
           </tbody>
         </table>
@@ -221,7 +221,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
     return (
       <div className="p-4 md:p-8 max-w-xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-black text-white">Table Read</h1>
+          <h1 className="text-xl font-bold text-white">Table Read</h1>
           <p className="text-sm text-surface-400">{currentSceneIdx + 1} / {scenes.length} scenes</p>
         </div>
 
@@ -232,10 +232,10 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
 
         {/* Current scene card */}
         <Card className="p-8 text-center mb-4">
-          <p className="text-xs text-surface-500 uppercase tracking-widest mb-2">Current Scene</p>
+          <p className="text-xs text-surface-500 uppercase tracking-[0.04em] mb-2">Current Scene</p>
           <p className="text-base font-semibold text-white mb-1 line-clamp-3">{scene.scene_heading ?? `Scene ${scene.scene_number}`}</p>
           {scene.page_count && <p className="text-xs text-surface-500">{scene.page_count} pages</p>}
-          <div className={cn('text-5xl font-black font-mono mt-6 tabular-nums', running ? 'text-orange-400' : 'text-surface-600')}>
+          <div className={cn('text-5xl font-bold font-mono mt-6 tabular-nums', running ? 'text-orange-400' : 'text-surface-600')}>
             {fmt(elapsed)}
           </div>
           <p className="text-xs text-surface-500 mt-2">Total: {fmt(totalElapsed)}</p>
@@ -254,7 +254,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
         {/* Upcoming list */}
         {scenes.slice(currentSceneIdx + 1, currentSceneIdx + 5).length > 0 && (
           <div className="mt-4">
-            <p className="text-xs text-surface-500 mb-2 uppercase tracking-wider">Up next</p>
+            <p className="text-xs text-surface-500 mb-2 uppercase tracking-[0.04em]">Up next</p>
             {scenes.slice(currentSceneIdx + 1, currentSceneIdx + 5).map((s, i) => (
               <div key={s.id} className="text-xs text-surface-500 py-1 border-b border-surface-800/50 truncate">
                 {currentSceneIdx + i + 2}. {s.scene_heading ?? `Scene ${s.scene_number}`}
@@ -266,7 +266,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
         {/* Already timed */}
         {sceneTimings.length > 0 && (
           <div className="mt-6">
-            <p className="text-xs text-surface-500 mb-2 uppercase tracking-wider">Completed</p>
+            <p className="text-xs text-surface-500 mb-2 uppercase tracking-[0.04em]">Completed</p>
             {[...sceneTimings].reverse().map((t) => (
               <div key={t.scene_id} className="flex justify-between text-xs text-surface-500 py-1 border-b border-surface-800/50">
                 <span className="truncate pr-4">{t.heading}</span>
@@ -284,7 +284,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-black text-white">Table Read</h1>
+          <h1 className="text-xl font-bold text-white">Table Read</h1>
           <p className="text-sm text-surface-400 mt-0.5">Time each scene live and save the session.</p>
         </div>
         {canEdit && scenes.length > 0 && (

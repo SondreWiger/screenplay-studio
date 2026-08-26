@@ -33,11 +33,11 @@ interface EpisodeMeta {
 // Constants
 
 const EPISODE_STATUSES = [
-  { value: 'white',     label: 'Draft',       dot: 'bg-surface-500',  pill: 'bg-surface-700  text-surface-300' },
-  { value: 'blue',      label: 'First Draft', dot: 'bg-blue-500',     pill: 'bg-blue-500/20  text-blue-300' },
-  { value: 'yellow',    label: 'In Progress', dot: 'bg-yellow-500',   pill: 'bg-yellow-500/20  text-yellow-300' },
-  { value: 'green',     label: 'Ready',       dot: 'bg-green-500',    pill: 'bg-green-500/20  text-green-300' },
-  { value: 'goldenrod', label: 'Locked',      dot: 'bg-amber-500',    pill: 'bg-amber-500/20  text-amber-300' },
+  { value: 'white',     label: 'Draft',       dot: 'bg-surface-500',  pill: 'bg-surface-700 text-surface-300' },
+  { value: 'blue',      label: 'First Draft', dot: 'bg-blue-500',     pill: 'bg-blue-500/20 text-blue-300' },
+  { value: 'yellow',    label: 'In Progress', dot: 'bg-yellow-500',   pill: 'bg-yellow-500/20 text-yellow-300' },
+  { value: 'green',     label: 'Ready',       dot: 'bg-green-500',    pill: 'bg-green-500/20 text-green-300' },
+  { value: 'goldenrod', label: 'Locked',      dot: 'bg-amber-500',    pill: 'bg-amber-500/20 text-amber-300' },
 ] as const;
 
 const SEASON_PALETTE = [
@@ -468,12 +468,12 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h1 className="text-2xl font-black text-white">{currentProject?.title}</h1>
+            <h1 className="text-2xl font-bold text-white">{currentProject?.title}</h1>
             <div className="flex items-center gap-1.5">
               {seasons.map(s => (
                 <span
                   key={s.num}
-                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold text-white"
+                  className="text-[11px] px-2 py-0.5 rounded-full font-semibold text-white"
                   style={{ backgroundColor: s.color + '33', color: s.color }}
                 >
                   {s.name}
@@ -656,7 +656,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                           />
 
                           {/* Episode code */}
-                          <span className="text-[10px] font-mono font-semibold text-surface-500 w-14 shrink-0">
+                          <span className="text-[11px] font-mono font-semibold text-surface-500 w-14 shrink-0">
                             S{String(snum).padStart(2,'0')}E{String(index + 1).padStart(2,'0')}
                           </span>
 
@@ -669,7 +669,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                           </div>
 
                           {/* Last edited */}
-                          <span className="text-[10px] text-surface-600 shrink-0 hidden md:block">
+                          <span className="text-[11px] text-surface-600 shrink-0 hidden md:block">
                             {timeAgo(script.updated_at)}
                           </span>
 
@@ -681,7 +681,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                               <div className="relative" onClick={e => e.stopPropagation()}>
                                 <button
                                   onClick={() => setOpenSeasonFor(openSeasonFor === script.id ? null : script.id)}
-                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-colors hover:bg-surface-800 text-surface-400 hover:text-white"
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors hover:bg-surface-800 text-surface-400 hover:text-white"
                                   title="Assign season"
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: seasonColor }} />
@@ -713,7 +713,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                               <div className="relative" onClick={e => e.stopPropagation()}>
                                 <button
                                   onClick={() => setOpenColorFor(openColorFor === script.id ? null : script.id)}
-                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] transition-colors hover:bg-surface-800"
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] transition-colors hover:bg-surface-800"
                                   title="Episode color"
                                 >
                                   <span
@@ -753,7 +753,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                                 <button
                                   onClick={() => setOpenStatusFor(openStatusFor === script.id ? null : script.id)}
                                   className={cn(
-                                    'flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-semibold transition-colors',
+                                    'flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors',
                                     status.pill,
                                   )}
                                 >
@@ -1002,7 +1002,7 @@ function SeasonManager({
                 onChange={e => updateName(s.num, e.target.value)}
                 placeholder={`Season ${s.num}`}
               />
-              <span className="text-[10px] text-surface-600 font-mono shrink-0">S{s.num}</span>
+              <span className="text-[11px] text-surface-600 font-mono shrink-0">S{s.num}</span>
               <button
                 onClick={() => removeSeason(s.num)}
                 className="shrink-0 text-surface-600 hover:text-red-400 transition-colors"

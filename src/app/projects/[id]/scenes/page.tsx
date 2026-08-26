@@ -164,7 +164,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">Scene Breakdown</h1>
+          <h1 className="text-2xl font-bold text-white">Scene Breakdown</h1>
           <p className="text-sm text-surface-400 mt-1">
             {completed}/{scenes.length} scenes completed &bull; {totalPages} pages total
             {setupNeeded > 0 && <span className="text-amber-400"> &bull; {setupNeeded} need setup</span>}
@@ -605,7 +605,7 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
                       <Badge size="sm">{parsed.timeOfDay}</Badge>
                     </div>
                   </div>
-                  {isLinked && <span className="text-[10px] text-green-400">Already linked</span>}
+                  {isLinked && <span className="text-[11px] text-green-400">Already linked</span>}
                 </button>
               );
             })}

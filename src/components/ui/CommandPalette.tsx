@@ -3,19 +3,23 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
+import { getNavCategories, getProjectNavFlags } from '@/lib/navCategories';
+import { useProFeatures } from '@/hooks/useProFeatures';
 import { cn } from '@/lib/utils';
 import { getRecentProjects } from '@/hooks/useRecentProjects';
 import { useTranslation } from '@/components/TranslationProvider';
 
 // Types
 type ResultGroup =
+  | 'Tools'
   | 'Projects' | 'Scripts' | 'Script Lines' | 'Characters'
   | 'Locations' | 'Scenes' | 'Ideas' | 'Documents'
   | 'Chat' | 'Messages' | 'Contacts' | 'Stories'
   | 'Ensemble' | 'Stage Cues';
 
 const GROUP_ORDER: ResultGroup[] = [
+  'Tools',
   'Projects', 'Scripts', 'Script Lines', 'Characters',
   'Locations', 'Scenes', 'Ideas', 'Documents',
   'Ensemble', 'Stage Cues',
@@ -23,6 +27,7 @@ const GROUP_ORDER: ResultGroup[] = [
 ];
 
 const GROUP_ICONS: Record<ResultGroup, string> = {
+  'Tools': '🧰',
   'Projects': '📁', 'Scripts': '📝', 'Script Lines': '📄', 'Characters': '🎭',
   'Locations': '📍', 'Scenes': '🎬', 'Ideas': '💡', 'Documents': '🗒',
   'Chat': '💬', 'Messages': '✉️', 'Contacts': '📇', 'Stories': '📰',
@@ -83,6 +88,8 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 
 // Modal
 function CommandPaletteModal({ onClose }: { onClose: () => void }) {
+  const { currentProject } = useProjectStore();
+  const { isPro } = useProFeatures();
   const router = useRouter();
   const { user } = useAuthStore();
   const { t } = useTranslation();
@@ -111,8 +118,31 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, user?.id]);
 
+  // Jump straight to any tool in the current project. The nav is the source of
+  // truth, so this automatically respects project type and the Pro gate.
+  const matchTools = useCallback((q: string): SearchResult[] => {
+    if (!currentProject?.id) return [];
+    const needle = q.trim().toLowerCase();
+    if (!needle) return [];
+    const flags = getProjectNavFlags(currentProject);
+    return getNavCategories(currentProject.id, flags)
+      .flatMap((cat) => cat.items.map((item) => ({ item, category: cat.category })))
+      .filter(({ item }) => (item.pro ? isPro : true))
+      .filter(({ item }) => item.label.toLowerCase().includes(needle))
+      .slice(0, 6)
+      .map(({ item, category }) => ({
+        id: `tool-${item.href}`,
+        label: item.label,
+        sublabel: currentProject.title || '',
+        context: category || undefined,
+        path: item.href,
+        group: 'Tools' as const,
+      }));
+  }, [currentProject, isPro]);
+
   const runSearch = useCallback(async (q: string) => {
     if (!user?.id) return;
+    const toolResults = matchTools(q);
     setLoading(true);
     try {
       const supabase = createClient();
@@ -132,7 +162,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
         if (proj?.id) projectMap[proj.id] = proj.title || 'Untitled';
       });
       const accessibleIds = Object.keys(projectMap);
-      if (accessibleIds.length === 0) { setResults([]); setLoading(false); return; }
+      if (accessibleIds.length === 0) { setResults(toolResults); setLoading(false); return; }
 
       // Phase 2: Resolve script IDs + channel IDs
       const [{ data: scriptRows }, { data: channelRows }] = await Promise.all([
@@ -208,7 +238,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       ]);
 
       // Phase 4: Map to SearchResult[]
-      const mapped: SearchResult[] = [];
+      const mapped: SearchResult[] = [...toolResults];
       const sn = (s: string, max = 68) => s.length > max ? s.slice(0, max) + '\u2026' : s;
 
       for (const p of (prjRes.data || []) as { id: string; title: string | null; logline?: string; project_type?: string }[])
@@ -299,11 +329,12 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       setCursor(0);
     } catch (err) {
       console.error('[CommandPalette] Search failed:', err);
-      setResults([]);
+      // Content search failed, but tool navigation is local — keep it usable.
+      setResults(toolResults);
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, matchTools]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -363,7 +394,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
           )}
-          <kbd className="text-[10px] font-mono text-surface-600 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5">Esc</kbd>
+          <kbd className="text-[11px] font-mono text-surface-600 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5">Esc</kbd>
         </div>
 
         {/* Results */}
@@ -373,7 +404,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
               {/* Recent projects */}
               {recentProjects.length > 0 && (
                 <>
-                  <p className="px-4 pb-1 text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Recent</p>
+                  <p className="px-4 pb-1 text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">Recent</p>
                   {recentProjects.map((rp, i) => (
                     <button
                       key={rp.id}
@@ -396,7 +427,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                   <div className="mx-4 my-2 border-t border-surface-800" />
                 </>
               )}
-              <p className="px-4 pb-2 text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Quick navigation</p>
+              <p className="px-4 pb-2 text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">Quick navigation</p>
               {([
                 { label: t('nav.dashboard'),       sublabel: 'Your projects',                path: '/dashboard',       icon: '🏠' },
                 { label: 'Accountability',  sublabel: 'Streaks, buddies & groups',    path: '/accountability',  icon: '🎯' },
@@ -428,7 +459,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
               return (
                 <div key={group}>
                   <div className="flex items-center gap-2 px-4 pt-2 pb-1">
-                    <span className="text-[10px] font-semibold text-surface-500 uppercase tracking-wider whitespace-nowrap">
+                    <span className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em] whitespace-nowrap">
                       {GROUP_ICONS[group]} {group}
                     </span>
                     <div className="flex-1 h-px bg-surface-800" />
@@ -457,7 +488,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                           )}
                         </div>
                         {isActive && (
-                          <kbd className="text-[10px] font-mono text-surface-600 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5 shrink-0">↵</kbd>
+                          <kbd className="text-[11px] font-mono text-surface-600 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5 shrink-0">↵</kbd>
                         )}
                       </button>
                     );
@@ -470,17 +501,17 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
 
         {/* Footer */}
         <div className="px-4 py-2 border-t border-surface-800 flex items-center gap-4">
-          <span className="text-[10px] text-surface-600 flex items-center gap-1">
+          <span className="text-[11px] text-surface-600 flex items-center gap-1">
             <kbd className="font-mono bg-surface-800 border border-surface-700 rounded px-1">↑↓</kbd> navigate
           </span>
-          <span className="text-[10px] text-surface-600 flex items-center gap-1">
+          <span className="text-[11px] text-surface-600 flex items-center gap-1">
             <kbd className="font-mono bg-surface-800 border border-surface-700 rounded px-1">↵</kbd> open
           </span>
-          <span className="text-[10px] text-surface-600 flex items-center gap-1">
+          <span className="text-[11px] text-surface-600 flex items-center gap-1">
             <kbd className="font-mono bg-surface-800 border border-surface-700 rounded px-1">Esc</kbd> close
           </span>
           {results.length > 0 && (
-            <span className="ml-auto text-[10px] text-surface-600">
+            <span className="ml-auto text-[11px] text-surface-600">
               {results.length} result{results.length !== 1 ? 's' : ''}
             </span>
           )}

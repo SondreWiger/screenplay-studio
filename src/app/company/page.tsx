@@ -370,7 +370,7 @@ export default function CompanyDashboard() {
           <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
           </div>
-          <h1 className="text-2xl font-black text-white mb-2">No Company Yet</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">No Company Yet</h1>
           <p className="text-surface-400 mb-8">Create a company to collaborate with your team, manage projects together, and set granular permissions.</p>
           <div className="flex gap-3 justify-center">
             <Link href="/settings">
@@ -415,12 +415,12 @@ export default function CompanyDashboard() {
             {company.logo_url ? (
               <img src={company.logo_url} alt={company.name || 'Company logo'} className="w-14 h-14 rounded-xl object-cover" loading="lazy" />
             ) : (
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: company.brand_color }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: company.brand_color }}>
                 {company.name[0]}
               </div>
             )}
             <div className="flex-1">
-              <h1 className="text-2xl font-black text-white">{company.name}</h1>
+              <h1 className="text-2xl font-bold text-white">{company.name}</h1>
               {company.tagline && <p className="text-sm text-surface-400 mt-0.5">{company.tagline}</p>}
             </div>
             {company.public_page_enabled && (
@@ -464,7 +464,7 @@ export default function CompanyDashboard() {
               ].map((stat) => (
                 <Card key={stat.label} className="p-4 text-center">
                   <span className="text-2xl">{stat.icon}</span>
-                  <p className="text-2xl font-black text-white mt-1">{stat.value}</p>
+                  <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
                   <p className="text-xs text-surface-400">{stat.label}</p>
                 </Card>
               ))}
@@ -508,7 +508,7 @@ export default function CompanyDashboard() {
                     { done: company.public_page_enabled, label: 'Enable your public company page', action: () => setTab('settings') },
                   ].map((step, i) => (
                     <button key={i} onClick={step.action} className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-surface-800/50 transition-colors text-left">
-                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 ${step.done ? 'bg-green-500/20 text-green-400' : 'bg-surface-800 text-surface-500'}`}>
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] shrink-0 ${step.done ? 'bg-green-500/20 text-green-400' : 'bg-surface-800 text-surface-500'}`}>
                         {step.done ? '✓' : (i + 1)}
                       </span>
                       <span className={`text-sm ${step.done ? 'text-surface-500 line-through' : 'text-surface-300'}`}>{step.label}</span>
@@ -544,7 +544,7 @@ export default function CompanyDashboard() {
                 <div className="space-y-3">
                   {activity.slice(0, 8).map((act) => (
                     <div key={act.id} className="flex items-center gap-3 text-sm">
-                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
                         {(act as CompanyActivityLog & { profile?: { display_name?: string } }).profile?.display_name?.[0] || '?'}
                       </div>
                       <p className="text-surface-300">
@@ -582,7 +582,7 @@ export default function CompanyDashboard() {
                     <p className="text-sm font-medium text-white">{(m as CompanyMember & { profile?: Profile }).profile?.display_name || (m as CompanyMember & { profile?: Profile }).profile?.full_name || 'Member'}</p>
                     <p className="text-xs text-surface-400">{m.job_title || m.role} {m.department ? `· ${m.department}` : ''}</p>
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
+                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide ${
                     m.role === 'owner' ? 'bg-brand-500/20 text-brand-500' :
                     m.role === 'admin' ? 'bg-blue-500/20 text-blue-400' :
                     m.role === 'manager' ? 'bg-green-500/20 text-green-400' :
@@ -665,7 +665,7 @@ export default function CompanyDashboard() {
                         team.can_publish_community && 'Publish',
                         team.can_manage_company && 'Admin',
                       ].filter(Boolean).map((perm) => (
-                        <span key={perm as string} className="px-1.5 py-0.5 text-[10px] rounded bg-surface-800 text-surface-400">{perm}</span>
+                        <span key={perm as string} className="px-1.5 py-0.5 text-[11px] rounded bg-surface-800 text-surface-400">{perm}</span>
                       ))}
                     </div>
                     {canManage && (
@@ -799,8 +799,8 @@ export default function CompanyDashboard() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      {post.pinned && <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-500 font-bold">PINNED</span>}
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide ${
+                      {post.pinned && <span className="text-[11px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-500 font-bold">PINNED</span>}
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide ${
                         post.status === 'published' ? 'bg-green-500/20 text-green-400' :
                         post.status === 'draft' ? 'bg-surface-700 text-surface-400' :
                         'bg-red-500/20 text-red-400'
@@ -981,7 +981,7 @@ export default function CompanyDashboard() {
                     Copy
                   </button>
                 </div>
-                <p className="text-[10px] text-surface-500 text-center">Link expires in 7 days. They&apos;ll also see a banner on their dashboard if they&apos;re registered.</p>
+                <p className="text-[11px] text-surface-500 text-center">Link expires in 7 days. They&apos;ll also see a banner on their dashboard if they&apos;re registered.</p>
                 <div className="flex justify-between items-center pt-2">
                   <button onClick={() => setLastInviteLink('')} className="text-xs text-brand-500 hover:text-brand-400">Invite another</button>
                   <Button variant="ghost" onClick={() => { setShowInviteModal(false); setLastInviteLink(''); }}>Done</Button>

@@ -198,7 +198,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
 
       {/* ── Top bar ─────────────────────────────────── */}
       <div className="flex items-center justify-between mb-10">
-        <span className="text-[11px] text-neutral-600 uppercase tracking-widest">Press Kit</span>
+        <span className="text-[11px] text-neutral-600 uppercase tracking-[0.04em]">Press Kit</span>
         <button
           onClick={handleCopyLink}
           className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-white transition-colors px-2.5 py-1 rounded-lg hover:bg-neutral-900"
@@ -227,7 +227,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
         <div className="flex flex-wrap items-center gap-2 mb-3">
           {format && (
             <span
-              className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full"
+              className="text-[11px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full"
               style={{ background: fColor + '20', color: fColor, border: `1px solid ${fColor}30` }}
             >
               {format.replace(/_/g, ' ')}
@@ -235,7 +235,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
           )}
           {genres.map((g) => <GenreTag key={g} label={g} />)}
         </div>
-        <h1 className="text-3xl font-black text-white leading-tight">{project.title}</h1>
+        <h1 className="text-3xl font-bold text-white leading-tight">{project.title}</h1>
         {project.press_kit_tagline && (
           <p className="text-lg text-neutral-400 mt-2 italic">{project.press_kit_tagline}</p>
         )}
@@ -244,7 +244,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
       {/* ── Logline ─────────────────────────────────── */}
       {project.logline && (
         <div className="mb-6 p-5 rounded-xl bg-neutral-900 border border-neutral-800">
-          <p className="text-[11px] text-neutral-600 uppercase tracking-widest mb-2">Logline</p>
+          <p className="text-[11px] text-neutral-600 uppercase tracking-[0.04em] mb-2">Logline</p>
           <p className="text-white text-base leading-relaxed font-medium">{project.logline}</p>
         </div>
       )}
@@ -252,7 +252,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
       {/* ── Synopsis ────────────────────────────────── */}
       {project.synopsis && (
         <div className="mb-8">
-          <p className="text-[11px] text-neutral-600 uppercase tracking-widest mb-3">Synopsis</p>
+          <p className="text-[11px] text-neutral-600 uppercase tracking-[0.04em] mb-3">Synopsis</p>
           <p className="text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">{project.synopsis}</p>
         </div>
       )}
@@ -263,7 +263,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
       {/* ── Key Creatives ───────────────────────────── */}
       {creatives.length > 0 && (
         <div className="mb-8">
-          <p className="text-[11px] text-neutral-600 uppercase tracking-widest mb-4">Key Creatives</p>
+          <p className="text-[11px] text-neutral-600 uppercase tracking-[0.04em] mb-4">Key Creatives</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {creatives.map((c) => (
               <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl bg-neutral-900 border border-neutral-800">
@@ -278,7 +278,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
                   <p className="text-sm font-semibold text-white truncate">{c.name}</p>
                   <p className="text-[11px] text-neutral-500 truncate">{c.role}</p>
                   {c.department && c.department !== c.role && (
-                    <p className="text-[10px] text-neutral-600">{c.department}</p>
+                    <p className="text-[11px] text-neutral-600">{c.department}</p>
                   )}
                 </div>
                 {c.email && (
@@ -303,7 +303,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
         <>
           <hr className="border-neutral-800 mb-8" />
           <div className="mb-8 text-center">
-            <p className="text-[11px] text-neutral-600 uppercase tracking-widest mb-3">Press Contact</p>
+            <p className="text-[11px] text-neutral-600 uppercase tracking-[0.04em] mb-3">Press Contact</p>
             <a
               href={`mailto:${project.press_kit_contact}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-sm rounded-xl hover:bg-neutral-200 active:scale-95 transition-all"
@@ -320,7 +320,7 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
 
       {/* ── Footer ──────────────────────────────────── */}
       <div className="text-center pt-8 border-t border-neutral-900">
-        <p className="text-[10px] text-neutral-800">
+        <p className="text-[11px] text-neutral-800">
           {project.title} · Press Kit · Powered by{' '}
           <a href="/" className="hover:text-neutral-600 transition-colors">Screenplay Studio</a>
         </p>

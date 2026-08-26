@@ -213,7 +213,7 @@ export default function SponsorsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">Sponsors & Segments</h1>
+          <h1 className="text-2xl font-bold text-white">Sponsors & Segments</h1>
           <p className="text-surface-400 text-sm mt-1">
             Track sponsorships, ad reads, and payments
           </p>
@@ -233,15 +233,15 @@ export default function SponsorsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-surface-900 border border-surface-800 rounded-xl p-4">
             <p className="text-surface-500 text-sm">Total Sponsors</p>
-            <p className="text-2xl font-black text-white mt-1">{sponsors.length}</p>
+            <p className="text-2xl font-bold text-white mt-1">{sponsors.length}</p>
           </div>
           <div className="bg-surface-900 border border-surface-800 rounded-xl p-4">
             <p className="text-surface-500 text-sm">Paid Revenue</p>
-            <p className="text-2xl font-black text-green-400 mt-1">${totalEarnings.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-green-400 mt-1">${totalEarnings.toLocaleString()}</p>
           </div>
           <div className="bg-surface-900 border border-surface-800 rounded-xl p-4">
             <p className="text-surface-500 text-sm">Pending Revenue</p>
-            <p className="text-2xl font-black text-yellow-400 mt-1">${pendingEarnings.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-yellow-400 mt-1">${pendingEarnings.toLocaleString()}</p>
           </div>
         </div>
       )}
@@ -321,7 +321,7 @@ export default function SponsorsPage() {
 
                 <div className="text-right shrink-0">
                   {sponsor.payment_amount && (
-                    <p className="text-xl font-black text-white">${sponsor.payment_amount.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-white">${sponsor.payment_amount.toLocaleString()}</p>
                   )}
                   {sponsor.due_date && (
                     <p className="text-xs text-surface-500 mt-1">

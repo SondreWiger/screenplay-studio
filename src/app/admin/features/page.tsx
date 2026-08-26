@@ -154,7 +154,7 @@ export default function FeatureFlagsPage() {
                 <div className={`w-2 h-2 rounded-full ${TIER_CONFIG[t].dot}`} />
                 <span className={`text-xs font-medium ${TIER_CONFIG[t].color}`}>{TIER_CONFIG[t].label}</span>
               </div>
-              <p className="text-2xl font-black text-white">{tierCounts[t]}</p>
+              <p className="text-2xl font-bold text-white">{tierCounts[t]}</p>
               <p className="text-[11px] text-surface-500">features</p>
             </div>
           ))}
@@ -168,15 +168,15 @@ export default function FeatureFlagsPage() {
           </h3>
           <div className="flex gap-6">
             <div>
-              <span className="text-xl font-black text-purple-400">{insiderStats.alpha}</span>
+              <span className="text-xl font-bold text-purple-400">{insiderStats.alpha}</span>
               <span className="text-xs text-surface-500 ml-1.5">Alpha testers</span>
             </div>
             <div>
-              <span className="text-xl font-black text-amber-400">{insiderStats.beta}</span>
+              <span className="text-xl font-bold text-amber-400">{insiderStats.beta}</span>
               <span className="text-xs text-surface-500 ml-1.5">Beta testers</span>
             </div>
             <div>
-              <span className="text-xl font-black text-white">{insiderStats.total}</span>
+              <span className="text-xl font-bold text-white">{insiderStats.total}</span>
               <span className="text-xs text-surface-500 ml-1.5">Total insiders</span>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function FeatureFlagsPage() {
         {/* Feature List */}
         {Object.entries(grouped).map(([category, items]) => (
           <div key={category}>
-            <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">{CATEGORY_LABELS[category as FeatureCategory] ?? category}</h3>
+            <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">{CATEGORY_LABELS[category as FeatureCategory] ?? category}</h3>
             <div className="space-y-1.5">
               {items.map((flag) => (
                 <div key={flag.id} className="rounded-xl border border-surface-800 bg-surface-900/50 px-4 py-3 flex items-center gap-4 group hover:border-surface-700 transition-colors">

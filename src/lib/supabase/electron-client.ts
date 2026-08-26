@@ -83,8 +83,6 @@ export function createLocalUser(displayName?: string): Profile {
     theme_preference: 'dark',
     company_id: null,
     is_pro: false,
-    is_studio: false,
-    studio_since: null,
     pro_since: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

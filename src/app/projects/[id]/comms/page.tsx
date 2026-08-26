@@ -156,7 +156,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
             {channelsByType.filter(t => t.channels.length > 0).map(typeGroup => (
               <div key={typeGroup.value}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-surface-500">
+                  <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">
                     {typeGroup.label}
                   </span>
                   <div className="flex-1 h-px bg-surface-800" />
@@ -187,10 +187,10 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                           <div>
                             <h3 className="text-sm font-bold text-white">{channel.name}</h3>
                             {channel.description && (
-                              <p className="text-[10px] text-surface-500 mt-0.5">{channel.description}</p>
+                              <p className="text-[11px] text-surface-500 mt-0.5">{channel.description}</p>
                             )}
                           </div>
-                          <Badge variant={channel.is_active ? 'info' : 'default'} className="text-[8px]">
+                          <Badge variant={channel.is_active ? 'info' : 'default'} className="text-[11px]">
                             {typeGroup.label}
                           </Badge>
                         </div>
@@ -199,7 +199,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                         {channel.members && channel.members.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-3">
                             {(channel.members as any[]).map((m, i) => (
-                              <span key={i} className="text-[10px] px-1.5 py-0.5 bg-surface-800 rounded text-surface-400">
+                              <span key={i} className="text-[11px] px-1.5 py-0.5 bg-surface-800 rounded text-surface-400">
                                 {m.name || m.role || `Member ${i + 1}`}
                               </span>
                             ))}
@@ -212,7 +212,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                             onClick={() => toggleListen(channel.id)}
                             disabled={!channel.is_active}
                             className={cn(
-                              'flex-1 py-2 rounded text-xs font-bold uppercase transition-colors',
+                              'flex-1 py-2 rounded text-xs font-medium uppercase transition-colors',
                               isListening
                                 ? 'bg-green-600 text-white hover:bg-green-700'
                                 : 'bg-surface-800 text-surface-400 hover:bg-surface-700'
@@ -228,7 +228,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                             onTouchEnd={() => stopTalk(channel.id)}
                             disabled={!isListening || !channel.is_active}
                             className={cn(
-                              'flex-1 py-2 rounded text-xs font-bold uppercase transition-colors',
+                              'flex-1 py-2 rounded text-xs font-medium uppercase transition-colors',
                               isTalking
                                 ? 'bg-red-600 text-white'
                                 : isListening
@@ -244,13 +244,13 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                         <div className="flex items-center justify-between mt-3 pt-2 border-t border-surface-800">
                           <button
                             onClick={() => toggleActive(channel)}
-                            className="text-[10px] text-surface-500 hover:text-white transition-colors"
+                            className="text-[11px] text-surface-500 hover:text-white transition-colors"
                           >
                             {channel.is_active ? 'Disable' : 'Enable'}
                           </button>
                           <button
                             onClick={() => deleteChannel(channel.id)}
-                            className="text-[10px] text-surface-500 hover:text-red-400 transition-colors"
+                            className="text-[11px] text-surface-500 hover:text-red-400 transition-colors"
                           >
                             Delete
                           </button>
@@ -267,7 +267,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
 
       {/* ── Status Bar ─────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-1.5 border-t border-surface-800 bg-surface-900">
-        <div className="flex items-center gap-4 text-[10px] text-surface-500">
+        <div className="flex items-center gap-4 text-[11px] text-surface-500">
           <span>{channels.length} channel{channels.length !== 1 ? 's' : ''}</span>
           <span>{channels.filter(c => c.is_active).length} active</span>
           <span>{activeChannels.size} monitoring</span>
@@ -275,7 +275,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
         {talkingChannels.size > 0 && (
           <div className="flex items-center gap-1 text-red-400">
             <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-[10px] font-bold uppercase">TX on {talkingChannels.size} ch</span>
+            <span className="text-[11px] font-medium uppercase">TX on {talkingChannels.size} ch</span>
           </div>
         )}
       </div>

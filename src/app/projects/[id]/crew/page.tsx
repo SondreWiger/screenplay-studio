@@ -77,7 +77,7 @@ function MobileSection({
       >
         <div className="flex items-center gap-2">
           <div className="w-1 h-4 rounded-full" style={{ backgroundColor: color }} />
-          <span className="text-sm font-bold text-white uppercase tracking-wide">{title}</span>
+          <span className="text-sm font-medium text-white uppercase tracking-wide">{title}</span>
           {count !== undefined && (
             <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: color + '20', color }}>
               {count}
@@ -107,7 +107,7 @@ function ContactRow({ label, sub, email, phone, badge, badgeColor }: {
         <p className="text-sm font-semibold text-white truncate">{label}</p>
         {sub && <p className="text-[11px] text-surface-500 truncate">{sub}</p>}
         {badge && (
-          <span className="inline-block text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded mt-0.5"
+          <span className="inline-block text-[11px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded mt-0.5"
             style={{ background: (badgeColor ?? '#6366f1') + '20', color: badgeColor ?? '#6366f1' }}>
             {badge}
           </span>
@@ -136,7 +136,7 @@ function DesktopPersonCard({ name, role, email, phone, color }: {
   const c = color ?? '#6366f1';
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-      <div className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-sm font-black"
+      <div className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-sm font-semibold"
         style={{ background: c + '22', color: c }}>
         {name.charAt(0).toUpperCase()}
       </div>
@@ -146,14 +146,14 @@ function DesktopPersonCard({ name, role, email, phone, color }: {
         <div className="flex items-center gap-2 mt-1.5">
           {phone && (
             <a href={`tel:${phone}`} title={phone}
-              className="text-[10px] font-mono text-green-400/70 hover:text-green-400 transition-colors flex items-center gap-0.5">
+              className="text-[11px] font-mono text-green-400/70 hover:text-green-400 transition-colors flex items-center gap-0.5">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
               {phone}
             </a>
           )}
           {email && (
             <a href={`mailto:${email}`} title={email}
-              className="text-[10px] font-mono text-blue-400/70 hover:text-blue-400 transition-colors flex items-center gap-0.5 truncate">
+              className="text-[11px] font-mono text-blue-400/70 hover:text-blue-400 transition-colors flex items-center gap-0.5 truncate">
               <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
               <span className="truncate">{email}</span>
             </a>
@@ -178,9 +178,9 @@ function DeptPanel({ title, members, color, castMode = false }: {
         style={{ background: color + '12' }}>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color }}>{title}</span>
+          <span className="text-xs font-medium uppercase tracking-[0.04em]" style={{ color }}>{title}</span>
         </div>
-        <span className="text-[10px] font-bold rounded-full px-2 py-0.5"
+        <span className="text-[11px] font-bold rounded-full px-2 py-0.5"
           style={{ background: color + '20', color }}>{members.length}</span>
       </div>
       {/* members grid */}
@@ -300,7 +300,7 @@ export default function CrewMobileView() {
   const totalPeople = crew.length + cast.length;
   const headerBadges = (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wide"
         style={{ background: statusColor + '18', color: statusColor, border: `1px solid ${statusColor}35` }}>
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: statusColor }} />
         {currentProject.status.replace(/_/g, ' ')}
@@ -323,7 +323,7 @@ export default function CrewMobileView() {
         {/* Project header */}
         <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
           <div className="flex items-start justify-between gap-2 mb-3">
-            <h1 className="text-base font-black text-white leading-tight">{currentProject.title}</h1>
+            <h1 className="text-base font-semibold text-white leading-tight">{currentProject.title}</h1>
             <button
               onClick={() => { setLoading(true); fetchAll(); }}
               className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-colors"
@@ -348,15 +348,15 @@ export default function CrewMobileView() {
             { label: 'Today',  val: todaysEvents.length },
           ].map(({ label, val }) => (
             <div key={label} className="flex flex-col items-center py-3 gap-0.5">
-              <span className="text-xl font-black text-white tabular-nums">{val}</span>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-white/25">{label}</span>
+              <span className="text-xl font-bold text-white tabular-nums">{val}</span>
+              <span className="text-[11px] uppercase tracking-[0.04em] text-white/55">{label}</span>
             </div>
           ))}
         </div>
 
         {/* Today's schedule */}
         <div className="flex-1 px-4 py-4">
-          <p className="text-[9px] font-mono uppercase tracking-widest text-white/25 mb-3">Today&apos;s Schedule</p>
+          <p className="text-[11px] uppercase tracking-[0.04em] text-white/55 mb-3">Today&apos;s Schedule</p>
           {todaysEvents.length === 0 ? (
             <p className="text-[12px] text-white/20 italic">Nothing scheduled today.</p>
           ) : (
@@ -366,13 +366,13 @@ export default function CrewMobileView() {
                   <div className="w-0.5 rounded-full self-stretch shrink-0" style={{ backgroundColor: event.color || '#6366f1' }} />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-white/80 leading-snug">{event.title}</p>
-                    <p className="text-[10px] text-white/30 mt-0.5">
+                    <p className="text-[11px] text-white/30 mt-0.5">
                       {new Date(event.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {event.end_time && ` – ${new Date(event.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                     </p>
-                    <p className="text-[10px] text-white/20 uppercase tracking-wide mt-0.5">{event.event_type?.replace(/_/g, ' ')}</p>
+                    <p className="text-[11px] text-white/55 uppercase tracking-wide mt-0.5">{event.event_type?.replace(/_/g, ' ')}</p>
                     {event.is_confirmed && (
-                      <span className="text-[9px] font-bold text-green-400 mt-1 inline-block">✓ confirmed</span>
+                      <span className="text-[11px] font-bold text-green-400 mt-1 inline-block">✓ confirmed</span>
                     )}
                   </div>
                 </div>
@@ -384,7 +384,7 @@ export default function CrewMobileView() {
         {/* Footer */}
         {lastUpdated && (
           <div className="px-5 py-3 border-t border-white/[0.04]">
-            <p className="text-[10px] text-white/15">Updated {timeAgo(lastUpdated.toISOString())}</p>
+            <p className="text-[11px] text-white/15">Updated {timeAgo(lastUpdated.toISOString())}</p>
           </div>
         )}
       </aside>
@@ -397,8 +397,8 @@ export default function CrewMobileView() {
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-1 h-5 rounded-full" style={{ background: '#f472b6' }} />
-              <h2 className="text-xs font-black uppercase tracking-widest text-white/60">Cast</h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#f472b6' + '20', color: '#f472b6' }}>{cast.length}</span>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.04em] text-white/60">Cast</h2>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#f472b6' + '20', color: '#f472b6' }}>{cast.length}</span>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {Object.entries(castByGroup).map(([group, members]) => (
@@ -413,10 +413,10 @@ export default function CrewMobileView() {
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-1 h-5 rounded-full" style={{ background: '#34d399' }} />
-              <h2 className="text-xs font-black uppercase tracking-widest text-white/60">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.04em] text-white/60">
                 {isStagePlay ? 'Production Team' : 'Team'}
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#34d39920', color: '#34d399' }}>{crew.length}</span>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#34d39920', color: '#34d399' }}>{crew.length}</span>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {Object.entries(crewByDept).map(([dept, members]) => (
@@ -431,15 +431,15 @@ export default function CrewMobileView() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-1 h-5 rounded-full" style={{ background: '#fbbf24' }} />
-              <h2 className="text-xs font-black uppercase tracking-widest text-white/60">Cue Sheet</h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#fbbf2420', color: '#fbbf24' }}>{cues.length}</span>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.04em] text-white/60">Cue Sheet</h2>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#fbbf2420', color: '#fbbf24' }}>{cues.length}</span>
             </div>
             <div className="rounded-xl border border-white/[0.06] overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/[0.06]" style={{ background: '#fbbf2410' }}>
                     {['Cue #', 'Type', 'Description', 'Scene', 'Timing'].map(h => (
-                      <th key={h} className="text-left text-[10px] font-mono uppercase tracking-widest text-white/30 px-4 py-2.5">{h}</th>
+                      <th key={h} className="text-left text-[11px] uppercase tracking-[0.04em] text-white/55 px-4 py-2.5">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -450,7 +450,7 @@ export default function CrewMobileView() {
                       <tr key={cue.id} className={cn('border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors', i % 2 === 0 ? '' : 'bg-white/[0.015]')}>
                         <td className="px-4 py-2.5 font-mono font-bold text-white/80 text-xs">{cue.cue_number}</td>
                         <td className="px-4 py-2.5">
-                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
+                          <span className="text-[11px] font-medium uppercase px-1.5 py-0.5 rounded"
                             style={{ background: cueColor + '20', color: cueColor }}>
                             {cue.cue_type?.replace('_', ' ')}
                           </span>
@@ -480,7 +480,7 @@ export default function CrewMobileView() {
       <div className="mb-6">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
-            <h1 className="text-xl font-black text-white leading-tight truncate">{currentProject.title}</h1>
+            <h1 className="text-xl font-bold text-white leading-tight truncate">{currentProject.title}</h1>
             {currentProject.logline && (
               <p className="text-sm text-surface-400 mt-1 leading-snug line-clamp-2">{currentProject.logline}</p>
             )}
@@ -497,7 +497,7 @@ export default function CrewMobileView() {
         </div>
         {headerBadges}
         {lastUpdated && (
-          <p className="text-[10px] text-surface-600 mt-2">Updated {timeAgo(lastUpdated.toISOString())}</p>
+          <p className="text-[11px] text-surface-600 mt-2">Updated {timeAgo(lastUpdated.toISOString())}</p>
         )}
       </div>
 
@@ -519,7 +519,7 @@ export default function CrewMobileView() {
                   </p>
                 </div>
                 {event.is_confirmed && (
-                  <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded shrink-0">✓</span>
+                  <span className="text-[11px] font-bold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded shrink-0">✓</span>
                 )}
               </div>
             ))}
@@ -557,7 +557,7 @@ export default function CrewMobileView() {
               const cueColor = CUE_COLORS[cue.cue_type] ?? '#6b7280';
               return (
                 <div key={cue.id} className="flex items-start gap-2.5 p-3 rounded-xl bg-surface-900 border border-surface-800/60">
-                  <div className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded shrink-0 mt-0.5"
+                  <div className="text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded shrink-0 mt-0.5"
                     style={{ background: cueColor + '20', color: cueColor }}>
                     {cue.cue_type?.replace('_', ' ')}
                   </div>
@@ -565,7 +565,7 @@ export default function CrewMobileView() {
                     <p className="text-sm font-bold text-white">{cue.cue_number}</p>
                     {cue.description && <p className="text-[11px] text-surface-400 mt-0.5 leading-snug">{cue.description}</p>}
                     {(cue.scene_ref || cue.timing_note) && (
-                      <p className="text-[10px] text-surface-600 mt-0.5">
+                      <p className="text-[11px] text-surface-600 mt-0.5">
                         {cue.scene_ref && `Scene: ${cue.scene_ref}`}
                         {cue.scene_ref && cue.timing_note && ' · '}
                         {cue.timing_note}
@@ -581,11 +581,11 @@ export default function CrewMobileView() {
 
       {/* Footer */}
       <div className="mt-8 pb-6 text-center">
-        <p className="text-[10px] text-surface-700">
+        <p className="text-[11px] text-surface-700">
           {currentProject.title} · Crew View
           {lastUpdated && ` · ${formatDate(lastUpdated.toISOString())}`}
         </p>
-        <p className="text-[10px] text-surface-800 mt-1">Screenplay Studio</p>
+        <p className="text-[11px] text-surface-800 mt-1">Screenplay Studio</p>
       </div>
     </div>
   );

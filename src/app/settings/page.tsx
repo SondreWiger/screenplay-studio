@@ -421,7 +421,7 @@ function GamificationSettingsTab() {
             ].map(({ label, value }) => (
               <div key={label} className="p-3 rounded-xl bg-surface-800/50 border border-surface-700 text-center">
                 <p className="text-xs text-surface-400 mb-1">{label}</p>
-                <p className="text-lg font-black text-brand-500">{value}</p>
+                <p className="text-lg font-bold text-brand-500">{value}</p>
               </div>
             ))}
           </div>
@@ -434,7 +434,7 @@ function GamificationSettingsTab() {
           <h3 className="text-sm font-semibold text-white">{t('settings.your_badges')}</h3>
           {displayBadges.length > 0 && (
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-surface-400 mr-1">Displayed:</span>
+              <span className="text-[11px] text-surface-400 mr-1">Displayed:</span>
               <BadgeDisplay badges={displayBadges} max={2} size="xs" />
             </div>
           )}
@@ -464,7 +464,7 @@ function GamificationSettingsTab() {
                       onClick={() => setDisplaySlot(badge.id, currentSlot === 1 ? null : 1)}
                       disabled={savingBadge}
                       title="Show as primary badge"
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+                      className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors ${
                         currentSlot === 1
                           ? 'bg-brand-500/20 border-brand-500/40 text-brand-500'
                           : 'bg-surface-800 border-surface-600 text-surface-400 hover:text-white'
@@ -477,7 +477,7 @@ function GamificationSettingsTab() {
                         onClick={() => setDisplaySlot(badge.id, currentSlot === 2 ? null : 2)}
                         disabled={savingBadge}
                         title="Show as secondary badge (admin/mod only)"
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+                        className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors ${
                           currentSlot === 2
                             ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
                             : 'bg-surface-800 border-surface-600 text-surface-400 hover:text-white'
@@ -605,7 +605,7 @@ function TranslationsSettingsTab() {
               <span className="text-lg">🇬🇧</span>
               <div>
                 <p className="text-sm font-medium text-white">English</p>
-                <p className="text-[10px] text-surface-500">Default language</p>
+                <p className="text-[11px] text-surface-500">Default language</p>
               </div>
             </div>
             {!preferredLang && (
@@ -626,7 +626,7 @@ function TranslationsSettingsTab() {
                 <span className="text-lg">🌐</span>
                 <div>
                   <p className="text-sm font-medium text-white">{lang.name} <span className="text-surface-500">({lang.native_name})</span></p>
-                  <p className="text-[10px] text-surface-500">{progress[lang.code] || 0}% translated</p>
+                  <p className="text-[11px] text-surface-500">{progress[lang.code] || 0}% translated</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -692,11 +692,11 @@ function TranslationsSettingsTab() {
         <h2 className="text-lg font-semibold text-white mb-2">{t('settings.translation_stats')}</h2>
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div>
-            <p className="text-2xl font-black text-white">{languages.length}</p>
+            <p className="text-2xl font-bold text-white">{languages.length}</p>
             <p className="text-xs text-surface-500">Languages</p>
           </div>
           <div>
-            <p className="text-2xl font-black text-white">{totalKeys}</p>
+            <p className="text-2xl font-bold text-white">{totalKeys}</p>
             <p className="text-xs text-surface-500">Translation Keys</p>
           </div>
         </div>
@@ -1040,7 +1040,7 @@ export default function UserSettingsPage() {
                       placeholder="your-username"
                     />
                   </div>
-                  <p className="text-[10px] text-surface-500 mt-1">Your public profile will be at /u/{username || 'username'}</p>
+                  <p className="text-[11px] text-surface-500 mt-1">Your public profile will be at /u/{username || 'username'}</p>
                 </div>
                 <Input label={t('settings.headline')} value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Screenwriter, Director, Producer..." />
                 <Textarea label={t('settings.bio')} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
@@ -1080,7 +1080,7 @@ export default function UserSettingsPage() {
                       }`}
                     >
                       <div className={`h-12 bg-gradient-to-br ${t.gradient}`} />
-                      <p className="text-[10px] font-medium text-surface-300 py-1 text-center">{t.label}</p>
+                      <p className="text-[11px] font-medium text-surface-300 py-1 text-center">{t.label}</p>
                       {profileTheme === t.key && (
                         <div className="absolute top-1 right-1 w-4 h-4 bg-brand-500 rounded-full flex items-center justify-center">
                           <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
@@ -1383,7 +1383,7 @@ export default function UserSettingsPage() {
               <p className="text-sm text-surface-400 mb-4">Choose which tabs appear by default across your projects. You can also override per-project in project settings.</p>
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs font-semibold text-surface-500 uppercase tracking-widest mb-2">Film / TV / Theatre</p>
+                  <p className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">Film / TV / Theatre</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {[
                       { key: 'script', label: 'Script', desc: 'Script editor' },
@@ -1419,7 +1419,7 @@ export default function UserSettingsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-surface-500 uppercase tracking-widest mb-2">Content Creator (YouTube, Podcast, etc.)</p>
+                  <p className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2">Content Creator (YouTube, Podcast, etc.)</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {[
                       { key: 'thumbnails', label: 'Thumbnails', desc: 'Thumbnail planner' },
@@ -1651,7 +1651,7 @@ export default function UserSettingsPage() {
                       placeholder="acme-pictures"
                     />
                   </div>
-                  <p className="text-[10px] text-surface-500 mt-1">Company projects will appear at /{companySlug || 'slug'}/projects</p>
+                  <p className="text-[11px] text-surface-500 mt-1">Company projects will appear at /{companySlug || 'slug'}/projects</p>
                 </div>
                 <Textarea
                   label="Description"
@@ -1746,7 +1746,7 @@ export default function UserSettingsPage() {
               }}>
                 {t('settings.delete_button')}
               </Button>
-              <p className="text-[10px] text-surface-600 mt-3">
+              <p className="text-[11px] text-surface-600 mt-3">
                 {t('settings.delete_warning')}
                 <br />
                 <a href="/legal/privacy" className="text-brand-500 hover:text-brand-400">Read our Privacy Policy</a>
@@ -1834,7 +1834,7 @@ export default function UserSettingsPage() {
 
               {/* Activity color */}
               <div className="mb-5">
-                <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-2">Grid color</label>
+                <label className="text-xs text-surface-500 font-semibold uppercase tracking-[0.04em] block mb-2">Grid color</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
@@ -1856,7 +1856,7 @@ export default function UserSettingsPage() {
 
               {/* Who can see */}
               <div>
-                <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-3">Who can see your grid</label>
+                <label className="text-xs text-surface-500 font-semibold uppercase tracking-[0.04em] block mb-3">Who can see your grid</label>
                 <div className="flex flex-col gap-2">
                   {([
                     { value: 'private', label: 'Only me', desc: 'Nobody else can see your activity' },
@@ -1893,7 +1893,7 @@ export default function UserSettingsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-1.5">Pages per day</label>
+                  <label className="text-xs text-surface-500 font-semibold uppercase tracking-[0.04em] block mb-1.5">Pages per day</label>
                   <input
                     type="number" min="0" step="0.5" value={dailyGoalPages}
                     onChange={e => setDailyGoalPages(e.target.value)}
@@ -1901,7 +1901,7 @@ export default function UserSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-surface-500 font-semibold uppercase tracking-widest block mb-1.5">Minutes per day</label>
+                  <label className="text-xs text-surface-500 font-semibold uppercase tracking-[0.04em] block mb-1.5">Minutes per day</label>
                   <input
                     type="number" min="0" step="15" value={dailyGoalMinutes}
                     onChange={e => setDailyGoalMinutes(e.target.value)}

@@ -78,7 +78,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
               </Link>
 
               <div className="mb-2 px-3">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-surface-500">Settings</span>
+                <span className="text-[11px] uppercase tracking-[0.04em] text-surface-500">Settings</span>
               </div>
               <div className="space-y-0.5">
                 {NAV_ITEMS.map((item) => (
@@ -101,7 +101,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 <>
                   <div className="my-3 mx-3 border-t border-surface-800" />
                   <div className="mb-2 px-3">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-surface-500">Pro</span>
+                    <span className="text-[11px] uppercase tracking-[0.04em] text-surface-500">Pro</span>
                   </div>
                   <div className="space-y-0.5">
                     {PRO_ITEMS.map((item) => (

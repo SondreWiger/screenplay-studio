@@ -893,7 +893,7 @@ export default function AdminPage() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-2xl font-black text-white">Admin Panel</h1>
+        <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
         <p className="text-sm text-surface-400 mt-1">Platform Management &amp; Moderation Tools</p>
       </div>
 
@@ -1173,7 +1173,7 @@ function TranslationsAdminTab() {
           { label: 'Votes', value: stats.total_votes },
         ].map(s => (
           <div key={s.label} className="rounded-lg border border-surface-800 bg-surface-900/50 p-4">
-            <p className="text-2xl font-black text-white">{s.value}</p>
+            <p className="text-2xl font-bold text-white">{s.value}</p>
             <p className="text-xs text-surface-500">{s.label}</p>
           </div>
         ))}
@@ -1188,7 +1188,7 @@ function TranslationsAdminTab() {
               <div key={lang.id} className="flex items-center justify-between p-3 rounded-lg bg-surface-900/50 border border-surface-800">
                 <div>
                   <p className="text-sm font-medium text-white">{lang.name} <span className="text-surface-500">({lang.native_name})</span></p>
-                  <p className="text-[10px] text-surface-500">Code: {lang.code} — Requested by {lang.added_by_profile?.display_name || lang.added_by_profile?.email || 'Unknown'}</p>
+                  <p className="text-[11px] text-surface-500">Code: {lang.code} — Requested by {lang.added_by_profile?.display_name || lang.added_by_profile?.email || 'Unknown'}</p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => approveLanguage(lang.id)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors">Approve</button>
@@ -1219,7 +1219,7 @@ function TranslationsAdminTab() {
                   <td className="py-2 text-white">{lang.name} <span className="text-surface-500">({lang.native_name})</span></td>
                   <td className="py-2 font-mono text-surface-400">{lang.code}</td>
                   <td className="py-2">
-                    <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                    <span className={`text-[11px] font-bold uppercase px-1.5 py-0.5 rounded ${
                       lang.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                       lang.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
                       'bg-red-500/10 text-red-400 border border-red-500/20'
@@ -1270,9 +1270,9 @@ function KpiCard({ label, value, sub, color, icon, trend }: {
         )}
       </div>
       <div>
-        <p className="text-2xl font-black text-white tracking-tight">{typeof value === 'number' ? value.toLocaleString() : value}</p>
+        <p className="text-2xl font-bold text-white tracking-tight">{typeof value === 'number' ? value.toLocaleString() : value}</p>
         <p className="text-xs text-surface-400 mt-0.5">{label}</p>
-        {sub && <p className="text-[10px] text-surface-600 mt-0.5">{sub}</p>}
+        {sub && <p className="text-[11px] text-surface-600 mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -1483,7 +1483,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
               Team Collaboration
             </h3>
             <div className="flex flex-col h-full justify-center pb-8 items-center text-center">
-              <span className="text-4xl font-black text-violet-400">
+              <span className="text-4xl font-bold text-violet-400">
                 {stats.totalProjects > 0 ? (compStats.advanced.collaboration.totalMembers / stats.totalProjects).toFixed(1) : '0'}
               </span>
               <span className="text-sm text-surface-400 mt-1">avg members per project</span>
@@ -1505,7 +1505,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
               <p className="text-xs text-surface-500 mt-0.5">{newSignups30} total new users</p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black text-blue-400 block">{newSignups30}</span>
+              <span className="text-2xl font-bold text-blue-400 block">{newSignups30}</span>
               {compStats?.growth?.signupGrowth !== undefined && (
                 <span className={cn(
                   'text-[11px] font-semibold',
@@ -1517,7 +1517,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
             </div>
           </div>
           <Sparkline values={signupValues} color="#3b82f6" height={56} />
-          <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+          <div className="flex justify-between text-[11px] text-surface-600 mt-1">
             <span>{stats.signupsByDay[0]?.date.slice(5)}</span>
             <span>{stats.signupsByDay[stats.signupsByDay.length - 1]?.date.slice(5)}</span>
           </div>
@@ -1531,7 +1531,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
               <p className="text-xs text-surface-500 mt-0.5">{newProj30} projects created</p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black text-violet-400 block">{newProj30}</span>
+              <span className="text-2xl font-bold text-violet-400 block">{newProj30}</span>
               {compStats?.growth?.projectGrowth !== undefined && (
                 <span className={cn(
                   'text-[11px] font-semibold',
@@ -1543,7 +1543,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
             </div>
           </div>
           <Sparkline values={projectValues} color="#7c3aed" height={56} />
-          <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+          <div className="flex justify-between text-[11px] text-surface-600 mt-1">
             <span>{stats.projectsByDay[0]?.date.slice(5)}</span>
             <span>{stats.projectsByDay[stats.projectsByDay.length - 1]?.date.slice(5)}</span>
           </div>
@@ -1561,14 +1561,14 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                 const h = (w.count / max) * 100;
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[11px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
                       {w.count}
                     </div>
                     <div
                       className="w-full rounded-t-sm transition-opacity duration-300 hover:opacity-80"
                       style={{ height: `${Math.max(h, 2)}%`, background: '#3b82f6' }}
                     />
-                    <span className="text-[8px] text-surface-600">{w.date.slice(5)}</span>
+                    <span className="text-[11px] text-surface-600">{w.date.slice(5)}</span>
                   </div>
                 );
               })}
@@ -1583,14 +1583,14 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                 const h = (w.count / max) * 100;
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[11px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
                       {w.count}
                     </div>
                     <div
                       className="w-full rounded-t-sm transition-opacity duration-300 hover:opacity-80"
                       style={{ height: `${Math.max(h, 2)}%`, background: '#7c3aed' }}
                     />
-                    <span className="text-[8px] text-surface-600">{w.date.slice(5)}</span>
+                    <span className="text-[11px] text-surface-600">{w.date.slice(5)}</span>
                   </div>
                 );
               })}
@@ -1609,14 +1609,14 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
               const pct = (h.count / max) * 100;
               return (
                 <div key={h.hour} className="flex-1 flex flex-col items-center gap-0.5 group relative">
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[11px] text-surface-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-semibold">
                     {h.count}
                   </div>
                   <div
                     className="w-full rounded-t-sm transition-[height] duration-200"
                     style={{ height: `${Math.max(pct, 1)}%`, background: `oklch(0.6 0.15 ${h.hour * 15})` }}
                   />
-                  <span className="text-[7px] text-surface-600">{h.hour}h</span>
+                  <span className="text-[11px] text-surface-600">{h.hour}h</span>
                 </div>
               );
             })}
@@ -1635,7 +1635,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
           ].map((m) => (
             <div key={m.label} className="rounded-xl border border-surface-800 bg-surface-900/50 p-4 relative overflow-hidden">
               <div className="flex items-center justify-between">
-                <p className={`text-2xl font-black ${m.c}`}>
+                <p className={`text-2xl font-bold ${m.c}`}>
                   {typeof m.value === 'number' ? m.value.toLocaleString() : m.value}
                 </p>
                 {'prev' in m && m.prev !== undefined && (
@@ -1647,9 +1647,9 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-surface-500 mt-1">{m.label}</p>
+              <p className="text-[11px] text-surface-500 mt-1">{m.label}</p>
               {'prev' in m && m.prev !== undefined && (
-                <p className="text-[9px] text-surface-600 mt-0.5">Previous 30d: {m.prev.toLocaleString()}</p>
+                <p className="text-[11px] text-surface-600 mt-0.5">Previous 30d: {m.prev.toLocaleString()}</p>
               )}
             </div>
           ))}
@@ -1659,7 +1659,7 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
       {/* ── Engagement metrics row ── */}
       <div>
         <div className="flex items-center gap-3 mb-4">
-          <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.12em]">Content Metrics</h3>
+          <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">Content Metrics</h3>
           <div className="flex-1 h-px bg-surface-800" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -1678,8 +1678,8 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
             { label: 'Episodic Projects', value: stats.episodicProjects, c: 'text-blue-400' },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border border-surface-800 bg-surface-900/50 p-3 text-center hover:border-surface-700/80 transition-colors">
-              <p className={`text-xl font-black ${s.c}`}>{typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</p>
-              <p className="text-[10px] text-surface-500 mt-0.5">{s.label}</p>
+              <p className={`text-xl font-bold ${s.c}`}>{typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</p>
+              <p className="text-[11px] text-surface-500 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -1724,13 +1724,13 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
               { label: 'Bug Reports', value: stats.bugReports, c: 'text-red-400' },
             ].map((t) => (
               <div key={t.label} className="text-center">
-                <p className={`text-2xl font-black ${t.c}`}>{t.value}</p>
-                <p className="text-[10px] text-surface-500 mt-0.5">{t.label}</p>
+                <p className={`text-2xl font-bold ${t.c}`}>{t.value}</p>
+                <p className="text-[11px] text-surface-500 mt-0.5">{t.label}</p>
               </div>
             ))}
           </div>
           <div>
-            <div className="flex justify-between text-[10px] text-surface-500 mb-1">
+            <div className="flex justify-between text-[11px] text-surface-500 mb-1">
               <span>Open rate</span>
               <span>{stats.totalTickets > 0 ? ((stats.openTickets / stats.totalTickets) * 100).toFixed(0) : 0}%</span>
             </div>
@@ -1791,11 +1791,11 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                 <Avatar src={u.avatar_url} name={u.full_name || u.email} size="sm" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-white truncate">{u.full_name || 'Unnamed'}</p>
-                  <p className="text-[10px] text-surface-500 truncate">{u.email}</p>
+                  <p className="text-[11px] text-surface-500 truncate">{u.email}</p>
                 </div>
                 <div className="flex flex-col items-end gap-0.5 shrink-0">
-                  <span className="text-[10px] text-surface-600">{timeAgo(u.created_at)}</span>
-                  {u.is_pro && <span className="text-[9px] font-bold text-yellow-400 bg-yellow-500/10 px-1 rounded">PRO</span>}
+                  <span className="text-[11px] text-surface-600">{timeAgo(u.created_at)}</span>
+                  {u.is_pro && <span className="text-[11px] font-bold text-yellow-400 bg-yellow-500/10 px-1 rounded">PRO</span>}
                 </div>
               </div>
             ))}
@@ -1812,9 +1812,9 @@ function OverviewTab({ stats }: { stats: PlatformStats }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-white truncate">{p.title}</p>
-                  <p className="text-[10px] text-surface-500 capitalize">{(p.script_type || '').replace('_', ' ')}</p>
+                  <p className="text-[11px] text-surface-500 capitalize">{(p.script_type || '').replace('_', ' ')}</p>
                 </div>
-                <span className="text-[10px] text-surface-600 shrink-0">{timeAgo(p.created_at)}</span>
+                <span className="text-[11px] text-surface-600 shrink-0">{timeAgo(p.created_at)}</span>
               </div>
             ))}
           </div>
@@ -2040,7 +2040,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">User Management</h1>
+          <h1 className="text-2xl font-bold text-white mb-1">User Management</h1>
           <p className="text-sm text-surface-400">{users.length} users total</p>
         </div>
         <div className="flex items-center gap-3">
@@ -2114,7 +2114,7 @@ function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }
                     <Avatar src={u.avatar_url} name={u.full_name || u.email} size="sm" />
                     <div>
                       <p className="text-sm text-white">{u.full_name || 'Unnamed'}</p>
-                      <p className="text-[10px] text-surface-500 font-mono">{u.id.slice(0, 8)}...</p>
+                      <p className="text-[11px] text-surface-500 font-mono">{u.id.slice(0, 8)}...</p>
                     </div>
                   </div>
                 </td>
@@ -2342,7 +2342,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">All Projects</h1>
+          <h1 className="text-2xl font-bold text-white mb-1">All Projects</h1>
           <p className="text-sm text-surface-400">{projects.length} projects total</p>
         </div>
         <div className="relative">
@@ -2374,7 +2374,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
               <Badge variant="default" size="sm">{(p.status || '').replace('_', ' ')}</Badge>
               <div className="text-right">
                 <p className="text-xs text-surface-400">{p.format || '—'}</p>
-                <p className="text-[10px] text-surface-500">{timeAgo(p.updated_at)}</p>
+                <p className="text-[11px] text-surface-500">{timeAgo(p.updated_at)}</p>
               </div>
               <svg className={cn('w-4 h-4 text-surface-500 transition-transform', expandedProject === p.id && 'rotate-180')} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
             </button>
@@ -2396,7 +2396,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
                   ].map((s) => (
                     <div key={s.label} className="text-center">
                       <p className="text-lg font-bold text-white">{s.val}</p>
-                      <p className="text-[10px] text-surface-500">{s.label}</p>
+                      <p className="text-[11px] text-surface-500">{s.label}</p>
                     </div>
                   ))}
                 </div>
@@ -2440,7 +2440,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
 
   return (
     <div>
-      <h1 className="text-2xl font-black text-white mb-1">System Management</h1>
+      <h1 className="text-2xl font-bold text-white mb-1">System Management</h1>
       <p className="text-sm text-surface-400 mb-8">Maintenance tools for the platform</p>
 
       {/* Open Source toggle */}
@@ -2454,7 +2454,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
           <div>
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               Open Source Mode
-              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+              <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 opensourceEnabled
                   ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
                   : 'text-white/30 border-white/10 bg-white/5'
@@ -2492,7 +2492,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
           <div>
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               Pro Feature Gating
-              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+              <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 proGatingEnabled
                   ? 'text-white/30 border-white/10 bg-white/5'
                   : 'text-brand-500 border-brand-500/30 bg-brand-500/10'
@@ -2530,7 +2530,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
           <div>
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               Creator Affiliate Program
-              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+              <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 creatorProgramEnabled
                   ? 'text-brand-500 border-brand-500/30 bg-brand-500/10'
                   : 'text-white/30 border-white/10 bg-white/5'
@@ -2568,7 +2568,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
           <div>
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               Creator Payouts
-              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+              <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 creatorPayoutEnabled
                   ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
                   : 'text-white/30 border-white/10 bg-white/5'
@@ -2730,7 +2730,7 @@ function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats
             </div>
             <div className="flex justify-between">
               <span className="text-surface-500">Admin UUID</span>
-              <span className="text-white font-mono text-[10px]">{ADMIN_UID.slice(0, 12)}...</span>
+              <span className="text-white font-mono text-[11px]">{ADMIN_UID.slice(0, 12)}...</span>
             </div>
             <div className="flex justify-between">
               <span className="text-surface-500">Version</span>
@@ -2845,7 +2845,7 @@ function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggl
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white mb-1">Blog Management</h1>
+          <h1 className="text-2xl font-bold text-white mb-1">Blog Management</h1>
           <p className="text-sm text-surface-400">Create and manage blog posts, moderate comments</p>
         </div>
         <Button onClick={onNewPost}>
@@ -2884,7 +2884,7 @@ function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggl
                 <div className="flex items-center gap-2 mb-1">
                   <Badge variant={statusColor(post.status)} size="sm">{post.status}</Badge>
                   {post.tags?.map((tag) => (
-                    <span key={tag} className="text-[10px] text-surface-500 bg-surface-800 px-1.5 py-0.5 rounded">{tag}</span>
+                    <span key={tag} className="text-[11px] text-surface-500 bg-surface-800 px-1.5 py-0.5 rounded">{tag}</span>
                   ))}
                 </div>
                 <h3 className="text-base font-semibold text-white truncate">{post.title}</h3>
@@ -2925,7 +2925,7 @@ function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggl
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-medium text-white">{c.author?.full_name || 'Anonymous'}</span>
-                  <span className="text-[10px] text-surface-500">{timeAgo(c.created_at)}</span>
+                  <span className="text-[11px] text-surface-500">{timeAgo(c.created_at)}</span>
                   {c.is_hidden && <Badge variant="error" size="sm">Hidden</Badge>}
                 </div>
                 <p className="text-sm text-surface-300 line-clamp-2">{c.content}</p>
@@ -3076,7 +3076,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white">Community</h1>
+          <h1 className="text-2xl font-bold text-white">Community</h1>
           <p className="text-sm text-surface-400">Manage posts, categories, themes & challenges</p>
         </div>
         <Link href="/community" className="text-sm text-surface-400 hover:text-white transition-colors">
@@ -3116,7 +3116,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge variant={post.status === 'published' ? 'success' : post.status === 'archived' ? 'warning' : 'default'} size="sm">{post.status}</Badge>
-                  {post.allow_free_use && <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 font-semibold">Free Use</span>}
+                  {post.allow_free_use && <span className="text-[11px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 font-semibold">Free Use</span>}
                 </div>
                 <p className="text-sm font-medium text-white truncate">{post.title}</p>
                 <p className="text-xs text-surface-500 mt-0.5">
@@ -3258,8 +3258,8 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-sm font-medium text-white">{theme.title}</span>
-                    {!theme.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-semibold">Inactive</span>}
-                    <span className="text-[10px] text-surface-500">used {theme.used_count}×</span>
+                    {!theme.is_active && <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-semibold">Inactive</span>}
+                    <span className="text-[11px] text-surface-500">used {theme.used_count}×</span>
                   </div>
                   <p className="text-xs text-surface-400 line-clamp-1">{theme.description}</p>
                 </div>
@@ -3313,7 +3313,7 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-sm font-medium text-white">{ch.title}</span>
                       <Badge variant={phase === 'completed' ? 'default' : phase === 'submissions' ? 'success' : phase === 'voting' ? 'warning' : 'info'} size="sm">{getPhaseLabel(phase)}</Badge>
-                      <span className="text-[10px] text-surface-500">{ch.challenge_type}</span>
+                      <span className="text-[11px] text-surface-500">{ch.challenge_type}</span>
                     </div>
                     <p className="text-xs text-surface-400">{ch.submission_count} submissions · {formatDate(ch.starts_at)} → {formatDate(ch.reveal_at)}</p>
                   </div>
@@ -3469,7 +3469,7 @@ function BlogPostEditorModal({ post, authorId, onClose, onSaved }: {
             {sections.map((section, idx) => (
               <div key={idx} className="rounded-lg border border-surface-800 bg-surface-900/30 p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] text-surface-500 font-mono bg-surface-800 px-2 py-0.5 rounded">
+                  <span className="text-[11px] text-surface-500 font-mono bg-surface-800 px-2 py-0.5 rounded">
                     Section {idx + 1}
                   </span>
                   <div className="flex-1" />
@@ -3565,7 +3565,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black text-white">Support Tickets</h2>
+          <h2 className="text-xl font-bold text-white">Support Tickets</h2>
           <p className="text-sm text-surface-400 mt-1">
             {openCount} open · {inProgressCount} in progress · {tickets.length} total
           </p>
@@ -3608,7 +3608,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className="text-sm font-semibold text-white line-clamp-1">{ticket.subject}</p>
-                  <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded border capitalize ${STATUS_COLORS[ticket.status]}`}>
+                  <span className={`shrink-0 px-1.5 py-0.5 text-[11px] font-semibold rounded border capitalize ${STATUS_COLORS[ticket.status]}`}>
                     {ticket.status.replace('_', ' ')}
                   </span>
                 </div>
@@ -3622,7 +3622,7 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                   <span className="text-surface-500">{timeAgo(ticket.updated_at)}</span>
                 </div>
                 {ticket.reported_content_type && (
-                  <p className="text-[10px] text-surface-500 mt-1">
+                  <p className="text-[11px] text-surface-500 mt-1">
                     Reported: {ticket.reported_content_type} · {ticket.reported_content_id?.slice(0, 8)}…
                   </p>
                 )}
@@ -3693,9 +3693,9 @@ function TicketsTab({ tickets, selectedTicketId, messages, replyText, onSelectTi
                       <div className={`flex items-center gap-2 mb-1 ${msg.is_staff ? 'justify-end' : ''}`}>
                         <span className="text-xs font-semibold text-surface-300">{msg.profile?.full_name || 'User'}</span>
                         {msg.is_staff && (
-                          <span className="px-1.5 py-0.5 text-[9px] font-bold text-brand-500 bg-brand-500/10 rounded border border-brand-500/20">STAFF</span>
+                          <span className="px-1.5 py-0.5 text-[11px] font-bold text-brand-500 bg-brand-500/10 rounded border border-brand-500/20">STAFF</span>
                         )}
-                        <span className="text-[10px] text-surface-500">{timeAgo(msg.created_at)}</span>
+                        <span className="text-[11px] text-surface-500">{timeAgo(msg.created_at)}</span>
                       </div>
                       <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                         msg.is_staff
@@ -3860,12 +3860,12 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
               )}
               {selectedUser && (
                 <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border border-brand-500/25" style={{ background: 'rgba(255,95,31,0.08)' }}>
-                  <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-[11px] font-semibold text-white shrink-0">
                     {(selectedUser.full_name || selectedUser.email || '?')[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-white truncate">{selectedUser.full_name || selectedUser.email}</p>
-                    <p className="text-[10px] text-surface-500 truncate">{selectedUser.email}</p>
+                    <p className="text-[11px] text-surface-500 truncate">{selectedUser.email}</p>
                   </div>
                   <button onClick={() => { setSelectedUser(null); setUserQuery(''); }} className="text-xs text-surface-500 hover:text-white ml-1">✕</button>
                 </div>
@@ -3974,7 +3974,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                   {c.contribution_areas?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {c.contribution_areas.map(a => (
-                        <span key={a} className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-surface-800 text-surface-400 border border-surface-700">
+                        <span key={a} className="px-1.5 py-0.5 text-[11px] font-medium rounded bg-surface-800 text-surface-400 border border-surface-700">
                           {a}
                         </span>
                       ))}
@@ -3996,7 +3996,7 @@ function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeatured }: {
                   >
                     {c.is_featured ? '⭐ Featured' : '☆ Feature'}
                   </button>
-                  <span className="text-[10px] text-surface-600 hidden sm:inline">{formatDate(c.added_at)}</span>
+                  <span className="text-[11px] text-surface-600 hidden sm:inline">{formatDate(c.added_at)}</span>
                   <button
                     onClick={() => onRemove(c.id)}
                     title="Remove contributor"
@@ -4074,7 +4074,7 @@ function BadgesAdminTab() {
 
       {/* Existing Badges */}
       <Card className="bg-white/5 border border-white/10 p-6">
-        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4">All Badges</h3>
+        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-[0.04em] mb-4">All Badges</h3>
         {loading ? (
           <p className="text-white/40 text-sm">Loading…</p>
         ) : (
@@ -4112,7 +4112,7 @@ function BadgesAdminTab() {
 
       {/* Create Badge */}
       <Card className="bg-white/5 border border-white/10 p-6">
-        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4">Create New Badge</h3>
+        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-[0.04em] mb-4">Create New Badge</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-white/50 mb-1">Badge Name *</label>
@@ -4176,7 +4176,7 @@ function BadgesAdminTab() {
 
       {/* Award Badge */}
       <Card className="bg-white/5 border border-white/10 p-6">
-        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-4">Award Badge to User</h3>
+        <h3 className="text-sm font-semibold text-white/70 uppercase tracking-[0.04em] mb-4">Award Badge to User</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-white/50 mb-1">Badge</label>
@@ -4294,8 +4294,8 @@ function CoursesAdminTab() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-semibold text-white truncate">{c.title}</span>
-                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase tracking-wider ${DIFF_COLOR[c.difficulty] ?? ''}`}>{c.difficulty}</span>
-                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase tracking-wider ${STATUS_COLOR[c.status] ?? ''}`}>{c.status}</span>
+                  <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border uppercase tracking-[0.04em] ${DIFF_COLOR[c.difficulty] ?? ''}`}>{c.difficulty}</span>
+                  <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border uppercase tracking-[0.04em] ${STATUS_COLOR[c.status] ?? ''}`}>{c.status}</span>
                 </div>
                 <div className="text-xs text-surface-500 mt-0.5">
                   by {c.creator?.full_name || c.creator?.email || 'Unknown'} &middot; {c.enrollment_count} enrolled &middot; {new Date(c.created_at).toLocaleDateString()}
@@ -4453,7 +4453,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
 
   return (
     <div>
-      <h1 className="text-2xl font-black text-white mb-1">Creator Program</h1>
+      <h1 className="text-2xl font-bold text-white mb-1">Creator Program</h1>
       <p className="text-sm text-surface-400 mb-8">Manage affiliate creator applications and payouts</p>
 
       {!programEnabled && (
@@ -4624,7 +4624,7 @@ function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolea
                     <span className="text-sm text-white">{b.period_start} → {b.period_end}</span>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-semibold text-white">${Number(b.total_amount).toFixed(2)}</span>
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${statusColors[b.status] || ''}`}>{b.status}</span>
+                      <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${statusColors[b.status] || ''}`}>{b.status}</span>
                     </div>
                   </div>
                 ))}

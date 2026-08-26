@@ -133,7 +133,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
             <h2 className="text-sm font-bold text-white">Stream Ingests</h2>
             <Button size="sm" onClick={() => setShowAddIngest(true)}>+ New</Button>
           </div>
-          <p className="text-[10px] text-surface-500">
+          <p className="text-[11px] text-surface-500">
             Receive streams from OBS Studio, Wirecast, vMix, hardware encoders, or any RTMP/SRT source.
           </p>
         </div>
@@ -160,7 +160,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-white truncate">{ingest.name}</span>
-                <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded uppercase', statusColor(ingest.status))}>
+                <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase', statusColor(ingest.status))}>
                   {ingest.status}
                 </span>
               </div>
@@ -184,14 +184,14 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
           <div className="p-6 max-w-3xl space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-black text-white">{selectedIngest.name}</h2>
+                <h2 className="text-xl font-bold text-white">{selectedIngest.name}</h2>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded uppercase', statusColor(selectedIngest.status))}>
+                  <span className={cn('text-[11px] font-medium px-2 py-0.5 rounded uppercase', statusColor(selectedIngest.status))}>
                     {selectedIngest.status}
                   </span>
                   <span className="text-xs text-surface-500 uppercase">{selectedIngest.protocol}</span>
                   {selectedIngest.auto_source && (
-                    <span className="text-[10px] text-green-400">Auto-registers as source</span>
+                    <span className="text-[11px] text-green-400">Auto-registers as source</span>
                   )}
                 </div>
               </div>
@@ -200,7 +200,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
 
             {/* Connection Details */}
             <div className="bg-surface-900 rounded-xl border border-surface-700 p-4 space-y-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Connection Details</h3>
+              <h3 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Connection Details</h3>
 
               {/* Server URL */}
               <div>
@@ -266,26 +266,26 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
 
             {/* OBS Setup Guide */}
             <div className="bg-surface-900 rounded-xl border border-surface-700 p-4 space-y-3">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Quick Setup — OBS Studio</h3>
+              <h3 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Quick Setup — OBS Studio</h3>
               <ol className="space-y-2 text-xs text-surface-300">
                 <li className="flex items-start gap-2">
-                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">1</span>
                   <span>Open OBS Studio → Settings → Stream</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">2</span>
                   <span>Set <strong>Service</strong> to &ldquo;Custom&rdquo;</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">3</span>
                   <span>Paste the <strong>Server URL</strong> above into the Server field</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">4</span>
+                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">4</span>
                   <span>Paste the <strong>Stream Key</strong> into the Stream Key field</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">5</span>
+                  <span className="bg-surface-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5">5</span>
                   <span>Click &ldquo;Start Streaming&rdquo; in OBS — the stream will appear as a source in this project</span>
                 </li>
               </ol>
@@ -300,7 +300,7 @@ export default function StreamIngestPage({ params }: { params: { id: string } })
             {/* Stream Health (when live) */}
             {selectedIngest.status === 'live' && (
               <div className="bg-surface-900 rounded-xl border border-green-900/50 p-4 space-y-3">
-                <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider">Stream Health</h3>
+                <h3 className="text-sm font-medium text-green-400 uppercase tracking-[0.04em]">Stream Health</h3>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <div className="text-xs text-surface-500">Resolution</div>

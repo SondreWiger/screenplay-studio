@@ -154,19 +154,19 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-white">{msg.author?.full_name || 'Unknown'}</span>
-                      <span className="text-[10px] text-surface-600">{timeAgo(msg.created_at)}</span>
-                      {msg.is_pinned && <span className="text-[10px] text-amber-400">📌 Pinned</span>}
+                      <span className="text-[11px] text-surface-600">{timeAgo(msg.created_at)}</span>
+                      {msg.is_pinned && <span className="text-[11px] text-amber-400">📌 Pinned</span>}
                       <div className="ml-auto opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
                         {canManage && (
                           <>
-                            <button onClick={() => pinMessage(msg.id, msg.is_pinned)} className="text-[10px] text-surface-500 hover:text-white px-1">
+                            <button onClick={() => pinMessage(msg.id, msg.is_pinned)} className="text-[11px] text-surface-500 hover:text-white px-1">
                               {msg.is_pinned ? 'Unpin' : 'Pin'}
                             </button>
-                            <button onClick={() => deleteMessage(msg.id)} className="text-[10px] text-surface-500 hover:text-red-400 px-1">Delete</button>
+                            <button onClick={() => deleteMessage(msg.id)} className="text-[11px] text-surface-500 hover:text-red-400 px-1">Delete</button>
                           </>
                         )}
                         {msg.author_id === userId && !canManage && (
-                          <button onClick={() => deleteMessage(msg.id)} className="text-[10px] text-surface-500 hover:text-red-400 px-1">Delete</button>
+                          <button onClick={() => deleteMessage(msg.id)} className="text-[11px] text-surface-500 hover:text-red-400 px-1">Delete</button>
                         )}
                       </div>
                     </div>

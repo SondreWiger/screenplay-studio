@@ -246,12 +246,12 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
                     >
                       <td className="px-4 py-2.5">
                         <div className="font-semibold text-white">{c.name}</div>
-                        {c.title && <div className="text-surface-500 text-[10px]">{c.title}</div>}
+                        {c.title && <div className="text-surface-500 text-[11px]">{c.title}</div>}
                       </td>
                       <td className="px-3 py-2.5 text-surface-400 hidden sm:table-cell">{c.organisation || '—'}</td>
                       <td className="px-3 py-2.5 text-surface-500 hidden md:table-cell">{c.topic_area || '—'}</td>
                       <td className="px-3 py-2.5">
-                        <span className={cn('text-[10px] font-bold text-white px-1.5 py-0.5 rounded uppercase', cat.color)}>
+                        <span className={cn('text-[11px] font-medium text-white px-1.5 py-0.5 rounded uppercase', cat.color)}>
                           {cat.label}
                         </span>
                       </td>
@@ -299,7 +299,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
               {selected.title && <p className="text-sm text-surface-300">{selected.title}</p>}
               {selected.organisation && <p className="text-sm text-surface-400">{selected.organisation}</p>}
               {selected.topic_area && (
-                <span className="inline-block text-[10px] bg-surface-800 text-surface-400 px-2 py-0.5 rounded-full">{selected.topic_area}</span>
+                <span className="inline-block text-[11px] bg-surface-800 text-surface-400 px-2 py-0.5 rounded-full">{selected.topic_area}</span>
               )}
             </div>
 
@@ -318,19 +318,19 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
             <div className="space-y-2">
               {selected.phone && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-surface-500 w-12">Phone</span>
+                  <span className="text-[11px] text-surface-500 w-12">Phone</span>
                   <a href={`tel:${selected.phone}`} className="text-xs text-brand-500 hover:underline">{selected.phone}</a>
                 </div>
               )}
               {selected.email && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-surface-500 w-12">Email</span>
+                  <span className="text-[11px] text-surface-500 w-12">Email</span>
                   <a href={`mailto:${selected.email}`} className="text-xs text-brand-500 hover:underline truncate">{selected.email}</a>
                 </div>
               )}
               {selected.last_contacted_at && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-surface-500 w-12">Last</span>
+                  <span className="text-[11px] text-surface-500 w-12">Last</span>
                   <span className="text-xs text-surface-400">{formatDate(selected.last_contacted_at)}</span>
                 </div>
               )}
@@ -339,7 +339,7 @@ export default function ContactsPage({ params }: { params: { id: string } }) {
             {/* Notes */}
             {selected.notes && (
               <div>
-                <p className="text-[10px] text-surface-500 uppercase mb-1">Notes</p>
+                <p className="text-[11px] text-surface-500 uppercase mb-1">Notes</p>
                 <p className="text-xs text-surface-300 whitespace-pre-wrap leading-relaxed bg-surface-900 rounded-lg p-3 border border-surface-800">
                   {selected.notes}
                 </p>

@@ -104,8 +104,6 @@ export interface Profile {
   ui_theme?: 'default' | 'soft' | null;
   company_id: string | null;
   is_pro: boolean;
-  is_studio: boolean;
-  studio_since: string | null;
   pro_since: string | null;
   created_at: string;
   updated_at: string;
@@ -470,31 +468,12 @@ export const PRO_LIMITS = {
     bulk_export: true,
     advanced_exports: true,
   },
-  studio: {
-    storage_bytes: Infinity,                       // Unlimited
-    max_team_size: Infinity,
-    max_projects: Infinity,
-    max_export_formats: ['pdf', 'fdx', 'json', 'html', 'docx', 'fountain'],
-    version_history: true,
-    external_shares: true,
-    client_review: true,
-    analytics_dashboard: true,
-    custom_branding: true,
-    priority_support: true,
-    api_access: true,
-    advanced_scheduling: true,
-    watermarked_exports: true,
-    bulk_export: true,
-    advanced_exports: true,
-  },
 } as const;
 
 export const PRO_PRICING = {
   yearly: { amount: 200, currency: 'USD', per_month: 16.67 },
   team_yearly: { amount: 160, currency: 'USD', per_month: 13.33, discount: 20 },
   project_lifetime: { amount: 100, currency: 'USD' },
-  studio_monthly: { amount: 50, currency: 'USD', per_month: 50 },
-  studio_yearly: { amount: 480, currency: 'USD', per_month: 40 },
 } as const;
 
 export interface Project {

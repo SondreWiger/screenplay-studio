@@ -301,7 +301,7 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
 
           {/* Members */}
           <div>
-            <h4 className="text-xs font-semibold text-surface-400 mb-2 uppercase tracking-wider">Members</h4>
+            <h4 className="text-xs font-semibold text-surface-400 mb-2 uppercase tracking-[0.04em]">Members</h4>
             {membersLoading ? (
               <div className="flex justify-center py-4"><LoadingSpinner /></div>
             ) : members.length === 0 ? (
@@ -311,18 +311,18 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
                 {members.map((member) => (
                   <div key={member.id} className="flex items-center justify-between bg-surface-900/50 rounded-lg px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-6 h-6 rounded-full bg-brand-500/20 flex items-center justify-center text-[10px] font-bold text-brand-400 shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-brand-500/20 flex items-center justify-center text-[11px] font-bold text-brand-400 shrink-0">
                         {member.profile?.display_name?.[0]?.toUpperCase() || '?'}
                       </div>
                       <span className="text-sm text-white truncate">{member.profile?.display_name || 'Unknown'}</span>
                       {member.role === 'owner' && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full">Owner</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full">Owner</span>
                       )}
                     </div>
                     {isOwner(selectedGroup) && member.role !== 'owner' && (
                       <button
                         onClick={() => handleRemoveMember(member.user_id)}
-                        className="text-[10px] text-surface-500 hover:text-red-400 transition-colors"
+                        className="text-[11px] text-surface-500 hover:text-red-400 transition-colors"
                       >
                         Remove
                       </button>
@@ -336,7 +336,7 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
           {/* Invite (owner only) */}
           {isOwner(selectedGroup) && (
             <div className="relative">
-              <label className="block text-xs font-semibold text-surface-400 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-surface-400 mb-1.5 uppercase tracking-[0.04em]">
                 Add Member
               </label>
               <div className="flex items-center gap-2">
@@ -497,10 +497,10 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] text-surface-500">{group.quote_count ?? 0} quotes</span>
-                    <span className="text-[10px] text-surface-500">{group.members?.length ?? 0} members</span>
+                    <span className="text-[11px] text-surface-500">{group.quote_count ?? 0} quotes</span>
+                    <span className="text-[11px] text-surface-500">{group.members?.length ?? 0} members</span>
                     {isOwner(group) && (
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full">Owner</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full">Owner</span>
                     )}
                   </div>
                 </div>

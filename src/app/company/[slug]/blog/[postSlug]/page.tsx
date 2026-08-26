@@ -123,10 +123,10 @@ export default function CompanyBlogPostPage() {
         return <h3 key={i} className="text-lg font-semibold text-white mt-6 mb-2">{trimmed.slice(4)}</h3>;
       }
       if (trimmed.startsWith('## ')) {
-        return <h2 key={i} className="text-xl font-black text-white mt-8 mb-3">{trimmed.slice(3)}</h2>;
+        return <h2 key={i} className="text-xl font-bold text-white mt-8 mb-3">{trimmed.slice(3)}</h2>;
       }
       if (trimmed.startsWith('# ')) {
-        return <h1 key={i} className="text-2xl font-black text-white mt-8 mb-3">{trimmed.slice(2)}</h1>;
+        return <h1 key={i} className="text-2xl font-bold text-white mt-8 mb-3">{trimmed.slice(2)}</h1>;
       }
 
       // Process inline bold/italic
@@ -167,11 +167,11 @@ export default function CompanyBlogPostPage() {
         {/* Meta */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {post.tags.map((tag) => (
-            <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] bg-surface-800 text-surface-400 font-medium">{tag}</span>
+            <span key={tag} className="px-2 py-0.5 rounded-full text-[11px] bg-surface-800 text-surface-400 font-medium">{tag}</span>
           ))}
         </div>
 
-        <h1 className="text-3xl font-black text-white leading-tight">{post.title}</h1>
+        <h1 className="text-3xl font-bold text-white leading-tight">{post.title}</h1>
 
         {/* Author row */}
         <div className="flex items-center gap-3 mt-6 mb-8 pb-6 border-b border-surface-800">
@@ -227,7 +227,7 @@ export default function CompanyBlogPostPage() {
                       <span className="text-sm font-medium text-white">{comment.author?.display_name || comment.author?.full_name || 'Unknown'}</span>
                       <span className="text-xs text-surface-500">{timeAgo(comment.created_at)}</span>
                       {user?.id === comment.author_id && (
-                        <button onClick={() => deleteComment(comment.id)} className="text-[10px] text-red-400 hover:text-red-300 ml-auto">Delete</button>
+                        <button onClick={() => deleteComment(comment.id)} className="text-[11px] text-red-400 hover:text-red-300 ml-auto">Delete</button>
                       )}
                     </div>
                     <p className="text-sm text-surface-300 mt-1 whitespace-pre-wrap">{comment.content}</p>

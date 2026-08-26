@@ -192,7 +192,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1 text-[10px] text-surface-400">
+            <label className="flex items-center gap-1 text-[11px] text-surface-400">
               <input type="checkbox" checked={autoScroll} onChange={(e) => setAutoScroll(e.target.checked)} className="rounded bg-surface-800 border-surface-600" />
               Auto-scroll
             </label>
@@ -219,7 +219,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
         )}
 
         {/* Column headers */}
-        <div className="grid grid-cols-[100px_90px_200px_1fr_70px_70px_70px] px-3 py-1.5 text-[10px] font-bold text-surface-500 uppercase border-b border-surface-800/50">
+        <div className="grid grid-cols-[100px_90px_200px_1fr_70px_70px_70px] px-3 py-1.5 text-[11px] font-medium text-surface-500 uppercase border-b border-surface-800/50">
           <span>Time</span><span>Event</span><span>Title</span><span>Notes</span>
           <span className="text-right">Planned</span><span className="text-right">Actual</span><span className="text-right">Dev</span>
         </div>
@@ -248,7 +248,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
                 <span className="text-surface-400 font-mono text-[11px]">
                   {formatBroadcastTime(entry.actual_time)}
                 </span>
-                <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded text-white w-fit', EVENT_COLORS[entry.event_type])}>
+                <span className={cn('text-[11px] font-bold px-1.5 py-0.5 rounded text-white w-fit', EVENT_COLORS[entry.event_type])}>
                   {EVENT_LABELS[entry.event_type]}
                 </span>
                 <span className="text-surface-300 truncate">{entry.title || '—'}</span>
@@ -276,7 +276,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
 
       {/* Stats sidebar */}
       <div className="w-64 border-l border-surface-800 p-4 space-y-4 overflow-y-auto bg-surface-900/30">
-        <h3 className="text-xs font-bold text-surface-400 uppercase">Show Summary</h3>
+        <h3 className="text-xs font-medium text-surface-400 uppercase">Show Summary</h3>
 
         <StatBox label="Total Events" value={entries.length.toString()} />
         <StatBox label="Show Start" value={showStart ? formatBroadcastTime(showStart.actual_time) : 'Not started'} />
@@ -286,7 +286,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
         <StatBox label="Errors" value={entries.filter(e => e.event_type === 'error').length.toString()} danger={entries.filter(e => e.event_type === 'error').length > 0} />
 
         <div className="border-t border-surface-800 pt-4">
-          <h3 className="text-xs font-bold text-surface-400 uppercase mb-3">Timing</h3>
+          <h3 className="text-xs font-medium text-surface-400 uppercase mb-3">Timing</h3>
           <StatBox
             label="Avg Deviation"
             value={totalDeviations.length > 0 ? `${avgDeviation > 0 ? '+' : ''}${avgDeviation.toFixed(1)}s` : 'N/A'}
@@ -296,22 +296,22 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
         </div>
 
         <div className="border-t border-surface-800 pt-4">
-          <h3 className="text-xs font-bold text-surface-400 uppercase mb-3">Graphics</h3>
+          <h3 className="text-xs font-medium text-surface-400 uppercase mb-3">Graphics</h3>
           <StatBox label="Graphics On" value={entries.filter(e => e.event_type === 'graphic_on').length.toString()} />
           <StatBox label="Graphics Off" value={entries.filter(e => e.event_type === 'graphic_off').length.toString()} />
         </div>
 
         <div className="border-t border-surface-800 pt-4">
-          <h3 className="text-xs font-bold text-surface-400 uppercase mb-2">Manual Notes</h3>
+          <h3 className="text-xs font-medium text-surface-400 uppercase mb-2">Manual Notes</h3>
           <div className="space-y-1.5">
             {entries.filter(e => e.event_type === 'manual_note').map(e => (
-              <div key={e.id} className="text-[10px]">
+              <div key={e.id} className="text-[11px]">
                 <span className="text-surface-500">{formatBroadcastTime(e.actual_time)}</span>
                 <span className="text-surface-300 ml-2">{e.notes}</span>
               </div>
             ))}
             {entries.filter(e => e.event_type === 'manual_note').length === 0 && (
-              <p className="text-[10px] text-surface-600">No notes</p>
+              <p className="text-[11px] text-surface-600">No notes</p>
             )}
           </div>
         </div>

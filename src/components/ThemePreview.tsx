@@ -34,28 +34,28 @@ export function ThemePreview({ theme, accentColor, className }: ThemePreviewProp
           <div className="w-2 h-2 rounded-full bg-white/10" />
           <div className="w-2 h-2 rounded-full bg-white/10" />
         </div>
-        <span className="text-[9px] text-white/30 font-medium ml-1 tracking-wide">screenplay.studio</span>
+        <span className="text-[11px] text-white/30 font-medium ml-1 tracking-wide">screenplay.studio</span>
       </div>
 
       {/* Script content */}
       <div className="px-5 py-4 space-y-3 font-mono text-white">
         {/* Scene heading */}
-        <div className="text-[11px] uppercase tracking-wider text-white/90 font-bold">
+        <div className="text-[11px] uppercase tracking-[0.04em] text-white/90 font-medium">
           INT. COFFEE SHOP — DAY
         </div>
 
         {/* Action */}
-        <div className="text-[10px] text-white/60 leading-relaxed pl-0">
+        <div className="text-[11px] text-white/60 leading-relaxed pl-0">
           A quiet corner booth. Maya fidgets with her napkin, eyes fixed on the door.
         </div>
 
         {/* Character */}
-        <div className="text-[10px] uppercase font-semibold text-white/80 tracking-wider pt-1" style={{ marginLeft: '0.5in' }}>
+        <div className="text-[11px] uppercase font-semibold text-white/80 tracking-[0.04em] pt-1" style={{ marginLeft: '0.5in' }}>
           MAYA
         </div>
 
         {/* Dialogue */}
-        <div className="text-[10px] text-white/60 leading-relaxed" style={{ marginLeft: '1.5in', marginRight: '0.5in' }}>
+        <div className="text-[11px] text-white/60 leading-relaxed" style={{ marginLeft: '1.5in', marginRight: '0.5in' }}>
           You&apos;re late. Again.
         </div>
 
@@ -70,7 +70,7 @@ export function ThemePreview({ theme, accentColor, className }: ThemePreviewProp
 
       {/* Theme label */}
       <div className="px-3 py-2 border-t border-white/5 flex items-center justify-between">
-        <span className="text-[9px] text-white/25 font-medium uppercase tracking-wider">
+        <span className="text-[11px] text-white/55 font-medium uppercase tracking-[0.04em]">
           {theme === 'soft' ? 'Soft Pastels' : 'Default'}
         </span>
         <div className="flex gap-0.5">

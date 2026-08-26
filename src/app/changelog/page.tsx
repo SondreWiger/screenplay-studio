@@ -143,27 +143,27 @@ export default function ChangelogPage() {
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
+            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
 
           <div className="flex items-center gap-6">
             <span className="ss-label" style={{ color: '#FF5F1F' }}>Changelog</span>
-            <Link href="/blog" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+            <Link href="/blog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
               Blog
             </Link>
-            <Link href="/community" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+            <Link href="/community" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
               Community
             </Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+                <Link href="/dashboard" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
                   Dashboard
                 </Link>
-                <button onClick={handleSignOut} className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+                <button onClick={handleSignOut} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
                   Sign Out
                 </button>
                 <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function ChangelogPage() {
                     <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-6 h-6" loading="lazy" />
                   ) : (
                     <div
-                      className="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white"
+                      className="w-6 h-6 flex items-center justify-center text-[11px] font-semibold text-white"
                       style={{ background: '#FF5F1F' }}
                     >
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
@@ -181,7 +181,7 @@ export default function ChangelogPage() {
               </>
             ) : (
               <>
-                <Link href="/auth/login?redirect=/changelog" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+                <Link href="/auth/login?redirect=/changelog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
                   Sign In
                 </Link>
                 <Link href="/auth/register?redirect=/changelog" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>
@@ -200,7 +200,7 @@ export default function ChangelogPage() {
           <span className="ss-label">Platform History</span>
         </div>
         <h1
-          className="font-black text-white"
+          className="font-semibold text-white"
           style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)', letterSpacing: '-0.04em', lineHeight: 0.88 }}
         >
           CHANGELOG
@@ -290,14 +290,14 @@ export default function ChangelogPage() {
                           {/* Version + badges */}
                           <div className="flex flex-wrap items-center gap-2 mb-1.5">
                             <span
-                              className="font-mono font-black text-white"
+                              className="font-mono font-semibold text-white"
                               style={{ fontSize: '0.95rem', letterSpacing: '-0.015em' }}
                             >
                               v{release.version}
                             </span>
                             {isLatest && (
                               <span
-                                className="text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5"
+                                className="text-[11px] uppercase tracking-[0.04em] px-1.5 py-0.5"
                                 style={{
                                   background: 'rgba(255,95,31,0.15)',
                                   color: '#FF5F1F',
@@ -308,7 +308,7 @@ export default function ChangelogPage() {
                               </span>
                             )}
                             <span
-                              className="text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5"
+                              className="text-[11px] uppercase tracking-[0.04em] px-1.5 py-0.5"
                               style={{ border: `1px solid ${rtBadge.border}`, color: rtBadge.text }}
                             >
                               {rtBadge.label}
@@ -317,14 +317,14 @@ export default function ChangelogPage() {
 
                           {/* Title */}
                           <h2
-                            className="font-black text-white leading-tight"
+                            className="font-semibold text-white leading-tight"
                             style={{ fontSize: 'clamp(0.95rem, 2vw, 1.2rem)', letterSpacing: '-0.02em' }}
                           >
                             {release.title}
                           </h2>
 
                           {/* Date */}
-                          <time className="block mt-1 text-[10px] font-mono text-white/20 uppercase tracking-wider">
+                          <time className="block mt-1 text-[11px] text-white/55 uppercase tracking-[0.04em]">
                             {formatReleaseDate(release.released_at)}
                           </time>
 
@@ -339,19 +339,19 @@ export default function ChangelogPage() {
                           {(release.feature_count > 0 || release.improvement_count > 0 || release.fix_count > 0) && (
                             <div className="flex flex-wrap items-center gap-4 mt-3">
                               {release.feature_count > 0 && (
-                                <span className="flex items-center gap-1.5 text-[10px] font-mono text-white/25">
+                                <span className="flex items-center gap-1.5 text-[11px] text-white/60">
                                   <span className="w-1.5 h-1.5 shrink-0" style={{ background: '#FF5F1F' }} />
                                   {release.feature_count} feature{release.feature_count !== 1 ? 's' : ''}
                                 </span>
                               )}
                               {release.improvement_count > 0 && (
-                                <span className="flex items-center gap-1.5 text-[10px] font-mono text-white/25">
+                                <span className="flex items-center gap-1.5 text-[11px] text-white/60">
                                   <span className="w-1.5 h-1.5 shrink-0" style={{ background: '#818CF8' }} />
                                   {release.improvement_count} improvement{release.improvement_count !== 1 ? 's' : ''}
                                 </span>
                               )}
                               {release.fix_count > 0 && (
-                                <span className="flex items-center gap-1.5 text-[10px] font-mono text-white/25">
+                                <span className="flex items-center gap-1.5 text-[11px] text-white/60">
                                   <span className="w-1.5 h-1.5 shrink-0" style={{ background: '#4ADE80' }} />
                                   {release.fix_count} fix{release.fix_count !== 1 ? 'es' : ''}
                                 </span>
@@ -362,7 +362,7 @@ export default function ChangelogPage() {
 
                         {/* Expand toggle */}
                         {(release.entries?.length ?? 0) > 0 && (
-                          <span className="shrink-0 mt-1 text-[10px] font-mono uppercase tracking-widest text-white/20 hover:text-white/50 transition-colors select-none">
+                          <span className="shrink-0 mt-1 text-[11px] uppercase tracking-[0.04em] text-white/55 hover:text-white/50 transition-colors select-none">
                             {isOpen ? '↑' : '↓'}
                           </span>
                         )}
@@ -390,12 +390,12 @@ export default function ChangelogPage() {
                                   <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2 mb-0.5">
                                       <span
-                                        className="text-[9px] font-mono uppercase tracking-widest"
+                                        className="text-[11px] uppercase tracking-[0.04em]"
                                         style={{ color: ts.dot, opacity: 0.85 }}
                                       >
                                         {ts.label}
                                       </span>
-                                      <span className="text-[9px] font-mono uppercase tracking-widest text-white/12">
+                                      <span className="text-[11px] uppercase tracking-[0.04em] text-white/12">
                                         {entry.area.replace(/_/g, '\u00a0')}
                                       </span>
                                     </div>
@@ -435,9 +435,9 @@ export default function ChangelogPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest">Screenplay Studio</span>
+            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Studio</span>
           </div>
           <div className="flex items-center gap-6">
             {[
@@ -451,7 +451,7 @@ export default function ChangelogPage() {
                 href={l.href}
                 target={(l as any).external ? '_blank' : undefined}
                 rel={(l as any).external ? 'noopener noreferrer' : undefined}
-                className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors"
+                className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors"
               >
                 {l.label}
               </Link>
@@ -462,7 +462,7 @@ export default function ChangelogPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>

@@ -206,7 +206,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-black text-white mb-1">Set up your organization</h2>
+                <h2 className="text-2xl font-bold text-white mb-1">Set up your organization</h2>
                 <p className="text-surface-400 text-sm">Give your creative workspace a name and identity.</p>
               </div>
 
@@ -258,7 +258,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
           {step === 'size' && (
             <div className="p-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-black text-white mb-1">How big is your team?</h2>
+                <h2 className="text-2xl font-bold text-white mb-1">How big is your team?</h2>
                 <p className="text-surface-400 text-sm">This helps us tailor the experience for you.</p>
               </div>
 
@@ -302,7 +302,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
           {step === 'style' && (
             <div className="p-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-black text-white mb-1">What kind of organization?</h2>
+                <h2 className="text-2xl font-bold text-white mb-1">What kind of organization?</h2>
                 <p className="text-surface-400 text-sm">We'll customize recommendations based on your type.</p>
               </div>
 
@@ -371,7 +371,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
           {step === 'features' && (
             <div className="p-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-black text-white mb-1">What do you need?</h2>
+                <h2 className="text-2xl font-bold text-white mb-1">What do you need?</h2>
                 <p className="text-surface-400 text-sm">Select the tools you want enabled. You can change this anytime.</p>
               </div>
 
@@ -391,7 +391,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                       )}
                     >
                       {isRecommended && (
-                        <span className="absolute -top-2 right-3 text-[9px] px-1.5 py-0.5 rounded-full bg-brand-500/20 text-brand-500 font-bold">
+                        <span className="absolute -top-2 right-3 text-[11px] px-1.5 py-0.5 rounded-full bg-brand-500/20 text-brand-500 font-bold">
                           RECOMMENDED
                         </span>
                       )}
@@ -423,7 +423,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
           {step === 'review' && (
             <div className="p-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-black text-white mb-1">Ready to launch</h2>
+                <h2 className="text-2xl font-bold text-white mb-1">Ready to launch</h2>
                 <p className="text-surface-400 text-sm">Here's what we're setting up for you.</p>
               </div>
 
@@ -432,7 +432,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                 <div className="rounded-xl border border-surface-800 bg-surface-800/30 p-5">
                   <div className="flex items-center gap-4 mb-4">
                     <div
-                      className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-black text-white shadow-lg"
+                      className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white shadow-lg"
                       style={{ backgroundColor: data.brandColor }}
                     >
                       {data.name[0]?.toUpperCase() || 'O'}

@@ -201,11 +201,11 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-white">{a.title}</h3>
                       {a.due_date && (
-                        <span className={cn('text-[10px] px-2 py-0.5 rounded-full', overdue ? 'bg-red-500/20 text-red-400' : 'bg-surface-800 text-surface-500')}>
+                        <span className={cn('text-[11px] px-2 py-0.5 rounded-full', overdue ? 'bg-red-500/20 text-red-400' : 'bg-surface-800 text-surface-500')}>
                           Due: {new Date(a.due_date).toLocaleDateString()}
                         </span>
                       )}
-                      <span className="text-[10px] text-surface-600">{a.max_points} pts</span>
+                      <span className="text-[11px] text-surface-600">{a.max_points} pts</span>
                     </div>
                     {a.description && <p className="text-sm text-surface-400 mb-2">{a.description}</p>}
                     <div className="flex gap-3 text-xs text-surface-500">
@@ -232,14 +232,14 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                       <div key={sub.id} className="bg-surface-900 rounded p-3">
                         <p className="text-sm text-surface-300 whitespace-pre-wrap line-clamp-4">{sub.content}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <span className="text-[10px] text-surface-600">{sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
+                          <span className="text-[11px] text-surface-600">{sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
                           {sub.grade != null ? (
                             <span className="text-xs text-green-400">{sub.grade}/{a.max_points}</span>
                           ) : (
                             <GradeInline maxPoints={a.max_points} onGrade={(g, f) => gradeSubmission(sub.id, g, f)} />
                           )}
                           <button onClick={() => { setExpandedSubmission(expandedSubmission === sub.id ? null : sub.id); loadPeerReviews(sub.id); }}
-                            className="text-[10px] text-brand-500 hover:underline ml-auto">
+                            className="text-[11px] text-brand-500 hover:underline ml-auto">
                             {expandedSubmission === sub.id ? 'Hide reviews' : 'Peer reviews'}
                           </button>
                         </div>
@@ -294,11 +294,11 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                 <p className="text-sm text-surface-400 line-clamp-3">{sub.content}</p>
                 {sub.feedback && (
                   <div className="mt-2 bg-surface-900 rounded p-2">
-                    <span className="text-[10px] text-surface-500 font-semibold">Feedback:</span>
+                    <span className="text-[11px] text-surface-500 font-semibold">Feedback:</span>
                     <p className="text-xs text-surface-300">{sub.feedback}</p>
                   </div>
                 )}
-                <span className="text-[10px] text-surface-600 mt-2 block">Submitted: {sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
+                <span className="text-[11px] text-surface-600 mt-2 block">Submitted: {sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
               </Card>
             );
           })}
@@ -370,7 +370,7 @@ function GradeInline({ maxPoints, onGrade }: { maxPoints: number; onGrade: (grad
   const [open, setOpen] = useState(false);
   const [grade, setGrade] = useState('');
   const [feedback, setFeedback] = useState('');
-  if (!open) return <button onClick={() => setOpen(true)} className="text-[10px] text-brand-500 hover:underline">Grade</button>;
+  if (!open) return <button onClick={() => setOpen(true)} className="text-[11px] text-brand-500 hover:underline">Grade</button>;
   return (
     <div className="flex gap-2 items-end">
       <Input value={grade} onChange={e => setGrade(e.target.value)} type="number" placeholder={`/ ${maxPoints}`} className="w-20 text-xs" />

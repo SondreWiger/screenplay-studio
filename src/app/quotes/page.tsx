@@ -192,7 +192,7 @@ export default function QuotesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
               The Quote Wall
             </h1>
             <p className="text-sm text-surface-500 mt-2 max-w-md mx-auto">
@@ -232,7 +232,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setShowGroupManager(true)}
-              className="px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-colors"
+              className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.04em] rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-colors"
               title="Manage groups"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -242,7 +242,7 @@ export default function QuotesPage() {
 
             <button
               onClick={() => setSortOrder(o => o === 'desc' ? 'asc' : 'desc')}
-              className="px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-colors"
+              className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.04em] rounded-lg bg-surface-900/80 border border-surface-800 text-surface-400 hover:text-surface-200 hover:border-surface-700 transition-colors"
             >
               {sortOrder === 'desc' ? 'Newest first ↓' : 'Oldest first ↑'}
             </button>
@@ -308,7 +308,7 @@ export default function QuotesPage() {
           {/* Quote count */}
           {!loading && quoteCount > 0 && (
             <div className="text-center mb-6">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-surface-600 bg-surface-900/50 px-3 py-1.5 rounded-full border border-surface-800/50">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-surface-400 bg-surface-900/50 px-3 py-1.5 rounded-full border border-surface-800/50">
                 <svg className="w-3 h-3 text-amber-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                 </svg>
@@ -353,7 +353,7 @@ export default function QuotesPage() {
                     <div className="flex items-center gap-3 mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-amber-500 to-brand-500 shadow-sm shadow-amber-500/20" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-500">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-surface-500">
                           {group.label}
                         </span>
                       </div>
@@ -418,17 +418,17 @@ export default function QuotesPage() {
                             {(quote.context || quote.location || quote.group_name || quote.group || quote.said_at) && (
                               <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-surface-800/30">
                                 {quote.group && (
-                                  <span className="text-[9px] font-semibold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/8 text-amber-500/70 border border-amber-500/10 flex items-center gap-1">
+                                  <span className="text-[11px] font-semibold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/8 text-amber-500/70 border border-amber-500/10 flex items-center gap-1">
                                     {quote.group.emoji} {quote.group.name}
                                   </span>
                                 )}
                                 {!quote.group && quote.group_name && (
-                                  <span className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/8 text-amber-500/70 border border-amber-500/10">
+                                  <span className="text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-0.5 rounded-full bg-amber-500/8 text-amber-500/70 border border-amber-500/10">
                                     {quote.group_name}
                                   </span>
                                 )}
                                 {quote.context && (
-                                  <span className="text-[10px] text-surface-500 flex items-center gap-1">
+                                  <span className="text-[11px] text-surface-500 flex items-center gap-1">
                                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                                     </svg>
@@ -436,7 +436,7 @@ export default function QuotesPage() {
                                   </span>
                                 )}
                                 {quote.location && (
-                                  <span className="text-[10px] text-surface-500 flex items-center gap-1">
+                                  <span className="text-[11px] text-surface-500 flex items-center gap-1">
                                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -445,7 +445,7 @@ export default function QuotesPage() {
                                   </span>
                                 )}
                                 {quote.said_at && (
-                                  <span className="text-[10px] text-surface-600 flex items-center gap-1">
+                                  <span className="text-[11px] text-surface-600 flex items-center gap-1">
                                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
@@ -466,7 +466,7 @@ export default function QuotesPage() {
             {/* Footer */}
             {!loading && quoteCount > 0 && (
               <div className="text-center mt-12 mb-8">
-                <div className="inline-flex items-center gap-2 text-[10px] text-surface-700 bg-surface-900/50 px-4 py-2 rounded-full border border-surface-800/50">
+                <div className="inline-flex items-center gap-2 text-[11px] text-surface-700 bg-surface-900/50 px-4 py-2 rounded-full border border-surface-800/50">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                   </svg>

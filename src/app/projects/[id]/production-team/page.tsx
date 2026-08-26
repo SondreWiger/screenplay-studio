@@ -10,15 +10,15 @@ import type { StageProductionTeamMember, StageProductionDepartment } from '@/lib
 import { STAGE_DEPARTMENTS } from '@/lib/types';
 
 const DEPT_COLORS: Record<StageProductionDepartment, string> = {
-  'Direction':          'text-brand-500  bg-brand-500/10  border-brand-500/20',
-  'Stage Management':   'text-[#f59e0b]  bg-[#f59e0b]/10  border-[#f59e0b]/20',
-  'Lighting':           'text-[#fbbf24]  bg-[#fbbf24]/10  border-[#fbbf24]/20',
-  'Sound':              'text-[#3b82f6]  bg-[#3b82f6]/10  border-[#3b82f6]/20',
-  'Musical Direction':  'text-[#8b5cf6]  bg-[#8b5cf6]/10  border-[#8b5cf6]/20',
-  'Choreography':       'text-[#ec4899]  bg-[#ec4899]/10  border-[#ec4899]/20',
-  'Design':             'text-[#10b981]  bg-[#10b981]/10  border-[#10b981]/20',
-  'Technical':          'text-[#14b8a6]  bg-[#14b8a6]/10  border-[#14b8a6]/20',
-  'Marketing':          'text-[#6366f1]  bg-[#6366f1]/10  border-[#6366f1]/20',
+  'Direction':          'text-brand-500 bg-brand-500/10 border-brand-500/20',
+  'Stage Management':   'text-[#f59e0b] bg-[#f59e0b]/10 border-[#f59e0b]/20',
+  'Lighting':           'text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20',
+  'Sound':              'text-[#3b82f6] bg-[#3b82f6]/10 border-[#3b82f6]/20',
+  'Musical Direction':  'text-[#8b5cf6] bg-[#8b5cf6]/10 border-[#8b5cf6]/20',
+  'Choreography':       'text-[#ec4899] bg-[#ec4899]/10 border-[#ec4899]/20',
+  'Design':             'text-[#10b981] bg-[#10b981]/10 border-[#10b981]/20',
+  'Technical':          'text-[#14b8a6] bg-[#14b8a6]/10 border-[#14b8a6]/20',
+  'Marketing':          'text-[#6366f1] bg-[#6366f1]/10 border-[#6366f1]/20',
   'Other':              'text-surface-400 bg-surface-800 border-surface-700',
 };
 
@@ -148,7 +148,7 @@ export default function ProductionTeamPage() {
               <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-semibold border', DEPT_COLORS[dept as StageProductionDepartment])}>
                 {dept}
               </span>
-              <span className="text-[10px] text-surface-600">({deptMembers.length})</span>
+              <span className="text-[11px] text-surface-600">({deptMembers.length})</span>
               <button
                 onClick={() => openAdd(dept as StageProductionDepartment)}
                 className="ml-auto text-xs text-surface-600 hover:text-surface-400 transition-colors flex items-center gap-1"

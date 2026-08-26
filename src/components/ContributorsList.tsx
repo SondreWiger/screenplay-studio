@@ -45,7 +45,7 @@ export default function ContributorsList() {
     return (
       <div className="flex items-center gap-2 py-8">
         <div className="w-1 h-4 animate-pulse" style={{ background: ORANGE }} />
-        <span className="text-xs text-white/20 font-mono uppercase tracking-widest">Loading contributors…</span>
+        <span className="text-xs text-white/55 uppercase tracking-[0.04em]">Loading contributors…</span>
       </div>
     );
   }
@@ -69,7 +69,7 @@ export default function ContributorsList() {
       {featured.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-[9px] font-black uppercase tracking-[0.22em]" style={{ color: ORANGE }}>Featured</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.04em]" style={{ color: ORANGE }}>Featured</span>
             <div className="flex-1 h-px" style={{ background: 'rgba(255,95,31,0.15)' }} />
           </div>
           <div className="flex flex-wrap gap-3">
@@ -83,7 +83,7 @@ export default function ContributorsList() {
         <div>
           {featured.length > 0 && (
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-[9px] font-black uppercase tracking-[0.22em] text-white/20">All Contributors</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/55">All Contributors</span>
               <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
             </div>
           )}
@@ -112,7 +112,7 @@ function ContributorCard({ c, large = false }: { c: Contributor; large?: boolean
     >
       {/* Avatar */}
       <div
-        className={`shrink-0 rounded-full overflow-hidden flex items-center justify-center font-black text-white ${large ? 'w-9 h-9 text-sm' : 'w-7 h-7 text-xs'}`}
+        className={`shrink-0 rounded-full overflow-hidden flex items-center justify-center font-semibold text-white ${large ? 'w-9 h-9 text-sm' : 'w-7 h-7 text-xs'}`}
         style={{ background: c.is_featured ? ORANGE : 'rgba(255,255,255,0.08)' }}
       >
         {c.cached_avatar_url
@@ -127,18 +127,18 @@ function ContributorCard({ c, large = false }: { c: Contributor; large?: boolean
             {name}
           </p>
           {c.is_featured && (
-            <span className="shrink-0 text-[8px]" title="Featured contributor">⭐</span>
+            <span className="shrink-0 text-[11px]" title="Featured contributor">⭐</span>
           )}
         </div>
         {large && c.bio && (
-          <p className="text-[10px] text-white/30 truncate max-w-[160px]">{c.bio}</p>
+          <p className="text-[11px] text-white/30 truncate max-w-[160px]">{c.bio}</p>
         )}
         {c.contribution_areas?.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-0.5">
             {c.contribution_areas.slice(0, large ? 4 : 2).map(a => (
               <span
                 key={a}
-                className="text-[8px] font-bold uppercase tracking-wide"
+                className="text-[11px] font-medium uppercase tracking-wide"
                 style={{ color: AREA_COLORS[a] || 'rgba(255,255,255,0.25)' }}
               >
                 {a}

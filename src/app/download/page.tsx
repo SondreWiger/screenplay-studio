@@ -71,7 +71,7 @@ const FEATURES = [
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[9px] font-bold uppercase tracking-[0.26em] text-white/25 font-mono">
+    <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55">
       {children}
     </span>
   );
@@ -141,7 +141,7 @@ export default function DownloadPage() {
       {/* NAV */}
       <nav className="relative z-10 max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between border-b border-white/5">
         <Link href="/" className="group flex items-center gap-2.5">
-          <div className="w-7 h-7 flex items-center justify-center text-[8px] font-black text-white shrink-0 bg-brand-500">SS</div>
+          <div className="w-7 h-7 flex items-center justify-center text-[11px] font-semibold text-white shrink-0 bg-brand-500">SS</div>
           <div className="leading-none">
             <div className="text-[11px] font-bold tracking-[-0.03em] text-white/90">SCREENPLAY STUDIO</div>
           </div>
@@ -149,13 +149,13 @@ export default function DownloadPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/auth"
-            className="h-8 px-4 flex items-center text-[10px] font-bold uppercase tracking-[0.12em] text-white/60 hover:text-white transition-colors"
+            className="h-8 px-4 flex items-center text-[11px] font-medium uppercase tracking-[0.04em] text-white/60 hover:text-white transition-colors"
           >
             Sign in
           </Link>
           <Link
             href="/download"
-            className="h-8 px-4 flex items-center text-[10px] font-bold uppercase tracking-[0.12em] text-white border border-brand-500 bg-brand-500/10 transition-colors"
+            className="h-8 px-4 flex items-center text-[11px] font-medium uppercase tracking-[0.04em] text-white border border-brand-500 bg-brand-500/10 transition-colors"
           >
             Download
           </Link>
@@ -168,7 +168,7 @@ export default function DownloadPage() {
         <div className="max-w-2xl mb-16">
           <Eyebrow>Download</Eyebrow>
           <h1
-            className="font-black text-white mb-6"
+            className="font-semibold text-white mb-6"
             style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', letterSpacing: '-0.03em', lineHeight: 0.95 }}
           >
             WRITE.<br />OFFLINE.<br />
@@ -200,10 +200,10 @@ export default function DownloadPage() {
                   <Icon size={18} className={selected === p.key ? 'text-brand-500' : 'text-white/30'} />
                   <div>
                     <div className="text-sm font-bold text-white/90">{p.label}</div>
-                    <div className="text-[10px] text-white/30 font-mono">{p.format}</div>
+                    <div className="text-[11px] text-white/30 font-mono">{p.format}</div>
                   </div>
                   {isDetected && (
-                    <span className="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-brand-500/40 text-brand-500">
+                    <span className="ml-auto text-[11px] font-medium uppercase tracking-[0.04em] px-1.5 py-0.5 border border-brand-500/40 text-brand-500">
                       Detected
                     </span>
                   )}
@@ -215,10 +215,10 @@ export default function DownloadPage() {
           {/* Download card */}
           <div className="flex-1 border border-white/[0.07] p-8 flex flex-col justify-between bg-white/[0.02]">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25 mb-2 font-mono">
+              <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 mb-2">
                 {dl.label} — {getPlatformHint(selected, selected === 'macos' ? macArch : undefined)}
               </div>
-              <h2 className="text-2xl font-black text-white mb-3" style={{ letterSpacing: '-0.02em' }}>
+              <h2 className="text-2xl font-bold text-white mb-3" style={{ letterSpacing: '-0.02em' }}>
                 Screenplay Studio for {dl.label}
               </h2>
               <p className="text-xs text-white/40 leading-relaxed mb-4">
@@ -241,7 +241,7 @@ export default function DownloadPage() {
                         }`}
                       >
                         <div className="text-xs font-bold text-white/90">{arch.label}</div>
-                        <div className="text-[10px] text-white/30">{arch.desc}</div>
+                        <div className="text-[11px] text-white/30">{arch.desc}</div>
                       </button>
                     ))}
                   </div>
@@ -251,7 +251,7 @@ export default function DownloadPage() {
                 </>
               )}
 
-              <div className="flex flex-wrap gap-3 text-[10px] text-white/30 mb-8">
+              <div className="flex flex-wrap gap-3 text-[11px] text-white/30 mb-8">
                 <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Free forever</span>
                 <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> No account required</span>
                 <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Auto-updates</span>
@@ -261,7 +261,7 @@ export default function DownloadPage() {
             <a
               href={getDownloadUrl(filename)}
               download
-              className="inline-flex items-center justify-center gap-2 h-12 px-8 text-sm font-bold uppercase tracking-[0.12em] text-white transition-all hover:opacity-90 bg-brand-500"
+              className="inline-flex items-center justify-center gap-2 h-12 px-8 text-sm font-medium uppercase tracking-[0.04em] text-white transition-all hover:opacity-90 bg-brand-500"
             >
               <DownloadIcon size={16} />
               Download for {dl.label}{selected === 'macos' ? ` (${MAC_ARCHS.find(a => a.key === macArch)?.label})` : ''}
@@ -272,7 +272,7 @@ export default function DownloadPage() {
         {/* Features grid */}
         <div className="mb-20">
           <Eyebrow>Features</Eyebrow>
-          <h2 className="font-black text-white mb-10" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', letterSpacing: '-0.02em', lineHeight: 0.95 }}>
+          <h2 className="font-semibold text-white mb-10" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', letterSpacing: '-0.02em', lineHeight: 0.95 }}>
             EVERYTHING YOU NEED.
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -317,13 +317,13 @@ export default function DownloadPage() {
         {/* Footer */}
         <div className="mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25 hover:text-white/60 transition-colors">
+            <Link href="/" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
               Home
             </Link>
-            <Link href="/auth" className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25 hover:text-white/60 transition-colors">
+            <Link href="/auth" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
               Sign in
             </Link>
-            <Link href="/docs" className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25 hover:text-white/60 transition-colors">
+            <Link href="/docs" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
               Docs
             </Link>
           </div>

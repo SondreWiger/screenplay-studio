@@ -64,7 +64,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
         <h2 className="text-lg font-semibold text-white mb-4">Log today&apos;s work</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs text-white/40 uppercase tracking-widest block mb-1">Pages written</label>
+            <label className="text-xs text-white/40 uppercase tracking-[0.04em] block mb-1">Pages written</label>
             <input
               type="number" min="0" step="0.5" value={pages}
               onChange={e => setPages(e.target.value)}
@@ -73,7 +73,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
             />
           </div>
           <div>
-            <label className="text-xs text-white/40 uppercase tracking-widest block mb-1">Time spent (minutes)</label>
+            <label className="text-xs text-white/40 uppercase tracking-[0.04em] block mb-1">Time spent (minutes)</label>
             <input
               type="number" min="0" step="5" value={minutes}
               onChange={e => setMinutes(e.target.value)}
@@ -82,7 +82,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
             />
           </div>
           <div>
-            <label className="text-xs text-white/40 uppercase tracking-widest block mb-1">Note (optional)</label>
+            <label className="text-xs text-white/40 uppercase tracking-[0.04em] block mb-1">Note (optional)</label>
             <textarea
               value={note} onChange={e => setNote(e.target.value)}
               rows={2} placeholder="What did you work on?"
@@ -312,7 +312,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
           <>
             {/* Members */}
             <div className="px-5 py-3 border-b border-white/[0.06]">
-              <p className="text-xs text-white/30 uppercase tracking-widest mb-2">Members ({members.length})</p>
+              <p className="text-xs text-white/55 uppercase tracking-[0.04em] mb-2">Members ({members.length})</p>
               <div className="flex -space-x-2">
                 {members.slice(0, 8).map(m => (
                   <Link key={m.user_id} href={`/u/${m.profile.username || m.user_id}`}
@@ -321,14 +321,14 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                     {m.profile.avatar_url ? (
                       <img src={m.profile.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] text-white/40 font-bold">
+                      <div className="w-full h-full flex items-center justify-center text-[11px] text-white/40 font-bold">
                         {(m.profile.display_name || m.profile.username || '?')[0].toUpperCase()}
                       </div>
                     )}
                   </Link>
                 ))}
                 {members.length > 8 && (
-                  <div className="w-7 h-7 rounded-full border-2 border-surface-800 bg-white/10 flex items-center justify-center text-[9px] text-white/30">
+                  <div className="w-7 h-7 rounded-full border-2 border-surface-800 bg-white/10 flex items-center justify-center text-[11px] text-white/30">
                     +{members.length - 8}
                   </div>
                 )}
@@ -346,7 +346,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                       {(post.author as any)?.avatar_url ? (
                         <img src={(post.author as any).avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[10px] text-white/30 font-bold">
+                        <div className="w-full h-full flex items-center justify-center text-[11px] text-white/30 font-bold">
                           {((post.author as any)?.display_name || '?')[0]}
                         </div>
                       )}
@@ -356,7 +356,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                         <span className="text-xs font-medium text-white/70">
                           {(post.author as any)?.display_name || (post.author as any)?.username || 'Member'}
                         </span>
-                        <span className="text-[10px] text-white/20">
+                        <span className="text-[11px] text-white/20">
                           {new Date(post.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -609,9 +609,9 @@ export default function AccountabilityPage() {
             <div>
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-                <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>work tracking</span>
+                <span className="text-[11px] uppercase tracking-[0.04em]" style={{ color: 'rgba(255,255,255,0.4)' }}>work tracking</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
                 ACCOUNTABILITY
               </h1>
               <p className="text-sm mt-2 max-w-md" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -622,12 +622,12 @@ export default function AccountabilityPage() {
             {!loading && (
               <div className="hidden sm:flex items-center gap-3 shrink-0 mt-2">
                 <div className="text-center px-4 py-2.5 rounded-xl" style={{ border: '1px solid rgba(255,95,31,0.2)', background: 'rgba(255,95,31,0.06)' }}>
-                  <p className="text-2xl font-black" style={{ color: '#FF5F1F', letterSpacing: '-0.02em' }}>{streak}</p>
-                  <p className="text-[9px] font-mono uppercase tracking-widest mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>day streak</p>
+                  <p className="text-2xl font-bold" style={{ color: '#FF5F1F', letterSpacing: '-0.02em' }}>{streak}</p>
+                  <p className="text-[11px] uppercase tracking-[0.04em] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>day streak</p>
                 </div>
                 <div className="text-center px-4 py-2.5 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-                  <p className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>{totalPages.toFixed(0)}</p>
-                  <p className="text-[9px] font-mono uppercase tracking-widest mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>pages</p>
+                  <p className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>{totalPages.toFixed(0)}</p>
+                  <p className="text-[11px] uppercase tracking-[0.04em] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>pages</p>
                 </div>
               </div>
             )}
@@ -646,7 +646,7 @@ export default function AccountabilityPage() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-[0.04em] rounded-lg transition-colors"
               style={tab === t.key
                 ? { background: '#FF5F1F', color: '#fff' }
                 : { color: 'rgba(255,255,255,0.4)' }}
@@ -690,11 +690,11 @@ export default function AccountabilityPage() {
                           style={{ background: 'radial-gradient(circle, #FF5F1F 0%, transparent 70%)' }} />
                       )}
                       <div className="text-2xl mb-3">{stat.icon}</div>
-                      <p className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>
+                      <p className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>
                         {stat.value}
                         <span className="text-xs font-normal ml-1.5" style={{ color: stat.accentColor }}>{stat.suffix}</span>
                       </p>
-                      <p className="text-[10px] font-mono uppercase tracking-widest mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{stat.label}</p>
+                      <p className="text-[11px] uppercase tracking-[0.04em] mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{stat.label}</p>
                     </div>
                   ))}
                 </div>
@@ -728,7 +728,7 @@ export default function AccountabilityPage() {
                     />
                   </div>
                   <div className="px-5 pb-4">
-                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                    <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
                       Daily goal: {dailyGoal} page{dailyGoal === 1 ? '' : 's'} ·{' '}
                       <Link href="/settings#accountability" className="hover:opacity-60 underline underline-offset-2 transition-opacity">
                         Change in settings
@@ -774,7 +774,7 @@ export default function AccountabilityPage() {
               <div className="space-y-6">
                 {/* Search / add */}
                 <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Find a buddy</p>
+                  <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Find a buddy</p>
                   <input
                     value={buddySearch}
                     onChange={e => setBuddySearch(e.target.value)}
@@ -813,9 +813,9 @@ export default function AccountabilityPage() {
                 {/* Pending incoming */}
                 {pendingIncoming.length > 0 && (
                   <div>
-                    <p className="text-xs font-mono uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       Pending requests
-                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-black text-white" style={{ background: '#FF5F1F' }}>
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[11px] font-semibold text-white" style={{ background: '#FF5F1F' }}>
                         {pendingIncoming.length}
                       </span>
                     </p>
@@ -832,7 +832,7 @@ export default function AccountabilityPage() {
 
                 {/* Buddies list */}
                 <div>
-                  <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
                     Your buddies ({buddies.filter(b => b.status === 'accepted').length})
                   </p>
                   {buddies.filter(b => b.status === 'accepted').length === 0 ? (
@@ -856,7 +856,7 @@ export default function AccountabilityPage() {
                 {/* Sent-pending */}
                 {buddies.filter(b => b.status === 'pending' && b.requester_id === user.id).length > 0 && (
                   <div>
-                    <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Sent requests</p>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Sent requests</p>
                     <div className="space-y-2">
                       {buddies.filter(b => b.status === 'pending' && b.requester_id === user.id).map(b => {
                         const profile = buddyProfiles[b.addressee_id];
@@ -875,7 +875,7 @@ export default function AccountabilityPage() {
                 {/* Your groups */}
                 {groups.length > 0 && (
                   <div>
-                    <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Your groups</p>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Your groups</p>
                     <div className="space-y-2">
                       {groups.map(g => (
                         <GroupCard key={g.id} group={g} myRole={myRoles[g.id] || 'member'} onEnter={() => setOpenGroup(g)} />
@@ -887,7 +887,7 @@ export default function AccountabilityPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   {/* Create */}
                   <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Create a group</p>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Create a group</p>
                     <form onSubmit={createGroup} className="space-y-3">
                       <input
                         value={createName} onChange={e => setCreateName(e.target.value)}
@@ -911,7 +911,7 @@ export default function AccountabilityPage() {
 
                   {/* Join by invite */}
                   <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Join with invite code</p>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Join with invite code</p>
                     <p className="text-xs mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.25)' }}>
                       Have a code? Paste it below to join an existing accountability group instantly.
                     </p>
@@ -942,9 +942,9 @@ export default function AccountabilityPage() {
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-5 h-5 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Screenplay Studio — Accountability</span>
+            <span className="text-[11px] uppercase tracking-[0.04em]" style={{ color: 'rgba(255,255,255,0.4)' }}>Screenplay Studio — Accountability</span>
           </div>
           <div className="flex items-center gap-6">
             {[
@@ -953,7 +953,7 @@ export default function AccountabilityPage() {
               { href: '/settings', label: 'Settings' },
             ].map(({ href, label }) => (
               <Link key={href} href={href}
-                className="text-[11px] font-mono uppercase tracking-widest transition-colors hover:text-white/60"
+                className="text-[11px] uppercase tracking-[0.04em] transition-colors hover:text-white/60"
                 style={{ color: 'rgba(255,255,255,0.25)' }}>
                 {label}
               </Link>

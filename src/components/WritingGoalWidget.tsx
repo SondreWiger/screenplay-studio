@@ -199,7 +199,7 @@ export function WritingGoalWidget({ userId }: WritingGoalWidgetProps) {
         ].map((s) => (
           <div key={s.label} className="text-center">
             <p className="text-sm font-semibold text-surface-100">{s.value}</p>
-            <p className="text-[10px] text-surface-600 uppercase tracking-wide mt-0.5">{s.label}</p>
+            <p className="text-[11px] text-surface-400 uppercase tracking-wide mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>

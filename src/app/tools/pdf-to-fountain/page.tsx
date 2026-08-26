@@ -39,7 +39,7 @@ export default function PdfToFountainPage() {
             <div>
               <p className="text-sm font-bold text-white/80">{file.name}</p>
               <p className="text-xs text-white/25 mt-1">{(file.size / 1024).toFixed(1)} KB</p>
-              <p className="text-[10px] mt-3 underline underline-offset-4 cursor-pointer text-brand-500" onClick={(e) => { e.stopPropagation(); setFile(null); setStatus('idle'); setError(null); }}>Choose a different file</p>
+              <p className="text-[11px] mt-3 underline underline-offset-4 cursor-pointer text-brand-500" onClick={(e) => { e.stopPropagation(); setFile(null); setStatus('idle'); setError(null); }}>Choose a different file</p>
             </div>
           ) : undefined}
         </UploadZone>

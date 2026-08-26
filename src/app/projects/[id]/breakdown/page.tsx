@@ -44,7 +44,7 @@ interface Location  { id: string; name: string }
 type Tab = 'stripboard' | 'cast' | 'locations' | 'departments';
 
 const DeptTag = ({ children, color }: { children: React.ReactNode; color: string }) => (
-  <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium', color)}>
+  <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium', color)}>
     {children}
   </span>
 );
@@ -53,10 +53,10 @@ function DeptSection({ label, items, color }: { label: string; items?: string[] 
   if (!items || items.length === 0) return null;
   return (
     <div>
-      <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-1">{label}</p>
       <div className="flex flex-wrap gap-1">
         {items.map((item, i) => (
-          <span key={i} className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', color)}>{item}</span>
+          <span key={i} className={cn('text-[11px] px-1.5 py-0.5 rounded font-medium', color)}>{item}</span>
         ))}
       </div>
     </div>
@@ -224,7 +224,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3 print:hidden">
         <div>
-          <h1 className="text-xl font-black text-white">Production Breakdown</h1>
+          <h1 className="text-xl font-bold text-white">Production Breakdown</h1>
           <p className="text-sm text-surface-400 mt-0.5">
             {displayScenes.length} scenes &middot; {summary.totalPages.toFixed(1)} pages
             {summary.totalMins > 0 && (<> &middot; ~{Math.round(summary.totalMins)} min</>)}
@@ -264,7 +264,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
           { label: 'Stunt Scenes',  value: summary.stuntScenes,           color: 'bg-red-500/10 text-red-300' },
         ].map(({ label, value, color }) => (
           <div key={label} className={cn('rounded-xl border border-surface-700/40 p-3', color)}>
-            <div className="text-xl font-black">{value}</div>
+            <div className="text-xl font-bold">{value}</div>
             <div className="text-xs opacity-60 mt-0.5">{label}</div>
           </div>
         ))}
@@ -293,11 +293,11 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
             {Object.entries(grouped).map(([groupKey, groupScenes]) => (
               <div key={groupKey}>
                 {groupBy !== 'none' && groupKey && (
-                  <h2 className="text-xs font-bold text-surface-400 uppercase tracking-widest mb-2 pl-1">{groupKey}</h2>
+                  <h2 className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em] mb-2 pl-1">{groupKey}</h2>
                 )}
                 <div className="rounded-xl border border-surface-700/40 overflow-hidden">
                   <div className="overflow-x-auto">
-                  <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] min-w-[380px] gap-0 bg-surface-800/80 border-b border-surface-700/40 px-2 py-2 text-[10px] font-bold text-surface-400 uppercase tracking-wider">
+                  <div className="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_3.5rem] min-w-[380px] gap-0 bg-surface-800/80 border-b border-surface-700/40 px-2 py-2 text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">
                     <span>#</span><span>Scene</span>
                     <span className="text-center">Int/Ext</span>
                     <span className="text-center">Time</span>
@@ -320,7 +320,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                               {scene.scene_heading ?? ('Scene ' + (scene.scene_number ?? (i + 1)))}
                             </p>
                             {scene.synopsis && !isOpen && (
-                              <p className="text-[10px] text-surface-500 truncate">{scene.synopsis}</p>
+                              <p className="text-[11px] text-surface-500 truncate">{scene.synopsis}</p>
                             )}
                             {!isOpen && (
                               <div className="flex flex-wrap gap-1 mt-0.5">
@@ -333,11 +333,11 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                               </div>
                             )}
                           </div>
-                          <span className={cn('text-[10px] font-semibold text-center px-1 py-0.5 rounded', INT_EXT_COLORS[scene.location_type ?? ''] ?? 'text-surface-500')}>
+                          <span className={cn('text-[11px] font-semibold text-center px-1 py-0.5 rounded', INT_EXT_COLORS[scene.location_type ?? ''] ?? 'text-surface-500')}>
                             {scene.location_type ?? '—'}
                           </span>
-                          <span className="text-[10px] text-surface-400 text-center">{scene.time_of_day ?? '—'}</span>
-                          <span className="text-[10px] font-mono text-surface-300 text-right">
+                          <span className="text-[11px] text-surface-400 text-center">{scene.time_of_day ?? '—'}</span>
+                          <span className="text-[11px] font-mono text-surface-300 text-right">
                             {scene.page_count != null
                               ? scene.page_count.toFixed(1)
                               : (() => {
@@ -351,7 +351,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                           <div className="bg-surface-900/60 border-t border-surface-700/20 px-4 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
                             {scene.synopsis && (
                               <div className="col-span-full">
-                                <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-1">Synopsis</p>
+                                <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-1">Synopsis</p>
                                 <p className="text-surface-300">{scene.synopsis}</p>
                               </div>
                             )}
@@ -374,7 +374,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                             {(scene.special_equipment?.length ?? 0) > 0 && <DeptSection label="Special Equipment" color="bg-surface-700/60 text-surface-300" items={scene.special_equipment} />}
                             {scene.notes && (
                               <div className="col-span-full">
-                                <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-1">Notes</p>
+                                <p className="text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] mb-1">Notes</p>
                                 <p className="text-surface-400">{scene.notes}</p>
                               </div>
                             )}
@@ -465,10 +465,10 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                       </div>
                       <span className="font-semibold text-white text-sm">{entry.displayName}</span>
                       {isScript && !isManual && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 font-semibold tracking-wide">SCRIPT</span>
+                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 font-semibold tracking-wide">SCRIPT</span>
                       )}
                       {isScript && isManual && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-teal-500/15 text-teal-400 font-semibold tracking-wide">MATCHED</span>
+                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-teal-500/15 text-teal-400 font-semibold tracking-wide">MATCHED</span>
                       )}
                     </div>
                     <span className="text-xs text-surface-400 font-mono">{total} scene{total !== 1 ? 's' : ''}</span>
@@ -481,7 +481,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                         <span
                           key={s.id}
                           title={fromManual && fromScript ? 'Manual + Script' : fromScript ? 'From script' : 'Manually assigned'}
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${
+                          className={`text-[11px] px-1.5 py-0.5 rounded font-mono border ${
                             fromManual
                               ? 'bg-brand-500/10 text-brand-400 border-brand-500/20'
                               : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
@@ -525,7 +525,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {sceneList.map((s, i) => (
-                      <span key={s.id} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400 font-mono border border-surface-700/40">
+                      <span key={s.id} className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-400 font-mono border border-surface-700/40">
                         {s.scene_number ?? ('S' + (i + 1))} ({s.time_of_day ?? '?'})
                       </span>
                     ))}
@@ -575,7 +575,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
               <div className="space-y-1.5">
                 {displayScenes.filter((s) => s.vfx_notes).map((s, i) => (
                   <div key={s.id} className="text-xs">
-                    <span className="font-mono text-purple-400 text-[10px] mr-2">{s.scene_number ?? ('S' + (i + 1))}</span>
+                    <span className="font-mono text-purple-400 text-[11px] mr-2">{s.scene_number ?? ('S' + (i + 1))}</span>
                     <span className="text-surface-300">{s.vfx_notes}</span>
                   </div>
                 ))}
@@ -591,7 +591,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
               <div className="space-y-1.5">
                 {displayScenes.filter((s) => s.stunts).map((s, i) => (
                   <div key={s.id} className="text-xs">
-                    <span className="font-mono text-red-400 text-[10px] mr-2">{s.scene_number ?? ('S' + (i + 1))}</span>
+                    <span className="font-mono text-red-400 text-[11px] mr-2">{s.scene_number ?? ('S' + (i + 1))}</span>
                     <span className="text-surface-300">{s.stunts}</span>
                   </div>
                 ))}

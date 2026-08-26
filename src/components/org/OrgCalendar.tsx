@@ -105,7 +105,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
           )}
           {Object.entries(upcomingGrouped).map(([date, evs]) => (
             <div key={date}>
-              <h3 className="text-xs font-semibold text-surface-500 mb-2 uppercase tracking-wider">{date}</h3>
+              <h3 className="text-xs font-semibold text-surface-500 mb-2 uppercase tracking-[0.04em]">{date}</h3>
               <div className="space-y-2">
                 {evs.map(ev => (
                   <Card key={ev.id} className="p-4 flex items-center gap-4">
@@ -131,13 +131,13 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
 
           {past.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-surface-600 mb-2 uppercase tracking-wider">Past events</h3>
+              <h3 className="text-xs font-semibold text-surface-400 mb-2 uppercase tracking-[0.04em]">Past events</h3>
               <div className="space-y-2 opacity-50">
                 {past.map(ev => (
                   <Card key={ev.id} className="p-3 flex items-center gap-3">
                     <span className="text-sm">{EVENT_ICONS[ev.event_type]}</span>
                     <span className="text-sm text-surface-400 line-through">{ev.title}</span>
-                    <span className="text-[10px] text-surface-600 ml-auto">{new Date(ev.start_at).toLocaleDateString()}</span>
+                    <span className="text-[11px] text-surface-600 ml-auto">{new Date(ev.start_at).toLocaleDateString()}</span>
                   </Card>
                 ))}
               </div>
@@ -154,7 +154,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
           </div>
           <div className="grid grid-cols-7 gap-px">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-              <div key={d} className="text-[10px] text-surface-600 text-center py-1 font-medium">{d}</div>
+              <div key={d} className="text-[11px] text-surface-600 text-center py-1 font-medium">{d}</div>
             ))}
             {(() => {
               const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
@@ -168,13 +168,13 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
                 const isToday = dayStr === now.toISOString().slice(0, 10);
                 cells.push(
                   <div key={d} className={cn('min-h-[60px] p-1 rounded border border-transparent', isToday && 'border-brand-500/30 bg-brand-500/5')}>
-                    <span className={cn('text-[10px] font-medium', isToday ? 'text-brand-500' : 'text-surface-500')}>{d}</span>
+                    <span className={cn('text-[11px] font-medium', isToday ? 'text-brand-500' : 'text-surface-500')}>{d}</span>
                     {dayEvents.slice(0, 3).map(ev => (
-                      <div key={ev.id} className="text-[8px] truncate rounded px-1 mt-0.5" style={{ backgroundColor: ev.color + '20', color: ev.color }}>
+                      <div key={ev.id} className="text-[11px] truncate rounded px-1 mt-0.5" style={{ backgroundColor: ev.color + '20', color: ev.color }}>
                         {ev.title}
                       </div>
                     ))}
-                    {dayEvents.length > 3 && <span className="text-[8px] text-surface-600">+{dayEvents.length - 3}</span>}
+                    {dayEvents.length > 3 && <span className="text-[11px] text-surface-600">+{dayEvents.length - 3}</span>}
                   </div>
                 );
               }

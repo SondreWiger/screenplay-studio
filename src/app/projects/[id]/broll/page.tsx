@@ -132,7 +132,7 @@ export default function BRollPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">B-Roll</h1>
+          <h1 className="text-2xl font-bold text-white">B-Roll</h1>
           <p className="text-surface-400 text-sm mt-1">
             Track supplementary footage for your video
           </p>
@@ -155,7 +155,7 @@ export default function BRollPage() {
               filter === status ? 'border-brand-500' : 'border-surface-800 hover:border-surface-700'
             )}
           >
-            <p className="text-2xl font-black text-white">{stats[status]}</p>
+            <p className="text-2xl font-bold text-white">{stats[status]}</p>
             <Badge className={cn('mt-1 text-xs', STATUS_COLORS[status])}>
               {STATUS_LABELS[status]}
             </Badge>

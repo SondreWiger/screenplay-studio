@@ -25,7 +25,7 @@ function StatusBadge({ status }: { status: FeedbackStatus }) {
   const Icon = m.icon;
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wide"
       style={{ background: m.color + '22', color: m.color }}
     >
       <Icon size={10} />
@@ -39,7 +39,7 @@ function TypeBadge({ type }: { type: FeedbackType }) {
   const Icon = m.icon;
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wide"
       style={{ background: m.color + '22', color: m.color }}
     >
       <Icon size={10} />
@@ -59,7 +59,7 @@ function FeedbackCard({ item, userVoted, onVote }: {
       <button
         onClick={(e) => { e.stopPropagation(); onVote(item.id); }}
         className={cn(
-          'flex flex-col items-center justify-center min-w-[44px] py-2 px-1 rounded-lg border text-xs font-black transition-colors duration-150 shrink-0',
+          'flex flex-col items-center justify-center min-w-[44px] py-2 px-1 rounded-lg border text-xs font-semibold transition-colors duration-150 shrink-0',
           userVoted
             ? 'border-brand-500 bg-brand-500/10 text-brand-500'
             : 'border-surface-700 bg-surface-800 text-surface-400 hover:border-surface-500 hover:text-white'
@@ -76,7 +76,7 @@ function FeedbackCard({ item, userVoted, onVote }: {
           <TypeBadge type={item.type} />
           <StatusBadge status={item.status} />
           {item.tags?.slice(0, 2).map(tag => (
-            <span key={tag} className="px-1.5 py-0.5 rounded text-[10px] bg-surface-800 text-surface-500 font-mono">
+            <span key={tag} className="px-1.5 py-0.5 rounded text-[11px] bg-surface-800 text-surface-500 font-mono">
               {tag}
             </span>
           ))}
@@ -85,7 +85,7 @@ function FeedbackCard({ item, userVoted, onVote }: {
           {item.title}
         </h3>
         <p className="text-xs text-surface-500 line-clamp-2 leading-relaxed mb-2">{item.body}</p>
-        <div className="flex items-center gap-3 text-[10px] text-surface-600">
+        <div className="flex items-center gap-3 text-[11px] text-surface-600">
           <span className="flex items-center gap-1">
             <MessageSquare size={10} /> {item.comment_count} comments
           </span>
@@ -234,25 +234,25 @@ export default function FeedbackPage() {
         <div className="max-w-screen-lg mx-auto px-6 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[10px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-widest group-hover:text-white/70 transition-colors">
+            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors">
               Screenplay Studio
             </span>
           </Link>
           <div className="hidden sm:flex items-center gap-6">
-            <span className="text-[11px] font-mono uppercase tracking-widest font-bold" style={{ color: '#FF5F1F' }}>Feedback</span>
-            <Link href="/blog" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Blog</Link>
-            <Link href="/community" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Community</Link>
+            <span className="text-[11px] uppercase tracking-[0.04em] font-medium" style={{ color: '#FF5F1F' }}>Feedback</span>
+            <Link href="/blog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Blog</Link>
+            <Link href="/community" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Community</Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Dashboard</Link>
-                <button onClick={() => signOut()} className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Sign Out</button>
+                <Link href="/dashboard" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Dashboard</Link>
+                <button onClick={() => signOut()} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign Out</button>
                 <div className="flex items-center">
                   {user.avatar_url ? (
                     <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-6 h-6 rounded-full" loading="lazy" />
                   ) : (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{ background: '#FF5F1F' }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: '#FF5F1F' }}>
                       {(user.full_name || user.email || '?')[0].toUpperCase()}
                     </div>
                   )}
@@ -260,7 +260,7 @@ export default function FeedbackPage() {
               </>
             ) : (
               <>
-                <Link href="/auth/login?redirect=/feedback" className="text-[11px] font-mono text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">Sign In</Link>
+                <Link href="/auth/login?redirect=/feedback" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign In</Link>
                 <Link href="/auth/register?redirect=/feedback" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>Get Started</Link>
               </>
             )}
@@ -274,13 +274,13 @@ export default function FeedbackPage() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Link href="/" className="text-[10px] font-bold uppercase tracking-widest text-surface-500 hover:text-white transition-colors">
+                <Link href="/" className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hover:text-white transition-colors">
                   Screenplay Studio
                 </Link>
                 <span className="text-surface-700">/</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-500">Feedback</span>
+                <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-brand-500">Feedback</span>
               </div>
-              <h1 className="text-4xl font-black tracking-tight mb-2">Feedback & Roadmap</h1>
+              <h1 className="text-4xl font-bold tracking-tight mb-2">Feedback & Roadmap</h1>
               <p className="text-surface-400 text-sm max-w-xl leading-relaxed">
                 Report bugs, request features, and follow what&apos;s being built. Your input shapes the product directly.
               </p>
@@ -302,8 +302,8 @@ export default function FeedbackPage() {
               { label: 'Fixed (30d)', val: stats.resolved_30d, color: '#22c55e' },
             ].map(s => (
               <div key={s.label} className="rounded-lg border border-surface-800 bg-surface-900 px-3 py-2.5 text-center">
-                <div className="text-2xl font-black" style={{ color: s.color }}>{s.val}</div>
-                <div className="text-[9px] font-bold uppercase tracking-widest text-surface-500 mt-0.5">{s.label}</div>
+                <div className="text-2xl font-bold" style={{ color: s.color }}>{s.val}</div>
+                <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 mt-0.5">{s.label}</div>
               </div>
             ))}
           </div>
@@ -331,7 +331,7 @@ export default function FeedbackPage() {
                 key={t}
                 onClick={() => setTypeFilter(t)}
                 className={cn(
-                  'px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide transition-colors',
+                  'px-3 py-1.5 rounded-md text-xs font-medium uppercase tracking-wide transition-colors',
                   typeFilter === t
                     ? 'bg-surface-700 text-white'
                     : 'text-surface-500 hover:text-surface-300'
@@ -346,7 +346,7 @@ export default function FeedbackPage() {
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value as typeof statusFilter)}
-            className="px-3 py-2 text-xs font-bold uppercase tracking-wide bg-surface-900 border border-surface-800 rounded-lg text-surface-300 focus:outline-none focus:border-surface-600"
+            className="px-3 py-2 text-xs font-medium uppercase tracking-wide bg-surface-900 border border-surface-800 rounded-lg text-surface-300 focus:outline-none focus:border-surface-600"
           >
             {STATUS_FILTERS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
@@ -355,7 +355,7 @@ export default function FeedbackPage() {
           <select
             value={sort}
             onChange={e => setSort(e.target.value as FeedbackSort)}
-            className="px-3 py-2 text-xs font-bold uppercase tracking-wide bg-surface-900 border border-surface-800 rounded-lg text-surface-300 focus:outline-none focus:border-surface-600"
+            className="px-3 py-2 text-xs font-medium uppercase tracking-wide bg-surface-900 border border-surface-800 rounded-lg text-surface-300 focus:outline-none focus:border-surface-600"
           >
             {SORT_OPTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
@@ -407,7 +407,7 @@ export default function FeedbackPage() {
         <div className="mt-16 pt-10 border-t border-surface-800">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-black">What Users Say</h2>
+              <h2 className="text-lg font-bold">What Users Say</h2>
               <p className="text-xs text-surface-500 mt-0.5">Real feedback from the community</p>
             </div>
             <button
@@ -426,9 +426,9 @@ export default function FeedbackPage() {
         <div className="max-w-screen-lg mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-              <span className="font-black text-white text-[9px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
+              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-[11px] font-mono text-white/30 uppercase tracking-widest">Screenplay Studio</span>
+            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Studio</span>
           </div>
           <div className="flex flex-wrap items-center gap-6">
             {[
@@ -442,7 +442,7 @@ export default function FeedbackPage() {
                 href={l.href}
                 target={l.external ? '_blank' : undefined}
                 rel={l.external ? 'noopener noreferrer' : undefined}
-                className="text-[11px] font-mono text-white/25 uppercase tracking-widest hover:text-white/60 transition-colors"
+                className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors"
               >
                 {l.label}
               </Link>
@@ -450,7 +450,7 @@ export default function FeedbackPage() {
             <SiteVersion light />
             <span className="text-white/10">·</span>
             <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80">
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80">
               Northem ♥
             </a>
           </div>

@@ -1738,7 +1738,7 @@ ${pageHTML}
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-surface-900 border border-surface-700 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6 border-b border-surface-800 bg-gradient-to-r from-brand-600/20 to-purple-600/20">
-              <h2 className="text-2xl font-black text-white">Welcome to Creator Format</h2>
+              <h2 className="text-2xl font-bold text-white">Welcome to Creator Format</h2>
               <p className="text-surface-300 mt-1">A structured script format designed for YouTubers & content creators</p>
             </div>
             
@@ -1822,7 +1822,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </button>
         <div className="p-3 border-b border-surface-800">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-surface-500 uppercase tracking-wider">Scripts</span>
+            <span className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em]">Scripts</span>
             <button onClick={() => setShowNewScript(true)} className="p-1 rounded text-surface-500 hover:text-white hover:bg-surface-900/10">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </button>
@@ -1834,7 +1834,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               )}>
               <div className="flex items-center justify-between">
                 <span className="truncate">{script.title}</span>
-                <span className="text-[10px] text-surface-600">v{script.version}</span>
+                <span className="text-[11px] text-surface-600">v{script.version}</span>
               </div>
             </button>
           ))}
@@ -1843,7 +1843,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         <div className="flex-1 overflow-y-auto p-3">
           {isContentCreator ? (
             <>
-              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Chapters ({chapterMarkers.length})</p>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Chapters ({chapterMarkers.length})</p>
               <div className="space-y-0.5">
                 {chapterMarkers.map((chapter, i) => (
                   <button key={chapter.id} onClick={() => {
@@ -1860,7 +1860,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </>
           ) : isAudioDrama && resolvedAudioFormat === 'us_radio' ? (
             <>
-              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Acts ({actBreaks.length})</p>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Acts ({actBreaks.length})</p>
               <div className="space-y-0.5">
                 {actBreaks.map((act, i) => (
                   <button key={act.id} onClick={() => {
@@ -1877,7 +1877,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </>
           ) : isComic ? (
             <>
-              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Pages & Panels</p>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Pages & Panels</p>
               <div className="space-y-0.5">
                 {elements.filter(e => e.element_type === 'comic_page' || e.element_type === 'comic_panel').map((el) => (
                   <button key={el.id} onClick={() => {
@@ -1898,7 +1898,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </>
           ) : (
             <>
-              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-2">Scenes ({sceneHeadings.length})</p>
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Scenes ({sceneHeadings.length})</p>
               <div className="space-y-0.5">
                 {sceneHeadings.map((scene, i) => (
                   <button key={scene.id} onClick={() => {
@@ -1916,10 +1916,10 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         <div className="p-3 border-t border-surface-800">
           {scriptUsers.length > 0 && (
             <div className="mb-3 pb-3 border-b border-surface-800">
-              <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-1.5">Editing Now</p>
+              <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em] mb-1.5">Editing Now</p>
               <div className="flex flex-wrap gap-1">
                 {scriptUsers.map((u) => (
-                  <div key={u.user_id} className="flex items-center gap-1 px-1.5 py-0.5 bg-green-500/10 rounded text-[10px] text-green-400">
+                  <div key={u.user_id} className="flex items-center gap-1 px-1.5 py-0.5 bg-green-500/10 rounded text-[11px] text-green-400">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                     {(u as UserPresence & { full_name?: string; email?: string }).full_name || (u as UserPresence & { full_name?: string; email?: string }).email || 'User'}
                   </div>
@@ -1930,15 +1930,15 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <div className="grid grid-cols-3 gap-2 text-center">
             {isComic ? (
               <>
-                <div><p className="text-lg font-bold text-white">{elements.filter(e => e.element_type === 'comic_page').length}</p><p className="text-[10px] text-surface-500">Pages</p></div>
-                <div><p className="text-lg font-bold text-white">{elements.filter(e => e.element_type === 'comic_panel').length}</p><p className="text-[10px] text-surface-500">Panels</p></div>
-                <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[10px] text-surface-500">Words</p></div>
+                <div><p className="text-lg font-bold text-white">{elements.filter(e => e.element_type === 'comic_page').length}</p><p className="text-[11px] text-surface-500">Pages</p></div>
+                <div><p className="text-lg font-bold text-white">{elements.filter(e => e.element_type === 'comic_panel').length}</p><p className="text-[11px] text-surface-500">Panels</p></div>
+                <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[11px] text-surface-500">Words</p></div>
               </>
             ) : (
               <>
-                <div><p className="text-lg font-bold text-white">{totalPages}</p><p className="text-[10px] text-surface-500">Pages</p></div>
-                <div><p className="text-lg font-bold text-white">{elements.length}</p><p className="text-[10px] text-surface-500">Elements</p></div>
-                <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[10px] text-surface-500">Words</p></div>
+                <div><p className="text-lg font-bold text-white">{totalPages}</p><p className="text-[11px] text-surface-500">Pages</p></div>
+                <div><p className="text-lg font-bold text-white">{elements.length}</p><p className="text-[11px] text-surface-500">Elements</p></div>
+                <div><p className="text-lg font-bold text-white">{wordCount.toLocaleString()}</p><p className="text-[11px] text-surface-500">Words</p></div>
               </>
             )}
           </div>
@@ -1947,7 +1947,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             {isComic ? (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-surface-500 uppercase tracking-wider">Est. Reading Time</span>
+                  <span className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">Est. Reading Time</span>
                   <span className="text-sm font-semibold text-white">
                     {(() => {
                       const panels = elements.filter(e => e.element_type === 'comic_panel').length;
@@ -1962,12 +1962,12 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     style={{ width: `${Math.min(100, (elements.filter(e => e.element_type === 'comic_panel').length / 90) * 100)}%` }}
                   />
                 </div>
-                <p className="text-[9px] text-surface-600 mt-1">~3 panels/min &middot; {elements.filter(e => e.element_type === 'comic_panel').length} panels &middot; {wordCount.toLocaleString()} words</p>
+                <p className="text-[11px] text-surface-600 mt-1">~3 panels/min &middot; {elements.filter(e => e.element_type === 'comic_panel').length} panels &middot; {wordCount.toLocaleString()} words</p>
               </>
             ) : (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-surface-500 uppercase tracking-wider">Est. Screen Time</span>
+                  <span className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">Est. Screen Time</span>
                   <span className="text-sm font-semibold text-white">
                     {totalPages >= 60
                       ? `${Math.floor(totalPages / 60)}h ${totalPages % 60}m`
@@ -1981,7 +1981,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     style={{ width: `${Math.min(100, (totalPages / 120) * 100)}%` }}
                   />
                 </div>
-                <p className="text-[9px] text-surface-600 mt-1">~1 min/page &middot; {totalPages} pages &middot; {wordCount.toLocaleString()} words</p>
+                <p className="text-[11px] text-surface-600 mt-1">~1 min/page &middot; {totalPages} pages &middot; {wordCount.toLocaleString()} words</p>
               </>
             )}
           </div>
@@ -2013,7 +2013,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           {isAudioDrama && (
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 shrink-0 ml-2">
               <svg className="w-3 h-3 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-7a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
-              <span className="text-[10px] font-medium text-violet-300">
+              <span className="text-[11px] font-medium text-violet-300">
                 {resolvedAudioFormat === 'bbc_radio' ? 'BBC Scene' : resolvedAudioFormat === 'us_radio' ? 'US Radio' : 'STARC'}
               </span>
             </div>
@@ -2021,7 +2021,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           {isStagePlay && (
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 shrink-0 ml-2">
               <span className="text-[11px]">🎭</span>
-              <span className="text-[10px] font-medium text-rose-300">Stage Play</span>
+              <span className="text-[11px] font-medium text-rose-300">Stage Play</span>
             </div>
           )}
           <div className="flex-1" />
@@ -2075,7 +2075,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
             {scriptComments.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-brand-500 text-[7px] font-bold text-white flex items-center justify-center shadow-sm">
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-brand-500 text-[11px] font-bold text-white flex items-center justify-center shadow-sm">
                 {scriptComments.filter(c => !c.parent_id).length}
               </span>
             )}
@@ -2107,57 +2107,57 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     border: '1px solid rgba(255,255,255,0.13)',
                     boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
                   }}>
-                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Import</p>
+                  <p className="px-3 py-1.5 text-[11px] text-surface-500 font-semibold uppercase tracking-[0.04em]">Import</p>
                   <button onClick={() => handleImportFile('fdx')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-brand-500">.fdx</span> Final Draft
+                    <span className="w-8 text-[11px] font-mono text-brand-500">.fdx</span> Final Draft
                   </button>
                   <button onClick={() => handleImportFile('fountain')} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-brand-500">.ftn</span> Fountain
+                    <span className="w-8 text-[11px] font-mono text-brand-500">.ftn</span> Fountain
                   </button>
                   <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
-                  <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Export</p>
+                  <p className="px-3 py-1.5 text-[11px] text-surface-500 font-semibold uppercase tracking-[0.04em]">Export</p>
                   <button onClick={handleExportPDF} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.pdf</span> PDF (Print)
+                    <span className="w-8 text-[11px] font-mono text-emerald-400">.pdf</span> PDF (Print)
                   </button>
                   <button onClick={handleExportFDX} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.fdx</span> Final Draft
+                    <span className="w-8 text-[11px] font-mono text-emerald-400">.fdx</span> Final Draft
                   </button>
                   <button onClick={handleExportFountain} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.ftn</span> Fountain
+                    <span className="w-8 text-[11px] font-mono text-emerald-400">.ftn</span> Fountain
                   </button>
                   <button onClick={handleExportPlainText} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.txt</span> Plain Text
+                    <span className="w-8 text-[11px] font-mono text-emerald-400">.txt</span> Plain Text
                   </button>
                   <button onClick={handleExportHTML} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                    <span className="w-8 text-[10px] font-mono text-emerald-400">.html</span> HTML
+                    <span className="w-8 text-[11px] font-mono text-emerald-400">.html</span> HTML
                   </button>
                   {isElectronMode() && (
                     <>
                       <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
-                      <p className="px-3 py-1.5 text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em]">Local File</p>
+                      <p className="px-3 py-1.5 text-[11px] text-surface-500 font-semibold uppercase tracking-[0.04em]">Local File</p>
                       <button onClick={handleElectronSave} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                        <span className="w-8 text-[10px] font-mono text-blue-400">.ss</span> Save to File
+                        <span className="w-8 text-[11px] font-mono text-blue-400">.ss</span> Save to File
                       </button>
                       <button onClick={handleElectronOpen} className="w-full text-left px-3 py-2 text-[13px] text-surface-300 hover:text-white flex items-center gap-2.5 transition-colors"
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
-                        <span className="w-8 text-[10px] font-mono text-blue-400">.ss</span> Open File
+                        <span className="w-8 text-[11px] font-mono text-blue-400">.ss</span> Open File
                       </button>
                     </>
                   )}
@@ -2210,7 +2210,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       border: '1px solid rgba(255,255,255,0.13)',
                       boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
                     }}>
-                    <p className="text-[10px] text-surface-500 font-semibold uppercase tracking-[0.12em] mb-2.5">Revision Colour</p>
+                    <p className="text-[11px] text-surface-500 font-semibold uppercase tracking-[0.04em] mb-2.5">Revision Colour</p>
                     <div className="grid grid-cols-5 gap-1.5">
                       {(Object.entries(REVISION_COLOR_HEX) as [import('@/lib/types').RevisionColor, string][]).map(([color, hex]) => (
                         <button
@@ -2256,7 +2256,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
               {allVersions.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center px-0.5 shadow-sm">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-brand-500 text-[11px] font-bold text-white flex items-center justify-center px-0.5 shadow-sm">
                   {allVersions.length}
                 </span>
               )}
@@ -2289,7 +2289,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   }}>
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 pt-3.5 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                    <span className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.14em]">Display</span>
+                    <span className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.04em]">Display</span>
                     <button onClick={() => setShowDisplaySettings(false)} className="p-0.5 rounded text-surface-600 hover:text-surface-300 transition-colors">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
@@ -2297,7 +2297,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
                   {/* Script section */}
                   <div className="px-4 pt-2 pb-1">
-                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-1">Script</p>
+                    <p className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.04em] pt-1.5 pb-1">Script</p>
                     {([
                       { label: 'Scene Numbers', key: 'showSceneNumbers' },
                       { label: 'Character Highlights', key: 'showCharacterHighlights' },
@@ -2317,7 +2317,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
                   {/* Typography section */}
                   <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-2">Typography</p>
+                    <p className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.04em] pt-1.5 pb-2">Typography</p>
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[13px] text-surface-300">Font Size</span>
@@ -2345,7 +2345,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
                   {/* Minimap section */}
                   <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-1">Minimap</p>
+                    <p className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.04em] pt-1.5 pb-1">Minimap</p>
                     {([
                       { label: 'Show Minimap', key: 'showMinimap' },
                       { label: 'Sequence Labels', key: 'minimapLabels' },
@@ -2364,11 +2364,11 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
                   {/* Page section */}
                   <div className="px-4 pt-2 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p className="text-[10px] font-semibold text-surface-600 uppercase tracking-[0.12em] pt-1.5 pb-1">Page</p>
+                    <p className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.04em] pt-1.5 pb-1">Page</p>
                     <div className="flex items-center justify-between py-[7px]">
                       <div>
                         <span className="text-[13px] text-surface-300">Page Gap</span>
-                        <p className="text-[10px] text-surface-600 mt-0.5">Gap between pages</p>
+                        <p className="text-[11px] text-surface-600 mt-0.5">Gap between pages</p>
                       </div>
                       <button type="button" onClick={() => updateDisplaySettings({ pageSplitGap: !displaySettings.pageSplitGap })}
                         className="relative flex-shrink-0 inline-flex h-[18px] w-[32px] rounded-full transition-colors duration-150 focus:outline-none"
@@ -2434,7 +2434,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
                 {/* Hint */}
                 <div className="text-right mb-4 pointer-events-none select-none">
-                  <span className={cn('text-[9px]', darkMode ? 'text-surface-700' : 'text-gray-300')}>
+                  <span className={cn('text-[11px]', darkMode ? 'text-surface-700' : 'text-gray-300')}>
                     Click any field to edit
                   </span>
                 </div>
@@ -2457,7 +2457,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     value={currentScript.title_page_data?.title ?? ''}
                     placeholder="TITLE"
                     className={cn(
-                      'text-2xl font-black uppercase tracking-wide text-center w-full print:text-black',
+                      'text-2xl font-semibold uppercase tracking-wide text-center w-full print:text-black',
                       darkMode ? 'text-white placeholder:text-surface-700' : 'text-black placeholder:text-gray-300',
                     )}
                     onSave={(v) => saveTitlePageField('title', v)}
@@ -2545,7 +2545,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       value={currentScript.title_page_data?.notes ?? ''}
                       placeholder="Notes…"
                       className={cn(
-                        'text-[10px] text-right print:text-black',
+                        'text-[11px] text-right print:text-black',
                         darkMode ? 'text-surface-600 placeholder:text-surface-700' : 'text-gray-400 placeholder:text-gray-300',
                       )}
                       onSave={(v) => saveTitlePageField('notes', v)}
@@ -2617,7 +2617,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     {/* Page number strip between pages */}
                     {pageIdx > 0 && (
                       <div className={cn(
-                        'text-center text-[10px] font-screenplay select-none pointer-events-none py-1',
+                        'text-center text-[11px] font-screenplay select-none pointer-events-none py-1',
                         darkMode ? 'text-surface-600' : 'text-gray-400',
                       )}>
                         {page.pageNum}.
@@ -2650,7 +2650,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                         const versionNames = getElementVersions(element).join(', ');
                         return (
                           <div key={element.id} className="relative flex items-center h-3 my-0.5 group/hidden" title={`Hidden version content${versionNames ? ': ' + versionNames : ''}`}>
-                            <span className="absolute -left-5 text-[10px] text-surface-700 select-none font-mono leading-none group-hover/hidden:text-surface-500 transition-colors">···</span>
+                            <span className="absolute -left-5 text-[11px] text-surface-700 select-none font-mono leading-none group-hover/hidden:text-surface-500 transition-colors">···</span>
                           </div>
                         );
                       }
@@ -2877,7 +2877,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       });
                     }
                   }
-                }} className="shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
+                }} className="shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
                   {shortcut}
                 </button>
               ))}
@@ -2912,14 +2912,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       });
                     }
                   }
-                }} className="shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
+                }} className="shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-surface-400 bg-surface-800/40 active:bg-surface-700 transition-colors min-h-[36px]">
                   {shortcut}
                 </button>
               ))}
             </div>
           )}
           {/* Status bar */}
-          <div className="flex items-center justify-between px-3 py-1 border-t border-surface-800/50 text-[10px] text-surface-500">
+          <div className="flex items-center justify-between px-3 py-1 border-t border-surface-800/50 text-[11px] text-surface-500">
             <span>{isComic
               ? `${elements.filter(e => e.element_type === 'comic_page').length} pages · ${elements.filter(e => e.element_type === 'comic_panel').length} panels · ${wordCount.toLocaleString()} words`
               : `${totalPages} pgs · ${elements.filter(e => e.element_type === 'scene_heading').length} scenes · ${wordCount.toLocaleString()} words`
@@ -2996,7 +2996,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <button
             type="button"
             onClick={() => toggleZenMode(false)}
-            className="fixed top-4 right-4 z-[210] flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-widest text-white/50 hover:text-white border border-white/10 hover:border-white/25 bg-black/40 backdrop-blur-md transition-colors"
+            className="fixed top-4 right-4 z-[210] flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] uppercase tracking-[0.04em] text-white/50 hover:text-white border border-white/10 hover:border-white/25 bg-black/40 backdrop-blur-md transition-colors"
             title="Exit Zen mode (Esc)"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -3005,7 +3005,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           {canEdit && (
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[210] max-w-[95vw]">
               <div className="flex items-center gap-1 px-2 py-2 rounded-2xl bg-surface-950/95 border border-white/10 shadow-2xl backdrop-blur-md overflow-x-auto scrollbar-none">
-                <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 px-2 shrink-0">Type</span>
+                <span className="text-[11px] uppercase tracking-[0.2em] text-white/55 px-2 shrink-0">Type</span>
                 {elementCycle.map((type) => (
                   <button
                     key={type}
@@ -3033,7 +3033,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         <button
           type="button"
           onClick={() => toggleZenMode(true)}
-          className="fixed bottom-5 right-5 z-30 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-mono uppercase tracking-widest text-white/40 hover:text-white/80 border border-white/10 hover:border-white/20 bg-surface-950/80 backdrop-blur-md shadow-lg transition-colors no-print"
+          className="fixed bottom-5 right-5 z-30 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] uppercase tracking-[0.04em] text-white/40 hover:text-white/80 border border-white/10 hover:border-white/20 bg-surface-950/80 backdrop-blur-md shadow-lg transition-colors no-print"
           title="Zen mode — script only (⌘⌥Z)"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.5 12.5h15M12 4.5v15M7.5 7.5l9 9M16.5 7.5l-9 9" /></svg>
@@ -3134,7 +3134,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 border: '1px solid rgba(255,255,255,0.13)',
                 boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
               }}>
-              <p className="text-[10px] font-semibold text-surface-400 uppercase tracking-[0.12em] mb-3">{seqEl?.element_type === 'scene_heading' ? 'Scene Colour' : seqEl?.element_type === 'act' ? 'Act Colour' : 'Sequence Colour'}</p>
+              <p className="text-[11px] font-semibold text-surface-400 uppercase tracking-[0.04em] mb-3">{seqEl?.element_type === 'scene_heading' ? 'Scene Colour' : seqEl?.element_type === 'act' ? 'Act Colour' : 'Sequence Colour'}</p>
               <div className="grid grid-cols-4 gap-2">
                 {SEQUENCE_COLORS.map((color) => (
                   <button key={color}
@@ -3156,7 +3156,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                     useScriptStore.getState().updateElement(sequenceColorModalId, { metadata: restMeta });
                     setSequenceColorModalId(null);
                   }}
-                  className="mt-2 w-full text-[10px] text-surface-400 hover:text-surface-200 transition-colors text-center"
+                  className="mt-2 w-full text-[11px] text-surface-400 hover:text-surface-200 transition-colors text-center"
                 >
                   Remove colour
                 </button>
@@ -3295,15 +3295,15 @@ function ScriptCommentPanel({
             <Avatar src={comment.profile?.avatar_url} name={comment.profile?.full_name || 'User'} size="sm" />
             <span className="text-xs font-medium text-surface-300">{comment.profile?.full_name || 'Anonymous'}</span>
             {comment.comment_type === 'issue' && !comment.is_resolved && (
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">Issue</span>
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">Issue</span>
             )}
             {comment.comment_type === 'suggestion' && (
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium">Suggestion</span>
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium">Suggestion</span>
             )}
             {comment.is_resolved && (
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium">Resolved</span>
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium">Resolved</span>
             )}
-            <span className="text-[10px] text-surface-600 ml-auto">{timeAgo(comment.created_at)}</span>
+            <span className="text-[11px] text-surface-600 ml-auto">{timeAgo(comment.created_at)}</span>
           </div>
           <p className="text-sm text-surface-300 whitespace-pre-wrap">{comment.content}</p>
           <div className="flex items-center gap-3 mt-1">
@@ -3354,16 +3354,16 @@ function ScriptCommentPanel({
       {/* Element selector — list of elements with comments */}
       {commentedElementIds.length > 0 && !elementId && (
         <div className="border-b border-surface-800 px-3 py-2 overflow-y-auto max-h-60">
-          <p className="text-[10px] text-surface-500 uppercase tracking-wider mb-2">Elements with comments</p>
+          <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em] mb-2">Elements with comments</p>
           {commentedElementIds.map(id => {
             const el = elements.find(e => e.id === id);
             const count = comments.filter(c => c.entity_id === id && !c.parent_id).length;
             return (
               <button key={id} onClick={() => onSelectElement(id)}
                 className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 flex items-center gap-2 mb-0.5">
-                <span className="text-[9px] text-surface-600 font-medium uppercase shrink-0">{ELEMENT_LABELS[el?.element_type || 'action']}</span>
+                <span className="text-[11px] text-surface-400 font-medium uppercase shrink-0">{ELEMENT_LABELS[el?.element_type || 'action']}</span>
                 <span className="truncate flex-1">{el?.content || 'Empty'}</span>
-                <span className="text-[9px] bg-brand-500/20 text-brand-500 px-1.5 py-0.5 rounded-full shrink-0">{count}</span>
+                <span className="text-[11px] bg-brand-500/20 text-brand-500 px-1.5 py-0.5 rounded-full shrink-0">{count}</span>
               </button>
             );
           })}
@@ -3374,8 +3374,8 @@ function ScriptCommentPanel({
       {selectedElement && (
         <div className="border-b border-surface-800 px-4 py-3">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[9px] text-surface-500 uppercase font-medium tracking-wider">{ELEMENT_LABELS[selectedElement.element_type]}</span>
-            <button onClick={() => onSelectElement('')} className="text-[10px] text-surface-500 hover:text-white ml-auto">
+            <span className="text-[11px] text-surface-500 uppercase font-medium tracking-[0.04em]">{ELEMENT_LABELS[selectedElement.element_type]}</span>
+            <button onClick={() => onSelectElement('')} className="text-[11px] text-surface-500 hover:text-white ml-auto">
               ← All comments
             </button>
           </div>
@@ -3430,7 +3430,7 @@ function ScriptCommentPanel({
               <option value="issue">Issue</option>
             </select>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-surface-600">⌘↵</span>
+              <span className="text-[11px] text-surface-600">⌘↵</span>
               <Button size="sm" onClick={() => onPost(elementId)} loading={posting} disabled={!newCommentText.trim()}>
                 Post
               </Button>
@@ -3639,7 +3639,7 @@ const ScriptMinimap = memo(function ScriptMinimap({
       {showLabels && showColors && sequences.map((seq, i) => (
         <div key={`lbl-${i}`} className="absolute top-0 bottom-0 flex items-center px-1.5 pointer-events-none overflow-hidden"
           style={{ left: `${getElFrac(seq.start) * 100}%`, width: `${Math.max(1, (getElFrac(seq.end) - getElFrac(seq.start)) * 100)}%` }}>
-          <span className={cn('text-[9px] font-semibold truncate tracking-wide', darkMode ? 'text-white/70' : 'text-black/60')}
+          <span className={cn('text-[11px] font-semibold truncate tracking-wide', darkMode ? 'text-white/70' : 'text-black/60')}
             style={{ textShadow: darkMode ? '0 1px 2px rgba(0,0,0,0.5)' : '0 1px 0 rgba(255,255,255,0.3)' }}>
             {seq.name}
           </span>
@@ -4314,7 +4314,7 @@ const LineEditor = memo(function LineEditor({
             </div>
           : <div className="relative" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
               <div className={cn('border-t border-dashed', darkMode ? 'border-surface-700' : 'border-gray-200')} />
-              <span className={cn('absolute right-0 -top-2.5 text-[9px] px-1', darkMode ? 'text-surface-600' : 'text-gray-300')}>Page {pageNumber}</span>
+              <span className={cn('absolute right-0 -top-2.5 text-[11px] px-1', darkMode ? 'text-surface-600' : 'text-gray-300')}>Page {pageNumber}</span>
             </div>
       )}
       <div
@@ -4341,7 +4341,7 @@ const LineEditor = memo(function LineEditor({
         {/* Scene number badge */}
         {displaySettings.showSceneNumbers && element.element_type === 'scene_heading' && sceneNumberMap[element.id] && (
           <div className="absolute -left-10 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <span className={cn('text-[10px] font-bold tabular-nums', darkMode ? 'text-surface-500' : 'text-gray-400')}>
+            <span className={cn('text-[11px] font-bold tabular-nums', darkMode ? 'text-surface-500' : 'text-gray-400')}>
               {sceneNumberMap[element.id]}
             </span>
           </div>
@@ -4349,7 +4349,7 @@ const LineEditor = memo(function LineEditor({
         {/* Comic page/panel number badge */}
         {isComic && comicNumberMap[element.id] && (
           <div className="absolute -left-10 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <span className="text-[10px] font-bold tabular-nums text-surface-500">
+            <span className="text-[11px] font-bold tabular-nums text-surface-500">
               {comicNumberMap[element.id]}
             </span>
           </div>
@@ -4358,7 +4358,7 @@ const LineEditor = memo(function LineEditor({
         {collaborators.length > 0 && (
           <div className="absolute -top-4 left-0 flex gap-1 z-10">
             {collaborators.map((c) => (
-              <span key={c.userId} className={cn('px-1.5 py-0 rounded-t text-[9px] font-medium', COLLAB_COLORS[c.colorIdx].text)} style={{ backgroundColor: COLLAB_COLORS[c.colorIdx].hex + '30' }}>
+              <span key={c.userId} className={cn('px-1.5 py-0 rounded-t text-[11px] font-medium', COLLAB_COLORS[c.colorIdx].text)} style={{ backgroundColor: COLLAB_COLORS[c.colorIdx].hex + '30' }}>
                 {c.name}
               </span>
             ))}
@@ -4367,7 +4367,7 @@ const LineEditor = memo(function LineEditor({
         {/* Gutter — shown on hover */}
         <div className="sp-gutter" style={element.element_type === 'scene_heading' ? { top: '24pt' } : undefined}>
           <button onClick={() => setShowTypeMenu(!showTypeMenu)}
-            className="px-1.5 py-0.5 rounded text-[9px] font-medium text-surface-400 hover:bg-surface-700 whitespace-nowrap">
+            className="px-1.5 py-0.5 rounded text-[11px] font-medium text-surface-400 hover:bg-surface-700 whitespace-nowrap">
             {ELEMENT_LABELS[element.element_type]}
           </button>
           {element.element_type === 'sequence' && (
@@ -4444,7 +4444,7 @@ const LineEditor = memo(function LineEditor({
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
           {commentCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-500 text-[8px] font-bold text-white flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-500 text-[11px] font-bold text-white flex items-center justify-center">
               {commentCount > 9 ? '9+' : commentCount}
             </span>
           )}
@@ -4452,7 +4452,7 @@ const LineEditor = memo(function LineEditor({
 
         {/* Mobile element type badge (since gutter is hidden) */}
         <div className="lg:hidden absolute -left-1 top-0 z-10">
-          <span className="inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-surface-800/80 text-surface-500 border border-surface-700/50">
+          <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-medium uppercase tracking-[0.04em] bg-surface-800/80 text-surface-500 border border-surface-700/50">
             {ELEMENT_LABELS[element.element_type]?.slice(0, 4)}
           </span>
         </div>
@@ -4464,14 +4464,14 @@ const LineEditor = memo(function LineEditor({
             style={{ bottom: 'calc(100% + 6px)' }}
             onMouseDown={(ev) => ev.preventDefault()} // don't steal focus
           >
-            <span className="text-[9px] text-surface-500 mr-0.5 whitespace-nowrap select-none">Type:</span>
+            <span className="text-[11px] text-surface-500 mr-0.5 whitespace-nowrap select-none">Type:</span>
             {getActiveCycle().map((type, i) => (
               <button
                 key={type}
                 onMouseEnter={() => { tabPickerIdxRef.current = i; setTabPickerIdx(i); }}
                 onMouseDown={(ev) => { ev.preventDefault(); commitPickerType(i); }}
                 className={cn(
-                  'px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors select-none',
+                  'px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors select-none',
                   i === tabPickerIdx
                     ? 'bg-brand-600 text-white ring-1 ring-brand-500/50'
                     : 'text-surface-400 hover:text-white hover:bg-surface-700',
@@ -4480,7 +4480,7 @@ const LineEditor = memo(function LineEditor({
                 {ELEMENT_LABELS[type]}
               </button>
             ))}
-            <span className="text-[9px] text-surface-600 ml-1 whitespace-nowrap select-none">↵ / release Tab</span>
+            <span className="text-[11px] text-surface-600 ml-1 whitespace-nowrap select-none">↵ / release Tab</span>
           </div>
         )}
 
@@ -4556,7 +4556,7 @@ const LineEditor = memo(function LineEditor({
             <div className="absolute inset-0 bg-black/40" />
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 bg-surface-900 border border-surface-700 rounded-xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="px-3 py-2 border-b border-surface-800">
-                <p className="text-[10px] text-surface-500 uppercase tracking-wider">Change type</p>
+                <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">Change type</p>
               </div>
               <div className="p-1.5 max-h-[50vh] overflow-y-auto">
                 {(isAudioDrama ? audioElementCycle : isContentCreator ? YOUTUBE_ELEMENT_CYCLE : isStagePlay ? stagePlayElementCycle : isComic ? comicElementCycle : ELEMENT_CYCLE).map((type) => (
@@ -4712,14 +4712,14 @@ function TitlePageLogoZone({
         />
         <button
           onClick={() => onSave(field, '')}
-          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] font-bold leading-none"
+          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[11px] font-bold leading-none"
           title="Remove"
         >×</button>
         <label
           className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/30 rounded flex items-center justify-center transition-opacity cursor-pointer"
           title={`Replace ${label}`}
         >
-          <span className="text-[9px] text-white font-medium">Replace</span>
+          <span className="text-[11px] text-white font-medium">Replace</span>
           <input
             type="file"
             accept="image/*"
@@ -4734,7 +4734,7 @@ function TitlePageLogoZone({
   return (
     <label className={cn(
       'border border-dashed rounded cursor-pointer select-none inline-flex items-center gap-1 transition-colors',
-      small ? 'px-2 py-1 text-[9px]' : 'px-3 py-2 text-[10px]',
+      small ? 'px-2 py-1 text-[11px]' : 'px-3 py-2 text-[11px]',
       darkMode
         ? 'border-surface-700 text-surface-600 hover:border-surface-500 hover:text-surface-400'
         : 'border-gray-300 text-gray-400 hover:border-gray-500 hover:text-gray-500',

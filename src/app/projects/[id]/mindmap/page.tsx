@@ -1041,7 +1041,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
 
           {/* Quick color */}
           <div>
-            <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Color</label>
+            <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Color</label>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {NODE_COLORS.map((c) => (
                 <button
@@ -1059,7 +1059,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
 
           {/* Quick shape */}
           <div>
-            <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Shape</label>
+            <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Shape</label>
             <div className="flex gap-1 mt-1">
               {NODE_SHAPES.map((s) => (
                 <button
@@ -1112,7 +1112,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
 
           <div className="space-y-2">
             <div>
-              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Label</label>
+              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Label</label>
               <Input
                 value={selectedEdge.label || ''}
                 onChange={(e) => {
@@ -1126,7 +1126,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
 
             {/* Style */}
             <div>
-              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Style</label>
+              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Style</label>
               <div className="flex gap-1 mt-1">
                 {LINE_STYLES.map((s) => (
                   <button
@@ -1145,7 +1145,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
 
             {/* Arrows */}
             <div>
-              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Arrow</label>
+              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Arrow</label>
               <div className="flex gap-1 mt-1">
                 {ARROW_TYPES.map((a) => (
                   <button
@@ -1164,7 +1164,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
 
             {/* Color */}
             <div>
-              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Color</label>
+              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Color</label>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {['#888888', '#dd574e', '#e8863a', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'].map((c) => (
                   <button
@@ -1182,7 +1182,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
 
             {/* Thickness */}
             <div>
-              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-wider">Thickness</label>
+              <label className="text-[11px] font-medium text-surface-400 uppercase tracking-[0.04em]">Thickness</label>
               <input
                 type="range"
                 min={1}
@@ -1356,7 +1356,7 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
                         </p>
                       </div>
                       {alreadyImported && (
-                        <Badge variant="default" className="text-[10px]">Added</Badge>
+                        <Badge variant="default" className="text-[11px]">Added</Badge>
                       )}
                     </div>
                   );

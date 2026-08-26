@@ -113,28 +113,28 @@ export function OrgPipeline({ companyId, canManage }: Props) {
                   >
                     <p className="text-sm font-medium text-white truncate">{project.title}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${priorityColors[project.pipeline_priority || 'normal']}`}>
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded ${priorityColors[project.pipeline_priority || 'normal']}`}>
                         {(project.pipeline_priority || 'normal').toUpperCase()}
                       </span>
                       {project.pipeline_deadline && (
-                        <span className="text-[10px] text-surface-500">
+                        <span className="text-[11px] text-surface-500">
                           {new Date(project.pipeline_deadline).toLocaleDateString()}
                         </span>
                       )}
                     </div>
                     {(project as any).pipeline_assignee && (
                       <div className="flex items-center gap-1.5 mt-2">
-                        <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[8px] text-white">
+                        <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[11px] text-white">
                           {(project as any).pipeline_assignee.full_name?.[0] || '?'}
                         </div>
-                        <span className="text-[10px] text-surface-400">{(project as any).pipeline_assignee.full_name}</span>
+                        <span className="text-[11px] text-surface-400">{(project as any).pipeline_assignee.full_name}</span>
                       </div>
                     )}
                     {canManage && (
                       <div className="mt-2 flex gap-1">
                         {['low', 'normal', 'high', 'urgent'].map(p => (
                           <button key={p} onClick={() => setPriority(project.id, p)}
-                            className={`text-[8px] px-1 py-0.5 rounded ${project.pipeline_priority === p ? 'ring-1 ring-white/30' : ''} ${priorityColors[p]}`}>
+                            className={`text-[11px] px-1 py-0.5 rounded ${project.pipeline_priority === p ? 'ring-1 ring-white/30' : ''} ${priorityColors[p]}`}>
                             {p[0].toUpperCase()}
                           </button>
                         ))}
@@ -158,7 +158,7 @@ export function OrgPipeline({ companyId, canManage }: Props) {
                 <div key={project.id} draggable onDragStart={() => setDragItem(project.id)}
                   className="bg-surface-800/50 rounded-lg p-3 cursor-grab active:cursor-grabbing hover:bg-surface-800 transition-colors">
                   <p className="text-sm font-medium text-surface-300 truncate">{project.title}</p>
-                  <p className="text-[10px] text-surface-500 mt-1">Drag to a stage to assign</p>
+                  <p className="text-[11px] text-surface-500 mt-1">Drag to a stage to assign</p>
                 </div>
               ))}
             </div>

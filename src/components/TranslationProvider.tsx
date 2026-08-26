@@ -220,7 +220,7 @@ const EN: Record<string, string> = {
   'sidebar.revisions': 'Revisions', 'sidebar.showcase': 'Showcase', 'sidebar.settings': 'Settings',
   'sidebar.write': 'Write', 'sidebar.plan': 'Plan', 'sidebar.on_set_cat': 'On Set',
   'sidebar.creative': 'Creative', 'sidebar.team_cat': 'Team', 'sidebar.finish': 'Finish',
-  'sidebar.studio': 'Studio',
+  'sidebar.pro_tools': 'Pro Tools',
 
   'common.save': 'Save', 'common.cancel': 'Cancel', 'common.delete': 'Delete',
   'common.edit': 'Edit', 'common.submit': 'Submit', 'common.search': 'Search',

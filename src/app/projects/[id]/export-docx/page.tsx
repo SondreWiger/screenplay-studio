@@ -345,7 +345,7 @@ function ExportDocxPageInner({ params }: { params: { id: string } }) {
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-2xl font-black text-white tracking-tight">Export to DOCX</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Export to DOCX</h1>
           <p className="text-sm text-surface-400 mt-1">
             Export your screenplay as a Word document.
           </p>
@@ -366,7 +366,7 @@ function ExportDocxPageInner({ params }: { params: { id: string } }) {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-2 space-y-4">
               <Card className="p-5">
-                <h2 className="text-sm font-bold text-white uppercase tracking-wide mb-4">Export Settings</h2>
+                <h2 className="text-sm font-medium text-white uppercase tracking-wide mb-4">Export Settings</h2>
 
                 <div className="space-y-4">
                   <div>
@@ -403,7 +403,7 @@ function ExportDocxPageInner({ params }: { params: { id: string } }) {
               </Card>
 
               <Card className="p-5">
-                <h2 className="text-sm font-bold text-white uppercase tracking-wide mb-3">Details</h2>
+                <h2 className="text-sm font-medium text-white uppercase tracking-wide mb-3">Details</h2>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-surface-400">Elements</span>
@@ -443,7 +443,7 @@ function ExportDocxPageInner({ params }: { params: { id: string } }) {
 
             <div className="lg:col-span-3">
               <Card className="p-5">
-                <h2 className="text-sm font-bold text-white uppercase tracking-wide mb-4">Preview</h2>
+                <h2 className="text-sm font-medium text-white uppercase tracking-wide mb-4">Preview</h2>
                 <div
                   className="bg-white rounded-lg overflow-y-auto max-h-[75vh]"
                   style={{

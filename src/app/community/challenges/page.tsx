@@ -52,8 +52,8 @@ export default function ChallengesPage() {
       <div className="max-w-5xl mx-auto px-6 py-10">
         {/* Page header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>WRITING CHALLENGES</h1>
-          <p className="text-white/40 mt-2 max-w-xl font-mono text-sm">
+          <h1 className="text-3xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>WRITING CHALLENGES</h1>
+          <p className="text-white/60 mt-2 max-w-xl text-sm">
             Weekly challenges to sharpen your craft. A new theme drops every Monday — submit your script, then vote for the winner.
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function ChallengesPage() {
 
             {/* How It Works */}
             <section className="mb-14">
-              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6" style={{ letterSpacing: '-0.01em' }}>HOW IT WORKS</h2>
+              <h2 className="text-sm font-semibold text-white uppercase tracking-[0.04em] mb-6" style={{ letterSpacing: '-0.01em' }}>HOW IT WORKS</h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {[
                   { num: '01', title: 'Theme Announced', desc: 'Monday 00:00 UTC — a random theme is revealed' },
@@ -82,9 +82,9 @@ export default function ChallengesPage() {
                   { num: '04', title: 'Winner Revealed', desc: 'Sunday 12:00 UTC — the ranking is revealed!' },
                 ].map((step, i) => (
                   <div key={i} className="p-5" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
-                    <div className="text-2xl font-black text-brand-500 mb-2" style={{ letterSpacing: '-0.04em' }}>{step.num}</div>
-                    <h3 className="text-sm font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>{step.title}</h3>
-                    <p className="text-xs font-mono text-white/40 leading-relaxed">{step.desc}</p>
+                    <div className="text-2xl font-bold text-brand-500 mb-2" style={{ letterSpacing: '-0.04em' }}>{step.num}</div>
+                    <h3 className="text-sm font-semibold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>{step.title}</h3>
+                    <p className="text-xs text-white/60 leading-relaxed">{step.desc}</p>
                   </div>
                 ))}
               </div>
@@ -104,11 +104,11 @@ export default function ChallengesPage() {
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${getPhaseColor('upcoming')}`}>
+                            <span className={`px-2 py-0.5 text-[11px] font-semibold rounded-full ${getPhaseColor('upcoming')}`}>
                               {getPhaseLabel('upcoming')}
                             </span>
                             {c.challenge_type === 'custom' && (
-                              <span className="px-2 py-0.5 text-[10px] font-semibold text-orange-700 bg-orange-50 rounded-full">Custom</span>
+                              <span className="px-2 py-0.5 text-[11px] font-semibold text-orange-700 bg-orange-50 rounded-full">Custom</span>
                             )}
                           </div>
                           <h3 className="text-base font-semibold text-white">{c.title}</h3>
@@ -127,9 +127,9 @@ export default function ChallengesPage() {
 
             {/* Past Challenges */}
             <section>
-              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-4">PAST CHALLENGES</h2>
+              <h2 className="text-sm font-semibold text-white uppercase tracking-[0.04em] mb-4">PAST CHALLENGES</h2>
               {pastChallenges.length === 0 ? (
-                <p className="text-sm font-mono text-white/50 py-8 text-center">No completed challenges yet. Check back after the first week!</p>
+                <p className="text-sm text-white/50 py-8 text-center">No completed challenges yet. Check back after the first week!</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {pastChallenges.map((c) => (
@@ -140,12 +140,12 @@ export default function ChallengesPage() {
                       style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="px-2 py-0.5 text-[10px] font-mono uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <span className="px-2 py-0.5 text-[11px] uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
                           {c.challenge_type === 'weekly' ? `Week ${c.week_number}, ${c.year}` : 'Custom'}
                         </span>
-                        <span className="text-xs font-mono text-white/50">{c.submission_count} submissions</span>
+                        <span className="text-xs text-white/50">{c.submission_count} submissions</span>
                       </div>
-                      <h3 className="text-base font-black text-white line-clamp-1" style={{ letterSpacing: '-0.02em' }}>{c.title}</h3>
+                      <h3 className="text-base font-semibold text-white line-clamp-1" style={{ letterSpacing: '-0.02em' }}>{c.title}</h3>
                       <p className="text-sm text-white/40 mt-1 line-clamp-2">{c.description}</p>
                       <div className="flex items-center gap-3 mt-3 text-xs font-mono text-white/50">
                         <span>{formatDate(c.starts_at)} — {formatDate(c.reveal_at)}</span>
@@ -163,8 +163,8 @@ export default function ChallengesPage() {
       {/* Footer */}
       <footer className="py-10 px-6 mt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">Screenplay Studio Community</span>
-          <div className="flex items-center gap-6 text-[11px] font-mono uppercase tracking-widest text-white/50">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/40">Screenplay Studio Community</span>
+          <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.04em] text-white/50">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/community" className="hover:text-white transition-colors">Feed</Link>
             <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
@@ -174,7 +174,7 @@ export default function ChallengesPage() {
               href="https://development.northem.no/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-mono uppercase tracking-[0.15em] transition-colors text-brand-500/40 hover:text-brand-500/80"
+              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
             >
               Northem ♥
             </a>
@@ -203,10 +203,10 @@ function ActiveChallengeCard({ challenge, user }: { challenge: CommunityChalleng
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-white/50">
+              <span className="text-xs font-medium uppercase tracking-[0.04em] text-white/50">
                 {challenge.challenge_type === 'weekly' ? `Weekly Challenge — Week ${challenge.week_number}` : 'Custom Challenge'}
               </span>
-              <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
+              <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full ${
                 phase === 'submissions' ? 'bg-green-500/20 text-green-300' :
                 phase === 'voting' ? 'bg-amber-500/20 text-amber-300' :
                 phase === 'reveal_pending' ? 'bg-purple-500/20 text-purple-300' :
@@ -216,7 +216,7 @@ function ActiveChallengeCard({ challenge, user }: { challenge: CommunityChalleng
               </span>
             </div>
 
-            <h2 className="text-2xl font-black mb-2" style={{ letterSpacing: '-0.03em' }}>{challenge.title.replace('Weekly Challenge: ', '')}</h2>
+            <h2 className="text-2xl font-bold mb-2" style={{ letterSpacing: '-0.03em' }}>{challenge.title.replace('Weekly Challenge: ', '')}</h2>
             <p className="text-white/70 leading-relaxed max-w-lg">{challenge.description}</p>
 
             {challenge.prize_title && (
@@ -233,13 +233,13 @@ function ActiveChallengeCard({ challenge, user }: { challenge: CommunityChalleng
           {/* Stats + CTA */}
           <div className="shrink-0 flex flex-col items-end gap-4">
             <div className="text-right">
-              <div className="text-3xl font-black">{challenge.submission_count}</div>
+              <div className="text-3xl font-bold">{challenge.submission_count}</div>
               <div className="text-xs text-white/50 uppercase tracking-wide">submissions</div>
             </div>
 
             <Link
               href={`/community/challenges/${challenge.id}`}
-              className="px-6 py-3 text-sm font-black uppercase tracking-wider text-white transition-opacity hover:opacity-80" style={{ background: '#FF5F1F' }}
+              className="px-6 py-3 text-sm font-semibold uppercase tracking-[0.04em] text-white transition-opacity hover:opacity-80" style={{ background: '#FF5F1F' }}
             >
               {phase === 'submissions' ? (user ? 'Submit Your Script' : 'View Challenge') :
                phase === 'voting' ? 'Vote Now' :

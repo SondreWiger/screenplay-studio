@@ -70,8 +70,8 @@ export default function BrowseCommunitiesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-mono text-brand-500 uppercase tracking-widest mb-1">Communities</p>
-            <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+            <p className="text-[11px] text-brand-500 uppercase tracking-[0.04em] mb-1">Communities</p>
+            <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
               BROWSE COMMUNITIES
             </h1>
             <p className="text-white/40 text-sm mt-1">Find your people. Create your space.</p>
@@ -104,7 +104,7 @@ export default function BrowseCommunitiesPage() {
         {/* Your communities */}
         {mine.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Your Communities</h2>
+            <h2 className="text-xs font-semibold text-white/40 uppercase tracking-[0.04em] mb-3">Your Communities</h2>
             <div className="flex flex-wrap gap-2">
               {mine.map(c => (
                 <Link
@@ -164,7 +164,7 @@ export default function BrowseCommunitiesPage() {
                   <div className="pt-7 p-4">
                     <Link href={`/community/c/${c.slug}`} className="block group">
                       <h3 className="text-sm font-bold text-white group-hover:text-white/80 transition-colors">{c.name}</h3>
-                      <p className="text-[10px] text-white/30 font-mono">c/{c.slug}</p>
+                      <p className="text-[11px] text-white/60 ">c/{c.slug}</p>
                     </Link>
                     {c.description && (
                       <p className="text-xs text-white/45 mt-2 line-clamp-2">{c.description}</p>
@@ -190,13 +190,13 @@ export default function BrowseCommunitiesPage() {
                     </div>
                     <div className="mt-2 flex gap-1 flex-wrap">
                       <span
-                        className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
+                        className="text-[11px] uppercase tracking-[0.04em] px-1.5 py-0.5 rounded"
                         style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)' }}
                       >
                         {c.visibility}
                       </span>
                       <span
-                        className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
+                        className="text-[11px] uppercase tracking-[0.04em] px-1.5 py-0.5 rounded"
                         style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)' }}
                       >
                         {c.posting_mode.replace(/_/g, ' ')}

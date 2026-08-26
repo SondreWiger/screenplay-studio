@@ -147,7 +147,7 @@ export default function IdeaBoardsPage() {
         {/* Page header */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Idea Boards</h1>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Idea Boards</h1>
             <p className="text-sm text-surface-400 mt-1">
               Capture ideas, collaborate, link to projects — no pressure, just notes.
             </p>
@@ -156,7 +156,7 @@ export default function IdeaBoardsPage() {
             <button
               onClick={() => setShowArchived(v => !v)}
               className={cn(
-                'px-3 py-2 text-xs font-mono uppercase tracking-widest transition-colors rounded-lg border',
+                'px-3 py-2 text-xs uppercase tracking-[0.04em] transition-colors rounded-lg border',
                 showArchived
                   ? 'border-surface-600 text-white bg-surface-800'
                   : 'border-surface-700 text-surface-500 hover:text-white hover:border-surface-600'
@@ -193,7 +193,7 @@ export default function IdeaBoardsPage() {
         {/* My boards */}
         {myBoards.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-xs font-mono uppercase tracking-widest text-surface-500 mb-4">
+            <h2 className="text-xs uppercase tracking-[0.04em] text-surface-500 mb-4">
               My boards
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -212,7 +212,7 @@ export default function IdeaBoardsPage() {
         {/* Shared with me */}
         {sharedBoards.length > 0 && (
           <section>
-            <h2 className="text-xs font-mono uppercase tracking-widest text-surface-500 mb-4">
+            <h2 className="text-xs uppercase tracking-[0.04em] text-surface-500 mb-4">
               Shared with me
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -378,7 +378,7 @@ function BoardCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {board.member_count > 1 && (
-                <span className="text-[10px] font-mono text-surface-500 flex items-center gap-1">
+                <span className="text-[11px] font-mono text-surface-500 flex items-center gap-1">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -387,7 +387,7 @@ function BoardCard({
               )}
               {board.linked_project_title && (
                 <span
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium"
                   style={{
                     background: (board.linked_project_color || '#6366f1') + '22',
                     color: board.linked_project_color || '#6366f1',
@@ -400,7 +400,7 @@ function BoardCard({
                 </span>
               )}
             </div>
-            <span className="text-[10px] text-surface-600">
+            <span className="text-[11px] text-surface-600">
               {new Date(board.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
             </span>
           </div>

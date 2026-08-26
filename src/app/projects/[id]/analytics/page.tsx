@@ -253,7 +253,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
       <Card className="p-8 text-center">
         <Badge variant="warning" className="mb-3">Pro Feature</Badge>
-        <h2 className="text-xl font-black text-white mb-2">Analytics Dashboard</h2>
+        <h2 className="text-xl font-bold text-white mb-2">Analytics Dashboard</h2>
         <p className="text-surface-400 mb-4">Unlock real project metrics, script activity tracking, and team contribution analytics.</p>
         <a href="/pro" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-500 transition-colors">Upgrade to Pro</a>
       </Card>
@@ -265,7 +265,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-black text-white">Analytics</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Analytics</h1>
             <Badge variant="warning">Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">Real project metrics computed from your actual data.</p>
@@ -302,8 +302,8 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
             ].map(s => (
               <Card key={s.label} className="p-4">
                 <p className="text-xs text-surface-500 font-medium mb-1">{s.label}</p>
-                <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
-                <p className="text-[10px] text-surface-500">{s.sub}</p>
+                <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+                <p className="text-[11px] text-surface-500">{s.sub}</p>
               </Card>
             ))}
           </div>
@@ -318,8 +318,8 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
             ].map(s => (
               <Card key={s.label} className="p-3">
                 <p className="text-xs text-surface-500 font-medium">{s.label}</p>
-                <p className="text-xl font-black text-white">{s.value}</p>
-                <p className="text-[10px] text-surface-500">{s.sub}</p>
+                <p className="text-xl font-bold text-white">{s.value}</p>
+                <p className="text-[11px] text-surface-500">{s.sub}</p>
               </Card>
             ))}
           </div>
@@ -337,13 +337,13 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                             className="w-full bg-brand-500/60 hover:bg-brand-500 rounded-t transition-colors min-h-[2px]"
                             style={{ height: `${(elementCount / maxActivity) * 100}%` }}
                           />
-                          <div className="absolute -top-8 hidden group-hover:block bg-surface-800 px-2 py-1 rounded text-[10px] text-white whitespace-nowrap z-10">
+                          <div className="absolute -top-8 hidden group-hover:block bg-surface-800 px-2 py-1 rounded text-[11px] text-white whitespace-nowrap z-10">
                             {date.slice(5)}: {elementCount} elements
                           </div>
                         </div>
                       ))}
                     </div>
-                    <p className="text-[10px] text-surface-600 mt-2 text-center">Elements created/edited per day</p>
+                    <p className="text-[11px] text-surface-600 mt-2 text-center">Elements created/edited per day</p>
                   </>
                 ) : (
                   <p className="text-sm text-surface-500 text-center py-8">No writing activity in this period.</p>
@@ -438,9 +438,9 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                   { label: 'Active days', value: String(workTime.daily.filter(d => d.seconds > 0).length), sub: 'of last 30 days' },
                 ].map((item) => (
                   <div key={item.label} className="p-3 rounded-lg bg-surface-800/40">
-                    <p className="text-[10px] text-surface-500 uppercase tracking-wider">{item.label}</p>
-                    <p className="text-xl font-black text-white mt-0.5">{item.value}</p>
-                    <p className="text-[10px] text-surface-500">{item.sub}</p>
+                    <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">{item.label}</p>
+                    <p className="text-xl font-bold text-white mt-0.5">{item.value}</p>
+                    <p className="text-[11px] text-surface-500">{item.sub}</p>
                   </div>
                 ))}
               </div>
@@ -459,14 +459,14 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                             style={{ height: `${(seconds / maxSecs) * 100}%` }}
                           />
                           {seconds > 0 && (
-                            <div className="absolute -top-8 hidden group-hover:block bg-surface-800 border border-surface-700 px-2 py-1 rounded text-[10px] text-white whitespace-nowrap z-10 pointer-events-none">
+                            <div className="absolute -top-8 hidden group-hover:block bg-surface-800 border border-surface-700 px-2 py-1 rounded text-[11px] text-white whitespace-nowrap z-10 pointer-events-none">
                               {date.slice(5)}: {formatWorkSeconds(seconds)}
                             </div>
                           )}
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-between text-[10px] text-surface-600 mt-1">
+                    <div className="flex justify-between text-[11px] text-surface-600 mt-1">
                       <span>{workTime.daily[0]?.date.slice(5)}</span>
                       <span>{workTime.daily[workTime.daily.length - 1]?.date.slice(5)}</span>
                     </div>
@@ -477,7 +477,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
               {/* Context breakdown */}
               {Object.keys(workTime.context_breakdown).length > 0 && (
                 <div>
-                  <p className="text-[11px] text-surface-500 uppercase tracking-wider mb-2">Time by area</p>
+                  <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em] mb-2">Time by area</p>
                   <div className="space-y-2">
                     {Object.entries(workTime.context_breakdown)
                       .sort(([, a], [, b]) => b - a)

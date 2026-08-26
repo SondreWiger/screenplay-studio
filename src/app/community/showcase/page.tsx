@@ -96,13 +96,13 @@ export default function ShowcasePage() {
 
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color: '#FF5F1F' }}>
+          <div className="text-[11px] uppercase tracking-[0.04em] mb-3" style={{ color: '#FF5F1F' }}>
             <span className="inline-block w-3 h-px bg-brand-500 mr-2 align-middle" />Community Showcase
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+          <h1 className="text-4xl md:text-5xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
             FINISHED PROJECTS
           </h1>
-          <p className="text-lg text-white/40 mt-3 max-w-xl font-mono text-sm">
+          <p className="text-lg text-white/60 mt-3 max-w-xl text-sm">
             Watch completed productions from the Screenplay Studio community. From short films to features — see what others have created.
           </p>
           <div className="flex items-center gap-3 mt-6 text-xs font-mono text-white/50">
@@ -122,7 +122,7 @@ export default function ShowcasePage() {
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-widest capitalize transition-colors ${
+                className={`px-3 py-1.5 text-xs uppercase tracking-[0.04em] capitalize transition-colors ${
                   sortBy === s ? 'text-white' : 'text-white/40 hover:text-white'
                 }`}
                 style={sortBy === s ? { background: '#FF5F1F' } : {}}
@@ -203,8 +203,8 @@ export default function ShowcasePage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
             <div className="text-6xl mb-4">🎬</div>
-          <p className="text-xl font-black text-white mb-2" style={{ letterSpacing: '-0.02em' }}>NO FINISHED PROJECTS YET</p>
-            <p className="text-sm font-mono text-white/40 mb-6">Be the first to showcase your completed production!</p>
+          <p className="text-xl font-bold text-white mb-2" style={{ letterSpacing: '-0.02em' }}>NO FINISHED PROJECTS YET</p>
+            <p className="text-sm text-white/60 mb-6">Be the first to showcase your completed production!</p>
             {user && (
               <Link href="/dashboard" className="ss-btn-orange text-sm">
                 Go to Dashboard
@@ -245,7 +245,7 @@ export default function ShowcasePage() {
                     </div>
                     {/* Format badge */}
                     {project.format && (
-                      <span className="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white/80 rounded">
+                      <span className="absolute top-2 left-2 px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.04em] bg-black/70 text-white/80 rounded">
                         {project.format}
                       </span>
                     )}
@@ -253,7 +253,7 @@ export default function ShowcasePage() {
 
                   {/* Info */}
                   <div className="p-4">
-                    <h3 className="font-black text-white group-hover:text-brand-500 transition-colors line-clamp-1" style={{ letterSpacing: '-0.02em' }}>
+                    <h3 className="font-semibold text-white group-hover:text-brand-500 transition-colors line-clamp-1" style={{ letterSpacing: '-0.02em' }}>
                       {project.title}
                     </h3>
                     {(project.showcase_description || project.logline) && (
@@ -267,13 +267,13 @@ export default function ShowcasePage() {
                         {project.author?.avatar_url ? (
                           <img src={project.author.avatar_url} alt={project.author.full_name || 'Author avatar'} className="w-5 h-5 rounded-full" loading="lazy" />
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white/50">
+                          <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[11px] font-bold text-white/50">
                             {(project.author?.full_name || '?')[0]}
                           </div>
                         )}
                         <span className="text-xs text-white/50">{project.author?.full_name || 'Unknown'}</span>
                       </div>
-                      <span className="text-[10px] text-white/50">{timeAgo(project.updated_at)}</span>
+                      <span className="text-[11px] text-white/50">{timeAgo(project.updated_at)}</span>
                     </div>
 
                     {/* Rating */}
@@ -281,7 +281,7 @@ export default function ShowcasePage() {
                       <div className="flex items-center gap-1.5 mt-2">
                         <svg className="w-3.5 h-3.5 text-brand-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
                         <span className="text-xs font-semibold text-brand-500">{reviewStats[project.id].avg.toFixed(1)}</span>
-                        <span className="text-[10px] text-white/50">({reviewStats[project.id].count})</span>
+                        <span className="text-[11px] text-white/50">({reviewStats[project.id].count})</span>
                       </div>
                     )}
 
@@ -289,7 +289,7 @@ export default function ShowcasePage() {
                     {project.genre && project.genre.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-3">
                         {project.genre.slice(0, 3).map((g) => (
-                          <span key={g} className="px-2 py-0.5 text-[10px] font-mono uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <span key={g} className="px-2 py-0.5 text-[11px] uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
                             {g}
                           </span>
                         ))}
@@ -306,8 +306,8 @@ export default function ShowcasePage() {
       {/* Footer */}
       <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">Screenplay Studio</span>
-          <div className="flex items-center gap-6 text-[11px] font-mono uppercase tracking-widest text-white/50">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/40">Screenplay Studio</span>
+          <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.04em] text-white/50">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <Link href="/community" className="hover:text-white transition-colors">Community</Link>
             <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>

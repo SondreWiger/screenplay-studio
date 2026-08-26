@@ -680,17 +680,17 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
       {/* Badges */}
       <div className="absolute top-2.5 right-2.5 flex gap-1 z-10">
         {feature.new && (
-          <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 border border-white/[0.08] text-white/30">New</span>
+          <span className="text-[11px] font-medium uppercase tracking-wide px-1.5 py-0.5 border border-white/[0.08] text-white/55">New</span>
         )}
         {feature.pro && (
-          <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 border border-white/[0.08] text-white/30">Pro</span>
+          <span className="text-[11px] font-medium uppercase tracking-wide px-1.5 py-0.5 border border-white/[0.08] text-white/55">Pro</span>
         )}
       </div>
 
       {/* Content */}
       <div className={cn('p-5 h-full flex flex-col transition-colors duration-150', expanded ? 'bg-white/[0.025]' : 'group-hover:bg-white/[0.018]')}>
         <div className="mb-auto">
-          <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/50 group-hover:text-white transition-colors duration-150 leading-tight">{feature.name}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/50 group-hover:text-white transition-colors duration-150 leading-tight">{feature.name}</p>
           <p className="text-[11px] text-white/22 mt-0.5 leading-snug group-hover:text-white/40 transition-colors duration-150">{feature.tagline}</p>
         </div>
 
@@ -706,7 +706,7 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
             {feature.bullets && (
               <ul className="space-y-1">
                 {feature.bullets.map(b => (
-                  <li key={b} className="flex items-center gap-1.5 text-[10px] text-white/30">
+                  <li key={b} className="flex items-center gap-1.5 text-[11px] text-white/30">
                     <div className="w-0.5 h-0.5 bg-white/30 rounded-full shrink-0" />
                     {b}
                   </li>
@@ -718,7 +718,7 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
 
         {/* Category label */}
         <div className="mt-3">
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/15">{feature.category}</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/15">{feature.category}</span>
         </div>
       </div>
     </MotionDiv>
@@ -750,7 +750,7 @@ export default function DevFeaturesPage() {
             key={cat}
             onClick={() => setActiveCategory(cat)}
             className={cn(
-              'px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] transition-colors border',
+              'px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors border',
               activeCategory === cat
                 ? 'border-white/20 text-white bg-white/[0.06]'
                 : 'border-white/[0.07] text-white/30 hover:text-white/60 hover:border-white/15'
@@ -759,7 +759,7 @@ export default function DevFeaturesPage() {
             {cat}
           </button>
         ))}
-        <span className="ml-auto text-[10px] font-mono text-white/20">{filtered.length} features</span>
+        <span className="ml-auto text-[11px] font-mono text-white/20">{filtered.length} features</span>
       </div>
 
       {/* Grid */}
@@ -785,7 +785,7 @@ export default function DevFeaturesPage() {
       </LayoutGroup>
 
       <div className="mt-12 pt-6 border-t border-white/[0.06] flex items-center gap-6">
-        <p className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{FEATURES.length} features · hover to expand</p>
+        <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">{FEATURES.length} features · hover to expand</p>
       </div>
     </div>
   );

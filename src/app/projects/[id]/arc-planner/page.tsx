@@ -137,7 +137,7 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
         {!isEpisodic && (
           <>
             <span className="text-white/20">·</span>
-            <span className="text-[10px] text-violet-400/60 italic">Act Structure Mode</span>
+            <span className="text-[11px] text-violet-400/60 italic">Act Structure Mode</span>
           </>
         )}
 
@@ -152,7 +152,7 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
         </div>
 
         {!canEdit && (
-          <span className="px-2 py-0.5 rounded-full bg-surface-800 text-[10px] text-surface-400">
+          <span className="px-2 py-0.5 rounded-full bg-surface-800 text-[11px] text-surface-400">
             View only
           </span>
         )}

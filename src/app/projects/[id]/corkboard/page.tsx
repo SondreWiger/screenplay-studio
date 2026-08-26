@@ -170,12 +170,12 @@ function SceneCard({
             #{scene.scene_number ?? index + 1}
           </span>
           {scene.location_type && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-700/60 text-surface-300 font-mono">
+            <span className="text-[11px] px-1.5 py-0.5 rounded bg-surface-700/60 text-surface-300 font-mono">
               {scene.location_type.replace('_', '/')}
             </span>
           )}
           {scene.time_of_day && (
-            <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-mono', timeColor.badge)}>
+            <span className={cn('text-[11px] px-1.5 py-0.5 rounded font-mono', timeColor.badge)}>
               {scene.time_of_day}
             </span>
           )}
@@ -245,10 +245,10 @@ function SceneCard({
       {(scene.page_count || scene.estimated_duration_minutes) && (
         <div className="flex items-center gap-2 mt-3 pt-2 border-t border-surface-700/40">
           {scene.page_count && (
-            <span className="text-[10px] text-surface-500">{scene.page_count}p</span>
+            <span className="text-[11px] text-surface-500">{scene.page_count}p</span>
           )}
           {scene.estimated_duration_minutes && (
-            <span className="text-[10px] text-surface-500">{scene.estimated_duration_minutes} min</span>
+            <span className="text-[11px] text-surface-500">{scene.estimated_duration_minutes} min</span>
           )}
         </div>
       )}
@@ -377,7 +377,7 @@ export default function CorkboardPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-black text-white">Corkboard</h1>
+          <h1 className="text-xl font-bold text-white">Corkboard</h1>
           <p className="text-sm text-surface-400 mt-0.5">
             {scenes.length} scenes · {completedCount} completed
             {canEdit && ' · Drag to reorder'}

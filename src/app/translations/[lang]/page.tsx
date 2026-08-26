@@ -148,7 +148,7 @@ export default function LanguageTranslationPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-white tracking-tight">
+          <h1 className="text-3xl font-bold text-white tracking-tight">
             {languageName} <span className="text-surface-500">({langCode})</span>
           </h1>
           <p className="text-surface-400 mt-2">
@@ -213,7 +213,7 @@ export default function LanguageTranslationPage() {
 
           return (
             <div key={section} className="mb-8">
-              <h2 className="text-sm font-mono uppercase tracking-wider text-surface-500 mb-3 capitalize">{section}</h2>
+              <h2 className="text-sm uppercase tracking-[0.04em] text-surface-500 mb-3 capitalize">{section}</h2>
               <div className="space-y-3">
                 {sectionKeys.map(k => (
                   <Card key={k.id} className="p-5">
@@ -230,7 +230,7 @@ export default function LanguageTranslationPage() {
                         <div className="text-right shrink-0">
                           <p className="text-xs text-green-400 font-medium">Winning</p>
                           <p className="text-sm text-white mt-0.5">{k.winner.translated_text}</p>
-                          <p className="text-[10px] text-surface-500 mt-0.5">
+                          <p className="text-[11px] text-surface-500 mt-0.5">
                             {k.winner.upvotes} up / {k.winner.downvotes} down
                           </p>
                         </div>
@@ -264,12 +264,12 @@ export default function LanguageTranslationPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-white">{s.translated_text}</p>
-                              <p className="text-[10px] text-surface-500 mt-0.5">
+                              <p className="text-[11px] text-surface-500 mt-0.5">
                                 by {s.profiles?.display_name || 'Anonymous'}
                               </p>
                             </div>
                             {i === 0 && s.net_votes > 0 && (
-                              <span className="text-[10px] font-mono text-green-400 bg-green-500/10 px-2 py-0.5 rounded">WINNING</span>
+                              <span className="text-[11px] font-mono text-green-400 bg-green-500/10 px-2 py-0.5 rounded">WINNING</span>
                             )}
                           </div>
                         ))}
@@ -284,7 +284,7 @@ export default function LanguageTranslationPage() {
                           <div className="mt-3 pt-3 border-t border-surface-800/60">
                             <p className="text-xs text-surface-500">
                               Your suggestion: <span className="text-white">{userSuggestion.translated_text}</span>
-                              <span className="ml-2 text-[10px] font-mono text-surface-600">
+                              <span className="ml-2 text-[11px] font-mono text-surface-600">
                                 {userSuggestion.net_votes > 0 ? '+' : ''}{userSuggestion.net_votes} votes
                               </span>
                             </p>
