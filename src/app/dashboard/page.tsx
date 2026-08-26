@@ -486,6 +486,9 @@ function DashboardContent() {
             <Link href="/idea-boards" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
               Ideas
             </Link>
+            <Link href="/people" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
+              People
+            </Link>
             <Link href="/about" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
               About
             </Link>
