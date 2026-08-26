@@ -432,6 +432,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                 { label: t('nav.dashboard'),       sublabel: 'Your projects',                path: '/dashboard',       icon: '🏠' },
                 { label: 'Accountability',  sublabel: 'Streaks, buddies & groups',    path: '/accountability',  icon: '🎯' },
                 { label: 'Idea Boards',     sublabel: 'Brainstorm & capture ideas',   path: '/idea-boards',     icon: '💡' },
+                { label: 'People',          sublabel: 'Everyone you\u2019ve worked with',  path: '/people',          icon: '🎬' },
                 { label: t('nav.community'),       sublabel: 'Posts & discussions',          path: '/community',       icon: '💬' },
                 { label: t('nav.settings'),        sublabel: 'Profile, preferences & more',  path: '/settings',        icon: '⚙️' },
               ] as { label: string; sublabel: string; path: string; icon: string }[]).map((item, i) => (

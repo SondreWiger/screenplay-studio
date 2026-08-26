@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -8,9 +8,10 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { useProToolRecords } from '@/hooks/useProToolRecords';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
 import { useProjectRefs, type RefOption } from '@/hooks/useProjectRefs';
+import { VIEWS } from '@/components/pro-tools/ProToolViews';
 import {
-  computeStats, formatField, matchesQuery, nextStatus, refSourcesFor, relatedTools,
-  statusMeta, toCSV, REF_SOURCE_LABEL, REF_SOURCE_ROUTE, TONE_CLASSES,
+  accentFor, computeStats, layoutFor, matchesQuery, nextStatus, refSourcesFor,
+  relatedTools, toCSV, REF_SOURCE_LABEL,
   type ProToolField, type ProToolRecord, type ProTool, type RefResolver,
 } from '@/lib/pro-tools';
 
@@ -25,11 +26,6 @@ const emptyForm = (tool: ProTool): FormState => ({
   status: tool.statuses[0]?.value ?? '',
   data: {},
 });
-
-const HIDE_CLASS: Record<'md' | 'lg', string> = {
-  md: 'hidden md:table-cell',
-  lg: 'hidden lg:table-cell',
-};
 
 function FieldInput({
   field, value, onChange, refOptions,
@@ -137,6 +133,9 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
   const [quickAdding, setQuickAdding] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const quickRef = useRef<HTMLInputElement>(null);
+
+  const accent = accentFor(tool);
+  const View = VIEWS[layoutFor(tool)];
 
   const refSources = useMemo(() => refSourcesFor(tool), [tool]);
   const { options: refOptions, resolve } = useProjectRefs(projectId, refSources);
@@ -274,10 +273,20 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
       <div className="border-b border-surface-800 px-6 py-4 flex items-center justify-between gap-4 shrink-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-brand-500 shrink-0">{sidebarIcons[tool.icon]}</span>
+            <Link
+              href={`/projects/${projectId}/pro`}
+              className="text-[11px] text-surface-500 hover:text-surface-300 transition-colors shrink-0"
+            >
+              Pro Tools
+            </Link>
+            <span className="text-surface-700 shrink-0">/</span>
+            <span className={cn('shrink-0', accent.text)}>{sidebarIcons[tool.icon]}</span>
             <h1 className="text-lg font-bold text-white truncate">{tool.label}</h1>
-            <span className="text-[11px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30 font-semibold uppercase tracking-[0.04em] shrink-0">
-              Pro
+            <span className={cn(
+              'text-[11px] px-1.5 py-0.5 rounded border font-medium shrink-0 hidden sm:inline',
+              accent.surface, accent.text, accent.border,
+            )}>
+              {tool.group}
             </span>
           </div>
           <p className="text-sm text-surface-400 mt-0.5 truncate">{tool.tagline}</p>
@@ -306,8 +315,12 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
       {/* Stats */}
       <div className="px-6 py-3 grid grid-cols-2 md:grid-cols-4 gap-3 border-b border-surface-800/50 shrink-0">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-surface-800 bg-surface-900/40 px-3 py-2">
-            <div className="text-[11px] uppercase tracking-[0.04em] text-surface-500 truncate">{s.label}</div>
+          <div key={s.label} className={cn(
+            'relative rounded-xl border border-surface-800 px-3 py-2 pl-4 overflow-hidden',
+            accent.surface,
+          )}>
+            <span className={cn('absolute left-0 inset-y-0 w-0.5', accent.rule)} />
+            <div className="text-[11px] uppercase tracking-[0.04em] text-surface-400 truncate">{s.label}</div>
             <div className="text-lg font-semibold text-white tabular-nums">{s.value}</div>
           </div>
         ))}
@@ -341,7 +354,10 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
         {filtered.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center max-w-sm">
-              <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-4 text-surface-500 [&_svg]:w-8 [&_svg]:h-8">
+              <div className={cn(
+                'w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 [&_svg]:w-8 [&_svg]:h-8',
+                accent.surface, accent.text,
+              )}>
                 {sidebarIcons[tool.icon]}
               </div>
               <p className="text-surface-400 font-medium">
@@ -372,109 +388,23 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
             <div key={key || 'all'}>
               {key && (
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-[11px] font-semibold text-surface-500 uppercase tracking-[0.04em]">{key}</h2>
-                  <span className="text-[11px] text-surface-700">{rows.length}</span>
+                  <span className={cn('w-1 h-3.5 rounded-full', accent.rule)} />
+                  <h2 className="text-[11px] font-semibold text-surface-300 uppercase tracking-[0.04em]">{key}</h2>
+                  <span className="text-[11px] text-surface-600">{rows.length}</span>
                 </div>
               )}
-              <div className="rounded-xl border border-surface-800 overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-surface-800 bg-surface-900/60">
-                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-4 py-2">
-                        {tool.titleLabel}
-                      </th>
-                      {columns.map((f) => (
-                        <th
-                          key={f.key}
-                          className={cn(
-                            'text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2',
-                            f.align === 'right' ? 'text-right' : 'text-left',
-                            f.hideBelow && HIDE_CLASS[f.hideBelow],
-                          )}
-                        >
-                          {f.label}
-                        </th>
-                      ))}
-                      <th className="text-left text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em] px-3 py-2 w-32">
-                        Status
-                      </th>
-                      {canEdit && <th className="w-16 px-3 py-2" />}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((record) => {
-                      const meta = statusMeta(tool, record.status);
-                      return (
-                        <tr key={record.id} className="border-b border-surface-800/40 last:border-0 hover:bg-surface-800/20 transition-colors group">
-                          <td className="px-4 py-2.5">
-                            <button
-                              onClick={() => canEdit && openEdit(record)}
-                              disabled={!canEdit}
-                              className="font-medium text-white text-left hover:text-brand-500 transition-colors disabled:hover:text-white"
-                            >
-                              {record.title}
-                            </button>
-                            {typeof record.data.notes === 'string' && record.data.notes && (
-                              <p className="text-[11px] text-surface-500 truncate max-w-[260px]">{record.data.notes}</p>
-                            )}
-                          </td>
-                          {columns.map((f) => (
-                            <td
-                              key={f.key}
-                              className={cn(
-                                'px-3 py-2.5 text-xs text-surface-300',
-                                f.align === 'right' ? 'text-right tabular-nums' : 'text-left',
-                                f.hideBelow && HIDE_CLASS[f.hideBelow],
-                              )}
-                            >
-                              {f.type === 'ref' && f.refSource && record.data[f.key] ? (
-                                <Link
-                                  href={`/projects/${projectId}/${REF_SOURCE_ROUTE[f.refSource]}`}
-                                  className="text-brand-500 hover:underline"
-                                >
-                                  {formatField(f, record.data[f.key], resolveRef) || 'Linked'}
-                                </Link>
-                              ) : (
-                                formatField(f, record.data[f.key], resolveRef) || <span className="text-surface-600">—</span>
-                              )}
-                            </td>
-                          ))}
-                          <td className="px-3 py-2.5">
-                            <button
-                              onClick={() => canEdit && update(record.id, { status: nextStatus(tool, record.status) })}
-                              disabled={!canEdit}
-                              title={canEdit ? 'Click to advance' : undefined}
-                              className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium transition-opacity hover:opacity-80', TONE_CLASSES[meta.tone])}
-                            >
-                              {meta.label}
-                            </button>
-                          </td>
-                          {canEdit && (
-                            <td className="px-3 py-2.5">
-                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => openEdit(record)}
-                                  className="p-1 rounded text-surface-500 hover:text-white transition-colors"
-                                  aria-label="Edit"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(record)}
-                                  className="p-1 rounded text-surface-500 hover:text-red-400 transition-colors"
-                                  aria-label="Delete"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <View
+                tool={tool}
+                projectId={projectId}
+                records={rows}
+                columns={columns}
+                canEdit={canEdit}
+                resolveRef={resolveRef}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                onCycleStatus={(record) => update(record.id, { status: nextStatus(tool, record.status) })}
+                onSetStatus={(record, status) => update(record.id, { status })}
+              />
             </div>
           ))
         )}

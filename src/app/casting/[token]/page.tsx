@@ -252,13 +252,13 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
                   onChange={(e) => setAnswers(prev => ({ ...prev, [q.label]: e.target.value }))}
                   rows={4}
                   placeholder={`Enter ${q.label.toLowerCase()}...`}
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
+                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-3 min-h-[44px] text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
                 />
               ) : q.type === 'select' ? (
                 <select
                   value={answers[q.label] || ''}
                   onChange={(e) => setAnswers(prev => ({ ...prev, [q.label]: e.target.value }))}
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500"
+                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-3 min-h-[44px] text-sm text-white outline-none focus:border-amber-500"
                 >
                   <option value="">Select...</option>
                   {q.options?.map((opt, i) => (
@@ -271,7 +271,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
                   value={answers[q.label] || ''}
                   onChange={(e) => setAnswers(prev => ({ ...prev, [q.label]: e.target.value }))}
                   placeholder={`Enter ${q.label.toLowerCase()}...`}
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
+                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-3 min-h-[44px] text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
                 />
               )}
             </div>
@@ -284,10 +284,14 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
             </label>
             <input
               type="url"
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={answers['__demo_url'] || ''}
               onChange={(e) => setAnswers(prev => ({ ...prev, '__demo_url': e.target.value }))}
               placeholder="https://youtube.com/... or https://vimeo.com/..."
-              className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
+              className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-3 min-h-[44px] text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
             />
           </div>
 
@@ -297,10 +301,14 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
             </label>
             <input
               type="url"
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={answers['__headshot_url'] || ''}
               onChange={(e) => setAnswers(prev => ({ ...prev, '__headshot_url': e.target.value }))}
               placeholder="Link to your headshot..."
-              className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
+              className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-3 min-h-[44px] text-sm text-white outline-none focus:border-amber-500 transition-colors placeholder-neutral-600"
             />
           </div>
 
@@ -313,7 +321,7 @@ export default function PublicCastingCallPage({ params }: { params: { token: str
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 px-6 rounded-lg bg-amber-500 text-black font-semibold text-sm hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full min-h-[48px] px-6 rounded-lg bg-amber-500 text-black font-semibold text-sm hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <span className="flex items-center justify-center gap-2">

@@ -5,7 +5,7 @@
 // must exist in `sidebarIcons` (components/sidebar/SidebarIcons.tsx).
 // `tests/pro-tools-registry.test.ts` enforces both.
 
-import type { ProToolStatus, ProTool } from './types';
+import type { ProToolGroup, ProToolStatus, ProTool } from './types';
 
 // Reusable status sets -------------------------------------------------------
 
@@ -80,7 +80,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'accounting', icon: 'accounting', flag: 'pro_accounting',
     label: 'Production Accounting', tagline: 'Purchase orders, invoices and cost report lines.',
-    group: 'Money', noun: 'cost line', titleLabel: 'Description', titlePlaceholder: 'What was purchased',
+    group: 'Money', layout: 'ledger', noun: 'cost line', titleLabel: 'Description', titlePlaceholder: 'What was purchased',
     statuses: [
       { value: 'committed', label: 'Committed', tone: 'neutral' },
       { value: 'invoiced', label: 'Invoiced', tone: 'warn' },
@@ -109,7 +109,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'greenlight', icon: 'greenlight', flag: 'pro_greenlight',
     label: 'Greenlight & Financing', tagline: 'Track the money from first conversation to signed.',
-    group: 'Money', noun: 'source', titleLabel: 'Source', titlePlaceholder: 'Financier, fund or broadcaster',
+    group: 'Money', layout: 'ledger', noun: 'source', titleLabel: 'Source', titlePlaceholder: 'Financier, fund or broadcaster',
     statuses: [
       { value: 'target', label: 'Target', tone: 'neutral' },
       { value: 'pitched', label: 'Pitched', tone: 'info' },
@@ -137,7 +137,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'tax-incentives', icon: 'tax-incentives', flag: 'pro_tax_incentives',
     label: 'Tax Incentives', tagline: 'Rebates, credits and the paperwork each one needs.',
-    group: 'Money', noun: 'incentive', titleLabel: 'Incentive', titlePlaceholder: 'e.g. Norwegian incentive scheme',
+    group: 'Money', layout: 'ledger', noun: 'incentive', titleLabel: 'Incentive', titlePlaceholder: 'e.g. Norwegian incentive scheme',
     statuses: APPROVAL,
     fields: [
       { key: 'jurisdiction', label: 'Jurisdiction', type: 'text', column: true },
@@ -157,7 +157,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'crowdfunding', icon: 'crowdfunding', flag: 'pro_crowdfunding',
     label: 'Crowdfunding', tagline: 'Tiers, backers and the rewards you owe them.',
-    group: 'Money', noun: 'tier', titleLabel: 'Reward tier', titlePlaceholder: 'e.g. Executive Producer credit',
+    group: 'Money', layout: 'ledger', noun: 'tier', titleLabel: 'Reward tier', titlePlaceholder: 'e.g. Executive Producer credit',
     statuses: [
       { value: 'planned', label: 'Planned', tone: 'neutral' },
       { value: 'live', label: 'Live', tone: 'info' },
@@ -182,7 +182,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'box-office', icon: 'box-office', flag: 'pro_box_office',
     label: 'Box Office & Revenue', tagline: 'Revenue by window, territory and platform.',
-    group: 'Money', noun: 'revenue line', titleLabel: 'Line', titlePlaceholder: 'e.g. UK theatrical — week 1',
+    group: 'Money', layout: 'ledger', noun: 'revenue line', titleLabel: 'Line', titlePlaceholder: 'e.g. UK theatrical — week 1',
     statuses: [
       { value: 'projected', label: 'Projected', tone: 'neutral' },
       { value: 'reported', label: 'Reported', tone: 'info' },
@@ -210,7 +210,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'rights', icon: 'rights', flag: 'pro_rights',
     label: 'Rights & Clearances', tagline: 'Nothing reaches picture lock uncleared.',
-    group: 'Legal & Rights', noun: 'clearance', titleLabel: 'Item', titlePlaceholder: 'What needs clearing',
+    group: 'Legal & Rights', layout: 'board', noun: 'clearance', titleLabel: 'Item', titlePlaceholder: 'What needs clearing',
     statuses: [
       { value: 'identified', label: 'Identified', tone: 'neutral' },
       { value: 'requested', label: 'Requested', tone: 'info' },
@@ -242,7 +242,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'legal', icon: 'legal', flag: 'pro_legal',
     label: 'Legal & Contracts', tagline: 'Every agreement, who signed and what is outstanding.',
-    group: 'Legal & Rights', noun: 'contract', titleLabel: 'Agreement', titlePlaceholder: 'e.g. Director’s agreement',
+    group: 'Legal & Rights', layout: 'board', noun: 'contract', titleLabel: 'Agreement', titlePlaceholder: 'e.g. Director’s agreement',
     statuses: [
       { value: 'drafting', label: 'Drafting', tone: 'neutral' },
       { value: 'in_review', label: 'In review', tone: 'info' },
@@ -272,7 +272,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'compliance', icon: 'compliance', flag: 'pro_compliance',
     label: 'Insurance & Compliance', tagline: 'Certificates, policies and risk sign-off.',
-    group: 'Legal & Rights', noun: 'policy', titleLabel: 'Policy / requirement',
+    group: 'Legal & Rights', layout: 'checklist', noun: 'policy', titleLabel: 'Policy / requirement',
     titlePlaceholder: 'e.g. General liability',
     statuses: [
       { value: 'required', label: 'Required', tone: 'neutral' },
@@ -301,7 +301,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'broadcast-compliance', icon: 'broadcast-compliance', flag: 'pro_broadcast_compliance',
     label: 'Broadcast Compliance', tagline: 'Delivery specs, classification and editorial notes.',
-    group: 'Legal & Rights', noun: 'check', titleLabel: 'Requirement', titlePlaceholder: 'e.g. Loudness — EBU R128',
+    group: 'Legal & Rights', layout: 'checklist', noun: 'check', titleLabel: 'Requirement', titlePlaceholder: 'e.g. Loudness — EBU R128',
     statuses: PIPELINE,
     groupBy: 'area',
     fields: [
@@ -322,7 +322,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'sustainability', icon: 'sustainability', flag: 'pro_sustainability',
     label: 'Sustainability', tagline: 'Carbon actions and the numbers behind the green stamp.',
-    group: 'Legal & Rights', noun: 'action', titleLabel: 'Action', titlePlaceholder: 'e.g. Replace diesel gennies',
+    group: 'Legal & Rights', layout: 'checklist', noun: 'action', titleLabel: 'Action', titlePlaceholder: 'e.g. Replace diesel gennies',
     statuses: PIPELINE,
     groupBy: 'category',
     fields: [
@@ -344,7 +344,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'crew-portal', icon: 'crew-portal', flag: 'pro_crew_portal',
     label: 'Crew Portal', tagline: 'Onboarding, paperwork and start dates per crew member.',
-    group: 'People', noun: 'crew member', titleLabel: 'Name', titlePlaceholder: 'Crew member name',
+    group: 'People', layout: 'cards', noun: 'crew member', titleLabel: 'Name', titlePlaceholder: 'Crew member name',
     statuses: [
       { value: 'invited', label: 'Invited', tone: 'neutral' },
       { value: 'onboarding', label: 'Onboarding', tone: 'info' },
@@ -373,7 +373,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'departments', icon: 'departments', flag: 'pro_departments',
     label: 'Departments', tagline: 'Heads of department, budgets and headcount.',
-    group: 'People', noun: 'department', titleLabel: 'Department', titlePlaceholder: 'e.g. Camera',
+    group: 'People', layout: 'ledger', noun: 'department', titleLabel: 'Department', titlePlaceholder: 'e.g. Camera',
     statuses: [
       { value: 'planning', label: 'Planning', tone: 'neutral' },
       { value: 'staffed', label: 'Staffed', tone: 'info' },
@@ -398,7 +398,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'talent', icon: 'talent', flag: 'pro_talent_mgmt',
     label: 'Talent Management', tagline: 'Offers, agents, deals and availability.',
-    group: 'People', noun: 'talent', titleLabel: 'Performer', titlePlaceholder: 'Performer name',
+    group: 'People', layout: 'cards', noun: 'talent', titleLabel: 'Performer', titlePlaceholder: 'Performer name',
     statuses: [
       { value: 'wishlist', label: 'Wishlist', tone: 'neutral' },
       { value: 'offer_out', label: 'Offer out', tone: 'info' },
@@ -426,7 +426,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'extras', icon: 'extras', flag: 'pro_extras',
     label: 'Extras & Background', tagline: 'Background casting calls, sizes and call times.',
-    group: 'People', noun: 'call', titleLabel: 'Background call', titlePlaceholder: 'e.g. Café patrons — day 4',
+    group: 'People', layout: 'cards', noun: 'call', titleLabel: 'Background call', titlePlaceholder: 'e.g. Café patrons — day 4',
     statuses: BOOKING,
     fields: [
       { key: 'shoot_day', label: 'Shoot day', type: 'ref', refSource: 'shoot_days', column: true },
@@ -494,7 +494,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'locations', icon: 'scouting', flag: 'pro_location_scouting',
     label: 'Location Scouting', tagline: 'Recces, permits and what each place costs.',
-    group: 'Production', noun: 'location', titleLabel: 'Location', titlePlaceholder: 'Place name',
+    group: 'Production', layout: 'cards', noun: 'location', titleLabel: 'Location', titlePlaceholder: 'Place name',
     statuses: [
       { value: 'scouting', label: 'Scouting', tone: 'neutral' },
       { value: 'recced', label: 'Recced', tone: 'info' },
@@ -523,7 +523,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'vendors', icon: 'vendors', flag: 'pro_vendor_mgmt',
     label: 'Vendor Management', tagline: 'Suppliers, contacts, terms and spend.',
-    group: 'Production', noun: 'vendor', titleLabel: 'Vendor', titlePlaceholder: 'Company name',
+    group: 'Production', layout: 'cards', noun: 'vendor', titleLabel: 'Vendor', titlePlaceholder: 'Company name',
     statuses: [
       { value: 'prospect', label: 'Prospect', tone: 'neutral' },
       { value: 'approved', label: 'Approved', tone: 'good' },
@@ -581,7 +581,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'safety', icon: 'stunts', flag: 'pro_stunts_safety',
     label: 'Stunts & Safety', tagline: 'Risk assessments, stunt breakdowns and sign-off.',
-    group: 'Production', noun: 'assessment', titleLabel: 'Activity', titlePlaceholder: 'e.g. Car chase — scene 44',
+    group: 'Production', layout: 'checklist', noun: 'assessment', titleLabel: 'Activity', titlePlaceholder: 'e.g. Car chase — scene 44',
     statuses: [
       { value: 'identified', label: 'Identified', tone: 'neutral' },
       { value: 'assessed', label: 'Assessed', tone: 'info' },
@@ -638,7 +638,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'post-production', icon: 'post-production', flag: 'pro_post_production',
     label: 'Post-Production', tagline: 'The post schedule from ingest to deliverable.',
-    group: 'Post & Delivery', noun: 'task', titleLabel: 'Task', titlePlaceholder: 'e.g. Picture lock',
+    group: 'Post & Delivery', layout: 'board', noun: 'task', titleLabel: 'Task', titlePlaceholder: 'e.g. Picture lock',
     statuses: PIPELINE,
     groupBy: 'stage',
     related: ['vfx-tracking', 'music-sound', 'archival'],
@@ -662,7 +662,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'vfx-tracking', icon: 'vfx-tracking', flag: 'pro_vfx_tracking',
     label: 'VFX Tracking', tagline: 'Shot-level VFX status, vendor and version.',
-    group: 'Post & Delivery', noun: 'shot', titleLabel: 'Shot ID', titlePlaceholder: 'e.g. SEQ010_0120',
+    group: 'Post & Delivery', layout: 'board', noun: 'shot', titleLabel: 'Shot ID', titlePlaceholder: 'e.g. SEQ010_0120',
     statuses: [
       { value: 'bid', label: 'Bid', tone: 'neutral' },
       { value: 'awarded', label: 'Awarded', tone: 'info' },
@@ -722,7 +722,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'multilang', icon: 'multilang', flag: 'pro_multilang',
     label: 'Localisation', tagline: 'Subtitles, dubs and territory language deliverables.',
-    group: 'Post & Delivery', noun: 'version', titleLabel: 'Language', titlePlaceholder: 'e.g. Norwegian subtitles',
+    group: 'Post & Delivery', layout: 'board', noun: 'version', titleLabel: 'Language', titlePlaceholder: 'e.g. Norwegian subtitles',
     statuses: PIPELINE,
     groupBy: 'deliverable',
     fields: [
@@ -743,7 +743,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'distribution', icon: 'distribution', flag: 'pro_distribution',
     label: 'Distribution Pipeline', tagline: 'Sales agents, platforms and delivery windows.',
-    group: 'Post & Delivery', noun: 'deal', titleLabel: 'Partner', titlePlaceholder: 'Distributor or platform',
+    group: 'Post & Delivery', layout: 'board', noun: 'deal', titleLabel: 'Partner', titlePlaceholder: 'Distributor or platform',
     statuses: [
       { value: 'target', label: 'Target', tone: 'neutral' },
       { value: 'submitted', label: 'Submitted', tone: 'info' },
@@ -773,7 +773,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'archival', icon: 'archival', flag: 'pro_archival',
     label: 'Archival', tagline: 'Masters, LTO sets and where every element lives.',
-    group: 'Post & Delivery', noun: 'asset', titleLabel: 'Asset', titlePlaceholder: 'e.g. Graded master ProRes 4444',
+    group: 'Post & Delivery', layout: 'checklist', noun: 'asset', titleLabel: 'Asset', titlePlaceholder: 'e.g. Graded master ProRes 4444',
     statuses: [
       { value: 'pending', label: 'Pending', tone: 'neutral' },
       { value: 'archived', label: 'Archived', tone: 'good' },
@@ -802,7 +802,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'wrap', icon: 'wrap', flag: 'pro_wrap',
     label: 'Wrap & Completion', tagline: 'The closing checklist — returns, reports and final payments.',
-    group: 'Post & Delivery', noun: 'item', titleLabel: 'Wrap item', titlePlaceholder: 'e.g. Return camera package',
+    group: 'Post & Delivery', layout: 'checklist', noun: 'item', titleLabel: 'Wrap item', titlePlaceholder: 'e.g. Return camera package',
     statuses: PIPELINE,
     groupBy: 'area',
     related: ['archival', 'accounting', 'equipment'],
@@ -826,7 +826,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'festival', icon: 'festival', flag: 'pro_festival',
     label: 'Festival Strategy', tagline: 'Deadlines, fees and where the film has been accepted.',
-    group: 'Audience', noun: 'submission', titleLabel: 'Festival', titlePlaceholder: 'Festival name',
+    group: 'Audience', layout: 'board', noun: 'submission', titleLabel: 'Festival', titlePlaceholder: 'Festival name',
     statuses: [
       { value: 'shortlist', label: 'Shortlist', tone: 'neutral' },
       { value: 'submitted', label: 'Submitted', tone: 'info' },
@@ -856,7 +856,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'marketing', icon: 'marketing', flag: 'pro_marketing',
     label: 'Marketing & PR', tagline: 'Campaign beats, assets and press coverage.',
-    group: 'Audience', noun: 'activity', titleLabel: 'Activity', titlePlaceholder: 'e.g. Teaser trailer drop',
+    group: 'Audience', layout: 'board', noun: 'activity', titleLabel: 'Activity', titlePlaceholder: 'e.g. Teaser trailer drop',
     statuses: PIPELINE,
     groupBy: 'channel',
     related: ['festival', 'newsletter', 'distribution'],
@@ -933,7 +933,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'deliverables', icon: 'deliverables', flag: 'pro_deliverables',
     label: 'Delivery Checklist', tagline: 'Everything the distributor asks for, ticked off.',
-    group: 'Post & Delivery', noun: 'deliverable', titleLabel: 'Deliverable', titlePlaceholder: 'e.g. Textless master',
+    group: 'Post & Delivery', layout: 'board', noun: 'deliverable', titleLabel: 'Deliverable', titlePlaceholder: 'e.g. Textless master',
     related: ['distribution', 'multilang', 'archival'],
     statuses: PIPELINE,
     groupBy: 'category',
@@ -957,7 +957,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'unions', icon: 'unions', flag: 'pro_unions',
     label: 'Unions & Guilds', tagline: 'Signatory status, minimums and the filings each one wants.',
-    group: 'People', noun: 'agreement', titleLabel: 'Union / guild', titlePlaceholder: 'e.g. Norsk Skuespillerforbund',
+    group: 'People', layout: 'cards', noun: 'agreement', titleLabel: 'Union / guild', titlePlaceholder: 'e.g. Norsk Skuespillerforbund',
     related: ['crew-portal', 'talent', 'legal'],
     statuses: APPROVAL,
     fields: [
@@ -978,7 +978,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'residuals', icon: 'residuals', flag: 'pro_residuals',
     label: 'Residuals & Royalties', tagline: 'Who is owed what, once the film starts earning.',
-    group: 'Money', noun: 'entitlement', titleLabel: 'Participant', titlePlaceholder: 'Name or company',
+    group: 'Money', layout: 'ledger', noun: 'entitlement', titleLabel: 'Participant', titlePlaceholder: 'Name or company',
     related: ['box-office', 'greenlight', 'legal'],
     statuses: [
       { value: 'accruing', label: 'Accruing', tone: 'neutral' },
@@ -1006,7 +1006,7 @@ export const PRO_TOOLS: ProTool[] = [
   {
     slug: 'screenings', icon: 'screenings', flag: 'pro_screenings',
     label: 'Test Screenings', tagline: 'Audience reaction, scores and what the cut changed.',
-    group: 'Audience', noun: 'screening', titleLabel: 'Screening', titlePlaceholder: 'e.g. Cut 3 — friends & family',
+    group: 'Audience', layout: 'cards', noun: 'screening', titleLabel: 'Screening', titlePlaceholder: 'e.g. Cut 3 — friends & family',
     related: ['marketing', 'festival', 'post-production'],
     statuses: [
       { value: 'planned', label: 'Planned', tone: 'neutral' },
@@ -1057,8 +1057,8 @@ export function relatedTools(tool: ProTool, limit = 3): ProTool[] {
 }
 
 /** Tools bucketed by their `group`, in registry order. */
-export function proToolsByGroup(): { group: string; tools: ProTool[] }[] {
-  const groups: { group: string; tools: ProTool[] }[] = [];
+export function proToolsByGroup(): { group: ProToolGroup; tools: ProTool[] }[] {
+  const groups: { group: ProToolGroup; tools: ProTool[] }[] = [];
   for (const tool of PRO_TOOLS) {
     const existing = groups.find((g) => g.group === tool.group);
     if (existing) existing.tools.push(tool);

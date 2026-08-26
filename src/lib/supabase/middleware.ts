@@ -356,7 +356,7 @@ export async function updateSession(request: NextRequest) {
 
   // Protected routes
   // /dev/features is intentionally public; /dev/stats and /dev/test require login
-  const protectedPaths = ['/dashboard', '/projects', '/admin', '/company', '/notifications', '/settings', '/onboarding', '/messages', '/translations', '/dev/stats', '/dev/test'];
+  const protectedPaths = ['/dashboard', '/projects', '/people', '/admin', '/company', '/notifications', '/settings', '/onboarding', '/messages', '/translations', '/dev/stats', '/dev/test'];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

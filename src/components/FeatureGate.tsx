@@ -47,6 +47,7 @@ export const ICON_TO_FLAG: Record<string, string> = {
   reports: 'pro_reports',
   casting: 'pro_casting',
   // Pro tool suite (see lib/pro-tools/tools.ts)
+  protools: 'pro_tool_suite',
   portfolio: 'pro_portfolio',
   accounting: 'pro_accounting',
   rights: 'pro_rights',

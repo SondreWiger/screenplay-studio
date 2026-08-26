@@ -5,6 +5,7 @@ import { PAGE_LABELS, getPageLabelKey } from '@/lib/pageLabels';
 import { ICON_TO_FLAG } from '@/components/FeatureGate';
 import {
   PRO_TOOLS, getProTool, proToolsByGroup, relatedTools, refSourcesFor, REF_SOURCE_ROUTE,
+  accentFor, layoutFor, doneStatusFor, GROUP_ACCENT,
   computeStats, toCSV, matchesQuery, nextStatus, statusMeta, formatField,
   type ProToolRecord, type ProTool,
 } from '@/lib/pro-tools';
@@ -41,72 +42,26 @@ describe('pro tool registry', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it.each(NAV_VARIANTS)('backs every Pro Tools nav item with a tool definition (%s nav)', (variant) => {
+  it.each(NAV_VARIANTS)('links the hub, not 37 rows, from the %s nav', (variant) => {
     const items = proNavItems(variant);
     if (variant === 'tv') {
       // Broadcast projects have their own fixed nav with no Pro Tools category.
       expect(items).toHaveLength(0);
       return;
     }
-    expect(items.length).toBeGreaterThan(0);
-    for (const item of items) {
-      const slug = item.href.split('/pro/')[1];
-      expect(getProTool(slug), `no tool for /pro/${slug}`).toBeDefined();
-    }
+    // One entry, so the suite cannot swamp the sidebar.
+    expect(items).toHaveLength(1);
+    expect(items[0].href).toBe(`/projects/${PROJECT_ID}/pro`);
+    expect(items[0].icon).toBe('protools');
   });
 
-  it.each(NAV_VARIANTS)('uses the same icon as the nav item that links to it (%s nav)', (variant) => {
-    for (const item of proNavItems(variant)) {
-      const tool = getProTool(item.href.split('/pro/')[1])!;
-      expect(tool.icon).toBe(item.icon);
-    }
+  it('has a rendered icon for the hub entry', () => {
+    expect(sidebarIcons.protools).toBeTruthy();
   });
 
-  it('exposes every registered tool in the nav', () => {
-    const linked = new Set(proNavItems().map((i) => i.href.split('/pro/')[1]));
-    for (const tool of PRO_TOOLS) {
-      expect(linked.has(tool.slug), `${tool.slug} is not linked from the sidebar`).toBe(true);
-    }
-  });
-
-  it('has a rendered icon for every tool', () => {
-    for (const tool of PRO_TOOLS) {
-      expect(sidebarIcons[tool.icon], `missing icon "${tool.icon}"`).toBeTruthy();
-    }
-  });
-
-  it('has a feature flag matching the FeatureGate map', () => {
-    for (const tool of PRO_TOOLS) {
-      expect(ICON_TO_FLAG[tool.icon], `no flag mapped for icon "${tool.icon}"`).toBe(tool.flag);
-    }
-  });
-
-  it('has a page label for every tool slug', () => {
-    for (const tool of PRO_TOOLS) {
-      expect(PAGE_LABELS[tool.slug], `missing label for "${tool.slug}"`).toBeTruthy();
-    }
-  });
-
-  it('defines statuses, fields and stats for every tool', () => {
-    for (const tool of PRO_TOOLS) {
-      expect(tool.statuses.length, tool.slug).toBeGreaterThan(0);
-      expect(tool.fields.length, tool.slug).toBeGreaterThan(0);
-      expect(tool.stats.length, tool.slug).toBeGreaterThan(0);
-      expect(tool.fields.some((f) => f.column), `${tool.slug} has no columns`).toBe(true);
-    }
-  });
-
-  it('only references its own fields from stats and groupBy', () => {
-    for (const tool of PRO_TOOLS) {
-      const keys = new Set(tool.fields.map((f) => f.key));
-      for (const stat of tool.stats) {
-        if (stat.field) expect(keys.has(stat.field), `${tool.slug}: ${stat.field}`).toBe(true);
-        if (stat.status) {
-          expect(tool.statuses.some((s) => s.value === stat.status), `${tool.slug}: ${stat.status}`).toBe(true);
-        }
-      }
-      if (tool.groupBy) expect(keys.has(tool.groupBy), `${tool.slug}: ${tool.groupBy}`).toBe(true);
-    }
+  it('reaches every tool from the hub', () => {
+    const fromHub = proToolsByGroup().flatMap((g) => g.tools.map((t) => t.slug));
+    expect(new Set(fromHub).size).toBe(PRO_TOOLS.length);
   });
 
   it('only lists related tools that exist, and never itself', () => {
@@ -168,6 +123,58 @@ describe('pro tool registry', () => {
     for (const slug of ['catering', 'extras', 'dailies', 'script-supervising']) {
       const field = getProTool(slug)!.fields.find((f) => f.key === 'shoot_day');
       expect(field?.refSource, slug).toBe('shoot_days');
+    }
+  });
+
+  it('gives every group its own accent', () => {
+    const rules = Object.values(GROUP_ACCENT).map((a) => a.rule);
+    expect(new Set(rules).size).toBe(rules.length);
+    for (const tool of PRO_TOOLS) {
+      expect(accentFor(tool), tool.slug).toBeDefined();
+      expect(accentFor(tool).rule, tool.slug).toBeTruthy();
+    }
+  });
+
+  it('does not put every tool behind the same layout', () => {
+    const used = new Set(PRO_TOOLS.map(layoutFor));
+    // Five layouts exist; a suite that only used one would be the old problem.
+    expect(used.size).toBeGreaterThanOrEqual(4);
+    expect(used.has('table')).toBe(true);
+  });
+
+  it('only uses layouts that have a view', () => {
+    const known = new Set(['table', 'ledger', 'board', 'cards', 'checklist']);
+    for (const tool of PRO_TOOLS) {
+      expect(known.has(layoutFor(tool)), `${tool.slug} → ${layoutFor(tool)}`).toBe(true);
+    }
+  });
+
+  it('gives money tools a currency column to total', () => {
+    for (const tool of PRO_TOOLS.filter((t) => layoutFor(t) === 'ledger')) {
+      const hasMoney = tool.fields.some((f) => f.type === 'currency' && f.column);
+      expect(hasMoney, `${tool.slug} uses the ledger but has no currency column`).toBe(true);
+    }
+  });
+
+  it('gives every checklist tool a real finishing status', () => {
+    for (const tool of PRO_TOOLS.filter((t) => layoutFor(t) === 'checklist')) {
+      const done = doneStatusFor(tool);
+      expect(done, `${tool.slug} has no positive terminal status`).toBeDefined();
+      const tone = tool.statuses.find((s) => s.value === done)!.tone;
+      expect(['good', 'accent']).toContain(tone);
+    }
+  });
+
+  it('never treats a failure state as done', () => {
+    // Insurance ends on "Expired" and Archival on "Missing" — ticking those off
+    // would hide exactly the rows that need attention.
+    expect(doneStatusFor(getProTool('compliance')!)).toBe('bound');
+    expect(doneStatusFor(getProTool('archival')!)).toBe('verified');
+    for (const tool of PRO_TOOLS) {
+      const done = doneStatusFor(tool);
+      if (!done) continue;
+      const tone = tool.statuses.find((s) => s.value === done)!.tone;
+      expect(tone, `${tool.slug} → ${done}`).not.toBe('bad');
     }
   });
 

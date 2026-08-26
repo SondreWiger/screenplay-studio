@@ -82,8 +82,10 @@ export interface ProTool {
   flag: string;
   label: string;
   tagline: string;
-  /** Grouping used by the Pro tools index page. */
+  /** Grouping used by the Pro tools index page; also picks the accent colour. */
   group: ProToolGroup;
+  /** Presentation for this tool's records. Defaults to 'table'. */
+  layout?: ProToolLayout;
   /** Singular noun for a record, e.g. "clearance". */
   noun: string;
   /** Label + placeholder for the always-present title field. */
@@ -104,6 +106,18 @@ export interface ProTool {
   starters?: string[];
 }
 
+/**
+ * How a tool presents its records. 37 tools sharing one table made them easy to
+ * mistake for each other — the shape of the page should tell you where you are
+ * before you read the title.
+ */
+export type ProToolLayout =
+  | 'table'      // dense reference data
+  | 'ledger'     // money — amounts emphasised, totals footer
+  | 'board'      // pipeline — a column per status
+  | 'cards'      // people and places — a grid of profiles
+  | 'checklist'; // things to tick off
+
 export type ProToolGroup =
   | 'Money' | 'Legal & Rights' | 'People' | 'Production' | 'Post & Delivery' | 'Audience';
 
@@ -118,6 +132,70 @@ export interface ProToolRecord {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * Each group gets its own accent, so two tools are never the same colour and
+ * shape at the same time.
+ */
+export interface GroupAccent {
+  /** Icon and heading colour. */
+  text: string;
+  /** Tinted surface for stat tiles and card headers. */
+  surface: string;
+  /** Border for the accented edge. */
+  border: string;
+  /** Solid colour for the left rule / column marker. */
+  rule: string;
+}
+
+export const GROUP_ACCENT: Record<ProToolGroup, GroupAccent> = {
+  'Money': {
+    text: 'text-emerald-300', surface: 'bg-emerald-500/[0.07]',
+    border: 'border-emerald-500/25', rule: 'bg-emerald-500',
+  },
+  'Legal & Rights': {
+    text: 'text-amber-300', surface: 'bg-amber-500/[0.07]',
+    border: 'border-amber-500/25', rule: 'bg-amber-500',
+  },
+  'People': {
+    text: 'text-sky-300', surface: 'bg-sky-500/[0.07]',
+    border: 'border-sky-500/25', rule: 'bg-sky-500',
+  },
+  'Production': {
+    text: 'text-brand-500', surface: 'bg-brand-500/[0.07]',
+    border: 'border-brand-500/25', rule: 'bg-brand-500',
+  },
+  'Post & Delivery': {
+    text: 'text-violet-300', surface: 'bg-violet-500/[0.07]',
+    border: 'border-violet-500/25', rule: 'bg-violet-500',
+  },
+  'Audience': {
+    text: 'text-rose-300', surface: 'bg-rose-500/[0.07]',
+    border: 'border-rose-500/25', rule: 'bg-rose-500',
+  },
+};
+
+export function accentFor(tool: ProTool): GroupAccent {
+  return GROUP_ACCENT[tool.group];
+}
+
+/**
+ * The status that means "finished". Not simply the last one — several tools end
+ * their list on a failure state (Insurance ends on "Expired", Archival on
+ * "Missing"), and treating those as done would tick off the very rows that need
+ * attention. The terminal *positive* state is the real answer.
+ */
+export function doneStatusFor(tool: ProTool): string | undefined {
+  for (let i = tool.statuses.length - 1; i >= 0; i--) {
+    const { tone, value } = tool.statuses[i];
+    if (tone === 'good' || tone === 'accent') return value;
+  }
+  return undefined;
+}
+
+export function layoutFor(tool: ProTool): ProToolLayout {
+  return tool.layout ?? 'table';
 }
 
 /** Badge classes per tone — matches the palette used across the project tools. */

@@ -660,11 +660,11 @@ function getElementStyle(type: ScriptElementType, dark: boolean): React.CSSPrope
     case 'action':
       return { marginBottom: '0.6em' };
     case 'character':
-      return { textTransform: 'uppercase', marginLeft: '2.2in', marginTop: '0.6em', marginBottom: '0', fontWeight: 600 };
+      return { textTransform: 'uppercase', marginLeft: 'var(--sp-character-l)', marginTop: '0.6em', marginBottom: '0', fontWeight: 600 };
     case 'dialogue':
-      return { marginLeft: '1in', marginRight: '1.5in', marginBottom: '0.4em' };
+      return { marginLeft: 'var(--sp-dialogue-l)', marginRight: 'var(--sp-dialogue-r)', marginBottom: '0.4em' };
     case 'parenthetical':
-      return { marginLeft: '1.6in', marginRight: '2in', marginBottom: '0', fontStyle: 'italic', color: muted };
+      return { marginLeft: 'var(--sp-paren-l)', marginRight: 'var(--sp-paren-r)', marginBottom: '0', fontStyle: 'italic', color: muted };
     case 'transition':
       return { textAlign: 'right', textTransform: 'uppercase', marginTop: '0.6em', marginBottom: '0.6em', fontWeight: 600, letterSpacing: '0.05em' };
     case 'centered':

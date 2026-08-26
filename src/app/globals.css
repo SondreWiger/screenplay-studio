@@ -20,6 +20,27 @@
     --surface-950: 15 15 18;
   }
 
+  /* ── Screenplay indent tokens ───────────────────────────
+     Screenplay format is defined for US Letter. Elements rendered with inline
+     styles cannot be fixed by a media query, so they read these instead and
+     compress proportionally on narrow screens. */
+  :root {
+    --sp-character-l: 2.2in;
+    --sp-dialogue-l: 1in;
+    --sp-dialogue-r: 1.5in;
+    --sp-paren-l: 1.6in;
+    --sp-paren-r: 2in;
+  }
+  @media (max-width: 768px) {
+    :root {
+      --sp-character-l: 20%;
+      --sp-dialogue-l: 6%;
+      --sp-dialogue-r: 6%;
+      --sp-paren-l: 12%;
+      --sp-paren-r: 12%;
+    }
+  }
+
   /* ── Accent color CSS variables ────────────────────────── */
   :root, [data-accent="brand"] {
     --brand-50: 255 247 237;
@@ -1737,6 +1758,15 @@ html {
 }
 
 /* ── Safe area padding for notched iPhones ───────────────────── */
+/* Horizontal tab strips scroll on phones — the scrollbar itself is noise. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }

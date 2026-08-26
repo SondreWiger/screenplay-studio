@@ -6,6 +6,7 @@ export const ELECTRON_WORKSPACE_PREFIXES = [
   '/settings',
   '/auth',
   '/idea-boards',
+  '/people',
   '/quotes',
   '/accountability',
   '/messages',

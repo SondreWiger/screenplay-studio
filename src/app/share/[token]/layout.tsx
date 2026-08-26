@@ -50,7 +50,13 @@ export async function generateMetadata({ params }: { params: { token: string } }
 
 export default function ShareViewerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-white">
+    <div
+      className="min-h-screen bg-surface-950 text-white"
+      style={{
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+      }}
+    >
       {children}
     </div>
   );

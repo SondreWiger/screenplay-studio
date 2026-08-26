@@ -225,7 +225,10 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
     return (
       <div className="min-h-screen flex flex-col">
         {/* Top bar */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <header
+          className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/10"
+          style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))' }}
+        >
           <div className="flex items-center gap-3">
             {project?.cover_url && (
               <img src={project.cover_url} alt="" className="w-8 h-8 rounded object-cover" loading="lazy" />
@@ -259,13 +262,13 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                 <div className="flex bg-white/5 rounded-lg p-1 mb-6">
                   <button
                     onClick={() => { setAuthMode('signin'); setAuthError(null); }}
-                    className={`flex-1 py-1.5 text-sm rounded-md transition-colors ${authMode === 'signin' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
+                    className={`flex-1 min-h-[40px] text-sm rounded-md transition-colors ${authMode === 'signin' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
                   >
                     Sign in
                   </button>
                   <button
                     onClick={() => { setAuthMode('signup'); setAuthError(null); }}
-                    className={`flex-1 py-1.5 text-sm rounded-md transition-colors ${authMode === 'signup' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
+                    className={`flex-1 min-h-[40px] text-sm rounded-md transition-colors ${authMode === 'signup' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
                   >
                     Sign up
                   </button>
@@ -279,7 +282,9 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       required
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                      autoComplete="name"
+                      autoCapitalize="words"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 min-h-[44px] text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
                     />
                   )}
                   <input
@@ -288,7 +293,12 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    autoComplete="email"
+                    inputMode="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 min-h-[44px] text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
                   />
                   <input
                     type="password"
@@ -296,7 +306,8 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 min-h-[44px] text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
                   />
 
                   {authError && (
@@ -306,7 +317,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                   <button
                     type="submit"
                     disabled={authLoading}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium min-h-[48px] rounded-lg text-sm transition-colors"
                   >
                     {authLoading ? 'Please wait…' : authMode === 'signup' ? 'Create account & join' : 'Sign in & join'}
                   </button>
@@ -323,27 +334,60 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Tabs */}
-      {tabs.length > 1 && (
-        <div className="flex gap-0.5 px-6 pt-4 border-b border-white/10 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
-                activeTab === tab
-                  ? 'text-white bg-white/10 border-b-2 border-indigo-500'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {TAB_LABELS[tab]}
-            </button>
-          ))}
+      {/* Header — sticky so the project stays identifiable while scrolling a
+          long script on a phone. */}
+      <header
+        className="sticky top-0 z-20 bg-surface-950/95 backdrop-blur border-b border-white/10"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+          {project?.cover_url && (
+            <img
+              src={project.cover_url}
+              alt=""
+              className="w-9 h-9 rounded object-cover shrink-0"
+              loading="lazy"
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <h1 className="font-semibold text-white text-sm truncate">
+              {project?.title ?? 'Shared content'}
+            </h1>
+            <p className="text-xs text-gray-400 truncate">
+              {link.name || 'Shared via Screenplay Studio'}
+            </p>
+          </div>
+          <a
+            href="https://screenplaystudio.fun"
+            className="hidden sm:inline text-xs text-gray-500 hover:text-gray-300 transition-colors shrink-0"
+          >
+            Screenplay Studio
+          </a>
         </div>
-      )}
+
+        {/* Tabs */}
+        {tabs.length > 1 && (
+          <div className="max-w-4xl mx-auto px-2 sm:px-6 flex gap-1 overflow-x-auto no-scrollbar">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                aria-current={activeTab === tab ? 'page' : undefined}
+                className={`px-4 min-h-[44px] flex items-center text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === tab
+                    ? 'text-white border-indigo-500'
+                    : 'text-gray-400 border-transparent hover:text-white'
+                }`}
+              >
+                {TAB_LABELS[tab]}
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-[max(2rem,env(safe-area-inset-bottom))]">
         {/* Script tab */}
         {activeTab === 'script' && data.script && (
           <div className="max-w-4xl mx-auto px-4 py-8">

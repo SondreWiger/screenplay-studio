@@ -72,6 +72,7 @@ ALTER TABLE profiles DROP COLUMN IF EXISTS studio_since;
 DELETE FROM feature_flags WHERE key LIKE 'studio\_%';
 
 INSERT INTO feature_flags (key, name, description, tier, category) VALUES
+  ('pro_tool_suite',           'Pro Tools hub',          'Entry point for the production tool suite',       'released', 'production'),
   ('pro_portfolio',            'Portfolio',              'Every title on the slate in one view',            'released', 'production'),
   ('pro_accounting',           'Production Accounting',  'Purchase orders, invoices and cost report lines', 'released', 'production'),
   ('pro_greenlight',           'Greenlight & Financing', 'Financing sources from pitch to committed',       'released', 'production'),
