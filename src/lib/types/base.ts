@@ -470,9 +470,21 @@ export const PRO_LIMITS = {
   },
 } as const;
 
+/**
+ * What Pro costs.
+ *
+ * Raised from $200 when Pro started covering Cinderra and CastingCall as
+ * well. Bought separately those are $9 and $50 a month, so the bundle is
+ * cheaper than either pair — which is the point, and is why the pricing page
+ * says so out loud rather than leaving it to be worked out.
+ *
+ * Anyone on the old price keeps it until their next renewal; nothing rebills
+ * mid term.
+ */
 export const PRO_PRICING = {
-  yearly: { amount: 200, currency: 'USD', per_month: 16.67 },
-  team_yearly: { amount: 160, currency: 'USD', per_month: 13.33, discount: 20 },
+  yearly: { amount: 249, currency: 'USD', per_month: 20.75 },
+  monthly: { amount: 29, currency: 'USD' },
+  team_yearly: { amount: 199, currency: 'USD', per_month: 16.58, discount: 20 },
   project_lifetime: { amount: 100, currency: 'USD' },
 } as const;
 

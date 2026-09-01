@@ -240,6 +240,8 @@ export default function ProUpgradePage() {
                 <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span>Pro on all projects</li>
                 <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span>50 GB storage</li>
                 <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span>Priority support</li>
+                <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span>Cinderra Pro included</li>
+                <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span>CastingCall Pro included</li>
               </ul>
             </Card>
 

@@ -24,8 +24,10 @@ export const PRICES = {
     teamSeat: 19900,
   },
   cinderra: {
-    yearly: 7900,
+    /** Billed monthly; the annual figure is what twelve months would cost. */
     monthly: 900,
+    yearly: 10800,
+    teamMonthly: 3400,
   },
   castingcall: {
     /** One production, no expiry. */

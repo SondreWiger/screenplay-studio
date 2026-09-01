@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures, formatBytes } from '@/hooks/useProFeatures';
 import { Button, Card, Badge, LoadingPage, Progress } from '@/components/ui';
 import { useFeatureAccess } from '@/components/FeatureGate';
+import { BundleCodes } from '@/components/BundleCodes';
 import type { Subscription, TeamLicense } from '@/lib/types';
 
 // Settings / Billing — Subscription management
@@ -115,6 +116,8 @@ export default function BillingPage() {
         </Card>
 
         {/* Storage Usage */}
+        <BundleCodes />
+
         <Card className="p-6 mb-6">
           <h2 className="text-lg font-semibold text-white mb-4">Storage</h2>
           <div className="mb-3">
