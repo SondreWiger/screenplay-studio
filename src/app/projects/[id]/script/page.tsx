@@ -649,6 +649,23 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const [newCommentType, setNewCommentType] = useState<CommentType>('note');
   const [postingComment, setPostingComment] = useState(false);
 
+  const [characterVoices, setCharacterVoices] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    const fetchVoices = async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from('characters').select('name, stats').eq('project_id', params.id);
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach(c => {
+          if (c.stats?.fish_audio_voice_id) map[c.name.toUpperCase()] = c.stats.fish_audio_voice_id;
+        });
+        setCharacterVoices(map);
+      }
+    };
+    fetchVoices();
+  }, [params.id]);
+
   // Versioned Story Editing
   const [showVersionPanel, setShowVersionPanel] = useState(false);
   const [versionConfig, setVersionConfig] = useState<VersionConfig>(DEFAULT_VERSION_CONFIG);
@@ -2689,6 +2706,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                             canEdit={canEdit}
                             displaySettings={displaySettings}
                             characterColorMap={characterColorMap}
+                            characterVoices={characterVoices}
                             sceneNumberMap={sceneNumberMap}
                             comicNumberMap={comicNumberMap}
                             commentCount={commentCountMap[element.id] || 0}
@@ -3709,6 +3727,7 @@ interface LineEditorProps {
   audioElementCycle: ScriptElementType[];
   stagePlayElementCycle: ScriptElementType[];
   comicElementCycle: ScriptElementType[];
+  characterVoices: Record<string, string>;
 }
 
 const LineEditor = memo(function LineEditor({
@@ -3739,6 +3758,7 @@ const LineEditor = memo(function LineEditor({
   audioElementCycle,
   stagePlayElementCycle,
   comicElementCycle,
+  characterVoices,
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector — stable reference prevents re-renders
   const selectElement = useCallback(
@@ -3758,6 +3778,65 @@ const LineEditor = memo(function LineEditor({
   const tabPickerIdxRef = useRef(0);
 
   const [showTypeMenu, setShowTypeMenu] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handlePlayAudio = async () => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+    if (isGenerating) return;
+
+    const state = useScriptStore.getState();
+    const idx = state.elements.findIndex(e => e.id === elementId);
+    let charName = '';
+    for (let i = idx - 1; i >= 0; i--) {
+      if (state.elements[i].element_type === 'character') {
+        charName = state.elements[i].content.trim().toUpperCase().replace(/\s*\([^)]*\)\s*$/, '').trim();
+        break;
+      }
+    }
+
+    const voiceId = characterVoices[charName];
+    if (!voiceId) {
+      toast.error(`No AI voice assigned to ${charName || 'this character'}.`);
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/audio/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: (element?.content || '').replace(/<[^>]*>/g, ''),
+          voice_id: voiceId,
+          project_id: projectId
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to generate audio');
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { setIsPlaying(false); URL.revokeObjectURL(url); };
+      await audio.play();
+      setIsPlaying(true);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error playing audio');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
   const [showTabPicker, setShowTabPicker] = useState(false);
   const [tabPickerIdx, setTabPickerIdx] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -4429,6 +4508,29 @@ const LineEditor = memo(function LineEditor({
             </Link>
           )}
         </div>
+
+        {/* Play Audio Button for Dialogue — visible only to admins */}
+        {element.element_type === 'dialogue' && canEdit && (
+          <button
+            onClick={(e) => { e.stopPropagation(); handlePlayAudio(); }}
+            disabled={isPlaying || isGenerating}
+            className={cn(
+              'absolute -left-10 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full transition-colors',
+              (isPlaying || isGenerating)
+                ? 'text-brand-500 bg-brand-500/15 opacity-100'
+                : 'text-surface-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-brand-500 hover:text-white'
+            )}
+            title="Generate & Play AI Voice"
+          >
+            {isGenerating ? (
+              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            ) : isPlaying ? (
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            )}
+          </button>
+        )}
 
         {/* Comment button — right side */}
         <button

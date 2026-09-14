@@ -482,6 +482,21 @@ function CharacterEditor({
   const [activeTab, setActiveTab] = useState('basic');
   const [castMembers, setCastMembers] = useState<{ id: string; name: string; photo_url: string | null; character_roles: string[] }[]>([]);
   const [castSearch, setCastSearch] = useState('');
+  const [voices, setVoices] = useState<{id: string, name: string, language: string, gender: string}[]>([]);
+  const [voicesLoading, setVoicesLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== 'voice') return;
+    if (voices.length > 0) return;
+    setVoicesLoading(true);
+    fetch('/api/audio/voices')
+      .then(r => r.json())
+      .then(data => {
+        if (data.voices) setVoices(data.voices);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setVoicesLoading(false));
+  }, [activeTab, voices.length]);
 
   useEffect(() => {
     if (character) {
@@ -572,7 +587,7 @@ function CharacterEditor({
     <Modal isOpen={isOpen} onClose={onClose} title={character ? `Edit: ${character.name}` : 'New Character'} size="xl">
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-surface-800 rounded-lg p-1">
-        {['basic', 'story', 'appearance', 'casting', 'stats'].map((tab) => (
+        {['basic', 'story', 'appearance', 'voice', 'casting', 'stats'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -658,7 +673,6 @@ function CharacterEditor({
         {activeTab === 'appearance' && (
           <>
             <Textarea label="Physical Appearance" value={form.appearance} onChange={(e) => setForm({ ...form, appearance: e.target.value })} rows={4} placeholder="Height, build, hair, distinguishing features..." />
-            <Textarea label="Voice & Speech Notes" value={form.voice_notes} onChange={(e) => setForm({ ...form, voice_notes: e.target.value })} rows={3} placeholder="Accent, speech patterns, vocabulary..." />
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1.5">Character Color</label>
               <div className="flex gap-2">
@@ -674,6 +688,32 @@ function CharacterEditor({
                   />
                 ))}
               </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'voice' && (
+          <>
+            <Textarea label="Voice & Speech Notes" value={form.voice_notes} onChange={(e) => setForm({ ...form, voice_notes: e.target.value })} rows={3} placeholder="Accent, speech patterns, vocabulary..." />
+            <div className="pt-4 border-t border-surface-800 mt-4">
+              <label className="block text-sm font-medium text-surface-300 mb-2">AI Voice Generation (Fish.audio)</label>
+              {voicesLoading ? (
+                <p className="text-sm text-surface-400">Loading voices...</p>
+              ) : (
+                <div className="space-y-3">
+                  <select
+                    value={form.stats?.fish_audio_voice_id || ''}
+                    onChange={(e) => setForm({ ...form, stats: { ...form.stats, fish_audio_voice_id: e.target.value } })}
+                    className="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    <option value="">No AI Voice Assigned</option>
+                    {voices.map(v => (
+                      <option key={v.id} value={v.id}>{v.name}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-surface-500">Admins can generate dialogue for this character in the script using this voice.</p>
+                </div>
+              )}
             </div>
           </>
         )}
