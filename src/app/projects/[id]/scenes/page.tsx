@@ -9,27 +9,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Scene, Location, Character, SceneLocationType, SceneTime, ScriptElement } from '@/lib/types';
-
-// Parse a scene heading like "INT. COFFEE SHOP - NIGHT" into components
-function parseSceneHeading(heading: string) {
-  let locationType: 'INT' | 'EXT' | 'INT_EXT' = 'INT';
-  let locationName = '';
-  let timeOfDay = 'DAY';
-
-  const h = heading.trim().toUpperCase();
-  if (h.startsWith('INT./EXT.') || h.startsWith('INT/EXT') || h.startsWith('I/E.')) locationType = 'INT_EXT';
-  else if (h.startsWith('EXT.')) locationType = 'EXT';
-  else if (h.startsWith('INT.')) locationType = 'INT';
-
-  const rest = h.replace(/^(INT\.\/EXT\.|INT\/EXT|I\/E\.|INT\.|EXT\.)\s*/i, '').trim();
-  const dashParts = rest.split(/\s+-\s+/);
-  locationName = dashParts[0]?.trim() || '';
-  if (dashParts.length > 1) {
-    timeOfDay = dashParts[dashParts.length - 1]?.trim() || 'DAY';
-  }
-
-  return { locationType, locationName, timeOfDay };
-}
+import { parseSceneHeading } from '@/lib/scripts/scene-heading';
 
 export default function ScenesPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
