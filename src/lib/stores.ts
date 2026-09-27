@@ -402,14 +402,25 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         return;
       }
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from('script_elements')
-        .select('*')
-        .eq('script_id', scriptId)
-        .order('sort_order', { ascending: true })
-        .limit(500000);
-      if (error || data === null) throw error || new Error('fetch failed');
-      set({ elements: data || [], loading: false, _isInitialLoad: false });
+      const allElements: any[] = [];
+      let from = 0;
+      const PAGE_SIZE = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from('script_elements')
+          .select('*')
+          .eq('script_id', scriptId)
+          .order('sort_order', { ascending: true })
+          .range(from, from + PAGE_SIZE - 1);
+          
+        if (error || data === null) throw error || new Error('fetch failed');
+        allElements.push(...data);
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+      
+      set({ elements: allElements, loading: false, _isInitialLoad: false });
     } catch {
       // Network error — fall back to cache
       try {

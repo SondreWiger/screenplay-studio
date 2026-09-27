@@ -121,14 +121,25 @@ export async function getProjectRows(
 export async function getScriptElements(scriptId: string): Promise<Row[]> {
   const cached = await getCachedByScript(scriptId);
 
-  backgroundRefresh('script_elements', () => {
+  backgroundRefresh('script_elements', async () => {
     const sb = createClient();
-    return sb
-      .from('script_elements')
-      .select('*')
-      .eq('script_id', scriptId)
-      .order('position', { ascending: true })
-      .limit(500000) as any;
+    const allData: any[] = [];
+    let from = 0;
+    const PAGE = 1000;
+    while (true) {
+      const { data, error } = await sb
+        .from('script_elements')
+        .select('*')
+        .eq('script_id', scriptId)
+        .order('position', { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error) return { data: null, error };
+      if (!data) break;
+      allData.push(...data);
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    return { data: allData, error: null };
   });
 
   return cached;
