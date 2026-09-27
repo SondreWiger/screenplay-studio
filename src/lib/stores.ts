@@ -33,7 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setLoading: (loading) => set({ loading }),
   setInitialized: (initialized) => set({ initialized }),
   signOut: async () => {
-    try { sessionStorage.removeItem('ss_session_active'); } catch {}
+    try { sessionStorage.removeItem('ss_session_active'); } catch { }
     if (isLocalMode()) {
       clearLocalUser();
     } else {
@@ -90,9 +90,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
             merged.set(p.id, p);
           }
         }
-        set({ 
-          projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')), 
-          loading: false 
+        set({
+          projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')),
+          loading: false
         });
         return;
       }
@@ -112,7 +112,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
         .or(`created_by.eq.${user.id}${memberProjectIds.length ? `,id.in.(${memberProjectIds.join(',')})` : ''}`)
         .order('updated_at', { ascending: false });
       if (error || data === null) throw error || new Error('fetch failed');
-      
+
       const merged = new Map<string, Project>();
       for (const p of diskProjects) merged.set(p.id, p);
       for (const p of data) {
@@ -121,10 +121,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
           merged.set(p.id, p);
         }
       }
-      
-      set({ 
-        projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')), 
-        loading: false 
+
+      set({
+        projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')),
+        loading: false
       });
     } catch {
       // Network error — fall back to cache
@@ -142,9 +142,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
             merged.set(p.id, p);
           }
         }
-        set({ 
-          projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')), 
-          loading: false 
+        set({
+          projects: Array.from(merged.values()).sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')),
+          loading: false
         });
       } catch {
         set({ projects: [], loading: false, error: 'Failed to load projects' });
@@ -312,7 +312,7 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   setCurrentScript: (script) => {
     set({ currentScript: script });
     if (script) {
-      try { localStorage.setItem(`ss-active-script-${script.project_id}`, script.id); } catch {}
+      try { localStorage.setItem(`ss-active-script-${script.project_id}`, script.id); } catch { }
     }
   },
   setElements: (elements) => set({ elements }),
@@ -406,7 +406,8 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
         .from('script_elements')
         .select('*')
         .eq('script_id', scriptId)
-        .order('sort_order', { ascending: true });
+        .order('sort_order', { ascending: true })
+        .limit(500000);
       if (error || data === null) throw error || new Error('fetch failed');
       set({ elements: data || [], loading: false, _isInitialLoad: false });
     } catch {

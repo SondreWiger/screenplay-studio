@@ -127,7 +127,8 @@ export async function getScriptElements(scriptId: string): Promise<Row[]> {
       .from('script_elements')
       .select('*')
       .eq('script_id', scriptId)
-      .order('position', { ascending: true }) as any;
+      .order('position', { ascending: true })
+      .limit(500000) as any;
   });
 
   return cached;
