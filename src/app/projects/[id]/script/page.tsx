@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
+import { usePlaybackStore } from '@/lib/playbackStore';
+import { PlaybackController } from './PlaybackController';
 import { Button, Modal, Input, Select, Avatar, Textarea, toast } from '@/components/ui';
 import logger from '@/lib/logger';
 import { cn, timeAgo } from '@/lib/utils';
@@ -1721,6 +1723,19 @@ ${pageHTML}
     'menu:open-file': () => { handleElectronOpen(); },
   });
 
+  const handleDeleteScript = useCallback(async () => {
+    if (!currentScript) return;
+    if (!confirm(`Are you sure you want to delete the script "${currentScript.title}"? This cannot be undone.`)) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('scripts').delete().eq('id', currentScript.id);
+    if (error) {
+      toast.error('Failed to delete script: ' + error.message);
+      return;
+    }
+    toast.success('Script deleted');
+    window.location.href = `/projects/${currentScript.project_id}`;
+  }, [currentScript]);
+
   const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
       e.preventDefault();
@@ -2082,6 +2097,9 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
 
           {/* Center: Navigation & Comments */}
+          <button onClick={() => usePlaybackStore.getState().startPlayback(params.id, undefined, characterVoices)} className="p-2 md:p-1.5 rounded-xl text-surface-500 hover:text-brand-400 hover:bg-surface-800/80 transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center" title="Table Read Mode (Play Script)">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+          </button>
           <button onClick={() => setShowSearch(!showSearch)} className={cn('p-2 md:p-1.5 rounded-xl transition-all duration-300 ease-spring min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center', showSearch ? 'text-brand-500 bg-brand-500/10' : 'text-surface-500 hover:text-white hover:bg-surface-800/80')} title={`${t('script.search')} (Cmd+F)`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
@@ -2178,6 +2196,14 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                       </button>
                     </>
                   )}
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
+                  <p className="px-3 py-1.5 text-[11px] text-surface-500 font-semibold uppercase tracking-[0.04em]">Danger Zone</p>
+                  <button onClick={handleDeleteScript} className="w-full text-left px-3 py-2 text-[13px] text-red-400 hover:text-red-300 flex items-center gap-2.5 transition-colors"
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}>
+                    <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Delete Script
+                  </button>
                 </div>
               </>
             )}
@@ -3246,6 +3272,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         </div>
       )}
     </div>
+      <PlaybackController characterVoices={characterVoices} />
     </>
   );
 }
@@ -3778,65 +3805,19 @@ const LineEditor = memo(function LineEditor({
   const tabPickerIdxRef = useRef(0);
 
   const [showTypeMenu, setShowTypeMenu] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { startPlayback, playingElementId, audioCache } = usePlaybackStore();
+  const isPlaying = playingElementId === elementId && audioCache[elementId]?.status === 'ready';
+  const isGenerating = playingElementId === elementId && audioCache[elementId]?.status === 'generating';
 
-  const handlePlayAudio = async () => {
-    if (isPlaying && audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      return;
-    }
-    if (isGenerating) return;
-
-    const state = useScriptStore.getState();
-    const idx = state.elements.findIndex(e => e.id === elementId);
-    let charName = '';
-    for (let i = idx - 1; i >= 0; i--) {
-      if (state.elements[i].element_type === 'character') {
-        charName = state.elements[i].content.trim().toUpperCase().replace(/\s*\([^)]*\)\s*$/, '').trim();
-        break;
-      }
-    }
-
-    const voiceId = characterVoices[charName];
-    if (!voiceId) {
-      toast.error(`No AI voice assigned to ${charName || 'this character'}.`);
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      const res = await fetch('/api/audio/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: (element?.content || '').replace(/<[^>]*>/g, ''),
-          voice_id: voiceId,
-          project_id: projectId
-        })
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to generate audio');
-      }
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => { setIsPlaying(false); URL.revokeObjectURL(url); };
-      await audio.play();
-      setIsPlaying(true);
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || 'Error playing audio');
-    } finally {
-      setIsGenerating(false);
-    }
+  const handlePlayAudio = () => {
+    startPlayback(projectId, elementId, characterVoices);
   };
+
+  useEffect(() => {
+    if (isPlaying && divRef.current) {
+      divRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [isPlaying]);
   const [showTabPicker, setShowTabPicker] = useState(false);
   const [tabPickerIdx, setTabPickerIdx] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -4400,6 +4381,7 @@ const LineEditor = memo(function LineEditor({
         data-etype={element.element_type}
         className={cn('sp-line group relative',
           isHighlighted && (darkMode ? 'bg-yellow-500/20' : 'bg-yellow-100'),
+          isPlaying && (darkMode ? 'bg-brand-500/20 ring-1 ring-brand-500/30' : 'bg-brand-500/10 ring-1 ring-brand-500/30'),
           element.is_omitted && 'opacity-40 line-through',
           collaborators.length > 0 && COLLAB_COLORS[collaborators[0].colorIdx].bg,
           charColorIdx >= 0 && CHARACTER_COLORS[charColorIdx].bg,
