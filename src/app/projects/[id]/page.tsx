@@ -198,6 +198,19 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     fetchStats();
   }, [params.id]);
 
+  const handleDeleteScript = async (e: React.MouseEvent, scriptId: string, title: string) => {
+    e.preventDefault();
+    if (!confirm(`Are you sure you want to delete the script "${title}"? This cannot be undone.`)) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('scripts').delete().eq('id', scriptId);
+    if (error) {
+      alert('Failed to delete script: ' + error.message);
+      return;
+    }
+    setRecentScripts(prev => prev.filter(s => s.id !== scriptId));
+    setStats(prev => ({ ...prev, scripts: Math.max(0, prev.scripts - 1) }));
+  };
+
   const fetchStats = async () => {
     try {
       if (!navigator.onLine) {
@@ -764,20 +777,32 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           ) : (
             <div className="space-y-2">
               {recentScripts.map((script) => (
-                <Link key={script.id} href={`/projects/${params.id}/script`}>
-                  <div className="card-row group">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgb(99 102 241 / 0.15)', color: '#818cf8' }}>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+                <div key={script.id} className="relative group">
+                  <Link href={`/projects/${params.id}/script`}>
+                    <div className="card-row">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgb(99 102 241 / 0.15)', color: '#818cf8' }}>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-white truncate group-hover:text-brand-400 transition-colors">{script.title}</p>
+                        <p className="text-[11px] text-surface-500">v{script.version} · {formatDate(script.updated_at)}</p>
+                      </div>
+                      <Badge size="sm">{script.revision_color}</Badge>
+                      <div className="w-8" /> {/* Spacer for delete button */}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-white truncate group-hover:text-brand-400 transition-colors">{script.title}</p>
-                      <p className="text-[11px] text-surface-500">v{script.version} · {formatDate(script.updated_at)}</p>
-                    </div>
-                    <Badge size="sm">{script.revision_color}</Badge>
-                  </div>
-                </Link>
+                  </Link>
+                  <button 
+                    onClick={(e) => handleDeleteScript(e, script.id, script.title)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all z-10"
+                    title="Delete script"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               ))}
             </div>
           )}
