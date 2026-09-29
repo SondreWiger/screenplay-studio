@@ -80,9 +80,21 @@ export function useAuth() {
       return;
     }
 
-    const initAuth = async () => {
+    // A slow network is not a signed-out user. When a request times out but this
+    // tab had a session, keep the cached profile instead of kicking to login.
+    const restoreCachedProfile = (): boolean => {
       try {
-        let hasSessionFlag = false;
+        if (sessionStorage.getItem('ss_session_active') !== '1') return false;
+        const cached = sessionStorage.getItem('ss_cached_profile');
+        if (!cached) return false;
+        setUser(JSON.parse(cached) as Profile);
+        return true;
+      } catch { return false; }
+    };
+
+    const initAuth = async () => {
+      let hasSessionFlag = false;
+      try {
         try { hasSessionFlag = !!sessionStorage.getItem('ss_session_active'); } catch {}
 
         // Always ask Supabase for the current user — auth cookies set by email
@@ -95,6 +107,10 @@ export function useAuth() {
           6_000,
           'getUser'
         ).catch(() => ({ data: { user: null as null }, error: new Error('timeout') }));
+
+        if (authError?.message === 'timeout' && restoreCachedProfile()) {
+          return;
+        }
 
         if (authError || !authUser) {
           // Truly no valid session — clean up any stale flag
@@ -171,7 +187,7 @@ export function useAuth() {
         }
       } catch (err) {
         logger.error('useAuth', 'Auth initialization error:', err);
-        setUser(null);
+        if (!restoreCachedProfile()) setUser(null);
       } finally {
         setLoading(false);
         clearTimeout(safetyTimer);
@@ -196,6 +212,19 @@ export function useAuth() {
           try { sessionStorage.removeItem('ss_session_active'); } catch {}
           setUser(null);
           setLoading(false);
+          return;
+        }
+
+        // Supabase re-emits SIGNED_IN on every tab refocus and TOKEN_REFRESHED
+        // hourly. For the user we already have loaded there is nothing new to
+        // fetch — refetching here used to replace the profile object and make
+        // open projects reload (and bounce to the dashboard on any hiccup).
+        const current = useAuthStore.getState().user;
+        if (
+          session?.user && current?.id === session.user.id &&
+          (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')
+        ) {
+          if (useAuthStore.getState().loading) setLoading(false);
           return;
         }
 

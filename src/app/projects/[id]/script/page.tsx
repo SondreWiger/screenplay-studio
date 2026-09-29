@@ -774,7 +774,8 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     setNewCommentText('');
   }, []);
 
-  useEffect(() => { fetchScripts(params.id); }, [params.id]);
+  // Forced refresh in place: episodes/overview create and delete scripts outside the store.
+  useEffect(() => { fetchScripts(params.id, { force: true }); }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
   // Guard against stale currentScript from a previously-viewed project
   useEffect(() => {
     if (currentScript && currentScript.project_id === params.id) {
@@ -3122,7 +3123,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
       <TitlePageModal isOpen={showTitlePage} onClose={() => setShowTitlePage(false)} script={currentScript} />
       <NewScriptModal isOpen={showNewScript} onClose={() => setShowNewScript(false)}
         projectId={params.id} userId={user?.id || ''}
-        onCreated={() => { fetchScripts(params.id); setShowNewScript(false); }}
+        onCreated={() => { fetchScripts(params.id, { force: true }); setShowNewScript(false); }}
       />
 
       {/* Floating format toolbar — shown when text is selected in a script element */}

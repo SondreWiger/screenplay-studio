@@ -318,28 +318,7 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Note: generic security headers are set via `next.config.js` headers().
-  // Keep CSP here because it needs environment-dependent values.
-  supabaseResponse.headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      // unsafe-inline is required for Next.js inline styles/scripts; unsafe-eval only in dev for Fast Refresh
-      process.env.NODE_ENV === 'development'
-        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.paypal.com https://www.paypalobjects.com"
-        : "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.paypal.com https://www.paypalobjects.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' data: https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://fonts.googleapis.com https://api-m.paypal.com https://api-m.sandbox.paypal.com",
-      "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://www.paypal.com https://www.sandbox.paypal.com",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self' https://www.paypal.com",
-      "upgrade-insecure-requests",
-      "object-src 'none'",
-    ].join('; ')
-  );
+  // Security headers (including the single CSP) live in next.config.js.
 
   // Rate limit headers (only when rate limiting was applied)
   // maxRequests and rateResult are set inside the !isLocalRequest block above

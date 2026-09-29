@@ -64,9 +64,15 @@ export default function CompanyPage() {
     if (!user) return;
     setLoading(true);
 
-    const { data: co, error: coError } = await supabase.from('companies').select('*').eq('slug', slug).single();
-    if (coError || !co) {
-      if (coError) toast.error('Failed to load company');
+    const { data: co, error: coError } = await supabase.from('companies').select('*').eq('slug', slug).maybeSingle();
+    if (coError) {
+      // Transient failure — stay put so the user can retry, don't bounce them.
+      toast.error("Couldn't load company. Check your connection and refresh.");
+      setLoading(false);
+      return;
+    }
+    if (!co) {
+      toast.error('Company not found');
       router.replace('/dashboard');
       return;
     }

@@ -25,11 +25,22 @@ interface AuthState {
   signOut: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+/**
+ * Profiles are refetched on several auth events (sign-in, tab refocus, token
+ * refresh). Swapping in a new object with identical contents would re-run every
+ * effect that depends on `user`, so identical profiles keep the old reference.
+ */
+function sameProfile(a: Profile | null, b: Profile | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   loading: true,
   initialized: false,
-  setUser: (user) => set({ user }),
+  setUser: (user) => { if (!sameProfile(get().user, user)) set({ user }); },
   setLoading: (loading) => set({ loading }),
   setInitialized: (initialized) => set({ initialized }),
   signOut: async () => {
@@ -219,7 +230,14 @@ interface ScriptState {
   setSelectedElementId: (id: string | null) => void;
   setSaving: (saving: boolean) => void;
   setLoading: (loading: boolean) => void;
-  fetchScripts: (projectId: string) => Promise<void>;
+  /** Project the loaded `scripts` belong to. */
+  scriptsProjectId: string | null;
+  /**
+   * Load a project's scripts. Repeat calls for the already-loaded project are
+   * no-ops unless `force` is set; a forced refresh updates the list in place
+   * without clearing the open script or its elements.
+   */
+  fetchScripts: (projectId: string, opts?: { force?: boolean }) => Promise<void>;
   fetchElements: (scriptId: string) => Promise<void>;
   addElement: (element: Partial<ScriptElement>) => Promise<ScriptElement | null>;
   updateElement: (id: string, updates: Partial<ScriptElement>) => Promise<void>;
@@ -253,6 +271,7 @@ async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
  * results that belong to a project the user has already navigated away from.
  */
 let latestScriptsRequest: string | null = null;
+let inflightScripts: { projectId: string; promise: Promise<void> } | null = null;
 
 /** Picks which draft to open: the one last opened, else the active one, else the newest. */
 function pickActiveScript(projectId: string, scripts: Script[]): Script | null {
@@ -266,6 +285,7 @@ function pickActiveScript(projectId: string, scripts: Script[]): Script | null {
 
 export const useScriptStore = create<ScriptState>((set, get) => ({
   scripts: [],
+  scriptsProjectId: null,
   currentScript: null,
   elements: [],
   selectedElementId: null,
@@ -320,64 +340,70 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   setSaving: (saving) => set({ saving }),
   setLoading: (loading) => set({ loading }),
 
-  fetchScripts: async (projectId: string) => {
+  fetchScripts: async (projectId: string, opts?: { force?: boolean }) => {
+    if (inflightScripts?.projectId === projectId) return inflightScripts.promise;
+    if (!opts?.force && get().scriptsProjectId === projectId) return;
+
     // Claim this request so slower in-flight fetches for other projects know
     // they have been superseded and must not write their results.
     latestScriptsRequest = projectId;
-    // Clear immediately so stale data from a previous project is never shown.
-    // Flag prevents autosave from writing empty data during load.
-    set({ currentScript: null, elements: [], scripts: [], _undoStack: [], _redoStack: [], _isInitialLoad: true });
-    try {
-      if (isLocalMode() || !navigator.onLine) {
-        if (isElectronMode()) {
-          const diskData = await loadProjectFromDisk(projectId);
-          if (diskData?.scripts) {
-            const scripts = diskData.scripts;
-            scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-            if (latestScriptsRequest !== projectId) return;
-            set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
-            return;
-          }
-        }
-        const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
-        scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-        if (latestScriptsRequest !== projectId) return;
-        set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
-        return;
-      }
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('scripts')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('version', { ascending: false });
-      if (error || data === null) throw error || new Error('fetch failed');
-      const scripts = (data || []) as Script[];
-      if (latestScriptsRequest !== projectId) return;
-      const active = pickActiveScript(projectId, scripts);
-      set(active ? { scripts, currentScript: active } : { scripts, currentScript: null, elements: [] });
-    } catch {
-      // Network error — fall back to cache
-      try {
-        if (isElectronMode()) {
-          const diskData = await loadProjectFromDisk(projectId);
-          if (diskData?.scripts) {
-            const scripts = diskData.scripts;
-            scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-            if (latestScriptsRequest !== projectId) return;
-            set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
-            return;
-          }
-        }
-        const scripts = await getCachedByProject('scripts', projectId) as unknown as Script[];
-        scripts.sort((a, b) => (b.version || 0) - (a.version || 0));
-        if (latestScriptsRequest !== projectId) return;
-        set({ scripts, currentScript: pickActiveScript(projectId, scripts) });
-      } catch {
-        logger.error('ScriptStore', 'Error fetching scripts (cache fallback failed)');
-        set({ scripts: [] });
-      }
+    const switching = get().scriptsProjectId !== projectId;
+    if (switching) {
+      // Clear immediately so stale data from a previous project is never shown.
+      // Flag prevents autosave from writing empty data during load.
+      set({ currentScript: null, elements: [], scripts: [], scriptsProjectId: null, _undoStack: [], _redoStack: [], _isInitialLoad: true });
     }
+
+    const apply = (scripts: Script[]) => {
+      if (latestScriptsRequest !== projectId) return;
+      const current = get().currentScript;
+      // Refreshing the same project: keep the open script if it still exists.
+      const keep = !switching && current ? scripts.find((s) => s.id === current.id) : null;
+      const active = keep ?? pickActiveScript(projectId, scripts);
+      set(active
+        ? { scripts, scriptsProjectId: projectId, currentScript: active }
+        : { scripts, scriptsProjectId: projectId, currentScript: null, elements: [] });
+    };
+
+    const loadLocal = async (): Promise<Script[]> => {
+      if (isElectronMode()) {
+        const diskData = await loadProjectFromDisk(projectId);
+        if (diskData?.scripts) return [...diskData.scripts];
+      }
+      return await getCachedByProject('scripts', projectId) as unknown as Script[];
+    };
+    const byVersion = (list: Script[]) => list.sort((a, b) => (b.version || 0) - (a.version || 0));
+
+    const run = async () => {
+      try {
+        if (isLocalMode() || !navigator.onLine) {
+          apply(byVersion(await loadLocal()));
+          return;
+        }
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('scripts')
+          .select('*')
+          .eq('project_id', projectId)
+          .order('version', { ascending: false });
+        if (error || data === null) throw error || new Error('fetch failed');
+        apply((data || []) as Script[]);
+      } catch {
+        // Network error — fall back to cache
+        try {
+          apply(byVersion(await loadLocal()));
+        } catch {
+          logger.error('ScriptStore', 'Error fetching scripts (cache fallback failed)');
+          if (switching && latestScriptsRequest === projectId) set({ scripts: [] });
+        }
+      }
+    };
+
+    const promise = run().finally(() => {
+      if (inflightScripts?.promise === promise) inflightScripts = null;
+    });
+    inflightScripts = { projectId, promise };
+    return promise;
   },
 
   fetchElements: async (scriptId: string) => {

@@ -14,7 +14,7 @@ import { isFeatureEnabled } from '@/lib/feature-flags';
 import { useProjectStore, usePresenceStore, useScriptStore } from '@/lib/stores';
 import { useRealtime } from '@/hooks/useRealtime';
 import { useCrossToolSync } from '@/hooks/useCrossToolSync';
-import { Avatar, LoadingPage, KeyboardShortcuts, Modal, Input, Textarea, Button, toast } from '@/components/ui';
+import { Avatar, KeyboardShortcuts, Modal, Input, Textarea, Button, toast } from '@/components/ui';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { useRecentProjects } from '@/hooks/useRecentProjects';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -32,6 +32,7 @@ import { usePreMiD } from '@/hooks/usePreMiD';
 import { getDefaultOtherIcons, loadOtherIcons, saveOtherIcons } from '@/lib/sidebarDefaults';
 import { useTranslation } from '@/components/TranslationProvider';
 import dynamic from 'next/dynamic';
+import ProjectLoading from './loading';
 import { ZEN_MODE_EVENT } from '@/lib/zen-mode';
 import { getTourState, endTour } from '@/lib/tourState';
 import type { UsageIntent } from '@/lib/types';
@@ -40,6 +41,41 @@ const PopoutButton = dynamic(() => import('@/components/PopoutButton').then(m =>
 const PopoutBar = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutBar })), { ssr: false });
 const GuidedTour = dynamic(() => import('@/components/GuidedTour').then(m => ({ default: m.GuidedTour })), { ssr: false });
 const TourBanner = dynamic(() => import('@/components/TourBanner'), { ssr: false });
+
+function ProjectUnavailable({ reason, onRetry }: { reason: 'not_found' | 'no_access' | 'network'; onRetry: () => void }) {
+  const copy = {
+    not_found: {
+      title: 'Project not found',
+      body: 'It may have been deleted, or you no longer have access to it.',
+    },
+    no_access: {
+      title: "You don't have access to this project",
+      body: 'Ask the project owner to invite you, then try again.',
+    },
+    network: {
+      title: "Couldn't load this project",
+      body: 'The connection dropped or the server took too long. Your work is safe — try again.',
+    },
+  }[reason];
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-surface-950 px-4">
+      <div className="w-full max-w-sm rounded-2xl border border-surface-800 bg-surface-900 p-6 text-center">
+        <h1 className="text-base font-semibold text-white">{copy.title}</h1>
+        <p className="mt-2 text-sm text-surface-400">{copy.body}</p>
+        <div className="mt-6 flex justify-center gap-2">
+          <Link href="/dashboard" className="rounded-lg border border-surface-700 px-4 py-2 text-sm text-surface-300 hover:bg-surface-800">
+            Back to dashboard
+          </Link>
+          {reason !== 'not_found' && (
+            <button onClick={onRetry} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+              Try again
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
 
@@ -62,6 +98,9 @@ export default function ProjectLayout({
   const { updatePresence } = useRealtime(params.id);
   useCrossToolSync(params.id);
   const [loading, setLoading] = useState(true);
+  // Why the project couldn't be shown. Transient failures never navigate away —
+  // the user gets a retry screen instead of being dropped on the dashboard.
+  const [loadError, setLoadError] = useState<null | 'not_found' | 'no_access' | 'network'>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMoreTools, setShowMoreTools] = useState(false);
@@ -312,18 +351,22 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Keyed on the user's id, not the profile object: auth events replace the
+  // object (tab refocus, token refresh) and must not reload the project.
+  const userId = user?.id;
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
+    if (!userId) {
       if (navigator.onLine && !isLocalMode()) {
-        router.replace('/auth/login');
+        router.replace(`/auth/login?redirect=${encodeURIComponent(pathname || `/projects/${params.id}`)}`);
         return;
       }
       // If offline or local mode, continue to fetchProjectData() to load from local cache
     }
     fetchProjectData();
     fetchScripts(params.id);
-  }, [params.id, user, authLoading, fetchScripts]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id, userId, authLoading]);
 
   useEffect(() => {
     if (user && params.id) {
@@ -371,103 +414,105 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     return () => window.removeEventListener(ZEN_MODE_EVENT, handler);
   }, []);
 
+  const showProject = (project: any, projectMembers: any[]) => {
+    setCurrentProject(project);
+    setMembers(projectMembers);
+    setLoadError(null);
+    setLoading(false);
+  };
+
+  const recordProjectView = (project: any) => recordView({
+    id: project.id,
+    title: project.title || 'Untitled',
+    cover_url: project.cover_url ?? null,
+    project_type: project.project_type,
+  });
+
   const fetchProjectData = async () => {
+    // Stale-while-revalidate: if this project is already in memory (coming back
+    // from another screen) or in the offline cache, render it immediately and
+    // refresh underneath instead of blocking on the network.
+    const inMemory = useProjectStore.getState().currentProject;
+    let shown = inMemory?.id === params.id;
+    if (!shown) {
+      setCurrentProject(null);
+      try {
+        const cached = await getCachedById('projects', params.id);
+        if (cached) {
+          const cachedMembers = await getCachedByProject('project_members', params.id);
+          showProject(cached, cachedMembers as any[] || []);
+          shown = true;
+        }
+      } catch { /* cache unavailable — fall through to network */ }
+    }
+
     try {
       if (isLocalMode()) {
-        // First try to load from disk (truth for local mode)
+        // Disk is the source of truth in local mode
         const diskData = await loadProjectFromDisk(params.id);
-        let project = diskData?.project;
-        
-        // Fallback to IndexedDB cache just in case
+        const project = diskData?.project ?? await getCachedById('projects', params.id);
         if (!project) {
-          project = await getCachedById('projects', params.id) as any;
-        }
-
-        if (!project) {
-          router.push('/dashboard');
+          setLoadError('not_found');
+          setLoading(false);
           return;
         }
-
-        setCurrentProject(project as any);
         const cachedMembers = await getCachedByProject('project_members', params.id);
-        setMembers(cachedMembers as any[] || []);
-        recordView({
-          id: (project as any).id,
-          title: (project as any).title || 'Untitled',
-          cover_url: (project as any).cover_url ?? null,
-          project_type: (project as any).project_type,
-        });
-        
+        showProject(project, cachedMembers as any[] || []);
+        recordProjectView(project);
         // Pre-warm the cache so other components find the local project
-        putCached('projects', project).catch(() => {});
-        if (diskData?.scripts?.length) {
-          cacheRows('scripts', diskData.scripts).catch(() => {});
-        }
-        if (diskData?.elements?.length) {
-          cacheRows('script_elements', diskData.elements).catch(() => {});
-        }
-        
-        setLoading(false);
+        putCached('projects', project as any).catch(() => {});
+        if (diskData?.scripts?.length) cacheRows('scripts', diskData.scripts as any).catch(() => {});
+        if (diskData?.elements?.length) cacheRows('script_elements', diskData.elements as any).catch(() => {});
         return;
       }
-      // When offline in cloud mode, fall back to IndexedDB cache
+
       if (!navigator.onLine) {
-        const project = await getCachedById('projects', params.id);
-        if (!project) {
-          router.push('/dashboard');
-          return;
-        }
-        setCurrentProject(project as any);
-        const cachedMembers = await getCachedByProject('project_members', params.id);
-        setMembers(cachedMembers as any[] || []);
-        recordView({
-          id: (project as any).id,
-          title: (project as any).title || 'Untitled',
-          cover_url: (project as any).cover_url ?? null,
-          project_type: (project as any).project_type,
-        });
+        if (!shown) setLoadError('network');
         setLoading(false);
         return;
       }
+
       const supabase = createClient();
       const [projectRes, membersRes] = await Promise.all([
-        supabase.from('projects').select('*').eq('id', params.id).single(),
+        supabase.from('projects').select('*').eq('id', params.id).maybeSingle(),
         supabase.from('project_members').select('*, profile:profiles!user_id(*)').eq('project_id', params.id),
       ]);
 
-      if (projectRes.error) {
-        console.error('Error fetching project:', projectRes.error.message);
-        router.push('/dashboard');
+      if (projectRes.error || membersRes.error) {
+        // Network, timeout, or server error. Keep whatever is on screen.
+        console.error('Error fetching project:', projectRes.error?.message || membersRes.error?.message);
+        if (!shown) setLoadError('network');
+        setLoading(false);
         return;
       }
 
-      // Guard: only allow access if user owns or is a member of this project
+      // RLS hides projects the user can't read, so "no row" means it was
+      // deleted or access was revoked — a definitive answer, not a hiccup.
+      if (!projectRes.data) {
+        setCurrentProject(null);
+        setLoadError('not_found');
+        setLoading(false);
+        return;
+      }
+
       const isMember = (membersRes.data || []).some((m: { user_id: string }) => m.user_id === user?.id);
-      const isOwner = projectRes.data?.created_by === user?.id;
+      const isOwner = projectRes.data.created_by === user?.id;
       if (!isMember && !isOwner) {
-        console.warn('Access denied: not a member or owner');
-        router.push('/dashboard');
+        setCurrentProject(null);
+        setLoadError('no_access');
+        setLoading(false);
         return;
       }
 
-      setCurrentProject(projectRes.data);
-      setMembers(membersRes.data || []);
-      // Cache project and members locally
+      showProject(projectRes.data, membersRes.data || []);
       putCached('projects', projectRes.data).catch(() => {});
       if (membersRes.data && membersRes.data.length > 0) {
         cacheRows('project_members', membersRes.data).catch(() => {});
       }
-      // Record this project as recently viewed
-      recordView({
-        id: projectRes.data.id,
-        title: projectRes.data.title || 'Untitled',
-        cover_url: projectRes.data.cover_url ?? null,
-        project_type: projectRes.data.project_type,
-      });
+      recordProjectView(projectRes.data);
     } catch (err) {
       console.error('Unexpected error fetching project data:', err);
-      router.push('/dashboard');
-    } finally {
+      if (!shown) setLoadError('network');
       setLoading(false);
     }
   };
@@ -482,8 +527,15 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   // Must be called unconditionally before any early returns
   const { applyLayout, saveLayout, resetLayout, activeScope } = useSidebarLayout(params.id, user?.id, isAdmin);
 
-  if (authLoading || (!user && loading)) return <LoadingPage />;
-  if (!currentProject) return null;
+  if (loadError && !currentProject) {
+    return (
+      <ProjectUnavailable
+        reason={loadError}
+        onRetry={() => { setLoadError(null); setLoading(true); fetchProjectData(); }}
+      />
+    );
+  }
+  if (authLoading || !currentProject || currentProject.id !== params.id) return <ProjectLoading />;
 
   // Popout Mode
   // When ?popout=1 is present, render a chrome-free shell for second screens
@@ -1029,7 +1081,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       {/* Main Content */}
       <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-mobile-header md:pt-0')}>
-        <ErrorBoundary>
+        {/* Keyed by path so a crash in one tool doesn't stick when navigating to another */}
+        <ErrorBoundary key={pathname}>
           {children}
         </ErrorBoundary>
       </main>

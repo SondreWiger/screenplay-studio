@@ -173,7 +173,9 @@ function DashboardContent() {
     fetchCompanyData();
     fetchPendingInvitations();
     fetchFolders();
-  }, [user, authLoading]);
+  // Keyed on id: a refreshed profile object must not refetch everything.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.onboarding_completed, authLoading]);
 
   const fetchProjects = async () => {
     if (!user?.id) return;

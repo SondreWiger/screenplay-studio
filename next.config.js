@@ -81,8 +81,10 @@ const nextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'no-referrer' },
           { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
-          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+          // allow-popups: PayPal checkout opens a popup that must talk back.
+          // No COEP — nothing needs cross-origin isolation, and require-corp
+          // blocked YouTube embeds and third-party avatars.
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()' },
@@ -90,19 +92,24 @@ const nextConfig = {
           // Blanket AI training opt-out on every page
           { key: 'X-Robots-Tag', value: 'noai, noimageai' },
           {
+            // The only CSP. Browsers enforce every CSP header they receive, so a
+            // second policy (the middleware used to set one) silently narrows
+            // this one — that is what blocked Supabase audio and avatars.
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://va.vercel-scripts.com https://vercel.live https://www.paypal.com https://www.paypalobjects.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "img-src 'self' data: blob: https://*.supabase.co https://framerusercontent.com https://*.pinimg.com https://i.pinimg.com",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://vercel.live",
-              "media-src 'self' blob: https://*.supabase.co",
+              "img-src 'self' data: blob: https:",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://vercel.live https://fonts.googleapis.com https://api-m.paypal.com https://api-m.sandbox.paypal.com",
+              "media-src 'self' blob: data: https://*.supabase.co",
               "worker-src 'self' blob:",
+              "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://www.paypal.com https://www.sandbox.paypal.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
-              "form-action 'self'",
+              "form-action 'self' https://www.paypal.com",
+              "object-src 'none'",
             ].join('; '),
           },
         ],

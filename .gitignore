@@ -26,3 +26,4 @@ public/downloads/.icon-*/
 public/downloads/*.dmg
 public/downloads/*.exe
 public/downloads/*.AppImage
+tsconfig.tsbuildinfo

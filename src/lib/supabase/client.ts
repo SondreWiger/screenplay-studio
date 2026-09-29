@@ -4,43 +4,22 @@ import { isLocalMode, createLocalSupabaseClient } from './electron-client';
 /**
  * Offline-aware fetch wrapper for the Supabase client.
  *
- * When offline, blocks token refresh requests (grant_type=refresh_token) and
- * other auth requests to prevent the client from firing SIGNED_OUT events
- * that would destroy the user state.  The session cookies are still valid —
- * we just can't verify them right now.
+ * When offline, auth refresh/verify requests fail fast with a network error.
+ * supabase-js treats network errors as retryable and keeps the existing
+ * session, whereas any HTTP response (even a fake "OK") would be stored as the
+ * new session. The previous shim returned an empty access token here, which
+ * could overwrite a valid session and sign the user out once back online.
  */
 function offlineSafeFetch(url: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  // Only intercept when offline
   if (navigator.onLine) {
     return fetch(url, init);
   }
 
   const urlString = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
-
-  // Block Supabase auth token refresh / verify requests when offline
-  if (
-    urlString.includes('/auth/v1/token') ||
-    urlString.includes('/auth/v1/verify')
-  ) {
-    // Return a minimal "session still valid" response so the Supabase client
-    // doesn't fire SIGNED_OUT.  The user object is empty which is fine —
-    // useAuth already handles the offline case via navigator.onLine.
-    return Promise.resolve(
-      new Response(
-        JSON.stringify({
-          access_token: '',
-          token_type: 'bearer',
-          expires_in: 3600,
-          expires_at: Math.floor(Date.now() / 1000) + 3600,
-          refresh_token: '',
-          user: null,
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
-    );
+  if (urlString.includes('/auth/v1/token') || urlString.includes('/auth/v1/verify')) {
+    return Promise.reject(new TypeError('Failed to fetch (offline)'));
   }
 
-  // For all other requests when offline, let them fail naturally
   return fetch(url, init);
 }
 
