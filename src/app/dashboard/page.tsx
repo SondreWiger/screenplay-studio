@@ -491,26 +491,26 @@ function DashboardContent() {
             <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
               <span className="font-semibold text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <h1 className="text-sm sm:text-base font-semibold text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
+            <h1 className="hidden sm:block whitespace-nowrap text-sm sm:text-base font-semibold text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
               Blog
             </Link>
-            <Link href="/idea-boards" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
+            <Link href="/idea-boards" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
               Ideas
             </Link>
-            <Link href="/people" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
+            <Link href="/people" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
               People
             </Link>
-            <Link href="/about" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
+            <Link href="/about" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
               About
             </Link>
-            <Link href="/quotes" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden md:inline">
+            <Link href="/quotes" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
               Quotes
             </Link>
             {user?.show_community !== false && canUseFeature('community') && (
-              <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden sm:inline">
+              <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
                 Community
               </Link>
             )}
@@ -525,17 +525,17 @@ function DashboardContent() {
                 {user?.role === 'admin' || user?.id === ADMIN_UID ? 'Admin' : 'Mod Panel'}
               </Link>
             )}
-            <Link href="/dashboard/import" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-surface-700 bg-surface-800 text-surface-50 hover:bg-surface-700 hover:border-surface-600 shadow-sm transition-all duration-300 ease-spring">
+            <Link href="/dashboard/import" title="Import a script" className="inline-flex items-center gap-2 px-3 md:px-4 py-2 text-sm font-medium rounded-xl border border-surface-700 bg-surface-800 text-surface-50 hover:bg-surface-700 hover:border-surface-600 shadow-sm transition-all duration-300 ease-spring whitespace-nowrap">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
               </svg>
-              Import
+              <span className="hidden md:inline">Import</span>
             </Link>
-            <Button onClick={() => setShowNewProject(true)}>
+            <Button onClick={() => setShowNewProject(true)} className="whitespace-nowrap" title="New project (⌘N)">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
-              New Project
+              <span className="hidden sm:inline">New Project</span>
             </Button>
             <Link href="/messages" className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors relative" title="Messages">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -702,7 +702,8 @@ function DashboardContent() {
         )}
 
         {/* Onboarding Checklist */}
-        {projects.length > 0 && (
+        {/* Only for people getting started — not a to-do list for veterans */}
+        {projects.length > 0 && projects.length < 3 && (
           <div className="mb-8">
             <OnboardingChecklist projectId={projects[0]?.id ?? null} />
           </div>

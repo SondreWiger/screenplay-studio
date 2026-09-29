@@ -1023,7 +1023,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       <div className="fixed top-0 left-0 right-0 z-40 md:hidden safe-pt safe-px bg-surface-950/80 backdrop-blur-md border-b border-surface-800">
         {/* Gradient top line on mobile too */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/20 to-transparent" />
-        <div className="flex items-center justify-between px-3 py-2.5">
+        {/* Fixed height must match .pt-mobile-header, or page tops slide under this bar */}
+        <div className="flex items-center justify-between px-3 h-12">
           <button
             onClick={() => setMobileMenuOpen(true)}
             className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-900/8 transition-colors tap-target"

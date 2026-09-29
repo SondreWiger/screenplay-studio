@@ -1189,7 +1189,8 @@ html {
   /* Content sitting under the fixed project header has to clear both the
      header and whatever the notch takes. Kept as one utility so the two
      numbers can never drift apart. */
-  .pt-mobile-header { padding-top: calc(3rem + var(--safe-top)); }
+  /* 3rem header row + 1px border (see project layout mobile header) */
+  .pt-mobile-header { padding-top: calc(3rem + 1px + var(--safe-top)); }
 
   /* Scrolling a modal must not drag the page behind it. */
   [role="dialog"],

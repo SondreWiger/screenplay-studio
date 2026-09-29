@@ -1097,12 +1097,15 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   const currentPageCountRef = useRef(totalPages);
   currentPageCountRef.current = totalPages;
   const sessionStartRef = useRef<number>(Date.now());
+  const startWordCountRef = useRef<number | null>(null);
+  const currentWordCountRef = useRef(0);
 
   useEffect(() => {
     if (!canEdit || elements.length === 0) return;
     // Set baseline only once, after the script has loaded (elements > 0)
     if (startPageCountRef.current === null) {
       startPageCountRef.current = currentPageCountRef.current;
+      startWordCountRef.current = currentWordCountRef.current;
     }
   }, [elements.length > 0, canEdit]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1114,12 +1117,16 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       if (pagesStart === null) return;
       const pagesEnd = currentPageCountRef.current;
       const pagesWritten = Math.max(0, pagesEnd - pagesStart);
+      // Net words added this session (feeds the dashboard Writing Goal widget,
+      // which previously always showed 0 because words were never logged)
+      const wordsWritten = Math.max(0, currentWordCountRef.current - (startWordCountRef.current ?? currentWordCountRef.current));
       const sessionMinutes = Math.round((Date.now() - sessionStartRef.current) / 60000);
       // Only log if there's something meaningful to report
-      if (pagesWritten > 0 || sessionMinutes >= 2) {
+      if (pagesWritten > 0 || wordsWritten > 0 || sessionMinutes >= 2) {
         logWork({
           projectId: params.id,
           pagesWritten,
+          wordsWritten,
           sessionMinutes,
         });
       }
@@ -1132,6 +1139,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       return count + stripHtml(el.content || '').split(/\s+/).filter(Boolean).length;
     }, 0);
   }, [elements]);
+  currentWordCountRef.current = wordCount;
 
   // Auto-save to disk in Electron mode via IPC heartbeat
   useAutoSave();
@@ -2032,7 +2040,8 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
         {/* Toolbar — Row 1: Element Types */}
         <div className={cn('border-b border-surface-800/60 bg-surface-950 px-2 md:px-4 py-2 flex items-center gap-2 no-print', zenMode && 'hidden')}>
           {canEdit && (
-            <div className="flex items-center gap-0.5 flex-wrap min-w-0">
+            // Phones use the floating type picker instead; this row wrapped into a tall stack there
+            <div className="hidden md:flex items-center gap-0.5 flex-wrap min-w-0">
               {elementCycle.map((type) => (
                 <button key={type} onClick={() => handleToolbarAdd(type)}
                   className={cn('px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all duration-300 ease-spring whitespace-nowrap',
@@ -2065,9 +2074,11 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           <div className="flex-1" />
           {/* Reflects the server, not just local state: pending / failed / offline */}
           <SaveStatus localSaving={saving} />
-          
-          <div className="w-px h-4 bg-surface-800 mx-2" />
-          <ScriptStatsPanel elements={elements} mode="bar" pageCount={totalPages} />
+
+          <div className="hidden sm:block w-px h-4 bg-surface-800 mx-2" />
+          <div className="hidden sm:flex min-w-0">
+            <ScriptStatsPanel elements={elements} mode="bar" pageCount={totalPages} />
+          </div>
         </div>
 
         {/* Toolbar — Row 2: Tools */}
