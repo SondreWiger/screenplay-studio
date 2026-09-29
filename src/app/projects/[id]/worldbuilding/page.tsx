@@ -33,6 +33,9 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
   const [entities, setEntities] = useState<WorldEntity[]>([]);
   const [relationships, setRelationships] = useState<WorldEntityRelationship[]>([]);
   const [loading, setLoading] = useState(true);
+  // Worldbuilding tables come from a migration; if it hasn't been applied the
+  // page explains that instead of silently showing nothing.
+  const [unavailable, setUnavailable] = useState(false);
   const [saving, setSaving] = useState(false);
   
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
@@ -54,6 +57,12 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
       supabase.from('world_entity_relationships').select('*').eq('project_id', params.id)
     ]);
     
+    const missing = (e: { code?: string } | null) => e?.code === 'PGRST205' || e?.code === '42P01';
+    if (missing(entitiesRes.error) || missing(relsRes.error)) {
+      setUnavailable(true);
+      setLoading(false);
+      return;
+    }
     if (entitiesRes.data) setEntities(entitiesRes.data);
     if (relsRes.data) setRelationships(relsRes.data);
     
@@ -104,6 +113,17 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
     const supabase = createClient();
     await supabase.from('world_entities').delete().eq('id', id);
   };
+
+  if (unavailable) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center p-6">
+        <div className="max-w-sm text-center">
+          <h1 className="text-lg font-semibold text-white">Worldbuilding isn&apos;t available yet</h1>
+          <p className="mt-2 text-sm text-surface-400">This server hasn&apos;t been set up for worldbuilding. Your other tools work as normal.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="p-8 text-center text-surface-400">Loading World Data...</div>;

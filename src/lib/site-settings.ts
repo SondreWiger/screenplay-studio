@@ -46,10 +46,11 @@ export async function getSiteSettings(): Promise<Record<string, string>> {
 }
 
 /**
- * Returns true unless the admin has explicitly set
- * opensource_enabled = 'false' in site_settings.
+ * Whether the site may describe itself as open source. Off unless an admin
+ * sets opensource_enabled = 'true' — the LICENSE is currently proprietary,
+ * so the claim must not appear by default.
  */
 export async function isOpenSourceEnabled(): Promise<boolean> {
   const settings = await getSiteSettings();
-  return settings['opensource_enabled'] !== 'false';
+  return settings['opensource_enabled'] === 'true';
 }

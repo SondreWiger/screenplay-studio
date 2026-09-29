@@ -5,11 +5,10 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
-import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, Input, Textarea, Modal, toast, ToastContainer } from '@/components/ui';
 
-// Casting — Pro Feature (Film/TV)
+// Casting — free for everyone (Film/TV)
 // Connect characters with team members, assign actors,
 // track casting status across the entire project.
 
@@ -66,9 +65,7 @@ export default function CastingPage() {
   const params = useParams();
   const projectId = params.id as string;
   const { user } = useAuth();
-  const { isPro } = useProFeatures();
   const { currentProject } = useProjectStore();
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -178,9 +175,8 @@ export default function CastingPage() {
   }, [projectId]);
 
   useEffect(() => {
-    if (!hasProAccess) { setLoading(false); return; }
     loadData();
-  }, [hasProAccess, loadData]);
+  }, [loadData]);
 
   // Derived data
   // Build a map of character_id -> scene numbers they appear in.
@@ -426,20 +422,6 @@ export default function CastingPage() {
   };
 
   // Pro gate
-  if (!hasProAccess) {
-    return (
-      <div className="p-6 flex items-center justify-center h-full">
-        <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4">🎭</div>
-          <h2 className="text-xl font-bold text-white mb-2">Casting</h2>
-          <p className="text-sm text-surface-400 mb-6">
-            Connect characters with team members, assign actors, and track casting status across your project.
-          </p>
-          <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
-        </Card>
-      </div>
-    );
-  }
 
   if (loading) return <LoadingPage />;
 

@@ -24,7 +24,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ShortcutPicker } from '@/components/sidebar/ShortcutPicker';
 import { cn } from '@/lib/utils';
 import { PAGE_LABELS, getPageSection, getPageLabelKey } from '@/lib/pageLabels';
-import { getNavCategories, getProjectNavFlags, PRO_GATED_ICONS, type NavItem, type NavCategory } from '@/lib/navCategories';
+import { getNavCategories, getProjectNavFlags, type NavItem, type NavCategory } from '@/lib/navCategories';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
 import type { UserRole, UserPresence, SidebarSection } from '@/lib/types';
 import { useSidebarLayout } from '@/hooks/useSidebarLayout';
@@ -87,7 +87,7 @@ export default function ProjectLayout({
   params: { id: string };
 }) {
   const { user, loading: authLoading } = useAuth();
-  const { isPro } = useProFeatures();
+  const { isStudio } = useProFeatures();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -110,10 +110,10 @@ export default function ProjectLayout({
   const [templateDesc, setTemplateDesc] = useState('');
   const [templatePublic, setTemplatePublic] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
-// Determine if the user has Pro access so we don't collapse the Pro Tools section
+// Keep the Studio section open for Studio users
 const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const defaults = ['Collaboration'];
-  if (!isPro) defaults.push('Pro Tools');
+  if (!isStudio) defaults.push('Studio');
   return new Set(defaults);
 });
   const [showCustomiser, setShowCustomiser] = useState(false);
@@ -295,7 +295,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     'Plan': 'sidebar.plan',
     'Creative': 'sidebar.creative',
     'Finish': 'sidebar.finish',
-    'Pro Tools': 'sidebar.pro_tools',
+    'Studio': 'sidebar.studio',
+    'Studio Tools': 'sidebar.studio_tools',
   };
   const sidebarT = (label: string) => {
     const key = sidebarLabelMap[label];
@@ -605,7 +606,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       if (!canUseFeature(item.icon)) return false;
     }
     // Pro tool suite: visible only to Pro subscribers
-    if (item.pro) return isPro;
+    // Studio suite: Studio accounts, or this production bought Studio on its own
+    if (item.pro) return isStudio || currentProject?.pro_enabled === true;
     if (item.always) return true;
     if (item.production && showProduction) return true;
     if (item.collab && showCollab) return true;
@@ -762,8 +764,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                       >
                         {icons[item.icon]}
                         {(mobile || !sidebarCollapsed) && <span>{sidebarT(item.label)}</span>}
-                        {(mobile || !sidebarCollapsed) && !isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
-                      </Link>
+                                              </Link>
                     );
                   })}
                 </div>
@@ -805,8 +806,6 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                         >
                           {icons[item.icon]}
                           <span>{sidebarT(item.label)}</span>
-                  {!isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
-                          {!isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
                         </Link>
                         <button
                           onClick={() => {
@@ -855,7 +854,6 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                 >
                   {icons[item.icon]}
                   <span>{sidebarT(item.label)}</span>
-                  {!isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
                 </Link>
               );
             })}

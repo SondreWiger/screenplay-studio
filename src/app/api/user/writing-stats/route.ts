@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 import logger from '@/lib/logger';
 import { fetchAll } from '@/lib/supabase/fetch-all';
 
+// Per-user data read from cookies; never prerender.
+export const dynamic = 'force-dynamic';
+
 // GET /api/user/writing-stats
 // Returns aggregated writing statistics for the authenticated user.
 // Used by the dashboard goal widget and profile stats sections.

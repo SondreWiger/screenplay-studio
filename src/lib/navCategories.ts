@@ -1,15 +1,11 @@
 export type NavItem = {
   label: string; href: string; icon: string;
   always?: boolean; production?: boolean; collab?: boolean;
-  contentCreator?: boolean; filmOnly?: boolean; pro?: boolean;
+  contentCreator?: boolean; filmOnly?: boolean;
+  /** Studio tier tool suite — shown only to Studio users. */
+  pro?: boolean;
 };
 export type NavCategory = { id?: string; category: string; items: NavItem[] };
-
-/**
- * Tools that are visible to everyone but paywalled inside the page. Free users
- * see a PRO badge on them so the sidebar doesn't lead into surprise paywalls.
- */
-export const PRO_GATED_ICONS = new Set(['export', 'revisions', 'casting', 'ai', 'analytics', 'reports', 'branding']);
 
 /** The shape `getNavCategories` needs to pick a nav for a project. */
 export type ProjectNavFlags = {
@@ -152,9 +148,9 @@ function filmNav(p: string, isEpisodic: boolean, isViewer: boolean): NavCategory
       ],
     },
     {
-      category: 'Pro Tools',
+      category: 'Studio',
       items: [
-        { label: 'Pro Tools', href: `${p}/pro`, icon: 'protools', pro: true },
+        { label: 'Studio Tools', href: `${p}/pro`, icon: 'protools', pro: true },
       ],
     },
     ...(!isViewer ? [{ category: '', items: [
@@ -283,9 +279,9 @@ function audioDramaNav(p: string): NavCategory[] {
       ],
     },
     {
-      category: 'Pro Tools',
+      category: 'Studio',
       items: [
-        { label: 'Pro Tools', href: `${p}/pro`, icon: 'protools', pro: true },
+        { label: 'Studio Tools', href: `${p}/pro`, icon: 'protools', pro: true },
       ],
     },
   ];
@@ -347,9 +343,9 @@ function stagePlayNav(p: string, isViewer: boolean): NavCategory[] {
       ],
     },
     {
-      category: 'Pro Tools',
+      category: 'Studio',
       items: [
-        { label: 'Pro Tools', href: `${p}/pro`, icon: 'protools', pro: true },
+        { label: 'Studio Tools', href: `${p}/pro`, icon: 'protools', pro: true },
       ],
     },
     ...(!isViewer ? [{ category: '', items: [
@@ -414,9 +410,9 @@ function contentCreatorNav(p: string): NavCategory[] {
       ],
     },
     {
-      category: 'Pro Tools',
+      category: 'Studio',
       items: [
-        { label: 'Pro Tools', href: `${p}/pro`, icon: 'protools', pro: true },
+        { label: 'Studio Tools', href: `${p}/pro`, icon: 'protools', pro: true },
       ],
     },
   ];

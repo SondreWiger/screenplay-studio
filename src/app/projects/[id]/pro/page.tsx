@@ -6,6 +6,7 @@ import { Badge, Card } from '@/components/ui';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
 import { createClient } from '@/lib/supabase/client';
 import { useProFeatures } from '@/hooks/useProFeatures';
+import { useProjectStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import { GROUP_ACCENT, PRO_TOOLS, proToolsByGroup, layoutFor } from '@/lib/pro-tools';
 
@@ -13,14 +14,17 @@ import { GROUP_ACCENT, PRO_TOOLS, proToolsByGroup, layoutFor } from '@/lib/pro-t
 // this page is the map of what the tier includes.
 
 export default function ProToolsIndexPage({ params }: { params: { id: string } }) {
-  const { isPro, loading } = useProFeatures();
+  const { isStudio: accountStudio, loading } = useProFeatures();
+  // Studio on the account, or bought for this production alone
+  const productionStudio = useProjectStore((st) => st.currentProject?.pro_enabled === true);
+  const isStudio = accountStudio || productionStudio;
   const [query, setQuery] = useState('');
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
 
   // One query for the whole suite — showing where work already exists turns
   // this page from a menu into a status board.
   useEffect(() => {
-    if (!isPro) return;
+    if (!isStudio) return;
     let cancelled = false;
     (async () => {
       const supabase = createClient();
@@ -37,7 +41,7 @@ export default function ProToolsIndexPage({ params }: { params: { id: string } }
       setCounts(tally);
     })();
     return () => { cancelled = true; };
-  }, [params.id, isPro]);
+  }, [params.id, isStudio]);
 
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -63,20 +67,20 @@ export default function ProToolsIndexPage({ params }: { params: { id: string } }
     </div>
   );
 
-  // Matches the sidebar's Pro gating in projects/[id]/layout.tsx.
-  if (!isPro) return (
+  // Matches the sidebar's Studio gating in projects/[id]/layout.tsx.
+  if (!isStudio) return (
     <div className="p-3 sm:p-4 md:p-8 max-w-3xl">
       <Card className="p-8 text-center">
-        <Badge variant="warning" className="mb-3">Pro Feature</Badge>
-        <h2 className="text-xl font-bold text-white mb-2">The Pro tool suite</h2>
+        <Badge variant="warning" className="mb-3">Studio</Badge>
+        <h2 className="text-xl font-bold text-white mb-2">The Studio tool suite</h2>
         <p className="text-surface-400 mb-4">
           {PRO_TOOLS.length} production tools — accounting, rights, distribution, VFX tracking and more.
         </p>
         <a
-          href="/pro"
+          href="/pro#studio"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-500 transition-colors"
         >
-          See Pro
+          About Studio
         </a>
       </Card>
     </div>

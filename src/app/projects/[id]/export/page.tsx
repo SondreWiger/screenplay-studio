@@ -1,15 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
-import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
+import { Button, Card, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
 
-// Advanced Export — Pro feature
+// Advanced Export — free for everyone
 // Branded PDF/DOCX/HTML/Fountain export with watermark & cover
 
 type ExportFormat = 'pdf' | 'docx' | 'fountain' | 'html' | 'fdx';
@@ -78,7 +75,6 @@ const REVISION_COLORS = [
 ];
 
 export default function ExportPage({ params }: { params: { id: string } }) {
-  const { isPro } = useProFeatures();
   const { currentProject } = useProjectStore();
   const [scripts, setScripts] = useState<any[]>([]);
   const [selectedScript, setSelectedScript] = useState<string>('');
@@ -228,35 +224,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
-
-  if (!hasProAccess) {
-    return (
-      <div className="p-6 flex items-center justify-center h-full">
-        <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4">
-            <svg className="w-12 h-12 mx-auto text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-          </div>
-          <h2 className="text-lg font-semibold text-white mb-2">Advanced Export</h2>
-          <p className="text-sm text-surface-400 mb-4">Batch export, DOCX and HTML, custom branding and watermarks.</p>
-          <Badge variant="warning">Pro Feature</Badge>
-          {/* Don't leave free users at a dead end: standard export is free */}
-          <p className="text-sm text-surface-300 mt-6">
-            Standard <strong>PDF, Final Draft (FDX) and Fountain</strong> export is free — use the Import / Export menu in the script editor.
-          </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <Link href={`/projects/${params.id}/script`} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
-              Export from the script editor
-            </Link>
-            <Link href="/pro" className="rounded-lg border border-surface-700 px-4 py-2 text-sm text-surface-300 hover:bg-surface-800">
-              See Pro
-            </Link>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
+  // Advanced export is free for everyone (since 2.7.7).
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
       <ToastContainer />
@@ -264,7 +232,6 @@ export default function ExportPage({ params }: { params: { id: string } }) {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-bold text-white">Advanced Export</h1>
-            <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">Branded, production-ready exports in multiple formats.</p>
         </div>

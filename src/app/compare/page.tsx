@@ -5,12 +5,12 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.f
 
 export const metadata: Metadata = {
   title: 'Compare — Screenplay Studio',
-  description: 'How Screenplay Studio stacks up against Final Draft, WriterDuet, and Arc Studio. Free, open-source, and built for the full production lifecycle.',
+  description: 'How Screenplay Studio stacks up against Final Draft, WriterDuet, and Arc Studio. Free, and built for the full production lifecycle.',
   openGraph: {
     type: 'website',
     siteName: 'Screenplay Studio',
     title: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
-    description: 'Side-by-side comparison of screenwriting software. See how the free, open-source option compares to $250 industry standards.',
+    description: 'Side-by-side comparison of screenwriting software. See how the free option compares to $250 industry standards.',
     images: [
       {
         url: `${SITE_URL}/api/og?title=${encodeURIComponent('Compare')}&subtitle=${encodeURIComponent('Screenplay Studio vs Final Draft, WriterDuet & Arc Studio')}`,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Screenplay Studio vs Final Draft, WriterDuet & Arc Studio',
-    description: 'Side-by-side comparison of screenwriting software. See how the free, open-source option compares to $250 industry standards.',
+    description: 'Side-by-side comparison of screenwriting software. See how the free option compares to $250 industry standards.',
     images: [`${SITE_URL}/api/og?title=${encodeURIComponent('Compare')}&subtitle=${encodeURIComponent('Screenplay Studio vs Final Draft, WriterDuet & Arc Studio')}`],
   },
 };
@@ -81,7 +81,6 @@ const COMPETITORS = [
       'No production scheduling or budget tools',
       'No shot list or storyboard features',
       'No free tier — $250 entry cost',
-      'Not open source',
     ],
   },
   {
@@ -102,7 +101,6 @@ const COMPETITORS = [
       'No scheduling or budget tracking',
       'No shot list or storyboard',
       'No arc planner or mind map',
-      'Not open source',
     ],
   },
   {
@@ -124,7 +122,6 @@ const COMPETITORS = [
       'No shot list or storyboard',
       'No scene breakdown sheets',
       'Collaboration limited on cheaper tiers',
-      'Not open source',
     ],
   },
 ];
@@ -147,7 +144,6 @@ const FEATURE_TABLE = [
   { feature: 'AI Analysis', screenplay: <Check />, finalDraft: <Dash />, writerDuet: <Dash />, arcStudio: <Check /> },
   { feature: 'Revision History', screenplay: <Check />, finalDraft: <Check />, writerDuet: 'Premium', arcStudio: 'Pro' },
   { feature: 'Offline Mode', screenplay: <Check />, finalDraft: <Check />, writerDuet: <Check />, arcStudio: <Check /> },
-  { feature: 'Open Source', screenplay: <Check />, finalDraft: <Dash />, writerDuet: <Dash />, arcStudio: <Dash /> },
   { feature: 'Desktop App', screenplay: 'PWA / browser', finalDraft: <Check />, writerDuet: 'Plus+', arcStudio: <Check /> },
   { feature: 'Mobile App', screenplay: 'PWA', finalDraft: 'Go ($)', writerDuet: <Check />, arcStudio: 'iOS' },
 ];
@@ -201,7 +197,7 @@ export default function ComparePage() {
           <p className="text-base sm:text-lg text-white/45 max-w-2xl leading-relaxed">
             Final Draft is the industry standard at $250. WriterDuet leads in collaboration. Arc Studio has the cleanest UI.
             Screenplay Studio is the only one that{' '}
-            <span className="text-white/70">does all of it — for free, open source,</span> with production tools none of them have.
+            <span className="text-white/70">does all of it — for free,</span> with production tools none of them have.
           </p>
         </section>
 
@@ -265,9 +261,9 @@ export default function ComparePage() {
                 highlight: 'Not a trial. Not a freemium trap.',
               },
               {
-                title: 'Open source',
-                desc: 'The code is on GitHub. Audit it, fork it, contribute to it, run your own instance. No black box.',
-                highlight: 'Transparency you cannot get elsewhere.',
+                title: 'Your files, your formats',
+                desc: 'Import and export Final Draft, Fountain, PDF, DOCX and HTML. Nothing is locked in a proprietary format.',
+                highlight: 'Leave any time, take everything with you.',
               },
             ].map((item) => (
               <div
@@ -352,7 +348,7 @@ export default function ComparePage() {
             <p className="pt-2">
               These are known gaps and the roadmap addresses most of them. If any of these are dealbreakers, the other tools
               might be a better fit today. If you want something that covers the full production cycle and is{' '}
-              <span className="text-white/70">genuinely free and open source</span>, Screenplay Studio is the only option.
+              <span className="text-white/70">genuinely free</span>, Screenplay Studio is the only option.
             </p>
           </div>
         </section>
@@ -391,7 +387,7 @@ export default function ComparePage() {
             <div className="w-6 h-6 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
               <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
             </div>
-            <span className="text-xs text-white/20">Screenplay Studio — free & open source</span>
+            <span className="text-xs text-white/20">Screenplay Studio — free screenwriting &amp; production</span>
           </div>
           <div className="flex items-center gap-5 flex-wrap">
             <Link href="/blog" className="text-xs text-white/25 hover:text-white/50 transition-colors">Blog</Link>

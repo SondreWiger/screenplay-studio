@@ -33,7 +33,7 @@ export const PAGE_LABELS: Record<string, string> = {
   rehearsal: 'Rehearsal',
 
   // Pro tool suite (see lib/pro-tools/tools.ts) — 'locations' is already mapped above
-  pro: 'Pro Tools',
+  pro: 'Studio Tools',
   portfolio: 'Portfolio',
   accounting: 'Production Accounting',
   rights: 'Rights & Clearances',

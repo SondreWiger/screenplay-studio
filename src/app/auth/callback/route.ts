@@ -5,7 +5,10 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  // Same-site paths only: `//evil.com` or `@evil.com` appended to the origin
+  // would otherwise send a freshly signed-in user to another site.
+  const requested = searchParams.get('redirect') || '/dashboard';
+  const redirect = /^\/(?!\/)[^@\\]*$/.test(requested) ? requested : '/dashboard';
 
   if (code) {
     const cookieStore = cookies();

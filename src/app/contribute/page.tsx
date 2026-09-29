@@ -305,11 +305,11 @@ const MARQUEE_ITEMS = [
 ];
 
 export default function ContributePage() {
-  const { enabled: ossEnabled, loading: ossLoading } = useOpenSource();
+  const { enabled: ossEnabled } = useOpenSource();
   const [expandedRule, setExpandedRule] = useState<string | null>(null);
 
   // Hide page entirely when opensource mode is disabled
-  if (!ossLoading && !ossEnabled) {
+  if (!ossEnabled) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
         <span className="text-6xl">🔒</span>

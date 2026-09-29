@@ -2647,14 +2647,15 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <p className="text-sm mb-2">
                   {isAudioDrama ? 'Start writing your audio drama' : isContentCreator ? 'Start writing your script' : isComic ? 'Start writing your comic' : 'Start writing your screenplay'}
                 </p>
-                <p className="text-xs opacity-60 mb-6">Press Enter to add lines. Tab to change element type.</p>
-                <button onClick={() => handleToolbarAdd(
+                <p className="text-xs opacity-60 mb-6">Press Enter to begin. Enter adds a line, Tab changes its type.</p>
+                {/* Focused on arrival so a new writer can just press Enter and start */}
+                <button autoFocus={canEdit} disabled={!canEdit} onClick={() => handleToolbarAdd(
                   isAudioDrama && audioElementCycle.length > 0 ? audioElementCycle[0]
                   : isContentCreator ? 'chapter_marker'
                   : isComic ? 'comic_page'
                   : 'scene_heading'
                 )}
-                  className={cn('px-4 py-2 rounded text-sm', darkMode ? 'bg-surface-700 hover:bg-surface-600 text-white' : 'bg-surface-800 hover:bg-gray-200 text-white/60')}>
+                  className="px-5 py-2.5 rounded-lg text-sm font-medium bg-brand-600 hover:bg-brand-500 text-white focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-50">
                   + Add {isAudioDrama && audioElementCycle.length > 0 ? ELEMENT_LABELS[audioElementCycle[0]] : isContentCreator ? 'Chapter' : isComic ? 'Page' : t('script.scene_heading')}
                 </button>
               </div>

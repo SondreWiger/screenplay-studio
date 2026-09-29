@@ -6,12 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { useAuth } from '@/hooks/useAuth';
-import { useProFeatures } from '@/hooks/useProFeatures';
-import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingPage, Modal, toast, ToastContainer } from '@/components/ui';
 import { timeAgo } from '@/lib/utils';
 
-// Revisions (Diff Comparison) — Pro Feature
+// Revisions (Diff Comparison) — free for everyone
 // Real snapshot-based revisions with side-by-side diff and restore.
 
 type SnapshotElement = {
@@ -120,9 +118,6 @@ export default function RevisionsPage() {
   const params = useParams();
   const projectId = params.id as string;
   const { user } = useAuth();
-  const { isPro } = useProFeatures();
-  const { currentProject } = useProjectStore();
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
 
   const [activeScript, setActiveScript] = useState<{ id: string; version: number; revision_color: string } | null>(null);
   const [revisions, setRevisions] = useState<Revision[]>([]);
@@ -189,9 +184,8 @@ export default function RevisionsPage() {
   }, [projectId]);
 
   useEffect(() => {
-    if (!hasProAccess) { setLoading(false); return; }
     fetchData();
-  }, [hasProAccess, fetchData]);
+  }, [fetchData]);
 
   // Create new revision
 
@@ -319,21 +313,7 @@ export default function RevisionsPage() {
     return { diff, added, removed, same, revA, revB };
   }, [compareA, compareB, revisions]);
 
-  // Render: Pro gate
-
-  if (!hasProAccess) {
-    return (
-      <div className="p-6 flex items-center justify-center h-full">
-        <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4">🔄</div>
-          <h2 className="text-xl font-bold text-white mb-2">Revisions & Comparisons</h2>
-          <p className="text-sm text-surface-400 mb-6">Track every revision with industry-standard color coding. Compare any two drafts side by side.</p>
-          <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
-        </Card>
-      </div>
-    );
-  }
-
+  // Revisions are free for everyone (since 2.7.7)
   if (loading) return <LoadingPage />;
 
   return (
@@ -345,7 +325,6 @@ export default function RevisionsPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white">Revisions</h1>
-            <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">
             Track changes with industry-standard color-coded revisions

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { createLocalUser, isElectronMode } from '@/lib/supabase/electron-client';
 import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
+import { ResendConfirmation } from '@/components/ResendConfirmation';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 function friendlyAuthError(msg: string): string {
@@ -48,6 +49,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const urlError = searchParams.get('error');
   const [error, setError] = useState(urlError ? friendlyAuthError(decodeURIComponent(urlError)) : '');
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -73,6 +75,8 @@ function LoginForm() {
       });
 
       if (authError) {
+        // Remember which address needs confirming so we can offer a resend
+        setUnconfirmedEmail(/not confirmed/i.test(authError.message) ? emailVal : null);
         setError(friendlyAuthError(authError.message));
         setLoading(false);
         return;
@@ -177,6 +181,9 @@ function LoginForm() {
                 }}
               >
                 {error}
+                {unconfirmedEmail && (
+                  <ResendConfirmation email={unconfirmedEmail} className="mt-3 text-xs text-white/60" />
+                )}
               </div>
             )}
 

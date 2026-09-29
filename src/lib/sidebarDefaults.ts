@@ -25,6 +25,9 @@ const ON_SET_TOOLS = [
 ];
 const BUSINESS_TOOLS = ['invoice', 'reports', 'analytics', 'branding', 'presskit', 'docx'];
 const NICHE_TOOLS = ['seo', 'sponsors', 'thumbnails', 'quotes', 'compare'];
+// Casting and crew management, and the public showcase — useful once there's
+// a production, noise while someone is writing their first draft.
+const CAST_CREW_TOOLS = ['crew', 'casting', 'actors', 'showcase'];
 
 export function getDefaultOtherIcons(
   intent: UsageIntent | undefined | null,
@@ -77,6 +80,7 @@ export function getDefaultOtherIcons(
         'revisions',
         'coverage',
         'presskit',
+        ...CAST_CREW_TOOLS,
       ]);
 
     // Producer / Filmmaker
@@ -161,7 +165,7 @@ export function getDefaultOtherIcons(
         'revisions',
         'coverage',
         'presskit',
-        'crew',
+        ...CAST_CREW_TOOLS,
       ]);
 
     // No stated intent: a balanced default. Showing all 50+ tools at once
@@ -169,7 +173,7 @@ export function getDefaultOtherIcons(
     default:
       return isContentCreator || isAudioDrama || isStagePlay
         ? new Set([...NICHE_TOOLS])
-        : new Set([...ON_SET_TOOLS, ...BUSINESS_TOOLS, ...NICHE_TOOLS]);
+        : new Set([...ON_SET_TOOLS, ...BUSINESS_TOOLS, ...NICHE_TOOLS, ...CAST_CREW_TOOLS]);
   }
 }
 

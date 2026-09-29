@@ -9,7 +9,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.f
 
 export const metadata: Metadata = {
   title: 'Screenplay Studio — Write, plan, and collaborate on screenplays',
-  description: 'Free open-source screenwriting software with a professional script editor, scene breakdowns, shot lists, scheduling tools, and real-time collaboration. Write your next film or TV script.',
+  description: 'Free screenwriting software with a professional script editor, scene breakdowns, shot lists, scheduling tools, and real-time collaboration. Write your next film or TV script.',
   openGraph: {
     type: 'website',
     siteName: 'Screenplay Studio',
@@ -281,8 +281,8 @@ export default async function LandingPage() {
             {/* Side annotation column */}
             <div className="absolute right-0 top-4 hidden xl:flex flex-col items-end gap-2 max-w-[180px]">
               <Mono className="text-white/20 text-right leading-relaxed">
-                Free & open source<br />
-                screenwriting software<br />
+                Free screenwriting<br />
+                software<br />
                 and production suite
               </Mono>
               <div className="w-12 h-px mt-2" style={{ background: 'rgb(var(--brand-500))', opacity: 0.4 }} />
@@ -295,7 +295,7 @@ export default async function LandingPage() {
             <div className="md:col-span-5">
               <p className="text-[14px] text-white/50 leading-[2] font-light">
                 Professional screenplay editor with automatic formatting. Scene breakdowns, shot lists, scheduling, budget tracking, 
-                and real-time collaboration — every tool in one place. No payment required.
+                and real-time collaboration — every tool in one place, free. Pro and Studio when your production needs more.
               </p>
             </div>
             <div className="md:col-span-3 flex flex-col gap-3">
@@ -316,7 +316,7 @@ export default async function LandingPage() {
                 {isLoggedIn ? 'Open Dashboard' : 'Start Writing — Free'}
                 <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
               </Link>
-              <Mono className="text-white/12">No credit card · 100% free</Mono>
+              <Mono className="text-white/12">Free forever · No credit card</Mono>
             </div>
           </div>
         </section>
@@ -348,14 +348,14 @@ export default async function LandingPage() {
                   was built from a simple premise: a writer needs focus, collaborative speed, and absolute ownership of their files.
                 </p>
                 <p className="text-[13px] text-white/35 leading-[2.2] font-light">
-                  This software is, and will always remain, completely free and open-source. There are no limits on script counts, 
-                  no restricted export formats, and no paywalls on basic creation. We sustain development entirely through voluntary 
-                  community support and professional hosting services. You focus on the page; we will keep the platform open.
+                  The whole writing and production toolkit is free, and will stay free: no limits on projects or scripts, every
+                  export format, version history, sharing and collaboration included. Pro adds storage and our sister apps; Studio
+                  adds a production-office suite for large shoots. You focus on the page; paying is for when you need more.
                 </p>
                 <div className="flex items-center gap-6 mt-2 font-mono text-[11px] text-white/20">
                   <span>NO EXPORT LOCKS</span>
-                  <span>NO PAYWALLS</span>
-                  <span>100% OPEN SOURCE</span>
+                  <span>NO PROJECT LIMITS</span>
+                  <span>YOUR FILES, YOUR FORMATS</span>
                 </div>
               </div>
             </div>
@@ -374,8 +374,8 @@ export default async function LandingPage() {
         <section className="max-w-screen-xl mx-auto px-6 md:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4">
             {[
-              { num: '100%', label: 'Free', sub: 'No payment ever' },
-              { num: '40+', label: 'Tools', sub: 'Script to wrap' },
+              { num: 'Free', label: 'Forever', sub: 'The whole core product' },
+              { num: '80+', label: 'Tools', sub: 'Script to wrap' },
               { num: '7', label: 'Formats', sub: 'Film · TV · Audio · Stage' },
               { num: '2024', label: 'Since', sub: 'Actively maintained' },
             ].map((s, i) => (
@@ -456,10 +456,10 @@ export default async function LandingPage() {
             </div>
             <div className="lg:col-span-5 flex flex-col justify-end gap-4">
               <p className="text-[13px] text-white/35 leading-[2]">
-                13 integrated tools covering every stage of film production — from first draft to final wrap.
+                Thirteen of the tools that cover every stage of film production — from first draft to final wrap.
                 No switching between apps. No exporting between tools. Everything lives in one place.
               </p>
-              <Mono className="text-white/10">13 tools · Oslo · 2026</Mono>
+              <Mono className="text-white/10">Highlights · Oslo · 2026</Mono>
             </div>
           </div>
 
@@ -569,7 +569,7 @@ export default async function LandingPage() {
                   </Link>
                   {!isLoggedIn && (
                     <span className="text-[11px] font-mono text-black/25 tracking-wider">
-                      100% FREE · NO CREDIT CARD
+                      FREE FOREVER · NO CREDIT CARD
                     </span>
                   )}
                 </div>
@@ -641,12 +641,12 @@ export default async function LandingPage() {
 
           <div className="max-w-3xl">
             {[
-              { q: 'What is Screenplay Studio?', a: 'Screenplay Studio is a free, open-source screenwriting and film production software. It provides a professional script editor with automatic formatting, real-time collaboration, character bibles, scene breakdowns, shot lists, corkboard planning, production scheduling, and budget tracking — all in one platform.' },
-              { q: 'Is Screenplay Studio really free?', a: 'Yes. Screenplay Studio is free and open-source software. You can use the script editor, collaborate with your team, plan scenes, create shot lists, and manage production schedules without paying anything.' },
+              { q: 'What is Screenplay Studio?', a: 'Screenplay Studio is free screenwriting and film production software. It provides a professional script editor with automatic formatting, real-time collaboration, character bibles, scene breakdowns, shot lists, corkboard planning, production scheduling, and budget tracking — all in one platform.' },
+              { q: 'Is Screenplay Studio really free?', a: 'Yes. The script editor, collaboration, scene planning, shot lists, scheduling, version history, sharing and every export format are free, with no project limits. Pro ($29/month or $249/year) adds 200 GB of storage, Cinderra Pro and CastingCall Pro; Studio adds a production-office tool suite for large shoots.' },
               { q: 'Does it support real-time collaboration?', a: 'Yes. Multiple people can work on the same script simultaneously. You can see who is editing what, leave inline comments, and stop emailing PDFs back and forth.' },
               { q: 'What script formats are supported?', a: 'The script editor supports screenplays, episodic TV, stage plays, audio dramas, YouTube scripts, TikTok scripts, podcasts, and educational content.' },
               { q: 'Can I plan a full film production?', a: 'Yes. Screenplay Studio covers the full production stack: script writing, character development, scene breakdowns, shot lists, corkboard planning, arc planning, beat sheets, production scheduling, budget tracking, submission tracking, and team role management.' },
-              { q: 'Is Screenplay Studio open source?', a: 'Yes. Screenplay Studio is open source and available on GitHub. The community can contribute features, report bugs, and review the code.' },
+              { q: 'Can I export to Final Draft?', a: 'Yes. Export to Final Draft (FDX), PDF, Fountain, DOCX and HTML — all included free. You can also import FDX, Fountain and PDF scripts.' },
             ].map((faq, i) => (
               <details
                 key={i}
@@ -732,7 +732,7 @@ export default async function LandingPage() {
                 name: 'What is Screenplay Studio?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Screenplay Studio is a free, open-source screenwriting and film production software. It provides a professional script editor with automatic formatting, real-time collaboration, character bibles, scene breakdowns, shot lists, corkboard planning, production scheduling, and budget tracking — all in one platform.',
+                  text: 'Screenplay Studio is free screenwriting and film production software. It provides a professional script editor with automatic formatting, real-time collaboration, character bibles, scene breakdowns, shot lists, corkboard planning, production scheduling, and budget tracking — all in one platform.',
                 },
               },
               {
@@ -740,7 +740,7 @@ export default async function LandingPage() {
                 name: 'Is Screenplay Studio really free?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Screenplay Studio is free and open-source software. You can use the script editor, collaborate with your team, plan scenes, create shot lists, and manage production schedules without paying anything.',
+                  text: 'Yes. The script editor, collaboration, scene planning, shot lists, scheduling, version history, sharing and every export format are free, with no project limits. Pro ($29/month or $249/year) adds 200 GB of storage, Cinderra Pro and CastingCall Pro; Studio adds a production-office tool suite for large shoots.',
                 },
               },
               {
@@ -769,10 +769,10 @@ export default async function LandingPage() {
               },
               {
                 '@type': 'Question',
-                name: 'Is Screenplay Studio open source?',
+                name: 'Can I export to Final Draft?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Yes. Screenplay Studio is open source and available on GitHub. The community can contribute features, report bugs, and review the code.',
+                  text: 'Yes. Export to Final Draft (FDX), PDF, Fountain, DOCX and HTML — all included free. You can also import FDX, Fountain and PDF scripts.',
                 },
               },
             ],

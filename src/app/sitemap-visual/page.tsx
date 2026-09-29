@@ -314,7 +314,7 @@ export default function VisualSitemapPage() {
         <SitemapTree nodes={siteStructure} />
 
         <div className="mt-12 pt-6 border-t border-surface-800 text-center">
-          <p className="text-xs text-surface-600">Screenplay Studio &mdash; Open-source screenwriting suite</p>
+          <p className="text-xs text-surface-600">Screenplay Studio &mdash; Screenwriting &amp; production suite</p>
         </div>
       </div>
     </div>

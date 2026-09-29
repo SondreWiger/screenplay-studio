@@ -3,19 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useProFeatures } from '@/hooks/useProFeatures';
-import { useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, LoadingPage, toast, ToastContainer } from '@/components/ui';
+import { Button, Card, LoadingPage, toast, ToastContainer } from '@/components/ui';
 
-// Custom Branding / Brand Kit — Pro Feature
+// Custom Branding / Brand Kit — free for everyone
 // Project-level branding: colors, logos, watermarks, cover pages,
 // and export themes. Saves to projects.custom_branding JSONB column.
 
 export default function BrandingPage() {
   const params = useParams();
-  const { isPro } = useProFeatures();
-  const { currentProject } = useProjectStore();
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -33,9 +28,8 @@ export default function BrandingPage() {
   const [headerTemplate, setHeaderTemplate] = useState('minimal');
 
   useEffect(() => {
-    if (!hasProAccess) { setLoading(false); return; }
     loadBranding();
-  }, [hasProAccess]);
+  }, []);
 
   const loadBranding = async () => {
     const supabase = createClient();
@@ -91,18 +85,6 @@ export default function BrandingPage() {
     setSaving(false);
   };
 
-  if (!hasProAccess) {
-    return (
-      <div className="p-6 flex items-center justify-center h-full">
-        <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4">🎨</div>
-          <h2 className="text-xl font-bold text-white mb-2">Custom Branding</h2>
-          <p className="text-sm text-surface-400 mb-6">Add your logo, colors, watermarks, and custom cover pages to every export.</p>
-          <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
-        </Card>
-      </div>
-    );
-  }
 
   if (loading) return <LoadingPage />;
 
@@ -113,7 +95,6 @@ export default function BrandingPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white">Brand Kit</h1>
-            <Badge variant="warning">⭐ Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">Customize the look of your exports and shared content</p>
         </div>

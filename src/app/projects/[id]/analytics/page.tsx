@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
-import { useProFeatures } from '@/hooks/useProFeatures';
-import { useProjectStore } from '@/lib/stores';
 import { Card, Badge, LoadingSpinner, Button } from '@/components/ui';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
 
@@ -48,8 +46,6 @@ interface MemberActivity {
 
 export default function AnalyticsPage({ params }: { params: { id: string } }) {
   useAuth();
-  const { isPro } = useProFeatures();
-  const { currentProject } = useProjectStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<ProjectStats | null>(null);
   const [scriptActivity, setScriptActivity] = useState<ScriptActivity[]>([]);
@@ -248,18 +244,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
 
   const maxActivity = Math.max(...scriptActivity.map(a => a.elementCount), 1);
 
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
 
-  if (!hasProAccess) return (
-    <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
-      <Card className="p-8 text-center">
-        <Badge variant="warning" className="mb-3">Pro Feature</Badge>
-        <h2 className="text-xl font-bold text-white mb-2">Analytics Dashboard</h2>
-        <p className="text-surface-400 mb-4">Unlock real project metrics, script activity tracking, and team contribution analytics.</p>
-        <a href="/pro" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-500 transition-colors">Upgrade to Pro</a>
-      </Card>
-    </div>
-  );
 
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-6xl">

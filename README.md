@@ -2,7 +2,7 @@
 
 **Write. Plan. Produce.**
 
-Free, open-source screenwriting and film pre-production software. A professional script editor combined with a full production planning suite — all in one web application. No paywalls, no credit card, no limits.
+Free screenwriting and film pre-production software. A professional script editor combined with a full production planning suite — all in one web application. No paywalls, no credit card, no limits.
 
 > Developed and maintained by [Northem Development](https://northem.no) · Oslo, Norway
 

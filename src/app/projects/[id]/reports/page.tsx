@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingPage, toast, ToastContainer } from '@/components/ui';
 
@@ -160,9 +159,7 @@ export default function ReportsPage() {
   const params = useParams();
   const projectId = params.id as string;
   const { user } = useAuth();
-  const { isPro } = useProFeatures();
   const { currentProject } = useProjectStore();
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -184,7 +181,7 @@ export default function ReportsPage() {
   const [selectedEventId, setSelectedEventId] = useState<string>('');
 
   useEffect(() => {
-    if (!hasProAccess || !projectId) { setLoading(false); return; }
+    if (!projectId) { setLoading(false); return; }
 
     const fetchAll = async () => {
       const [scRes, chRes, shRes, evRes, buRes, loRes, meRes] = await Promise.all([
@@ -216,7 +213,7 @@ export default function ReportsPage() {
     };
 
     fetchAll().catch(() => setLoading(false));
-  }, [hasProAccess, projectId, supabase]);
+  }, [projectId, supabase]);
 
   const charMap = useMemo(() => {
     const m = new Map<string, Character>();
@@ -667,19 +664,6 @@ export default function ReportsPage() {
     toast.success(`Downloaded ${report.downloadName}`);
   }, []);
 
-  if (!hasProAccess) {
-    return (
-      <div className="p-6 flex items-center justify-center h-full">
-        <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4 font-bold text-surface-400">R</div>
-          <h2 className="text-xl font-bold text-white mb-2">Production Reports</h2>
-          <p className="text-sm text-surface-400 mb-6">Generate call sheets, DOOD reports, daily production reports, and more.</p>
-          <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
-        </Card>
-        <ToastContainer />
-      </div>
-    );
-  }
 
   if (loading) return <LoadingPage />;
 

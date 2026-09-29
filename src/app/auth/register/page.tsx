@@ -9,6 +9,7 @@ import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { sendWelcomeEmailAction } from '@/lib/email-actions';
 import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
+import { ResendConfirmation } from '@/components/ResendConfirmation';
 
 // Map raw Supabase/auth error messages to user-friendly ones
 function friendlyAuthError(msg: string): string {
@@ -130,6 +131,16 @@ function RegisterForm() {
         return;
       }
 
+      // Supabase hides whether an email is registered: for an existing account
+      // it returns "success" with a user that has no identities and sends no
+      // email. Without this check the person waits for a confirmation that
+      // never arrives — the registration looks broken.
+      if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        setError('An account with this email already exists. Sign in, or reset your password if you forgot it.');
+        setLoading(false);
+        return;
+      }
+
       // If Supabase returned a live session (email confirmation disabled),
       // go straight to the dashboard.
       // Track referral signup regardless of whether email confirmation is required.
@@ -222,6 +233,7 @@ function RegisterForm() {
             <span className="text-white font-mono">{successEmail}</span>.
             {t('auth.click_to_activate')}
           </p>
+          <ResendConfirmation email={successEmail} />
           <Link
             href="/auth/login"
             className="text-xs font-medium transition-opacity hover:opacity-70"

@@ -54,7 +54,8 @@ export function useSiteSettings() {
  */
 export function useOpenSource() {
   const { settings, loading } = useSiteSettings();
-  // Treat "not set" or "true" as enabled; only "false" disables it
-  const enabled = loading ? true : settings['opensource_enabled'] !== 'false';
+  // Off unless explicitly enabled: the LICENSE is proprietary. While loading,
+  // assume off so the claim never flashes.
+  const enabled = !loading && settings['opensource_enabled'] === 'true';
   return { enabled, loading };
 }

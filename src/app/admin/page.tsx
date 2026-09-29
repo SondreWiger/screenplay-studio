@@ -277,7 +277,7 @@ export default function AdminPage() {
     try {
       const supabase = createClient();
       const { data } = await supabase.from('site_settings').select('value').eq('key', 'opensource_enabled').single();
-      if (data) setOpensourceEnabled(data.value !== 'false');
+      setOpensourceEnabled(data?.value === 'true');
     } catch { /* row may not exist yet — default true */ }
   };
 

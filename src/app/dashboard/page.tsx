@@ -1718,29 +1718,6 @@ function NewProjectModal({
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
 
-            {/* TV Production — amber accent grid item */}
-            <button
-              type="button"
-              onClick={() => {
-                setProjectType('tv_production');
-                setScriptType('screenplay');
-              }}
-              className={`text-left p-4 rounded-xl border-2 transition-colors ${
-                projectType === 'tv_production'
-                  ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
-                  : 'border-surface-700 bg-surface-800/50 hover:border-amber-500/30 hover:bg-surface-800'
-              }`}
-            >
-              <div className={`transition-colors ${projectType === 'tv_production' ? 'text-amber-400' : 'text-surface-400'}`}>
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
-              </div>
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <h3 className={`text-sm font-semibold ${projectType === 'tv_production' ? 'text-amber-400' : 'text-white'}`}>TV Production</h3>
-                <span className="text-[11px] px-1 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium uppercase tracking-[0.04em]">Pro</span>
-              </div>
-              <p className="mt-0.5 text-[11px] text-surface-500">Broadcast & studio — rundown, autocue, crew</p>
-            </button>
-
             {/* Standard script-type options */}
             {SCRIPT_TYPE_OPTIONS.map((opt) => (
               <button
@@ -1783,6 +1760,28 @@ function NewProjectModal({
                 <p className="mt-0.5 text-[11px] text-surface-500">{opt.description}</p>
               </button>
             ))}
+
+            {/* TV Production — broadcast workflow, listed after the writing formats */}
+            <button
+              type="button"
+              onClick={() => {
+                setProjectType('tv_production');
+                setScriptType('screenplay');
+              }}
+              className={`text-left p-4 rounded-xl border-2 transition-colors ${
+                projectType === 'tv_production'
+                  ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
+                  : 'border-surface-700 bg-surface-800/50 hover:border-amber-500/30 hover:bg-surface-800'
+              }`}
+            >
+              <div className={`transition-colors ${projectType === 'tv_production' ? 'text-amber-400' : 'text-surface-400'}`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <h3 className={`text-sm font-semibold ${projectType === 'tv_production' ? 'text-amber-400' : 'text-white'}`}>TV Production</h3>
+              </div>
+              <p className="mt-0.5 text-[11px] text-surface-500">Broadcast & studio — rundown, autocue, crew</p>
+            </button>
           </div>
           <div className="flex justify-end">
             <Button onClick={() => setStep(1)}>Continue</Button>

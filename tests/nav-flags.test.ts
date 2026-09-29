@@ -64,7 +64,7 @@ describe('getNavCategories via the flags', () => {
   it('gives broadcast projects the On Air nav and no Pro Tools category', () => {
     const cats = categories({ project_type: 'tv_production' });
     expect(cats).toContain('On Air');
-    expect(cats).not.toContain('Pro Tools');
+    expect(cats).not.toContain('Studio');
   });
 
   it('gives every other project type a Pro Tools category', () => {
@@ -74,7 +74,7 @@ describe('getNavCategories via the flags', () => {
       { project_type: 'stage_play' },
       { project_type: 'youtube' },
     ]) {
-      expect(categories(project), JSON.stringify(project)).toContain('Pro Tools');
+      expect(categories(project), JSON.stringify(project)).toContain('Studio');
     }
   });
 

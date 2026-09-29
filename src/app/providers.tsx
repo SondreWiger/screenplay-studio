@@ -4,7 +4,6 @@ import { Suspense, useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { ToastContainer } from '@/components/ui';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
-import { BetaBanner } from '@/components/BetaBanner';
 import { CommandPaletteProvider } from '@/components/ui/CommandPalette';
 import { TranslationProvider } from '@/components/TranslationProvider';
 import { ThemeEditor } from '@/components/ThemeEditor';
@@ -43,7 +42,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <Suspense fallback={null}>
         <ServiceWorkerRegistration />
       </Suspense>
-      <BetaBanner />
       <Suspense fallback={null}>
         <ElectronShell />
       </Suspense>

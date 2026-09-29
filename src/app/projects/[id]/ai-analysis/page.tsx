@@ -5,11 +5,9 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
-import { useProFeatures } from '@/hooks/useProFeatures';
-import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingPage, EmptyState } from '@/components/ui';
 
-// Script Analysis — Pro Feature
+// Script Analysis — free for everyone
 // Real computational analysis of actual script content
 
 type ScriptElement = {
@@ -549,9 +547,6 @@ export default function AIAnalysisPage() {
   const params = useParams();
   const projectId = params.id as string;
   useAuth();
-  const { isPro } = useProFeatures();
-  const { currentProject } = useProjectStore();
-  const hasProAccess = isPro || currentProject?.pro_enabled === true;
 
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState<FullAnalysis | null>(null);
@@ -602,23 +597,10 @@ export default function AIAnalysisPage() {
   }, [projectId]);
 
   useEffect(() => {
-    if (!hasProAccess) { setLoading(false); return; }
     loadAnalysis();
-  }, [hasProAccess, loadAnalysis]);
+  }, [loadAnalysis]);
 
   // Pro gate
-  if (!hasProAccess) {
-    return (
-      <div className="p-6 flex items-center justify-center h-full">
-        <Card className="max-w-md p-8 text-center">
-          <div className="text-4xl mb-4">📊</div>
-          <h2 className="text-xl font-bold text-white mb-2">Script Analysis</h2>
-          <p className="text-sm text-surface-400 mb-6">Get in-depth computational analysis of your screenplay — dialogue breakdown, pacing, scene metrics, and production readiness.</p>
-          <Button onClick={() => { window.location.href = '/pro'; }}>Upgrade to Pro</Button>
-        </Card>
-      </div>
-    );
-  }
 
   if (loading) return <LoadingPage />;
 

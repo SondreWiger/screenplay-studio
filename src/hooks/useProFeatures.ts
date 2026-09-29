@@ -10,8 +10,13 @@ import { PRO_LIMITS, type Subscription, type TeamLicense } from '@/lib/types';
 // Pro adds the production tool suite (portfolio, production accounting,
 // rights management, distribution, etc.) — see lib/pro-tools/tools.ts.
 
+/** Pro subscriptions started before this date keep the Studio tool suite. */
+export const STUDIO_TIER_START = '2026-10-01';
+
 interface ProFeatures {
   isPro: boolean;
+  /** Studio tier: the production tool suite (formerly "Pro Tools"). */
+  isStudio: boolean;
   subscription: Subscription | null;
   loading: boolean;
   // Limits
@@ -94,6 +99,14 @@ export function useProFeatures(): ProFeatures {
   const isPro = !proGatingEnabled || isProByAccount;
   const limits = isPro ? PRO_LIMITS.pro : PRO_LIMITS.free;
 
+  // Studio = the production tool suite. Granted by an 'enterprise' plan, to
+  // admins, when gating is off, and to everyone who was Pro before the suite
+  // moved to Studio — nobody loses a tool they were already paying for.
+  const isStudio = !proGatingEnabled
+    || user?.role === 'admin'
+    || subscription?.plan === 'enterprise'
+    || (isProByAccount && !!user?.pro_since && user.pro_since < STUDIO_TIER_START);
+
   const fetchSubscription = useCallback(async (force = false) => {
     if (!user) { setLoading(false); return; }
     try {
@@ -150,6 +163,7 @@ export function useProFeatures(): ProFeatures {
 
   return {
     isPro,
+    isStudio,
     subscription,
     loading,
     storageLimit: user?.storage_limit_bytes ?? limits.storage_bytes,

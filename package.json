@@ -1,6 +1,6 @@
 {
   "name": "screenplay-studio",
-  "version": "2.7.7",
+  "version": "3.0.0",
   "private": true,
   "packageManager": "npm@10.9.3",
   "main": "electron/dist/main.js",

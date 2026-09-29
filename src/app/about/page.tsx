@@ -66,7 +66,7 @@ const TIMELINE = [
   { year: '2023', label: 'Idea & first lines of code', detail: 'Started as a script formatter written out of frustration with expensive, fragmented production tools. Immediately became clear the problem was bigger than formatting.' },
   { year: '2024', label: 'First public release', detail: 'Script editor, scene breakdown, shot list, and basic team tools shipped. Early users were film students and indie filmmakers.' },
   { year: '2025', label: 'Platform expansion', detail: 'Audio drama, stage play, TV production, and content creator formats added. Community, AI analysis, and casting tools launched.' },
-  { year: '2026', label: 'Now', detail: 'Tens of thousands of projects. Open-source code base. Continual feature work driven by user feedback.' },
+  { year: '2026', label: 'Out of beta', detail: 'Tens of thousands of projects. Screenplay Studio leaves early access with Free, Pro and Studio tiers, and continual feature work driven by user feedback.' },
 ];
 
 export default async function AboutPage() {

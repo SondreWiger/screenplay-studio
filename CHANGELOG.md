@@ -1,5 +1,37 @@
 # Changelog
 
+## [3.0.0] - 2026-10-01
+### Out of beta
+Screenplay Studio leaves early access. This release is about reliability,
+honesty and a calmer first hour.
+
+**Reliability**
+- Projects no longer bounce you back to the dashboard or reload when you switch tabs; failures show a retry screen instead
+- Large scripts load completely everywhere (export, breakdown, revisions, analysis and more were cut off at 1,000 lines)
+- Saving batches changes, never silently drops an edit, and the save indicator only says "Saved" once the server has it
+- Restoring a revision or importing a script can no longer leave a script empty if something fails part-way
+- Faster navigation, dashboard and editor, especially on long scripts
+
+**Writing**
+- Typing straight after Enter lands in the new line; character names in capitals become character cues automatically
+- The title page suggests your project title and name
+- A new script opens ready to type
+
+**Accounts**
+- Password reset works end to end with a new "choose a new password" page
+- Signing up with an existing email says so instead of waiting for an email that never comes
+- Resend the confirmation email from sign-up and sign-in
+
+**Plans**
+- Free is the whole product: version history, revisions, sharing, analytics, reports, script analysis, casting, branding and every export format are free
+- Pro ($29/month or $249/year): 200 GB storage, Cinderra Pro and CastingCall Pro, API access and priority support
+- Studio: the production-office tool suite (formerly "Pro Tools"), per production for $100 once or company-wide by arrangement. Existing Pro subscribers keep Studio tools
+
+**Everything else**
+- Community chat, document comments, org pitch voting, community upvotes and ⌘K script search work again
+- Calmer first run: no donation prompt on day one, onboarding asks your role once, tidier sidebar defaults, fixed mobile layouts
+- Early-access banner removed
+
 ## [2.7.7] - 2026-06-14
 ### Studio Tier — Big Production Tools
 - All previous Pro features (version history, share portals, analytics, AI analysis, client review, branding, revision tracking, reports, casting, advanced export) are now **free for everyone**
