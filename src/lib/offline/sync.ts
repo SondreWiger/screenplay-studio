@@ -16,6 +16,7 @@ import {
   getCachedById,
   getCachedProjects,
   enqueueSyncItem,
+  syncKey,
   type DataStoreName,
   type Row,
 } from './db';
@@ -131,7 +132,7 @@ export async function getScriptElements(scriptId: string): Promise<Row[]> {
         .from('script_elements')
         .select('*')
         .eq('script_id', scriptId)
-        .order('position', { ascending: true })
+        .order('sort_order', { ascending: true })
         .range(from, from + PAGE - 1);
       if (error) return { data: null, error };
       if (!data) break;
@@ -145,7 +146,8 @@ export async function getScriptElements(scriptId: string): Promise<Row[]> {
   return cached;
 }
 
-// Trigger immediate sync (without importing queue to avoid circular dep)
+// Trigger a sync (without importing queue to avoid circular dep). The queue
+// debounces these, so a burst of keystrokes becomes one batched request.
 
 function triggerImmediateSync() {
   if (typeof window !== 'undefined' && navigator.onLine) {
@@ -157,7 +159,8 @@ function triggerImmediateSync() {
 
 /**
  * Write a row locally and queue a remote sync.
- * Immediately attempts remote write if online; the queue is the safety net.
+ * The queue holds one entry per row, so rapid edits collapse into a single
+ * upsert carrying the latest content.
  */
 export async function offlineUpsert(
   store: DataStoreName,
@@ -169,10 +172,9 @@ export async function offlineUpsert(
   // 1. Write to local cache immediately (optimistic)
   await putCached(store, rowWithId);
 
-  // 2. Add to sync queue (persists through crashes/offline)
-  const queueId = newId();
+  // 2. Queue (persists through crashes/offline), replacing older pending writes
   await enqueueSyncItem({
-    id: queueId,
+    id: syncKey(store, rowWithId.id as string),
     table: store,
     operation: 'upsert',
     data: rowWithId,
@@ -180,37 +182,49 @@ export async function offlineUpsert(
     timestamp: Date.now(),
   });
 
-  // 3. Try immediate remote sync if online
-  if (isOnline()) {
-    triggerImmediateSync();
-  }
-
+  triggerImmediateSync();
   return { data: rowWithId, error: null };
 }
 
 /**
- * Delete a row locally and queue a remote sync.
+ * Delete a row locally and queue a remote sync. Supersedes any pending upsert
+ * for the same row.
  */
 export async function offlineDelete(
   store: DataStoreName,
   id: string,
   projectId?: string
 ): Promise<void> {
-  // 1. Remove from local cache
   await deleteCached(store, id);
-
-  // 2. Add to sync queue
   await enqueueSyncItem({
-    id: newId(),
+    id: syncKey(store, id),
     table: store,
     operation: 'delete',
     data: { id },
     projectId,
     timestamp: Date.now(),
   });
+  triggerImmediateSync();
+}
 
-  // 3. Try immediate remote sync
-  if (isOnline()) {
-    triggerImmediateSync();
-  }
+/**
+ * Queue many row writes at once (reorders, undo/redo, imports). One IndexedDB
+ * transaction and one sync trigger instead of one per row.
+ */
+export async function offlineUpsertMany(store: DataStoreName, rows: Row[]): Promise<void> {
+  if (!rows.length) return;
+  const { getDB } = await import('./db');
+  const db = await getDB();
+  const now = Date.now();
+  const tx = db.transaction([store, 'sync_queue'], 'readwrite');
+  const data = tx.objectStore(store);
+  const queue = tx.objectStore('sync_queue');
+  await Promise.all([
+    ...rows.map((r) => data.put(r)),
+    ...rows.map((r) => queue.put({
+      id: syncKey(store, r.id as string), table: store, operation: 'upsert', data: r, timestamp: now, retries: 0,
+    })),
+    tx.done,
+  ]);
+  triggerImmediateSync();
 }

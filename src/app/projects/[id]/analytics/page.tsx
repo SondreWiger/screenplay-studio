@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
@@ -86,10 +87,10 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
 
     const [elemRes, sceneRes, charRes, shotRes, commentRes, memberRes, locationRes] = await Promise.all([
       scriptIds.length > 0
-        ? supabase
+        ? fetchAllResult(() => supabase
             .from('script_elements')
             .select('id, element_type, content, sort_order, created_at, created_by, last_edited_by')
-            .in('script_id', scriptIds)
+            .in('script_id', scriptIds))
         : Promise.resolve({ data: [] }),
       supabase.from('scenes').select('id, is_completed, created_at').eq('project_id', params.id),
       supabase.from('characters').select('id, is_main, cast_actor, created_at').eq('project_id', params.id),

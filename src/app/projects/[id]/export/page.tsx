@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
@@ -105,11 +106,11 @@ export default function ExportPage({ params }: { params: { id: string } }) {
     // Fetch actual script_elements for each script (the real content source)
     const elemsByScript: Record<string, any[]> = {};
     for (const s of scr) {
-      const { data: elems } = await supabase
+      const { data: elems } = await fetchAllResult(() => supabase
         .from('script_elements')
         .select('element_type, content, sort_order, scene_number, revision_color, is_revised, is_omitted')
         .eq('script_id', s.id)
-        .order('sort_order');
+        .order('sort_order'));
       elemsByScript[s.id] = (elems || []).filter((e: { is_omitted?: boolean }) => !e.is_omitted).map((e: { element_type: string; content: string; scene_number?: string; revision_color?: string; is_revised?: boolean }) => ({
         type: e.element_type,
         text: e.content,

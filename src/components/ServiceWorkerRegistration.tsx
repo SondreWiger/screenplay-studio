@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { processSyncQueue } from '@/lib/offline/queue';
+import { processSyncQueue, requestSync, flushSyncQueue } from '@/lib/offline/queue';
 
 /**
  * Registers the service worker and wires up the offline sync queue.
@@ -39,26 +39,35 @@ export function ServiceWorkerRegistration() {
         console.warn('[sw] registration failed', err);
       });
 
-    // When the app comes back online, flush any queued offline writes
-    const handleOnline = () => {
-      processSyncQueue().catch(console.warn);
-    };
-    // Also triggered by offlineUpsert/offlineDelete when online
-    const handleSyncEvent = () => {
-      processSyncQueue().catch(console.warn);
-    };
+  }, []);
+
+  // Offline write queue. Independent of the service worker — it must run in
+  // every environment (it used to be skipped entirely in development).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOnline = () => { processSyncQueue({ includeFailed: true }).catch(console.warn); };
+    // Fired by offlineUpsert/offlineDelete; debounced so typing batches up.
+    const handleSyncEvent = () => requestSync();
+    // Don't leave edits sitting in the debounce window when the tab goes away.
+    const handleHidden = () => { if (document.visibilityState === 'hidden') flushSyncQueue(); };
+    const handlePageHide = () => { flushSyncQueue(); };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('ss:sync', handleSyncEvent);
+    document.addEventListener('visibilitychange', handleHidden);
+    window.addEventListener('pagehide', handlePageHide);
 
-    // Also attempt a sync on initial load (in case there are leftovers)
+    // Leftovers from a previous session (including ones that had failed)
     if (navigator.onLine) {
-      processSyncQueue().catch(console.warn);
+      processSyncQueue({ includeFailed: true }).catch(console.warn);
     }
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('ss:sync', handleSyncEvent);
+      document.removeEventListener('visibilitychange', handleHidden);
+      window.removeEventListener('pagehide', handlePageHide);
     };
   }, []);
 

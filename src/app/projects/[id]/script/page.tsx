@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback, memo, useMemo, Fragment } fro
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
 import { usePlaybackStore } from '@/lib/playbackStore';
@@ -1495,39 +1496,30 @@ ${pageHTML}
 
         const supabase = createClient();
 
-        // Save current as draft first
+        // Save current as draft first — and don't replace anything if that fails
         if (elements.length > 0) {
-          await supabase.rpc('save_script_draft', {
+          const { error: draftErr } = await supabase.rpc('save_script_draft', {
             p_script_id: currentScript.id,
             p_draft_name: `Pre-import backup`,
             p_notes: `Auto-saved before importing ${file.name}`,
           });
+          if (draftErr) throw new Error(`Couldn't save a backup draft, import cancelled (${draftErr.message})`);
         }
 
-        // Delete existing elements
-        await supabase.from('script_elements').delete().eq('script_id', currentScript.id);
-
-        // Update title page
-        if (titlePage.title || titlePage.author) {
-          await supabase.from('scripts').update({ title_page_data: titlePage }).eq('id', currentScript.id);
-          // Update the Zustand store so exports pick up the title page immediately
-          setCurrentScript({ ...currentScript, title_page_data: titlePage });
-        }
-
-        // Insert new elements
-        const inserts = importedElements.map((el, i) => ({
-          script_id: currentScript.id,
+        await replaceScriptElements(currentScript.id, importedElements.map((el, i) => ({
           element_type: el.element_type || 'action',
           content: el.content || '',
           sort_order: i,
           scene_number: el.scene_number || null,
           created_by: user?.id,
           last_edited_by: user?.id,
-        }));
+        })));
 
-        // Insert in batches of 100
-        for (let b = 0; b < inserts.length; b += 100) {
-          await supabase.from('script_elements').insert(inserts.slice(b, b + 100));
+        // Update title page
+        if (titlePage.title || titlePage.author) {
+          await supabase.from('scripts').update({ title_page_data: titlePage }).eq('id', currentScript.id);
+          // Update the Zustand store so exports pick up the title page immediately
+          setCurrentScript({ ...currentScript, title_page_data: titlePage });
         }
 
         // Refresh

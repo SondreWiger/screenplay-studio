@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
@@ -578,7 +579,7 @@ export default function AIAnalysisPage() {
 
     // 2. Fetch all data in parallel
     const [elemRes, sceneRes, charRes, shotRes] = await Promise.all([
-      supabase.from('script_elements').select('*').eq('script_id', scriptId).order('sort_order'),
+      fetchAllResult(() => supabase.from('script_elements').select('*').eq('script_id', scriptId).order('sort_order')),
       supabase.from('scenes').select('*').eq('project_id', projectId).order('scene_number'),
       supabase.from('characters').select('*').eq('project_id', projectId).order('name'),
       supabase.from('shots').select('id, project_id, scene_id, is_completed').eq('project_id', projectId),

@@ -11,6 +11,7 @@ export function useRealtime(projectId: string) {
   const { setOnlineUsers } = usePresenceStore();
   // Only grab setElements — avoid capturing `elements` in the closure (stale)
   const { setElements } = useScriptStore();
+  const scriptId = useScriptStore((s) => s.currentScript?.id ?? null);
 
   // Store a ref to the presence channel so updatePresence can reuse it
   const presenceChannelRef = useRef<ReturnType<typeof createClient.prototype.channel> | null>(null);
@@ -19,49 +20,6 @@ export function useRealtime(projectId: string) {
     if (!projectId || !user) return;
 
     const supabase = createClient();
-
-    // Subscribe to script element changes
-    const elementsChannel = supabase
-      .channel(`script-elements-${projectId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'script_elements',
-        },
-        (payload: { eventType: string; new: ScriptElement | undefined; old: Record<string, unknown> }) => {
-          // Ignore changes made by the current user — we already update state locally
-          const newRecord = payload.new as ScriptElement | undefined;
-          if (newRecord && newRecord.last_edited_by === user.id) return;
-
-          // For DELETE, check old record's last_edited_by as well
-          if (payload.eventType === 'DELETE') {
-            const oldRecord = payload.old as { id: string; last_edited_by?: string };
-            if (oldRecord?.last_edited_by === user.id) return;
-          }
-
-          // Use getState() to avoid stale closure
-          const currentElements = useScriptStore.getState().elements;
-
-          if (payload.eventType === 'INSERT') {
-            const newElement = payload.new as ScriptElement;
-            // Avoid duplicates (we may already have it from local addElement)
-            if (currentElements.some((e) => e.id === newElement.id)) return;
-            setElements([...currentElements, newElement].sort((a, b) => a.sort_order - b.sort_order));
-          } else if (payload.eventType === 'UPDATE') {
-            const updated = payload.new as ScriptElement;
-            setElements(
-              currentElements.map((e) => (e.id === updated.id ? updated : e))
-            );
-          } else if (payload.eventType === 'DELETE') {
-            const deleted = payload.old as { id: string };
-            setElements(currentElements.filter((e) => e.id !== deleted.id));
-          }
-        }
-      )
-      .subscribe();
-
     // Presence tracking
     const presenceChannel = supabase
       .channel(`presence-${projectId}`)
@@ -95,11 +53,56 @@ export function useRealtime(projectId: string) {
     presenceChannelRef.current = presenceChannel;
 
     return () => {
-      supabase.removeChannel(elementsChannel);
       supabase.removeChannel(presenceChannel);
       presenceChannelRef.current = null;
     };
   }, [projectId, user?.id]);
+
+  // Live edits to the open script. Filtered server-side by script_id — the
+  // old unfiltered channel received every element change in every project the
+  // user belongs to, and merged other scripts' lines into the open editor.
+  useEffect(() => {
+    if (!scriptId || !user) return;
+    const supabase = createClient();
+    const userId = user.id;
+
+    const apply = (payload: { eventType: string; new: ScriptElement | undefined; old: Record<string, unknown> }) => {
+      const current = useScriptStore.getState();
+      if (current.currentScript?.id !== scriptId) return;
+      const elements = current.elements;
+
+      if (payload.eventType === 'DELETE') {
+        const old = payload.old as { id: string; last_edited_by?: string };
+        if (!old?.id || old.last_edited_by === userId) return;
+        if (!elements.some((e) => e.id === old.id)) return;
+        setElements(elements.filter((e) => e.id !== old.id));
+        return;
+      }
+
+      const row = payload.new as ScriptElement | undefined;
+      // Ignore our own echoes — local state already has them
+      if (!row || row.script_id !== scriptId || row.last_edited_by === userId) return;
+
+      if (payload.eventType === 'INSERT') {
+        if (elements.some((e) => e.id === row.id)) return;
+        setElements([...elements, row].sort((a, b) => a.sort_order - b.sort_order));
+      } else if (payload.eventType === 'UPDATE') {
+        const moved = elements.find((e) => e.id === row.id)?.sort_order !== row.sort_order;
+        const next = elements.map((e) => (e.id === row.id ? row : e));
+        setElements(moved ? next.sort((a, b) => a.sort_order - b.sort_order) : next);
+      }
+    };
+
+    const channel = supabase
+      .channel(`script-elements-${scriptId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'script_elements', filter: `script_id=eq.${scriptId}` }, apply)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'script_elements', filter: `script_id=eq.${scriptId}` }, apply)
+      // Realtime can't filter DELETEs; apply() only removes ids we actually hold.
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'script_elements' }, apply)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [scriptId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updatePresence = useCallback(
     async (page: string, elementId?: string) => {

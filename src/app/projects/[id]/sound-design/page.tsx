@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useProjectStore } from '@/lib/stores';
 import { Card, Button, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -98,7 +99,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
     const scriptMap: Record<string, string> = {};
     scriptRows.forEach((s: ScriptRow) => { scriptMap[s.id] = s.title || 'Untitled Script'; });
 
-    const { data: elements } = await supabase
+    const { data: elements } = await fetchAllResult(() => supabase
       .from('script_elements')
       .select('id, content, element_type, sort_order, script_id')
       .in('script_id', scriptIds)
@@ -109,7 +110,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
         // legacy / alternate names tolerated
         'sound_effect', 'ambience',
       ])
-      .order('sort_order');
+      .order('sort_order'));
 
     const discovered: AudioCue[] = [];
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Textarea, EmptyState, LoadingSpinner, Avatar, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
@@ -195,11 +196,11 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
       // Fetch script elements for inline comment context
       const scriptIdsRes = await supabase.from('scripts').select('id').eq('project_id', params.id);
       const scriptIds = scriptIdsRes.data?.map(s => s.id) ?? [];
-      const scriptRes = await supabase
+      const scriptRes = await fetchAllResult(() => supabase
         .from('script_elements')
         .select('*')
         .in('script_id', scriptIds)
-        .order('sort_order');
+        .order('sort_order'));
       setScriptElements((scriptRes.data as ScriptElement[]) || []);
     } catch (err) {
       console.error('Error fetching comments:', err);

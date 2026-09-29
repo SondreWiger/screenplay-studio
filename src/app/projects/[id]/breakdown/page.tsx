@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { cn } from '@/lib/utils';
 import { SkeletonList } from '@/components/ui';
 import { useScriptStore } from '@/lib/stores';
@@ -115,11 +116,11 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
     type RawEl = { element_type: string; content: string; sort_order: number };
     let rawElements: RawEl[] = [];
     if (scriptIds.length > 0) {
-      const { data: elData } = await supabase
+      const { data: elData } = await fetchAllResult(() => supabase
         .from('script_elements')
         .select('element_type, content, sort_order')
         .in('script_id', scriptIds)
-        .order('sort_order', { ascending: true });
+        .order('sort_order', { ascending: true }));
       rawElements = (elData ?? []) as RawEl[];
     }
 

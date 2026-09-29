@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 
 import { cn } from '@/lib/utils';
@@ -79,10 +80,10 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
       const [scenesRes, charsRes, statusRes] = await Promise.all([
         supabase.from('scenes').select('*').eq('project_id', params.id).order('sort_order'),
         supabase.from('characters').select('id,name').eq('project_id', params.id),
-        supabase.from('script_elements')
+        fetchAllResult(() => supabase.from('script_elements')
           .select('id,scene_status')
           .in('script_id', scriptIds)
-          .eq('element_type', 'scene_heading'),
+          .eq('element_type', 'scene_heading')),
       ]);
 
       const statusMap: Record<string, SceneStatus> = {};

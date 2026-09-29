@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { MindmapTab } from '@/components/admin/MindmapTab';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select, toast } from '@/components/ui';
@@ -2290,7 +2291,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
     const supabase = createClient();
     const [scripts, , chars, locs, scenes, shots, ideas, budget, schedule] = await Promise.all([
       supabase.from('scripts').select('id, title, version', { count: 'exact' }).eq('project_id', projectId),
-      supabase.from('script_elements').select('content').eq('script_id', projectId), // This needs script IDs
+      Promise.resolve(null), // element stats are fetched below, once script ids are known
       supabase.from('characters').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
       supabase.from('locations').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
       supabase.from('scenes').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
@@ -2305,11 +2306,11 @@ function ProjectsTab({ projects, search, onSearchChange }: {
     let wordCount = 0;
     let elementCount = 0;
     if (scriptIds.length > 0) {
-      const { data: elData, count } = await supabase
+      const { data: elData } = await fetchAllResult<{ content: string | null }>(() => supabase
         .from('script_elements')
-        .select('content', { count: 'exact' })
-        .in('script_id', scriptIds);
-      elementCount = count || 0;
+        .select('content')
+        .in('script_id', scriptIds));
+      elementCount = elData?.length || 0;
       wordCount = (elData || []).reduce((sum: number, el: { content: string | null }) => {
         return sum + (el.content || '').trim().split(/\s+/).filter(Boolean).length;
       }, 0);

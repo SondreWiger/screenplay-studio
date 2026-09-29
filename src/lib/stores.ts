@@ -4,8 +4,8 @@ import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
 import { clearLocalUser, isLocalMode, isElectronMode } from '@/lib/supabase/electron-client';
 import { loadProjectFromDisk, listLocalProjects } from '@/lib/local-files';
-import { putCached, deleteCached, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById, pendingSyncCount } from '@/lib/offline/db';
-import { offlineUpsert, offlineDelete } from '@/lib/offline/sync';
+import { putCached, deleteCached, cacheRows, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById, pendingSyncCount } from '@/lib/offline/db';
+import { offlineUpsert, offlineDelete, offlineUpsertMany } from '@/lib/offline/sync';
 import logger from '@/lib/logger';
 import type {
   Project, Script, ScriptElement, Character, Location,
@@ -245,19 +245,24 @@ interface ScriptState {
   reorderElements: (elements: ScriptElement[]) => Promise<void>;
 }
 
-// Sync a full snapshot of elements to Supabase (or IndexedDB in local mode)
-async function syncSnapshotToDB(snapshot: ScriptElement[], scriptId: string) {
+/**
+ * Persist the difference between two element snapshots (undo/redo/reorder).
+ * Only rows that changed are written, in one batch, and rows missing from the
+ * new snapshot are deleted — undoing an "add line" must remove it remotely too.
+ */
+async function syncSnapshotDiff(prev: ScriptElement[], next: ScriptElement[]) {
+  const before = new Map(prev.map((e) => [e.id, e]));
+  const changed = next.filter((e) => before.get(e.id) !== e);
+  const nextIds = new Set(next.map((e) => e.id));
+  const removed = prev.filter((e) => !nextIds.has(e.id)).map((e) => e.id);
+
   if (isLocalMode()) {
-    // In local mode, just write all elements to IndexedDB
-    for (const el of snapshot) {
-      await putCached('script_elements', el as unknown as Record<string, unknown>);
-    }
+    await cacheRows('script_elements', changed as unknown as Record<string, unknown>[]);
+    for (const id of removed) await deleteCached('script_elements', id);
     return;
   }
-  // Cloud mode: offline-first — write locally, enqueue sync, try remote
-  for (const el of snapshot) {
-    await offlineUpsert('script_elements', el as unknown as Record<string, unknown>);
-  }
+  await offlineUpsertMany('script_elements', changed as unknown as Record<string, unknown>[]);
+  for (const id of removed) await offlineDelete('script_elements', id);
 }
 
 /**
@@ -298,34 +303,33 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
   pushHistory: () => {
     const { elements, _undoStack } = get();
-    const snapshot = elements.map((e) => ({ ...e }));
-    set({ _undoStack: [..._undoStack.slice(-49), snapshot], _redoStack: [], _lastHistoryPush: Date.now() });
+    // Elements are immutable (every update replaces the object), so the array
+    // itself is a safe snapshot. Copying every row per keystroke was O(n).
+    set({ _undoStack: [..._undoStack.slice(-49), elements], _redoStack: [], _lastHistoryPush: Date.now() });
   },
 
   undo: async () => {
     const { elements, _undoStack, _redoStack, currentScript } = get();
     if (_undoStack.length === 0) return;
     const previous = _undoStack[_undoStack.length - 1];
-    const current = elements.map((e) => ({ ...e }));
     set({
       elements: previous,
       _undoStack: _undoStack.slice(0, -1),
-      _redoStack: [..._redoStack.slice(-49), current],
+      _redoStack: [..._redoStack.slice(-49), elements],
     });
-    if (currentScript) syncSnapshotToDB(previous, currentScript.id);
+    if (currentScript) syncSnapshotDiff(elements, previous);
   },
 
   redo: async () => {
     const { elements, _undoStack, _redoStack, currentScript } = get();
     if (_redoStack.length === 0) return;
     const next = _redoStack[_redoStack.length - 1];
-    const current = elements.map((e) => ({ ...e }));
     set({
       elements: next,
-      _undoStack: [..._undoStack.slice(-49), current],
+      _undoStack: [..._undoStack.slice(-49), elements],
       _redoStack: _redoStack.slice(0, -1),
     });
-    if (currentScript) syncSnapshotToDB(next, currentScript.id);
+    if (currentScript) syncSnapshotDiff(elements, next);
   },
 
   setScripts: (scripts) => set({ scripts }),
@@ -537,21 +541,12 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
   },
 
   reorderElements: async (elements) => {
-    set({ elements, saving: true });
-
-    if (isLocalMode()) {
-      for (const el of elements) {
-        await putCached('script_elements', { ...el, sort_order: elements.indexOf(el) } as unknown as Record<string, unknown>);
-      }
-      set({ saving: false });
-      return;
-    }
-
-    // Cloud mode: offline-first
-    for (let i = 0; i < elements.length; i++) {
-      const el = { ...elements[i], sort_order: i };
-      await offlineUpsert('script_elements', el as unknown as Record<string, unknown>);
-    }
+    const prev = get().elements;
+    // Renumber, keeping the object identity of rows whose position didn't change
+    // so only moved rows are written.
+    const renumbered = elements.map((el, i) => (el.sort_order === i ? el : { ...el, sort_order: i }));
+    set({ elements: renumbered, saving: true });
+    await syncSnapshotDiff(prev, renumbered);
     set({ saving: false });
   },
 }));

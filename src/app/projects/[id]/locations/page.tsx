@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -87,12 +88,12 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
       if (!scripts || scripts.length === 0) { setSyncing(false); return; }
 
       const scriptIds = scripts.map(s => s.id);
-      const { data: elements } = await supabase
+      const { data: elements } = await fetchAllResult(() => supabase
         .from('script_elements')
         .select('content')
         .in('script_id', scriptIds)
         .eq('element_type', 'scene_heading')
-        .eq('is_omitted', false);
+        .eq('is_omitted', false));
 
       if (!elements || elements.length === 0) { setSyncing(false); return; }
 

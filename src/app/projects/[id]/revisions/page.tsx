@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
+import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
@@ -194,16 +196,16 @@ export default function RevisionsPage() {
   // Create new revision
 
   const createRevision = async () => {
-    if (!user || !activeScript) return;
+    if (!user || !activeScript) return false;
     setCreating(true);
     const supabase = createClient();
 
     try {
-      const { data: elements, error: elErr } = await supabase
+      const { data: elements, error: elErr } = await fetchAllResult(() => supabase
         .from('script_elements')
         .select('id, element_type, content, sort_order, scene_number, revision_color, is_revised, is_omitted, metadata')
         .eq('script_id', activeScript.id)
-        .order('sort_order', { ascending: true });
+        .order('sort_order', { ascending: true }));
 
       if (elErr) throw elErr;
 
@@ -231,9 +233,11 @@ export default function RevisionsPage() {
 
       toast(`Revision ${nextVersion} (${getColorName(nextColor)}) saved`, 'success');
       await fetchData();
+      return true;
     } catch (err: unknown) {
       console.error('Failed to create revision:', err);
       toast(err instanceof Error ? err.message : 'Failed to create revision', 'error');
+      return false;
     } finally {
       setCreating(false);
     }
@@ -252,17 +256,11 @@ export default function RevisionsPage() {
     const supabase = createClient();
 
     try {
-      // Save current state first so nothing is lost
-      await createRevision();
+      // Save current state first so nothing is lost. If that backup fails,
+      // stop — otherwise a restore could destroy the only copy.
+      if (!(await createRevision())) return;
 
-      const { error: delErr } = await supabase
-        .from('script_elements')
-        .delete()
-        .eq('script_id', rev.script_id);
-      if (delErr) throw delErr;
-
-      const elementsToInsert = rev.snapshot.map(el => ({
-        script_id: rev.script_id,
+      await replaceScriptElements(rev.script_id, rev.snapshot.map(el => ({
         element_type: el.element_type,
         content: el.content,
         sort_order: el.sort_order,
@@ -272,14 +270,7 @@ export default function RevisionsPage() {
         is_omitted: el.is_omitted || false,
         metadata: el.metadata || {},
         created_by: user!.id,
-      }));
-
-      if (elementsToInsert.length > 0) {
-        const { error: insErr } = await supabase
-          .from('script_elements')
-          .insert(elementsToInsert);
-        if (insErr) throw insErr;
-      }
+      })));
 
       await supabase.from('scripts')
         .update({ version: rev.version, revision_color: rev.revision_color })

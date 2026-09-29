@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, SkeletonList, toast } from '@/components/ui';
 import { useScriptStore } from '@/lib/stores';
@@ -67,13 +68,13 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
       const supabase = createClient();
       if (!currentScript) { setSyncing(false); return; }
 
-      const { data: elements } = await supabase
+      const { data: elements } = await fetchAllResult(() => supabase
         .from('script_elements')
         .select('*')
         .eq('script_id', currentScript.id)
         .eq('element_type', 'scene_heading')
         .eq('is_omitted', false)
-        .order('sort_order');
+        .order('sort_order'));
 
       if (!elements || elements.length === 0) { setSyncing(false); return; }
 
@@ -465,13 +466,13 @@ function ImportFromScriptModal({ isOpen, onClose, projectId, userId, existingSce
     if (!scripts || scripts.length === 0) { setLoading(false); return; }
 
     const scriptIds = scripts.map(s => s.id);
-    const { data: elements } = await supabase
+    const { data: elements } = await fetchAllResult(() => supabase
       .from('script_elements')
       .select('*')
       .in('script_id', scriptIds)
       .eq('element_type', 'scene_heading')
       .eq('is_omitted', false)
-      .order('sort_order');
+      .order('sort_order'));
 
     setScriptElements(elements || []);
     setLoading(false);

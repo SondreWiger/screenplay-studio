@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { useScriptStore, useProjectStore } from '@/lib/stores';
 import { Card, Select, LoadingSpinner, Badge, EmptyState } from '@/components/ui';
@@ -141,11 +142,11 @@ export default function ComparePage({ params }: { params: { id: string } }) {
 
   const loadElements = useCallback(async (scriptId: string): Promise<ScriptElement[]> => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data } = await fetchAllResult(() => supabase
       .from('script_elements')
       .select('*')
       .eq('script_id', scriptId)
-      .order('sort_order', { ascending: true });
+      .order('sort_order', { ascending: true }));
     return (data || []) as ScriptElement[];
   }, []);
 

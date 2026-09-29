@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
@@ -131,12 +132,12 @@ export default function CastingPage() {
           .eq('project_id', projectId)
           .order('scene_number'),
         scripts?.[0]?.id
-          ? supabase
+          ? fetchAllResult(() => supabase
               .from('script_elements')
               .select('id, element_type, content, scene_number, sort_order')
               .eq('script_id', scripts[0].id)
               .in('element_type', ['character', 'dialogue'])
-              .order('sort_order')
+              .order('sort_order'))
           : Promise.resolve({ data: [] }),
       ]);
 

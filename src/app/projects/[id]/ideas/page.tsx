@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Badge, Modal, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
@@ -120,13 +121,13 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
     const { data: scripts } = await supabase.from('scripts').select('id').eq('project_id', params.id);
     if (!scripts || scripts.length === 0) return;
     const scriptIds = scripts.map(s => s.id);
-    const { data: elements } = await supabase
+    const { data: elements } = await fetchAllResult(() => supabase
       .from('script_elements')
       .select('id, content, scene_number')
       .in('script_id', scriptIds)
       .eq('element_type', 'scene_heading')
       .eq('is_omitted', false)
-      .order('sort_order');
+      .order('sort_order'));
     if (elements) setScenes(elements as SceneHead[]);
   };
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore, useScriptStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -92,11 +93,11 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
   const fetchAllScriptElements = useCallback(async () => {
     if (!activeScript) return;
     const supabase = createClient();
-    const { data } = await supabase
+    const { data } = await fetchAllResult(() => supabase
       .from('script_elements')
       .select('id, content, scene_number, sort_order, script_id, element_type')
       .eq('script_id', activeScript.id)
-      .order('sort_order');
+      .order('sort_order'));
     const elements = (data || []) as unknown as ScriptElement[];
     setAllScriptElements(elements);
     setAllSceneHeadings(elements.filter(el => el.element_type === 'scene_heading'));

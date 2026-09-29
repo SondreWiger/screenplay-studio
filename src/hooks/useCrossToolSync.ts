@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
+import { useAuthStore, usePresenceStore, useScriptStore } from '@/lib/stores';
 import type { ScriptElement } from '@/lib/types';
 
 /**
@@ -10,7 +10,17 @@ import type { ScriptElement } from '@/lib/types';
  * - script_elements INSERT/UPDATE → auto-create characters (new names)
  * - script_elements INSERT/UPDATE → auto-create scenes (new headings)
  * - runs only for changes made by OTHER users (local changes already optimistically applied)
+ * - runs on exactly one client: the online member with the lowest user id.
+ *   Previously every connected collaborator inserted the same row.
+ * - ignores elements from other projects' scripts (the subscription can't be
+ *   filtered by project, and RLS lets through every project the user is in)
  */
+function isSyncLeader(userId: string): boolean {
+  const online = usePresenceStore.getState().onlineUsers.map((u) => u.user_id).filter(Boolean);
+  if (!online.includes(userId)) online.push(userId);
+  return online.sort()[0] === userId;
+}
+
 export function useCrossToolSync(projectId: string) {
   const { user } = useAuthStore();
 
@@ -31,6 +41,8 @@ export function useCrossToolSync(projectId: string) {
         async (payload: { new: ScriptElement }) => {
           const element = payload.new as ScriptElement;
           if (element.last_edited_by === user.id) return;
+          const inThisProject = useScriptStore.getState().scripts.some((sc) => sc.id === element.script_id);
+          if (!inThisProject || !isSyncLeader(user.id)) return;
 
           if (element.element_type === 'character' && !element.is_omitted) {
             await syncCharacterFromScript(projectId, element, user.id);
@@ -65,7 +77,8 @@ async function syncCharacterFromScript(
     .from('characters')
     .select('id')
     .eq('project_id', projectId)
-    .eq('name', name.charAt(0) + name.slice(1).toLowerCase())
+    .ilike('name', name.replace(/[%_\\]/g, '\\$&'))
+    .limit(1)
     .maybeSingle();
 
   if (existing) return;

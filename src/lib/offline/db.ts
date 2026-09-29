@@ -130,7 +130,15 @@ export async function getCachedProjects(): Promise<Row[]> {
 
 // Sync Queue
 
-/** Add a pending write to the sync queue. */
+/** Queue key for a row: one pending entry per row, so repeated saves coalesce. */
+export function syncKey(table: string, rowId: string): string {
+  return `${table}:${rowId}`;
+}
+
+/**
+ * Add a pending write to the sync queue. Items keyed by `syncKey()` replace any
+ * earlier pending write for the same row — only the latest state is sent.
+ */
 export async function enqueueSyncItem(item: Omit<SyncQueueItem, 'retries'>): Promise<void> {
   const db = await getDB();
   await db.put('sync_queue', { ...item, retries: 0 });
@@ -148,10 +156,27 @@ export async function removeSyncItem(id: string): Promise<void> {
   await db.delete('sync_queue', id);
 }
 
-/** Increment retry count for a sync item. */
+/**
+ * Remove a synced item only if it wasn't replaced while the request was in
+ * flight. A newer write for the same row must stay queued.
+ */
+export async function removeSyncItemIfUnchanged(item: SyncQueueItem): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction('sync_queue', 'readwrite');
+  const current = await tx.store.get(item.id) as SyncQueueItem | undefined;
+  if (current && current.timestamp === item.timestamp) await tx.store.delete(item.id);
+  await tx.done;
+}
+
+/** Increment retry count for a sync item (unless a newer write replaced it). */
 export async function incrementRetry(item: SyncQueueItem): Promise<void> {
   const db = await getDB();
-  await db.put('sync_queue', { ...item, retries: item.retries + 1 });
+  const tx = db.transaction('sync_queue', 'readwrite');
+  const current = await tx.store.get(item.id) as SyncQueueItem | undefined;
+  if (current && current.timestamp === item.timestamp) {
+    await tx.store.put({ ...current, retries: current.retries + 1 });
+  }
+  await tx.done;
 }
 
 /** How many items are pending sync. */
