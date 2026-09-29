@@ -193,7 +193,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       ] = await Promise.all([
         supabase.from('projects').select('id, title, logline, project_type')
           .in('id', accessibleIds).ilike('title', like).limit(N),
-        supabase.from('scripts').select('id, title, project_id, script_type')
+        supabase.from('scripts').select('id, title, project_id')
           .in('project_id', accessibleIds).ilike('title', like).limit(N),
         accessibleScriptIds.length > 0
           ? supabase.from('script_elements')
@@ -225,8 +225,8 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
           .eq('is_deleted', false).ilike('content', like).limit(N),
         supabase.from('broadcast_contacts').select('id, name, category, project_id')
           .in('project_id', accessibleIds).ilike('name', like).limit(N),
-        supabase.from('broadcast_stories').select('id, headline, project_id, story_type')
-          .in('project_id', accessibleIds).ilike('headline', like).limit(N),
+        supabase.from('broadcast_stories').select('id, headline:title, project_id, story_type')
+          .in('project_id', accessibleIds).ilike('title', like).limit(N),
         supabase.from('stage_ensemble_members')
           .select('id, actor_name, character_name, ensemble_group, project_id')
           .in('project_id', accessibleIds)

@@ -55,7 +55,7 @@ export default function DeepDiveMoodboardPage() {
     setProject(proj);
 
     const { data: itemsData } = await supabase
-      .from('moodboard_items')
+      .from('mood_board_items')
       .select('*')
       .eq('project_id', params.id)
       .order('z_index');

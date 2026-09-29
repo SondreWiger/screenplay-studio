@@ -94,7 +94,7 @@ export async function GET() {
       supabase.from('script_elements').select('id', { count: 'exact', head: true }),
       supabase.from('scenes').select('id', { count: 'exact', head: true }),
       supabase.from('characters').select('id', { count: 'exact', head: true }),
-      supabase.from('scripts').select('script_type'),
+      supabase.from('projects').select('script_type'), // script_type lives on projects
       supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
       supabase.from('profiles').select('created_at').gte('created_at', sevenDaysAgo),
       // Advanced Metrics

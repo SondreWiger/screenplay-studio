@@ -260,7 +260,7 @@ export default function CrewMobileView() {
     } else {
       const [membersResult, charsResult] = await Promise.all([
         supabase.from('project_members').select('id, role, profiles(id, display_name, email, avatar_url)').eq('project_id', params.id),
-        supabase.from('characters').select('id, name, notes').eq('project_id', params.id).order('name'),
+        supabase.from('characters').select('id, name, notes:description').eq('project_id', params.id).order('name'),
       ]);
 
       setCrew(((membersResult.data || []) as unknown as { id: string; role: string; profiles: { id: string; display_name: string | null; email: string | null; avatar_url: string | null } | null }[]).map(m => ({

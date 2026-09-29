@@ -43,7 +43,15 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
       .select('*')
       .eq('company_id', companyId)
       .order('created_at', { ascending: false });
-    setPitches(data || []);
+    const list = (data || []) as OrgPitch[];
+    // vote_count isn't maintained by the database; derive the score from votes
+    const ids = list.map((p) => p.id);
+    const { data: votes } = ids.length
+      ? await supabase.from('org_pitch_votes').select('pitch_id, vote').in('pitch_id', ids)
+      : { data: [] as { pitch_id: string; vote: number }[] };
+    const score = new Map<string, number>();
+    for (const v of votes || []) score.set(v.pitch_id, (score.get(v.pitch_id) || 0) + v.vote);
+    setPitches(list.map((p) => ({ ...p, vote_count: score.get(p.id) || 0 })));
     setLoading(false);
   }, [companyId]);
 
@@ -85,23 +93,24 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
     load();
   };
 
+  // org_pitch_votes is keyed by (pitch_id, user_id) with vote = 1 | -1.
+  // (The old code used id / vote_type columns that don't exist, so voting never worked.)
   const vote = async (pitchId: string, voteType: 'upvote' | 'downvote') => {
+    const value = voteType === 'upvote' ? 1 : -1;
     const { data: existing } = await supabase
       .from('org_pitch_votes')
-      .select('id, vote_type')
+      .select('vote')
       .eq('pitch_id', pitchId)
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (existing) {
-      if (existing.vote_type === voteType) {
-        await supabase.from('org_pitch_votes').delete().eq('id', existing.id);
-      } else {
-        await supabase.from('org_pitch_votes').update({ vote_type: voteType }).eq('id', existing.id);
-      }
-    } else {
-      await supabase.from('org_pitch_votes').insert({ pitch_id: pitchId, user_id: userId, vote_type: voteType });
-    }
+    const { error } = existing?.vote === value
+      ? await supabase.from('org_pitch_votes').delete().eq('pitch_id', pitchId).eq('user_id', userId)
+      : await supabase.from('org_pitch_votes').upsert(
+          { pitch_id: pitchId, user_id: userId, vote: value },
+          { onConflict: 'pitch_id,user_id' },
+        );
+    if (error) toast.error("Couldn't record your vote");
     load();
   };
 

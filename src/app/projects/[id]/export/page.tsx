@@ -95,7 +95,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
     const supabase = createClient();
     const [scriptRes] = await Promise.all([
       supabase.from('scripts')
-        .select('id, title, content, updated_at')
+        .select('id, title, updated_at') // no scripts.content column; elements are fetched below
         .eq('project_id', params.id)
         .order('created_at', { ascending: true }),
     ]);

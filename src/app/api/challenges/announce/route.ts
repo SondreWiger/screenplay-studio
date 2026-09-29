@@ -37,7 +37,6 @@ export async function GET() {
         challenge_type,
         week_number,
         year,
-        status,
         created_at,
         updated_at
       `)
@@ -122,12 +121,10 @@ export async function GET() {
         id,
         title,
         excerpt,
-        content,
         published_at,
         created_at,
         cover_image_url,
         slug,
-        series_name,
         author:profiles!author_id(full_name,avatar_url)
       `)
       .or(`published_at.gt.${yesterday},created_at.gt.${yesterday}`)
@@ -138,8 +135,8 @@ export async function GET() {
       // Group posts by series if they have a series_name
       for (const post of recentPosts) {
         try {
-          if (post.series_name) {
-            await announceBlogPostWithSeries(post, post.series_name);
+          if ((post as { series_name?: string }).series_name) {
+            await announceBlogPostWithSeries(post, (post as { series_name?: string }).series_name as string);
           } else {
             await announceBlogPost(post);
           }

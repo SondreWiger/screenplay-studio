@@ -282,9 +282,9 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
                   )}
                 </div>
 
-                {location.tags.length > 0 && (
+                {(location.tags?.length ?? 0) > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1">
-                    {location.tags.map((tag) => <Badge key={tag} size="sm">{tag}</Badge>)}
+                    {(location.tags ?? []).map((tag) => <Badge key={tag} size="sm">{tag}</Badge>)}
                   </div>
                 )}
               </div>

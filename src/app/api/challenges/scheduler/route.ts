@@ -47,7 +47,6 @@ export async function GET() {
         submission_count,
         prize_title,
         prize_description,
-        status,
         challenge_type,
         week_number,
         year,
@@ -135,7 +134,6 @@ export async function GET() {
       .select(`
         id,
         title,
-        series_name,
         published_at,
         author:profiles!author_id(full_name,avatar_url)
       `)
@@ -146,8 +144,8 @@ export async function GET() {
     if (newPosts && newPosts.length > 0) {
       for (const post of newPosts) {
         try {
-          if (post.series_name) {
-            await announceBlogPostWithSeries(post, post.series_name);
+          if ((post as { series_name?: string }).series_name) {
+            await announceBlogPostWithSeries(post, (post as { series_name?: string }).series_name as string);
           } else {
             await announceBlogPost(post);
           }
@@ -155,7 +153,7 @@ export async function GET() {
           processedChallenges.push({
             postId: post.id,
             title: post.title,
-            action: post.series_name ? 'announced_series_post' : 'announced_blog_post',
+            action: (post as { series_name?: string }).series_name ? 'announced_series_post' : 'announced_blog_post',
             success: true,
           });
         } catch (error) {

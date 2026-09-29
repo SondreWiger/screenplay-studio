@@ -481,7 +481,7 @@ export default function ShareViewerPage({ params }: { params: { token: string } 
                     )}
                     {!!day.notes && <p className="text-xs text-gray-500 mt-1">{String(day.notes)}</p>}
                   </div>
-                  {!!day.is_completed && (
+                  {day.status === 'completed' && (
                     <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Done</span>
                   )}
                 </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { attachProfiles } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubCommunity } from '@/lib/SubCommunityContext';
 import { Button, Input, Modal, Avatar, LoadingSpinner, toast } from '@/components/ui';
@@ -147,14 +148,15 @@ function CommunityChatUI({
     setShowSidebar(false);
     setLoadingMsgs(true);
     const sb = createClient();
+    // author_id references auth.users, so authors are attached separately
     const { data } = await sb
       .from('community_messages')
-      .select('*, author:profiles!author_id(id,full_name,avatar_url,username)')
+      .select('*')
       .eq('channel_id', ch.id)
       .eq('is_deleted', false)
       .order('created_at', { ascending: true })
       .limit(200);
-    setMessages((data ?? []) as RichMessage[]);
+    setMessages(await attachProfiles(sb, data ?? [], 'author_id', 'author', 'id, full_name, avatar_url, username') as RichMessage[]);
     setLoadingMsgs(false);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }, []);
@@ -183,11 +185,12 @@ function CommunityChatUI({
         event: 'INSERT', schema: 'public', table: 'community_messages',
         filter: `channel_id=eq.${activeChannel.id}`,
       }, async (payload) => {
-        const { data } = await sb
+        const { data: row } = await sb
           .from('community_messages')
-          .select('*, author:profiles!author_id(id,full_name,avatar_url,username)')
+          .select('*')
           .eq('id', payload.new.id)
           .single();
+        const data = row ? (await attachProfiles(sb, [row], 'author_id', 'author', 'id, full_name, avatar_url, username'))[0] : null;
         if (data) {
           setMessages(prev => prev.some(m => m.id === (data as RichMessage).id) ? prev : [...prev, data as RichMessage]);
           setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);

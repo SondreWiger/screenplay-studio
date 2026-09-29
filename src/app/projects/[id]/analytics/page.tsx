@@ -95,9 +95,9 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
       supabase.from('scenes').select('id, is_completed, created_at').eq('project_id', params.id),
       supabase.from('characters').select('id, is_main, cast_actor, created_at').eq('project_id', params.id),
       supabase.from('shots').select('id, is_completed, created_at').eq('project_id', params.id),
-      supabase.from('comments').select('id, is_resolved, created_at, user_id').eq('project_id', params.id),
+      supabase.from('comments').select('id, is_resolved, created_at, user_id:created_by').eq('project_id', params.id),
       supabase.from('project_members')
-        .select('id, user_id, role, created_at, profiles:user_id(full_name, display_name, avatar_url, email)')
+        .select('id, user_id, role, created_at:joined_at, profiles:profiles!user_id(full_name, display_name, avatar_url, email)')
         .eq('project_id', params.id),
       supabase.from('locations').select('id').eq('project_id', params.id),
     ]);

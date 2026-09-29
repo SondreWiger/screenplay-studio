@@ -18,6 +18,14 @@ import type { UsageIntent } from '@/lib/types';
  * These are AVAILABLE tools (the user has access) that are simply
  * lower priority for their workflow.
  */
+// Shared groups for the balanced defaults below
+const ON_SET_TOOLS = [
+  'continuity', 'dood', 'table-read', 'camera-reports', 'safety-plan',
+  'production-overview', 'onset', 'schedule-pack', 'one-liner', 'auto-breakdown',
+];
+const BUSINESS_TOOLS = ['invoice', 'reports', 'analytics', 'branding', 'presskit', 'docx'];
+const NICHE_TOOLS = ['seo', 'sponsors', 'thumbnails', 'quotes', 'compare'];
+
 export function getDefaultOtherIcons(
   intent: UsageIntent | undefined | null,
   projectType?: string | null,
@@ -90,16 +98,10 @@ export function getDefaultOtherIcons(
         'thumbnails',
       ]);
 
-    // Writer & Producer — virtually nothing hidden by default
+    // Writer & Producer — keep writing and core planning up front; the
+    // day-of-shoot paperwork and business tools wait under "Other Tools".
     case 'both':
-      return new Set([
-        // Only truly niche tools go to Other for power users
-        'seo',
-        'sponsors',
-        'thumbnails',
-        'presskit',
-        'invoice',
-      ]);
+      return new Set([...ON_SET_TOOLS, ...BUSINESS_TOOLS, ...NICHE_TOOLS]);
 
     // Content Creator — focus on content pipeline
     case 'content_creator':
@@ -162,8 +164,12 @@ export function getDefaultOtherIcons(
         'crew',
       ]);
 
+    // No stated intent: a balanced default. Showing all 50+ tools at once
+    // (the old behaviour) buried the ones most people use.
     default:
-      return new Set();
+      return isContentCreator || isAudioDrama || isStagePlay
+        ? new Set([...NICHE_TOOLS])
+        : new Set([...ON_SET_TOOLS, ...BUSINESS_TOOLS, ...NICHE_TOOLS]);
   }
 }
 

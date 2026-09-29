@@ -45,7 +45,7 @@ export default function PitchDeckPage() {
       const [projRes, charsRes, moodRes] = await Promise.all([
         supabase.from('projects').select('*').eq('id', projectId).single(),
         supabase.from('characters').select('*').eq('project_id', projectId).order('sort_order'),
-        supabase.from('moodboard_items').select('*').eq('project_id', projectId).limit(6),
+        supabase.from('mood_board_items').select('*').eq('project_id', projectId).eq('item_type', 'image').not('image_url', 'is', null).order('z_index').limit(6),
       ]);
 
       if (projRes.data) setProject(projRes.data as Project);

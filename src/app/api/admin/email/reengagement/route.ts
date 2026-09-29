@@ -18,11 +18,11 @@ export async function GET(req: Request) {
   const supabase = createAdminSupabaseClient();
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Fetch inactive users: last_login_at OR updated_at older than 30 days
+  // Inactive users: last_seen (kept by the middleware) or, if never seen, updated_at older than 30 days
   const { data: candidates, error: queryErr } = await supabase
     .from('profiles')
-    .select('id, email, display_name, full_name, last_login_at, updated_at')
-    .or(`last_login_at.lt.${thirtyDaysAgo},and(last_login_at.is.null,updated_at.lt.${thirtyDaysAgo})`)
+    .select('id, email, display_name, full_name, last_seen, updated_at')
+    .or(`last_seen.lt.${thirtyDaysAgo},and(last_seen.is.null,updated_at.lt.${thirtyDaysAgo})`)
     .not('email', 'is', null)
     .neq('email_weekly_digest', false);
 

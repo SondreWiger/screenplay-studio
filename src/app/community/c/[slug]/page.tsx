@@ -63,9 +63,9 @@ export default function CommunityFeedPage() {
       ? { ...p, upvote_count: (p.upvote_count ?? 0) + (has ? -1 : 1) }
       : p));
     if (has)
-      await sb.from('post_upvotes').delete().eq('post_id', post.id).eq('user_id', user.id);
+      await sb.from('community_upvotes').delete().eq('post_id', post.id).eq('user_id', user.id);
     else
-      await sb.from('post_upvotes').insert({ post_id: post.id, user_id: user.id });
+      await sb.from('community_upvotes').insert({ post_id: post.id, user_id: user.id });
   };
 
   const deletePost = async (post: RichPost) => {

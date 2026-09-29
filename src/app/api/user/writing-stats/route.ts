@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import logger from '@/lib/logger';
+import { fetchAll } from '@/lib/supabase/fetch-all';
 
 // GET /api/user/writing-stats
 // Returns aggregated writing statistics for the authenticated user.
@@ -16,106 +17,78 @@ export async function GET() {
     }
 
     const uid = user.id;
-
-    // Gather stats in parallel
-    const [
-      scriptElementsRes,
-      projectsRes,
-      workSessionsRes,
-    ] = await Promise.all([
-      // All script elements (for word counts)
-      supabase
-        .from('script_elements')
-        .select('content, created_at, script_id')
-        .eq('created_by', uid),
-      // Projects (to find top project)
-      supabase
-        .from('projects')
-        .select('id, title')
-        .eq('created_by', uid),
-      // Work sessions for time-based stats
-      supabase
-        .from('work_sessions')
-        .select('words_written, started_at, ended_at')
-        .eq('user_id', uid)
-        .order('started_at', { ascending: false })
-        .limit(500),
-    ]);
-
-    const elements = scriptElementsRes.data ?? [];
-    const projects = projectsRes.data ?? [];
-    const sessions = workSessionsRes.data ?? [];
-
-    // Count words from script elements
-    const countWords = (text: string): number =>
-      text ? text.trim().split(/\s+/).filter(Boolean).length : 0;
-
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - 7);
     weekStart.setHours(0, 0, 0, 0);
+    const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
+    // Daily totals come from work_logs (maintained by the work tracker). The old
+    // version read non-existent work_sessions columns and then downloaded every
+    // element the user had ever written on each dashboard load.
+    const [logsRes, projectsRes, profileRes] = await Promise.all([
+      supabase
+        .from('work_logs')
+        .select('log_date, words_written')
+        .eq('user_id', uid)
+        .order('log_date', { ascending: false })
+        .limit(1000),
+      supabase.from('projects').select('id', { count: 'exact', head: true }).eq('created_by', uid),
+      supabase.from('profiles').select('writing_goal_words_per_day').eq('id', uid).maybeSingle(),
+    ]);
+
+    const logs = (logsRes.data ?? []) as { log_date: string; words_written: number | null }[];
     let totalWords = 0;
     let wordsToday = 0;
     let wordsThisWeek = 0;
+    const today = isoDate(todayStart);
+    const week = isoDate(weekStart);
+    for (const l of logs) {
+      const w = l.words_written ?? 0;
+      totalWords += w;
+      if (l.log_date === today) wordsToday += w;
+      if (l.log_date >= week) wordsThisWeek += w;
+    }
 
-    // Use work sessions if available (more reliable, tracks actual typing)
-    if (sessions.length > 0) {
-      for (const s of sessions) {
-        const w = s.words_written ?? 0;
-        totalWords += w;
-        const t = new Date(s.started_at);
-        if (t >= todayStart) wordsToday += w;
-        if (t >= weekStart) wordsThisWeek += w;
-      }
-    } else {
-      // Fall back to counting script element content
-      for (const el of elements) {
+    // No tracked sessions yet: estimate the recent numbers from lines written
+    // this week (bounded, unlike an all-time scan).
+    if (logs.length === 0) {
+      const countWords = (text: string): number =>
+        text ? text.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length : 0;
+      const recent = await fetchAll<{ content: string | null; created_at: string }>(() =>
+        supabase
+          .from('script_elements')
+          .select('content, created_at')
+          .eq('created_by', uid)
+          .gte('created_at', weekStart.toISOString()),
+      ).catch(() => []);
+      for (const el of recent) {
         const w = countWords(el.content ?? '');
-        totalWords += w;
-        const t = new Date(el.created_at);
-        if (t >= todayStart) wordsToday += w;
-        if (t >= weekStart) wordsThisWeek += w;
+        wordsThisWeek += w;
+        if (new Date(el.created_at) >= todayStart) wordsToday += w;
       }
+      totalWords = wordsThisWeek;
     }
 
-    // Find top project by element count
-    const countByProject: Record<string, number> = {};
-    for (const el of elements) {
-      if (el.script_id) {
-        countByProject[el.script_id] = (countByProject[el.script_id] ?? 0) + 1;
-      }
-    }
+    const firstLog = logs.length > 0 ? new Date(logs[logs.length - 1].log_date) : null;
+    const activeDays = firstLog
+      ? Math.max(1, Math.ceil((now.getTime() - firstLog.getTime()) / (1000 * 60 * 60 * 24)))
+      : 7;
+    const avgWordsPerDay = Math.round(totalWords / activeDays);
 
-    // Total days since first session
-    const firstSession = sessions.length > 0
-      ? new Date(sessions[sessions.length - 1].started_at)
-      : null;
-    const activeDays = firstSession
-      ? Math.max(1, Math.ceil((now.getTime() - firstSession.getTime()) / (1000 * 60 * 60 * 24)))
-      : 1;
-
-    const avgWordsPerDay = activeDays > 0 ? Math.round(totalWords / activeDays) : 0;
-
-    // Fetch user's writing goal from profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('writing_goal_words_per_day')
-      .eq('id', uid)
-      .single();
+    // Null until the writing_goal_words_per_day migration is applied
+    const goal = (profileRes.data as { writing_goal_words_per_day?: number | null } | null)?.writing_goal_words_per_day ?? null;
 
     return NextResponse.json({
       totalWords,
       wordsToday,
       wordsThisWeek,
       avgWordsPerDay,
-      totalProjects: projects.length,
-      writingGoal: (profile as any)?.writing_goal_words_per_day ?? null,
-      goalProgress: (profile as any)?.writing_goal_words_per_day
-        ? Math.min(100, Math.round((wordsToday / (profile as any).writing_goal_words_per_day) * 100))
-        : null,
+      totalProjects: projectsRes.count ?? 0,
+      writingGoal: goal,
+      goalProgress: goal ? Math.min(100, Math.round((wordsToday / goal) * 100)) : null,
     });
   } catch (err: any) {
     logger.error('writing-stats', 'Unexpected error', err?.message);

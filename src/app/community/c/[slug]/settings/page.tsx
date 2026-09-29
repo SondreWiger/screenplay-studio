@@ -59,7 +59,7 @@ export default function SettingsPage() {
       sb.from('sub_community_rules').select('*').eq('community_id', community.id).order('sort_order'),
       sb.from('sub_community_members').select('*, user:user_id(id,full_name,avatar_url)').eq('community_id', community.id),
       sb.from('automod_flags').select('*').eq('community_id', community.id).eq('resolved', false).order('created_at', { ascending: false }),
-      sb.from('community_posts').select('*, author:user_id(id,full_name)').eq('sub_community_id', community.id).eq('mod_status', 'pending'),
+      sb.from('community_posts').select('*, author:profiles!author_id(id,full_name)').eq('sub_community_id', community.id).eq('mod_status', 'pending'),
     ]);
     setRules(r ?? []);
     setMembers(m ?? []);

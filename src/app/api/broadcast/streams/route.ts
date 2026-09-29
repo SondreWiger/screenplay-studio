@@ -123,7 +123,7 @@ export async function DELETE(req: NextRequest) {
 
   const { data: stream, error: fetchError } = await supabase
     .from('broadcast_stream_ingests')
-    .select('user_id, created_by')
+    .select('created_by')
     .eq('id', streamId)
     .single();
 
@@ -132,7 +132,7 @@ export async function DELETE(req: NextRequest) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
   const isAdmin = profile?.role === 'admin';
 
-  if (stream.user_id !== user.id && stream.created_by !== user.id && !isAdmin) {
+  if (stream.created_by !== user.id && !isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

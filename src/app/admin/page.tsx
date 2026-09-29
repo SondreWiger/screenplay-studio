@@ -390,8 +390,8 @@ export default function AdminPage() {
         supabase.from('profiles').select('created_at').gte('created_at', thirtyDaysAgo),
         // 30-day project creation trend
         supabase.from('projects').select('created_at').gte('created_at', thirtyDaysAgo),
-        // Script type breakdown
-        supabase.from('scripts').select('script_type'),
+        // Script type breakdown (script_type lives on projects)
+        supabase.from('projects').select('script_type'),
         // Project type breakdown
         supabase.from('projects').select('project_type'),
         // Country breakdown
@@ -2297,7 +2297,7 @@ function ProjectsTab({ projects, search, onSearchChange }: {
       supabase.from('scenes').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
       supabase.from('shots').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
       supabase.from('ideas').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
-      supabase.from('budget_items').select('id, amount', { count: 'exact' }).eq('project_id', projectId),
+      supabase.from('budget_items').select('id, amount:estimated_amount', { count: 'exact' }).eq('project_id', projectId),
       supabase.from('production_schedule').select('id', { count: 'exact', head: true }).eq('project_id', projectId),
     ]);
 

@@ -36,10 +36,9 @@ export async function POST(req: NextRequest) {
       const amount = Number(payload?.amount) || 50;
       const { error } = await supabase.rpc('award_xp', { target_user_id: user.id, xp_amount: amount, reason: 'dev_panel_test' });
       if (error) {
-        // Fallback: direct update
-        const { data: profile } = await supabase.from('profiles').select('xp').eq('id', user.id).single();
-        const newXp = (profile?.xp ?? 0) + amount;
-        await supabase.from('profiles').update({ xp: newXp }).eq('id', user.id);
+        // Fallback: direct update (XP lives in user_gamification, not profiles)
+        const { data: g } = await supabase.from('user_gamification').select('xp_total').eq('user_id', user.id).maybeSingle();
+        await supabase.from('user_gamification').update({ xp_total: (g?.xp_total ?? 0) + amount }).eq('user_id', user.id);
       }
       return NextResponse.json({ ok: true, awarded: amount });
     }

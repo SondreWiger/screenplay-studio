@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { attachProfiles } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { AppHeader } from '@/components/AppHeader';
 import { Button, Input, Modal, LoadingPage, toast } from '@/components/ui';
@@ -145,11 +146,12 @@ export default function BoardPage({ params }: { params: { id: string } }) {
 
   const fetchMembers = useCallback(async () => {
     const supabase = createClient();
+    // user_id references auth.users, so profiles are attached separately
     const { data } = await supabase
       .from('idea_board_members')
-      .select('*, profiles(full_name, avatar_url)')
+      .select('*')
       .eq('board_id', boardId);
-    setMembers((data ?? []) as Member[]);
+    setMembers(await attachProfiles(supabase, data ?? [], 'user_id', 'profiles', 'id, full_name, avatar_url') as Member[]);
   }, [boardId]);
 
   const fetchProjects = useCallback(async () => {

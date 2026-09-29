@@ -120,8 +120,8 @@ export async function GET(
     contentFetches.push(
       (async () => {
         const { data } = await admin
-          .from('shooting_days')
-          .select('id, day_number, shoot_date, call_time, wrap_time, notes, is_completed')
+          .from('shoot_days')
+          .select('id, day_number, shoot_date, call_time, wrap_time, notes, status')
           .eq('project_id', link.project_id)
           .order('day_number', { ascending: true });
         schedule = data ?? [];

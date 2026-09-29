@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { replaceScriptElements } from '@/lib/scripts/replace-elements';
+import { SaveStatus } from '@/components/SaveStatus';
+import { flushSyncQueue, getSyncStatus } from '@/lib/offline/queue';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
 import { usePlaybackStore } from '@/lib/playbackStore';
@@ -1131,25 +1133,8 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     }, 0);
   }, [elements]);
 
-  // Last saved timestamp
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  useEffect(() => {
-    if (!saving && lastSaved === null && elements.length > 0) {
-      setLastSaved(new Date());
-    }
-    if (saving) return;
-    // When saving just finished
-    setLastSaved(new Date());
-  }, [saving]);
-
   // Auto-save to disk in Electron mode via IPC heartbeat
-  const { lastSaved: electronLastSaved } = useAutoSave();
-  
-  useEffect(() => {
-    if (electronLastSaved) {
-      setLastSaved(electronLastSaved);
-    }
-  }, [electronLastSaved]);
+  useAutoSave();
   // All version names present in this script (known + detected from elements)
   const allVersions = useMemo(() => getAllVersionNames(elements, versionConfig), [elements, versionConfig]);
 
@@ -1765,7 +1750,13 @@ ${pageHTML}
       if (isElectronMode()) {
         handleSilentSave();
       } else {
-        toast.success('All changes are saved');
+        // Actually push pending edits and report what happened
+        flushSyncQueue().then(() => {
+          const st = getSyncStatus();
+          if (!navigator.onLine) toast.warning('Offline — changes are saved on this device and will sync when you reconnect');
+          else if (st.failed > 0) toast.error(`${st.failed} change${st.failed === 1 ? '' : 's'} couldn't be saved. Use Retry in the status bar.`);
+          else toast.success('All changes are saved');
+        });
       }
     }
     if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
@@ -2072,15 +2063,8 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </div>
           )}
           <div className="flex-1" />
-          {saving ? (
-            <span className="flex items-center gap-1.5 text-[11px] text-surface-500 shrink-0">
-              <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />Saving
-            </span>
-          ) : lastSaved && (
-            <span className="flex items-center gap-1.5 text-[11px] text-surface-600 shrink-0">
-              <div className="w-2 h-2 rounded-full bg-green-500" />Saved
-            </span>
-          )}
+          {/* Reflects the server, not just local state: pending / failed / offline */}
+          <SaveStatus localSaving={saving} />
           
           <div className="w-px h-4 bg-surface-800 mx-2" />
           <ScriptStatsPanel elements={elements} mode="bar" pageCount={totalPages} />
@@ -2983,13 +2967,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
               ? `${elements.filter(e => e.element_type === 'comic_page').length} pages · ${elements.filter(e => e.element_type === 'comic_panel').length} panels · ${wordCount.toLocaleString()} words`
               : `${totalPages} pgs · ${elements.filter(e => e.element_type === 'scene_heading').length} scenes · ${wordCount.toLocaleString()} words`
             }</span>
-            <span className="flex items-center gap-1.5">
-              {saving ? (
-                <><span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />Saving</>
-              ) : lastSaved ? (
-                <><span className="w-1.5 h-1.5 rounded-full bg-green-500" />Saved</>
-              ) : null}
-            </span>
+            <SaveStatus localSaving={saving} compact />
           </div>
         </div>
       )}

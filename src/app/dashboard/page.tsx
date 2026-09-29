@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, Modal, Input, Textarea, Select, KeyboardShortcuts, toast } from '@/components/ui';
+import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, SkeletonCard, Modal, Input, Textarea, Select, KeyboardShortcuts, toast } from '@/components/ui';
 import { pickToast, NEW_PROJECT } from '@/lib/funToasts';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -823,6 +823,11 @@ function DashboardContent() {
           <div className="text-center py-12 text-surface-500 text-sm mb-8">
             {t('dashboard.no_match')}{' '}
             <button onClick={() => { setSearchQuery(''); setFilterStatus('all'); }} className="text-brand-500 hover:text-brand-400 transition-colors">{t('dashboard.clear_filters')}</button>
+          </div>
+        ) : projects.length === 0 && loading ? (
+          // Still fetching — don't flash "no projects yet" at people who have some
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8" aria-busy="true" aria-label="Loading projects">
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : projects.length === 0 ? (
           <EmptyState
