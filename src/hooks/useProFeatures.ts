@@ -38,47 +38,74 @@ interface ProFeatures {
   isProForProject: (project: { pro_enabled?: boolean } | null | undefined) => boolean;
 }
 
+// Shared across every component that calls useProFeatures() (28+ call sites):
+// one request per user per TTL instead of two queries per mounted component.
+type ProData = { subscription: Subscription | null; gating: boolean };
+const PRO_TTL_MS = 5 * 60_000;
+let proCache: { userId: string; at: number; data: ProData } | null = null;
+let proInflight: { userId: string; promise: Promise<ProData> } | null = null;
+
+function loadProData(userId: string, force = false): Promise<ProData> {
+  if (!force && proCache?.userId === userId && Date.now() - proCache.at < PRO_TTL_MS) {
+    return Promise.resolve(proCache.data);
+  }
+  if (!force && proInflight?.userId === userId) return proInflight.promise;
+  const supabase = createClient();
+  const promise = Promise.all([
+    supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'pro_gating_enabled')
+      .maybeSingle(),
+  ]).then(([subRes, gatingRes]) => {
+    // Default: gating ON. Admin can set 'false' to make everything free.
+    const data: ProData = {
+      subscription: subRes.data,
+      gating: gatingRes.data ? gatingRes.data.value !== 'false' : true,
+    };
+    proCache = { userId, at: Date.now(), data };
+    return data;
+  }).finally(() => {
+    if (proInflight?.promise === promise) proInflight = null;
+  });
+  proInflight = { userId, promise };
+  return promise;
+}
+
 export function useProFeatures(): ProFeatures {
   const { user } = useAuthStore();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [proGatingEnabled, setProGatingEnabled] = useState(false);
+  const cached = user && proCache?.userId === user.id ? proCache.data : null;
+  const [subscription, setSubscription] = useState<Subscription | null>(cached?.subscription ?? null);
+  const [loading, setLoading] = useState(!cached);
+  // Assume gating is on until told otherwise, so Pro-only UI doesn't flash for
+  // free users while loading (the old default briefly made everyone Pro).
+  const [proGatingEnabled, setProGatingEnabled] = useState(cached?.gating ?? true);
 
   // If pro gating is disabled globally, every user is treated as Pro
   const isProByAccount = user?.is_pro === true;
   const isPro = !proGatingEnabled || isProByAccount;
   const limits = isPro ? PRO_LIMITS.pro : PRO_LIMITS.free;
 
-  const fetchSubscription = useCallback(async () => {
+  const fetchSubscription = useCallback(async (force = false) => {
     if (!user) { setLoading(false); return; }
     try {
-      const supabase = createClient();
-      const [subRes, gatingRes] = await Promise.all([
-        supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from('site_settings')
-          .select('value')
-          .eq('key', 'pro_gating_enabled')
-          .maybeSingle(),
-      ]);
-      setSubscription(subRes.data);
-      // Default: gating ON (true). Admin can set to 'false' to make everything free.
-      if (gatingRes.data) {
-        setProGatingEnabled(gatingRes.data.value !== 'false');
-      }
+      const data = await loadProData(user.id, force);
+      setSubscription(data.subscription);
+      setProGatingEnabled(data.gating);
     } catch (err) {
       console.error('Error fetching subscription:', err);
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { fetchSubscription(); }, [fetchSubscription]);
 
@@ -114,6 +141,7 @@ export function useProFeatures(): ProFeatures {
     // Update local state
     useAuthStore.getState().setUser({ ...user, is_pro: true, pro_since: new Date().toISOString() });
     if (sub) setSubscription(sub);
+    proCache = null;
   }, [user]);
 
   const isProForProject = useCallback((project: { pro_enabled?: boolean } | null | undefined) => {
@@ -140,7 +168,7 @@ export function useProFeatures(): ProFeatures {
     hasBulkExport: limits.bulk_export,
     hasAdvancedExports: limits.advanced_exports,
     activateDevBypass,
-    refreshSubscription: fetchSubscription,
+    refreshSubscription: () => fetchSubscription(true),
     isProForProject,
   };
 }

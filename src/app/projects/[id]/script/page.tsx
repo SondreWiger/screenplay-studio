@@ -477,6 +477,21 @@ function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
   });
 }
 
+// Per-line lookup index. Every LineEditor selects its element from the store on
+// each change; a linear find() made that O(lines²) per keystroke on long scripts.
+// One Map per elements array, shared by all lines.
+const elementIndexCache = new WeakMap<ScriptElement[], Map<string, ScriptElement>>();
+function getElementIndex(elements: ScriptElement[]): Map<string, ScriptElement> {
+  let index = elementIndexCache.get(elements);
+  if (!index) {
+    index = new Map(elements.map((e) => [e.id, e]));
+    elementIndexCache.set(elements, index);
+  }
+  return index;
+}
+
+const NO_COLLABORATORS: never[] = [];
+
 // Main Page
 
 export default function ScriptEditorPage({ params }: { params: { id: string } }) {
@@ -904,6 +919,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   };
 
   // Character names for autocomplete
+  const characterNamesRef = useRef<string[]>([]);
   const characterNames = useMemo(() => {
     const names = new Set<string>();
     elements.forEach((e) => {
@@ -914,7 +930,13 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
         if (clean) names.add(clean);
       }
     });
-    return Array.from(names).sort();
+    const next = Array.from(names).sort();
+    // Keep the previous array while the set of names is unchanged, so every
+    // line (which receives this for autocomplete) doesn't re-render per edit.
+    const prev = characterNamesRef.current;
+    if (prev.length === next.length && prev.every((n, i) => n === next[i])) return prev;
+    characterNamesRef.current = next;
+    return next;
   }, [elements]);
 
   // Character color map — assigns stable colors to each character
@@ -2061,7 +2083,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
           )}
           
           <div className="w-px h-4 bg-surface-800 mx-2" />
-          <ScriptStatsPanel elements={elements} mode="bar" />
+          <ScriptStatsPanel elements={elements} mode="bar" pageCount={totalPages} />
         </div>
 
         {/* Toolbar — Row 2: Tools */}
@@ -2720,7 +2742,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                             showPageBreak={false}
                             pageNumber={elementPages[element.id]}
                             onFocused={(type) => setActiveElementType(type)}
-                            collaborators={collabMap[element.id] || []}
+                            collaborators={collabMap[element.id] || NO_COLLABORATORS}
                             projectId={params.id}
                             canEdit={canEdit}
                             displaySettings={displaySettings}
@@ -3782,7 +3804,7 @@ const LineEditor = memo(function LineEditor({
 }: LineEditorProps) {
   // Subscribe to just this element via a Zustand selector — stable reference prevents re-renders
   const selectElement = useCallback(
-    (s: ReturnType<typeof useScriptStore.getState>) => s.elements.find((e) => e.id === elementId),
+    (s: ReturnType<typeof useScriptStore.getState>) => getElementIndex(s.elements).get(elementId),
     [elementId]
   );
   const element = useScriptStore(selectElement);
@@ -3798,9 +3820,12 @@ const LineEditor = memo(function LineEditor({
   const tabPickerIdxRef = useRef(0);
 
   const [showTypeMenu, setShowTypeMenu] = useState(false);
-  const { startPlayback, playingElementId, audioCache } = usePlaybackStore();
-  const isPlaying = playingElementId === elementId && audioCache[elementId]?.status === 'ready';
-  const isGenerating = playingElementId === elementId && audioCache[elementId]?.status === 'generating';
+  // Narrow selectors: this component exists once per line, so subscribing to the
+  // whole playback store re-rendered every line on each audio status change.
+  const startPlayback = usePlaybackStore((st) => st.startPlayback);
+  const playbackStatus = usePlaybackStore((st) => (st.playingElementId === elementId ? st.audioCache[elementId]?.status : undefined));
+  const isPlaying = playbackStatus === 'ready';
+  const isGenerating = playbackStatus === 'generating';
 
   const handlePlayAudio = () => {
     startPlayback(projectId, elementId, characterVoices);
@@ -4684,8 +4709,10 @@ const LineEditor = memo(function LineEditor({
     && prev.canEdit === next.canEdit
     && prev.displaySettings === next.displaySettings
     && prev.characterColorMap === next.characterColorMap
-    && prev.sceneNumberMap === next.sceneNumberMap
-    && prev.comicNumberMap === next.comicNumberMap
+    // Maps are rebuilt on every edit; only this line's entry matters.
+    && prev.sceneNumberMap[prev.elementId] === next.sceneNumberMap[next.elementId]
+    && prev.comicNumberMap[prev.elementId] === next.comicNumberMap[next.elementId]
+    && prev.characterVoices === next.characterVoices
     && prev.commentCount === next.commentCount
     && prev.isContentCreator === next.isContentCreator
     && prev.isAudioDrama === next.isAudioDrama

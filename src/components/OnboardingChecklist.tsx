@@ -134,6 +134,8 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
   // Auto-verify completed items when projectId is known
   useEffect(() => {
     if (!projectId || !loaded) return;
+    // Having a project to check is itself proof of the first step
+    persistCompleted('project');
 
     const checkVerification = async () => {
       const currentState = loadState();
@@ -168,10 +170,14 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
             id: 'write',
             fn: async () => {
               if (currentState.completed.includes('write')) return false;
+              // script_elements has no project_id; go through the project's scripts
+              const { data: scripts } = await supabase.from('scripts').select('id').eq('project_id', projectId);
+              const ids = (scripts || []).map((sc: { id: string }) => sc.id);
+              if (ids.length === 0) return false;
               const { count } = await supabase
                 .from('script_elements')
-                .select('*', { count: 'exact', head: true })
-                .eq('project_id', projectId);
+                .select('id', { count: 'exact', head: true })
+                .in('script_id', ids);
               return (count || 0) >= 10;
             },
           },

@@ -52,3 +52,23 @@ export async function fetchAllResult<T = any>(
     return { data: null, error: error as Error };
   }
 }
+
+/**
+ * Attach author profiles to rows whose author column references auth.users
+ * rather than profiles. PostgREST can't embed across that foreign key
+ * (`profiles!author_id(...)` fails with PGRST200), so look them up separately.
+ */
+export async function attachProfiles<T extends Record<string, any>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  rows: T[],
+  idKey: keyof T,
+  as: string,
+  columns = 'id, display_name, full_name, avatar_url, email',
+): Promise<T[]> {
+  const ids = Array.from(new Set(rows.map((r) => r[idKey]).filter(Boolean)));
+  if (ids.length === 0) return rows;
+  const { data } = await supabase.from('profiles').select(columns).in('id', ids);
+  const byId = new Map<string, unknown>((data || []).map((p: { id: string }) => [p.id, p]));
+  return rows.map((r) => ({ ...r, [as]: byId.get(r[idKey]) ?? null }));
+}

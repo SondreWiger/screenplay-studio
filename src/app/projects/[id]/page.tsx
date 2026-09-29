@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { attachProfiles } from '@/lib/supabase/fetch-all';
 import { useProjectStore } from '@/lib/stores';
 import { getCachedByProject, getCachedByScript } from '@/lib/offline/db';
 import { Card, Badge, Progress, Button, LoadingPage } from '@/components/ui';
@@ -304,13 +305,18 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           .eq('project_id', params.id)
           .order('updated_at', { ascending: false })
           .limit(5),
+        // author_id references auth.users, so profiles are attached separately
         supabase
           .from('document_comments')
-          .select('id, content, created_at, profiles!author_id(display_name)')
+          .select('id, content, created_at, author_id')
           .eq('project_id', params.id)
           .eq('is_resolved', false)
           .order('created_at', { ascending: false })
-          .limit(10),
+          .limit(10)
+          .then(async (res: { data: { author_id: string }[] | null; error: unknown }) => ({
+            ...res,
+            data: res.data ? await attachProfiles(supabase, res.data, 'author_id', 'profiles', 'id, display_name') : null,
+          })),
         supabase
           .from('stage_ensemble_members')
           .select('id, actor_name, character_name, updated_at')

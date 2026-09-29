@@ -306,6 +306,11 @@
     color: black;
     box-shadow: 0 4px 32px rgba(0,0,0,0.38), 0 1px 8px rgba(0,0,0,0.22);
     flex-shrink: 0;
+    /* Long scripts render 100+ pages; let the browser skip layout and paint for
+       pages outside the viewport. `auto` keeps them findable and focusable, and
+       the intrinsic size keeps the scrollbar stable. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 11in;
     transition: background-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
   }
 

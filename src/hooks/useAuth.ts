@@ -133,13 +133,7 @@ export function useAuth() {
         );
 
         if (profile) {
-          // Update last_seen when profile is loaded
-          Promise.resolve(
-            supabase.from('profiles')
-              .update({ last_seen: new Date().toISOString() })
-              .eq('id', authUser.id)
-          ).then(() => {}).catch((err) => logger.error('useAuth', 'Failed to update last_seen:', err));
-
+          // last_seen is maintained by the middleware (throttled), not per page load.
           setUser(profile as Profile);
           // Cache profile in sessionStorage so offline reloads can restore it
           try { sessionStorage.setItem('ss_cached_profile', JSON.stringify(profile)); } catch {}
@@ -242,13 +236,6 @@ export function useAuth() {
               'onAuthChange:fetchProfile'
             );
             if (profile) {
-              // Update last_seen when profile is loaded
-              Promise.resolve(
-                supabase.from('profiles')
-                  .update({ last_seen: new Date().toISOString() })
-                  .eq('id', session.user.id)
-              ).then(() => {}).catch((err) => logger.error('useAuth', 'Failed to update last_seen:', err));
-
               setUser(profile as Profile);
               try { sessionStorage.setItem('ss_cached_profile', JSON.stringify(profile)); } catch {}
               if (typeof document !== 'undefined' && (profile as Profile).accent_color) {

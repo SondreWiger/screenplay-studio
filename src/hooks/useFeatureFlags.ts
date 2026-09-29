@@ -58,6 +58,8 @@ export function canAccess(
 /**
  * Hook that returns all feature flags and helper functions.
  */
+let flagsInflight: Promise<FeatureFlag[] | null> | null = null;
+
 export function useFeatureFlags() {
   const [flags, setFlags] = useState<FeatureFlag[]>(flagsCache ?? []);
   const [loading, setLoading] = useState(!flagsCache);
@@ -71,20 +73,26 @@ export function useFeatureFlags() {
       return;
     }
 
-    const supabase = createClient();
-    Promise.resolve(
-      supabase
-        .from('feature_flags')
-        .select('*')
-        .order('category')
-        .order('name')
-    )
-      .then(({ data }) => {
+    // Many components mount at once; share one request between them.
+    if (!flagsInflight) {
+      const supabase = createClient();
+      flagsInflight = Promise.resolve(
+        supabase
+          .from('feature_flags')
+          .select('*')
+          .order('category')
+          .order('name')
+      ).then(({ data }) => {
         if (data) {
           flagsCache = data;
           flagsCacheTime = Date.now();
-          setFlags(data);
         }
+        return data as FeatureFlag[] | null;
+      }).finally(() => { flagsInflight = null; });
+    }
+    flagsInflight
+      .then((data) => {
+        if (data) setFlags(data);
         setLoading(false);
       })
       .catch(() => {

@@ -217,11 +217,23 @@ function DashboardContent() {
       }
       const supabase = createClient();
 
-      // Get project IDs where user is a member (but not creator)
-      const { data: memberships } = await supabase
-        .from('project_members')
-        .select('project_id')
-        .eq('user_id', user.id);
+      // Paint last session's projects straight away; the network refresh below
+      // replaces them. (Cached rows already carry the personal folder_id.)
+      if (projects.length === 0) {
+        try {
+          const cached = (await getCachedProjects() as unknown as Project[]).filter((p) => !p.company_id);
+          if (cached.length > 0) {
+            setProjects(cached.sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || '')));
+            setLoading(false);
+          }
+        } catch { /* no cache */ }
+      }
+
+      // Memberships and folder assignments don't depend on each other
+      const [{ data: memberships }, { data: assignments }] = await Promise.all([
+        supabase.from('project_members').select('project_id').eq('user_id', user.id),
+        supabase.from('user_project_folder_assignments').select('project_id, folder_id').eq('user_id', user.id),
+      ]);
       const memberProjectIds = (memberships || []).map((m) => m.project_id);
 
       // Fetch projects the user created OR is a member of (personal, non-company)
@@ -232,14 +244,14 @@ function DashboardContent() {
         .or(`created_by.eq.${user.id}${memberProjectIds.length ? `,id.in.(${memberProjectIds.join(',')})` : ''}`)
         .order('updated_at', { ascending: false });
       if (error) console.error('Error fetching projects:', error.message);
-
+      if (error) {
+        // Keep what's on screen (cache) rather than blanking the dashboard
+        toast.error("Couldn't refresh your projects. Showing your last saved list.");
+        return;
+      }
       const projectList = data || [];
 
-      // Fetch this user's personal folder assignments (private per-user, not on the project row)
-      const { data: assignments } = await supabase
-        .from('user_project_folder_assignments')
-        .select('project_id, folder_id')
-        .eq('user_id', user.id);
+      // Personal folder assignments (private per-user, not on the project row)
       const folderMap = new Map(
         (assignments || []).map((a: { project_id: string; folder_id: string | null }) => [a.project_id, a.folder_id])
       );
@@ -262,8 +274,8 @@ function DashboardContent() {
         cacheRows('projects', sortedMerged).catch(() => {});
       }
     } catch (err) {
+      // Network failure: keep the cached list if we painted one
       console.error('Unexpected error fetching projects:', err);
-      setProjects([]);
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { attachProfiles } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Input, Modal, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -316,10 +317,11 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     const supabase = createClient();
     const { data } = await supabase
       .from('document_comments')
-      .select('*, author:profiles!author_id(display_name, avatar_url, email)')
+      .select('*')
       .eq('document_id', docId)
       .order('created_at', { ascending: false });
-    setComments((data || []) as DocumentComment[]);
+    // author_id references auth.users, so the author can't be embedded directly
+    setComments(await attachProfiles(supabase, (data || []) as DocumentComment[], 'author_id', 'author') as DocumentComment[]);
   }, []);
 
   // Re-fetch comments whenever active doc changes
@@ -383,7 +385,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
     const mentionIds = mentionMembers
       .filter(m => commentText.includes(`@${m.name}`))
       .map(m => m.id);
-    const { data } = await supabase.from('document_comments').insert({
+    const { data, error } = await supabase.from('document_comments').insert({
       document_id: currentDoc.id,
       project_id: params.id,
       author_id: user.id,
@@ -391,8 +393,12 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
       char_offset: selectionOffset,
       selected_text: selectedText || null,
       mentions: mentionIds,
-    }).select('*, author:profiles!author_id(display_name, avatar_url, email)').single();
-    if (data) setComments(prev => [data as DocumentComment, ...prev]);
+    }).select('*').single();
+    if (error) { toast.error("Couldn't post your comment"); return; }
+    if (data) {
+      const [withAuthor] = await attachProfiles(supabase, [data as DocumentComment], 'author_id', 'author');
+      setComments(prev => [withAuthor as DocumentComment, ...prev]);
+    }
     setCommentText('');
     setSelectedText('');
     setSelectionOffset(null);

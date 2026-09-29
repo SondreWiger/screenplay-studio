@@ -24,6 +24,19 @@ export interface LevelUpEvent {
   unlocks: string[];
 }
 
+// Several components use this hook on the same page; share one request.
+let gamifInflight: { userId: string; at: number; promise: Promise<{ g: unknown; b: unknown[] | null }> } | null = null;
+function loadGamification(userId: string) {
+  if (gamifInflight?.userId === userId && Date.now() - gamifInflight.at < 10_000) return gamifInflight.promise;
+  const supabase = createClient();
+  const promise = Promise.all([
+    supabase.from('user_gamification').select('*').eq('user_id', userId).maybeSingle(),
+    supabase.from('user_badges').select('*, badge:badges(*)').eq('user_id', userId),
+  ]).then(([gr, br]) => ({ g: gr.data, b: br.data }));
+  gamifInflight = { userId, at: Date.now(), promise };
+  return promise;
+}
+
 export function useGamification() {
   const { user } = useAuth();
   const [gamif, setGamif] = useState<UserGamification | null>(null);
@@ -36,12 +49,7 @@ export function useGamification() {
   // Load state
   const load = useCallback(async () => {
     if (!user) { setLoading(false); return; }
-    const supabase = createClient();
-
-    const [{ data: g }, { data: b }] = await Promise.all([
-      supabase.from('user_gamification').select('*').eq('user_id', user.id).single(),
-      supabase.from('user_badges').select('*, badge:badges(*)').eq('user_id', user.id),
-    ]);
+    const { g, b } = await loadGamification(user.id);
 
     if (g) {
       setGamif(g as UserGamification);
@@ -49,7 +57,7 @@ export function useGamification() {
     }
     if (b) setBadges(b as UserBadge[]);
     setLoading(false);
-  }, [user]);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { load(); }, [load]);
 
@@ -94,6 +102,7 @@ export function useGamification() {
       };
 
       setGamif((prev) => prev ? { ...prev, xp_total, level } : prev);
+      gamifInflight = null; // other mounts must not reuse the stale copy
 
       // Show XP toast (silent for small amounts unless gamification is enabled)
       if (xp_awarded > 0 && (xp_awarded >= 5 || (gamif?.gamification_enabled ?? false))) {
@@ -124,6 +133,7 @@ export function useGamification() {
       .update({ gamification_enabled: enabled, popup_shown: true })
       .eq('user_id', user.id);
     setGamif((prev) => prev ? { ...prev, gamification_enabled: enabled, popup_shown: true } : prev);
+    gamifInflight = null; // other mounts must not reuse the stale copy
   }, [user]);
 
   const markPopupShown = useCallback(async () => {
@@ -131,6 +141,7 @@ export function useGamification() {
     const supabase = createClient();
     await supabase.from('user_gamification').update({ popup_shown: true }).eq('user_id', user.id);
     setGamif((prev) => prev ? { ...prev, popup_shown: true } : prev);
+    gamifInflight = null; // other mounts must not reuse the stale copy
   }, [user]);
 
   // Derived

@@ -95,6 +95,50 @@ const BLOCKED_BOTS = [
   'petalbot',
 ];
 
+
+// ── Moderation check cache ─────────────────────────────────────
+// Ban, suspension and role checks cost up to four database round trips. Their
+// result is cached for a few minutes in an HMAC-signed cookie bound to the
+// user and IP, so ordinary navigation (and every prefetch) skips them. The
+// signature means a banned user can't forge the cookie to get past the check.
+const MOD_COOKIE = 'ss-mod';
+const MOD_TTL_MS = 5 * 60_000;
+const MOD_SECRET = process.env.MIDDLEWARE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+let hmacKey: Promise<CryptoKey> | null = null;
+function getHmacKey() {
+  if (!hmacKey) {
+    hmacKey = crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(MOD_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+    );
+  }
+  return hmacKey;
+}
+
+async function sign(payload: string): Promise<string> {
+  const sig = await crypto.subtle.sign('HMAC', await getHmacKey(), new TextEncoder().encode(payload));
+  return btoa(String.fromCharCode(...Array.from(new Uint8Array(sig)))).replace(/[+/=]/g, (c) => ({ '+': '-', '/': '_', '=': '' }[c] as string));
+}
+
+/** Returns the cached role if a valid, unexpired check exists for this user+IP. */
+async function readModCache(value: string | undefined, userId: string, ip: string): Promise<string | null> {
+  if (!MOD_SECRET || !value) return null;
+  const parts = value.split('.');
+  if (parts.length !== 5) return null;
+  const [uid, ipHash, exp, role, sig] = parts;
+  if (uid !== userId || Number(exp) < Date.now()) return null;
+  if (ipHash !== (await sign(ip)).slice(0, 16)) return null;
+  if (sig !== (await sign(`${uid}.${ipHash}.${exp}.${role}`))) return null;
+  return role;
+}
+
+async function writeModCache(userId: string, ip: string, role: string): Promise<string | null> {
+  if (!MOD_SECRET) return null;
+  const ipHash = (await sign(ip)).slice(0, 16);
+  const body = `${userId}.${ipHash}.${Date.now() + MOD_TTL_MS}.${role || 'user'}`;
+  return `${body}.${await sign(body)}`;
+}
+
 export async function updateSession(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
              request.headers.get('x-real-ip') || 'unknown';
@@ -182,6 +226,9 @@ export async function updateSession(request: NextRequest) {
   let supabase: any = null;
   let user: { id: string } | null = null;
   let authTimedOut = false;
+  // Profile role, known either from the signed cache or the moderation check
+  let userRole: string | null = null;
+  let modCacheValue: string | null = null;
 
   if (!isLocalMode) {
     supabase = createServerClient(
@@ -228,14 +275,29 @@ export async function updateSession(request: NextRequest) {
     const enforcementExemptPaths = ['/banned', '/suspended', '/auth/', '/api/auth/', '/_next/', '/favicon.ico'];
     const isEnforcementExempt = enforcementExemptPaths.some(p => pathname.startsWith(p));
 
-    if (!isEnforcementExempt && !authTimedOut) {
-      const { data: ipBan } = await supabase
-        .from('banned_ips')
-        .select('id, reason')
-        .eq('ip_address', ip)
-        .eq('is_active', true)
-        .limit(1)
-        .single();
+    const cachedRole = user
+      ? await readModCache(request.cookies.get(MOD_COOKIE)?.value, user.id, ip)
+      : null;
+    if (cachedRole) userRole = cachedRole;
+
+    if (!isEnforcementExempt && !authTimedOut && !cachedRole) {
+      // Independent lookups — run them together rather than one after another.
+      const [{ data: ipBan }, profileRes] = await Promise.all([
+        supabase
+          .from('banned_ips')
+          .select('id, reason')
+          .eq('ip_address', ip)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle(),
+        user
+          ? supabase
+              .from('profiles')
+              .select('role, moderation_status, moderation_notes, last_known_ip')
+              .eq('id', user.id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+      ]);
 
       if (ipBan) {
         const url = request.nextUrl.clone();
@@ -245,25 +307,26 @@ export async function updateSession(request: NextRequest) {
         return redirectWithCookies(url);
       }
 
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('moderation_status, moderation_notes, last_known_ip')
-          .eq('id', user.id)
-          .single();
+      const profile = profileRes.data as {
+        role?: string; moderation_status?: string; moderation_notes?: string; last_known_ip?: string;
+      } | null;
 
-        if (profile && profile.last_known_ip !== ip) {
+      if (user && profile) {
+        userRole = profile.role || 'user';
+
+        if (profile.last_known_ip !== ip) {
           supabase.from('profiles').update({ last_known_ip: ip }).eq('id', user.id).then(() => {});
         }
 
-        if (profile?.moderation_status === 'banned') {
+        if (profile.moderation_status === 'banned') {
           const url = request.nextUrl.clone();
           url.pathname = '/banned';
           url.searchParams.set('reason', profile.moderation_notes || 'Account banned');
           return redirectWithCookies(url);
         }
 
-        if (profile?.moderation_status === 'suspended') {
+        let clean = true;
+        if (profile.moderation_status === 'suspended') {
           const { data: activeSuspension } = await supabase
             .from('user_bans')
             .select('expires_at')
@@ -272,7 +335,7 @@ export async function updateSession(request: NextRequest) {
             .eq('is_active', true)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           if (activeSuspension?.expires_at && new Date(activeSuspension.expires_at) < new Date()) {
             await supabase.from('user_bans')
@@ -284,6 +347,7 @@ export async function updateSession(request: NextRequest) {
               .update({ moderation_status: 'clean', moderation_notes: 'Suspension expired' })
               .eq('id', user.id);
           } else {
+            clean = false;
             const url = request.nextUrl.clone();
             url.pathname = '/suspended';
             url.searchParams.set('reason', profile.moderation_notes || 'Account suspended');
@@ -293,6 +357,8 @@ export async function updateSession(request: NextRequest) {
             return redirectWithCookies(url);
           }
         }
+
+        if (clean) modCacheValue = await writeModCache(user.id, ip, userRole);
       }
     }
 
@@ -319,6 +385,12 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Security headers (including the single CSP) live in next.config.js.
+
+  if (modCacheValue) {
+    supabaseResponse.cookies.set(MOD_COOKIE, modCacheValue, {
+      httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge: MOD_TTL_MS / 1000,
+    });
+  }
 
   // Rate limit headers (only when rate limiting was applied)
   // maxRequests and rateResult are set inside the !isLocalRequest block above
@@ -351,13 +423,16 @@ export async function updateSession(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/admin') && user && !isLocalMode) {
     const ADMIN_UID = process.env.ADMIN_UID || '';
     if (!ADMIN_UID || user.id !== ADMIN_UID) {
-      // Fetch profile to check role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      const role = profile?.role;
+      // Role is usually already known from the moderation check or its cache
+      let role = userRole;
+      if (!role) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        role = profile?.role;
+      }
       if (role !== 'admin' && role !== 'moderator') {
         const url = request.nextUrl.clone();
         url.pathname = '/dashboard';

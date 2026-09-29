@@ -11,16 +11,20 @@ interface ScriptStatsPanelProps {
   elements: ScriptElement[];
   /** Whether to show as a compact horizontal bar or full sidebar panel */
   mode?: 'bar' | 'panel';
+  /** Real page count from the paginator; the word-based estimate is only a fallback. */
+  pageCount?: number;
 }
 
 function countWords(text: string): number {
   return text ? text.trim().split(/\s+/).filter(Boolean).length : 0;
 }
 
-const WORDS_PER_PAGE = 56 * 8; // ~56 lines/page × ~8 words/line for screenplay format
+// Fallback only. Formatted screenplay pages average ~170–200 words (dialogue
+// columns and white space); 448 undercounted long scripts by more than half.
+const WORDS_PER_PAGE = 180;
 const MINS_PER_PAGE = 1; // industry standard: 1 page ≈ 1 minute of screen time
 
-export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelProps) {
+export function ScriptStatsPanel({ elements, mode = 'panel', pageCount }: ScriptStatsPanelProps) {
   const stats = useMemo(() => {
     let totalWords = 0;
     let sceneCount = 0;
@@ -57,7 +61,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelP
       }
     }
 
-    const estimatedPages = Math.max(1, Math.round(totalWords / WORDS_PER_PAGE));
+    const estimatedPages = pageCount ?? Math.max(1, Math.round(totalWords / WORDS_PER_PAGE));
     const estimatedRuntime = estimatedPages * MINS_PER_PAGE;
     const dialoguePct = totalWords > 0 ? Math.round((dialogueWords / totalWords) * 100) : 0;
     const actionPct = totalWords > 0 ? Math.round((actionWords / totalWords) * 100) : 0;
@@ -79,7 +83,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelP
       topCharacters,
       maxCharWords,
     };
-  }, [elements]);
+  }, [elements, pageCount]);
 
   const formatRuntime = (mins: number) => {
     if (mins < 60) return `${mins} min`;
@@ -92,7 +96,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel' }: ScriptStatsPanelP
       <div className="flex items-center gap-4 text-xs text-surface-500 font-mono select-none">
         <span title="Total words">{stats.totalWords.toLocaleString()} words</span>
         <span className="text-surface-700">·</span>
-        <span title="Estimated pages">~{stats.estimatedPages}p</span>
+        <span title={pageCount ? 'Pages' : 'Estimated pages'}>{pageCount ? '' : '~'}{stats.estimatedPages}p</span>
         <span className="text-surface-700">·</span>
         <span title="Estimated runtime">~{formatRuntime(stats.estimatedRuntime)}</span>
         <span className="text-surface-700">·</span>

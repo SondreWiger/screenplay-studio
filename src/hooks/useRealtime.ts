@@ -136,7 +136,9 @@ export function useRealtime(projectId: string) {
         current_element_id: elementId || null,
         is_online: true,
         last_seen: new Date().toISOString(),
-      });
+      // One row per user+project: without this every update after the first
+      // tried to insert a duplicate and failed with 409.
+      }, { onConflict: 'user_id,project_id' });
     },
     [user, projectId]
   );
