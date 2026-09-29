@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, Badge, LoadingSpinner, Button } from '@/components/ui';
@@ -93,7 +94,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
       supabase.from('shots').select('id, is_completed, created_at').eq('project_id', params.id),
       supabase.from('comments').select('id, is_resolved, created_at, user_id:created_by').eq('project_id', params.id),
       supabase.from('project_members')
-        .select('id, user_id, role, created_at:joined_at, profiles:profiles!user_id(full_name, display_name, avatar_url, email)')
+        .select('id, user_id, role, created_at:joined_at, profiles:profiles!user_id(id, full_name, display_name, avatar_url, email)')
         .eq('project_id', params.id),
       supabase.from('locations').select('id').eq('project_id', params.id),
     ]);
@@ -104,6 +105,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     const characters = (charRes.data || []) as { id: string; is_main: boolean; cast_actor: string | null; created_at: string }[];
     const shots = (shotRes.data || []) as { id: string; is_completed: boolean; created_at: string }[];
     const comments = (commentRes.data || []) as { id: string; is_resolved: boolean; created_at: string; user_id: string }[];
+    await fillEmails(supabase, ((memberRes.data || []) as { profiles?: { id?: string; email?: string | null } | null }[]).map((m) => m.profiles));
     const teamMembers = (memberRes.data || []) as { id: string; user_id: string; role: string; created_at: string; profiles?: { full_name?: string; display_name?: string; avatar_url?: string; email?: string } }[];
     const locations = (locationRes.data || []) as { id: string }[];
 

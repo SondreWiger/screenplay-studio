@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { isLocalMode } from '@/lib/supabase/electron-client';
 import { getCachedById, putCached, getCachedByProject, cacheRows } from '@/lib/offline/db';
 import { loadProjectFromDisk } from '@/lib/local-files';
@@ -505,6 +506,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
         return;
       }
 
+      // Emails are in profile_contact (visible to collaborators)
+      await fillEmails(supabase, (membersRes.data || []).map((m: { profile?: { id?: string; email?: string | null } | null }) => m.profile));
       showProject(projectRes.data, membersRes.data || []);
       putCached('projects', projectRes.data).catch(() => {});
       if (membersRes.data && membersRes.data.length > 0) {

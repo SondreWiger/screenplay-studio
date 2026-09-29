@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { useAuth } from '@/hooks/useAuth';
@@ -157,9 +158,10 @@ export default function RevisionsPage() {
 
     const { data: revData } = await supabase
       .from('revisions')
-      .select('*, author:profiles!created_by(full_name, email)')
+      .select('*, author:profiles!created_by(id, full_name, email)')
       .eq('script_id', scriptData.id)
       .order('version', { ascending: false });
+    await fillEmails(supabase, (revData || []).map((r: { author?: { id?: string; email?: string | null } | null }) => r.author));
 
     const mapped: Revision[] = (revData || []).map((r: { id: string; script_id: string; version: number; revision_color?: string; notes?: string; snapshot?: SnapshotElement[] | null; created_by: string; created_at: string; author?: { full_name?: string; email?: string } }) => {
       const snap: SnapshotElement[] | null = r.snapshot ? (Array.isArray(r.snapshot) ? r.snapshot : []) : null;

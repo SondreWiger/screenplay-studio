@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { useProjectStore } from '@/lib/stores';
 import { Badge, LoadingPage } from '@/components/ui';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
@@ -262,6 +263,8 @@ export default function CrewMobileView() {
         supabase.from('project_members').select('id, role, profiles(id, display_name, email, avatar_url)').eq('project_id', params.id),
         supabase.from('characters').select('id, name, notes:description').eq('project_id', params.id).order('name'),
       ]);
+      // Emails live in profile_contact now
+      await fillEmails(supabase, (membersResult.data || []).map((m: { profiles: { id: string; email: string | null } | null }) => m.profiles));
 
       setCrew(((membersResult.data || []) as unknown as { id: string; role: string; profiles: { id: string; display_name: string | null; email: string | null; avatar_url: string | null } | null }[]).map(m => ({
         id: m.id,

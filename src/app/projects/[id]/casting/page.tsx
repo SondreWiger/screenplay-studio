@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
@@ -139,6 +140,7 @@ export default function CastingPage() {
       ]);
 
       if (charRes.data) setCharacters(charRes.data as Character[]);
+      await fillEmails(supabase, ((teamRes.data || []) as { profiles: { id: string; email: string | null } | null }[]).map((m) => m.profiles));
       if (teamRes.data) {
         const mapped = (teamRes.data as any[]).map((m) => ({
           ...m,

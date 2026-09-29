@@ -86,13 +86,13 @@ export default function PressKitPage({ params }: { params: { id: string } }) {
     // Fallback: project members with profiles
     const { data: members } = await supabase
       .from('project_members')
-      .select('id, role, profiles(display_name, email)')
+      .select('id, role, profiles(display_name)') // public page: no contact details
       .eq('project_id', projectId)
       .limit(20);
 
     if (members) {
       setCreatives(
-        (members as unknown as { id: string; role: string; profiles: { display_name: string | null; email: string | null } | null }[])
+        (members as unknown as { id: string; role: string; profiles: { display_name: string | null } | null }[])
           .filter((m) => m.profiles?.display_name)
           .map((m) => ({
             id: m.id,

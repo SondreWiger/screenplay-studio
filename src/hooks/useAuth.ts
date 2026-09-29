@@ -134,6 +134,8 @@ export function useAuth() {
 
         if (profile) {
           // last_seen is maintained by the middleware (throttled), not per page load.
+          // Email lives in the auth account (profiles.email is private and may be empty)
+          (profile as Profile).email = (profile as Profile).email || authUser.email || '';
           setUser(profile as Profile);
           // Cache profile in sessionStorage so offline reloads can restore it
           try { sessionStorage.setItem('ss_cached_profile', JSON.stringify(profile)); } catch {}
@@ -236,6 +238,7 @@ export function useAuth() {
               'onAuthChange:fetchProfile'
             );
             if (profile) {
+              (profile as Profile).email = (profile as Profile).email || session.user.email || '';
               setUser(profile as Profile);
               try { sessionStorage.setItem('ss_cached_profile', JSON.stringify(profile)); } catch {}
               if (typeof document !== 'undefined' && (profile as Profile).accent_color) {

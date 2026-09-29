@@ -282,7 +282,7 @@ export async function updateSession(request: NextRequest) {
 
     if (!isEnforcementExempt && !authTimedOut && !cachedRole) {
       // Independent lookups — run them together rather than one after another.
-      const [{ data: ipBan }, profileRes] = await Promise.all([
+      const [{ data: ipBan }, profileRes, moderationRes] = await Promise.all([
         supabase
           .from('banned_ips')
           .select('id, reason')
@@ -297,6 +297,15 @@ export async function updateSession(request: NextRequest) {
               .eq('id', user.id)
               .maybeSingle()
           : Promise.resolve({ data: null }),
+        // IP and moderation notes live in profile_moderation (readable by the
+        // user themself); fall back to the profiles row before that migration.
+        user
+          ? supabase
+              .from('profile_moderation')
+              .select('last_known_ip, moderation_notes')
+              .eq('id', user.id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
 
       if (ipBan) {
@@ -307,9 +316,16 @@ export async function updateSession(request: NextRequest) {
         return redirectWithCookies(url);
       }
 
-      const profile = profileRes.data as {
-        role?: string; moderation_status?: string; moderation_notes?: string; last_known_ip?: string;
-      } | null;
+      const privateFields = (moderationRes as { data: { last_known_ip?: string | null; moderation_notes?: string | null } | null; error?: unknown }).data;
+      const profile = profileRes.data
+        ? {
+            ...(profileRes.data as { role?: string; moderation_status?: string; moderation_notes?: string; last_known_ip?: string }),
+            ...(privateFields ? {
+              last_known_ip: privateFields.last_known_ip ?? undefined,
+              moderation_notes: privateFields.moderation_notes ?? undefined,
+            } : {}),
+          }
+        : null;
 
       if (user && profile) {
         userRole = profile.role || 'user';

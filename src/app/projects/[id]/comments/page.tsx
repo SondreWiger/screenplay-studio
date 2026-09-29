@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { getEmailsByIds } from '@/lib/private-profile';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Textarea, EmptyState, LoadingSpinner, Avatar, toast } from '@/components/ui';
@@ -247,8 +248,17 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
         if (members) {
           const { data: actorProfile } = await supabase.from('profiles').select('display_name, full_name').eq('id', user.id).single();
           const actorName = actorProfile?.display_name || actorProfile?.full_name || 'Someone';
+          // One query for everyone instead of one per member; emails come from
+          // profile_contact (collaborators can see each other's).
+          const memberIds = members.map((m: { user_id: string }) => m.user_id);
+          const [{ data: memberProfiles }, emailMap] = await Promise.all([
+            supabase.from('profiles').select('id, email, display_name, full_name').in('id', memberIds),
+            getEmailsByIds(supabase, memberIds),
+          ]);
+          const profileById = new Map((memberProfiles || []).map((p: { id: string }) => [p.id, p]));
           for (const member of members) {
-            const { data: memberProfile } = await supabase.from('profiles').select('email, display_name, full_name').eq('id', member.user_id).single();
+            const found = profileById.get(member.user_id) as { email: string | null; display_name: string | null; full_name: string | null } | undefined;
+            const memberProfile = found ? { ...found, email: emailMap.get(member.user_id) || found.email } : null;
             if (memberProfile?.email) {
               sendNotificationEmailAction(
                 memberProfile.email,

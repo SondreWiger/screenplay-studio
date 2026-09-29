@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { findUserByEmail } from '@/lib/private-profile';
 import { useAuthStore, usePresenceStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, LoadingSpinner, Avatar, toast } from '@/components/ui';
 import { cn, formatDate } from '@/lib/utils';
@@ -513,9 +514,9 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
     try {
       const supabase = createClient();
 
-      // Find user by email
-      const { data: profile, error: profileErr } = await supabase.from('profiles').select('id').eq('email', email).single();
-      if (profileErr || !profile) { setError('No user found with that email. They need to create an account first.'); setLoading(false); return; }
+      // Find user by email (addresses are private, so this goes through an RPC)
+      const profile = await findUserByEmail(supabase, email);
+      if (!profile) { setError('No user found with that email. They need to create an account first.'); setLoading(false); return; }
 
       // Check if already a member
       const { data: existing } = await supabase.from('project_members').select('id').eq('project_id', projectId).eq('user_id', profile.id).maybeSingle();
@@ -541,12 +542,11 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
         entityId: projectId,
       });
 
-      // Send invitation email (best-effort)
-      const { data: inviteeProfile } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', profile.id).single();
-      if (inviteeProfile?.email) {
+      // Send invitation email (best-effort) to the address that was entered
+      {
         sendProjectInviteEmailAction(
-          inviteeProfile.email,
-          inviteeProfile.display_name || inviteeProfile.full_name || '',
+          email.trim(),
+          profile.display_name || profile.full_name || '',
           project?.title || 'a project',
           actorName,
           projectId,
