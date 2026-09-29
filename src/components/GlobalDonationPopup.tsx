@@ -15,6 +15,17 @@ export function GlobalDonationPopup() {
     const dismissedKey = `donation-modal-dismissed-${user.id}`;
     const isDismissed = localStorage.getItem(dismissedKey);
 
+    // Ask only people who have been using the app for a while. Showing it two
+    // seconds into a brand-new user's first visit was their first impression.
+    const firstSeenKey = `ss-first-seen-${user.id}`;
+    let firstSeen = Number(localStorage.getItem(firstSeenKey) || 0);
+    if (!firstSeen) {
+      firstSeen = Date.now();
+      try { localStorage.setItem(firstSeenKey, String(firstSeen)); } catch { /* ignore */ }
+    }
+    const MIN_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+    if (Date.now() - firstSeen < MIN_AGE_MS) return;
+
     if (!isDismissed) {
       // Show after a small delay so it doesn't interfere with page load
       const timer = setTimeout(() => {

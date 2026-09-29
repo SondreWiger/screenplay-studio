@@ -24,7 +24,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ShortcutPicker } from '@/components/sidebar/ShortcutPicker';
 import { cn } from '@/lib/utils';
 import { PAGE_LABELS, getPageSection, getPageLabelKey } from '@/lib/pageLabels';
-import { getNavCategories, getProjectNavFlags, type NavItem, type NavCategory } from '@/lib/navCategories';
+import { getNavCategories, getProjectNavFlags, PRO_GATED_ICONS, type NavItem, type NavCategory } from '@/lib/navCategories';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
 import type { UserRole, UserPresence, SidebarSection } from '@/lib/types';
 import { useSidebarLayout } from '@/hooks/useSidebarLayout';
@@ -762,6 +762,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                       >
                         {icons[item.icon]}
                         {(mobile || !sidebarCollapsed) && <span>{sidebarT(item.label)}</span>}
+                        {(mobile || !sidebarCollapsed) && !isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
                       </Link>
                     );
                   })}
@@ -804,6 +805,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                         >
                           {icons[item.icon]}
                           <span>{sidebarT(item.label)}</span>
+                  {!isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
+                          {!isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
                         </Link>
                         <button
                           onClick={() => {
@@ -852,6 +855,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                 >
                   {icons[item.icon]}
                   <span>{sidebarT(item.label)}</span>
+                  {!isPro && PRO_GATED_ICONS.has(item.icon) && <span className="ml-auto rounded px-1 py-px text-[9px] font-semibold tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/20" title="Included with Pro">PRO</span>}
                 </Link>
               );
             })}

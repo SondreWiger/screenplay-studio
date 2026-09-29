@@ -650,7 +650,8 @@ function DashboardContent() {
               <span className="ss-label">{t('dashboard.title')}</span>
             </div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2 flex-wrap" style={{ letterSpacing: '-0.03em' }}>
-              {t('dashboard.welcome_back')}{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
+              {/* "Welcome back" only once there's something to come back to */}
+              {t(!loading && projects.length === 0 ? 'dashboard.welcome' : 'dashboard.welcome_back')}{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
               {user?.is_pro && <span className="text-xs px-2 py-0.5 font-semibold uppercase tracking-[0.04em]" style={{ background: 'rgba(255,95,31,0.12)', color: '#FF5F1F', border: '1px solid rgba(255,95,31,0.2)' }}>Pro</span>}
               <StreakBadge />
             </h2>
@@ -1513,7 +1514,8 @@ function NewProjectModal({
   const [episodeCount, setEpisodeCount] = useState('');
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; description?: string; project_type: string; script_type?: string; genre?: string; format?: string; structure_snapshot?: any }>>([]);
   const [storageMode, setStorageMode] = useState<'cloud' | 'local'>(
-    isElectronMode() && isLocalMode() ? 'local' : isElectronMode() ? 'cloud' : 'cloud'
+    // Local mode has no cloud account to write to, on desktop or web
+    isLocalMode() ? 'local' : 'cloud'
   );
 
   useEffect(() => {

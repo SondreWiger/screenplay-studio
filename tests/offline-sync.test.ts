@@ -118,3 +118,13 @@ describe('processSyncQueue', () => {
     expect(queue.has('script_elements:bad')).toBe(false);
   });
 });
+
+describe('local (offline) supabase client', () => {
+  it('supports chained realtime subscriptions without crashing', async () => {
+    const { createLocalSupabaseClient } = await import('@/lib/supabase/electron-client');
+    const client = createLocalSupabaseClient() as any;
+    const ch = client.channel('x').on('postgres_changes', {}, () => {}).on('postgres_changes', {}, () => {}).on('presence', {}, () => {}).subscribe();
+    expect(ch.presenceState()).toEqual({});
+    await expect(ch.track({})).resolves.toBe('ok');
+  });
+});

@@ -287,7 +287,12 @@ export default function OnboardingPage() {
                   ].map(({ id, label }) => (
                     <button
                       key={id}
-                      onClick={() => { applyIntentDefaults(id as UsageIntent); goNext(); }}
+                      onClick={() => {
+                        applyIntentDefaults(id as UsageIntent);
+                        // Step 2 asks the same question; they've just answered it
+                        setDirection('forward');
+                        setStep(2);
+                      }}
                       className="p-3 rounded-xl border border-surface-700 bg-surface-900/50 hover:border-brand-500/40 hover:bg-brand-500/5 transition-colors text-center"
                     >
                       <span className="text-sm font-medium text-white">{label}</span>

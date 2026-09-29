@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { replaceScriptElements } from '@/lib/scripts/replace-elements';
+import { isCharacterCue } from '@/lib/scripts/cues';
 import { SaveStatus } from '@/components/SaveStatus';
 import { flushSyncQueue, getSyncStatus } from '@/lib/offline/queue';
 import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
@@ -445,10 +446,11 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 }
 
 // Focus helper — places cursor at start or end of an element
-function focusElement(elementId: string, position: 'start' | 'end' = 'end') {
+function focusElement(elementId: string, position: 'start' | 'end' = 'end', attempts = 6) {
   requestAnimationFrame(() => {
     const el = document.getElementById(`el-${elementId}`);
-    if (!el) return;
+    // A just-added line may not have rendered yet; try again next frame
+    if (!el) { if (attempts > 0) focusElement(elementId, position, attempts - 1); return; }
     el.focus();
     const sel = window.getSelection();
     if (!sel) return;
@@ -2508,7 +2510,8 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                 <div className="flex-1 flex flex-col items-center justify-center gap-0.5">
                   <TitlePageField
                     value={currentScript.title_page_data?.title ?? ''}
-                    placeholder="TITLE"
+                    // Suggest what we already know instead of generic filler
+                    placeholder={currentProject?.title?.toUpperCase() || 'TITLE'}
                     className={cn(
                       'text-2xl font-semibold uppercase tracking-wide text-center w-full print:text-black',
                       darkMode ? 'text-white placeholder:text-surface-700' : 'text-black placeholder:text-gray-300',
@@ -2526,7 +2529,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
                   />
                   <TitlePageField
                     value={currentScript.title_page_data?.author ?? ''}
-                    placeholder="Author Name"
+                    placeholder={user?.full_name || user?.display_name || 'Author Name'}
                     className={cn(
                       'text-sm text-center w-full print:text-black',
                       darkMode ? 'text-surface-400 placeholder:text-surface-700' : 'text-gray-600 placeholder:text-gray-300',
@@ -4071,28 +4074,34 @@ const LineEditor = memo(function LineEditor({
           const currentOrder2 = idx >= 0 ? els[idx].sort_order : 0;
           const nextOrder2 = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder2 + 2;
           const newOrder2 = (currentOrder2 + nextOrder2) / 2;
+          const newId = crypto.randomUUID();
           store.addElement({
+            id: newId,
             script_id: store.currentScript.id,
             element_type: 'character',
             content: '',
             sort_order: newOrder2,
             created_by: auth.user.id,
             last_edited_by: auth.user.id,
-          }).then((newEl) => { if (newEl) focusElement(newEl.id, 'start'); });
+          }).catch((err) => logger.error('Script', 'Failed to create script element:', err));
+          focusElement(newId, 'start');
           return;
         }
         // Has content → create another panel description (multi-paragraph)
         const currentOrder3 = idx >= 0 ? els[idx].sort_order : 0;
         const nextOrder3 = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder3 + 2;
         const newOrder3 = (currentOrder3 + nextOrder3) / 2;
+        const newId = crypto.randomUUID();
         store.addElement({
+          id: newId,
           script_id: store.currentScript.id,
           element_type: 'comic_panel_description',
           content: '',
           sort_order: newOrder3,
           created_by: auth.user.id,
           last_edited_by: auth.user.id,
-        }).then((newEl) => { if (newEl) focusElement(newEl.id, 'start'); });
+        }).catch((err) => logger.error('Script', 'Failed to create script element:', err));
+        focusElement(newId, 'start');
         return;
       }
 
@@ -4101,28 +4110,43 @@ const LineEditor = memo(function LineEditor({
       const nextOrder = idx < els.length - 1 ? els[idx + 1].sort_order : currentOrder + 2;
       const newOrder = (currentOrder + nextOrder) / 2;
 
-      // Comic: character → comic_dialogue; otherwise use getNextElementType
-      let nextType: ScriptElementType;
-      if (isComic && element.element_type === 'character') {
-        nextType = 'comic_dialogue';
-      } else if (isAudioDrama) {
-        nextType = getAudioNextElementType(element.element_type, audioFormat);
-      } else {
-        nextType = getNextElementType(element.element_type);
+      // A short all-caps action line is a character cue (the Fountain rule):
+      // "MARA" or "DR. HALE (V.O.)" + Enter becomes Character, and the next
+      // line is Dialogue. Writers coming from Final Draft/WriterDuet expect
+      // this; before, the name stayed Action unless they discovered Tab.
+      let currentType = element.element_type;
+      if (currentType === 'action' && !isComic && !isAudioDrama && !isContentCreator) {
+        const cue = (divRef.current?.textContent ?? '').trim();
+        if (isCharacterCue(cue)) {
+          currentType = 'character';
+          if (debounceRef.current) clearTimeout(debounceRef.current);
+          store.updateElement(elementId, { element_type: 'character', content: cue, last_edited_by: auth.user.id });
+        }
       }
 
+      // Comic: character → comic_dialogue; otherwise use getNextElementType
+      let nextType: ScriptElementType;
+      if (isComic && currentType === 'character') {
+        nextType = 'comic_dialogue';
+      } else if (isAudioDrama) {
+        nextType = getAudioNextElementType(currentType, audioFormat);
+      } else {
+        nextType = getNextElementType(currentType);
+      }
+
+      // Focus the new line as soon as it renders — not after it's persisted —
+      // so keystrokes typed right after Enter land in it.
+      const newId = crypto.randomUUID();
       store.addElement({
+        id: newId,
         script_id: store.currentScript.id,
         element_type: nextType,
         content: '',
         sort_order: newOrder,
         created_by: auth.user.id,
         last_edited_by: auth.user.id,
-      }).then((newEl) => {
-        if (newEl) {
-          focusElement(newEl.id, 'start');
-        }
       }).catch((err) => logger.error('Script', 'Failed to create script element:', err));
+      focusElement(newId, 'start');
       return;
     }
 

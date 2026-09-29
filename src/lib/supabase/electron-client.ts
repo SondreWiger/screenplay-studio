@@ -266,9 +266,20 @@ export function createLocalSupabaseClient(): any {
       delete: () => StubQueryBuilder.create(),
     }),
     rpc: async () => ({ data: null, error: null }),
-    channel: () => ({
-      on: () => ({ subscribe: () => {} }),
-    }),
+    // No realtime offline. The stub must chain like the real one:
+    // channel().on().on().subscribe(), plus the presence helpers.
+    channel: () => {
+      const ch = {
+        on: () => ch,
+        subscribe: () => ch,
+        unsubscribe: () => Promise.resolve('ok'),
+        track: () => Promise.resolve('ok'),
+        untrack: () => Promise.resolve('ok'),
+        send: () => Promise.resolve('ok'),
+        presenceState: () => ({}),
+      };
+      return ch;
+    },
     removeChannel: () => {},
   };
 }

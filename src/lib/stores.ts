@@ -488,15 +488,18 @@ export const useScriptStore = create<ScriptState>((set, get) => ({
 
     const newElement = { ...insertData, id: insertData.id || crypto.randomUUID() } as ScriptElement;
 
+    // Show the line immediately so the editor can focus it on the same frame
+    // as the Enter key. Waiting for the IndexedDB write first left a gap in
+    // which fast typing landed in the previous line.
+    set({ elements: [...get().elements, newElement].sort((a, b) => a.sort_order - b.sort_order) });
+
     if (isLocalMode()) {
       await putCached('script_elements', newElement as unknown as Record<string, unknown>);
-      set({ elements: [...get().elements, newElement].sort((a, b) => a.sort_order - b.sort_order), saving: false });
-      return newElement;
+    } else {
+      // Cloud mode: offline-first — write locally, enqueue sync, try remote
+      await offlineUpsert('script_elements', newElement as unknown as Record<string, unknown>);
     }
-
-    // Cloud mode: offline-first — write locally, enqueue sync, try remote
-    await offlineUpsert('script_elements', newElement as unknown as Record<string, unknown>);
-    set({ elements: [...get().elements, newElement].sort((a, b) => a.sort_order - b.sort_order), saving: false });
+    set({ saving: false });
     return newElement;
   },
 

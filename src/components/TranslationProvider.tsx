@@ -45,7 +45,7 @@ const EN: Record<string, string> = {
   'auth.password_rule_lower': 'Lowercase letter', 'auth.password_rule_number': 'Number',
   'auth.password_rule_special': 'Special character',
 
-  'dashboard.title': 'Dashboard', 'dashboard.welcome_back': 'WELCOME BACK',
+  'dashboard.title': 'Dashboard', 'dashboard.welcome_back': 'WELCOME BACK', 'dashboard.welcome': 'WELCOME',
   'dashboard.your_projects': 'Your film projects and recent work', 'dashboard.projects': 'Projects',
   'dashboard.in_dev': 'In Dev', 'dashboard.in_prod': 'In Prod', 'dashboard.done': 'Done',
   'dashboard.continue_writing': 'Continue Writing', 'dashboard.last_edited': 'Last edited',

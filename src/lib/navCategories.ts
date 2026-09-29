@@ -5,6 +5,12 @@ export type NavItem = {
 };
 export type NavCategory = { id?: string; category: string; items: NavItem[] };
 
+/**
+ * Tools that are visible to everyone but paywalled inside the page. Free users
+ * see a PRO badge on them so the sidebar doesn't lead into surprise paywalls.
+ */
+export const PRO_GATED_ICONS = new Set(['export', 'revisions', 'casting', 'ai', 'analytics', 'reports', 'branding']);
+
 /** The shape `getNavCategories` needs to pick a nav for a project. */
 export type ProjectNavFlags = {
   isTvProduction: boolean;
