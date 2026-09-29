@@ -164,6 +164,12 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await authSupabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    // The service client below bypasses RLS, so confirm through the user's own
+    // session that they can see this project before touching its feeds.
+    const { data: visibleProject } = await authSupabase
+      .from('projects').select('id').eq('id', project_id).maybeSingle();
+    if (!visibleProject) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+
     const ip = getClientIp(request);
     const rateResult = checkRateLimit(`wire-poll:${ip}`, 10, 60_000);
     if (!rateResult.allowed) {

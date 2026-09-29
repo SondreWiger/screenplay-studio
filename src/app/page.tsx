@@ -63,13 +63,21 @@ function GridLine({ orientation = 'h', className = '' }: { orientation?: 'h' | '
 
 async function TestimonialsRow() {
   const supabase = createServerSupabaseClient();
-  const { data: testimonials } = await supabase
+  const { data: recent } = await supabase
     .from('public_testimonials')
     .select('id,title,body,rating,display_name,created_at')
     .order('created_at', { ascending: false })
-    .limit(4);
+    .limit(30);
 
-  if (!testimonials || testimonials.length === 0) return null;
+  // The landing page is the first impression: show substantive reviews, best
+  // rated first, and hide the row rather than show one-liners. Everything is
+  // still on /testimonials.
+  const testimonials = (recent || [])
+    .filter((t: { body: string | null }) => (t.body || '').trim().length >= 80)
+    .sort((a: { rating: number | null }, b: { rating: number | null }) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, 4);
+
+  if (testimonials.length < 2) return null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.04]">

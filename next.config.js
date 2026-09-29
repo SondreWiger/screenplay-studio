@@ -220,6 +220,9 @@ const nextConfig = {
       { source: '/content-policy', destination: '/legal/content-policy', permanent: true },
       { source: '/community-guidelines', destination: '/legal/community-guidelines', permanent: true },
       { source: '/acceptable-use', destination: '/legal/acceptable-use', permanent: true },
+      // Merged project tools: old links go straight to their replacements
+      { source: '/projects/:id/review', destination: '/projects/:id/share', permanent: true },
+      { source: '/projects/:id/versions', destination: '/projects/:id/revisions', permanent: true },
     ];
   },
   poweredByHeader: false, // Remove X-Powered-By header

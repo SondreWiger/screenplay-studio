@@ -548,7 +548,7 @@ function CommunityChatUI({
               <div className="border-t border-surface-800 p-3 shrink-0">
                 {!user ? (
                   <p className="text-center text-sm text-surface-500 py-1">
-                    <a href="/login" className="underline" style={{ color: accent }}>Sign in</a> to join the conversation
+                    <a href="/auth/login" className="underline" style={{ color: accent }}>Sign in</a> to join the conversation
                   </p>
                 ) : !canSend ? (
                   <p className="text-center text-sm text-surface-500 py-1">

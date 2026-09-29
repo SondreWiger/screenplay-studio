@@ -323,7 +323,7 @@ export default function DownloadPage() {
             <Link href="/auth" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
               Sign in
             </Link>
-            <Link href="/docs" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
+            <Link href="/learn" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
               Docs
             </Link>
           </div>

@@ -107,8 +107,9 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
         'action', 'note',
         // audio drama dedicated types
         'sfx_cue', 'music_cue', 'ambience_cue', 'sound_cue',
-        // legacy / alternate names tolerated
-        'sound_effect', 'ambience',
+        // Only values in the element_type enum: an unknown value (the old
+        // 'sound_effect' / 'ambience') makes Postgres reject the whole query,
+        // which left this page permanently empty.
       ])
       .order('sort_order'));
 

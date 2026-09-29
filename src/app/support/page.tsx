@@ -67,6 +67,12 @@ function SupportPage() {
       setNewCategory('bug');
       setNewSubject('Bug Report');
       setNewMessage('**What happened?**\n\n\n**Steps to reproduce:**\n1. \n2. \n\n**Expected behaviour:**\n\n\n**Browser / device:**\n');
+    } else if (searchParams.get('topic') === 'studio') {
+      // From "Contact us about Studio" on the pricing page
+      setShowNewForm(true);
+      setNewCategory('general');
+      setNewSubject('Studio for our company');
+      setNewMessage('Tell us about your company and productions:\n\nCompany:\nNumber of people:\nProductions per year:\nWhat you need from Studio:\n');
     } else if (type && id) {
       setShowNewForm(true);
       setNewCategory('content_report');

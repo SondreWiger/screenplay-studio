@@ -118,7 +118,7 @@ export function PlaybackController({ characterVoices }: { characterVoices: Recor
           </button>
         </div>
 
-        <button
+        <button aria-label="Stop playback"
           onClick={stopPlayback}
           className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center rounded-full bg-surface-700 border border-surface-600 text-surface-400 hover:text-white transition-colors"
         >

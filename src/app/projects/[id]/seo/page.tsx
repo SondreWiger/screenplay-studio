@@ -218,7 +218,7 @@ export default function SEOPage() {
   const fetchData = async () => {
     const supabase = createClient();
     const [{ data: seoData }, { data: chaptersData }, { data: thumbData }] = await Promise.all([
-      supabase.from('video_seo').select('*').eq('project_id', projectId).single(),
+      supabase.from('video_seo').select('*').eq('project_id', projectId).maybeSingle(),
       supabase.from('video_chapters').select('*').eq('project_id', projectId).order('timestamp'),
       supabase.from('thumbnails').select('id').eq('project_id', projectId).limit(1),
     ]);

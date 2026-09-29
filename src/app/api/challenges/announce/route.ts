@@ -1,5 +1,6 @@
 import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
+import { rejectUnlessCron } from '@/lib/cron-auth';
 import { createClient } from '@/lib/supabase/client';
 import { getChallengePhase, formatDateTime } from '@/lib/utils';
 import { sendDiscordWebhook, announceBlogPost, announceBlogPostWithSeries } from '@/lib/discord';
@@ -7,7 +8,10 @@ import { getThemeEmoji, getPhaseEmoji } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
+  const denied = rejectUnlessCron(req);
+  if (denied) return denied;
+
   try {
     const supabase = createClient();
 

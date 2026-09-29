@@ -878,7 +878,7 @@ export function Alert({ variant = 'info', title, children, onDismiss, className 
         <div className="text-sm opacity-90">{children}</div>
       </div>
       {onDismiss && (
-        <button onClick={onDismiss} className="opacity-60 hover:opacity-100 transition-opacity shrink-0">
+        <button aria-label="Dismiss" onClick={onDismiss} className="opacity-60 hover:opacity-100 transition-opacity shrink-0">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       )}

@@ -491,7 +491,7 @@ export default function ModerationPage() {
                             <p className="text-xs text-surface-500">{flag.flagged_user.email}</p>
                           </div>
                           {flag.flagged_user.username && (
-                            <Link href={`/profile/${flag.flagged_user.username}`} className="text-xs text-brand-500 hover:underline">
+                            <Link href={`/u/${flag.flagged_user.username}`} className="text-xs text-brand-500 hover:underline">
                               @{flag.flagged_user.username}
                             </Link>
                           )}

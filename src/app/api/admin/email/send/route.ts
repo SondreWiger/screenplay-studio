@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { rejectUnlessAdmin } from '@/lib/require-admin';
 import { sendNotificationEmail } from '@/lib/mailer';
 
 function replaceVars(str: string, vars: Record<string, string>): string {
@@ -19,6 +20,9 @@ export async function POST(req: NextRequest) {
   const userClient = createServerSupabaseClient();
   const { data: { user } } = await userClient.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Mass email from our domain: admins only, never just any signed-in user
+  const denied = await rejectUnlessAdmin(user.id);
+  if (denied) return denied;
 
   const body = await req.json();
   const { userIds, subject, heading, body: emailBody, ctaLabel, ctaUrl } = body;

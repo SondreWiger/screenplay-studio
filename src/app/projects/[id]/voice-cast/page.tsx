@@ -86,7 +86,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
               .from('script_elements')
               .select('content')
               .in('script_id', ids)
-              .in('element_type', ['character', 'narrator', 'announcer']));
+              .in('element_type', ['character', 'announcer']));
             return new Set((els || []).map((e: { content: string }) => e.content.trim().toUpperCase()).filter(Boolean)).size;
           }),
       ]);
@@ -111,12 +111,12 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
       .from('scripts').select('id').eq('project_id', projectId);
     if (!scripts?.length) return 0;
     const scriptIds = scripts.map((s: { id: string }) => s.id);
-    // Include narrator / announcer for audio dramas alongside the standard character type
+    // Include announcer cues for audio dramas alongside the standard character type
     const { data: elements } = await fetchAllResult(() => supabase
       .from('script_elements')
       .select('content, element_type')
       .in('script_id', scriptIds)
-      .in('element_type', ['character', 'narrator', 'announcer']));
+      .in('element_type', ['character', 'announcer']));
     const names = Array.from(new Set((elements || []).map((e: { content: string }) => e.content.trim().toUpperCase()).filter(Boolean)));
     const existing = existingCast.map(c => c.name?.toUpperCase());
     const newNames = names.filter(n => !existing.includes(n));

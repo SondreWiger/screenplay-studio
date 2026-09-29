@@ -164,11 +164,11 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
         <div className="bg-surface-900 rounded-xl border border-surface-800 min-w-[420px]">
           {/* Calendar header */}
           <div className="flex items-center justify-between p-4 border-b border-surface-800">
-            <button onClick={prevMonth} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
+            <button aria-label="Previous month" onClick={prevMonth} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
             <h2 className="text-lg font-semibold text-white">{MONTHS[currentMonth]} {currentYear}</h2>
-            <button onClick={nextMonth} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
+            <button aria-label="Next month" onClick={nextMonth} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
@@ -313,7 +313,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
       {/* Day header */}
       <div className="flex items-center justify-between p-4 border-b border-surface-800">
         <div className="flex items-center gap-3">
-          <button onClick={prevDay} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
+          <button aria-label="Previous day" onClick={prevDay} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <div className="text-center min-w-[200px]">
@@ -322,7 +322,7 @@ function DayPlannerView({ date, events, scenes, locations, canEdit, onDateChange
             </h2>
             <p className="text-xs text-surface-500">{date.getFullYear()}</p>
           </div>
-          <button onClick={nextDay} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
+          <button aria-label="Next day" onClick={nextDay} className="p-2 text-surface-400 hover:text-white hover:bg-surface-900/5 rounded-lg">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>

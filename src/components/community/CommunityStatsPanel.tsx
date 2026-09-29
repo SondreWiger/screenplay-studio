@@ -135,7 +135,7 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
           >
             Profile ↗
           </Link>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="p-1 text-white/30 hover:text-white/80 transition-colors"
           >

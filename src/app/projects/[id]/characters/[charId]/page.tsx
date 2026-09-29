@@ -891,7 +891,7 @@ function ImageLightbox({
       )}
 
       {/* Close */}
-      <button
+      <button aria-label="Close"
         className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors z-10"
         onClick={onClose}
       >

@@ -353,7 +353,7 @@ export function GroupManager({ isOpen, onClose, onGroupChange }: GroupManagerPro
                     </div>
                   )}
                   {selectedInviteUser && (
-                    <button
+                    <button aria-label="Clear selection"
                       onClick={clearInviteUser}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-surface-500 hover:text-surface-300"
                     >

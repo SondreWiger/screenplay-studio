@@ -54,8 +54,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
     const { data } = await supabase
       .from('broadcast_switcher_state')
       .select('*')
-      .eq('project_id', projectId)
-      .single();
+      .eq('project_id', projectId).maybeSingle();
 
     if (data) {
       setSwitcherState(data);

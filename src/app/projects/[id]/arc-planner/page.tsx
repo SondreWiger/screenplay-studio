@@ -110,7 +110,7 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
       {/* Top bar */}
       <div className="h-10 shrink-0 flex items-center px-3 gap-3 border-b border-white/5 bg-black/30 z-20">
         <Link
-          href={isEpisodic ? `/projects/${params.id}/episodes` : `/projects/${params.id}/overview`}
+          href={isEpisodic ? `/projects/${params.id}/episodes` : `/projects/${params.id}`}
           className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
