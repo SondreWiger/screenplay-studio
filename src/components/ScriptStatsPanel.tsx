@@ -3,8 +3,8 @@
 import { useMemo } from 'react';
 
 interface ScriptElement {
-  type: string;
-  content: string;
+  element_type: string;
+  content: string | null;
 }
 
 interface ScriptStatsPanelProps {
@@ -38,7 +38,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel', pageCount }: Script
       const words = countWords(text);
       totalWords += words;
 
-      switch (el.type) {
+      switch (el.element_type) {
         case 'scene_heading':
           sceneCount++;
           currentCharacter = '';

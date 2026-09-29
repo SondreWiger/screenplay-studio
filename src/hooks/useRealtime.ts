@@ -4,6 +4,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { usePresenceStore, useAuthStore, useScriptStore } from '@/lib/stores';
 import logger from '@/lib/logger';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { UserPresence, ScriptElement } from '@/lib/types';
 
 export function useRealtime(projectId: string) {
@@ -66,7 +67,7 @@ export function useRealtime(projectId: string) {
     const supabase = createClient();
     const userId = user.id;
 
-    const apply = (payload: { eventType: string; new: ScriptElement | undefined; old: Record<string, unknown> }) => {
+    const apply = (payload: RealtimePostgresChangesPayload<ScriptElement>) => {
       const current = useScriptStore.getState();
       if (current.currentScript?.id !== scriptId) return;
       const elements = current.elements;

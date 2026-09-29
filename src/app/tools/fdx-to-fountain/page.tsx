@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { normalizeParsed } from '@/lib/scripts/normalize';
 import { ConverterLayout } from '../converter-layout';
 import { UploadZone, OrangeButton } from '../shared';
 import { parseFDX } from '@/lib/scripts/fdx';
@@ -21,7 +22,7 @@ export default function FdxToFountainPage() {
     setStatus('converting'); setError(null);
     try {
       const result = parseFDX(await file.text());
-      const fountain = generateFountain({ elements: result.elements, titlePage: result.titlePage });
+      const fountain = generateFountain({ elements: normalizeParsed(result.elements), titlePage: result.titlePage });
       const blob = new Blob([fountain], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url;

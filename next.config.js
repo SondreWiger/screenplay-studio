@@ -7,10 +7,10 @@ const nextConfig = {
   swcMinify: true,
   compress: true,
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   // Faster startup in Electron by disabling source maps
   ...(isElectron ? {

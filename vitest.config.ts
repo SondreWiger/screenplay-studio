@@ -9,6 +9,7 @@ export default defineConfig({
   },
   // tsconfig sets jsx: 'preserve' for Next — tell the transformer to compile it
   // so tests can import .tsx modules.
+  // @ts-expect-error — `oxc` is a Vite 7 option newer than the bundled types; it works at runtime
   oxc: { jsx: 'automatic' },
   test: {
     environment: 'jsdom',

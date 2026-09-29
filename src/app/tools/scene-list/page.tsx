@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { normalizeParsed } from '@/lib/scripts/normalize';
 import { ConverterLayout } from '../converter-layout';
 import { UploadZone, StatBox, GhostButton } from '../shared';
 import { parseFountain } from '@/lib/scripts/fountain';
@@ -19,9 +20,9 @@ export default function SceneListPage() {
     try {
       const ext = file.name.toLowerCase().split('.').pop();
       let elements: { content: string; element_type: string; scene_number?: string | null }[] = [];
-      if (ext === 'pdf') { elements = (await parsePDF(file)).elements; }
-      else if (ext === 'fdx') { elements = (await parseFDX(await file.text())).elements; }
-      else if (ext === 'fountain' || ext === 'txt') { elements = (await parseFountain(await file.text())).elements; }
+      if (ext === 'pdf') { elements = normalizeParsed((await parsePDF(file)).elements); }
+      else if (ext === 'fdx') { elements = normalizeParsed((await parseFDX(await file.text())).elements); }
+      else if (ext === 'fountain' || ext === 'txt') { elements = normalizeParsed((await parseFountain(await file.text())).elements); }
       else { setError('Unsupported file. Use PDF, FDX, or Fountain.'); return; }
 
       const list: SceneInfo[] = [];

@@ -271,7 +271,7 @@ function DashboardContent() {
       setProjects(sortedMerged);
       // Cache projects to IndexedDB so they're available offline
       if (sortedMerged.length > 0) {
-        cacheRows('projects', sortedMerged).catch(() => {});
+        cacheRows('projects', sortedMerged as unknown as Record<string, unknown>[]).catch(() => {});
       }
     } catch (err) {
       // Network failure: keep the cached list if we painted one

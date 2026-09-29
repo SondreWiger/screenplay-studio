@@ -313,7 +313,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
           .eq('is_resolved', false)
           .order('created_at', { ascending: false })
           .limit(10)
-          .then(async (res: { data: { author_id: string }[] | null; error: unknown }) => ({
+          .then(async (res: { data: Record<string, any>[] | null; error: unknown }): Promise<{ data: any[] | null; error: unknown }> => ({
             ...res,
             data: res.data ? await attachProfiles(supabase, res.data, 'author_id', 'profiles', 'id, display_name') : null,
           })),

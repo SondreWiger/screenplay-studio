@@ -25,12 +25,15 @@ function offlineSafeFetch(url: RequestInfo | URL, init?: RequestInit): Promise<R
 
 // Singleton — avoid creating multiple Supabase clients (each one spawns its
 // own token-refresh interval, which compounds the offline problem).
-let sharedClient: ReturnType<typeof createBrowserClient> | null = null;
+type BrowserClient = ReturnType<typeof createBrowserClient>;
+let sharedClient: BrowserClient | null = null;
 
-export function createClient() {
+export function createClient(): BrowserClient {
   if (isLocalMode()) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return createLocalSupabaseClient() as any;
+    // The local (IndexedDB-backed) client mimics the Supabase query API. Typing
+    // it as the real client keeps inference working at every call site —
+    // returning `any` here made callback parameters implicitly `any` app-wide.
+    return createLocalSupabaseClient() as unknown as BrowserClient;
   }
 
   if (!sharedClient) {

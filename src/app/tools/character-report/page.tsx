@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { normalizeParsed } from '@/lib/scripts/normalize';
 import { ConverterLayout } from '../converter-layout';
 import { UploadZone, GhostButton } from '../shared';
 import { parseFountain } from '@/lib/scripts/fountain';
@@ -19,9 +20,9 @@ export default function CharacterReportPage() {
     try {
       const ext = file.name.toLowerCase().split('.').pop();
       let elements: { content: string; element_type: string; sort_order: number }[] = [];
-      if (ext === 'pdf') { elements = (await parsePDF(file)).elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i })); }
-      else if (ext === 'fdx') { elements = (await parseFDX(await file.text())).elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i })); }
-      else if (ext === 'fountain' || ext === 'txt') { elements = (await parseFountain(await file.text())).elements.map((e, i) => ({ ...e, sort_order: e.sort_order ?? i })); }
+      if (ext === 'pdf') { elements = normalizeParsed((await parsePDF(file)).elements).map((e, i) => ({ ...e, sort_order: e.sort_order ?? i })); }
+      else if (ext === 'fdx') { elements = normalizeParsed((await parseFDX(await file.text())).elements).map((e, i) => ({ ...e, sort_order: e.sort_order ?? i })); }
+      else if (ext === 'fountain' || ext === 'txt') { elements = normalizeParsed((await parseFountain(await file.text())).elements).map((e, i) => ({ ...e, sort_order: e.sort_order ?? i })); }
       else { setError('Unsupported file. Use PDF, FDX, or Fountain.'); return; }
 
       const map = new Map<string, CharStats>();
