@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { fillEmails } from '@/lib/private-profile';
 import { rejectUnlessAdmin } from '@/lib/require-admin';
 
 export async function POST(req: NextRequest) {
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
     .from('profiles')
     .select('id, email')
     .in('id', userIds);
+  if (profiles) await fillEmails(adminSupabase, profiles);
 
   if (!profiles || profiles.length === 0) {
     return NextResponse.json({ error: 'No valid recipients' }, { status: 400 });

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Badge, Modal, Input, Textarea, Select, Avatar } from '@/components/ui';
 import { cn, formatDate, timeAgo } from '@/lib/utils';
@@ -208,7 +209,7 @@ export default function SecurityPage() {
     const supabase = createClient();
     let query = supabase
       .from('security_events')
-      .select('*, profiles!security_events_user_id_fkey(display_name, full_name, email, avatar_url)')
+      .select('*, profiles!security_events_user_id_fkey(id, display_name, full_name, email, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(200);
 
@@ -217,6 +218,8 @@ export default function SecurityPage() {
     if (cutoff) query = query.gte('created_at', cutoff);
 
     const { data } = await query;
+    // Emails come from profile_contact (staff can read all)
+    await fillEmails(supabase, (data ?? []).map((e: { profiles?: { id?: string; email?: string | null } | null }) => e.profiles));
     let filtered = (data ?? []) as SecurityEvent[];
     if (eventUserSearch.trim()) {
       const s = eventUserSearch.toLowerCase();
@@ -234,7 +237,7 @@ export default function SecurityPage() {
     const supabase = createClient();
     let query = supabase
       .from('audit_log')
-      .select('*, profiles!audit_log_user_id_fkey(display_name, full_name, email, avatar_url)')
+      .select('*, profiles!audit_log_user_id_fkey(id, display_name, full_name, email, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(200);
 
@@ -243,6 +246,7 @@ export default function SecurityPage() {
     if (auditActionFilter) query = query.ilike('action', `%${auditActionFilter}%`);
 
     const { data } = await query;
+    await fillEmails(supabase, (data ?? []).map((e: { profiles?: { id?: string; email?: string | null } | null }) => e.profiles));
     let filtered = (data ?? []) as AuditEntry[];
     if (auditSearch.trim()) {
       const s = auditSearch.toLowerCase();
@@ -262,8 +266,9 @@ export default function SecurityPage() {
     const supabase = createClient();
     const { data } = await supabase
       .from('user_bans')
-      .select('*, profiles!user_bans_user_id_fkey(display_name, full_name, email, avatar_url), banner:profiles!user_bans_banned_by_fkey(display_name, full_name, email)')
+      .select('*, profiles!user_bans_user_id_fkey(id, display_name, full_name, email, avatar_url), banner:profiles!user_bans_banned_by_fkey(id, display_name, full_name, email)')
       .order('created_at', { ascending: false });
+    await fillEmails(supabase, (data ?? []).flatMap((b: { profiles?: { id?: string; email?: string | null } | null; banner?: { id?: string; email?: string | null } | null }) => [b.profiles, b.banner]));
     setBans((data ?? []) as UserBan[]);
   };
 

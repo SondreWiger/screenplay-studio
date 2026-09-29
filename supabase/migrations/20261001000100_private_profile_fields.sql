@@ -1,3 +1,4 @@
+-- ▼▼▼ COPY FROM HERE — select the whole file (Cmd+A) so nothing is cut off ▼▼▼
 -- ============================================================================
 -- Private profile fields
 --
@@ -17,7 +18,10 @@
 -- middleware, older app code) keep working without leaking.
 --
 -- Run after 20260929120000_missing_profile_columns.sql.
+-- All-or-nothing: if any statement fails, nothing is changed.
 -- ============================================================================
+
+BEGIN;
 
 -- 1. Tables ------------------------------------------------------------------
 
@@ -93,7 +97,8 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   WHERE auth.uid() IS NOT NULL AND lower(c.email) = lower(trim(p_email))
   LIMIT 1;
 $$;
-REVOKE ALL ON FUNCTION public.find_user_by_email(text) FROM anon;
+REVOKE ALL ON FUNCTION public.find_user_by_email(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.find_user_by_email(text) TO authenticated;
 
 -- 3. Move writes out of profiles ---------------------------------------------
 
@@ -155,3 +160,9 @@ DROP TRIGGER IF EXISTS on_auth_user_email_change ON auth.users;
 CREATE TRIGGER on_auth_user_email_change
   AFTER UPDATE OF email ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.sync_contact_email();
+
+COMMIT;
+
+-- Check: this should return 0 (no emails left on the public table)
+SELECT count(*) AS emails_left_on_profiles FROM public.profiles WHERE email IS NOT NULL;
+-- ▲▲▲ COPY TO HERE ▲▲▲

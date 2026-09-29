@@ -1,5 +1,6 @@
 import { PRODUCTION_ROLES } from '@/lib/types';
 import { ToolError, type McpContext } from '../context';
+import { fillEmails, findUserByEmail } from '@/lib/private-profile';
 import { s } from '../schema';
 import { compact, must, tool } from '../tool';
 
@@ -14,9 +15,15 @@ const memberProps = {
 };
 
 async function findUser(ctx: McpContext, who: { email?: string; username?: string; user_id?: string }) {
+  // Addresses are private (profile_contact); resolve them through the RPC
+  if (!who.user_id && who.email) {
+    const found = await findUserByEmail(ctx.db, who.email);
+    if (!found) throw new ToolError('No Screenplay Studio account matches. They need to sign up first.');
+    const { data } = await ctx.db.from('profiles').select('id, display_name, username').eq('id', found.id).maybeSingle();
+    return { ...(data ?? { id: found.id, display_name: found.display_name, username: null }), email: who.email.trim() } as { id: string; email: string; display_name: string | null; username: string | null };
+  }
   let query = ctx.db.from('profiles').select('id, email, display_name, username');
   if (who.user_id) query = query.eq('id', who.user_id);
-  else if (who.email) query = query.ilike('email', who.email.trim());
   else if (who.username) query = query.ilike('username', who.username.replace(/^@/, '').trim());
   else throw new ToolError('Give an email, username or user_id');
   const { data } = await query.limit(1).maybeSingle();
@@ -43,9 +50,10 @@ export const teamTools = [
     async run(args, ctx) {
       await ctx.requireProject(args.project_id, 'read');
       const rows = must(
-        await ctx.db.from('project_members').select('user_id, role, production_role, job_title, department, character_name, joined_at, profile:profiles!user_id(display_name, username, email)').eq('project_id', args.project_id).order('joined_at'),
+        await ctx.db.from('project_members').select('user_id, role, production_role, job_title, department, character_name, joined_at, profile:profiles!user_id(id, display_name, username, email)').eq('project_id', args.project_id).order('joined_at'),
         'Loading team',
       ) as Record<string, unknown>[];
+      await fillEmails(ctx.db, rows.map((m) => m.profile as { id?: string; email?: string | null } | null));
       return rows.map((m) => {
         const p = (m.profile ?? {}) as Record<string, unknown>;
         return compact({ ...m, profile: undefined, name: p.display_name, username: p.username, email: p.email });

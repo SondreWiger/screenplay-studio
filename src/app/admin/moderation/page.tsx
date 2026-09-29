@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Badge, Modal, Textarea, Avatar, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
@@ -152,8 +153,9 @@ export default function ModerationPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from('projects')
-        .select('id, title, logline, status, format, created_by, created_at, updated_at, poster_url, project_members(count), scripts(count), owner:profiles!created_by(email, full_name, display_name, avatar_url, username, moderation_status, moderation_flags)')
+        .select('id, title, logline, status, format, created_by, created_at, updated_at, poster_url, project_members(count), scripts(count), owner:profiles!created_by(id, email, full_name, display_name, avatar_url, username, moderation_status, moderation_flags)')
         .order('updated_at', { ascending: false });
+      await fillEmails(supabase, (data || []).map((p: { owner?: { id?: string; email?: string | null } | null }) => p.owner));
       setAllProjects(data || []);
     } catch (err) {
       console.error('Error loading all projects:', err);

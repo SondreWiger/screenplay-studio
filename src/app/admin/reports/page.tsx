@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Badge, Modal, Textarea, Select, Avatar } from '@/components/ui';
 import { cn, formatDate, timeAgo } from '@/lib/utils';
@@ -186,7 +187,7 @@ export default function ReportsPage() {
     const supabase = createClient();
     let query = supabase
       .from('content_reports')
-      .select('*, reporter:profiles!content_reports_reporter_id_fkey(display_name, full_name, email, avatar_url)')
+      .select('*, reporter:profiles!content_reports_reporter_id_fkey(id, display_name, full_name, email, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(300);
 
@@ -195,6 +196,7 @@ export default function ReportsPage() {
     if (typeFilter) query = query.eq('content_type', typeFilter);
 
     const { data } = await query;
+    await fillEmails(supabase, (data ?? []).map((r: { reporter?: { id?: string; email?: string | null } | null }) => r.reporter));
     setReports((data ?? []) as ContentReport[]);
   };
 
@@ -202,9 +204,10 @@ export default function ReportsPage() {
     const supabase = createClient();
     const { data } = await supabase
       .from('mod_actions')
-      .select('*, profiles(display_name, full_name, email, avatar_url)')
+      .select('*, profiles(id, display_name, full_name, email, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(200);
+    await fillEmails(supabase, (data ?? []).map((a: { profiles?: { id?: string; email?: string | null } | null }) => a.profiles));
     setModActions((data ?? []) as ModAction[]);
   };
 
@@ -245,6 +248,7 @@ export default function ReportsPage() {
         }
         case 'user': {
           const { data } = await supabase.from('profiles').select('id, email, display_name, full_name, bio, avatar_url, role, created_at').eq('id', report.content_id).single();
+          if (data) await fillEmails(supabase, [data]);
           content = data;
           break;
         }

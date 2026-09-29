@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui';
 import { formatDate, timeAgo } from '@/lib/utils';
@@ -90,6 +91,9 @@ export default function UserProfilePage({ params }: { params: { username: string
       return;
     }
 
+    // Email is private unless the user chose to show it; then it's readable
+    // from profile_contact by anyone
+    if (prof.show_email && !prof.email) await fillEmails(supabase, [prof]);
     setProfile(prof);
 
     // Fetch display badges

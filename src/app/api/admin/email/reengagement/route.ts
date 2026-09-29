@@ -1,6 +1,7 @@
 import logger from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { fillEmails } from '@/lib/private-profile';
 import { sendNotificationEmail } from '@/lib/mailer';
 
 const CRON_SECRET = process.env.CRON_SECRET || '';
@@ -23,8 +24,9 @@ export async function GET(req: Request) {
     .from('profiles')
     .select('id, email, display_name, full_name, last_seen, updated_at')
     .or(`last_seen.lt.${thirtyDaysAgo},and(last_seen.is.null,updated_at.lt.${thirtyDaysAgo})`)
-    .not('email', 'is', null)
     .neq('email_weekly_digest', false);
+  // Addresses live in profile_contact (the service role can read them)
+  if (candidates) await fillEmails(supabase, candidates);
 
   if (queryErr) {
     logger.error('[api]', '[reengagement] query error:', queryErr);
@@ -44,7 +46,7 @@ export async function GET(req: Request) {
     .gte('sent_at', thirtyDaysAgo);
 
   const alreadyEmailed = new Set((recentLogs || []).map((r) => r.user_id));
-  const toEmail = candidates.filter((u) => !alreadyEmailed.has(u.id));
+  const toEmail = candidates.filter((u) => !!u.email && !alreadyEmailed.has(u.id));
 
   let sent = 0;
   let skipped = 0;

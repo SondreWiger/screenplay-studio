@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Input, Textarea, Modal, Select, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
@@ -118,6 +119,7 @@ export default function AdminEmailPage() {
         toast.error('Failed to load users: ' + error.message);
         setUsers([]);
       } else {
+        await fillEmails(supabase, data || []);
         setUsers((data || []) as UserProfile[]);
         if (!data || data.length === 0) {
           console.warn('Profiles query returned 0 rows');

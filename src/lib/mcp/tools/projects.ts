@@ -3,6 +3,7 @@ import { ToolError } from '../context';
 import { s } from '../schema';
 import { compact, must, tool } from '../tool';
 import { writeFountain } from './scripts';
+import { fillEmails } from '@/lib/private-profile';
 
 const SCRIPT_TYPES = ['screenplay', 'stageplay', 'episodic', 'sketch', 'comic', 'podcast', 'audio_drama', 'youtube', 'tiktok', 'videogame'] as const;
 const PROJECT_TYPES = ['film', 'youtube', 'tiktok', 'podcast', 'audio_drama', 'documentary', 'educational', 'livestream', 'tv_production', 'stage_play', 'videogame'] as const;
@@ -104,10 +105,11 @@ export const projectTools = [
       const [project, scripts, members, ...counts] = await Promise.all([
         ctx.db.from('projects').select('*').eq('id', args.project_id).single(),
         ctx.db.from('scripts').select('id, title, revision_color, locked, metadata, updated_at').eq('project_id', args.project_id).order('created_at'),
-        ctx.db.from('project_members').select('user_id, role, production_role, job_title, department, character_name, profile:profiles!user_id(display_name, username, email)').eq('project_id', args.project_id),
+        ctx.db.from('project_members').select('user_id, role, production_role, job_title, department, character_name, profile:profiles!user_id(id, display_name, username, email)').eq('project_id', args.project_id),
         ...projectKinds.map(([, k]) => ctx.db.from(k.table).select('*', { count: 'exact', head: true }).eq('project_id', args.project_id)),
       ]);
 
+      await fillEmails(ctx.db, ((members as { data?: { profile?: { id?: string; email?: string | null } | null }[] | null }).data || []).map((m) => m.profile));
       const p = must(project, 'Loading project') as Record<string, unknown>;
       const meta = (p.content_metadata ?? {}) as Record<string, unknown>;
       const record_counts: Record<string, number> = {};

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { getModeration } from '@/lib/private-profile';
 
 /**
  * Account moderation: warnings, suspensions, bans and lifting them.
@@ -183,13 +184,17 @@ export async function moderateUser(
       }).eq('id', userId);
 
       // Store user's known IP as banned
-      const { data: userProfile } = await supabase
+      // IP lives in profile_moderation (staff can read it); older rows may
+      // still have it on profiles
+      const { data: legacyProfile } = await supabase
         .from('profiles')
         .select('last_known_ip')
         .eq('id', userId)
         .single();
+      const privateFields = await getModeration(supabase, userId);
+      const userProfile = { last_known_ip: privateFields?.last_known_ip || legacyProfile?.last_known_ip || null };
 
-      if (userProfile?.last_known_ip) {
+      if (userProfile.last_known_ip) {
         await supabase.from('banned_ips').insert({
           ip_address: userProfile.last_known_ip,
           user_id: userId,

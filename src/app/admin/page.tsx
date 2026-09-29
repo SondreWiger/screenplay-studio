@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { fillEmails } from '@/lib/private-profile';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { MindmapTab } from '@/components/admin/MindmapTab';
@@ -510,6 +511,7 @@ export default function AdminPage() {
         .from('projects')
         .select('*, project_members(role, user_id, profile:profiles!project_members_user_id_fkey(id, display_name, email, avatar_url)), scripts(count)')
         .order('updated_at', { ascending: false });
+      await fillEmails(supabase, (data || []).flatMap((p: { project_members?: { profile?: { id?: string; email?: string | null } | null }[] }) => (p.project_members || []).map((m) => m.profile)));
       setProjects(data as any || []);
     } catch (err) {
       console.error('Error loading projects:', err);
@@ -540,11 +542,12 @@ export default function AdminPage() {
     try {
       const supabase = createClient();
       const [postsRes, catsRes, themesRes, challengesRes] = await Promise.all([
-        supabase.from('community_posts').select('*, author:profiles!author_id(full_name, email)').order('created_at', { ascending: false }),
+        supabase.from('community_posts').select('*, author:profiles!author_id(id, full_name, email)').order('created_at', { ascending: false }),
         supabase.from('community_categories').select('*').order('display_order'),
         supabase.from('challenge_themes').select('*').order('title'),
         supabase.from('community_challenges').select('*').order('starts_at', { ascending: false }),
       ]);
+      await fillEmails(supabase, (postsRes.data || []).map((p: { author?: { id?: string; email?: string | null } | null }) => p.author));
       setCommunityPosts(postsRes.data || []);
       setCommunityCategories(catsRes.data || []);
       setChallengeThemes(themesRes.data || []);
@@ -673,7 +676,9 @@ export default function AdminPage() {
         });
         // Push delivery is handled by the recipient's useNotifications hook (triggerSelfPush)
         // Trigger email notification
-        const { data: ownerProfile, error: profileError } = await supabase.from('profiles').select('email, full_name, display_name').eq('id', ticket.user_id).single();
+        const { data: ownerProfile, error: profileError } = await supabase.from('profiles').select('id, email, full_name, display_name').eq('id', ticket.user_id).single();
+        // The address lives in profile_contact (staff can read it)
+        if (ownerProfile) await fillEmails(supabase, [ownerProfile]);
         if (profileError) console.error('Failed to fetch ticket owner profile:', profileError.message);
         if (ownerProfile?.email) {
           sendTicketReplyEmailAction(
@@ -1114,10 +1119,11 @@ function TranslationsAdminTab() {
 
     const { data: pending } = await supabase
       .from('translation_languages')
-      .select('*, added_by_profile:profiles!added_by(display_name, email)')
+      .select('*, added_by_profile:profiles!added_by(id, display_name, email)')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
+    await fillEmails(supabase, (pending || []).map((l: { added_by_profile?: { id?: string; email?: string | null } | null }) => l.added_by_profile));
     setPendingLanguages(pending || []);
 
     const [keysRes, suggestionsRes, votesRes] = await Promise.all([
@@ -3053,8 +3059,9 @@ function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onS
     const supabase = createClient();
     const { data } = await supabase
       .from('script_productions')
-      .select('*, submitter:profiles!submitter_id(full_name, email, avatar_url), post:community_posts!post_id(title, slug)')
+      .select('*, submitter:profiles!submitter_id(id, full_name, email, avatar_url), post:community_posts!post_id(title, slug)')
       .order('created_at', { ascending: false });
+    await fillEmails(supabase, (data || []).map((p: { submitter?: { id?: string; email?: string | null } | null }) => p.submitter));
     setPendingProductions(data || []);
   }, []);
 
@@ -4232,10 +4239,11 @@ function CoursesAdminTab() {
     setLoading(true);
     let q = supabase
       .from('courses')
-      .select('id,title,difficulty,status,enrollment_count,created_at,creator:profiles!courses_creator_id_fkey(full_name,email)')
+      .select('id,title,difficulty,status,enrollment_count,created_at,creator:profiles!courses_creator_id_fkey(id,full_name,email)')
       .order('created_at', { ascending: false });
     if (filter !== 'all') q = q.eq('status', filter);
     const { data } = await q;
+    await fillEmails(supabase, (data || []).map((c: { creator?: { id?: string; email?: string | null } | null }) => c.creator));
     setCourses((data as unknown as CourseRow[]) || []);
     setLoading(false);
   };

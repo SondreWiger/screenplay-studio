@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { fillEmails } from '@/lib/private-profile';
 import { sendEmail } from '@/lib/mailer';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
@@ -166,11 +167,12 @@ export async function POST(req: NextRequest) {
 
   const adminSupabase = createAdminSupabaseClient();
 
-  // Fetch all user emails from profiles
+  // Fetch every user and their email address
   const { data: profiles, error: fetchError } = await adminSupabase
     .from('profiles')
-    .select('id, email, display_name, full_name')
-    .not('email', 'is', null);
+    .select('id, email, display_name, full_name');
+  // Addresses live in profile_contact (the service role can read them)
+  if (profiles) await fillEmails(adminSupabase, profiles);
 
   if (fetchError) {
     return NextResponse.json(

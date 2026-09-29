@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { fillEmails } from '@/lib/private-profile';
 import { createHash } from 'crypto';
 
 // ═══════════════════════════════════════════════════════════════
@@ -412,9 +413,10 @@ export async function GET(req: NextRequest) {
 
   const { data: flags, count } = await supabase
     .from('content_flags')
-    .select('*, flagged_user:profiles!flagged_user_id(email, full_name, display_name, avatar_url, username)', { count: 'exact' })
+    .select('*, flagged_user:profiles!flagged_user_id(id, email, full_name, display_name, avatar_url, username)', { count: 'exact' })
     .order('detected_at', { ascending: false })
     .limit(200);
+  if (flags) await fillEmails(supabase, flags.map((f: { flagged_user: { id?: string; email?: string | null } | null }) => f.flagged_user));
 
   const { data: stats } = await supabase
     .from('content_flags')

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { fillEmails } from '@/lib/private-profile';
 import { rejectUnlessAdmin } from '@/lib/require-admin';
 import { sendNotificationEmail } from '@/lib/mailer';
 
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
     .from('profiles')
     .select('id, email, full_name, display_name')
     .in('id', userIds);
+  if (profiles) await fillEmails(adminSupabase, profiles);
 
   if (fetchError) {
     return NextResponse.json({ error: `Failed to fetch profiles: ${fetchError.message}` }, { status: 500 });
