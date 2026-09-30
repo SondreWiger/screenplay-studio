@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback, memo, useMemo, Fragment } fro
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { deleteCached } from '@/lib/offline/db';
 import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { isCharacterCue } from '@/lib/scripts/cues';
 import { SaveStatus } from '@/components/SaveStatus';
@@ -1737,11 +1738,18 @@ ${pageHTML}
     if (!currentScript) return;
     if (!confirm(`Are you sure you want to delete the script "${currentScript.title}"? This cannot be undone.`)) return;
     const supabase = createClient();
-    const { error } = await supabase.from('scripts').delete().eq('id', currentScript.id);
+    // .select() so a delete blocked by row-level security (0 rows, no error)
+    // isn't reported as success — the script would come back on reload.
+    const { data: deletedRows, error } = await supabase.from('scripts').delete().eq('id', currentScript.id).select('id');
     if (error) {
       toast.error('Failed to delete script: ' + error.message);
       return;
     }
+    if (!deletedRows?.length) {
+      toast.error('Only the project owner or an admin can delete scripts.');
+      return;
+    }
+    deleteCached('scripts', currentScript.id).catch(() => {});
     toast.success('Script deleted');
     window.location.href = `/projects/${currentScript.project_id}`;
   }, [currentScript]);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -772,9 +772,14 @@ export default function UserSettingsPage() {
   const [companyDescription, setCompanyDescription] = useState('');
   const [creatingCompany, setCreatingCompany] = useState(false);
 
+  // Set when a toggle saves on its own, so the store update doesn't reset the
+  // rest of the form (and throw away unsaved edits) from the user object.
+  const skipFormReset = useRef(false);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) { if (navigator.onLine) router.replace('/auth/login'); return; }
+    if (skipFormReset.current) { skipFormReset.current = false; return; }
 
     setFullName(user.full_name || '');
     setDisplayName(user.display_name || '');
@@ -800,6 +805,12 @@ export default function UserSettingsPage() {
     setAccentColor(user.accent_color || 'brand');
     setUiTheme(user.ui_theme === 'soft' ? 'soft' : 'default');
     setActivityColor(user.activity_color || '#22c55e');
+    // Same defaults as the columns (migration_email_prefs.sql)
+    setEmailProjectInvites(user.email_project_invites !== false);
+    setEmailMentions(user.email_mentions !== false);
+    setEmailDirectMessages(user.email_direct_messages !== false);
+    setEmailTicketReplies(user.email_ticket_replies !== false);
+    setEmailWeeklyDigest(user.email_weekly_digest === true);
 
     // Load desktop auth mode preference
     if (isElectronMode()) {
@@ -865,6 +876,29 @@ export default function UserSettingsPage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  // Email toggles look like switches, so they save on click rather than
+  // waiting for the Save button at the bottom of the tab.
+  const saveEmailPref = async (
+    column: 'email_project_invites' | 'email_mentions' | 'email_direct_messages' | 'email_ticket_replies' | 'email_weekly_digest',
+    value: boolean,
+    set: (v: boolean) => void,
+  ) => {
+    if (!user) return;
+    set(value);
+    const supabase = createClient();
+    const { error } = await supabase.from('profiles').update({ [column]: value }).eq('id', user.id);
+    if (error) {
+      set(!value);
+      toast.error('Could not save notification setting: ' + error.message);
+      return;
+    }
+    const current = useAuthStore.getState().user;
+    if (current) {
+      skipFormReset.current = true;
+      useAuthStore.getState().setUser({ ...current, [column]: value });
+    }
   };
 
   const savePreferences = async () => {
@@ -1155,15 +1189,17 @@ export default function UserSettingsPage() {
               <p className="text-sm text-surface-400 mb-6">{t('settings.email_notifications_desc')}</p>
               <div className="space-y-3">
                 {[
-                  { label: t('settings.notif_invitations'), desc: 'When someone invites you to a project', value: emailProjectInvites, set: setEmailProjectInvites },
-                  { label: t('settings.notif_mentions'), desc: 'When someone mentions you or replies to your comments', value: emailMentions, set: setEmailMentions },
-                  { label: t('settings.notif_dms'), desc: 'When someone sends you a direct message', value: emailDirectMessages, set: setEmailDirectMessages },
-                  { label: t('settings.notif_support'), desc: 'When our team replies to your support ticket', value: emailTicketReplies, set: setEmailTicketReplies },
-                  { label: t('settings.notif_digest'), desc: 'Summary of your writing activity and project updates', value: emailWeeklyDigest, set: setEmailWeeklyDigest },
+                  { label: t('settings.notif_invitations'), desc: 'When someone invites you to a project', column: 'email_project_invites' as const, value: emailProjectInvites, set: setEmailProjectInvites },
+                  { label: t('settings.notif_mentions'), desc: 'When someone mentions you or replies to your comments', column: 'email_mentions' as const, value: emailMentions, set: setEmailMentions },
+                  { label: t('settings.notif_dms'), desc: 'When someone sends you a direct message', column: 'email_direct_messages' as const, value: emailDirectMessages, set: setEmailDirectMessages },
+                  { label: t('settings.notif_support'), desc: 'When our team replies to your support ticket', column: 'email_ticket_replies' as const, value: emailTicketReplies, set: setEmailTicketReplies },
+                  { label: t('settings.notif_digest'), desc: 'Summary of your writing activity and project updates', column: 'email_weekly_digest' as const, value: emailWeeklyDigest, set: setEmailWeeklyDigest },
                 ].map((toggle) => (
                   <button
                     key={toggle.label}
-                    onClick={() => toggle.set(!toggle.value)}
+                    role="switch"
+                    aria-checked={toggle.value}
+                    onClick={() => saveEmailPref(toggle.column, !toggle.value, toggle.set)}
                     className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-surface-700 hover:border-surface-600 transition-colors text-left"
                   >
                     <div className="min-w-0">

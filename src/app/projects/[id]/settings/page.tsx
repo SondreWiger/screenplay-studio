@@ -3,7 +3,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingSpinner, Modal, toast } from '@/components/ui';
+import { putCached, deleteCached } from '@/lib/offline/db';
+import { isElectronMode } from '@/lib/supabase/electron-client';
+import { removeProjectFromDisk } from '@/lib/local-files';
 import type { Project } from '@/lib/types';
 import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS, SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -34,6 +37,9 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const [coverUrlInput, setCoverUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [language, setLanguage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Project customization
@@ -125,34 +131,69 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const handleSave = async () => {
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.from('projects').update({
-      title: form.title, logline: form.logline, synopsis: form.synopsis,
+    const title = (form.title || '').trim();
+    if (!title) {
+      setSaving(false);
+      toast.warning('The project needs a title.');
+      return;
+    }
+    // .select() so a write blocked by row-level security (0 rows) isn't
+    // mistaken for success — PostgREST reports no error in that case.
+    const { data: savedRows, error } = await supabase.from('projects').update({
+      title, logline: form.logline, synopsis: form.synopsis,
       genre: form.genre, format: form.format, status: form.status,
       script_type: form.script_type,
       language: language || null,
-    }).eq('id', params.id);
+    }).eq('id', params.id).select('*');
     setSaving(false);
     if (error) {
-      toast.error('Failed to save settings');
+      toast.error('Failed to save settings: ' + error.message);
+      return;
+    }
+    if (!savedRows?.length) {
+      toast.error('Only the project owner or an admin can change these settings.');
       return;
     }
     // Sync Zustand store so sidebar/dashboard update immediately
-    const updatedProject = { ...project, ...form, language: language || null } as Project;
+    const updatedProject = { ...project, ...form, ...savedRows[0] } as Project;
+    putCached('projects', updatedProject as unknown as Record<string, unknown>).catch(() => {});
     useProjectStore.getState().setCurrentProject(updatedProject);
     useProjectStore.setState((state) => ({
-      projects: state.projects.map((p) => p.id === params.id ? { ...p, ...form, language: language || null } : p),
+      projects: state.projects.map((p) => p.id === params.id ? { ...p, ...updatedProject } : p),
     }));
     setProject(updatedProject);
+    setForm(updatedProject);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
+  // In-page dialog rather than window.prompt(): the desktop app (Electron)
+  // doesn't support prompt(), so deleting was impossible there.
   const handleDelete = async () => {
-    const confirmation = prompt('Type the project title to confirm deletion:');
-    if (confirmation !== project?.title) return;
+    if (!project || deleteConfirm.trim() !== (project.title || '').trim()) return;
+    setDeleting(true);
     const supabase = createClient();
-    // Delete related data first (cascade should handle most, but be explicit)
-    await supabase.from('projects').delete().eq('id', params.id);
+    // Related rows cascade. .select() so a delete blocked by row-level
+    // security (0 rows, no error) isn't reported as success.
+    const { data: deletedRows, error } = await supabase.from('projects').delete().eq('id', params.id).select('id');
+    setDeleting(false);
+    if (error) {
+      toast.error('Failed to delete project: ' + error.message);
+      return;
+    }
+    if (!deletedRows?.length) {
+      toast.error('Only the person who created this project can delete it.');
+      return;
+    }
+    // Drop every local copy so the dashboard doesn't show it again
+    useProjectStore.setState((state) => ({
+      projects: state.projects.filter((p) => p.id !== params.id),
+      currentProject: state.currentProject?.id === params.id ? null : state.currentProject,
+    }));
+    deleteCached('projects', params.id).catch(() => {});
+    if (isElectronMode()) removeProjectFromDisk(params.id).catch(() => {});
+    setShowDeleteModal(false);
+    toast.success('Project deleted');
     router.push('/dashboard');
   };
 
@@ -640,8 +681,37 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
         <p className="text-sm text-surface-400 mb-4">
           Deleting this project is permanent. All scripts, characters, locations, scenes, and production data will be lost forever.
         </p>
-        <Button variant="danger" onClick={handleDelete}>{t('project.delete')}</Button>
+        <Button variant="danger" onClick={() => { setDeleteConfirm(''); setShowDeleteModal(true); }}>{t('project.delete')}</Button>
       </Card>
+
+      <Modal isOpen={showDeleteModal} onClose={() => !deleting && setShowDeleteModal(false)} title={t('project.delete')} size="sm">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => { e.preventDefault(); handleDelete(); }}
+        >
+          <p className="text-sm text-surface-300">
+            This permanently deletes <span className="font-semibold text-white">{project.title}</span> and all of its scripts and production data.
+          </p>
+          <Input
+            label="Type the project title to confirm"
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            placeholder={project.title}
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setShowDeleteModal(false)} disabled={deleting}>Cancel</Button>
+            <Button
+              type="submit"
+              variant="danger"
+              loading={deleting}
+              disabled={deleteConfirm.trim() !== (project.title || '').trim()}
+            >
+              Delete permanently
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

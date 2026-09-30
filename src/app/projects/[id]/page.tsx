@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { attachProfiles } from '@/lib/supabase/fetch-all';
-import { useProjectStore } from '@/lib/stores';
-import { getCachedByProject, getCachedByScript } from '@/lib/offline/db';
-import { Card, Badge, Progress, Button, LoadingPage } from '@/components/ui';
+import { useProjectStore, useScriptStore } from '@/lib/stores';
+import { getCachedByProject, getCachedByScript, deleteCached } from '@/lib/offline/db';
+import { Card, Badge, Progress, Button, LoadingPage, toast } from '@/components/ui';
 import { formatDate, formatCurrency, timeAgo, cn } from '@/lib/utils';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
 import type { Script, Character, Location, Scene, Shot, Idea, BudgetItem, ScheduleEvent } from '@/lib/types';
@@ -203,11 +203,20 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     e.preventDefault();
     if (!confirm(`Are you sure you want to delete the script "${title}"? This cannot be undone.`)) return;
     const supabase = createClient();
-    const { error } = await supabase.from('scripts').delete().eq('id', scriptId);
+    // .select() so a delete blocked by row-level security (0 rows, no error)
+    // isn't treated as success — the script would reappear on reload.
+    const { data: deletedRows, error } = await supabase.from('scripts').delete().eq('id', scriptId).select('id');
     if (error) {
-      alert('Failed to delete script: ' + error.message);
+      toast.error('Failed to delete script: ' + error.message);
       return;
     }
+    if (!deletedRows?.length) {
+      toast.error('Only the project owner or an admin can delete scripts.');
+      return;
+    }
+    deleteCached('scripts', scriptId).catch(() => {});
+    useScriptStore.setState((state) => ({ scripts: state.scripts.filter((s) => s.id !== scriptId) }));
+    toast.success('Script deleted');
     setRecentScripts(prev => prev.filter(s => s.id !== scriptId));
     setStats(prev => ({ ...prev, scripts: Math.max(0, prev.scripts - 1) }));
   };
@@ -801,8 +810,9 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
                   </Link>
                   <button 
                     onClick={(e) => handleDeleteScript(e, script.id, script.title)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all z-10"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-red-400 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100 transition-all z-10"
                     title="Delete script"
+                    aria-label={`Delete script ${script.title}`}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

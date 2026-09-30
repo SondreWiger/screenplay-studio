@@ -58,6 +58,7 @@ export async function loadProjectFromDisk(
     console.log('[local-files] Loading project from disk:', projectId);
     const content = await window.electron.readFile(`${basePath}/${projectId}/project.json`);
     const data = JSON.parse(content);
+    if (!data?.project) return null; // removed (see removeProjectFromDisk)
     console.log('[local-files] Project loaded successfully:', data.project?.title);
     return {
       project: data.project,
@@ -91,6 +92,22 @@ export async function listLocalProjects(): Promise<Project[]> {
     const bTime = b.updated_at || b.created_at || '';
     return bTime.localeCompare(aTime);
   });
+}
+
+/**
+ * Forget a deleted project's local copy. The desktop bridge has no delete call,
+ * so project.json is overwritten with a marker that has no `project`, which
+ * listLocalProjects/loadProjectFromDisk already skip. Without this the dashboard
+ * merges the disk copy back in and the deleted project reappears.
+ */
+export async function removeProjectFromDisk(projectId: string): Promise<void> {
+  if (!window.electron) return;
+  const basePath = await getBasePath();
+  if (!basePath) return;
+  await window.electron.writeFile(
+    `${basePath}/${projectId}/project.json`,
+    JSON.stringify({ deleted: true, deletedAt: new Date().toISOString() })
+  );
 }
 
 export async function saveScriptToDisk(

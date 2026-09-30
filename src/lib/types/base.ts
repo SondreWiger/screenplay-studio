@@ -121,6 +121,12 @@ export interface Profile {
   show_activity: boolean;
   allow_dms: boolean;
   profile_views: number;
+  // Email notification preferences
+  email_project_invites?: boolean | null;
+  email_mentions?: boolean | null;
+  email_direct_messages?: boolean | null;
+  email_ticket_replies?: boolean | null;
+  email_weekly_digest?: boolean | null;
   // Client customisation
   accent_color?: string | null;
   sidebar_tabs?: Record<string, boolean> | null;
