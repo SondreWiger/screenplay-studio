@@ -1,13 +1,20 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Ban, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Badge, Modal, Input, Textarea, Select, Avatar } from '@/components/ui';
+import { Avatar } from '@/components/ui';
 import { cn, formatDate, timeAgo } from '@/lib/utils';
+import { weekdayHourGrid } from '@/lib/admin/analytics';
+import {
+  ActionButton, AdminPage, BarList, Dialog, Dots, EmptyState, Field, Heatmap, PageHeader, Panel, Pill, Reveal,
+  SearchInput, Segmented, StatGrid, TabSkeleton, Toolbar, TrendPanel, fieldClass, tally, SERIES, type Tone,
+} from '@/components/admin/kit';
 
 // Constants
 
@@ -30,33 +37,21 @@ const EVENT_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: 'permission_change', label: 'Permission Change' },
 ];
 
-const DATE_RANGE_OPTIONS: { value: string; label: string }[] = [
-  { value: '24h', label: 'Last 24 hours' },
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: 'all', label: 'All time' },
-];
-
 const BAN_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: 'warning', label: 'Warning' },
   { value: 'temporary', label: 'Temporary Ban' },
   { value: 'permanent', label: 'Permanent Ban' },
 ];
 
-const EVENT_BADGE_COLORS: Record<string, string> = {
-  failed_login: 'bg-red-500/20 text-red-400 border-red-500/30',
-  password_changed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  email_changed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  suspicious_login: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  rate_limited: 'bg-brand-500/20 text-brand-500 border-amber-500/30',
-  api_abuse: 'bg-red-500/20 text-red-400 border-red-500/30',
-  brute_force: 'bg-red-500/20 text-red-400 border-red-500/30',
-  account_locked: 'bg-red-500/20 text-red-400 border-red-500/30',
-  data_export: 'bg-green-500/20 text-green-400 border-green-500/30',
-  account_deletion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  admin_action: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-  permission_change: 'bg-brand-500/20 text-brand-500 border-yellow-500/30',
+const EVENT_TONE: Record<string, Tone> = {
+  failed_login: 'red', password_changed: 'blue', email_changed: 'blue', suspicious_login: 'brand',
+  rate_limited: 'amber', api_abuse: 'red', brute_force: 'red', account_locked: 'red',
+  data_export: 'green', account_deletion: 'violet', admin_action: 'aqua', permission_change: 'amber',
 };
+const BAN_TONE: Record<string, Tone> = { permanent: 'red', temporary: 'amber', warning: 'blue' };
+/** How far back the event and audit views load (filtered client-side from there). */
+const HISTORY_DAYS = 90;
+type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Types
 
@@ -128,14 +123,16 @@ export default function SecurityPage() {
   // Security Events
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [eventTypeFilter, setEventTypeFilter] = useState('');
-  const [eventDateRange, setEventDateRange] = useState('7d');
+  const [eventDateRange, setEventDateRange] = useState<DateRange>('7d');
+  const [refreshing, setRefreshing] = useState(false);
+  const [banView, setBanView] = useState<'active' | 'all'>('active');
   const [eventUserSearch, setEventUserSearch] = useState('');
 
   // Audit Log
   const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
   const [auditSearch, setAuditSearch] = useState('');
   const [auditActionFilter, setAuditActionFilter] = useState('');
-  const [auditDateRange, setAuditDateRange] = useState('7d');
+  const [auditDateRange, setAuditDateRange] = useState<DateRange>('7d');
 
   // Bans
   const [bans, setBans] = useState<UserBan[]>([]);
@@ -161,14 +158,17 @@ export default function SecurityPage() {
       return;
     }
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
   // Data Loading
 
   const loadAll = useCallback(async () => {
-    setLoading(true);
+    setRefreshing(true);
     await Promise.all([loadStats(), loadEvents(), loadAudit(), loadBans()]);
     setLoading(false);
+    setRefreshing(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadStats = async () => {
@@ -205,61 +205,32 @@ export default function SecurityPage() {
     return null;
   };
 
+  const historyCutoff = () => new Date(Date.now() - HISTORY_DAYS * 86_400_000).toISOString();
+
+  // Load the last HISTORY_DAYS once; type/date/search filters apply instantly client-side.
   const loadEvents = async () => {
     const supabase = createClient();
-    let query = supabase
+    const { data } = await supabase
       .from('security_events')
       .select('*, profiles!security_events_user_id_fkey(id, display_name, full_name, email, avatar_url)')
+      .gte('created_at', historyCutoff())
       .order('created_at', { ascending: false })
-      .limit(200);
-
-    if (eventTypeFilter) query = query.eq('event_type', eventTypeFilter);
-    const cutoff = getDateCutoff(eventDateRange);
-    if (cutoff) query = query.gte('created_at', cutoff);
-
-    const { data } = await query;
+      .limit(2000);
     // Emails come from profile_contact (staff can read all)
     await fillEmails(supabase, (data ?? []).map((e: { profiles?: { id?: string; email?: string | null } | null }) => e.profiles));
-    let filtered = (data ?? []) as SecurityEvent[];
-    if (eventUserSearch.trim()) {
-      const s = eventUserSearch.toLowerCase();
-      filtered = filtered.filter(
-        (e) =>
-          e.profiles?.email?.toLowerCase().includes(s) ||
-          e.profiles?.display_name?.toLowerCase().includes(s) ||
-          e.profiles?.full_name?.toLowerCase().includes(s)
-      );
-    }
-    setEvents(filtered);
+    setEvents((data ?? []) as SecurityEvent[]);
   };
 
   const loadAudit = async () => {
     const supabase = createClient();
-    let query = supabase
+    const { data } = await supabase
       .from('audit_log')
       .select('*, profiles!audit_log_user_id_fkey(id, display_name, full_name, email, avatar_url)')
+      .gte('created_at', historyCutoff())
       .order('created_at', { ascending: false })
-      .limit(200);
-
-    const cutoff = getDateCutoff(auditDateRange);
-    if (cutoff) query = query.gte('created_at', cutoff);
-    if (auditActionFilter) query = query.ilike('action', `%${auditActionFilter}%`);
-
-    const { data } = await query;
+      .limit(2000);
     await fillEmails(supabase, (data ?? []).map((e: { profiles?: { id?: string; email?: string | null } | null }) => e.profiles));
-    let filtered = (data ?? []) as AuditEntry[];
-    if (auditSearch.trim()) {
-      const s = auditSearch.toLowerCase();
-      filtered = filtered.filter(
-        (e) =>
-          e.action.toLowerCase().includes(s) ||
-          e.entity_type.toLowerCase().includes(s) ||
-          e.entity_id?.toLowerCase().includes(s) ||
-          e.profiles?.email?.toLowerCase().includes(s) ||
-          e.profiles?.display_name?.toLowerCase().includes(s)
-      );
-    }
-    setAuditEntries(filtered);
+    setAuditEntries((data ?? []) as AuditEntry[]);
   };
 
   const loadBans = async () => {
@@ -271,17 +242,6 @@ export default function SecurityPage() {
     await fillEmails(supabase, (data ?? []).flatMap((b: { profiles?: { id?: string; email?: string | null } | null; banner?: { id?: string; email?: string | null } | null }) => [b.profiles, b.banner]));
     setBans((data ?? []) as UserBan[]);
   };
-
-  // Reload on filter changes
-  useEffect(() => {
-    if (!user || !isFullAdmin(user.id, user.role)) return;
-    loadEvents();
-  }, [eventTypeFilter, eventDateRange, eventUserSearch]);
-
-  useEffect(() => {
-    if (!user || !isFullAdmin(user.id, user.role)) return;
-    loadAudit();
-  }, [auditSearch, auditActionFilter, auditDateRange]);
 
   // Ban Actions
 
@@ -387,481 +347,335 @@ export default function SecurityPage() {
     return ua.length > 60 ? ua.substring(0, 60) + '…' : ua;
   };
 
+  const inRange = (iso: string, range: DateRange) => {
+    const cutoff = getDateCutoff(range);
+    return !cutoff || iso >= cutoff;
+  };
+
+  const visibleEvents = useMemo(() => {
+    const q = eventUserSearch.trim().toLowerCase();
+    return events
+      .filter(e => inRange(e.created_at, eventDateRange))
+      .filter(e => !eventTypeFilter || e.event_type === eventTypeFilter)
+      .filter(e => !q || `${e.profiles?.email || ''} ${e.profiles?.display_name || ''} ${e.profiles?.full_name || ''} ${e.ip_address || ''}`.toLowerCase().includes(q));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events, eventDateRange, eventTypeFilter, eventUserSearch]);
+
+  const visibleAudit = useMemo(() => {
+    const q = auditSearch.trim().toLowerCase();
+    const act = auditActionFilter.trim().toLowerCase();
+    return auditEntries
+      .filter(e => inRange(e.created_at, auditDateRange))
+      .filter(e => !act || e.action.toLowerCase().includes(act))
+      .filter(e => !q || `${e.action} ${e.entity_type} ${e.entity_id || ''} ${e.profiles?.email || ''} ${e.profiles?.display_name || ''}`.toLowerCase().includes(q));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auditEntries, auditDateRange, auditSearch, auditActionFilter]);
+
   // Render
+  if (authLoading || loading) return <TabSkeleton />;
 
-  if (authLoading || loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
-      </div>
-    );
-  }
-
-  const TABS: { id: ActiveTab; label: string; count?: number }[] = [
-    { id: 'events', label: 'Security Events', count: events.length },
-    { id: 'audit', label: 'Audit Log', count: auditEntries.length },
-    { id: 'bans', label: 'User Bans', count: bans.filter((b) => b.is_active).length },
-  ];
+  const now = new Date().toISOString();
+  const banLive = (b: UserBan) => b.is_active && (!b.expires_at || b.expires_at > now);
+  const visibleBans = banView === 'active' ? bans.filter(banLive) : bans;
+  const failed = events.filter(e => e.event_type === 'failed_login' || e.event_type === 'brute_force');
+  const topIps = tally(visibleEvents.filter(e => e.ip_address), e => e.ip_address).slice(0, 8);
+  const RANGE_OPTS: { key: DateRange; label: string }[] = [{ key: '24h', label: '24H' }, { key: '7d', label: '7D' }, { key: '30d', label: '30D' }, { key: 'all', label: `${HISTORY_DAYS}D` }];
 
   return (
-    <div className="min-h-screen bg-surface-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/admin" className="text-xs text-surface-500 hover:text-white transition-colors mb-2 inline-flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back to Admin
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Security &amp; Audit</h1>
-          <p className="text-sm text-surface-400 mt-1">Monitor security events, audit trails, and user bans</p>
-        </div>
-        <Button onClick={loadAll} variant="secondary" size="sm">
-          Refresh
-        </Button>
-      </div>
+    <AdminPage>
+      <PageHeader
+        icon={<ShieldCheck className="h-5 w-5" />}
+        title="Security & Audit"
+        description="Security events, the audit trail, and user bans."
+        meta={<>Events and audit entries cover the last {HISTORY_DAYS} days</>}
+        actions={<ActionButton icon={<RefreshCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />} onClick={loadAll} disabled={refreshing}>Refresh</ActionButton>}
+      />
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {[
-          { label: 'Events (24h)', value: stats.events24h, color: 'text-white' },
-          { label: 'Events (7d)', value: stats.events7d, color: 'text-white' },
-          { label: 'Events (30d)', value: stats.events30d, color: 'text-white' },
-          { label: 'Failed Logins (7d)', value: stats.failedLogins, color: 'text-red-400' },
-          { label: 'Rate Limits (7d)', value: stats.rateLimits, color: 'text-amber-400' },
-          { label: 'Active Bans', value: stats.activeBans, color: 'text-red-400' },
-        ].map((s) => (
-          <Card key={s.label} className="p-4">
-            <p className="text-xs text-surface-400 mb-1">{s.label}</p>
-            <p className={cn('text-2xl font-bold', s.color)}>{s.value.toLocaleString()}</p>
-          </Card>
-        ))}
-      </div>
+      <StatGrid
+        cols={6}
+        layoutGroup="security"
+        items={[
+          { label: 'Events · 24h', value: stats.events24h, tone: 'blue', onClick: () => { setActiveTab('events'); setEventDateRange('24h'); setEventTypeFilter(''); }, active: activeTab === 'events' && eventDateRange === '24h' && !eventTypeFilter },
+          { label: 'Events · 7d', value: stats.events7d, tone: 'aqua', onClick: () => { setActiveTab('events'); setEventDateRange('7d'); setEventTypeFilter(''); }, active: activeTab === 'events' && eventDateRange === '7d' && !eventTypeFilter },
+          { label: 'Events · 30d', value: stats.events30d, tone: 'violet' },
+          { label: 'Failed logins · 7d', value: stats.failedLogins, tone: 'red', onClick: () => { setActiveTab('events'); setEventDateRange('7d'); setEventTypeFilter('failed_login'); }, active: eventTypeFilter === 'failed_login' },
+          { label: 'Rate limits · 7d', value: stats.rateLimits, tone: 'amber', onClick: () => { setActiveTab('events'); setEventDateRange('7d'); setEventTypeFilter('rate_limited'); }, active: eventTypeFilter === 'rate_limited' },
+          { label: 'Active bans', value: stats.activeBans, tone: 'red', onClick: () => { setActiveTab('bans'); setBanView('active'); }, active: activeTab === 'bans' },
+        ]}
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-surface-800 overflow-x-auto">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              'px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px',
-              activeTab === tab.id
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-surface-400 hover:text-white'
-            )}
-          >
-            {tab.label}
-            {tab.count !== undefined && (
-              <span className="ml-2 text-xs bg-surface-800 rounded-full px-2 py-0.5">{tab.count}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Security Events Tab ── */}
-      {activeTab === 'events' && (
-        <div className="space-y-4">
-          {/* Filters */}
-          <Card className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Select
-                label="Event Type"
-                options={EVENT_TYPE_OPTIONS}
-                value={eventTypeFilter}
-                onChange={(e) => setEventTypeFilter(e.target.value)}
-              />
-              <Select
-                label="Date Range"
-                options={DATE_RANGE_OPTIONS}
-                value={eventDateRange}
-                onChange={(e) => setEventDateRange(e.target.value)}
-              />
-              <Input
-                label="Search User"
-                placeholder="Email or name…"
-                value={eventUserSearch}
-                onChange={(e) => setEventUserSearch(e.target.value)}
-              />
-            </div>
-          </Card>
-
-          {/* Events Table */}
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-surface-800 text-left">
-                    <th className="px-4 py-3 text-surface-400 font-medium">Time</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">User</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Event</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">IP Address</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">User Agent</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Metadata</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-800/50">
-                  {events.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-surface-400">
-                        No security events found
-                      </td>
-                    </tr>
-                  )}
-                  {events.map((evt) => (
-                    <tr key={evt.id} className="hover:bg-surface-800/30 transition-colors">
-                      <td className="px-4 py-3 text-surface-300 whitespace-nowrap" title={formatDate(evt.created_at)}>
-                        {timeAgo(evt.created_at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {evt.user_id ? (
-                          <Link href={`/u/${evt.user_id}`} className="text-amber-400 hover:underline text-sm">
-                            {userName(evt.profiles)}
-                          </Link>
-                        ) : (
-                          <span className="text-surface-400">System</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={cn(
-                            'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
-                            EVENT_BADGE_COLORS[evt.event_type] ?? 'bg-surface-800 text-surface-300 border-surface-700'
-                          )}
-                        >
-                          {evt.event_type.replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-surface-300 font-mono text-xs">
-                        {evt.ip_address ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-surface-400 text-xs max-w-[200px] truncate" title={evt.user_agent ?? ''}>
-                        {truncateUA(evt.user_agent)}
-                      </td>
-                      <td className="px-4 py-3 text-surface-400 text-xs max-w-[200px]">
-                        {evt.metadata && Object.keys(evt.metadata).length > 0 ? (
-                          <code className="text-xs bg-surface-800 rounded px-1.5 py-0.5">
-                            {JSON.stringify(evt.metadata).substring(0, 80)}
-                          </code>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* ── Audit Log Tab ── */}
-      {activeTab === 'audit' && (
-        <div className="space-y-4">
-          <Card className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Input
-                label="Search"
-                placeholder="Action, entity, user…"
-                value={auditSearch}
-                onChange={(e) => setAuditSearch(e.target.value)}
-              />
-              <Input
-                label="Filter Action"
-                placeholder="e.g. ban_user, delete…"
-                value={auditActionFilter}
-                onChange={(e) => setAuditActionFilter(e.target.value)}
-              />
-              <Select
-                label="Date Range"
-                options={DATE_RANGE_OPTIONS}
-                value={auditDateRange}
-                onChange={(e) => setAuditDateRange(e.target.value)}
-              />
-            </div>
-          </Card>
-
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-surface-800 text-left">
-                    <th className="px-4 py-3 text-surface-400 font-medium">Timestamp</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">User</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Action</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Entity Type</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Entity ID</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">IP</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Metadata</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-800/50">
-                  {auditEntries.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-surface-400">
-                        No audit entries found
-                      </td>
-                    </tr>
-                  )}
-                  {auditEntries.map((entry) => (
-                    <tr key={entry.id} className="hover:bg-surface-800/30 transition-colors">
-                      <td className="px-4 py-3 text-surface-300 whitespace-nowrap text-xs" title={formatDate(entry.created_at)}>
-                        {formatDate(entry.created_at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {entry.user_id ? (
-                          <Link href={`/u/${entry.user_id}`} className="text-amber-400 hover:underline text-sm">
-                            {userName(entry.profiles)}
-                          </Link>
-                        ) : (
-                          <span className="text-surface-400">System</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <code className="text-xs bg-surface-800 rounded px-1.5 py-0.5 text-surface-300">
-                          {entry.action}
-                        </code>
-                      </td>
-                      <td className="px-4 py-3 text-surface-300 text-sm">{entry.entity_type}</td>
-                      <td className="px-4 py-3 text-surface-400 font-mono text-xs max-w-[120px] truncate" title={entry.entity_id ?? ''}>
-                        {entry.entity_id ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-surface-300 font-mono text-xs">{entry.ip_address ?? '—'}</td>
-                      <td className="px-4 py-3 text-surface-400 text-xs max-w-[200px]">
-                        {entry.metadata && Object.keys(entry.metadata).length > 0 ? (
-                          <code className="text-xs bg-surface-800 rounded px-1.5 py-0.5">
-                            {JSON.stringify(entry.metadata).substring(0, 80)}
-                          </code>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* ── User Bans Tab ── */}
-      {activeTab === 'bans' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">User Bans</h2>
-            <Button onClick={() => setShowBanModal(true)} variant="primary" size="sm">
-              + Ban User
-            </Button>
-          </div>
-
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-surface-800 text-left">
-                    <th className="px-4 py-3 text-surface-400 font-medium">User</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Type</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Reason</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Expires</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Status</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Banned By</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Created</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-800/50">
-                  {bans.length === 0 && (
-                    <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center text-surface-400">
-                        No bans found
-                      </td>
-                    </tr>
-                  )}
-                  {bans.map((ban) => (
-                    <tr key={ban.id} className={cn('hover:bg-surface-800/30 transition-colors', !ban.is_active && 'opacity-50')}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Avatar src={ban.profiles?.avatar_url} name={userName(ban.profiles)} size="sm" />
-                          <div>
-                            <Link href={`/u/${ban.user_id}`} className="text-amber-400 hover:underline text-sm">
-                              {userName(ban.profiles)}
-                            </Link>
-                            <p className="text-xs text-surface-400">{ban.profiles?.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={cn(
-                            'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
-                            ban.ban_type === 'permanent'
-                              ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                              : ban.ban_type === 'temporary'
-                                ? 'bg-brand-500/20 text-brand-500 border-amber-500/30'
-                                : 'bg-brand-500/20 text-brand-500 border-yellow-500/30'
-                          )}
-                        >
-                          {ban.ban_type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-surface-300 text-sm max-w-[200px] truncate" title={ban.reason}>
-                        {ban.reason}
-                      </td>
-                      <td className="px-4 py-3 text-surface-300 text-sm whitespace-nowrap">
-                        {ban.expires_at ? formatDate(ban.expires_at) : '—'}
-                      </td>
-                      <td className="px-4 py-3">
-                        {ban.is_active ? (
-                          <Badge variant="error">Active</Badge>
-                        ) : (
-                          <Badge variant="default">Expired</Badge>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-surface-300 text-sm">{userName(ban.banner)}</td>
-                      <td className="px-4 py-3 text-surface-400 text-xs whitespace-nowrap">{timeAgo(ban.created_at)}</td>
-                      <td className="px-4 py-3">
-                        {ban.is_active && (
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => revokeBan(ban)}
-                              className="text-xs text-red-400 hover:text-red-300 transition-colors"
-                            >
-                              Revoke
-                            </button>
-                            {ban.ban_type === 'temporary' && (
-                              <button
-                                onClick={() => { setExtendBan(ban); setExtendDays('7'); }}
-                                className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
-                              >
-                                Extend
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* ── Ban User Modal ── */}
-      <Modal isOpen={showBanModal} onClose={closeBanModal} title="Ban User" size="md">
-        <div className="p-6 space-y-4">
-          {/* User search */}
-          <div>
-            <Input
-              label="Search User"
-              placeholder="Search by email or name…"
-              value={banUserSearch}
-              onChange={(e) => searchUsersForBan(e.target.value)}
-            />
-            {banUserResults.length > 0 && !selectedBanUser && (
-              <div className="mt-2 border border-surface-800 rounded-lg bg-surface-950 max-h-48 overflow-y-auto">
-                {banUserResults.map((u) => (
-                  <button
-                    key={u.id}
-                    onClick={() => { setSelectedBanUser(u); setBanUserResults([]); }}
-                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-surface-800 transition-colors text-left"
-                  >
-                    <Avatar src={u.avatar_url} name={u.display_name || u.full_name || u.email} size="sm" />
-                    <div>
-                      <p className="text-sm text-white">{u.display_name || u.full_name || u.email}</p>
-                      <p className="text-xs text-surface-400">{u.email}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {selectedBanUser && (
-              <div className="mt-2 flex items-center gap-3 p-3 bg-surface-800 rounded-lg">
-                <Avatar src={selectedBanUser.avatar_url} name={selectedBanUser.display_name || selectedBanUser.email} size="sm" />
-                <div className="flex-1">
-                  <p className="text-sm text-white">{selectedBanUser.display_name || selectedBanUser.full_name || selectedBanUser.email}</p>
-                  <p className="text-xs text-surface-400">{selectedBanUser.email}</p>
-                </div>
-                <button onClick={() => { setSelectedBanUser(null); setBanUserSearch(''); }} className="text-surface-400 hover:text-white">
-                  ✕
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Ban type */}
-          <Select
-            label="Ban Type"
-            options={BAN_TYPE_OPTIONS}
-            value={banType}
-            onChange={(e) => setBanType(e.target.value as any)}
+      {events.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <TrendPanel
+            id="security-events"
+            stacked
+            className="lg:col-span-3"
+            title="Security events"
+            subtitle={`Last ${HISTORY_DAYS} days, by kind`}
+            defaultRange="30d"
+            sources={[
+              { key: 'failed', label: 'Failed / brute force', color: SERIES.red, rows: failed, time: e => e.created_at },
+              { key: 'rate', label: 'Rate limited', color: SERIES.yellow, rows: events.filter(e => e.event_type === 'rate_limited'), time: e => e.created_at },
+              { key: 'other', label: 'Other', color: SERIES.blue, rows: events.filter(e => !['failed_login', 'brute_force', 'rate_limited'].includes(e.event_type)), time: e => e.created_at },
+            ]}
           />
-
-          {/* Duration (for temp bans) */}
-          {banType === 'temporary' && (
-            <Input
-              label="Duration (days)"
-              type="number"
-              value={banDuration}
-              onChange={(e) => setBanDuration(e.target.value)}
-              min={1}
-              max={365}
-            />
-          )}
-
-          {/* Reason */}
-          <Textarea
-            label="Reason"
-            placeholder="Why is this user being banned?"
-            value={banReason}
-            onChange={(e) => setBanReason(e.target.value)}
-            rows={3}
-          />
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={closeBanModal}>Cancel</Button>
-            <Button
-              variant="primary"
-              onClick={submitBan}
-              disabled={!selectedBanUser || !banReason.trim() || banSubmitting}
-            >
-              {banSubmitting ? 'Banning…' : 'Confirm Ban'}
-            </Button>
-          </div>
+          <Panel title="When failed logins happen" subtitle="Weekday × hour, UTC" className="lg:col-span-2">
+            <Heatmap grid={weekdayHourGrid(failed.map(e => e.created_at))} label="failed logins" />
+          </Panel>
         </div>
-      </Modal>
+      )}
 
-      {/* ── Extend Ban Modal ── */}
-      <Modal isOpen={!!extendBan} onClose={() => setExtendBan(null)} title="Extend Ban" size="sm">
-        <div className="p-6 space-y-4">
-          {extendBan && (
+      <Reveal>
+        <Segmented
+          id="security-tab"
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { key: 'events', label: <>Security events <span className="ml-1 text-surface-500">{visibleEvents.length}</span></> },
+            { key: 'audit', label: <>Audit log <span className="ml-1 text-surface-500">{visibleAudit.length}</span></> },
+            { key: 'bans', label: <>User bans <span className="ml-1 text-surface-500">{bans.filter(banLive).length}</span></> },
+          ]}
+        />
+      </Reveal>
+
+      <AnimatePresence mode="wait">
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="space-y-4">
+          {activeTab === 'events' && (
             <>
-              <p className="text-sm text-surface-300">
-                Extending ban for <span className="text-white font-medium">{userName(extendBan.profiles)}</span>
-              </p>
-              <p className="text-xs text-surface-400">
-                Current expiry: {extendBan.expires_at ? formatDate(extendBan.expires_at) : 'None'}
-              </p>
-              <Input
-                label="Extend by (days)"
-                type="number"
-                value={extendDays}
-                onChange={(e) => setExtendDays(e.target.value)}
-                min={1}
-                max={365}
-              />
-              <div className="flex justify-end gap-3 pt-2">
-                <Button variant="secondary" onClick={() => setExtendBan(null)}>Cancel</Button>
-                <Button variant="primary" onClick={submitExtendBan}>Extend</Button>
+              <Toolbar>
+                <SearchInput value={eventUserSearch} onChange={setEventUserSearch} placeholder="User email, name or IP…" />
+                <select value={eventTypeFilter} onChange={e => setEventTypeFilter(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Event type">
+                  {EVENT_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <Segmented id="sec-event-range" size="sm" value={eventDateRange} onChange={setEventDateRange} options={RANGE_OPTS} />
+              </Toolbar>
+              <div className="grid gap-5 xl:grid-cols-3">
+                <Panel title="Events" subtitle={`${visibleEvents.length} matching`} className="xl:col-span-2" bodyClassName="p-0">
+                  {visibleEvents.length === 0 ? (
+                    <div className="p-5"><EmptyState title="No security events" description="Nothing matches these filters." /></div>
+                  ) : (
+                    <ul className="max-h-[640px] divide-y divide-surface-800/70 overflow-y-auto">
+                      {visibleEvents.slice(0, 300).map((evt, i) => (
+                        <motion.li key={evt.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i, 20) * 0.015 }} className="px-5 py-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Pill tone={EVENT_TONE[evt.event_type] ?? 'neutral'} dot>{evt.event_type.replace(/_/g, ' ')}</Pill>
+                            {evt.user_id ? (
+                              <Link href={`/u/${evt.user_id}`} className="text-sm text-brand-400 hover:underline">{userName(evt.profiles)}</Link>
+                            ) : <span className="text-sm text-surface-400">System</span>}
+                            {evt.ip_address && (
+                              <button onClick={() => setEventUserSearch(evt.ip_address!)} className="font-mono text-xs text-surface-400 hover:text-white" title="Filter by this IP">{evt.ip_address}</button>
+                            )}
+                            <span className="ml-auto text-[11px] text-surface-500" title={formatDate(evt.created_at)}>{timeAgo(evt.created_at)}</span>
+                          </div>
+                          <p className="mt-1 truncate text-[11px] text-surface-600" title={evt.user_agent ?? ''}>{truncateUA(evt.user_agent)}</p>
+                          {evt.metadata && Object.keys(evt.metadata).length > 0 && (
+                            <code className="mt-1 block truncate rounded bg-surface-950 px-1.5 py-0.5 text-[11px] text-surface-400">{JSON.stringify(evt.metadata)}</code>
+                          )}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  )}
+                </Panel>
+                <div className="space-y-5">
+                  <Panel title="By type" subtitle="In the current view"><BarList items={tally(visibleEvents, e => e.event_type)} color={SERIES.red} limit={7} /></Panel>
+                  <Panel title="Top IP addresses" subtitle="Click one to filter">
+                    {topIps.length === 0 ? <p className="py-4 text-center text-xs text-surface-600">No IPs recorded</p> : (
+                      <ul className="space-y-1">
+                        {topIps.map(ip => (
+                          <li key={ip.label}>
+                            <button onClick={() => setEventUserSearch(ip.label)} className="flex w-full items-center justify-between rounded-lg px-2 py-1 font-mono text-xs text-surface-300 hover:bg-surface-800/60">
+                              {ip.label}<span className="font-sans font-semibold text-white">{ip.count}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </Panel>
+                </div>
               </div>
             </>
           )}
+
+          {activeTab === 'audit' && (
+            <>
+              <Toolbar>
+                <SearchInput value={auditSearch} onChange={setAuditSearch} placeholder="Action, entity, user…" />
+                <input value={auditActionFilter} onChange={e => setAuditActionFilter(e.target.value)} placeholder="Action contains… e.g. ban_user" className={cn(fieldClass, 'w-auto py-2')} />
+                <Segmented id="sec-audit-range" size="sm" value={auditDateRange} onChange={setAuditDateRange} options={RANGE_OPTS} />
+              </Toolbar>
+              <div className="grid gap-5 xl:grid-cols-3">
+                <Panel title="Audit trail" subtitle={`${visibleAudit.length} entries`} className="xl:col-span-2" bodyClassName="p-0">
+                  {visibleAudit.length === 0 ? (
+                    <div className="p-5"><EmptyState title="No audit entries" /></div>
+                  ) : (
+                    <ol className="relative max-h-[640px] overflow-y-auto px-5 py-3">
+                      <span className="absolute bottom-3 left-[27px] top-3 w-px bg-surface-800" aria-hidden />
+                      {visibleAudit.slice(0, 300).map((entry, i) => (
+                        <motion.li key={entry.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(i, 20) * 0.015 }} className="relative flex gap-3 py-2">
+                          <span className="relative z-10 mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-surface-900 bg-brand-400" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm text-white">
+                              {entry.user_id ? <Link href={`/u/${entry.user_id}`} className="font-medium text-brand-400 hover:underline">{userName(entry.profiles)}</Link> : <span className="text-surface-400">System</span>}{' '}
+                              <code className="rounded bg-surface-800 px-1.5 py-0.5 text-xs text-surface-200">{entry.action}</code>{' '}
+                              <span className="text-surface-400">{entry.entity_type}</span>{' '}
+                              {entry.entity_id && <span className="font-mono text-[11px] text-surface-600" title={entry.entity_id}>{entry.entity_id.slice(0, 8)}</span>}
+                            </p>
+                            <p className="text-[11px] text-surface-500">
+                              {formatDate(entry.created_at)} · {timeAgo(entry.created_at)}{entry.ip_address && <> · <span className="font-mono">{entry.ip_address}</span></>}
+                            </p>
+                            {entry.metadata && Object.keys(entry.metadata).length > 0 && (
+                              <code className="mt-1 block truncate rounded bg-surface-950 px-1.5 py-0.5 text-[11px] text-surface-400">{JSON.stringify(entry.metadata)}</code>
+                            )}
+                          </div>
+                        </motion.li>
+                      ))}
+                    </ol>
+                  )}
+                </Panel>
+                <div className="space-y-5">
+                  <Panel title="Most common actions"><BarList items={tally(visibleAudit, e => e.action)} color={SERIES.aqua} limit={8} labelFormat={l => <code className="normal-case">{l}</code>} /></Panel>
+                  <Panel title="Most active people"><BarList items={tally(visibleAudit, e => userName(e.profiles))} color={SERIES.blue} limit={6} labelFormat={l => <span className="normal-case">{l}</span>} /></Panel>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'bans' && (
+            <>
+              <Toolbar>
+                <Segmented id="sec-ban-view" size="sm" value={banView} onChange={setBanView} options={[{ key: 'active', label: 'In effect' }, { key: 'all', label: 'All' }]} />
+                <span className="text-xs text-surface-500">{visibleBans.length} shown</span>
+                <ActionButton variant="danger" icon={<Ban className="h-4 w-4" />} onClick={() => setShowBanModal(true)} className="sm:ml-auto">Ban user</ActionButton>
+              </Toolbar>
+              {visibleBans.length === 0 ? (
+                <EmptyState icon={<ShieldCheck className="h-8 w-8 text-emerald-500/60" />} title="No bans" description={banView === 'active' ? 'Nobody is currently banned.' : undefined} />
+              ) : (
+                <ul className="grid gap-3 md:grid-cols-2">
+                  <AnimatePresence initial={false}>
+                    {visibleBans.map(ban => {
+                      const live = banLive(ban);
+                      return (
+                        <motion.li
+                          key={ban.id}
+                          layout="position"
+                          initial={{ opacity: 0, scale: 0.97 }}
+                          animate={{ opacity: live ? 1 : 0.55, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.97 }}
+                          className={cn('rounded-2xl border p-4', live ? 'border-surface-800 bg-surface-900/60' : 'border-surface-800/60 bg-surface-900/30')}
+                        >
+                          <div className="flex items-start gap-3">
+                            <Avatar src={ban.profiles?.avatar_url} name={userName(ban.profiles)} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <Link href={`/u/${ban.user_id}`} className="block truncate text-sm font-medium text-white hover:text-brand-300">{userName(ban.profiles)}</Link>
+                              <p className="truncate text-xs text-surface-500">{ban.profiles?.email}</p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              <Pill tone={BAN_TONE[ban.ban_type] ?? 'neutral'} dot>{ban.ban_type}</Pill>
+                              <Pill tone={live ? 'red' : 'neutral'}>{live ? 'In effect' : ban.is_active ? 'Expired' : 'Revoked'}</Pill>
+                            </div>
+                          </div>
+                          <p className="mt-3 text-sm text-surface-300">{ban.reason}</p>
+                          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-surface-500">
+                            <span>By {userName(ban.banner)}</span>
+                            <span>· {timeAgo(ban.created_at)}</span>
+                            {ban.expires_at && <span>· {ban.expires_at > now ? 'Ends' : 'Ended'} {formatDate(ban.expires_at)}</span>}
+                            {live && (
+                              <span className="ml-auto flex gap-1.5">
+                                {ban.ban_type === 'temporary' && <ActionButton variant="ghost" onClick={() => { setExtendBan(ban); setExtendDays('7'); }}>Extend</ActionButton>}
+                                <ActionButton variant="danger" onClick={() => revokeBan(ban)}>Revoke</ActionButton>
+                              </span>
+                            )}
+                          </div>
+                        </motion.li>
+                      );
+                    })}
+                  </AnimatePresence>
+                </ul>
+              )}
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <Dialog
+        open={showBanModal}
+        onClose={closeBanModal}
+        title="Ban user"
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={closeBanModal}>Cancel</ActionButton>
+            <ActionButton variant="danger" onClick={submitBan} disabled={!selectedBanUser || !banReason.trim() || banSubmitting}>
+              {banSubmitting ? <>Banning <Dots /></> : 'Confirm ban'}
+            </ActionButton>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="User">
+            {selectedBanUser ? (
+              <div className="flex items-center gap-3 rounded-xl bg-surface-800 p-3">
+                <Avatar src={selectedBanUser.avatar_url} name={selectedBanUser.display_name || selectedBanUser.email} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-white">{selectedBanUser.display_name || selectedBanUser.full_name || selectedBanUser.email}</p>
+                  <p className="truncate text-xs text-surface-400">{selectedBanUser.email}</p>
+                </div>
+                <button onClick={() => { setSelectedBanUser(null); setBanUserSearch(''); }} className="rounded p-1 text-surface-400 hover:text-white" aria-label="Clear user"><X className="h-4 w-4" /></button>
+              </div>
+            ) : (
+              <>
+                <input autoFocus value={banUserSearch} onChange={e => searchUsersForBan(e.target.value)} placeholder="Search by email or name…" className={fieldClass} />
+                {banUserResults.length > 0 && (
+                  <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-surface-800 bg-surface-950">
+                    {banUserResults.map(u => (
+                      <button key={u.id} onClick={() => { setSelectedBanUser(u); setBanUserResults([]); }} className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-surface-800">
+                        <Avatar src={u.avatar_url} name={u.display_name || u.full_name || u.email} size="sm" />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm text-white">{u.display_name || u.full_name || u.email}</p>
+                          <p className="truncate text-xs text-surface-400">{u.email}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </Field>
+          <Field label="Type">
+            <Segmented id="ban-type" value={banType} onChange={setBanType} options={BAN_TYPE_OPTIONS.map(o => ({ key: o.value, label: o.label }))} />
+          </Field>
+          {banType === 'temporary' && (
+            <Field label="Duration (days)">
+              <input type="number" value={banDuration} onChange={e => setBanDuration(e.target.value)} min={1} max={365} className={cn(fieldClass, 'w-32')} />
+            </Field>
+          )}
+          <Field label="Reason">
+            <textarea value={banReason} onChange={e => setBanReason(e.target.value)} placeholder="Why is this user being banned?" rows={3} className={fieldClass} />
+          </Field>
         </div>
-      </Modal>
-      </div>
-    </div>
+      </Dialog>
+
+      <Dialog
+        open={!!extendBan}
+        onClose={() => setExtendBan(null)}
+        title="Extend ban"
+        size="sm"
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={() => setExtendBan(null)}>Cancel</ActionButton>
+            <ActionButton variant="primary" onClick={submitExtendBan}>Extend</ActionButton>
+          </>
+        }
+      >
+        {extendBan && (
+          <div className="space-y-3">
+            <p className="text-sm text-surface-300">Extending the ban for <span className="font-medium text-white">{userName(extendBan.profiles)}</span>.</p>
+            <p className="text-xs text-surface-500">Current expiry: {extendBan.expires_at ? formatDate(extendBan.expires_at) : 'None'}</p>
+            <Field label="Extend by (days)">
+              <input type="number" value={extendDays} onChange={e => setExtendDays(e.target.value)} min={1} max={365} className={cn(fieldClass, 'w-32')} />
+            </Field>
+          </div>
+        )}
+      </Dialog>
+    </AdminPage>
   );
 }

@@ -99,7 +99,7 @@ export interface ChartSeries {
  * Area/line chart over time buckets with a hover crosshair and tooltip.
  * One y axis; series share a scale.
  */
-export function TimeChart({ buckets, unit, series, height = 260, format = compact, fill = true, animKey, zeroBase = true }: {
+export function TimeChart({ buckets, unit, series, height = 260, format = compact, fill = true, animKey, zeroBase = true, bars = false, stacked = false }: {
   buckets: number[];
   unit: BucketUnit;
   series: ChartSeries[];
@@ -110,6 +110,10 @@ export function TimeChart({ buckets, unit, series, height = 260, format = compac
   animKey?: string;
   /** Start the y axis at 0 (default). Off for slow-moving totals, so the trend is visible. */
   zeroBase?: boolean;
+  /** Draw columns instead of areas — better for sparse counts. Ghost series stay lines. */
+  bars?: boolean;
+  /** With `bars`: stack series (parts of one whole) instead of grouping them side by side. */
+  stacked?: boolean;
 }) {
   const [wrapRef, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
@@ -119,7 +123,10 @@ export function TimeChart({ buckets, unit, series, height = 260, format = compac
   const h = height - pad.top - pad.bottom;
   const n = buckets.length;
 
-  const all = series.flatMap((s) => s.values);
+  const solidSeries = series.filter((s) => !s.ghost);
+  // Stacked columns: the axis must fit each bucket's total
+  const stackTotals = bars && stacked ? buckets.map((_, i) => solidSeries.reduce((sum, s) => sum + (s.values[i] ?? 0), 0)) : [];
+  const all = [...series.flatMap((s) => s.values), ...stackTotals];
   const max = Math.max(1, ...all);
   const min = all.length ? Math.min(...all) : 0;
   let lo = 0;
@@ -130,7 +137,8 @@ export function TimeChart({ buckets, unit, series, height = 260, format = compac
     lo = Math.max(0, Math.floor((min - span * 0.2) / step) * step);
     top = Math.max(lo + step, Math.ceil(max / step) * step);
   }
-  const x = (i: number) => (n <= 1 ? w / 2 : (i / (n - 1)) * w);
+  const band = n > 0 ? w / n : w;
+  const x = (i: number) => (bars ? (i + 0.5) * band : n <= 1 ? w / 2 : (i / (n - 1)) * w);
   const y = (v: number) => h - ((v - lo) / (top - lo)) * h;
 
   const paths = useMemo(() => series.map((s) => {
@@ -139,7 +147,7 @@ export function TimeChart({ buckets, unit, series, height = 260, format = compac
     const area = pts.length ? `${line}L${x(pts.length - 1)},${h}L${x(0)},${h}Z` : '';
     return { ...s, line, area };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [series, w, h, top, lo]);
+  }), [series, w, h, top, lo, bars]);
 
   const yTicks: number[] = [];
   for (let v = lo; v <= top + 1e-9; v += step) yTicks.push(v);
@@ -148,7 +156,8 @@ export function TimeChart({ buckets, unit, series, height = 260, format = compac
   const onMove = (e: React.PointerEvent<SVGRectElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const px = e.clientX - rect.left;
-    setHover(Math.max(0, Math.min(n - 1, Math.round((px / w) * (n - 1)))));
+    const i = bars ? Math.floor(px / band) : Math.round((px / w) * (n - 1));
+    setHover(Math.max(0, Math.min(n - 1, i)));
   };
 
   const tipLeft = hover != null ? pad.left + x(hover) : 0;
@@ -179,7 +188,72 @@ export function TimeChart({ buckets, unit, series, height = 260, format = compac
               </text>
             ) : null)}
             <g key={animKey}>
-                {paths.map((p) => (
+                {bars && !stacked && (() => {
+                  const solid = paths.filter((p) => !p.ghost);
+                  const gap = solid.length > 1 ? 1 : 0;
+                  const bw = Math.max(1.5, (band * 0.72) / solid.length - gap);
+                  return solid.map((p, k) => (
+                    <g key={`grp-${p.key}`}>
+                      {p.values.map((v, i) => {
+                        if (v <= lo) return null;
+                        const by = y(v);
+                        return (
+                          <motion.rect
+                            key={i}
+                            x={x(i) - band * 0.36 + k * (bw + gap)}
+                            y={by}
+                            width={bw}
+                            height={Math.max(1, h - by)}
+                            rx={Math.min(3, bw / 2)}
+                            fill={p.color}
+                            fillOpacity={hover == null || hover === i ? 0.95 : 0.5}
+                            style={{ transformBox: 'fill-box', transformOrigin: 'bottom' }}
+                            initial={{ scaleY: 0 }}
+                            animate={{ scaleY: 1 }}
+                            transition={{ duration: 0.5, ease: EASE, delay: Math.min(i, 60) * 0.008 }}
+                          />
+                        );
+                      })}
+                    </g>
+                  ));
+                })()}
+                {bars && stacked && (() => {
+                  const solid = paths.filter((p) => !p.ghost);
+                  const bw = Math.max(2, band * 0.7);
+                  return buckets.map((_, i) => {
+                    let acc = 0;
+                    return (
+                      <g key={`col-${i}`}>
+                        {solid.map((p, k) => {
+                          const v = p.values[i] ?? 0;
+                          if (v <= 0) return null;
+                          const y0 = y(acc);
+                          acc += v;
+                          const y1 = y(acc);
+                          // 2px surface gap between stacked segments
+                          const gap = k > 0 && solid.slice(0, k).some((q) => (q.values[i] ?? 0) > 0) ? 2 : 0;
+                          return (
+                            <motion.rect
+                              key={p.key}
+                              x={x(i) - bw / 2}
+                              y={y1}
+                              width={bw}
+                              height={Math.max(1, y0 - y1 - gap)}
+                              rx={Math.min(3, bw / 2)}
+                              fill={p.color}
+                              fillOpacity={hover == null || hover === i ? 0.95 : 0.5}
+                              style={{ transformBox: 'fill-box', transformOrigin: 'bottom' }}
+                              initial={{ scaleY: 0 }}
+                              animate={{ scaleY: 1 }}
+                              transition={{ duration: 0.5, ease: EASE, delay: Math.min(i, 60) * 0.008 }}
+                            />
+                          );
+                        })}
+                      </g>
+                    );
+                  });
+                })()}
+                {paths.filter((p) => !bars || p.ghost).map((p) => (
                   <g key={p.key}>
                     {fill && !p.ghost && (
                       <motion.path
@@ -208,7 +282,7 @@ export function TimeChart({ buckets, unit, series, height = 260, format = compac
             {hover != null && (
               <g pointerEvents="none">
                 <line x1={x(hover)} x2={x(hover)} y1={0} y2={h} stroke="rgb(var(--surface-500))" strokeWidth={1} />
-                {paths.filter((p) => !p.ghost).map((p) => (
+                {!bars && paths.filter((p) => !p.ghost).map((p) => (
                   <circle key={p.key} cx={x(hover)} cy={y(p.values[hover] ?? 0)} r={4.5} fill={p.color} stroke="rgb(var(--surface-900))" strokeWidth={2} />
                 ))}
               </g>

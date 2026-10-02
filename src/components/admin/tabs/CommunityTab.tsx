@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
 import { Button, Badge } from '@/components/ui';
@@ -11,6 +11,8 @@ import type { PendingProduction } from '../types';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminData } from '../data';
 import { TabSkeleton } from '../motion';
+import { ExternalLink, MessagesSquare } from 'lucide-react';
+import { AdminPage, BarList, PageHeader, Panel, Reveal, StatGrid, TrendPanel, tally, windowCounts, SERIES } from '../kit';
 
 export function CommunityTab({ posts, categories, themes, challenges, onDeletePost, onSaveCategory, onDeleteCategory, onSaveTheme, onDeleteTheme, onCreateChallenge }: {
   posts: CommunityPost[];
@@ -131,15 +133,6 @@ export function CommunityTab({ posts, categories, themes, challenges, onDeletePo
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Community</h1>
-          <p className="text-sm text-surface-400">Manage posts, categories, themes & challenges</p>
-        </div>
-        <Link href="/community" className="text-sm text-surface-400 hover:text-white transition-colors">
-          View Community →
-        </Link>
-      </div>
 
       {/* Sub-tabs */}
       <div className="flex gap-1 mb-6 bg-surface-900 rounded-lg p-1 w-fit overflow-x-auto">
@@ -448,8 +441,38 @@ export default function CommunityPanel() {
   };
 
   if (loading) return <TabSkeleton />;
+  const week = windowCounts(data.posts, (p) => p.created_at, 7);
+  const now = new Date().toISOString();
   return (
-    <CommunityTab
+    <AdminPage>
+      <PageHeader
+        icon={<MessagesSquare className="h-5 w-5" />}
+        title="Community"
+        description="Posts, categories, challenge themes and challenges."
+        actions={<Link href="/community" className="inline-flex items-center gap-1.5 rounded-xl border border-surface-800 px-3 py-2 text-xs font-semibold text-surface-300 hover:text-white">View community <ExternalLink className="h-3.5 w-3.5" /></Link>}
+      />
+      <StatGrid
+        cols={5}
+        items={[
+          { label: 'Posts', value: data.posts.length, tone: 'brand' },
+          { label: 'New · 7 days', value: week.current, delta: week.delta, tone: 'blue' },
+          { label: 'Upvotes', value: data.posts.reduce((n, p) => n + (p.upvote_count || 0), 0), tone: 'pink' },
+          { label: 'Comments', value: data.posts.reduce((n, p) => n + (p.comment_count || 0), 0), tone: 'aqua' },
+          { label: 'Live challenges', value: data.challenges.filter((c) => c.starts_at <= now && (!c.reveal_at || c.reveal_at >= now)).length, tone: 'violet' },
+        ]}
+      />
+      <div className="grid gap-5 lg:grid-cols-5">
+        <TrendPanel id="community" className="lg:col-span-3" title="Community activity" subtitle="New posts over time" sources={[{ key: 'posts', label: 'Posts', color: SERIES.violet, rows: data.posts, time: (p) => p.created_at }]} />
+        <Panel title="Top posts" subtitle="By upvotes" className="lg:col-span-2">
+          <BarList items={[...data.posts].sort((a, b) => (b.upvote_count || 0) - (a.upvote_count || 0)).slice(0, 6).map((p) => ({ label: p.title, count: p.upvote_count || 0 }))} color={SERIES.magenta} labelFormat={(l) => <span className="normal-case">{l}</span>} />
+          <div className="mt-4 border-t border-surface-800 pt-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-surface-500">By status</p>
+            <BarList items={tally(data.posts, (p) => p.status)} color={SERIES.violet} limit={4} />
+          </div>
+        </Panel>
+      </div>
+      <Reveal>
+      <CommunityTab
       posts={data.posts}
       categories={data.categories}
       themes={data.themes}
@@ -461,5 +484,7 @@ export default function CommunityPanel() {
       onDeleteTheme={handleDeleteTheme}
       onCreateChallenge={handleCreateChallenge}
     />
+      </Reveal>
+    </AdminPage>
   );
 }

@@ -1,20 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AnimatePresence } from 'framer-motion';
+import { BarChart3, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { formatDate } from '@/lib/utils';
+import { formatDate, timeAgo } from '@/lib/utils';
 import type { PollSession } from '@/lib/types';
+import {
+  ActionButton, AdminPage, AnimatedItem, AnimatedList, BarList, Dialog, Dots, EmptyState, Field, PageHeader, Panel,
+  Pill, SearchInput, Segmented, StatGrid, TabSkeleton, Toolbar, TrendPanel, fieldClass, type Tone,
+} from '@/components/admin/kit';
 
-// Admin — Poll Sessions List
-
-const STATUS_COLOR: Record<string, string> = {
-  draft:     'bg-white/10 text-white/50',
-  review:    'bg-amber-500/20 text-amber-300',
-  published: 'bg-emerald-500/20 text-emerald-300',
-  closed:    'bg-white/5 text-white/30',
-};
+const STATUS_TONE: Record<string, Tone> = { draft: 'neutral', review: 'amber', published: 'green', closed: 'violet' };
+type Filter = 'all' | 'draft' | 'review' | 'published' | 'closed';
+type Sort = 'newest' | 'responses';
 
 export default function AdminPollsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -25,6 +26,9 @@ export default function AdminPollsPage() {
   const [newTitle, setNewTitle] = useState('');
   const [newPreface, setNewPreface] = useState('');
   const [creating, setCreating] = useState(false);
+  const [filter, setFilter] = useState<Filter>('all');
+  const [sort, setSort] = useState<Sort>('newest');
+  const [query, setQuery] = useState('');
 
   const isAdmin = user && (user.id === 'f0e0c4a4-0833-4c64-b012-15829c087c77' || user.role === 'admin');
 
@@ -33,7 +37,8 @@ export default function AdminPollsPage() {
     if (!isAdmin) return;
     fetch('/api/admin/polls')
       .then((r) => r.json())
-      .then((d) => { setSessions(Array.isArray(d) ? d : []); setLoading(false); });
+      .then((d) => { setSessions(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [isAdmin, authLoading, router]);
 
   const handleCreate = async () => {
@@ -46,128 +51,140 @@ export default function AdminPollsPage() {
     });
     const data = await res.json();
     setCreating(false);
-    if (res.ok) {
-      router.push(`/admin/polls/${data.id}`);
-    }
+    if (res.ok) router.push(`/admin/polls/${data.id}`);
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const counts = useMemo(() => {
+    const c = { all: sessions.length, draft: 0, review: 0, published: 0, closed: 0, responses: 0 };
+    sessions.forEach((s) => {
+      if (s.status in c) c[s.status as Exclude<Filter, 'all'>]++;
+      c.responses += s.response_count || 0;
+    });
+    return c;
+  }, [sessions]);
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return sessions
+      .filter((s) => filter === 'all' || s.status === filter)
+      .filter((s) => !q || `${s.title} ${s.preface || ''}`.toLowerCase().includes(q))
+      .sort((a, b) => (sort === 'responses' ? (b.response_count || 0) - (a.response_count || 0) : b.created_at.localeCompare(a.created_at)));
+  }, [sessions, filter, query, sort]);
+
+  if (authLoading || loading) return <TabSkeleton />;
+
+  const toggle = (f: Filter) => () => setFilter((cur) => (cur === f ? 'all' : f));
+  const live = sessions.filter((s) => s.status === 'published' || s.status === 'closed');
+  const avgResponses = live.length ? counts.responses / live.length : 0;
 
   return (
-    <div className="min-h-screen bg-surface-950 text-white">
-      {/* Top bar */}
-      <header className="sticky top-0 z-10 bg-surface-950/95 border-b border-white/[0.06] px-6 py-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link href="/admin" className="text-white/40 hover:text-white transition-colors text-sm">
-            ← Admin
-          </Link>
-          <span className="text-white/20">/</span>
-          <h1 className="text-base font-semibold text-white flex items-center gap-2">
-            <span>📊</span> Polls
-          </h1>
-        </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-brand-500 hover:bg-brand-500 text-white text-sm font-semibold rounded-lg transition-colors"
-        >
-          + New Poll
-        </button>
-      </header>
+    <AdminPage>
+      <PageHeader
+        icon={<BarChart3 className="h-5 w-5" />}
+        title="Polls"
+        description="Ask the community, then read the results."
+        actions={<ActionButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={() => setShowCreate(true)}>New poll</ActionButton>}
+      />
 
-      <main className="max-w-3xl mx-auto px-6 py-8">
-        {sessions.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-5xl mb-4">📋</div>
-            <p className="text-white/40 text-sm">No polls yet. Create one to get started.</p>
-          </div>
-        )}
+      <StatGrid
+        cols={5}
+        layoutGroup="polls"
+        items={[
+          { label: 'All polls', value: counts.all, tone: 'brand', onClick: () => setFilter('all'), active: filter === 'all' },
+          { label: 'Published', value: counts.published, tone: 'green', onClick: toggle('published'), active: filter === 'published' },
+          { label: 'In review', value: counts.review, tone: 'amber', onClick: toggle('review'), active: filter === 'review' },
+          { label: 'Drafts', value: counts.draft, tone: 'neutral', onClick: toggle('draft'), active: filter === 'draft' },
+          { label: 'Total responses', value: counts.responses, tone: 'blue', hint: `${avgResponses.toFixed(1)} per published poll` },
+        ]}
+      />
 
-        <div className="space-y-3">
-          {sessions.map((s) => (
-            <Link
-              key={s.id}
-              href={`/admin/polls/${s.id}`}
-              className="block bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-xl p-5 transition-colors group"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-0.5 rounded-full ${STATUS_COLOR[s.status] ?? 'bg-white/10 text-white/40'}`}>
-                      {s.status}
-                    </span>
-                    {s.questions && (
-                      <span className="text-xs text-white/30">{s.questions.length} question{s.questions.length !== 1 ? 's' : ''}</span>
-                    )}
-                  </div>
-                  <h2 className="font-semibold text-white group-hover:text-brand-400 transition-colors truncate">{s.title}</h2>
-                  {s.preface && (
-                    <p className="text-sm text-white/40 mt-1 line-clamp-2">{s.preface}</p>
-                  )}
-                </div>
-                <div className="flex-shrink-0 text-right">
-                  {s.status === 'published' || s.status === 'closed' ? (
-                    <p className="text-xl font-bold text-white">{s.response_count}</p>
-                  ) : null}
-                  {(s.status === 'published' || s.status === 'closed') && (
-                    <p className="text-[11px] text-white/30">responses</p>
-                  )}
-                  <p className="text-[11px] text-white/20 mt-1">{formatDate(s.created_at)}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </main>
-
-      {/* Create modal */}
-      {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
-          <div className="relative bg-surface-900 border border-white/[0.08] rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-lg font-bold text-white mb-5">New Poll</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Title</label>
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="What should we work on next?"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Preface <span className="normal-case text-white/20">(optional intro shown to users)</span></label>
-                <textarea
-                  rows={3}
-                  value={newPreface}
-                  onChange={(e) => setNewPreface(e.target.value)}
-                  placeholder="We want to hear your thoughts on what to build next…"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 resize-none"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowCreate(false)} className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white/60 text-sm rounded-xl transition-colors">
-                Cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                disabled={!newTitle.trim() || creating}
-                className="flex-1 py-2.5 bg-brand-500 hover:bg-brand-500 disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
-              >
-                {creating ? 'Creating…' : 'Create & Edit'}
-              </button>
-            </div>
-          </div>
+      {sessions.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <TrendPanel
+            id="polls"
+            className="lg:col-span-3"
+            title="Poll activity"
+            subtitle="Polls created and published over time"
+            sources={[
+              { key: 'created', label: 'Created', rows: sessions, time: (s) => s.created_at },
+              { key: 'published', label: 'Published', rows: sessions, time: (s) => s.published_at },
+            ]}
+            defaultRange="90d"
+          />
+          <Panel title="Most answered" subtitle="Responses per poll" className="lg:col-span-2">
+            <BarList
+              items={[...live].sort((a, b) => (b.response_count || 0) - (a.response_count || 0)).slice(0, 6).map((s) => ({ label: s.title, count: s.response_count || 0 }))}
+              empty="No published polls yet"
+              labelFormat={(l) => <span className="normal-case">{l}</span>}
+            />
+          </Panel>
         </div>
       )}
-    </div>
+
+      <Toolbar>
+        <SearchInput value={query} onChange={setQuery} placeholder="Search polls…" />
+        <Segmented id="polls-sort" value={sort} onChange={setSort} options={[{ key: 'newest', label: 'Newest' }, { key: 'responses', label: 'Most responses' }]} />
+      </Toolbar>
+
+      {visible.length === 0 ? (
+        <EmptyState
+          icon={<BarChart3 className="h-8 w-8" />}
+          title={sessions.length === 0 ? 'No polls yet' : 'No polls match'}
+          description={sessions.length === 0 ? 'Create one to start collecting answers.' : 'Try a different search or filter.'}
+          action={sessions.length === 0 ? <ActionButton variant="primary" onClick={() => setShowCreate(true)}>Create a poll</ActionButton> : undefined}
+        />
+      ) : (
+        <AnimatedList className="grid gap-3 md:grid-cols-2">
+          <AnimatePresence initial={false}>
+            {visible.map((s) => (
+              <AnimatedItem key={s.id}>
+                <Link
+                  href={`/admin/polls/${s.id}`}
+                  className="group flex h-full flex-col rounded-2xl border border-surface-800 bg-surface-900/60 p-4 transition-all hover:-translate-y-0.5 hover:border-surface-700 hover:shadow-lg hover:shadow-black/30"
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <Pill tone={STATUS_TONE[s.status] ?? 'neutral'} dot>{s.status}</Pill>
+                    {s.questions && <span className="text-[11px] text-surface-500">{s.questions.length} question{s.questions.length !== 1 ? 's' : ''}</span>}
+                    <span className="ml-auto text-[11px] text-surface-600" title={formatDate(s.created_at)}>{timeAgo(s.created_at)}</span>
+                  </div>
+                  <h2 className="truncate font-semibold text-white transition-colors group-hover:text-brand-300">{s.title}</h2>
+                  {s.preface && <p className="mt-1 line-clamp-2 text-sm text-surface-400">{s.preface}</p>}
+                  {(s.status === 'published' || s.status === 'closed') && (
+                    <div className="mt-auto flex items-baseline gap-1.5 pt-3">
+                      <span className="text-xl font-bold tabular-nums text-white">{(s.response_count || 0).toLocaleString()}</span>
+                      <span className="text-[11px] text-surface-500">responses</span>
+                    </div>
+                  )}
+                </Link>
+              </AnimatedItem>
+            ))}
+          </AnimatePresence>
+        </AnimatedList>
+      )}
+
+      <Dialog
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        title="New poll"
+        description="You can add questions on the next screen."
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={() => setShowCreate(false)}>Cancel</ActionButton>
+            <ActionButton variant="primary" onClick={handleCreate} disabled={!newTitle.trim() || creating}>
+              {creating ? <>Creating <Dots /></> : 'Create & edit'}
+            </ActionButton>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="Title">
+            <input autoFocus value={newTitle} onChange={(e) => setNewTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreate()} placeholder="What should we work on next?" className={fieldClass} />
+          </Field>
+          <Field label="Preface" hint="(optional intro shown to users)">
+            <textarea rows={3} value={newPreface} onChange={(e) => setNewPreface(e.target.value)} placeholder="We want to hear your thoughts on what to build next…" className={`${fieldClass} resize-none`} />
+          </Field>
+        </div>
+      </Dialog>
+    </AdminPage>
   );
 }

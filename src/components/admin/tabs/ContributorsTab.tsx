@@ -9,6 +9,8 @@ import { toast } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminData } from '../data';
 import { TabSkeleton } from '../motion';
+import { Star } from 'lucide-react';
+import { AdminPage, BarList, PageHeader, Panel, Reveal, StatGrid, TrendPanel } from '../kit';
 
 const CONTRIBUTOR_AREA_OPTIONS = ['Code', 'Design', 'Docs', 'Testing', 'Community', 'Translation'];
 
@@ -333,5 +335,28 @@ export default function ContributorsPanel() {
   };
 
   if (loading) return <TabSkeleton />;
-  return <ContributorsTab contributors={contributors} onRemove={handleRemove} onAdd={handleAdd} onToggleFeatured={handleToggleFeatured} />;
+  const areas = new Map<string, number>();
+  contributors.forEach((c) => (c.contribution_areas || []).forEach((a) => areas.set(a, (areas.get(a) || 0) + 1)));
+  return (
+    <AdminPage>
+      <PageHeader icon={<Star className="h-5 w-5" />} title="Contributors" description="People credited on the /contribute and /about pages." />
+      <StatGrid
+        cols={3}
+        items={[
+          { label: 'Contributors', value: contributors.length, tone: 'brand' },
+          { label: 'Featured', value: contributors.filter((c) => c.is_featured).length, tone: 'amber' },
+          { label: 'With GitHub', value: contributors.filter((c) => c.github_handle).length, tone: 'violet' },
+        ]}
+      />
+      {contributors.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <TrendPanel id="contributors" className="lg:col-span-3" title="Contributors added" defaultRange="1y" sources={[{ key: 'added', label: 'Added', rows: contributors, time: (c) => c.added_at }]} />
+          <Panel title="Contribution areas" className="lg:col-span-2">
+            <BarList items={Array.from(areas.entries()).map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count)} />
+          </Panel>
+        </div>
+      )}
+      <Reveal><ContributorsTab contributors={contributors} onRemove={handleRemove} onAdd={handleAdd} onToggleFeatured={handleToggleFeatured} /></Reveal>
+    </AdminPage>
+  );
 }

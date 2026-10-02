@@ -10,6 +10,8 @@ import logger from '@/lib/logger';
 import { sendTicketReplyEmailAction } from '@/lib/email-actions';
 import { useAdminData } from '../data';
 import { TabSkeleton } from '../motion';
+import { Ticket } from 'lucide-react';
+import { AdminPage, BarList, PageHeader, Panel, Reveal, StatGrid, TrendPanel, tally, windowCounts, SERIES } from '../kit';
 
 const STATUS_COLORS: Record<string, string> = {
   open: 'text-green-400 bg-green-500/10 border-green-500/20',
@@ -41,19 +43,11 @@ export function TicketsTab({ tickets, selectedTicketId, messages, replyText, onS
 
   const filtered = tickets.filter((t) => statusFilter === 'all' || t.status === statusFilter);
 
-  const openCount = tickets.filter((t) => t.status === 'open').length;
-  const inProgressCount = tickets.filter((t) => t.status === 'in_progress').length;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-white">Support Tickets</h2>
-          <p className="text-sm text-surface-400 mt-1">
-            {openCount} open · {inProgressCount} in progress · {tickets.length} total
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end">
+        <div className="flex flex-wrap items-center gap-2">
           {['all', 'open', 'in_progress', 'resolved', 'closed'].map((s) => (
             <button
               key={s}
@@ -287,7 +281,26 @@ export default function TicketsPanel() {
   };
 
   if (loading) return <TabSkeleton />;
+  const count = (st: string) => tickets.filter((t) => t.status === st).length;
+  const week = windowCounts(tickets, (t) => t.created_at, 7);
   return (
+    <AdminPage>
+      <PageHeader icon={<Ticket className="h-5 w-5" />} title="Support Tickets" description="Answer users and keep the queue moving." meta={<>{week.current} opened in the last 7 days</>} />
+      <StatGrid
+        cols={5}
+        items={[
+          { label: 'Open', value: count('open'), tone: 'green' },
+          { label: 'In progress', value: count('in_progress'), tone: 'blue' },
+          { label: 'Urgent / high', value: tickets.filter((t) => (t.priority === 'urgent' || t.priority === 'high') && (t.status === 'open' || t.status === 'in_progress')).length, tone: 'red', hint: 'Not yet resolved' },
+          { label: 'New · 7 days', value: week.current, delta: week.delta, invertDelta: true, tone: 'amber' },
+          { label: 'Resolved', value: count('resolved') + count('closed'), tone: 'violet' },
+        ]}
+      />
+      <div className="grid gap-5 lg:grid-cols-5">
+        <TrendPanel id="tickets" className="lg:col-span-3" title="Ticket volume" subtitle="Opened over time" sources={[{ key: 'opened', label: 'Opened', color: SERIES.red, rows: tickets, time: (t) => t.created_at }]} />
+        <Panel title="By category" className="lg:col-span-2"><BarList items={tally(tickets, (t) => t.category)} color={SERIES.red} limit={6} /></Panel>
+      </div>
+      <Reveal>
     <TicketsTab
       tickets={tickets}
       selectedTicketId={selectedId}
@@ -299,5 +312,7 @@ export default function TicketsPanel() {
       onStatusChange={(id, status) => updateTicket(id, { status: status as SupportTicket['status'] })}
       onPriorityChange={(id, priority) => updateTicket(id, { priority: priority as SupportTicket['priority'] })}
     />
+      </Reveal>
+    </AdminPage>
   );
 }

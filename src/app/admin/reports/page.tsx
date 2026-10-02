@@ -1,13 +1,19 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, Eye, Flag, RefreshCw, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Badge, Modal, Textarea, Select, Avatar } from '@/components/ui';
+import { Avatar } from '@/components/ui';
 import { cn, formatDate, timeAgo } from '@/lib/utils';
+import {
+  ActionButton, AdminPage, BarList, Dialog, Dots, EmptyState, Field, PageHeader, Panel, Pill, Reveal, SearchInput,
+  Segmented, Shimmer, StatGrid, TabSkeleton, Toolbar, TrendPanel, fieldClass, tally, SERIES, type Tone,
+} from '@/components/admin/kit';
 
 // Constants
 
@@ -44,24 +50,12 @@ const CONTENT_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: 'script', label: 'Script' },
 ];
 
-const REASON_BADGE_COLORS: Record<string, string> = {
-  spam: 'bg-brand-500/20 text-brand-500 border-yellow-500/30',
-  harassment: 'bg-red-500/20 text-red-400 border-red-500/30',
-  hate_speech: 'bg-red-500/20 text-red-400 border-red-500/30',
-  copyright: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  nsfw: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-  illegal: 'bg-red-500/20 text-red-400 border-red-500/30',
-  impersonation: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  misinformation: 'bg-brand-500/20 text-brand-500 border-amber-500/30',
-  other: 'bg-surface-700/50 text-surface-300 border-surface-600',
+const REASON_TONE: Record<string, Tone> = {
+  spam: 'amber', harassment: 'red', hate_speech: 'red', copyright: 'violet', nsfw: 'pink',
+  illegal: 'red', impersonation: 'brand', misinformation: 'amber', other: 'neutral',
 };
-
-const STATUS_BADGE: Record<string, { variant: 'warning' | 'info' | 'success' | 'default'; label: string }> = {
-  pending: { variant: 'warning', label: 'Pending' },
-  reviewing: { variant: 'info', label: 'Reviewing' },
-  resolved: { variant: 'success', label: 'Resolved' },
-  dismissed: { variant: 'default', label: 'Dismissed' },
-};
+const STATUS_TONE: Record<string, Tone> = { pending: 'amber', reviewing: 'blue', resolved: 'green', dismissed: 'neutral' };
+const OPEN = (st: string) => st === 'pending' || st === 'reviewing';
 
 const MOD_ACTION_OPTIONS: { value: string; label: string }[] = [
   { value: 'dismiss', label: 'Dismiss Report' },
@@ -100,13 +94,6 @@ interface ModAction {
   profiles?: { display_name: string | null; full_name: string | null; email: string; avatar_url: string | null } | null;
 }
 
-interface QuickStats {
-  pending: number;
-  today: number;
-  resolvedToday: number;
-  topContentType: string;
-}
-
 type ActiveTab = 'queue' | 'history';
 
 
@@ -116,11 +103,12 @@ export default function ReportsPage() {
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('queue');
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<QuickStats>({ pending: 0, today: 0, resolvedToday: 0, topContentType: '—' });
+  const [refreshing, setRefreshing] = useState(false);
+  const [search, setSearch] = useState('');
 
   // Reports
   const [reports, setReports] = useState<ContentReport[]>([]);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('open');
   const [reasonFilter, setReasonFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
@@ -144,56 +132,26 @@ export default function ReportsPage() {
       return;
     }
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
   // Data Loading
 
   const loadAll = useCallback(async () => {
-    setLoading(true);
-    await Promise.all([loadStats(), loadReports(), loadModActions()]);
+    setRefreshing(true);
+    await Promise.all([loadReports(), loadModActions()]);
     setLoading(false);
+    setRefreshing(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const loadStats = async () => {
-    const supabase = createClient();
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayISO = todayStart.toISOString();
-
-    const [rPending, rToday, rResolved, rTypes] = await Promise.all([
-      supabase.from('content_reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('content_reports').select('id', { count: 'exact', head: true }).gte('created_at', todayISO),
-      supabase.from('content_reports').select('id', { count: 'exact', head: true }).eq('status', 'resolved').gte('resolved_at', todayISO),
-      supabase.from('content_reports').select('content_type').eq('status', 'pending'),
-    ]);
-
-    // Figure out most-reported content type from pending reports
-    let topType = '—';
-    if (rTypes.data && rTypes.data.length > 0) {
-      const counts: Record<string, number> = {};
-      rTypes.data.forEach((r: any) => { counts[r.content_type] = (counts[r.content_type] || 0) + 1; });
-      topType = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—';
-    }
-
-    setStats({
-      pending: rPending.count ?? 0,
-      today: rToday.count ?? 0,
-      resolvedToday: rResolved.count ?? 0,
-      topContentType: topType,
-    });
-  };
 
   const loadReports = async () => {
     const supabase = createClient();
-    let query = supabase
+    const query = supabase
       .from('content_reports')
       .select('*, reporter:profiles!content_reports_reporter_id_fkey(id, display_name, full_name, email, avatar_url)')
       .order('created_at', { ascending: false })
-      .limit(300);
-
-    if (statusFilter) query = query.eq('status', statusFilter);
-    if (reasonFilter) query = query.eq('reason', reasonFilter);
-    if (typeFilter) query = query.eq('content_type', typeFilter);
+      .limit(1000);
 
     const { data } = await query;
     await fillEmails(supabase, (data ?? []).map((r: { reporter?: { id?: string; email?: string | null } | null }) => r.reporter));
@@ -210,12 +168,6 @@ export default function ReportsPage() {
     await fillEmails(supabase, (data ?? []).map((a: { profiles?: { id?: string; email?: string | null } | null }) => a.profiles));
     setModActions((data ?? []) as ModAction[]);
   };
-
-  // Reload on filter changes
-  useEffect(() => {
-    if (!user || !isStaff(user.role)) return;
-    loadReports();
-  }, [statusFilter, reasonFilter, typeFilter]);
 
   // Review Modal
 
@@ -273,7 +225,6 @@ export default function ReportsPage() {
       .eq('id', reportId);
     setReviewReport(null);
     loadReports();
-    loadStats();
   };
 
   const submitModAction = async () => {
@@ -402,7 +353,6 @@ export default function ReportsPage() {
       .update({ status: newStatus, resolved_by: user.id, resolved_at: new Date().toISOString() })
       .eq('id', report.id);
     loadReports();
-    loadStats();
   };
 
   // Helpers
@@ -412,356 +362,268 @@ export default function ReportsPage() {
     return p.display_name || p.full_name || p.email;
   };
 
+  const visibleReports = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return reports
+      .filter(r => !statusFilter || (statusFilter === 'open' ? OPEN(r.status) : r.status === statusFilter))
+      .filter(r => !reasonFilter || r.reason === reasonFilter)
+      .filter(r => !typeFilter || r.content_type === typeFilter)
+      .filter(r => !q || `${r.description || ''} ${userName(r.reporter)} ${r.content_id}`.toLowerCase().includes(q));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reports, statusFilter, reasonFilter, typeFilter, search]);
+
   // Render
+  if (authLoading || loading) return <TabSkeleton />;
 
-  if (authLoading || loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
-      </div>
-    );
-  }
-
-  const TABS: { id: ActiveTab; label: string; count?: number }[] = [
-    { id: 'queue', label: 'Reports Queue', count: reports.length },
-    { id: 'history', label: 'Moderation History', count: modActions.length },
-  ];
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const today = todayStart.toISOString();
+  const openReports = reports.filter(r => OPEN(r.status));
+  const resolvedTimes = reports.filter(r => r.resolved_at).map(r => Date.parse(r.resolved_at!) - Date.parse(r.created_at));
+  const medianHours = resolvedTimes.length ? [...resolvedTimes].sort((a, b) => a - b)[Math.floor(resolvedTimes.length / 2)] / 3_600_000 : 0;
+  const oldestOpen = openReports.length ? openReports[openReports.length - 1] : null;
+  const isOpenReview = !!reviewReport && OPEN(reviewReport.status);
 
   return (
-    <div className="min-h-screen bg-surface-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/admin" className="text-xs text-surface-500 hover:text-white transition-colors mb-2 inline-flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back to Admin
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Content Reports &amp; Moderation</h1>
-          <p className="text-sm text-surface-400 mt-1">Review reports, moderate content, and track actions</p>
-        </div>
-        <Button onClick={loadAll} variant="secondary" size="sm">
-          Refresh
-        </Button>
-      </div>
+    <AdminPage>
+      <PageHeader
+        icon={<Flag className="h-5 w-5" />}
+        title="Reports"
+        description="User reports on content — review, act, and track decisions."
+        meta={oldestOpen ? <>Oldest open report: {timeAgo(oldestOpen.created_at)}</> : <>Queue is clear</>}
+        actions={<ActionButton icon={<RefreshCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />} onClick={loadAll} disabled={refreshing}>Refresh</ActionButton>}
+      />
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: 'Pending Reports', value: stats.pending, color: 'text-amber-400' },
-          { label: 'Reports Today', value: stats.today, color: 'text-white' },
-          { label: 'Resolved Today', value: stats.resolvedToday, color: 'text-green-400' },
-          { label: 'Top Reported Type', value: stats.topContentType, color: 'text-surface-300', isText: true },
-        ].map((s) => (
-          <Card key={s.label} className="p-4">
-            <p className="text-xs text-surface-400 mb-1">{s.label}</p>
-            <p className={cn('text-2xl font-bold', s.color)}>
-              {'isText' in s ? s.value : (s.value as number).toLocaleString()}
-            </p>
-          </Card>
-        ))}
-      </div>
+      <StatGrid
+        cols={5}
+        layoutGroup="reports"
+        items={[
+          { label: 'Open', value: openReports.length, tone: 'amber', onClick: () => { setActiveTab('queue'); setStatusFilter(c => (c === 'open' ? '' : 'open')); }, active: activeTab === 'queue' && statusFilter === 'open' },
+          { label: 'Reported today', value: reports.filter(r => r.created_at >= today).length, tone: 'blue' },
+          { label: 'Resolved today', value: reports.filter(r => r.resolved_at && r.resolved_at >= today).length, tone: 'green' },
+          { label: 'Median time to resolve', value: medianHours, tone: 'violet', format: n => (n < 1 ? `${Math.round(n * 60)}m` : n < 48 ? `${n.toFixed(1)}h` : `${(n / 24).toFixed(1)}d`), hint: 'From report to resolution' },
+          { label: 'Mod actions', value: modActions.length, tone: 'red', onClick: () => setActiveTab('history'), active: activeTab === 'history' },
+        ]}
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-surface-800 overflow-x-auto">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              'px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px',
-              activeTab === tab.id
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-surface-400 hover:text-white'
-            )}
-          >
-            {tab.label}
-            {tab.count !== undefined && (
-              <span className="ml-2 text-xs bg-surface-800 rounded-full px-2 py-0.5">{tab.count}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Reports Queue Tab ── */}
-      {activeTab === 'queue' && (
-        <div className="space-y-4">
-          {/* Filters */}
-          <Card className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Select label="Status" options={STATUS_OPTIONS} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} />
-              <Select label="Reason" options={REASON_OPTIONS} value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)} />
-              <Select label="Content Type" options={CONTENT_TYPE_OPTIONS} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} />
+      {reports.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <TrendPanel
+            id="reports"
+            className="lg:col-span-3"
+            title="Reports in vs. closed"
+            subtitle="Is the queue keeping up?"
+            sources={[
+              { key: 'in', label: 'Reported', color: SERIES.orange, rows: reports, time: r => r.created_at },
+              { key: 'out', label: 'Closed', color: SERIES.aqua, rows: reports, time: r => r.resolved_at },
+            ]}
+          />
+          <Panel title="Why people report" subtitle="All reports, by reason" className="lg:col-span-2">
+            <BarList items={tally(reports, r => r.reason)} color={SERIES.orange} limit={6} />
+            <div className="mt-4 border-t border-surface-800 pt-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-surface-500">Open, by content type</p>
+              <div className="flex flex-wrap gap-1.5">
+                {tally(openReports, r => r.content_type).map(t => (
+                  <button key={t.label} onClick={() => { setActiveTab('queue'); setStatusFilter('open'); setTypeFilter(f => (f === t.label ? '' : t.label)); }}>
+                    <Pill tone={typeFilter === t.label ? 'brand' : 'neutral'}>{t.label} <span className="text-white">{t.count}</span></Pill>
+                  </button>
+                ))}
+                {openReports.length === 0 && <span className="text-xs text-surface-600">Nothing open</span>}
+              </div>
             </div>
-          </Card>
+          </Panel>
+        </div>
+      )}
 
-          {/* Reports Table */}
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-surface-800 text-left">
-                    <th className="px-4 py-3 text-surface-400 font-medium">Date</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Reporter</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Content Type</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Reason</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Description</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Status</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-800/50">
-                  {reports.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-surface-400">
-                        No reports found
-                      </td>
-                    </tr>
-                  )}
-                  {reports.map((report) => (
-                    <tr key={report.id} className="hover:bg-surface-800/30 transition-colors">
-                      <td className="px-4 py-3 text-surface-300 whitespace-nowrap text-xs" title={formatDate(report.created_at)}>
-                        {timeAgo(report.created_at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
+      <Reveal>
+        <Segmented
+          id="reports-tab"
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { key: 'queue', label: <>Reports queue <span className="ml-1 text-surface-500">{reports.length}</span></> },
+            { key: 'history', label: <>Moderation history <span className="ml-1 text-surface-500">{modActions.length}</span></> },
+          ]}
+        />
+      </Reveal>
+
+      <AnimatePresence mode="wait">
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="space-y-4">
+          {activeTab === 'queue' && (
+            <>
+              <Toolbar>
+                <SearchInput value={search} onChange={setSearch} placeholder="Search description, reporter or content ID…" />
+                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Status">
+                  <option value="open">Open (pending + reviewing)</option>
+                  {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <select value={reasonFilter} onChange={e => setReasonFilter(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Reason">
+                  {REASON_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Content type">
+                  {CONTENT_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </Toolbar>
+              {visibleReports.length === 0 ? (
+                <EmptyState icon={<Check className="h-8 w-8 text-emerald-500/60" />} title="No reports here" description={statusFilter === 'open' ? 'The queue is clear.' : 'Try different filters.'} />
+              ) : (
+                <ul className="space-y-2">
+                  <AnimatePresence initial={false}>
+                    {visibleReports.map((report, i) => (
+                      <motion.li
+                        key={report.id}
+                        layout="position"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0, transition: { delay: Math.min(i, 15) * 0.02 } }}
+                        exit={{ opacity: 0, x: -16, transition: { duration: 0.15 } }}
+                        className="flex flex-col gap-3 rounded-xl border border-surface-800 bg-surface-900/60 px-4 py-3 md:flex-row md:items-center"
+                      >
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
                           <Avatar src={report.reporter?.avatar_url} name={userName(report.reporter)} size="sm" />
-                          <Link href={`/u/${report.reporter_id}`} className="text-amber-400 hover:underline text-sm">
-                            {userName(report.reporter)}
-                          </Link>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <Pill tone={REASON_TONE[report.reason] ?? 'neutral'} dot>{report.reason.replace(/_/g, ' ')}</Pill>
+                              <Pill>{report.content_type}</Pill>
+                              <Pill tone={STATUS_TONE[report.status] ?? 'neutral'}>{report.status}</Pill>
+                              <span className="text-[11px] text-surface-500" title={formatDate(report.created_at)}>{timeAgo(report.created_at)}</span>
+                            </div>
+                            <p className="mt-1 truncate text-sm text-surface-300">{report.description || <span className="text-surface-600">No description</span>}</p>
+                            <p className="text-[11px] text-surface-500">by <Link href={`/u/${report.reporter_id}`} className="text-brand-400 hover:underline">{userName(report.reporter)}</Link></p>
+                          </div>
                         </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs bg-surface-800 rounded px-2 py-0.5 text-surface-300">
-                          {report.content_type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={cn(
-                            'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
-                            REASON_BADGE_COLORS[report.reason] ?? 'bg-surface-800 text-surface-300 border-surface-700'
-                          )}
-                        >
-                          {report.reason.replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-surface-400 text-xs max-w-[200px] truncate" title={report.description ?? ''}>
-                        {report.description || '—'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={STATUS_BADGE[report.status]?.variant ?? 'default'}>
-                          {STATUS_BADGE[report.status]?.label ?? report.status}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openReview(report)}
-                            className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
-                          >
-                            Review
-                          </button>
-                          {(report.status === 'pending' || report.status === 'reviewing') && (
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <ActionButton variant="secondary" icon={<Eye className="h-3.5 w-3.5" />} onClick={() => openReview(report)}>Review</ActionButton>
+                          {OPEN(report.status) && (
                             <>
-                              <button
-                                onClick={() => quickResolve(report, 'resolved')}
-                                className="text-xs text-green-400 hover:text-green-300 transition-colors"
-                              >
-                                Resolve
-                              </button>
-                              <button
-                                onClick={() => quickResolve(report, 'dismissed')}
-                                className="text-xs text-surface-400 hover:text-surface-300 transition-colors"
-                              >
-                                Dismiss
-                              </button>
+                              <ActionButton variant="success" icon={<Check className="h-3.5 w-3.5" />} onClick={() => quickResolve(report, 'resolved')}>Resolve</ActionButton>
+                              <ActionButton variant="ghost" icon={<X className="h-3.5 w-3.5" />} onClick={() => quickResolve(report, 'dismissed')}>Dismiss</ActionButton>
                             </>
                           )}
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      )}
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </ul>
+              )}
+            </>
+          )}
 
-      {/* ── Moderation History Tab ── */}
-      {activeTab === 'history' && (
-        <div className="space-y-4">
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-surface-800 text-left">
-                    <th className="px-4 py-3 text-surface-400 font-medium">Date</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Moderator</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Action</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Target Type</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Target ID</th>
-                    <th className="px-4 py-3 text-surface-400 font-medium">Reason</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-800/50">
-                  {modActions.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-surface-400">
-                        No moderation actions yet
-                      </td>
-                    </tr>
-                  )}
-                  {modActions.map((action) => (
-                    <tr key={action.id} className="hover:bg-surface-800/30 transition-colors">
-                      <td className="px-4 py-3 text-surface-300 whitespace-nowrap text-xs" title={formatDate(action.created_at)}>
-                        {timeAgo(action.created_at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Avatar src={action.profiles?.avatar_url} name={userName(action.profiles)} size="sm" />
-                          <span className="text-sm text-white">{userName(action.profiles)}</span>
+          {activeTab === 'history' && (
+            <div className="grid gap-5 lg:grid-cols-3">
+              <Panel title="Action log" subtitle="Latest 200 moderation actions" className="lg:col-span-2" bodyClassName="p-0">
+                {modActions.length === 0 ? (
+                  <div className="p-5"><EmptyState title="No moderation actions yet" /></div>
+                ) : (
+                  <ul className="divide-y divide-surface-800/70">
+                    {modActions.map((action, i) => (
+                      <motion.li key={action.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i, 20) * 0.015 }} className="flex items-center gap-3 px-5 py-3">
+                        <Avatar src={action.profiles?.avatar_url} name={userName(action.profiles)} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-white">
+                            <span className="font-medium">{userName(action.profiles)}</span>{' '}
+                            <code className="rounded bg-surface-800 px-1.5 py-0.5 text-xs text-surface-300">{action.action_type}</code>{' '}
+                            <span className="text-surface-500">{action.target_type ?? ''}</span>
+                          </p>
+                          <p className="truncate text-xs text-surface-500" title={action.reason ?? ''}>{action.reason || '—'}</p>
                         </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <code className="text-xs bg-surface-800 rounded px-1.5 py-0.5 text-surface-300">
-                          {action.action_type}
-                        </code>
-                      </td>
-                      <td className="px-4 py-3 text-surface-300 text-sm">{action.target_type ?? '—'}</td>
-                      <td className="px-4 py-3 text-surface-400 font-mono text-xs max-w-[120px] truncate" title={action.target_id ?? ''}>
-                        {action.target_id ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-surface-400 text-xs max-w-[200px] truncate" title={action.reason ?? ''}>
-                        {action.reason || '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <span className="shrink-0 text-[11px] text-surface-500" title={formatDate(action.created_at)}>{timeAgo(action.created_at)}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                )}
+              </Panel>
+              <div className="space-y-5">
+                <Panel title="Actions taken"><BarList items={tally(modActions, a => a.action_type)} color={SERIES.violet} /></Panel>
+                <Panel title="By moderator"><BarList items={tally(modActions, a => userName(a.profiles))} color={SERIES.blue} labelFormat={l => <span className="normal-case">{l}</span>} /></Panel>
+              </div>
             </div>
-          </Card>
-        </div>
-      )}
+          )}
+        </motion.div>
+      </AnimatePresence>
 
-      {/* ── Review Modal ── */}
-      <Modal isOpen={!!reviewReport} onClose={() => setReviewReport(null)} title="Review Report" size="lg">
+      <Dialog
+        open={!!reviewReport}
+        onClose={() => setReviewReport(null)}
+        title="Review report"
+        size="lg"
+        footer={isOpenReview ? (
+          <>
+            <ActionButton variant="ghost" onClick={() => setReviewReport(null)}>Cancel</ActionButton>
+            <ActionButton variant={selectedAction === 'ban_user' || selectedAction === 'remove_content' ? 'danger' : 'primary'} onClick={submitModAction} disabled={submitting}>
+              {submitting ? <>Submitting <Dots /></> : MOD_ACTION_OPTIONS.find(o => o.value === selectedAction)?.label ?? 'Submit'}
+            </ActionButton>
+          </>
+        ) : undefined}
+      >
         {reviewReport && (
-          <div className="p-6 space-y-5">
-            {/* Report Info */}
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-xs text-surface-400 mb-1">Reporter</p>
+                <p className="mb-1 text-[11px] text-surface-500">Reporter</p>
                 <div className="flex items-center gap-2">
                   <Avatar src={reviewReport.reporter?.avatar_url} name={userName(reviewReport.reporter)} size="sm" />
-                  <Link href={`/u/${reviewReport.reporter_id}`} className="text-amber-400 hover:underline text-sm">
-                    {userName(reviewReport.reporter)}
-                  </Link>
+                  <Link href={`/u/${reviewReport.reporter_id}`} className="text-brand-400 hover:underline">{userName(reviewReport.reporter)}</Link>
                 </div>
               </div>
-              <div>
-                <p className="text-xs text-surface-400 mb-1">Reported</p>
-                <p className="text-sm text-white">{timeAgo(reviewReport.created_at)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-surface-400 mb-1">Content Type</p>
-                <span className="text-xs bg-surface-800 rounded px-2 py-0.5 text-surface-300">
-                  {reviewReport.content_type}
-                </span>
-              </div>
-              <div>
-                <p className="text-xs text-surface-400 mb-1">Reason</p>
-                <span
-                  className={cn(
-                    'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
-                    REASON_BADGE_COLORS[reviewReport.reason] ?? 'bg-surface-800 text-surface-300 border-surface-700'
-                  )}
-                >
-                  {reviewReport.reason.replace(/_/g, ' ')}
-                </span>
-              </div>
+              <div><p className="mb-1 text-[11px] text-surface-500">Reported</p><p className="text-white">{timeAgo(reviewReport.created_at)}</p></div>
+              <div><p className="mb-1 text-[11px] text-surface-500">Content type</p><Pill>{reviewReport.content_type}</Pill></div>
+              <div><p className="mb-1 text-[11px] text-surface-500">Reason</p><Pill tone={REASON_TONE[reviewReport.reason] ?? 'neutral'} dot>{reviewReport.reason.replace(/_/g, ' ')}</Pill></div>
             </div>
-
             {reviewReport.description && (
               <div>
-                <p className="text-xs text-surface-400 mb-1">Reporter&apos;s Description</p>
-                <p className="text-sm text-surface-300 bg-surface-950 rounded-lg p-3 border border-surface-800">
-                  {reviewReport.description}
-                </p>
+                <p className="mb-1 text-[11px] text-surface-500">Reporter’s description</p>
+                <p className="rounded-xl border border-surface-800 bg-surface-950 p-3 text-sm text-surface-300">{reviewReport.description}</p>
               </div>
             )}
-
-            {/* Content Preview */}
             <div>
-              <p className="text-xs text-surface-400 mb-2">Reported Content</p>
-              <div className="bg-surface-950 rounded-lg border border-surface-800 p-4">
+              <p className="mb-2 text-[11px] text-surface-500">Reported content</p>
+              <div className="rounded-xl border border-surface-800 bg-surface-950 p-4">
                 {reviewContentLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
-                  </div>
+                  <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Shimmer key={i} className="h-4" />)}</div>
                 ) : reviewContent ? (
-                  <div className="space-y-2 text-sm">
+                  <dl className="space-y-1.5 text-xs">
                     {Object.entries(reviewContent).map(([key, value]) => (
                       <div key={key} className="flex gap-2">
-                        <span className="text-surface-400 font-mono text-xs min-w-[100px] shrink-0">{key}:</span>
-                        <span className="text-surface-300 text-xs break-all">
-                          {typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}
-                        </span>
+                        <dt className="min-w-[100px] shrink-0 font-mono text-surface-500">{key}</dt>
+                        <dd className="break-all text-surface-300">{typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}</dd>
                       </div>
                     ))}
-                  </div>
+                  </dl>
                 ) : (
-                  <p className="text-surface-400 text-sm">Content not found or deleted</p>
+                  <p className="text-sm text-surface-400">Content not found or deleted</p>
                 )}
               </div>
             </div>
-
-            {/* Action Selection */}
-            {(reviewReport.status === 'pending' || reviewReport.status === 'reviewing') && (
+            {isOpenReview ? (
               <>
-                <Select
-                  label="Action"
-                  options={MOD_ACTION_OPTIONS}
-                  value={selectedAction}
-                  onChange={(e) => setSelectedAction(e.target.value)}
-                />
-
-                <Textarea
-                  label="Resolution Notes"
-                  placeholder="Optional notes about this resolution…"
-                  value={resolutionNotes}
-                  onChange={(e) => setResolutionNotes(e.target.value)}
-                  rows={3}
-                />
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button variant="secondary" onClick={() => setReviewReport(null)}>
-                    Cancel
-                  </Button>
-                  <Button variant="primary" onClick={submitModAction} disabled={submitting}>
-                    {submitting ? 'Submitting…' : 'Submit Action'}
-                  </Button>
-                </div>
+                <Field label="Action">
+                  <div className="flex flex-wrap gap-1.5">
+                    {MOD_ACTION_OPTIONS.map(o => (
+                      <button
+                        key={o.value}
+                        type="button"
+                        onClick={() => setSelectedAction(o.value)}
+                        className={cn('relative rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors', selectedAction === o.value ? 'border-transparent text-white' : 'border-surface-800 text-surface-400 hover:text-white')}
+                      >
+                        {selectedAction === o.value && <motion.span layoutId="report-action" className="absolute inset-0 rounded-lg bg-brand-500/20 ring-1 ring-brand-500/50" />}
+                        <span className="relative">{o.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Resolution notes" hint="(optional)">
+                  <textarea value={resolutionNotes} onChange={e => setResolutionNotes(e.target.value)} placeholder="Notes about this resolution…" rows={3} className={fieldClass} />
+                </Field>
               </>
-            )}
-
-            {/* Already resolved */}
-            {reviewReport.status !== 'pending' && reviewReport.status !== 'reviewing' && (
-              <div className="rounded-lg bg-surface-800/50 p-4">
-                <p className="text-xs text-surface-400 mb-1">Resolution</p>
-                <Badge variant={STATUS_BADGE[reviewReport.status]?.variant ?? 'default'}>
-                  {STATUS_BADGE[reviewReport.status]?.label ?? reviewReport.status}
-                </Badge>
-                {reviewReport.resolution_notes && (
-                  <p className="text-sm text-surface-300 mt-2">{reviewReport.resolution_notes}</p>
-                )}
+            ) : (
+              <div className="rounded-xl bg-surface-800/50 p-4">
+                <p className="mb-1 text-[11px] text-surface-500">Resolution</p>
+                <Pill tone={STATUS_TONE[reviewReport.status] ?? 'neutral'} dot>{reviewReport.status}</Pill>
+                {reviewReport.resolution_notes && <p className="mt-2 text-sm text-surface-300">{reviewReport.resolution_notes}</p>}
               </div>
             )}
           </div>
         )}
-      </Modal>
-      </div>
-    </div>
+      </Dialog>
+    </AdminPage>
   );
 }

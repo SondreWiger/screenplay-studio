@@ -1,13 +1,19 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Eye, Mail, Send, TriangleAlert, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
+import { fetchAll } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Input, Textarea, Modal, Select, toast } from '@/components/ui';
+import { toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
+import {
+  ActionButton, AdminPage, AnimatedNumber, BarList, Dialog, Dots, EmptyState, Field, Meter, PageHeader, Panel, Pill,
+  SearchInput, Segmented, StatGrid, TabSkeleton, TrendPanel, fieldClass, tally, SERIES,
+} from '@/components/admin/kit';
 import { sendNotificationEmailAction } from '@/lib/email-actions';
 
 const EMAIL_TEMPLATES = [
@@ -50,6 +56,21 @@ interface EmailLogEntry {
 }
 
 type SendTab = 'all' | 'filtered' | 'specific';
+
+interface EmailBatch {
+  id: string;
+  subject: string;
+  status: string;
+  total_recipients: number;
+  sent_count: number;
+  failed_count: number;
+  batch_size: number;
+  created_at: string;
+}
+
+const DAY_MS = 86_400_000;
+/** Days since the user was last seen (falls back to signup date). */
+const daysIdle = (u: UserProfile) => (Date.now() - new Date(u.last_seen || u.created_at || 0).getTime()) / DAY_MS;
 
 function getStoredEmailLog(): EmailLogEntry[] {
   if (typeof window === 'undefined') return [];
@@ -96,7 +117,7 @@ export default function AdminEmailPage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [emailLog, setEmailLog] = useState<EmailLogEntry[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
+  const [batches, setBatches] = useState<EmailBatch[]>([]);
   const [userProjectCounts, setUserProjectCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -113,29 +134,19 @@ export default function AdminEmailPage() {
   const loadUsers = async () => {
     try {
       const supabase = createClient();
-      const { data, error } = await supabase.from('profiles').select('id, email, full_name, display_name, avatar_url, role, is_pro, created_at');
-      if (error) {
-        console.error('Profiles query error:', error.message, error);
-        toast.error('Failed to load users: ' + error.message);
-        setUsers([]);
-      } else {
-        await fillEmails(supabase, data || []);
-        setUsers((data || []) as UserProfile[]);
-        if (!data || data.length === 0) {
-          console.warn('Profiles query returned 0 rows');
-        }
-      }
-
-      const { data: projectsData, error: projErr } = await supabase.from('projects').select('created_by');
-      if (projErr) console.error('Projects query error:', projErr.message);
+      // Page past PostgREST's 1000-row cap so bulk sends reach everyone
+      const [data, projectsData] = await Promise.all([
+        fetchAll<UserProfile>(() => supabase.from('profiles').select('id, email, full_name, display_name, avatar_url, role, is_pro, created_at, last_seen')),
+        fetchAll<{ id: string; created_by: string }>(() => supabase.from('projects').select('id, created_by')).catch(() => []),
+      ]);
+      await fillEmails(supabase, data);
+      setUsers(data);
       const counts: Record<string, number> = {};
-      for (const p of projectsData || []) {
-        counts[p.created_by] = (counts[p.created_by] || 0) + 1;
-      }
+      for (const p of projectsData) counts[p.created_by] = (counts[p.created_by] || 0) + 1;
       setUserProjectCounts(counts);
     } catch (err) {
       console.error('Error loading users:', err);
-      toast.error('Error loading users');
+      toast.error('Failed to load users: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }
@@ -163,10 +174,8 @@ export default function AdminEmailPage() {
       if (roleFilter !== 'all') result = result.filter(u => u.role === roleFilter);
 
       if (lastLoginFilter !== 'any') {
-        const now = Date.now();
         result = result.filter(u => {
-          const createdAt = u.created_at ? new Date(u.created_at).getTime() : 0;
-          const daysSince = (now - createdAt) / (1000 * 60 * 60 * 24);
+          const daysSince = daysIdle(u);
           if (lastLoginFilter === '7d') return daysSince <= 7;
           if (lastLoginFilter === '30d') return daysSince <= 30;
           if (lastLoginFilter === '30d_inactive') return daysSince > 30 && daysSince <= 90;
@@ -216,7 +225,6 @@ export default function AdminEmailPage() {
     return users.filter(u => selectedUserIds.has(u.id));
   };
 
-  const handlePreview = () => setShowPreview(true);
 
   const handleSend = async () => {
     if (!subject.trim() || !heading.trim() || !body.trim()) {
@@ -340,439 +348,358 @@ export default function AdminEmailPage() {
     storeEmailLog(updated);
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const roles = useMemo(() => Array.from(new Set(users.map(u => u.role).filter(Boolean))).sort(), [users]);
+  const audience = useMemo(() => {
+    const a = { pro: 0, active7: 0, active30: 0, dormant: 0, withProjects: 0 };
+    users.forEach(u => {
+      const d = daysIdle(u);
+      if (u.is_pro) a.pro++;
+      if (d <= 7) a.active7++;
+      if (d <= 30) a.active30++;
+      if (d > 90) a.dormant++;
+      if ((userProjectCounts[u.id] || 0) > 0) a.withProjects++;
+    });
+    return a;
+  }, [users, userProjectCounts]);
 
+  if (authLoading || loading) return <TabSkeleton />;
   if (!user || !isFullAdmin(user.id, user.role)) return null;
 
+  const recipients = getRecipientUserIds();
   const canSend = subject.trim() && heading.trim() && body.trim() && !sending;
+  const previewUser = recipients[0] || users[0];
+  const previewName = previewUser?.full_name || previewUser?.display_name || 'there';
+  const vars: Record<string, string> = { name: previewName, email: previewUser?.email || 'user@example.com' };
+  const fill = (str: string) => Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, v), str);
+  const unfilled = Array.from(new Set(`${subject} ${heading} ${body} ${ctaLabel} ${ctaUrl}`.match(/\{[a-z_]+\}/g) || [])).filter(t => t !== '{name}' && t !== '{email}');
+  const pendingBatches = batches.filter(b => b.status === 'pending');
+  const sentTotal = emailLog.reduce((sum, e) => sum + e.recipientCount, 0) + batches.reduce((sum, b) => sum + (b.sent_count || 0), 0);
+
+  const applyTemplate = (id: string) => {
+    const tpl = EMAIL_TEMPLATES.find(t => t.id === id);
+    setSelectedTemplate(id);
+    setSubject(tpl?.subject || '');
+    setHeading(tpl?.heading || '');
+    setBody(tpl?.body || '');
+    setCtaLabel(tpl?.ctaLabel || '');
+    setCtaUrl(tpl?.ctaUrl || '');
+  };
+
+  const emailPreview = (
+    <div className="mx-auto max-w-lg rounded-xl bg-white p-7 text-left shadow-inner">
+      <p className="mb-3 border-b border-gray-200 pb-2 text-[11px] text-gray-500"><span className="font-semibold text-gray-700">Subject:</span> {fill(subject) || '—'}</p>
+      <h1 className="mb-4 text-xl font-bold text-gray-900">{fill(heading) || 'Email heading'}</h1>
+      <div className="mb-6 whitespace-pre-wrap text-sm leading-relaxed text-gray-700" dangerouslySetInnerHTML={{ __html: fill(body) || 'Email body content will appear here.' }} />
+      {ctaLabel && (
+        <div className="text-center">
+          <span className="inline-block rounded-lg bg-brand-500 px-6 py-3 text-sm font-bold text-white">{fill(ctaLabel)}</span>
+        </div>
+      )}
+      <p className="mt-8 border-t border-gray-200 pt-4 text-center text-[11px] text-gray-400">Sent via Screenplay Studio</p>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-surface-950 text-white">
-      <div className="border-b border-surface-800 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-surface-400 hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Email Management
-              </h1>
-              <p className="text-xs text-surface-500">Send emails to users and manage outreach</p>
-            </div>
-          </div>
-          <span className="text-xs text-surface-500 bg-surface-800 px-3 py-1.5 rounded-lg">
-            {users.length.toLocaleString()} users loaded
-          </span>
-        </div>
-      </div>
+    <AdminPage>
+      <PageHeader
+        icon={<Mail className="h-5 w-5" />}
+        title="Email"
+        description="Compose, target and send emails to users."
+        meta={<>{users.length.toLocaleString()} users loaded · {pendingBatches.length} batch{pendingBatches.length === 1 ? '' : 'es'} in progress</>}
+      />
 
-      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-        <div className="flex flex-wrap gap-1 p-1 bg-surface-900/80 border border-surface-800/60 rounded-xl">
-          {[
-            { key: 'all' as SendTab, label: 'All Users' },
-            { key: 'filtered' as SendTab, label: 'Filtered Users' },
-            { key: 'specific' as SendTab, label: 'Specific Users' },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                'flex-1 min-w-[140px] px-4 py-2.5 rounded-lg text-xs font-medium uppercase tracking-wide transition-colors duration-200',
-                activeTab === tab.key
-                  ? 'bg-surface-700 text-white shadow-md'
-                  : 'text-surface-500 hover:text-surface-200 hover:bg-surface-800/60'
-              )}
-              style={activeTab === tab.key ? { boxShadow: '0 0 0 1px rgba(255,95,31,0.25) inset' } : {}}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      <StatGrid
+        cols={5}
+        items={[
+          { label: 'Reachable users', value: users.length, tone: 'brand' },
+          { label: 'Active · 7 days', value: audience.active7, tone: 'green', hint: 'Seen in the last 7 days' },
+          { label: 'Active · 30 days', value: audience.active30, tone: 'aqua', hint: 'Seen in the last 30 days' },
+          { label: 'Dormant · 90+ days', value: audience.dormant, tone: 'amber', hint: 'Not seen for over 90 days — re-engagement candidates' },
+          { label: 'Emails sent', value: sentTotal, tone: 'blue', hint: 'From this browser’s history plus batch sends' },
+        ]}
+      />
 
-        <div className="rounded-xl border border-surface-800 bg-surface-900/60 p-6 space-y-4">
-          {activeTab === 'all' && (
-            <div>
-              <p className="text-sm text-surface-300 mb-1">
-                Sending to <span className="font-bold text-white">{users.length.toLocaleString()}</span> users
-              </p>
-              <p className="text-xs text-surface-500 mb-4">This will send an email to every user on the platform.</p>
-              <div className="p-3 rounded-lg bg-amber-500/8 border border-amber-500/25 text-amber-300 text-sm flex items-start gap-2">
-                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>This will send to <strong>{users.length.toLocaleString()}</strong> users. Make sure your email content is correct before sending.</span>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'filtered' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Select
-                  label="Pro Status"
-                  options={[
-                    { value: 'all', label: 'All' },
-                    { value: 'pro', label: 'Pro Only' },
-                    { value: 'free', label: 'Free Only' },
-                  ]}
-                  value={proFilter}
-                  onChange={(e) => setProFilter(e.target.value)}
-                />
-                <Select
-                  label="Role"
-                  options={[
-                    { value: 'all', label: 'All Roles' },
-                    { value: 'writer', label: 'Writer' },
-                    { value: 'director', label: 'Director' },
-                    { value: 'producer', label: 'Producer' },
-                  ]}
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                />
-                <Select
-                  label="Last Login"
-                  options={[
-                    { value: 'any', label: 'Any Time' },
-                    { value: '7d', label: 'Last 7 Days' },
-                    { value: '30d', label: 'Last 30 Days' },
-                    { value: '30d_inactive', label: '30+ Days (Inactive)' },
-                    { value: '90d_dormant', label: '90+ Days (Dormant)' },
-                  ]}
-                  value={lastLoginFilter}
-                  onChange={(e) => setLastLoginFilter(e.target.value)}
-                />
-                <Select
-                  label="Has Projects"
-                  options={[
-                    { value: 'all', label: 'All' },
-                    { value: 'yes', label: 'Has Projects' },
-                    { value: 'no', label: 'No Projects' },
-                  ]}
-                  value={hasProjectsFilter}
-                  onChange={(e) => setHasProjectsFilter(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center justify-between pt-2 border-t border-surface-800">
-                <p className="text-sm text-surface-400">
-                  <span className="font-bold text-white">{targetUsers.length.toLocaleString()}</span> users match the current filters
-                </p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'specific' && (
-            <div className="space-y-4">
-              <Input
-                label="Search Users"
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                icon={
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                }
-              />
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-surface-500">
-                  <span className="font-bold text-white">{selectedUserIds.size}</span> users selected
-                </p>
-                <button
-                  onClick={toggleAllVisible}
-                  className="text-xs text-brand-500 hover:underline font-medium"
-                >
-                  {targetUsers.length > 0 && targetUsers.every(u => selectedUserIds.has(u.id))
-                    ? 'Deselect all visible'
-                    : 'Select all visible'}
-                </button>
-              </div>
-              <div className="max-h-[320px] overflow-y-auto space-y-1 rounded-lg border border-surface-800 bg-surface-950/50 p-2">
-                {targetUsers.length === 0 && (
-                  <p className="text-sm text-surface-500 text-center py-8">
-                    {searchQuery ? 'No users match your search' : 'No users found'}
-                  </p>
-                )}
-                {targetUsers.map(u => (
-                  <label
-                    key={u.id}
-                    className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors',
-                      selectedUserIds.has(u.id) ? 'bg-brand-500/8 border border-brand-500/20' : 'hover:bg-surface-800/60 border border-transparent'
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedUserIds.has(u.id)}
-                      onChange={() => toggleUserSelection(u.id)}
-                      className="rounded border-surface-600 text-brand-500 focus:ring-brand-500/30 bg-surface-800"
-                    />
-                    <div className="w-7 h-7 rounded-full bg-surface-700 flex items-center justify-center text-[11px] text-surface-400 shrink-0">
-                      {(u.display_name || u.full_name || u.email)?.[0]?.toUpperCase() || '?'}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-white truncate">
-                        {u.display_name || u.full_name || 'No Name'}
-                      </p>
-                      <p className="text-[11px] text-surface-500 truncate">{u.email}</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {u.is_pro && (
-                        <span className="text-[11px] font-bold text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded">PRO</span>
-                      )}
-                      <span className="text-[11px] text-surface-600">{userProjectCounts[u.id] || 0} projects</span>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-xl border border-surface-800 bg-surface-900/60 p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Email Composer</h2>
-            <select
-              value={selectedTemplate}
-              onChange={(e) => {
-                const tpl = EMAIL_TEMPLATES.find(t => t.id === e.target.value);
-                setSelectedTemplate(e.target.value);
-                if (tpl && tpl.id) {
-                  setSubject(tpl.subject || '');
-                  setHeading(tpl.heading || '');
-                  setBody(tpl.body || '');
-                  setCtaLabel(tpl.ctaLabel || '');
-                  setCtaUrl(tpl.ctaUrl || '');
-                } else {
-                  setSubject('');
-                  setHeading('');
-                  setBody('');
-                  setCtaLabel('');
-                  setCtaUrl('');
-                }
-              }}
-              className="text-xs bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-white"
-            >
-              {EMAIL_TEMPLATES.map(t => (
-                <option key={t.id} value={t.id}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-          <Input
-            label="Subject"
-            placeholder="Email subject line..."
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-          />
-          <Input
-            label="Heading"
-            placeholder="Heading shown in email template..."
-            value={heading}
-            onChange={(e) => setHeading(e.target.value)}
-          />
-          <Textarea
-            label="Body"
-            placeholder="Email body content. HTML is supported."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={8}
-            className="font-mono text-xs"
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="CTA Label (optional)"
-              placeholder="e.g. Open App"
-              value={ctaLabel}
-              onChange={(e) => setCtaLabel(e.target.value)}
-            />
-            <Input
-              label="CTA URL (optional)"
-              placeholder="https://..."
-              value={ctaUrl}
-              onChange={(e) => setCtaUrl(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Button variant="ghost" onClick={handlePreview} disabled={!subject && !heading && !body}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Preview
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                const count = getRecipientUserIds().length;
-                if (count === 0) {
-                  toast.error('No recipients selected');
-                  return;
-                }
-                setShowConfirm(true);
-              }}
-              disabled={!canSend || getRecipientUserIds().length === 0}
-              loading={sending}
-            >
-              Send to {activeTab === 'all' ? `${users.length.toLocaleString()} Users` : activeTab === 'filtered' ? `${targetUsers.length.toLocaleString()} Users` : `${selectedUserIds.size} Users`}
-            </Button>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-surface-800 bg-surface-900/60 p-6">
-          <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em] mb-4">Email History</h2>
-          {emailLog.length === 0 ? (
-            <p className="text-sm text-surface-500 text-center py-8">No emails sent yet</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-surface-800">
-                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Date</th>
-                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Subject</th>
-                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Recipients</th>
-                    <th className="text-left py-2 px-3 text-[11px] font-medium text-surface-500 uppercase tracking-[0.04em]">Sent By</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {emailLog.map(entry => (
-                    <tr key={entry.id} className="border-b border-surface-800/50 hover:bg-surface-800/30 transition-colors">
-                      <td className="py-2.5 px-3 text-xs text-surface-400 whitespace-nowrap">{timeAgo(entry.date)}</td>
-                      <td className="py-2.5 px-3 text-sm text-white font-medium truncate max-w-[300px]">{entry.subject}</td>
-                      <td className="py-2.5 px-3">
-                        <span className="text-xs font-bold text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded-full">
-                          {entry.recipientCount.toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-surface-400">{entry.sentBy}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {batches.length > 0 && (
-        <div className="rounded-xl border border-surface-800 bg-surface-900/60 p-6">
-          <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em] mb-4">Email Batches</h2>
-          <p className="text-xs text-surface-500 mb-4">Bulk emails are sent in batches of 100/day. A cron job processes one batch per day.</p>
+      <div className="grid gap-5 lg:grid-cols-5">
+        <TrendPanel
+          id="email-signups"
+          className="lg:col-span-3"
+          title="Audience growth"
+          subtitle="New users who can receive email"
+          defaultRange="90d"
+          sources={[{ key: 'signups', label: 'New users', rows: users, time: u => u.created_at }]}
+        />
+        <Panel title="Audience mix" subtitle="Who you’d be talking to" className="lg:col-span-2">
           <div className="space-y-3">
-            {batches.map((b: any) => {
-              const progress = b.total_recipients > 0 ? Math.round(((b.sent_count + b.failed_count) / b.total_recipients) * 100) : 0;
-              const daysLeft = b.batch_size > 0 ? Math.ceil((b.total_recipients - b.sent_count - b.failed_count) / b.batch_size) : 0;
-              return (
-                <div key={b.id} className="p-4 rounded-lg border border-surface-700 bg-surface-800/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{b.subject}</p>
-                      <p className="text-[11px] text-surface-500">
-                        Created {new Date(b.created_at).toLocaleDateString()} · {b.total_recipients} recipients
-                      </p>
-                    </div>
-                    <span className={cn(
-                      'text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0',
-                      b.status === 'completed' ? 'bg-green-500/15 text-green-400' :
-                      b.status === 'pending' ? 'bg-yellow-500/15 text-yellow-400' :
-                      'bg-surface-700 text-surface-400'
-                    )}>
-                      {b.status === 'completed' ? 'Done' : b.status === 'pending' ? `${daysLeft}d left` : b.status}
-                    </span>
-                  </div>
-                  <div className="w-full bg-surface-700 rounded-full h-1.5 mb-1">
-                    <div
-                      className={cn('h-1.5 rounded-full transition-[width]', b.status === 'completed' ? 'bg-green-500' : 'bg-brand-500')}
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="text-[11px] text-surface-500">{b.sent_count} sent · {b.failed_count} failed · {b.total_recipients - b.sent_count - b.failed_count} remaining</p>
+            {[
+              { label: 'Pro', value: audience.pro, color: SERIES.yellow },
+              { label: 'Has projects', value: audience.withProjects, color: SERIES.orange },
+              { label: 'Active in 30 days', value: audience.active30, color: SERIES.aqua },
+            ].map(x => (
+              <div key={x.label}>
+                <div className="mb-1 flex justify-between text-xs">
+                  <span className="text-surface-300">{x.label}</span>
+                  <span className="tabular-nums text-surface-400"><span className="font-semibold text-white">{x.value.toLocaleString()}</span> · {users.length ? Math.round((x.value / users.length) * 100) : 0}%</span>
                 </div>
-              );
-            })}
+                <Meter value={x.value} max={users.length || 1} color={x.color} />
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+          <div className="mt-4 border-t border-surface-800 pt-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-surface-500">By role</p>
+            <BarList items={tally(users, u => u.role)} limit={4} />
+          </div>
+        </Panel>
+      </div>
 
-      {showPreview && (() => {
-        const previewUser = getRecipientUserIds()[0];
-        const previewName = previewUser?.full_name || previewUser?.display_name || 'there';
-        const vars: Record<string, string> = { name: previewName, email: previewUser?.email || 'user@example.com' };
-        const replace = (s: string) => Object.entries(vars).reduce((str, [k, v]) => str.replaceAll(`{${k}}`, v), s);
-        return (
-          <Modal isOpen onClose={() => setShowPreview(false)} title={`Email Preview — ${previewName}`} size="lg">
-            <div className="rounded-xl border border-surface-800 bg-white p-8 max-w-lg mx-auto">
-              <h1 className="text-xl font-bold text-gray-900 mb-4">{replace(heading) || 'Email Heading'}</h1>
-              <div
-                className="text-sm text-gray-700 leading-relaxed mb-6 whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: replace(body) || 'Email body content will appear here.' }}
+      <div className="grid gap-5 xl:grid-cols-2">
+        {/* Audience + composer */}
+        <div className="space-y-5">
+          <Panel
+            title={<span className="flex items-center gap-2"><Users className="h-4 w-4 text-brand-400" />Recipients</span>}
+            action={
+              <Segmented
+                id="email-audience"
+                size="sm"
+                value={activeTab}
+                onChange={setActiveTab}
+                options={[{ key: 'all', label: 'Everyone' }, { key: 'filtered', label: 'Segment' }, { key: 'specific', label: 'Pick users' }]}
               />
-              {ctaLabel && (
-                <div className="text-center">
-                  <span className="inline-block px-6 py-3 rounded-lg bg-brand-500 text-white font-bold text-sm">
-                    {replace(ctaLabel)}
-                  </span>
-                </div>
+            }
+          >
+            <AnimatePresence mode="wait">
+              <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }}>
+                {activeTab === 'all' && (
+                  <div className="flex items-start gap-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-3 text-sm text-amber-200">
+                    <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>Sends to <strong>{users.length.toLocaleString()}</strong> users in daily batches (about 100 per day, ~{Math.max(1, Math.ceil(users.length / 80))} day{users.length > 80 ? 's' : ''}). Check the preview first.</span>
+                  </div>
+                )}
+
+                {activeTab === 'filtered' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Plan">
+                        <select value={proFilter} onChange={e => setProFilter(e.target.value)} className={fieldClass}>
+                          <option value="all">Everyone</option>
+                          <option value="pro">Pro only</option>
+                          <option value="free">Free only</option>
+                        </select>
+                      </Field>
+                      <Field label="Role">
+                        <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className={fieldClass}>
+                          <option value="all">All roles</option>
+                          {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                      </Field>
+                      <Field label="Last active">
+                        <select value={lastLoginFilter} onChange={e => setLastLoginFilter(e.target.value)} className={fieldClass}>
+                          <option value="any">Any time</option>
+                          <option value="7d">Within 7 days</option>
+                          <option value="30d">Within 30 days</option>
+                          <option value="30d_inactive">31–90 days ago (inactive)</option>
+                          <option value="90d_dormant">90+ days ago (dormant)</option>
+                        </select>
+                      </Field>
+                      <Field label="Projects">
+                        <select value={hasProjectsFilter} onChange={e => setHasProjectsFilter(e.target.value)} className={fieldClass}>
+                          <option value="all">Any</option>
+                          <option value="yes">Has projects</option>
+                          <option value="no">No projects</option>
+                        </select>
+                      </Field>
+                    </div>
+                    <div className="flex items-center gap-3 border-t border-surface-800 pt-3">
+                      <AnimatedNumber value={targetUsers.length} className="text-2xl font-bold text-white" />
+                      <span className="text-sm text-surface-400">users match ({users.length ? Math.round((targetUsers.length / users.length) * 100) : 0}% of everyone)</span>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'specific' && (
+                  <div className="space-y-3">
+                    <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Search by name or email…" />
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-surface-500"><span className="font-bold text-white">{selectedUserIds.size}</span> selected</span>
+                      <button onClick={toggleAllVisible} className="font-medium text-brand-400 hover:underline">
+                        {targetUsers.length > 0 && targetUsers.every(u => selectedUserIds.has(u.id)) ? 'Deselect all visible' : 'Select all visible'}
+                      </button>
+                    </div>
+                    <div className="max-h-[320px] space-y-1 overflow-y-auto rounded-xl border border-surface-800 bg-surface-950/50 p-1.5">
+                      {targetUsers.length === 0 && <p className="py-8 text-center text-sm text-surface-500">{searchQuery ? 'No users match your search' : 'No users found'}</p>}
+                      {targetUsers.slice(0, 300).map(u => (
+                        <label
+                          key={u.id}
+                          className={cn('flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors', selectedUserIds.has(u.id) ? 'border-brand-500/30 bg-brand-500/10' : 'border-transparent hover:bg-surface-800/60')}
+                        >
+                          <input type="checkbox" checked={selectedUserIds.has(u.id)} onChange={() => toggleUserSelection(u.id)} className="accent-brand-500" />
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-700 text-[11px] text-surface-300">
+                            {(u.display_name || u.full_name || u.email)?.[0]?.toUpperCase() || '?'}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-medium text-white">{u.display_name || u.full_name || 'No name'}</span>
+                            <span className="block truncate text-[11px] text-surface-500">{u.email}</span>
+                          </span>
+                          {u.is_pro && <Pill tone="amber">Pro</Pill>}
+                          <span className="shrink-0 text-[11px] text-surface-600">{userProjectCounts[u.id] || 0} proj</span>
+                        </label>
+                      ))}
+                      {targetUsers.length > 300 && <p className="py-2 text-center text-[11px] text-surface-600">Showing 300 of {targetUsers.length.toLocaleString()} — refine the search</p>}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </Panel>
+
+          <Panel
+            title="Compose"
+            action={
+              <select value={selectedTemplate} onChange={e => applyTemplate(e.target.value)} className={cn(fieldClass, 'w-auto py-1.5 text-xs')} aria-label="Template">
+                {EMAIL_TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+            }
+          >
+            <div className="space-y-3">
+              <Field label="Subject">
+                <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Email subject line…" className={fieldClass} />
+              </Field>
+              <Field label="Heading">
+                <input value={heading} onChange={e => setHeading(e.target.value)} placeholder="Heading shown in the email…" className={fieldClass} />
+              </Field>
+              <Field label="Body" hint="(HTML supported · {name} and {email} are filled per recipient)">
+                <textarea value={body} onChange={e => setBody(e.target.value)} rows={8} placeholder="Email body content…" className={cn(fieldClass, 'font-mono text-xs')} />
+              </Field>
+              <div className="grid gap-3 md:grid-cols-2">
+                <Field label="Button label" hint="(optional)">
+                  <input value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} placeholder="e.g. Open app" className={fieldClass} />
+                </Field>
+                <Field label="Button URL" hint="(optional)">
+                  <input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} placeholder="https://…" className={fieldClass} />
+                </Field>
+              </div>
+              {unfilled.length > 0 && (
+                <p className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2 text-xs text-amber-200">
+                  <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  Placeholders still to replace: {unfilled.join(', ')}
+                </p>
               )}
-              <div className="mt-8 pt-4 border-t border-gray-200 text-center">
-                <p className="text-[11px] text-gray-400">Sent via Screenplay Studio</p>
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+                <ActionButton variant="ghost" icon={<Eye className="h-4 w-4" />} onClick={() => setShowPreview(true)} disabled={!subject && !heading && !body} className="xl:hidden">Preview</ActionButton>
+                <ActionButton
+                  variant="primary"
+                  icon={<Send className="h-4 w-4" />}
+                  onClick={() => {
+                    if (recipients.length === 0) { toast.error('No recipients selected'); return; }
+                    setShowConfirm(true);
+                  }}
+                  disabled={!canSend || recipients.length === 0}
+                >
+                  {sending ? <>Sending <Dots /></> : `Send to ${recipients.length.toLocaleString()} user${recipients.length === 1 ? '' : 's'}`}
+                </ActionButton>
               </div>
             </div>
-            <p className="text-xs text-surface-500 text-center mt-4">
-              Previewing as: {previewName} ({previewUser?.email}). {'{name}'} and {'{email}'} will be replaced per recipient.
-            </p>
-          </Modal>
-        );
-      })()}
-
-      {showConfirm && (
-        <Modal isOpen onClose={() => setShowConfirm(false)} title="Confirm Send" size="sm">
-          <div className="space-y-4">
-            <p className="text-sm text-surface-300">
-              You are about to send an email to{' '}
-              <span className="font-bold text-white">{getRecipientUserIds().length.toLocaleString()}</span>{' '}
-              users.
-            </p>
-            <div className="rounded-lg bg-surface-800/50 p-3 text-xs text-surface-400 space-y-1">
-              <p><span className="font-medium text-surface-300">Subject:</span> {subject}</p>
-              <p><span className="font-medium text-surface-300">Heading:</span> {heading}</p>
-              {ctaLabel && <p><span className="font-medium text-surface-300">CTA:</span> {ctaLabel}</p>}
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="ghost" onClick={() => setShowConfirm(false)} disabled={sending}>Cancel</Button>
-              <Button variant="primary" onClick={handleSend} loading={sending}>
-                Confirm Send
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {sending && sendProgress.total > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-surface-900 border border-surface-700 rounded-xl px-6 py-4 shadow-2xl flex items-center gap-4">
-          <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <div>
-            <p className="text-sm font-bold text-white">Sending emails...</p>
-            <p className="text-xs text-surface-400">{sendProgress.sent} / {sendProgress.total} sent</p>
-          </div>
-          <div className="w-32 h-2 bg-surface-800 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-brand-500 transition-[width] duration-300"
-              style={{ width: `${sendProgress.total > 0 ? (sendProgress.sent / sendProgress.total) * 100 : 0}%` }}
-            />
-          </div>
+          </Panel>
         </div>
-      )}
-    </div>
+
+        {/* Live preview (desktop) */}
+        <Panel title="Live preview" subtitle={`As ${previewName}${previewUser?.email ? ` (${previewUser.email})` : ''}`} className="hidden xl:block" bodyClassName="sticky top-4">
+          <div className="rounded-xl bg-surface-950/60 p-4">{emailPreview}</div>
+        </Panel>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Panel title="Batches" subtitle="Bulk sends go out in daily batches via cron">
+          {batches.length === 0 ? (
+            <EmptyState title="No batches yet" description="Sending to everyone creates a batch here." />
+          ) : (
+            <ul className="space-y-3">
+              {batches.map((b, i) => {
+                const done = (b.sent_count || 0) + (b.failed_count || 0);
+                const progress = b.total_recipients > 0 ? (done / b.total_recipients) * 100 : 0;
+                const daysLeft = b.batch_size > 0 ? Math.ceil((b.total_recipients - done) / b.batch_size) : 0;
+                return (
+                  <motion.li key={b.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="rounded-xl border border-surface-800 p-3">
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-white">{b.subject}</p>
+                        <p className="text-[11px] text-surface-500">{timeAgo(b.created_at)} · {b.total_recipients.toLocaleString()} recipients</p>
+                      </div>
+                      <Pill tone={b.status === 'completed' ? 'green' : b.status === 'pending' ? 'amber' : 'neutral'} dot>
+                        {b.status === 'completed' ? 'Done' : b.status === 'pending' ? `${daysLeft}d left` : b.status}
+                      </Pill>
+                    </div>
+                    <Meter value={progress} color={b.status === 'completed' ? '#22c55e' : SERIES.blue} />
+                    <p className="mt-1 text-[11px] text-surface-500">{b.sent_count} sent · {b.failed_count} failed · {b.total_recipients - done} remaining</p>
+                  </motion.li>
+                );
+              })}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel title="History" subtitle="Sends from this browser">
+          {emailLog.length === 0 ? (
+            <EmptyState title="No emails sent yet" />
+          ) : (
+            <ul className="divide-y divide-surface-800">
+              {emailLog.slice(0, 20).map(entry => (
+                <li key={entry.id} className="flex items-center gap-3 py-2.5">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-white">{entry.subject}</p>
+                    <p className="text-[11px] text-surface-500">{timeAgo(entry.date)} · {entry.sentBy}</p>
+                  </div>
+                  <Pill tone="brand">{entry.recipientCount === 0 ? 'batched' : entry.recipientCount.toLocaleString()}</Pill>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+      </div>
+
+      <Dialog open={showPreview} onClose={() => setShowPreview(false)} title={`Preview — ${previewName}`} size="lg">
+        {emailPreview}
+        <p className="mt-4 text-center text-xs text-surface-500">{'{name}'} and {'{email}'} are replaced per recipient.</p>
+      </Dialog>
+
+      <Dialog
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        title="Confirm send"
+        size="sm"
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={() => setShowConfirm(false)} disabled={sending}>Cancel</ActionButton>
+            <ActionButton variant="primary" icon={<Send className="h-4 w-4" />} onClick={handleSend} disabled={sending}>{sending ? <>Sending <Dots /></> : 'Send now'}</ActionButton>
+          </>
+        }
+      >
+        <p className="text-sm text-surface-300">
+          You’re about to email <span className="font-bold text-white">{recipients.length.toLocaleString()}</span> user{recipients.length === 1 ? '' : 's'}.
+        </p>
+        <div className="mt-3 space-y-1 rounded-xl bg-surface-950/60 p-3 text-xs text-surface-400">
+          <p><span className="font-medium text-surface-200">Subject:</span> {subject}</p>
+          <p><span className="font-medium text-surface-200">Heading:</span> {heading}</p>
+          {ctaLabel && <p><span className="font-medium text-surface-200">Button:</span> {ctaLabel}</p>}
+        </div>
+      </Dialog>
+
+      <AnimatePresence>
+        {sending && sendProgress.total > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-2xl border border-surface-700 bg-surface-900 px-5 py-3 shadow-2xl"
+          >
+            <Send className="h-4 w-4 text-brand-400" />
+            <div>
+              <p className="text-sm font-bold text-white">Sending emails <Dots /></p>
+              <p className="text-xs text-surface-400">{sendProgress.sent} / {sendProgress.total} sent</p>
+            </div>
+            <div className="w-32"><Meter value={sendProgress.sent} max={sendProgress.total} color={SERIES.blue} /></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </AdminPage>
   );
 }

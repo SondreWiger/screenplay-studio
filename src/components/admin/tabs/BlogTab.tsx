@@ -8,6 +8,8 @@ import type { BlogPost, BlogPostSection, BlogComment, CommunityPostStatus } from
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminData } from '../data';
 import { TabSkeleton } from '../motion';
+import { Newspaper } from 'lucide-react';
+import { AdminPage, BarList, PageHeader, Panel, Reveal, StatGrid, TrendPanel, SERIES } from '../kit';
 
 export function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, onToggleCommentHidden, onDeleteComment }: {
   posts: BlogPost[];
@@ -28,11 +30,7 @@ export function BlogTab({ posts, comments, onNewPost, onEditPost, onDeletePost, 
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Blog Management</h1>
-          <p className="text-sm text-surface-400">Create and manage blog posts, moderate comments</p>
-        </div>
+      <div className="mb-4 flex items-center justify-end">
         <Button onClick={onNewPost}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           New Post
@@ -368,8 +366,30 @@ export default function BlogPanel() {
   };
 
   if (loading) return <TabSkeleton />;
+  const { posts, comments } = data;
   return (
-    <>
+    <AdminPage>
+      <PageHeader icon={<Newspaper className="h-5 w-5" />} title="Blog" description="Write and publish posts, moderate comments." />
+      <StatGrid
+        cols={5}
+        items={[
+          { label: 'Posts', value: posts.length, tone: 'brand' },
+          { label: 'Published', value: posts.filter((p) => p.status === 'published').length, tone: 'green' },
+          { label: 'Drafts', value: posts.filter((p) => p.status !== 'published').length, tone: 'amber' },
+          { label: 'Total views', value: posts.reduce((n, p) => n + (p.view_count || 0), 0), tone: 'blue' },
+          { label: 'Hidden comments', value: comments.filter((c) => c.is_hidden).length, tone: 'red', hint: 'Among the latest 50 comments' },
+        ]}
+      />
+      <div className="grid gap-5 lg:grid-cols-5">
+        <TrendPanel id="blog" className="lg:col-span-3" title="Publishing & discussion" subtitle="Posts published and comments received" defaultRange="1y" sources={[
+          { key: 'posts', label: 'Posts published', color: SERIES.blue, rows: posts, time: (p) => p.published_at },
+          { key: 'comments', label: 'Comments', color: SERIES.aqua, rows: comments, time: (c) => c.created_at },
+        ]} />
+        <Panel title="Most viewed" className="lg:col-span-2">
+          <BarList items={[...posts].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 6).map((p) => ({ label: p.title, count: p.view_count || 0 }))} labelFormat={(l) => <span className="normal-case">{l}</span>} empty="No views yet" />
+        </Panel>
+      </div>
+      <Reveal>
       <BlogTab
         posts={data.posts}
         comments={data.comments}
@@ -379,6 +399,7 @@ export default function BlogPanel() {
         onToggleCommentHidden={handleToggleCommentHidden}
         onDeleteComment={handleDeleteComment}
       />
+      </Reveal>
       {editing && user && (
         <BlogPostEditorModal
           post={editing === 'new' ? null : editing}
@@ -387,6 +408,6 @@ export default function BlogPanel() {
           onSaved={() => { setEditing(null); reload(); }}
         />
       )}
-    </>
+    </AdminPage>
   );
 }

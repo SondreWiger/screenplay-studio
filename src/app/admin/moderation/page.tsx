@@ -1,33 +1,29 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Archive, MessageSquare, Radar, ShieldAlert, ShieldCheck, Trash2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Badge, Modal, Textarea, Avatar, toast } from '@/components/ui';
+import { Avatar, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
+import {
+  ActionButton, AdminPage, AnimatedItem, BarList, Dialog, Dots, EmptyState, Field, PageHeader, Panel, Pill, Reveal,
+  SearchInput, Segmented, Shimmer, StatGrid, TabSkeleton, Toolbar, TrendPanel, fieldClass, tally, SERIES, type Tone,
+} from '@/components/admin/kit';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 const isFullAdmin = (id?: string, role?: string) => id === ADMIN_UID || role === 'admin';
 
 type SubTab = 'flags' | 'all-projects' | 'evidence';
 
-const SEVERITY_COLORS: Record<string, string> = {
-  critical: 'bg-red-500/20 text-red-400 border-red-500/40',
-  high: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
-  medium: 'bg-amber-500/20 text-amber-400 border-amber-500/40',
-  low: 'bg-surface-700/50 text-surface-300 border-surface-600',
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-amber-500/20 text-amber-400',
-  reviewing: 'bg-sky-500/20 text-sky-400',
-  confirmed: 'bg-red-500/20 text-red-400',
-  false_positive: 'bg-green-500/20 text-green-400',
-  actioned: 'bg-purple-500/20 text-purple-400',
-};
+const SEVERITY_TONE: Record<string, Tone> = { critical: 'red', high: 'brand', medium: 'amber', low: 'neutral' };
+const STATUS_TONE: Record<string, Tone> = { pending: 'amber', reviewing: 'blue', confirmed: 'red', false_positive: 'green', actioned: 'violet' };
+const SEVERITY_RANK: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+type FlagView = 'pending' | 'reviewed' | 'all';
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
   script_element: 'Script',
@@ -87,11 +83,15 @@ export default function ModerationPage() {
   const [subTab, setSubTab] = useState<SubTab>('flags');
   const [flags, setFlags] = useState<ContentFlag[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
-  const [allProjects, setAllProjects] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [allProjects, setAllProjects] = useState<any[] | null>(null);
+  const [flagView, setFlagView] = useState<FlagView>('pending');
+  const [severity, setSeverity] = useState<string>('all');
+  const [flagSearch, setFlagSearch] = useState('');
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [scanResults, setScanResults] = useState<any>(null);
-  const [stats, setStats] = useState<any>(null);
   const [projectSearch, setProjectSearch] = useState('');
 
   // Action modals
@@ -108,7 +108,7 @@ export default function ModerationPage() {
       return;
     }
     loadFlags();
-    loadAllProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
   const getAuthHeaders = useCallback(async () => {
@@ -126,7 +126,6 @@ export default function ModerationPage() {
       const res = await fetch('/api/admin/moderation/scan', { headers });
       const data = await res.json();
       setFlags(data.flags || []);
-      setStats(data.stats || null);
     } catch (err) {
       console.error('Error loading flags:', err);
     } finally {
@@ -159,6 +158,7 @@ export default function ModerationPage() {
       setAllProjects(data || []);
     } catch (err) {
       console.error('Error loading all projects:', err);
+      setAllProjects([]);
     }
   };
 
@@ -254,603 +254,370 @@ export default function ModerationPage() {
     setActionNotes('');
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const visibleFlags = useMemo(() => {
+    const q = flagSearch.trim().toLowerCase();
+    return flags
+      .filter(f => flagView === 'all' || (flagView === 'pending' ? f.status === 'pending' || f.status === 'reviewing' : f.status !== 'pending' && f.status !== 'reviewing'))
+      .filter(f => severity === 'all' || f.severity === severity)
+      .filter(f => !q || `${f.content_snippet} ${f.matched_terms.join(' ')} ${f.flagged_user?.email || ''} ${f.flagged_user?.display_name || ''}`.toLowerCase().includes(q))
+      .sort((a, b) => (SEVERITY_RANK[a.severity] ?? 9) - (SEVERITY_RANK[b.severity] ?? 9) || b.detected_at.localeCompare(a.detected_at));
+  }, [flags, flagView, severity, flagSearch]);
 
+  if (authLoading || loading) return <TabSkeleton />;
   if (!user || !isFullAdmin(user.id, user.role)) return null;
 
   const pendingFlags = flags.filter(f => f.status === 'pending');
-  const criticalFlags = flags.filter(f => f.severity === 'critical' && f.status === 'pending');
+  const criticalFlags = pendingFlags.filter(f => f.severity === 'critical');
+  const byStatus = (st: string) => flags.filter(f => f.status === st).length;
+  const repeatOffenders = tally(flags, f => f.flagged_user?.display_name || f.flagged_user?.email || f.flagged_user_id.slice(0, 8)).filter(x => x.count > 1);
 
-  const filteredProjects = allProjects.filter(p =>
+  const filteredProjects = (allProjects || []).filter(p =>
     !projectSearch || (p.title + ' ' + (p.owner?.email || '') + ' ' + (p.owner?.full_name || '')).toLowerCase().includes(projectSearch.toLowerCase())
   );
 
+  const switchTab = (t: SubTab) => {
+    setSubTab(t);
+    if (t === 'evidence' && evidence.length === 0) loadEvidence();
+    if (t === 'all-projects' && allProjects === null) loadAllProjects();
+  };
+
+  const actionTitle: Record<string, string> = {
+    warn: 'Warn user', suspend: 'Suspend user', ban: 'Ban user permanently', delete: 'Delete flagged content', dismiss: 'Dismiss as false positive',
+  };
+  const actionCta: Record<string, string> = {
+    warn: 'Send warning', suspend: `Suspend for ${actionDays} days`, ban: 'Permanently ban', delete: 'Delete content', dismiss: 'Mark as false positive',
+  };
+
   return (
-    <div className="min-h-screen bg-surface-950 text-white">
-      {/* Header */}
-      <div className="border-b border-surface-800 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-surface-400 hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-                Content Moderation
-              </h1>
-              <p className="text-xs text-surface-500">Child safety, content scanning & evidence preservation</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {criticalFlags.length > 0 && (
-              <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-bold animate-pulse">
-                {criticalFlags.length} CRITICAL
-              </span>
-            )}
-            <Button
-              variant="primary"
-              onClick={runScan}
-              disabled={scanning}
-              className="text-sm"
-            >
-              {scanning ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Scanning…
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  Scan Platform
-                </span>
+    <AdminPage>
+      <PageHeader
+        icon={<ShieldAlert className="h-5 w-5" />}
+        title="Content Moderation"
+        description="Child safety, content scanning and evidence preservation."
+        actions={
+          <>
+            <AnimatePresence>
+              {criticalFlags.length > 0 && (
+                <motion.span initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+                  <Pill tone="red" dot className="animate-pulse">{criticalFlags.length} critical</Pill>
+                </motion.span>
               )}
-            </Button>
-          </div>
-        </div>
-      </div>
+            </AnimatePresence>
+            <ActionButton variant="primary" icon={<Radar className={cn('h-4 w-4', scanning && 'animate-spin')} />} onClick={runScan} disabled={scanning}>
+              {scanning ? <>Scanning <Dots /></> : 'Scan platform'}
+            </ActionButton>
+          </>
+        }
+      />
 
-      {/* Scan Results Banner */}
-      {scanResults && (
-        <div className="bg-surface-900 border-b border-surface-800 px-6 py-3">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-6 text-sm">
-              <span className="text-surface-400">Last scan:</span>
+      <AnimatePresence>
+        {scanResults && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className={cn('flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border px-4 py-3 text-sm', (scanResults.new_flags || 0) > 0 ? 'border-red-500/30 bg-red-500/[0.06]' : 'border-emerald-500/30 bg-emerald-500/[0.06]')}>
+              <span className={cn('font-bold', (scanResults.new_flags || 0) > 0 ? 'text-red-300' : 'text-emerald-300')}>
+                {scanResults.new_flags || 0} new flag{scanResults.new_flags === 1 ? '' : 's'}
+              </span>
               {Object.entries(scanResults.scanned || {}).map(([key, val]) => (
-                <span key={key} className="text-surface-300">
-                  <span className="text-surface-500">{key.replace(/_/g, ' ')}:</span> {String(val)}
-                </span>
+                <span key={key} className="text-surface-400"><span className="text-surface-500">{key.replace(/_/g, ' ')}:</span> <span className="font-semibold text-surface-200">{String(val)}</span></span>
               ))}
+              <button onClick={() => setScanResults(null)} className="ml-auto rounded p-1 text-surface-500 hover:text-white" aria-label="Dismiss"><X className="h-4 w-4" /></button>
             </div>
-            <div className="flex items-center gap-4 text-sm">
-              <span className={cn(
-                'font-bold',
-                (scanResults.new_flags || 0) > 0 ? 'text-red-400' : 'text-green-400'
-              )}>
-                {scanResults.new_flags || 0} new flags
-              </span>
-              <button
-                onClick={() => setScanResults(null)}
-                className="text-surface-500 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Stats bar */}
-      {stats && (
-        <div className="border-b border-surface-800 px-6 py-3 bg-surface-900/50">
-          <div className="max-w-7xl mx-auto flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-surface-400">Pending:</span>
-              <span className="font-bold text-amber-400">{stats.by_status?.pending || 0}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-400" />
-              <span className="text-surface-400">Critical:</span>
-              <span className="font-bold text-red-400">{stats.by_severity?.critical || 0}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-purple-400" />
-              <span className="text-surface-400">Actioned:</span>
-              <span className="font-bold text-purple-400">{stats.by_status?.actioned || 0}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-surface-400">False Positives:</span>
-              <span className="font-bold text-green-400">{stats.by_status?.false_positive || 0}</span>
-            </div>
-          </div>
-        </div>
-      )}
+      <StatGrid
+        cols={5}
+        layoutGroup="moderation"
+        items={[
+          { label: 'Pending review', value: pendingFlags.length, tone: 'amber', onClick: () => { switchTab('flags'); setFlagView('pending'); setSeverity('all'); }, active: subTab === 'flags' && flagView === 'pending' && severity === 'all' },
+          { label: 'Critical pending', value: criticalFlags.length, tone: 'red', onClick: () => { switchTab('flags'); setFlagView('pending'); setSeverity('critical'); }, active: subTab === 'flags' && severity === 'critical' },
+          { label: 'Actioned', value: byStatus('actioned') + byStatus('confirmed'), tone: 'violet', onClick: () => { switchTab('flags'); setFlagView('reviewed'); setSeverity('all'); }, active: subTab === 'flags' && flagView === 'reviewed' },
+          { label: 'False positives', value: byStatus('false_positive'), tone: 'green', hint: `${flags.length ? Math.round((byStatus('false_positive') / flags.length) * 100) : 0}% of all flags` },
+          { label: 'Evidence items', value: evidence.length, tone: 'blue', hint: 'Loaded when you open the vault', onClick: () => switchTab('evidence'), active: subTab === 'evidence' },
+        ]}
+      />
 
-      {/* Sub-tabs */}
-      <div className="border-b border-surface-800 px-6">
-        <div className="max-w-7xl mx-auto flex gap-6">
-          {[
-            { key: 'flags' as SubTab, label: 'Content Flags', count: pendingFlags.length },
-            { key: 'all-projects' as SubTab, label: 'All Projects', count: allProjects.length },
-            { key: 'evidence' as SubTab, label: 'Evidence Vault', count: evidence.length },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setSubTab(tab.key);
-                if (tab.key === 'evidence' && evidence.length === 0) loadEvidence();
-              }}
-              className={cn(
-                'py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2',
-                subTab === tab.key
-                  ? 'border-brand-500 text-white'
-                  : 'border-transparent text-surface-400 hover:text-white'
-              )}
-            >
-              {tab.label}
-              {tab.count > 0 && (
-                <span className={cn(
-                  'px-1.5 py-0.5 rounded text-[11px] font-bold',
-                  tab.key === 'flags' && pendingFlags.length > 0
-                    ? 'bg-red-500/20 text-red-400'
-                    : 'bg-surface-800 text-surface-400'
-                )}>
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* ── FLAGS TAB ──────────────────────────────────────── */}
-        {subTab === 'flags' && (
-          <div className="space-y-4">
-            {flags.length === 0 ? (
-              <div className="text-center py-16">
-                <svg className="w-16 h-16 text-green-500/50 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 className="text-lg font-semibold text-surface-300 mb-1">No flags detected</h3>
-                <p className="text-sm text-surface-500">Click &quot;Scan Platform&quot; to run a content scan</p>
-              </div>
-            ) : (
-              flags.map(flag => (
-                <div
-                  key={flag.id}
-                  className={cn(
-                    'rounded-xl border p-5',
-                    flag.severity === 'critical'
-                      ? 'border-red-500/40 bg-red-500/5'
-                      : 'border-surface-800 bg-surface-900/50'
-                  )}
-                >
-                  {/* Header row */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className={cn('px-2 py-0.5 rounded text-xs font-medium uppercase border', SEVERITY_COLORS[flag.severity])}>
-                        {flag.severity}
-                      </span>
-                      <span className={cn('px-2 py-0.5 rounded text-xs font-medium', STATUS_COLORS[flag.status])}>
-                        {flag.status}
-                      </span>
-                      <span className="text-xs text-surface-500 bg-surface-800 px-2 py-0.5 rounded">
-                        {CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}
-                      </span>
-                      <span className="text-xs text-surface-500">{timeAgo(flag.detected_at)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[11px] text-surface-600 font-mono">{flag.id.slice(0, 8)}</span>
-                    </div>
-                  </div>
-
-                  {/* Matched terms */}
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {flag.matched_terms.map((term, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-red-500/10 text-red-400 rounded text-xs font-mono border border-red-500/20">
-                        {term}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Content snippet */}
-                  <div className="bg-surface-950 rounded-lg p-3 mb-3 border border-surface-800">
-                    <p className="text-sm text-surface-300 font-mono whitespace-pre-wrap break-words">
-                      {flag.content_snippet}
-                    </p>
-                  </div>
-
-                  {/* User info + Actions */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {flag.flagged_user && (
-                        <>
-                          <Avatar
-                            src={flag.flagged_user.avatar_url || undefined}
-                            name={flag.flagged_user.display_name || flag.flagged_user.email}
-                            size="sm"
-                          />
-                          <div>
-                            <p className="text-sm font-medium text-white">
-                              {flag.flagged_user.display_name || flag.flagged_user.full_name || 'Unknown'}
-                            </p>
-                            <p className="text-xs text-surface-500">{flag.flagged_user.email}</p>
-                          </div>
-                          {flag.flagged_user.username && (
-                            <Link href={`/u/${flag.flagged_user.username}`} className="text-xs text-brand-500 hover:underline">
-                              @{flag.flagged_user.username}
-                            </Link>
-                          )}
-                        </>
-                      )}
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex items-center gap-2">
-                      {flag.status === 'pending' && (
-                        <>
-                          {/* DM User */}
-                          <Button
-                            variant="ghost"
-                            onClick={() => setDmModal({
-                              userId: flag.flagged_user_id,
-                              userName: flag.flagged_user?.display_name || flag.flagged_user?.full_name || 'User',
-                            })}
-                            className="text-xs"
-                          >
-                            <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                            </svg>
-                            DM
-                          </Button>
-
-                          {/* Preserve Evidence */}
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleAction('preserve_evidence', {
-                              flag_id: flag.id,
-                              content_type: flag.content_type,
-                              content_id: flag.content_id,
-                              full_content: flag.content_snippet,
-                              author_id: flag.flagged_user_id,
-                            }).then(() => toast.success('Evidence preserved'))}
-                            className="text-xs"
-                          >
-                            <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                            </svg>
-                            Preserve
-                          </Button>
-
-                          {/* Delete Content */}
-                          <Button
-                            variant="ghost"
-                            onClick={() => setActionModal({ flag, action: 'delete' })}
-                            className="text-xs text-amber-400"
-                          >
-                            <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Delete
-                          </Button>
-
-                          {/* Warn */}
-                          <Button
-                            variant="ghost"
-                            onClick={() => setActionModal({ flag, action: 'warn' })}
-                            className="text-xs text-amber-400"
-                          >
-                            Warn
-                          </Button>
-
-                          {/* Suspend */}
-                          <Button
-                            variant="ghost"
-                            onClick={() => setActionModal({ flag, action: 'suspend' })}
-                            className="text-xs text-orange-400"
-                          >
-                            Suspend
-                          </Button>
-
-                          {/* Ban */}
-                          <Button
-                            variant="ghost"
-                            onClick={() => setActionModal({ flag, action: 'ban' })}
-                            className="text-xs text-red-400"
-                          >
-                            Ban
-                          </Button>
-
-                          {/* Dismiss (false positive) */}
-                          <Button
-                            variant="ghost"
-                            onClick={() => setActionModal({ flag, action: 'dismiss' })}
-                            className="text-xs text-surface-400"
-                          >
-                            Dismiss
-                          </Button>
-                        </>
-                      )}
-
-                      {flag.status !== 'pending' && flag.action_taken && (
-                        <span className="text-xs text-surface-500">
-                          Action: {flag.action_taken.replace(/_/g, ' ')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Review notes */}
-                  {flag.review_notes && (
-                    <div className="mt-3 pt-3 border-t border-surface-800">
-                      <p className="text-xs text-surface-500">
-                        <span className="font-medium">Review notes:</span> {flag.review_notes}
-                      </p>
-                    </div>
-                  )}
+      {flags.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <TrendPanel
+            id="mod-flags"
+            stacked
+            className="lg:col-span-3"
+            title="Flags detected"
+            subtitle="Automated scan hits over time, by severity"
+            sources={[
+              { key: 'critical', label: 'Critical', color: SERIES.red, rows: flags.filter(f => f.severity === 'critical'), time: f => f.detected_at },
+              { key: 'high', label: 'High', color: SERIES.orange, rows: flags.filter(f => f.severity === 'high'), time: f => f.detected_at },
+              { key: 'other', label: 'Medium / low', color: SERIES.yellow, rows: flags.filter(f => f.severity !== 'critical' && f.severity !== 'high'), time: f => f.detected_at },
+            ]}
+          />
+          <Panel title="What gets flagged" subtitle="By content type" className="lg:col-span-2">
+            <BarList items={tally(flags, f => CONTENT_TYPE_LABELS[f.content_type] || f.content_type)} color={SERIES.red} limit={5} labelFormat={l => <span className="normal-case">{l}</span>} />
+            {repeatOffenders.length > 0 && (
+              <div className="mt-4 border-t border-surface-800 pt-3">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-surface-500">Repeat flags</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {repeatOffenders.slice(0, 8).map(r => <Pill key={r.label} tone="red">{r.label} <span className="text-white">×{r.count}</span></Pill>)}
                 </div>
-              ))
+              </div>
             )}
-          </div>
-        )}
+          </Panel>
+        </div>
+      )}
 
-        {/* ── ALL PROJECTS TAB ───────────────────────────────── */}
-        {subTab === 'all-projects' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-bold text-white">All Platform Projects</h2>
-                <p className="text-xs text-surface-500">{allProjects.length} projects — read-only admin view</p>
-              </div>
-              <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search projects, owners..."
-                  value={projectSearch}
-                  onChange={(e) => setProjectSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 w-72"
+      <Reveal>
+        <Segmented
+          id="mod-subtab"
+          value={subTab}
+          onChange={switchTab}
+          options={[
+            { key: 'flags', label: <>Content flags {pendingFlags.length > 0 && <span className="ml-1 rounded bg-red-500/20 px-1 text-red-300">{pendingFlags.length}</span>}</> },
+            { key: 'all-projects', label: 'All projects' },
+            { key: 'evidence', label: 'Evidence vault' },
+          ]}
+        />
+      </Reveal>
+
+      <AnimatePresence mode="wait">
+        <motion.div key={subTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="space-y-4">
+          {subTab === 'flags' && (
+            <>
+              <Toolbar>
+                <SearchInput value={flagSearch} onChange={setFlagSearch} placeholder="Search snippet, matched term or user…" />
+                <Segmented id="mod-flagview" size="sm" value={flagView} onChange={setFlagView} options={[{ key: 'pending', label: 'Needs review' }, { key: 'reviewed', label: 'Reviewed' }, { key: 'all', label: 'All' }]} />
+                <select value={severity} onChange={e => setSeverity(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Severity">
+                  <option value="all">All severities</option>
+                  {['critical', 'high', 'medium', 'low'].map(sv => <option key={sv} value={sv}>{sv}</option>)}
+                </select>
+              </Toolbar>
+              {visibleFlags.length === 0 ? (
+                <EmptyState
+                  icon={<ShieldCheck className="h-10 w-10 text-emerald-500/60" />}
+                  title={flags.length === 0 ? 'No flags detected' : 'Nothing in this view'}
+                  description={flags.length === 0 ? 'Run “Scan platform” to check content.' : 'All clear for these filters.'}
                 />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {filteredProjects.map(p => {
-                const owner = p.owner;
-                const hasModFlags = owner?.moderation_flags > 0;
-                const isFlaggedUser = owner?.moderation_status && owner.moderation_status !== 'clean';
-
-                return (
-                  <div
-                    key={p.id}
-                    className={cn(
-                      'rounded-xl border px-5 py-4 flex items-center gap-4',
-                      hasModFlags
-                        ? 'border-red-500/30 bg-red-500/5'
-                        : 'border-surface-800 bg-surface-900/50'
-                    )}
-                  >
-                    {/* Project icon */}
-                    <div className="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
-                      {p.title?.[0] || '?'}
-                    </div>
-
-                    {/* Project info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-white truncate">{p.title}</p>
-                        <Badge variant="default" size="sm">{(p.status || '').replace(/_/g, ' ')}</Badge>
-                        {p.format && (
-                          <span className="text-[11px] text-surface-500 bg-surface-800 px-1.5 py-0.5 rounded">{p.format}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-surface-500 truncate">{p.logline || 'No logline'}</p>
-                    </div>
-
-                    {/* Owner */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      {owner?.avatar_url ? (
-                        <img src={owner.avatar_url} alt="" className="w-6 h-6 rounded-full" loading="lazy" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-surface-700 flex items-center justify-center text-[11px] text-surface-400">
-                          {(owner?.display_name || owner?.email)?.[0]?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                      <div className="text-right">
-                        <p className="text-xs text-surface-300">
-                          {owner?.display_name || owner?.full_name || 'Unknown'}
-                        </p>
-                        <p className="text-[11px] text-surface-500">{owner?.email}</p>
-                      </div>
-                      {/* Moderation warning */}
-                      {isFlaggedUser && (
-                        <span className="ml-1 flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 text-[11px] font-bold" title={`Status: ${owner.moderation_status} | ${owner.moderation_flags} flag(s)`}>
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                          </svg>
-                          {owner.moderation_status}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Quick actions */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => setDmModal({
-                          userId: p.created_by,
-                          userName: owner?.display_name || owner?.full_name || 'Owner',
-                        })}
-                        className="p-1.5 rounded-lg text-surface-500 hover:text-white hover:bg-surface-800 transition-colors"
-                        title="DM Owner"
+              ) : (
+                <ul className="space-y-3">
+                  <AnimatePresence initial={false}>
+                    {visibleFlags.map(flag => (
+                      <AnimatedItem
+                        key={flag.id}
+                        className={cn('rounded-2xl border p-4', flag.severity === 'critical' && flag.status === 'pending' ? 'border-red-500/40 bg-red-500/[0.05]' : 'border-surface-800 bg-surface-900/60')}
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                      </button>
-                    </div>
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          <Pill tone={SEVERITY_TONE[flag.severity] ?? 'neutral'} dot>{flag.severity}</Pill>
+                          <Pill tone={STATUS_TONE[flag.status] ?? 'neutral'}>{flag.status.replace(/_/g, ' ')}</Pill>
+                          <Pill>{CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}</Pill>
+                          <span className="text-xs text-surface-500">{timeAgo(flag.detected_at)}</span>
+                          <span className="ml-auto font-mono text-[11px] text-surface-600">{flag.id.slice(0, 8)}</span>
+                        </div>
+                        <div className="mb-3 flex flex-wrap gap-1">
+                          {flag.matched_terms.map((term, i) => (
+                            <span key={i} className="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 font-mono text-xs text-red-300">{term}</span>
+                          ))}
+                        </div>
+                        <p className="mb-3 whitespace-pre-wrap break-words rounded-xl border border-surface-800 bg-surface-950 p-3 font-mono text-sm text-surface-300">{flag.content_snippet}</p>
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                          <div className="flex min-w-0 items-center gap-3">
+                            {flag.flagged_user && (
+                              <>
+                                <Avatar src={flag.flagged_user.avatar_url || undefined} name={flag.flagged_user.display_name || flag.flagged_user.email} size="sm" />
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-medium text-white">{flag.flagged_user.display_name || flag.flagged_user.full_name || 'Unknown'}</p>
+                                  <p className="truncate text-xs text-surface-500">{flag.flagged_user.email}</p>
+                                </div>
+                                {flag.flagged_user.username && <Link href={`/u/${flag.flagged_user.username}`} className="text-xs text-brand-400 hover:underline">@{flag.flagged_user.username}</Link>}
+                              </>
+                            )}
+                          </div>
+                          {flag.status === 'pending' ? (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <ActionButton variant="ghost" icon={<MessageSquare className="h-3.5 w-3.5" />} onClick={() => setDmModal({ userId: flag.flagged_user_id, userName: flag.flagged_user?.display_name || flag.flagged_user?.full_name || 'User' })}>DM</ActionButton>
+                              <ActionButton
+                                variant="ghost"
+                                icon={<Archive className="h-3.5 w-3.5" />}
+                                onClick={() => handleAction('preserve_evidence', {
+                                  flag_id: flag.id,
+                                  content_type: flag.content_type,
+                                  content_id: flag.content_id,
+                                  full_content: flag.content_snippet,
+                                  author_id: flag.flagged_user_id,
+                                }).then(() => toast.success('Evidence preserved'))}
+                              >
+                                Preserve
+                              </ActionButton>
+                              <ActionButton variant="ghost" icon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setActionModal({ flag, action: 'delete' })} className="text-amber-300">Delete</ActionButton>
+                              <ActionButton variant="ghost" onClick={() => setActionModal({ flag, action: 'warn' })} className="text-amber-300">Warn</ActionButton>
+                              <ActionButton variant="ghost" onClick={() => setActionModal({ flag, action: 'suspend' })} className="text-orange-300">Suspend</ActionButton>
+                              <ActionButton variant="danger" onClick={() => setActionModal({ flag, action: 'ban' })}>Ban</ActionButton>
+                              <ActionButton variant="success" onClick={() => setActionModal({ flag, action: 'dismiss' })}>Dismiss</ActionButton>
+                            </div>
+                          ) : flag.action_taken ? (
+                            <span className="text-xs text-surface-500">Action: {flag.action_taken.replace(/_/g, ' ')}</span>
+                          ) : null}
+                        </div>
+                        {flag.review_notes && (
+                          <p className="mt-3 border-t border-surface-800 pt-3 text-xs text-surface-500"><span className="font-medium text-surface-400">Review notes:</span> {flag.review_notes}</p>
+                        )}
+                      </AnimatedItem>
+                    ))}
+                  </AnimatePresence>
+                </ul>
+              )}
+            </>
+          )}
 
-                    {/* Timestamp */}
-                    <div className="text-right shrink-0">
-                      <p className="text-[11px] text-surface-500">{timeAgo(p.updated_at)}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+          {subTab === 'all-projects' && (
+            <>
+              <Toolbar>
+                <SearchInput value={projectSearch} onChange={setProjectSearch} placeholder="Search projects or owners…" />
+                <span className="text-xs text-surface-500">{allProjects ? `${filteredProjects.length} of ${allProjects.length} projects · read-only` : 'Loading…'}</span>
+              </Toolbar>
+              {allProjects === null ? (
+                <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Shimmer key={i} className="h-16 rounded-xl" />)}</div>
+              ) : (
+                <ul className="space-y-2">
+                  {filteredProjects.slice(0, 200).map((p, i) => {
+                    const owner = p.owner;
+                    const hasModFlags = owner?.moderation_flags > 0;
+                    const isFlaggedUser = owner?.moderation_status && owner.moderation_status !== 'clean';
+                    return (
+                      <motion.li
+                        key={p.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(i, 15) * 0.02 }}
+                        className={cn('flex items-center gap-4 rounded-xl border px-4 py-3', hasModFlags ? 'border-red-500/30 bg-red-500/[0.05]' : 'border-surface-800 bg-surface-900/60')}
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-800 text-sm font-bold text-surface-200">{p.title?.[0] || '?'}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-medium text-white">{p.title}</p>
+                            <Pill>{(p.status || '').replace(/_/g, ' ')}</Pill>
+                            {p.format && <Pill tone="blue">{p.format}</Pill>}
+                          </div>
+                          <p className="truncate text-xs text-surface-500">{p.logline || 'No logline'}</p>
+                        </div>
+                        <div className="hidden shrink-0 items-center gap-2 md:flex">
+                          <Avatar src={owner?.avatar_url || undefined} name={owner?.display_name || owner?.email || '?'} size="sm" />
+                          <div className="text-right">
+                            <p className="text-xs text-surface-300">{owner?.display_name || owner?.full_name || 'Unknown'}</p>
+                            <p className="text-[11px] text-surface-500">{owner?.email}</p>
+                          </div>
+                          {isFlaggedUser && <Pill tone="red" dot>{owner.moderation_status}</Pill>}
+                        </div>
+                        <button
+                          onClick={() => setDmModal({ userId: p.created_by, userName: owner?.display_name || owner?.full_name || 'Owner' })}
+                          className="rounded-lg p-1.5 text-surface-500 transition-colors hover:bg-surface-800 hover:text-white"
+                          title="DM owner"
+                          aria-label="DM owner"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </button>
+                        <span className="w-16 shrink-0 text-right text-[11px] text-surface-500">{timeAgo(p.updated_at)}</span>
+                      </motion.li>
+                    );
+                  })}
+                  {filteredProjects.length > 200 && <p className="py-2 text-center text-[11px] text-surface-600">Showing 200 of {filteredProjects.length} — search to narrow down</p>}
+                </ul>
+              )}
+            </>
+          )}
 
-        {/* ── EVIDENCE VAULT TAB ─────────────────────────────── */}
-        {subTab === 'evidence' && (
-          <div>
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-white">Evidence Vault</h2>
-              <p className="text-xs text-surface-500">Tamper-proof snapshots — cannot be edited or deleted</p>
-            </div>
-
-            {evidence.length === 0 ? (
-              <div className="text-center py-16">
-                <svg className="w-12 h-12 text-surface-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
-                <p className="text-sm text-surface-500">No preserved evidence yet</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {evidence.map(ev => (
-                  <div key={ev.id} className="rounded-xl border border-surface-800 bg-surface-900/50 p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-medium">
-                          {CONTENT_TYPE_LABELS[ev.content_type] || ev.content_type}
-                        </span>
+          {subTab === 'evidence' && (
+            <>
+              <p className="text-xs text-surface-500">Tamper-proof snapshots — they can’t be edited or deleted.</p>
+              {evidence.length === 0 ? (
+                <EmptyState icon={<Archive className="h-8 w-8" />} title="No preserved evidence yet" />
+              ) : (
+                <ul className="space-y-3">
+                  {evidence.map((ev, i) => (
+                    <motion.li key={ev.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 15) * 0.03 }} className="rounded-2xl border border-surface-800 bg-surface-900/60 p-4">
+                      <div className="mb-3 flex items-center gap-3">
+                        <Pill tone="violet">{CONTENT_TYPE_LABELS[ev.content_type] || ev.content_type}</Pill>
                         <span className="text-xs text-surface-500">{timeAgo(ev.captured_at)}</span>
+                        <span className="ml-auto font-mono text-[11px] text-surface-600" title="SHA-256 integrity hash">#{ev.content_hash.slice(0, 16)}…</span>
                       </div>
-                      <span className="text-[11px] text-surface-600 font-mono" title="SHA-256 integrity hash">
-                        Hash: {ev.content_hash.slice(0, 16)}…
-                      </span>
-                    </div>
-                    <div className="bg-surface-950 rounded-lg p-3 mb-3 border border-surface-800">
-                      <p className="text-sm text-surface-300 font-mono whitespace-pre-wrap break-words">
-                        {ev.full_content}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-surface-500">
-                      <span>Author: <strong className="text-surface-300">{ev.author_name || 'Unknown'}</strong> ({ev.author_email})</span>
-                      <span>Author ID: <span className="font-mono">{ev.author_id.slice(0, 8)}</span></span>
-                      <span>Flag: <span className="font-mono">{ev.flag_id.slice(0, 8)}</span></span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      <p className="mb-3 whitespace-pre-wrap break-words rounded-xl border border-surface-800 bg-surface-950 p-3 font-mono text-sm text-surface-300">{ev.full_content}</p>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-surface-500">
+                        <span>Author: <strong className="text-surface-300">{ev.author_name || 'Unknown'}</strong> ({ev.author_email})</span>
+                        <span>Author ID: <span className="font-mono">{ev.author_id.slice(0, 8)}</span></span>
+                        <span>Flag: <span className="font-mono">{ev.flag_id.slice(0, 8)}</span></span>
+                      </div>
+                    </motion.li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <Dialog
+        open={!!dmModal}
+        onClose={() => { setDmModal(null); setDmMessage(''); }}
+        title={`Message ${dmModal?.userName ?? ''}`}
+        description="Uses an existing DM conversation or starts a new one."
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={() => { setDmModal(null); setDmMessage(''); }}>Cancel</ActionButton>
+            <ActionButton variant="primary" onClick={handleDmUser} disabled={!dmMessage.trim()}>Send message</ActionButton>
+          </>
+        }
+      >
+        <textarea autoFocus value={dmMessage} onChange={e => setDmMessage(e.target.value)} placeholder="Write your message…" rows={4} className={fieldClass} />
+      </Dialog>
+
+      <Dialog
+        open={!!actionModal}
+        onClose={() => { setActionModal(null); setActionNotes(''); }}
+        title={actionModal ? actionTitle[actionModal.action] : ''}
+        description={
+          actionModal?.action === 'ban' ? 'Removes all project memberships and blocks the user permanently.'
+            : actionModal?.action === 'delete' ? 'Content is permanently removed (messages are soft-deleted).'
+            : actionModal?.action === 'dismiss' ? 'No action will be taken against the user.' : undefined
+        }
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={() => { setActionModal(null); setActionNotes(''); }}>Cancel</ActionButton>
+            <ActionButton
+              variant={actionModal?.action === 'ban' || actionModal?.action === 'delete' ? 'danger' : actionModal?.action === 'dismiss' ? 'success' : 'primary'}
+              onClick={handleModAction}
+              disabled={!actionNotes.trim()}
+            >
+              {actionModal ? actionCta[actionModal.action] : ''}
+            </ActionButton>
+          </>
+        }
+      >
+        {actionModal && (
+          <div className="space-y-3">
+            <p className="flex items-center gap-2 text-xs text-surface-400">
+              <Pill>{actionModal.flag.content_type}</Pill>
+              User: <strong className="text-surface-200">{actionModal.flag.flagged_user?.display_name || actionModal.flag.flagged_user?.email || 'Unknown'}</strong>
+            </p>
+            {actionModal.action === 'suspend' && (
+              <Field label="Duration (days)">
+                <input type="number" value={actionDays} onChange={e => setActionDays(parseInt(e.target.value) || 30)} min={1} max={365} className={cn(fieldClass, 'w-32')} />
+              </Field>
             )}
+            <textarea
+              autoFocus
+              value={actionNotes}
+              onChange={e => setActionNotes(e.target.value)}
+              placeholder={actionModal.action === 'dismiss' ? 'Why is this a false positive?' : 'Reason for this action…'}
+              rows={3}
+              className={fieldClass}
+            />
           </div>
         )}
-      </div>
-
-      {/* ── DM MODAL ─────────────────────────────────────────── */}
-      {dmModal && (
-        <Modal isOpen onClose={() => { setDmModal(null); setDmMessage(''); }}>
-          <div className="p-6 max-w-lg">
-            <h3 className="text-lg font-bold text-white mb-1">Message {dmModal.userName}</h3>
-            <p className="text-xs text-surface-500 mb-4">This will create or use an existing DM conversation</p>
-            <Textarea
-              value={dmMessage}
-              onChange={(e) => setDmMessage(e.target.value)}
-              placeholder="Write your message..."
-              rows={4}
-              className="mb-4"
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => { setDmModal(null); setDmMessage(''); }}>Cancel</Button>
-              <Button variant="primary" onClick={handleDmUser} disabled={!dmMessage.trim()}>Send Message</Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* ── ACTION MODAL ─────────────────────────────────────── */}
-      {actionModal && (
-        <Modal isOpen onClose={() => { setActionModal(null); setActionNotes(''); }}>
-          <div className="p-6 max-w-lg">
-            <h3 className="text-lg font-bold text-white mb-1">
-              {actionModal.action === 'warn' && 'Warn User'}
-              {actionModal.action === 'suspend' && 'Suspend User'}
-              {actionModal.action === 'ban' && 'Ban User Permanently'}
-              {actionModal.action === 'delete' && 'Delete Flagged Content'}
-              {actionModal.action === 'dismiss' && 'Dismiss as False Positive'}
-            </h3>
-            <p className="text-xs text-surface-500 mb-1">
-              {actionModal.action === 'ban' && 'This removes all project memberships and blocks the user permanently.'}
-              {actionModal.action === 'delete' && 'Content will be permanently removed (messages soft-deleted).'}
-              {actionModal.action === 'dismiss' && 'Mark this flag as a false positive. No action will be taken against the user.'}
-            </p>
-            <p className="text-xs text-surface-400 mb-4 flex items-center gap-2">
-              <span className="font-mono bg-surface-800 px-1.5 py-0.5 rounded">{actionModal.flag.content_type}</span>
-              User: <strong>{actionModal.flag.flagged_user?.display_name || actionModal.flag.flagged_user?.email || 'Unknown'}</strong>
-            </p>
-
-            {actionModal.action === 'suspend' && (
-              <div className="mb-3">
-                <label className="text-xs text-surface-400 mb-1 block">Duration (days)</label>
-                <input
-                  type="number"
-                  value={actionDays}
-                  onChange={(e) => setActionDays(parseInt(e.target.value) || 30)}
-                  min={1}
-                  max={365}
-                  className="w-32 px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-sm text-white outline-none focus:border-brand-500"
-                />
-              </div>
-            )}
-
-            <Textarea
-              value={actionNotes}
-              onChange={(e) => setActionNotes(e.target.value)}
-              placeholder={
-                actionModal.action === 'dismiss'
-                  ? 'Why is this a false positive?'
-                  : 'Reason for this action...'
-              }
-              rows={3}
-              className="mb-4"
-            />
-
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => { setActionModal(null); setActionNotes(''); }}>Cancel</Button>
-              <Button
-                variant={actionModal.action === 'ban' || actionModal.action === 'delete' ? 'danger' : 'primary'}
-                onClick={handleModAction}
-                disabled={!actionNotes.trim()}
-              >
-                {actionModal.action === 'warn' && 'Send Warning'}
-                {actionModal.action === 'suspend' && `Suspend for ${actionDays} days`}
-                {actionModal.action === 'ban' && 'Permanently Ban'}
-                {actionModal.action === 'delete' && 'Delete Content'}
-                {actionModal.action === 'dismiss' && 'Mark as False Positive'}
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
+      </Dialog>
+    </AdminPage>
   );
 }

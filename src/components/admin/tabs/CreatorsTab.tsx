@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { PayoutPreviewItem } from '../types';
 import { useSiteSetting } from '../data';
+import { Zap } from 'lucide-react';
+import { AdminPage, PageHeader, Pill, Reveal } from '../kit';
 
 export function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled: boolean; payoutEnabled: boolean }) {
   const supabase = createClient();
@@ -132,8 +134,6 @@ export function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled:
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-1">Creator Program</h1>
-      <p className="text-sm text-surface-400 mb-8">Manage affiliate creator applications and payouts</p>
 
       {!programEnabled && (
         <div className="mb-6 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4">
@@ -319,5 +319,20 @@ export function CreatorsTab({ programEnabled, payoutEnabled }: { programEnabled:
 export default function CreatorsPanel() {
   const [programEnabled] = useSiteSetting('creator_program_enabled', false);
   const [payoutEnabled] = useSiteSetting('creator_payout_enabled', false);
-  return <CreatorsTab programEnabled={programEnabled} payoutEnabled={payoutEnabled} />;
+  return (
+    <AdminPage>
+      <PageHeader
+        icon={<Zap className="h-5 w-5" />}
+        title="Creator Program"
+        description="Affiliate creator applications and monthly payouts."
+        meta={
+          <>
+            <Pill tone={programEnabled ? 'green' : 'neutral'} dot>Program {programEnabled ? 'on' : 'off'}</Pill>
+            <Pill tone={payoutEnabled ? 'green' : 'neutral'} dot>Payouts {payoutEnabled ? 'on' : 'off'}</Pill>
+          </>
+        }
+      />
+      <Reveal><CreatorsTab programEnabled={programEnabled} payoutEnabled={payoutEnabled} /></Reveal>
+    </AdminPage>
+  );
 }

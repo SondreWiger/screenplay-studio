@@ -1,12 +1,19 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ExternalLink, MessageSquareText, RefreshCw, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAll } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
+import {
+  ActionButton, AdminPage, BarList, EmptyState, PageHeader, Panel, Pill, Reveal, SearchInput, Segmented, StatGrid,
+  TabSkeleton, Toolbar, TrendPanel, dailySpark, fieldClass, tally, windowCounts, SERIES, type Tone,
+} from '@/components/admin/kit';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 
@@ -85,6 +92,10 @@ const PRIORITY_META: Record<FPriority, { label: string; dot: string }> = {
   high:     { label: 'High',     dot: 'bg-orange-400' },
   critical: { label: 'Critical', dot: 'bg-red-500' },
 };
+
+const PRIORITY_TONE: Record<FPriority, Tone> = { low: 'neutral', medium: 'amber', high: 'brand', critical: 'red' };
+const TYPE_COLOR: Record<FType, string> = { bug_report: SERIES.red, feature_request: SERIES.blue, testimonial: SERIES.yellow, other: SERIES.violet };
+const ACTIVE_STATUSES: FStatus[] = ['open', 'in_progress', 'planned', 'pending_review'];
 
 const TYPE_META: Record<FType, { label: string; emoji: string }> = {
   bug_report:      { label: 'Bug',         emoji: '🐛' },
@@ -341,10 +352,16 @@ function DetailDrawer({
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Backdrop */}
-      <div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <motion.div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
 
       {/* Drawer */}
-      <div className="w-full max-w-2xl bg-surface-950 border-l border-surface-800 flex flex-col overflow-hidden">
+      <motion.div
+        className="flex w-full max-w-2xl flex-col overflow-hidden border-l border-surface-800 bg-surface-950 shadow-2xl"
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', stiffness: 380, damping: 40 }}
+      >
         {/* Header */}
         <div className="flex items-start gap-3 px-6 py-4 border-b border-surface-800 shrink-0">
           <span className="text-2xl mt-0.5">{TYPE_META[item.type].emoji}</span>
@@ -356,7 +373,7 @@ function DetailDrawer({
               {item.author_email && ` (${item.author_email})`}
             </p>
           </div>
-          <button onClick={onClose} className="text-surface-500 hover:text-white text-xl leading-none">×</button>
+          <button onClick={onClose} className="rounded-lg p-1 text-surface-500 hover:bg-surface-800 hover:text-white" aria-label="Close"><X className="h-4 w-4" /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
@@ -600,329 +617,215 @@ function DetailDrawer({
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
 
+type Sort = 'newest' | 'votes' | 'priority';
+const PRIORITY_RANK: Record<FPriority, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+
 export default function AdminFeedbackPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [items, setItems] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selected, setSelected] = useState<FeedbackItem | null>(null);
 
-  // Filters
+  // Filters (client-side: instant, and stats always reflect everything)
   const [filterType, setFilterType] = useState<FType | 'all'>('all');
-  const [filterStatus, setFilterStatus] = useState<FStatus | 'all'>('all');
+  const [filterStatus, setFilterStatus] = useState<FStatus | 'all' | 'active'>('active');
   const [filterPriority, setFilterPriority] = useState<FPriority | 'all'>('all');
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<Sort>('newest');
 
-  // Stats
-  const [stats, setStats] = useState({ open: 0, inProgress: 0, critical: 0, pendingTestimonials: 0 });
-
-  // Auth guard
   useEffect(() => {
-    if (!authLoading && user?.id !== ADMIN_UID) {
-      router.replace('/');
-    }
-  }, [user, authLoading]);
+    if (!authLoading && user?.id !== ADMIN_UID) router.replace('/');
+  }, [user, authLoading, router]);
 
   const fetchItems = useCallback(async () => {
-    setLoading(true);
-    let q = supabase
-      .from('feedback_items')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (filterType !== 'all') q = q.eq('type', filterType);
-    if (filterStatus !== 'all') q = q.eq('status', filterStatus);
-    if (filterPriority !== 'all') q = q.eq('priority', filterPriority);
-    if (search.trim()) q = q.ilike('title', `%${search.trim()}%`);
-
-    const { data, error } = await q.limit(200);
-    if (error) { toast.error('Failed to load feedback'); setLoading(false); return; }
-    const rows = (data as FeedbackItem[]) ?? [];
-    setItems(rows);
-    setStats({
-      open: rows.filter(r => r.status === 'open').length,
-      inProgress: rows.filter(r => r.status === 'in_progress').length,
-      critical: rows.filter(r => r.priority === 'critical').length,
-      pendingTestimonials: rows.filter(r => r.type === 'testimonial' && !r.is_approved).length,
-    });
+    setRefreshing(true);
+    try {
+      const rows = await fetchAll<FeedbackItem>(() => supabase.from('feedback_items').select('*'));
+      setItems(rows.sort((a, b) => b.created_at.localeCompare(a.created_at)));
+    } catch {
+      toast.error('Failed to load feedback');
+    }
     setLoading(false);
-  }, [filterType, filterStatus, filterPriority, search]);
+    setRefreshing(false);
+  }, [supabase]);
 
-  useEffect(() => { fetchItems(); }, [fetchItems]);
+  useEffect(() => { if (user?.id === ADMIN_UID) fetchItems(); }, [fetchItems, user?.id]);
 
   const applyPatch = (id: string, patch: Partial<FeedbackItem>) => {
     setItems(prev => prev.map(it => it.id === id ? { ...it, ...patch } : it));
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...patch } : null);
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items
+      .filter(it => filterType === 'all' || it.type === filterType)
+      .filter(it => filterStatus === 'all' || (filterStatus === 'active' ? ACTIVE_STATUSES.includes(it.status) : it.status === filterStatus))
+      .filter(it => filterPriority === 'all' || it.priority === filterPriority)
+      .filter(it => !q || `${it.title} ${it.body} ${it.author_name || ''} ${it.author_email || ''} ${(it.tags || []).join(' ')}`.toLowerCase().includes(q))
+      .sort((a, b) => sort === 'votes' ? b.vote_count - a.vote_count
+        : sort === 'priority' ? PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || b.created_at.localeCompare(a.created_at)
+        : b.created_at.localeCompare(a.created_at));
+  }, [items, filterType, filterStatus, filterPriority, search, sort]);
 
+  if (authLoading || (loading && user?.id === ADMIN_UID)) return <TabSkeleton />;
   if (user?.id !== ADMIN_UID) return null;
 
+  const count = (pred: (i: FeedbackItem) => boolean) => items.filter(pred).length;
+  const created = (i: FeedbackItem) => i.created_at;
+  const week = windowCounts(items, created, 7);
+  const resolvedRate = items.length ? (count(i => i.status === 'resolved') / items.length) * 100 : 0;
+  const toggleStatus = (st: FStatus) => () => setFilterStatus(cur => (cur === st ? 'active' : st));
+
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-950 text-white">
-
-      {/* ── Sidebar ───────────────────────────────────────────────────────── */}
-      <aside className="w-64 flex flex-col border-r border-surface-800 bg-surface-950 shrink-0">
-        <div className="border-b border-surface-800 p-4">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">A</div>
+    <AdminPage>
+      <PageHeader
+        icon={<MessageSquareText className="h-5 w-5" />}
+        title="Feedback"
+        description="Bug reports, feature requests and testimonials from users."
+        meta={<>{week.current} new this week · {resolvedRate.toFixed(0)}% resolved overall</>}
+        actions={
+          <>
+            <ActionButton icon={<RefreshCw className={cn('h-4 w-4', refreshing && 'animate-spin')} />} onClick={fetchItems} disabled={refreshing}>Refresh</ActionButton>
+            <Link href="/feedback" className="inline-flex items-center gap-1.5 rounded-xl border border-surface-800 px-3 py-2 text-xs font-semibold text-surface-300 hover:text-white">
+              Public portal <ExternalLink className="h-3.5 w-3.5" />
             </Link>
-            <div>
-              <h2 className="text-sm font-semibold text-white">Admin Panel</h2>
-              <p className="text-[11px] text-surface-500">Platform Management</p>
-            </div>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-          {([
-            { href: '/admin', label: 'Overview', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg> },
-            { href: '/admin?tab=users', label: 'Users', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
-            { href: '/admin?tab=projects', label: 'Projects', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
-            { href: '/admin?tab=system', label: 'System', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
-            { href: '/admin?tab=blog', label: 'Blog', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg> },
-            { href: '/admin?tab=community', label: 'Community', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
-          ] as { href: string; label: string; icon: React.ReactNode }[]).map(item => (
-            <Link key={item.href} href={item.href}
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
-              {item.icon}{item.label}
-            </Link>
-          ))}
+      <StatGrid
+        cols={5}
+        layoutGroup="feedback"
+        items={[
+          { label: 'Open', value: count(i => i.status === 'open'), tone: 'blue', onClick: toggleStatus('open'), active: filterStatus === 'open', spark: dailySpark(items.filter(i => i.status === 'open'), created) },
+          { label: 'In progress', value: count(i => i.status === 'in_progress'), tone: 'brand', onClick: toggleStatus('in_progress'), active: filterStatus === 'in_progress' },
+          { label: 'Planned', value: count(i => i.status === 'planned'), tone: 'violet', onClick: toggleStatus('planned'), active: filterStatus === 'planned' },
+          { label: 'Critical (active)', value: count(i => i.priority === 'critical' && ACTIVE_STATUSES.includes(i.status)), tone: 'red', hint: 'Critical items not yet closed', onClick: () => { setFilterPriority(p => (p === 'critical' ? 'all' : 'critical')); setFilterStatus('active'); }, active: filterPriority === 'critical' },
+          { label: 'Testimonials to approve', value: count(i => i.type === 'testimonial' && !i.is_approved), tone: 'amber', onClick: () => { setFilterType(t => (t === 'testimonial' ? 'all' : 'testimonial')); setFilterStatus('all'); }, active: filterType === 'testimonial' },
+        ]}
+      />
 
-          <div className="mt-4 pt-4 border-t border-surface-800">
-            <p className="px-3 py-1 text-[11px] text-surface-400 uppercase tracking-[0.04em] font-medium">Tools</p>
-            <Link href="/admin/legal" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
-              Legal Blog
-            </Link>
-            <Link href="/admin/security" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-              Security
-            </Link>
-            <Link href="/admin/reports" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>
-              Reports
-            </Link>
-            <Link href="/admin/features" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
-              Feature Flags
-            </Link>
-            <Link href="/admin/changelog" className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-surface-400 hover:bg-surface-900/5 hover:text-white transition-colors duration-200">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-              Changelog
-            </Link>
-            <Link href="/admin/feedback"
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-brand-600/10 text-brand-500 transition-colors duration-200">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 4v-4z" /></svg>
-              Feedback
-            </Link>
-          </div>
-        </nav>
-
-        <div className="border-t border-surface-800 p-4">
-          <Link href="/dashboard" className="flex items-center gap-2 text-xs text-surface-500 hover:text-white transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back to Dashboard
-          </Link>
-        </div>
-      </aside>
-
-      {/* ── Main ─────────────────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto">
-        {/* Top bar */}
-        <div className="border-b border-surface-800 sticky top-0 z-10 bg-surface-950">
-          <div className="px-6 py-4 flex items-center gap-4">
-            <h1 className="text-sm font-semibold">Feedback</h1>
-            <div className="flex-1" />
-            <Link href="/feedback" className="text-sm text-orange-400 hover:text-orange-300">View Public Portal →</Link>
-          </div>
-        </div>
-
-      <div className="px-6 py-8 space-y-6">
-
-        {/* Stats strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { label: 'Open', value: stats.open, color: 'text-blue-400' },
-            { label: 'In Progress', value: stats.inProgress, color: 'text-orange-400' },
-            { label: 'Critical', value: stats.critical, color: 'text-red-400' },
-            { label: 'Testimonials Pending', value: stats.pendingTestimonials, color: 'text-yellow-400' },
-          ].map(s => (
-            <div key={s.label} className="bg-surface-900 border border-surface-800 rounded-xl p-4">
-              <p className={cn('text-2xl font-bold', s.color)}>{s.value}</p>
-              <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em] mt-0.5">{s.label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 items-center">
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search titles…"
-            className="w-48 text-sm"
-          />
-
-          {/* Type filter */}
-          <select
-            value={filterType}
-            onChange={e => setFilterType(e.target.value as FType | 'all')}
-            className="bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500"
-          >
-            <option value="all">All Types</option>
-            {Object.entries(TYPE_META).map(([k, v]) => <option key={k} value={k}>{v.emoji} {v.label}</option>)}
-          </select>
-
-          {/* Status filter */}
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value as FStatus | 'all')}
-            className="bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500"
-          >
-            <option value="all">All Statuses</option>
-            {Object.entries(STATUS_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-          </select>
-
-          {/* Priority filter */}
-          <select
-            value={filterPriority}
-            onChange={e => setFilterPriority(e.target.value as FPriority | 'all')}
-            className="bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500"
-          >
-            <option value="all">All Priorities</option>
-            {Object.entries(PRIORITY_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-          </select>
-
-          <button
-            onClick={fetchItems}
-            className="text-sm text-surface-400 hover:text-white border border-surface-700 rounded-lg px-3 py-2"
-          >
-            Refresh
-          </button>
-
-          <span className="text-sm text-surface-500 ml-auto">{items.length} items</span>
-        </div>
-
-        {/* Table */}
-        {loading ? (
-          <div className="flex justify-center py-16"><LoadingSpinner /></div>
-        ) : items.length === 0 ? (
-          <div className="text-center py-16 text-surface-600">No feedback items found.</div>
-        ) : (
-          <div className="border border-surface-800 rounded-xl overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-surface-800 bg-surface-900/50">
-                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 w-8"></th>
-                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Title</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden md:table-cell">Author</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500">Status</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden lg:table-cell">Priority</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden lg:table-cell">Votes</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hidden xl:table-cell">Submitted</th>
-                  <th className="px-4 py-3 w-8"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, i) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => setSelected(item)}
-                    className={cn(
-                      'border-b border-surface-800/50 cursor-pointer transition-colors',
-                      selected?.id === item.id
-                        ? 'bg-orange-500/5 border-orange-500/20'
-                        : 'hover:bg-surface-900/50',
-                      i === items.length - 1 && 'border-b-0'
-                    )}
-                  >
-                    <td className="px-4 py-3 text-lg">{TYPE_META[item.type].emoji}</td>
-                    <td className="px-4 py-3 max-w-[300px]">
-                      <p className="truncate text-surface-200">{item.title}</p>
-                      {item.admin_note && (
-                        <p className="text-[11px] text-yellow-500/70 truncate mt-0.5">📍 {item.admin_note}</p>
-                      )}
-                      {item.tags.length > 0 && (
-                        <div className="flex gap-1 mt-1 flex-wrap">
-                          {item.tags.slice(0, 3).map(t => (
-                            <span key={t} className="text-[11px] px-1.5 py-0.5 rounded bg-surface-800 text-surface-500">{t}</span>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <p className="text-surface-400 text-xs truncate max-w-[140px]">
-                        {item.author_name ?? item.author_email ?? '—'}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={item.status}
-                        onClick={e => e.stopPropagation()}
-                        onChange={async e => {
-                          e.stopPropagation();
-                          const newStatus = e.target.value as FStatus;
-                          await supabase.from('feedback_items').update({ status: newStatus }).eq('id', item.id);
-                          applyPatch(item.id, { status: newStatus });
-                        }}
-                        className={cn(
-                          'rounded px-2 py-1 text-xs border bg-transparent cursor-pointer focus:outline-none',
-                          STATUS_META[item.status].color
-                        )}
-                      >
-                        {Object.entries(STATUS_META).map(([k, v]) => (
-                          <option key={k} value={k} className="bg-surface-900 text-white">{v.label}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
-                      <div className="flex items-center gap-1.5">
-                        <div className={cn('w-2 h-2 rounded-full', PRIORITY_META[item.priority].dot)} />
-                        <span className="text-xs text-surface-400">{PRIORITY_META[item.priority].label}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden lg:table-cell text-xs text-surface-500">
-                      ▲ {item.vote_count}
-                    </td>
-                    <td className="px-4 py-3 hidden xl:table-cell text-xs text-surface-500">
-                      {timeAgo(item.created_at)}
-                    </td>
-                    <td className="px-4 py-3 text-surface-600 text-xs">›</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-      </main>
-
-      {/* Detail drawer */}
-      {selected && (
-        <DetailDrawer
-          item={selected}
-          onClose={() => setSelected(null)}
-          onUpdate={patch => applyPatch(selected.id, patch)}
+      <div className="grid gap-5 lg:grid-cols-5">
+        <TrendPanel
+          id="feedback"
+            stacked
+          className="lg:col-span-3"
+          title="Incoming feedback"
+          subtitle="Submissions over time, by type"
+          sources={(['bug_report', 'feature_request', 'testimonial'] as FType[]).map(t => ({
+            key: t, label: TYPE_META[t].label, color: TYPE_COLOR[t], rows: items.filter(i => i.type === t), time: created,
+          }))}
         />
+        <Panel title="Where things stand" subtitle="All items by status" className="lg:col-span-2">
+          <BarList items={tally(items, i => STATUS_META[i.status]?.label ?? i.status)} color={SERIES.blue} limit={6} />
+          <div className="mt-4 border-t border-surface-800 pt-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-surface-500">Most voted (active)</p>
+            <ul className="space-y-1">
+              {[...items].filter(i => ACTIVE_STATUSES.includes(i.status)).sort((a, b) => b.vote_count - a.vote_count).slice(0, 4).map(i => (
+                <li key={i.id}>
+                  <button onClick={() => setSelected(i)} className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left text-xs hover:bg-surface-800/50">
+                    <span className="w-8 shrink-0 font-semibold tabular-nums text-brand-300">▲{i.vote_count}</span>
+                    <span className="truncate text-surface-300">{i.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Panel>
+      </div>
+
+      <Toolbar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search title, body, author or tag…" />
+        <Segmented
+          id="feedback-type"
+          value={filterType}
+          onChange={setFilterType}
+          options={[{ key: 'all' as const, label: 'All' }, ...(Object.keys(TYPE_META) as FType[]).map(k => ({ key: k, label: `${TYPE_META[k].emoji} ${TYPE_META[k].label}` }))]}
+        />
+      </Toolbar>
+      <Toolbar>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as FStatus | 'all' | 'active')} className={cn(fieldClass, 'w-auto py-2')} aria-label="Status">
+          <option value="active">Active (not closed)</option>
+          <option value="all">All statuses</option>
+          {Object.entries(STATUS_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+        <select value={filterPriority} onChange={e => setFilterPriority(e.target.value as FPriority | 'all')} className={cn(fieldClass, 'w-auto py-2')} aria-label="Priority">
+          <option value="all">All priorities</option>
+          {Object.entries(PRIORITY_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+        <Segmented id="feedback-sort" size="sm" value={sort} onChange={setSort} options={[{ key: 'newest', label: 'Newest' }, { key: 'votes', label: 'Votes' }, { key: 'priority', label: 'Priority' }]} />
+        <span className="text-xs text-surface-500 sm:ml-auto">{visible.length} of {items.length}</span>
+      </Toolbar>
+
+      {visible.length === 0 ? (
+        <EmptyState icon={<MessageSquareText className="h-8 w-8" />} title="Nothing here" description="No feedback matches these filters." />
+      ) : (
+        <Reveal className="overflow-hidden rounded-2xl border border-surface-800 bg-surface-900/40">
+          <ul className="divide-y divide-surface-800/70">
+            {visible.slice(0, 300).map((item, i) => (
+              <motion.li
+                key={item.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i, 20) * 0.02 }}
+                onClick={() => setSelected(item)}
+                className={cn('flex cursor-pointer items-start gap-3 px-4 py-3 transition-colors', selected?.id === item.id ? 'bg-brand-500/[0.06]' : 'hover:bg-surface-800/30')}
+              >
+                <span className="mt-0.5 text-lg" title={TYPE_META[item.type].label}>{TYPE_META[item.type].emoji}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-surface-100">{item.title}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-surface-500">
+                    <Pill tone={PRIORITY_TONE[item.priority]} dot>{PRIORITY_META[item.priority].label}</Pill>
+                    {(item.tags || []).slice(0, 3).map(t => <Pill key={t}>{t}</Pill>)}
+                    <span>{item.author_name ?? item.author_email ?? 'Anonymous'}</span>
+                    <span>· {timeAgo(item.created_at)}</span>
+                    {item.comment_count > 0 && <span>· {item.comment_count} comments</span>}
+                  </div>
+                  {item.admin_note && <p className="mt-1 truncate text-[11px] text-amber-300/70">📍 {item.admin_note}</p>}
+                </div>
+                <span className="hidden w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-surface-400 sm:block">▲ {item.vote_count}</span>
+                <select
+                  value={item.status}
+                  onClick={e => e.stopPropagation()}
+                  onChange={async e => {
+                    const newStatus = e.target.value as FStatus;
+                    const { error } = await supabase.from('feedback_items').update({ status: newStatus }).eq('id', item.id);
+                    if (error) { toast.error('Update failed'); return; }
+                    applyPatch(item.id, { status: newStatus });
+                  }}
+                  className={cn('shrink-0 cursor-pointer rounded-md border bg-transparent px-2 py-1 text-[11px] font-semibold focus:outline-none', STATUS_META[item.status].color)}
+                  aria-label="Status"
+                >
+                  {Object.entries(STATUS_META).map(([k, v]) => <option key={k} value={k} className="bg-surface-900 text-white">{v.label}</option>)}
+                </select>
+              </motion.li>
+            ))}
+          </ul>
+          {visible.length > 300 && <p className="border-t border-surface-800 py-2 text-center text-[11px] text-surface-600">Showing 300 of {visible.length} — narrow the filters to see more</p>}
+        </Reveal>
       )}
-    </div>
+
+      <AnimatePresence>
+        {selected && (
+          <DetailDrawer
+            key={selected.id}
+            item={selected}
+            onClose={() => setSelected(null)}
+            onUpdate={patch => applyPatch(selected.id, patch)}
+          />
+        )}
+      </AnimatePresence>
+    </AdminPage>
   );
 }
-

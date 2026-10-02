@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
+import { GraduationCap } from 'lucide-react';
+import { AdminPage, PageHeader, Reveal } from '../kit';
 
 export function CoursesAdminTab() {
   const supabase = createClient();
@@ -56,12 +58,8 @@ export function CoursesAdminTab() {
   };
 
   return (
-    <div className="space-y-5 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-white">Course Moderation</h2>
-          <p className="text-sm text-surface-400 mt-0.5">Review and manage community-submitted courses</p>
-        </div>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex items-center gap-1.5 bg-surface-900 border border-surface-800 rounded-xl p-1">
           {(['pending','published','rejected','all'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
@@ -114,4 +112,11 @@ export function CoursesAdminTab() {
   );
 }
 
-export default CoursesAdminTab;
+export default function CoursesPanel() {
+  return (
+    <AdminPage>
+      <PageHeader icon={<GraduationCap className="h-5 w-5" />} title="Courses" description="Review and manage community-submitted courses." />
+      <Reveal><CoursesAdminTab /></Reveal>
+    </AdminPage>
+  );
+}

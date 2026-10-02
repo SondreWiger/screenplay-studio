@@ -11,6 +11,8 @@ import { MindmapTab } from '../MindmapTab';
 import { useAdminData } from '../data';
 import { TabSkeleton } from '../motion';
 import { fillEmails } from '@/lib/private-profile';
+import { FolderKanban, Network } from 'lucide-react';
+import { AdminPage, BarList, PageHeader, Panel, Reveal, StatGrid, TrendPanel, tally, windowCounts, dailySpark, SERIES } from '../kit';
 
 export function ProjectsTab({ projects, search, onSearchChange }: {
   projects: ProjectWithCounts[];
@@ -79,11 +81,7 @@ export function ProjectsTab({ projects, search, onSearchChange }: {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-1">All Projects</h1>
-          <p className="text-sm text-surface-400">{projects.length} projects total</p>
-        </div>
+      <div className="mb-4 flex items-center justify-end">
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           <input
@@ -175,13 +173,51 @@ export default function ProjectsPanel() {
     return q ? projects.filter((p) => p.title.toLowerCase().includes(q)) : projects;
   }, [projects, search]);
   if (loading) return <TabSkeleton />;
-  return <ProjectsTab projects={filtered} search={search} onSearchChange={setSearch} />;
+  const created = (p: ProjectWithCounts) => p.created_at;
+  const week = windowCounts(projects, created, 7);
+  const activeWeek = windowCounts(projects, (p) => p.updated_at, 7);
+  const scripts = projects.reduce((n, p) => n + (p.scripts?.[0]?.count ?? 0), 0);
+  const collaborative = projects.filter((p) => (p.project_members?.length ?? 0) > 1).length;
+  return (
+    <AdminPage>
+      <PageHeader icon={<FolderKanban className="h-5 w-5" />} title="Projects" description="Every project on the platform, with members and content stats." meta={<>{activeWeek.current} edited in the last 7 days</>} />
+      <StatGrid
+        cols={5}
+        items={[
+          { label: 'Projects', value: projects.length, tone: 'brand' },
+          { label: 'New · 7 days', value: week.current, delta: week.delta, tone: 'amber', spark: dailySpark(projects, created) },
+          { label: 'Active · 7 days', value: activeWeek.current, tone: 'aqua', hint: 'Updated in the last 7 days' },
+          { label: 'Collaborative', value: collaborative, tone: 'violet', hint: 'Projects with more than one member' },
+          { label: 'Scripts', value: scripts, tone: 'blue' },
+        ]}
+      />
+      <div className="grid gap-5 lg:grid-cols-5">
+        <TrendPanel id="projects-created" className="lg:col-span-3" title="Project activity" subtitle="Created vs. last edited" sources={[
+          { key: 'created', label: 'Created', color: SERIES.orange, rows: projects, time: created },
+          { key: 'updated', label: 'Last edited', color: SERIES.aqua, rows: projects, time: (p) => p.updated_at },
+        ]} />
+        <Panel title="By format" className="lg:col-span-2">
+          <BarList items={tally(projects, (p) => p.format)} color={SERIES.orange} limit={6} />
+          <div className="mt-4 border-t border-surface-800 pt-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-surface-500">By status</p>
+            <BarList items={tally(projects, (p) => p.status)} color={SERIES.violet} limit={4} />
+          </div>
+        </Panel>
+      </div>
+      <Reveal><ProjectsTab projects={filtered} search={search} onSearchChange={setSearch} /></Reveal>
+    </AdminPage>
+  );
 }
 
 /** Mind map shares the projects cache with the Projects tab. */
 export function MindmapPanel() {
   const { data: projects, loading } = useAdminData('projects', loadAdminProjects, []);
   if (loading) return <TabSkeleton />;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <MindmapTab projects={projects as any} />;
+  return (
+    <AdminPage>
+      <PageHeader icon={<Network className="h-5 w-5" />} title="Mind Map" description="How projects and people connect across the platform." />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Reveal><MindmapTab projects={projects as any} /></Reveal>
+    </AdminPage>
+  );
 }

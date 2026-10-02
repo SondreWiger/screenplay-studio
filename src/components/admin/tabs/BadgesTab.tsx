@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Badge, Card, Select } from '@/components/ui';
+import { Card } from '@/components/ui';
 import type { Badge as BadgeType } from '@/lib/types';
+import { Award } from 'lucide-react';
+import { AdminPage, PageHeader, Reveal } from '../kit';
 
 export function BadgesAdminTab() {
   const supabase = createClient();
@@ -55,10 +57,6 @@ export function BadgesAdminTab() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-semibold text-white mb-1">Badge Management</h2>
-        <p className="text-sm text-white/40">Create custom badges and award them to users. System badges (Admin, Moderator, Contributor) are managed automatically by user roles.</p>
-      </div>
 
       {/* Existing Badges */}
       <Card className="bg-white/5 border border-white/10 p-6">
@@ -203,4 +201,11 @@ export function BadgesAdminTab() {
     </div>
   );
 }
-export default BadgesAdminTab;
+export default function BadgesPanel() {
+  return (
+    <AdminPage>
+      <PageHeader icon={<Award className="h-5 w-5" />} title="Badges" description="Create custom badges and award them. System badges (Admin, Moderator, Contributor) follow user roles automatically." />
+      <Reveal><BadgesAdminTab /></Reveal>
+    </AdminPage>
+  );
+}

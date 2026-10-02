@@ -1,12 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, Pencil, Plus, Scale, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Card, Badge, Modal, Input, Textarea, Select, toast } from '@/components/ui';
-import { cn, formatDate } from '@/lib/utils';
+import { Button, Badge, Modal, Input, Textarea, Select, toast } from '@/components/ui';
+import { cn, formatDate, timeAgo } from '@/lib/utils';
+import {
+  ActionButton, AdminPage, AnimatedItem, BarList, EmptyState, PageHeader, Panel, Pill, SearchInput, StatGrid,
+  TabSkeleton, Toolbar, TrendPanel, fieldClass, tally, SERIES, type Tone,
+} from '@/components/admin/kit';
 
 // Types
 
@@ -114,6 +119,8 @@ const SEVERITY_BADGE: Record<Severity, 'info' | 'warning' | 'error'> = {
   critical: 'error',
 };
 
+const SEVERITY_TONE: Record<Severity, Tone> = { info: 'blue', important: 'amber', critical: 'red' };
+
 const CATEGORY_LABELS: Record<LegalCategory, string> = {
   tos_update: 'TOS Update',
   privacy_update: 'Privacy Update',
@@ -182,9 +189,10 @@ function sectionsToContent(sections: LegalPostSection[]): string {
 export default function AdminLegalPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // State
+  const [search, setSearch] = useState('');
   const [posts, setPosts] = useState<LegalPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -214,7 +222,6 @@ export default function AdminLegalPage() {
   // Data loading
 
   const loadPosts = useCallback(async () => {
-    setLoading(true);
     const { data, error } = await supabase
       .from('legal_posts')
       .select('*')
@@ -231,6 +238,7 @@ export default function AdminLegalPage() {
   // Filtered posts
 
   const filteredPosts = posts.filter((p) => {
+    if (search.trim() && !`${p.title} ${p.summary} ${p.slug} ${(p.tags ?? []).join(' ')}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
     if (filterCategory && p.category !== filterCategory) return false;
     if (filterSeverity && p.severity !== filterSeverity) return false;
     if (filterStatus === 'published' && !p.published) return false;
@@ -391,138 +399,102 @@ export default function AdminLegalPage() {
 
   // Render guards
 
-  if (authLoading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-surface-950">
-        <div className="animate-spin h-8 w-8 border-2 border-red-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
+  if (authLoading || !user || loading) return <TabSkeleton />;
 
   // Combine sections for preview
   const previewContent = sectionsToContent(draft.sections);
 
   // Main render
 
+  const published = posts.filter((p) => p.published);
+  const pendingEmail = posts.filter((p) => p.notify_users && !p.email_sent && p.published).length;
+  const toggleStatus = (st: string) => () => setFilterStatus((cur) => (cur === st ? '' : st));
+
   return (
-    <div className="min-h-screen bg-surface-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <AdminPage>
+      <PageHeader
+        icon={<Scale className="h-5 w-5" />}
+        title="Legal Blog"
+        description="Policy updates, TOS changes, security advisories and more."
+        meta={published[0]?.published_at ? <>Last published {timeAgo(published[0].published_at)}</> : undefined}
+        actions={<ActionButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={openNewPost}>New post</ActionButton>}
+      />
 
-        {/* ── Header ──────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between">
-          <div>
-            <Link href="/admin" className="text-xs text-surface-500 hover:text-white transition-colors mb-2 inline-flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Back to Admin
-            </Link>
-            <h1 className="text-2xl font-bold tracking-tight">Legal Blog Management</h1>
-            <p className="text-sm text-surface-400 mt-1">
-              Manage policy updates, TOS changes, security advisories and more.
-            </p>
-          </div>
-          <Button onClick={openNewPost} className="bg-red-500 hover:bg-red-600 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            New Post
-          </Button>
+      <StatGrid
+        cols={5}
+        layoutGroup="legal"
+        items={[
+          { label: 'All posts', value: posts.length, tone: 'brand', onClick: () => { setFilterStatus(''); setFilterSeverity(''); }, active: !filterStatus && !filterSeverity },
+          { label: 'Published', value: published.length, tone: 'green', onClick: toggleStatus('published'), active: filterStatus === 'published' },
+          { label: 'Drafts', value: posts.length - published.length, tone: 'amber', onClick: toggleStatus('draft'), active: filterStatus === 'draft' },
+          { label: 'Critical', value: posts.filter((p) => p.severity === 'critical').length, tone: 'red', onClick: () => setFilterSeverity((c) => (c === 'critical' ? '' : 'critical')), active: filterSeverity === 'critical' },
+          { label: 'Emails pending', value: pendingEmail, tone: 'blue', hint: 'Published posts set to notify users, not emailed yet' },
+        ]}
+      />
+
+      {posts.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <TrendPanel
+            id="legal"
+            className="lg:col-span-3"
+            title="Publishing activity"
+            subtitle="Posts published over time"
+            defaultRange="1y"
+            sources={[{ key: 'published', label: 'Published', rows: posts, time: (p) => p.published_at }]}
+          />
+          <Panel title="By category" className="lg:col-span-2">
+            <BarList items={tally(posts, (p) => CATEGORY_LABELS[p.category] ?? p.category)} color={SERIES.violet} limit={6} labelFormat={(l) => <span className="normal-case">{l}</span>} />
+          </Panel>
         </div>
+      )}
 
-        {/* ── Filter bar ──────────────────────────────────────────────── */}
-        <Card className="p-4 bg-surface-900/50 border-surface-800">
-          <div className="flex flex-wrap gap-3">
-            <div className="w-48">
-              <Select
-                label="Category"
-                options={CATEGORY_OPTIONS}
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-              />
-            </div>
-            <div className="w-40">
-              <Select
-                label="Severity"
-                options={SEVERITY_OPTIONS}
-                value={filterSeverity}
-                onChange={(e) => setFilterSeverity(e.target.value)}
-              />
-            </div>
-            <div className="w-40">
-              <Select
-                label="Status"
-                options={STATUS_OPTIONS}
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-              />
-            </div>
-            <div className="flex items-end ml-auto">
-              <span className="text-xs text-surface-500">
-                {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
-        </Card>
+      <Toolbar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search title, summary, slug or tag…" />
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Category">
+          {CATEGORY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <select value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Severity">
+          {SEVERITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={cn(fieldClass, 'w-auto py-2')} aria-label="Status">
+          {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <span className="text-xs text-surface-500 sm:ml-auto">{filteredPosts.length} of {posts.length}</span>
+      </Toolbar>
 
-        {/* ── Posts list ───────────────────────────────────────────────── */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin h-8 w-8 border-2 border-red-500 border-t-transparent rounded-full" />
-          </div>
-        ) : filteredPosts.length === 0 ? (
-          <Card className="p-12 text-center bg-surface-900/50 border-surface-800">
-            <p className="text-surface-400">No legal posts found.</p>
-            <Button className="mt-4 bg-red-500 hover:bg-red-600" onClick={openNewPost}>
-              Create your first post
-            </Button>
-          </Card>
-        ) : (
-          <div className="space-y-2">
+      {filteredPosts.length === 0 ? (
+        <EmptyState
+          icon={<Scale className="h-8 w-8" />}
+          title={posts.length === 0 ? 'No legal posts yet' : 'No posts match'}
+          action={posts.length === 0 ? <ActionButton variant="primary" onClick={openNewPost}>Create the first post</ActionButton> : undefined}
+        />
+      ) : (
+        <ul className="space-y-2">
+          <AnimatePresence initial={false}>
             {filteredPosts.map((post) => (
-              <div
-                key={post.id}
-                className="rounded-lg border border-surface-800 bg-surface-900/50 p-4 flex items-center gap-4 hover:bg-surface-800/50 transition-colors group"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge variant={SEVERITY_BADGE[post.severity]} size="sm">{post.severity}</Badge>
-                    <Badge variant="default" size="sm">{CATEGORY_LABELS[post.category] ?? post.category}</Badge>
-                    {post.published ? (
-                      <Badge variant="success" size="sm">Published</Badge>
-                    ) : (
-                      <Badge variant="warning" size="sm">Draft</Badge>
-                    )}
-                    {post.notify_users && !post.email_sent && post.published && (
-                      <span className="text-[11px] text-yellow-400/80 bg-yellow-500/10 px-2 py-0.5 rounded">📧 pending</span>
-                    )}
+              <AnimatedItem key={post.id} className="group flex flex-col gap-3 rounded-2xl border border-surface-800 bg-surface-900/60 p-4 transition-colors hover:border-surface-700 md:flex-row md:items-center">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+                    <Pill tone={SEVERITY_TONE[post.severity]} dot>{post.severity}</Pill>
+                    <Pill>{CATEGORY_LABELS[post.category] ?? post.category}</Pill>
+                    <Pill tone={post.published ? 'green' : 'amber'}>{post.published ? 'Published' : 'Draft'}</Pill>
+                    {post.notify_users && !post.email_sent && post.published && <Pill tone="blue">Email pending</Pill>}
                   </div>
-                  <h3 className="text-sm font-medium text-white group-hover:text-red-400 transition-colors truncate">
-                    {post.title}
-                  </h3>
-                  <p className="text-xs text-surface-500 mt-1">
-                    /{post.slug} · {post.published_at ? formatDate(post.published_at) : 'Draft'}
-                  </p>
+                  <h3 className="truncate text-sm font-semibold text-white transition-colors group-hover:text-brand-300">{post.title}</h3>
+                  <p className="mt-0.5 text-xs text-surface-500">/{post.slug} · {post.published_at ? formatDate(post.published_at) : `Edited ${timeAgo(post.updated_at)}`}</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button size="sm" variant="ghost" onClick={() => openEditPost(post)}>
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => togglePublish(post)}>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <ActionButton variant="ghost" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEditPost(post)}>Edit</ActionButton>
+                  <ActionButton variant={post.published ? 'ghost' : 'success'} icon={post.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />} onClick={() => togglePublish(post)}>
                     {post.published ? 'Unpublish' : 'Publish'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    onClick={() => setDeleteTarget(post)}
-                  >
-                    Delete
-                  </Button>
+                  </ActionButton>
+                  <ActionButton variant="danger" icon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setDeleteTarget(post)} title="Delete" />
                 </div>
-              </div>
+              </AnimatedItem>
             ))}
-          </div>
-        )}
-      </div>
+          </AnimatePresence>
+        </ul>
+      )}
 
       {/* ── Editor Modal ──────────────────────────────────────────────── */}
       <Modal isOpen={editorOpen} onClose={() => setEditorOpen(false)} title={draft.id ? 'Edit Legal Post' : 'New Legal Post'} size="xl">
@@ -761,6 +733,6 @@ export default function AdminLegalPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </AdminPage>
   );
 }

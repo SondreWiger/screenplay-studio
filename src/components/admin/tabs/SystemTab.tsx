@@ -6,6 +6,8 @@ import { ADMIN_UID } from '../types';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { invalidateAdminCache, useSiteSetting } from '../data';
+import { Cpu } from 'lucide-react';
+import { AdminPage, PageHeader, Pill, Reveal } from '../kit';
 
 export function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefreshStats, siteVersion, onUpdateVersion, opensourceEnabled, onToggleOpensource, proGatingEnabled, onToggleProGating, creatorProgramEnabled, onToggleCreatorProgram, creatorPayoutEnabled, onToggleCreatorPayout }: {
   rebootStatus: string | null;
@@ -28,8 +30,6 @@ export function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefre
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-1">System Management</h1>
-      <p className="text-sm text-surface-400 mb-8">Maintenance tools for the platform</p>
 
       {/* Open Source toggle */}
       <div className="mb-6 rounded-xl border bg-surface-900/50 p-5 flex items-center justify-between"
@@ -361,6 +361,14 @@ export default function SystemPanel() {
   };
 
   return (
+    <AdminPage>
+      <PageHeader
+        icon={<Cpu className="h-5 w-5" />}
+        title="System"
+        description="Site settings, feature switches and maintenance tools."
+        meta={siteVersion ? <Pill tone="brand">v{siteVersion}</Pill> : undefined}
+      />
+      <Reveal>
     <SystemTab
       rebootStatus={rebootStatus}
       onSoftReboot={handleSoftReboot}
@@ -377,5 +385,7 @@ export default function SystemPanel() {
       creatorPayoutEnabled={creatorPayoutEnabled}
       onToggleCreatorPayout={setCreatorPayoutEnabled}
     />
+      </Reveal>
+    </AdminPage>
   );
 }

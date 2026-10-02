@@ -10,6 +10,8 @@ import { ADMIN_UID } from '../types';
 import { useAdminData } from '../data';
 import { TabSkeleton } from '../motion';
 import { fetchAll } from '@/lib/supabase/fetch-all';
+import { Users as UsersIcon } from 'lucide-react';
+import { AdminPage, BarList, PageHeader, Panel, Reveal, StatGrid, TrendPanel, tally, windowCounts, dailySpark } from '../kit';
 
 export function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRefresh }: {
   users: UserRow[];
@@ -223,12 +225,8 @@ export function UsersTab({ users, search, onSearchChange, onEdit, onDelete, onRe
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-1">User Management</h1>
-          <p className="text-sm text-surface-400">{users.length} users total</p>
-        </div>
-        <div className="flex items-center gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setDmAllOpen(true)}
             title={`Send DM to ${search ? 'filtered' : 'all'} users`}
@@ -539,15 +537,22 @@ export function EditUserModal({ user, onClose, onSave }: {
 /** Users tab with its own data: all profiles, paged past the 1000-row cap. */
 export default function UsersPanel() {
   const [search, setSearch] = useState('');
+  const [segment, setSegment] = useState<'all' | 'pro' | 'staff' | 'new' | 'flagged'>('all');
   const [editing, setEditing] = useState<UserRow | null>(null);
   const { data: users, loading, reload } = useAdminData<UserRow[]>('users', () =>
     fetchAll<UserRow>(() => createClient().from('profiles').select('*').order('created_at', { ascending: false })), []);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((u) => `${u.email} ${u.full_name || ''} ${u.display_name || ''}`.toLowerCase().includes(q));
-  }, [users, search]);
+    const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    return users
+      .filter((u) => segment === 'all'
+        || (segment === 'pro' && u.is_pro)
+        || (segment === 'staff' && (u.role === 'admin' || u.role === 'moderator'))
+        || (segment === 'new' && u.created_at >= weekAgo)
+        || (segment === 'flagged' && !!u.moderation_status && u.moderation_status !== 'clean'))
+      .filter((u) => !q || `${u.email} ${u.full_name || ''} ${u.display_name || ''}`.toLowerCase().includes(q));
+  }, [users, search, segment]);
 
   const handleUpdate = async (userId: string, updates: Partial<UserRow>) => {
     const { error } = await createClient().from('profiles').update(updates).eq('id', userId);
@@ -566,10 +571,31 @@ export default function UsersPanel() {
   };
 
   if (loading) return <TabSkeleton />;
+  const created = (u: UserRow) => u.created_at;
+  const week = windowCounts(users, created, 7);
+  const pick = (s: typeof segment) => () => setSegment((cur) => (cur === s ? 'all' : s));
   return (
-    <>
-      <UsersTab users={filtered} search={search} onSearchChange={setSearch} onEdit={setEditing} onDelete={handleDelete} onRefresh={reload} />
+    <AdminPage>
+      <PageHeader icon={<UsersIcon className="h-5 w-5" />} title="Users" description="Everyone on the platform — edit roles, moderate, message." meta={<>{week.current} joined in the last 7 days</>} />
+      <StatGrid
+        cols={5}
+        layoutGroup="users"
+        items={[
+          { label: 'All users', value: users.length, tone: 'brand', onClick: () => setSegment('all'), active: segment === 'all' },
+          { label: 'New · 7 days', value: week.current, delta: week.delta, tone: 'blue', spark: dailySpark(users, created), onClick: pick('new'), active: segment === 'new' },
+          { label: 'Pro', value: users.filter((u) => u.is_pro).length, tone: 'amber', onClick: pick('pro'), active: segment === 'pro' },
+          { label: 'Staff', value: users.filter((u) => u.role === 'admin' || u.role === 'moderator').length, tone: 'violet', onClick: pick('staff'), active: segment === 'staff' },
+          { label: 'Flagged', value: users.filter((u) => u.moderation_status && u.moderation_status !== 'clean').length, tone: 'red', onClick: pick('flagged'), active: segment === 'flagged' },
+        ]}
+      />
+      <div className="grid gap-5 lg:grid-cols-5">
+        <TrendPanel id="users-signups" className="lg:col-span-3" title="Signups" subtitle="New accounts over time" sources={[{ key: 'signups', label: 'New users', rows: users, time: created }]} />
+        <Panel title="Roles" className="lg:col-span-2"><BarList items={tally(users, (u) => u.role)} limit={6} /></Panel>
+      </div>
+      <Reveal>
+        <UsersTab users={filtered} search={search} onSearchChange={setSearch} onEdit={setEditing} onDelete={handleDelete} onRefresh={reload} />
+      </Reveal>
       {editing && <EditUserModal user={editing} onClose={() => setEditing(null)} onSave={handleUpdate} />}
-    </>
+    </AdminPage>
   );
 }

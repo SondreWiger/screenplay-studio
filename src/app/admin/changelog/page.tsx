@@ -8,13 +8,17 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Plus, Rocket, ScrollText, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
+import { cn, timeAgo } from '@/lib/utils';
+import {
+  ActionButton, AdminPage, AnimatedItem, BarList, Dialog, Dots, EmptyState, Field, PageHeader, Panel, Pill,
+  SearchInput, Segmented, StatGrid, TabSkeleton, TrendPanel, fieldClass, tally, type Tone,
+} from '@/components/admin/kit';
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
-const ORANGE = '#FF5F1F';
 
 // Types
 
@@ -55,28 +59,17 @@ interface Entry {
 
 // Helpers
 
-const STATUS_STYLES: Record<ReleaseStatus, string> = {
-  draft: 'bg-yellow-900/30 text-yellow-400 border border-yellow-700/40',
-  published: 'bg-green-900/30 text-green-400 border border-green-700/40',
-  yanked: 'bg-red-900/30 text-red-400 border border-red-700/40',
-};
-
-const TYPE_STYLES: Record<EntryType, string> = {
-  feature: 'text-orange-400',
-  improvement: 'text-indigo-400',
-  fix: 'text-green-400',
-  performance: 'text-yellow-400',
-  security: 'text-red-400',
-  breaking: 'text-red-500',
-  deprecation: 'text-orange-600',
-  internal: 'text-white/30',
-};
-
-const RELEASE_TYPE_BADGE: Record<ReleaseType, string> = {
-  major: 'bg-orange-900/40 text-orange-300',
-  minor: 'bg-white/5 text-white/40',
-  patch: 'bg-white/5 text-white/30',
-  hotfix: 'bg-red-900/40 text-red-400',
+const STATUS_TONE: Record<ReleaseStatus, Tone> = { draft: 'amber', published: 'green', yanked: 'red' };
+const RELEASE_TONE: Record<ReleaseType, Tone> = { major: 'brand', minor: 'blue', patch: 'neutral', hotfix: 'red' };
+const TYPE_TONE: Record<EntryType, Tone> = {
+  feature: 'brand',
+  improvement: 'violet',
+  fix: 'green',
+  performance: 'amber',
+  security: 'red',
+  breaking: 'red',
+  deprecation: 'amber',
+  internal: 'neutral',
 };
 
 const ENTRY_TYPES: EntryType[] = ['feature', 'improvement', 'fix', 'performance', 'security', 'breaking', 'deprecation', 'internal'];
@@ -122,6 +115,11 @@ export default function AdminChangelogPage() {
   const [publishing, setPublishing] = useState<string | null>(null);
   const [publishError, setPublishError] = useState('');
 
+  // List filters
+  const [statusFilter, setStatusFilter] = useState<ReleaseStatus | 'all'>('all');
+  const [query, setQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<EntryType | 'all'>('all');
+
   // Auth guard
   useEffect(() => {
     if (authLoading) return;
@@ -132,7 +130,6 @@ export default function AdminChangelogPage() {
 
   // Data loading
   const loadData = useCallback(async () => {
-    setLoading(true);
     const supabase = createClient();
 
     const [{ data: relData }, { data: entData }] = await Promise.all([
@@ -252,354 +249,271 @@ export default function AdminChangelogPage() {
   }
 
   // UI
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#07070f' }}>
-        <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: ORANGE, borderTopColor: 'transparent' }} />
-      </div>
-    );
-  }
+  if (authLoading || loading) return <TabSkeleton />;
 
   const selectedRelease = releases.find(r => r.id === selectedId) || null;
   const selectedEntries = entries.filter(e => e.release_id === selectedId).sort((a, b) => a.sort_order - b.sort_order);
+  const visibleEntries = selectedEntries.filter(e => typeFilter === 'all' || e.entry_type === typeFilter);
+  const q = query.trim().toLowerCase();
+  const visibleReleases = releases.filter(r =>
+    (statusFilter === 'all' || r.status === statusFilter) &&
+    (!q || `${r.version} ${r.title} ${r.summary || ''}`.toLowerCase().includes(q)));
+  const published = releases.filter(r => r.status === 'published');
+  const drafts = releases.filter(r => r.status === 'draft');
+  const releaseById = new Map(releases.map(r => [r.id, r]));
+  const toggleStatus = (st: ReleaseStatus) => () => setStatusFilter(cur => (cur === st ? 'all' : st));
 
   return (
-    <div className="min-h-screen" style={{ background: '#07070f', color: '#fff' }}>
+    <AdminPage>
+      <PageHeader
+        icon={<ScrollText className="h-5 w-5" />}
+        title="Changelog"
+        description="Draft releases, add entries, publish to the public changelog."
+        meta={published[0]?.released_at ? <>Latest: <span className="font-mono text-surface-300">v{published[0].version}</span> · {timeAgo(published[0].released_at)}</> : undefined}
+        actions={
+          <ActionButton variant="primary" icon={<Plus className="h-4 w-4" />} onClick={() => { setShowNewRelease(true); setCreateError(''); }}>
+            New release
+          </ActionButton>
+        }
+      />
 
-      {/* ─── Header ────────────────────────────────────────────────── */}
-      <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="max-w-screen-2xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-white/30 hover:text-white transition-colors text-sm">
-              ← Admin
-            </Link>
-            <span className="text-white/10">/</span>
-            <span className="text-white/70 text-sm font-mono">changelog</span>
-          </div>
-          <button
-            onClick={() => { setShowNewRelease(true); setCreateError(''); }}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-[0.04em] text-white transition-transform hover:-translate-y-px"
-            style={{ background: ORANGE }}
-          >
-            + New Release
-          </button>
-        </div>
-      </div>
+      <StatGrid
+        cols={4}
+        layoutGroup="changelog"
+        items={[
+          { label: 'Releases', value: releases.length, tone: 'brand', onClick: () => setStatusFilter('all'), active: statusFilter === 'all' },
+          { label: 'Published', value: published.length, tone: 'green', onClick: toggleStatus('published'), active: statusFilter === 'published' },
+          { label: 'Drafts', value: drafts.length, tone: 'amber', onClick: toggleStatus('draft'), active: statusFilter === 'draft' },
+          { label: 'Entries', value: entries.length, tone: 'violet', hint: `${entries.filter(e => !e.is_public).length} internal` },
+        ]}
+      />
 
-      <div className="max-w-screen-2xl mx-auto px-6 py-8 flex gap-6 h-[calc(100vh-57px)]">
-
-        {/* ─── Left panel: releases list ──────────────────────────── */}
-        <div className="w-72 shrink-0 flex flex-col gap-2 overflow-y-auto pr-2">
-          <p className="text-[11px] uppercase tracking-[0.04em] text-white/55 mb-1">
-            {releases.length} releases
-          </p>
-          {releases.map(r => (
-            <button
-              key={r.id}
-              onClick={() => setSelectedId(r.id)}
-              className={cn(
-                'w-full text-left p-3 border transition-colors',
-                selectedId === r.id
-                  ? 'border-orange-600/50 bg-orange-950/20'
-                  : 'border-white/5 hover:border-white/10 bg-white/[0.02] hover:bg-white/[0.04]'
-              )}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-mono text-sm font-bold text-white/90">v{r.version}</span>
-                <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-[0.04em]', STATUS_STYLES[r.status])}>
-                  {r.status}
-                </span>
+      {releases.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <TrendPanel
+            id="changelog"
+            className="lg:col-span-3"
+            title="Shipping cadence"
+            subtitle="Releases published over time"
+            defaultRange="1y"
+            sources={[{ key: 'published', label: 'Releases published', rows: releases, time: r => r.released_at }]}
+          />
+          <Panel title="What ships" subtitle="All entries, by type" className="lg:col-span-2">
+            <BarList items={tally(entries, e => e.entry_type)} limit={6} />
+            <div className="mt-4 border-t border-surface-800 pt-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-surface-500">Most-changed areas</p>
+              <div className="flex flex-wrap gap-1.5">
+                {tally(entries.filter(e => releaseById.get(e.release_id)?.status === 'published'), e => e.area).slice(0, 10).map(a => (
+                  <Pill key={a.label}>{a.label.replace(/_/g, ' ')} <span className="text-white">{a.count}</span></Pill>
+                ))}
               </div>
-              <p className="text-xs text-white/50 truncate">{r.title}</p>
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className={cn('text-[11px] px-1.5 py-0.5 rounded font-medium uppercase', RELEASE_TYPE_BADGE[r.release_type])}>
-                  {r.release_type}
-                </span>
-                <span className="text-[11px] text-white/25">
-                  {r.feature_count + r.improvement_count + r.fix_count} changes
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* ─── Right panel: release detail ───────────────────────── */}
-        <div className="flex-1 min-w-0 overflow-y-auto">
-          {!selectedRelease ? (
-            <div className="flex items-center justify-center h-48 text-white/20 text-sm">
-              Select a release
             </div>
+          </Panel>
+        </div>
+      )}
+
+      <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+        {/* Release list */}
+        <Panel title="Releases" subtitle={`${visibleReleases.length} shown`} bodyClassName="space-y-2">
+          <SearchInput value={query} onChange={setQuery} placeholder="Version or title…" />
+          <div className="max-h-[60vh] space-y-1.5 overflow-y-auto pr-1 lg:max-h-[calc(100vh-260px)]">
+            {visibleReleases.length === 0 && <p className="py-6 text-center text-xs text-surface-600">No releases match</p>}
+            {visibleReleases.map(r => {
+              const active = selectedId === r.id;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => { setSelectedId(r.id); setTypeFilter('all'); }}
+                  className={cn('relative w-full rounded-xl border p-3 text-left transition-colors', active ? 'border-transparent' : 'border-surface-800 hover:border-surface-700 hover:bg-surface-800/30')}
+                >
+                  {active && (
+                    <motion.span layoutId="release-active" className="absolute inset-0 rounded-xl bg-brand-500/10 ring-1 ring-brand-500/40" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />
+                  )}
+                  <span className="relative block">
+                    <span className="mb-1 flex items-center justify-between gap-2">
+                      <span className="font-mono text-sm font-bold text-white">v{r.version}</span>
+                      <Pill tone={STATUS_TONE[r.status]} dot>{r.status}</Pill>
+                    </span>
+                    <span className="block truncate text-xs text-surface-400">{r.title}</span>
+                    <span className="mt-1.5 flex items-center gap-2 text-[11px] text-surface-500">
+                      <Pill tone={RELEASE_TONE[r.release_type]}>{r.release_type}</Pill>
+                      {r.feature_count + r.improvement_count + r.fix_count} changes
+                      <span className="ml-auto">{timeAgo(r.released_at || r.created_at)}</span>
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </Panel>
+
+        {/* Release detail */}
+        <AnimatePresence mode="wait">
+          {!selectedRelease ? (
+            <EmptyState icon={<ScrollText className="h-8 w-8" />} title="Select a release" description="Pick a release on the left, or create a new draft." />
           ) : (
-            <div className="space-y-6">
-              {/* Release header */}
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold text-white">v{selectedRelease.version}</h1>
-                    <span className={cn('text-[11px] font-medium px-2 py-1 rounded uppercase tracking-[0.04em]', STATUS_STYLES[selectedRelease.status])}>
-                      {selectedRelease.status}
-                    </span>
-                    <span className={cn('text-[11px] font-medium px-2 py-1 rounded uppercase tracking-[0.04em]', RELEASE_TYPE_BADGE[selectedRelease.release_type])}>
-                      {selectedRelease.release_type}
-                    </span>
+            <motion.div key={selectedRelease.id} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.2 }} className="space-y-5">
+              <Panel>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <h2 className="font-mono text-2xl font-bold text-white">v{selectedRelease.version}</h2>
+                      <Pill tone={STATUS_TONE[selectedRelease.status]} dot>{selectedRelease.status}</Pill>
+                      <Pill tone={RELEASE_TONE[selectedRelease.release_type]}>{selectedRelease.release_type}</Pill>
+                    </div>
+                    <p className="text-lg font-semibold text-surface-200">{selectedRelease.title}</p>
+                    {selectedRelease.summary && <p className="mt-1 max-w-2xl text-sm text-surface-400">{selectedRelease.summary}</p>}
+                    <p className="mt-2 text-xs text-surface-500">
+                      {selectedRelease.released_at ? `Released ${new Date(selectedRelease.released_at).toLocaleDateString()}` : `Drafted ${timeAgo(selectedRelease.created_at)}`}
+                    </p>
                   </div>
-                  <p className="text-lg text-white/70 font-semibold">{selectedRelease.title}</p>
-                  {selectedRelease.summary && (
-                    <p className="text-sm text-white/40 mt-1 max-w-2xl">{selectedRelease.summary}</p>
-                  )}
-                  <div className="flex items-center gap-4 mt-2 text-xs text-white/30">
-                    <span>🟠 {selectedRelease.feature_count} features</span>
-                    <span>🟣 {selectedRelease.improvement_count} improvements</span>
-                    <span>🟢 {selectedRelease.fix_count} fixes</span>
-                    {selectedRelease.released_at && (
-                      <span>Released {new Date(selectedRelease.released_at).toLocaleDateString()}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
                   {selectedRelease.status === 'draft' && (
-                    <button
-                      onClick={() => handlePublish(selectedRelease.version)}
-                      disabled={!!publishing}
-                      className="px-4 py-2 text-xs font-medium uppercase tracking-[0.04em] text-white transition-transform hover:-translate-y-px disabled:opacity-50"
-                      style={{ background: '#16a34a' }}
-                    >
-                      {publishing === selectedRelease.version ? 'Publishing…' : '✓ Publish'}
-                    </button>
-                  )}
-                  {selectedRelease.status === 'draft' && (
-                    <button
-                      onClick={() => handleDeleteRelease(selectedRelease.id, selectedRelease.version)}
-                      className="px-3 py-2 text-xs font-medium uppercase tracking-[0.04em] text-red-400 border border-red-900/40 hover:bg-red-950/30 transition-colors"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <ActionButton variant="success" icon={<Rocket className="h-4 w-4" />} onClick={() => handlePublish(selectedRelease.version)} disabled={!!publishing}>
+                        {publishing === selectedRelease.version ? <>Publishing <Dots /></> : 'Publish'}
+                      </ActionButton>
+                      <ActionButton variant="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => handleDeleteRelease(selectedRelease.id, selectedRelease.version)}>
+                        Delete
+                      </ActionButton>
+                    </div>
                   )}
                 </div>
-              </div>
-
-              {publishError && (
-                <p className="text-sm text-red-400 bg-red-950/30 px-3 py-2 border border-red-900/40">
-                  {publishError}
-                </p>
-              )}
-
-              {/* Entries */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-[11px] uppercase tracking-[0.04em] text-white/55">
-                    {selectedEntries.length} entries
-                  </h2>
-                  {selectedRelease.status === 'draft' && (
-                    <button
-                      onClick={() => { setShowNewEntry(true); setEntryError(''); }}
-                      className="text-xs font-bold px-3 py-1.5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-colors"
-                    >
-                      + Add Entry
-                    </button>
-                  )}
+                <div className="mt-4 grid grid-cols-3 gap-3 border-t border-surface-800 pt-4">
+                  {[
+                    { label: 'Features', value: selectedRelease.feature_count, tone: TYPE_TONE.feature },
+                    { label: 'Improvements', value: selectedRelease.improvement_count, tone: TYPE_TONE.improvement },
+                    { label: 'Fixes', value: selectedRelease.fix_count, tone: TYPE_TONE.fix },
+                  ].map(x => (
+                    <div key={x.label}>
+                      <p className="text-[11px] text-surface-500">{x.label}</p>
+                      <p className="text-xl font-bold tabular-nums text-white">{x.value}</p>
+                    </div>
+                  ))}
                 </div>
+                {publishError && <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{publishError}</p>}
+              </Panel>
 
-                {selectedEntries.length === 0 ? (
-                  <div className="border border-dashed border-white/10 p-8 text-center text-white/20 text-sm">
-                    No entries yet — add the first change
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {selectedEntries.map(entry => (
-                      <div
-                        key={entry.id}
-                        className="flex items-start gap-3 p-3 border border-white/5 hover:border-white/10 transition-colors group"
-                      >
-                        <div className="w-24 shrink-0">
-                          <span className={cn('text-[11px] font-medium uppercase', TYPE_STYLES[entry.entry_type])}>
-                            {entry.entry_type}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white/80 font-medium">{entry.title}</p>
-                          {entry.description && (
-                            <p className="text-xs text-white/35 mt-0.5 line-clamp-2">{entry.description}</p>
-                          )}
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[11px] text-white/55 uppercase">{entry.area}</span>
-                            {!entry.is_public && (
-                              <span className="text-[11px] text-yellow-500/60 uppercase font-medium">internal</span>
-                            )}
-                          </div>
-                        </div>
-                        {selectedRelease.status === 'draft' && (
-                          <button
-                            onClick={() => handleDeleteEntry(entry.id)}
-                            className="opacity-0 group-hover:opacity-100 text-red-500/50 hover:text-red-400 transition-opacity text-xs px-1.5"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    ))}
+              <Panel
+                title={`${selectedEntries.length} entries`}
+                action={selectedRelease.status === 'draft' ? (
+                  <ActionButton icon={<Plus className="h-4 w-4" />} onClick={() => { setShowNewEntry(true); setEntryError(''); }}>Add entry</ActionButton>
+                ) : null}
+              >
+                {selectedEntries.length > 0 && (
+                  <div className="mb-3">
+                    <Segmented
+                      id="entry-type"
+                      size="sm"
+                      value={typeFilter}
+                      onChange={setTypeFilter}
+                      options={[{ key: 'all' as const, label: 'All' }, ...ENTRY_TYPES.filter(t => selectedEntries.some(e => e.entry_type === t)).map(t => ({ key: t, label: t }))]}
+                    />
                   </div>
                 )}
-              </div>
-            </div>
+                {visibleEntries.length === 0 ? (
+                  <EmptyState title="No entries yet" description={selectedRelease.status === 'draft' ? 'Add the first change to this release.' : undefined} />
+                ) : (
+                  <ul className="space-y-2">
+                    <AnimatePresence initial={false}>
+                      {visibleEntries.map(entry => (
+                        <AnimatedItem key={entry.id} className="group flex items-start gap-3 rounded-xl border border-surface-800 p-3 transition-colors hover:border-surface-700">
+                          <div className="w-28 shrink-0"><Pill tone={TYPE_TONE[entry.entry_type]} dot>{entry.entry_type}</Pill></div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-white">{entry.title}</p>
+                            {entry.description && <p className="mt-0.5 line-clamp-2 text-xs text-surface-400">{entry.description}</p>}
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className="text-[11px] uppercase text-surface-500">{entry.area.replace(/_/g, ' ')}</span>
+                              {!entry.is_public && <Pill tone="amber">internal</Pill>}
+                            </div>
+                          </div>
+                          {selectedRelease.status === 'draft' && (
+                            <button onClick={() => handleDeleteEntry(entry.id)} className="p-1 text-surface-600 transition-all hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100" aria-label="Delete entry">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </AnimatedItem>
+                      ))}
+                    </AnimatePresence>
+                  </ul>
+                )}
+              </Panel>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
 
-      {/* ─── New Release Modal ──────────────────────────────────────── */}
-      {showNewRelease && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.85)' }}>
-          <div className="w-full max-w-lg border p-6 space-y-4" style={{ background: '#0d0d1a', borderColor: 'rgba(255,255,255,0.08)' }}>
-            <h2 className="text-base font-semibold text-white uppercase tracking-wide">New Draft Release</h2>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Version *</label>
-                <input
-                  type="text"
-                  value={newVersion}
-                  onChange={e => setNewVersion(e.target.value)}
-                  placeholder="e.g. 2.7.0"
-                  className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50 font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Title *</label>
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={e => setNewTitle(e.target.value)}
-                  placeholder="e.g. The AI Drop"
-                  className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Summary</label>
-                <textarea
-                  value={newSummary}
-                  onChange={e => setNewSummary(e.target.value)}
-                  rows={3}
-                  placeholder="One paragraph describing what this release brings."
-                  className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50 resize-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Release Type</label>
-                <select
-                  value={newReleaseType}
-                  onChange={e => setNewReleaseType(e.target.value as ReleaseType)}
-                  className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50"
-                >
-                  {RELEASE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {createError && <p className="text-sm text-red-400">{createError}</p>}
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleCreateRelease}
-                disabled={creating}
-                className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] text-white disabled:opacity-50"
-                style={{ background: ORANGE }}
-              >
-                {creating ? 'Creating…' : 'Create Draft'}
-              </button>
-              <button
-                onClick={() => { setShowNewRelease(false); setCreateError(''); }}
-                className="px-4 py-2.5 text-xs font-medium uppercase tracking-[0.04em] text-white/50 border border-white/10 hover:border-white/20 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
+      <Dialog
+        open={showNewRelease}
+        onClose={() => { setShowNewRelease(false); setCreateError(''); }}
+        title="New draft release"
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={() => { setShowNewRelease(false); setCreateError(''); }}>Cancel</ActionButton>
+            <ActionButton variant="primary" onClick={handleCreateRelease} disabled={creating}>{creating ? <>Creating <Dots /></> : 'Create draft'}</ActionButton>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Version *">
+              <input autoFocus value={newVersion} onChange={e => setNewVersion(e.target.value)} placeholder="e.g. 2.7.0" className={cn(fieldClass, 'font-mono')} />
+            </Field>
+            <Field label="Release type">
+              <select value={newReleaseType} onChange={e => setNewReleaseType(e.target.value as ReleaseType)} className={fieldClass}>
+                {RELEASE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </Field>
           </div>
+          <Field label="Title *">
+            <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g. The AI Drop" className={fieldClass} />
+          </Field>
+          <Field label="Summary">
+            <textarea value={newSummary} onChange={e => setNewSummary(e.target.value)} rows={3} placeholder="One paragraph describing what this release brings." className={cn(fieldClass, 'resize-none')} />
+          </Field>
+          {createError && <p className="text-sm text-red-400">{createError}</p>}
         </div>
-      )}
+      </Dialog>
 
-      {/* ─── New Entry Modal ────────────────────────────────────────── */}
-      {showNewEntry && selectedRelease && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.85)' }}>
-          <div className="w-full max-w-xl border p-6 space-y-4" style={{ background: '#0d0d1a', borderColor: 'rgba(255,255,255,0.08)' }}>
-            <h2 className="text-base font-semibold text-white uppercase tracking-wide">
-              Add Entry — v{selectedRelease.version}
-            </h2>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Title *</label>
-                <input
-                  type="text"
-                  value={eTitle}
-                  onChange={e => setETitle(e.target.value)}
-                  placeholder="Short one-line description"
-                  className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Description</label>
-                <textarea
-                  value={eDesc}
-                  onChange={e => setEDesc(e.target.value)}
-                  rows={3}
-                  placeholder="Longer explanation (optional, markdown supported in public UI)"
-                  className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50 resize-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Type</label>
-                  <select
-                    value={eType}
-                    onChange={e => setEType(e.target.value as EntryType)}
-                    className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50"
-                  >
-                    {ENTRY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] text-white/40 uppercase tracking-[0.04em] mb-1">Area</label>
-                  <select
-                    value={eArea}
-                    onChange={e => setEArea(e.target.value as Area)}
-                    className="w-full bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500/50"
-                  >
-                    {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
-                  </select>
-                </div>
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={ePublic}
-                  onChange={e => setEPublic(e.target.checked)}
-                  className="accent-orange-500"
-                />
-                <span className="text-sm text-white/50">Public (shown in the public changelog)</span>
-              </label>
+      <Dialog
+        open={showNewEntry && !!selectedRelease}
+        onClose={() => { setShowNewEntry(false); setEntryError(''); }}
+        title={`Add entry — v${selectedRelease?.version ?? ''}`}
+        size="lg"
+        footer={
+          <>
+            <ActionButton variant="ghost" onClick={() => { setShowNewEntry(false); setEntryError(''); }}>Cancel</ActionButton>
+            <ActionButton variant="primary" onClick={handleAddEntry} disabled={savingEntry}>{savingEntry ? <>Adding <Dots /></> : 'Add entry'}</ActionButton>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Field label="Title *">
+            <input autoFocus value={eTitle} onChange={e => setETitle(e.target.value)} placeholder="Short one-line description" className={fieldClass} />
+          </Field>
+          <Field label="Description">
+            <textarea value={eDesc} onChange={e => setEDesc(e.target.value)} rows={3} placeholder="Longer explanation (optional, markdown supported in public UI)" className={cn(fieldClass, 'resize-none')} />
+          </Field>
+          <Field label="Type">
+            <div className="flex flex-wrap gap-1.5">
+              {ENTRY_TYPES.map(t => (
+                <button key={t} type="button" onClick={() => setEType(t)} className={cn('rounded-lg transition-opacity', eType === t ? 'opacity-100 ring-1 ring-white/30' : 'opacity-50 hover:opacity-90')}>
+                  <Pill tone={TYPE_TONE[t]} dot>{t}</Pill>
+                </button>
+              ))}
             </div>
-
-            {entryError && <p className="text-sm text-red-400">{entryError}</p>}
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleAddEntry}
-                disabled={savingEntry}
-                className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] text-white disabled:opacity-50"
-                style={{ background: ORANGE }}
-              >
-                {savingEntry ? 'Adding…' : 'Add Entry'}
-              </button>
-              <button
-                onClick={() => { setShowNewEntry(false); setEntryError(''); }}
-                className="px-4 py-2.5 text-xs font-medium uppercase tracking-[0.04em] text-white/50 border border-white/10 hover:border-white/20 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          </Field>
+          <Field label="Area">
+            <select value={eArea} onChange={e => setEArea(e.target.value as Area)} className={fieldClass}>
+              {AREAS.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
+            </select>
+          </Field>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input type="checkbox" checked={ePublic} onChange={e => setEPublic(e.target.checked)} className="accent-brand-500" />
+            <span className="text-sm text-surface-300">Public (shown in the public changelog)</span>
+          </label>
+          {entryError && <p className="text-sm text-red-400">{entryError}</p>}
         </div>
-      )}
-    </div>
+      </Dialog>
+    </AdminPage>
   );
 }

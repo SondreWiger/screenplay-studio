@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
 import { Button, toast } from '@/components/ui';
 import type { PendingLanguage } from '../types';
+import { Languages } from 'lucide-react';
+import { AdminPage, PageHeader, Reveal } from '../kit';
 
 export function TranslationsAdminTab() {
   const [languages, setLanguages] = useState<{ id: string; code: string; name: string; native_name: string; status: string; added_by: string }[]>([]);
@@ -76,10 +78,6 @@ export function TranslationsAdminTab() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-white mb-1">Translator Hub</h2>
-        <p className="text-sm text-surface-400">Manage languages, review pending requests, and moderate suggestions.</p>
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -164,4 +162,11 @@ export function TranslationsAdminTab() {
 }
 
 /** A big KPI card */
-export default TranslationsAdminTab;
+export default function TranslationsPanel() {
+  return (
+    <AdminPage>
+      <PageHeader icon={<Languages className="h-5 w-5" />} title="Translations" description="Languages, pending requests and suggestion moderation." />
+      <Reveal><TranslationsAdminTab /></Reveal>
+    </AdminPage>
+  );
+}

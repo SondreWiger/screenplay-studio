@@ -7,6 +7,12 @@ import { useAuth } from '@/hooks/useAuth';
 import type { PollSession, PollQuestion, PollQuestionType } from '@/lib/types';
 import type { QuestionResult } from '@/components/PollResultChart';
 import { PollResultCard } from '@/components/PollResultChart';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowLeft, BarChart3 } from 'lucide-react';
+import { timeAgo } from '@/lib/utils';
+import {
+  AdminPage, Dots, EmptyState, Meter, PageHeader, Pill, Reveal, Segmented, StatGrid, TabSkeleton, SERIES, type Tone,
+} from '@/components/admin/kit';
 
 // Admin — Poll Detail / Editor / Results
 
@@ -19,12 +25,7 @@ const QUESTION_TYPES: { value: PollQuestionType; label: string; desc: string }[]
   { value: 'long_text',     label: 'Long text',      desc: 'Open-ended paragraph' },
 ];
 
-const STATUS_COLOR: Record<string, string> = {
-  draft:     'bg-white/10 text-white/50',
-  review:    'bg-amber-500/20 text-amber-300',
-  published: 'bg-emerald-500/20 text-emerald-300',
-  closed:    'bg-white/5 text-white/30',
-};
+const STATUS_TONE: Record<string, Tone> = { draft: 'neutral', review: 'amber', published: 'green', closed: 'violet' };
 
 
 export default function AdminPollDetailPage({ params }: { params: { id: string } }) {
@@ -246,15 +247,16 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
     setSaving(false);
   };
 
-  if (authLoading || loading) {
+  if (authLoading || loading) return <TabSkeleton />;
+
+  if (!session) {
     return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      </div>
+      <EmptyState
+        title="Poll not found"
+        action={<Link href="/admin/polls" className="text-xs font-semibold text-brand-400 hover:underline">Back to polls</Link>}
+      />
     );
   }
-
-  if (!session) return <div className="min-h-screen bg-surface-950 flex items-center justify-center text-white/40">Poll not found</div>;
 
   const questions = [...(session.questions ?? [])].sort((a, b) => a.sort_order - b.sort_order);
   const allApproved = questions.length > 0 && questions.every((q) => q.is_approved);
@@ -264,75 +266,84 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
   const reviewQ = questions[reviewStep] ?? null;
 
   return (
-    <div className="min-h-screen bg-surface-950 text-white">
-      {/* Top bar */}
-      <header className="sticky top-0 z-10 bg-surface-950/95 border-b border-white/[0.06] px-6 py-3 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <Link href="/admin/polls" className="text-white/40 hover:text-white transition-colors text-sm flex-shrink-0">
-            ← Polls
-          </Link>
-          <span className="text-white/20">/</span>
-          <h1 className="text-sm font-semibold text-white truncate">{session.title}</h1>
-          <span className={`text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-0.5 rounded-full flex-shrink-0 ${STATUS_COLOR[session.status]}`}>
-            {session.status}
-          </span>
-        </div>
-        {saving && (
-          <span className="text-xs text-white/30 flex-shrink-0">Saving…</span>
-        )}
-      </header>
+    <AdminPage>
+      <PageHeader
+        back={<Link href="/admin/polls" className="inline-flex items-center gap-1 text-xs text-surface-500 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" />All polls</Link>}
+        icon={<BarChart3 className="h-5 w-5" />}
+        title={session.title}
+        description={session.preface || undefined}
+        meta={
+          <>
+            <Pill tone={STATUS_TONE[session.status] ?? 'neutral'} dot>{session.status}</Pill>
+            <span>Created {timeAgo(session.created_at)}</span>
+            {session.published_at && <span>· Published {timeAgo(session.published_at)}</span>}
+            <AnimatePresence>{saving && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>· Saving <Dots /></motion.span>}</AnimatePresence>
+          </>
+        }
+      />
 
-      {/* Tab bar */}
-      <div className="border-b border-white/[0.06] px-6">
-        <div className="flex gap-0">
-          {(['edit', 'review', 'results'] as View[]).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`px-4 py-3 text-sm font-medium transition-colors capitalize border-b-2 ${
-                view === v
-                  ? 'text-white border-brand-500'
-                  : 'text-white/40 hover:text-white border-transparent'
-              }`}
-            >
-              {v === 'review'
-                ? `Review (${approvedCount}/${questions.length})`
-                : v === 'results'
-                  ? `Results${isLive ? ` · ${session.response_count}` : ''}`
-                  : 'Edit'}
-            </button>
-          ))}
-        </div>
-      </div>
+      <StatGrid
+        cols={4}
+        items={[
+          { label: 'Questions', value: questions.length, tone: 'brand' },
+          { label: 'Approved', value: approvedCount, tone: 'green', hint: 'Questions approved in review' },
+          { label: 'Required', value: questions.filter((q) => q.is_required).length, tone: 'amber' },
+          { label: 'Responses', value: session.response_count || 0, tone: 'blue' },
+        ]}
+      />
 
-      <main className="max-w-3xl mx-auto px-6 py-8">
+      {questions.length > 0 && (
+        <Reveal>
+          <div className="mb-1 flex justify-between text-[11px] text-surface-500">
+            <span>Review progress</span>
+            <span className="font-semibold text-surface-300">{approvedCount}/{questions.length} approved</span>
+          </div>
+          <Meter value={approvedCount} max={questions.length} color={allApproved ? '#22c55e' : SERIES.blue} />
+        </Reveal>
+      )}
+
+      <Reveal>
+        <Segmented
+          id="poll-view"
+          value={view}
+          onChange={setView}
+          options={[
+            { key: 'edit', label: 'Edit' },
+            { key: 'review', label: `Review (${approvedCount}/${questions.length})` },
+            { key: 'results', label: `Results${isLive ? ` · ${session.response_count}` : ''}` },
+          ]}
+        />
+      </Reveal>
+
+      <AnimatePresence mode="wait">
+      <motion.main key={view} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="max-w-3xl">
 
         {/* ── Edit Tab ─────────────────────────────────────────── */}
         {view === 'edit' && (
           <div className="space-y-6">
             {/* Session meta */}
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+            <div className="bg-surface-900/60 border border-surface-800 rounded-xl p-5">
               <h2 className="text-sm font-semibold text-white mb-4">Poll details</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Title</label>
+                  <label className="block text-xs text-surface-400 mb-1.5 font-medium uppercase tracking-[0.04em]">Title</label>
                   <input
                     type="text"
                     value={editTitle}
                     onChange={(e) => { setEditTitle(e.target.value); setMetaDirty(true); }}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50"
+                    className="w-full bg-surface-950/60 border border-surface-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">
-                    Preface <span className="normal-case text-white/20">(displayed on the intro page)</span>
+                  <label className="block text-xs text-surface-400 mb-1.5 font-medium uppercase tracking-[0.04em]">
+                    Preface <span className="normal-case text-surface-600">(displayed on the intro page)</span>
                   </label>
                   <textarea
                     rows={4}
                     value={editPreface}
                     onChange={(e) => { setEditPreface(e.target.value); setMetaDirty(true); }}
                     placeholder="Tell users what this poll is about and why their input matters…"
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 resize-none"
+                    className="w-full bg-surface-950/60 border border-surface-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/50 resize-none"
                   />
                 </div>
                 {metaDirty && (
@@ -350,7 +361,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                 {!isLive && (
                   <button
                     onClick={() => setAddingQ(true)}
-                    className="text-xs px-3 py-1.5 border border-white/20 hover:border-white/40 text-white/60 hover:text-white rounded-lg transition-colors"
+                    className="text-xs px-3 py-1.5 border border-surface-700 hover:border-surface-500 text-surface-300 hover:text-white rounded-lg transition-colors"
                   >
                     + Add question
                   </button>
@@ -391,8 +402,8 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
               </div>
 
               {questions.length === 0 && (
-                <div className="text-center py-10 border border-dashed border-white/10 rounded-xl">
-                  <p className="text-white/30 text-sm">No questions yet</p>
+                <div className="text-center py-10 border border-dashed border-surface-800 rounded-xl">
+                  <p className="text-surface-500 text-sm">No questions yet</p>
                 </div>
               )}
             </div>
@@ -413,14 +424,14 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
 
             {/* Actions bar */}
             {!isLive && questions.length > 0 && (
-              <div className="pt-4 border-t border-white/[0.06]">
+              <div className="pt-4 border-t border-surface-800">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/40">
+                  <p className="text-sm text-surface-400">
                     Once all questions are approved in the Review tab, you can publish.
                   </p>
                   <button
                     onClick={() => setView('review')}
-                    className="px-4 py-2 border border-white/20 hover:border-white/40 text-white/60 hover:text-white text-sm rounded-lg transition-colors"
+                    className="px-4 py-2 border border-surface-700 hover:border-surface-500 text-surface-300 hover:text-white text-sm rounded-lg transition-colors"
                   >
                     Go to Review →
                   </button>
@@ -434,7 +445,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
         {view === 'review' && (
           <div>
             {questions.length === 0 ? (
-              <div className="text-center py-16 text-white/30 text-sm">No questions to review.</div>
+              <div className="text-center py-16 text-surface-500 text-sm">No questions to review.</div>
             ) : reviewStep >= questions.length ? (
               /* All reviewed */
               <div className="text-center py-10">
@@ -442,7 +453,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                 <h2 className="text-xl font-bold text-white mb-2">
                   {allApproved ? 'All questions approved!' : `${approvedCount} of ${questions.length} approved`}
                 </h2>
-                <p className="text-white/40 text-sm mb-8">
+                <p className="text-surface-400 text-sm mb-8">
                   {allApproved
                     ? 'You\'re good to publish. Clicking Publish will notify all users.'
                     : 'Some questions still need approval. Go back to review them.'}
@@ -455,7 +466,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <button
                     onClick={() => setReviewStep(0)}
-                    className="px-5 py-2.5 border border-white/20 hover:border-white/40 text-white/60 hover:text-white text-sm rounded-xl transition-colors"
+                    className="px-5 py-2.5 border border-surface-700 hover:border-surface-500 text-surface-300 hover:text-white text-sm rounded-xl transition-colors"
                   >
                     ← Review again
                   </button>
@@ -478,8 +489,8 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                   {questions.map((q, i) => (
                     <div key={q.id} className="flex items-center gap-3 text-sm">
                       <span className={q.is_approved ? 'text-emerald-400' : 'text-amber-400'}>{q.is_approved ? '✓' : '○'}</span>
-                      <span className="text-white/60 truncate">{i + 1}. {q.question_text}</span>
-                      <button onClick={() => { setReviewStep(i); }} className="text-white/30 hover:text-white ml-auto flex-shrink-0 text-xs underline">edit</button>
+                      <span className="text-surface-300 truncate">{i + 1}. {q.question_text}</span>
+                      <button onClick={() => { setReviewStep(i); }} className="text-surface-500 hover:text-white ml-auto flex-shrink-0 text-xs underline">edit</button>
                     </div>
                   ))}
                 </div>
@@ -508,7 +519,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                 <div className={`rounded-xl border p-6 mb-5 transition-colors ${
                   reviewQ.is_approved
                     ? 'border-emerald-500/30 bg-emerald-500/5'
-                    : 'border-white/10 bg-white/[0.03]'
+                    : 'border-surface-800 bg-surface-900/60'
                 }`}>
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <p className="text-lg font-semibold text-white leading-snug">{reviewQ.question_text}</p>
@@ -517,34 +528,34 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     )}
                   </div>
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-xs bg-white/10 text-white/50 px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-white/10 text-surface-400 px-2 py-0.5 rounded-full">
                       {QUESTION_TYPES.find((t) => t.value === reviewQ.question_type)?.label ?? reviewQ.question_type}
                     </span>
                     {!reviewQ.is_required && (
-                      <span className="text-xs bg-white/5 text-white/30 px-2 py-0.5 rounded-full">Optional</span>
+                      <span className="text-xs bg-white/5 text-surface-500 px-2 py-0.5 rounded-full">Optional</span>
                     )}
                   </div>
                   {/* Show options preview */}
                   {Array.isArray(reviewQ.options) && reviewQ.options.length > 0 && (
                     <div className="space-y-2">
                       {reviewQ.options.map((opt, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-white/50">
-                          <span className="text-white/20">{i + 1}.</span> {opt}
+                        <div key={i} className="flex items-center gap-2 text-sm text-surface-400">
+                          <span className="text-surface-600">{i + 1}.</span> {opt}
                         </div>
                       ))}
                     </div>
                   )}
                   {(reviewQ.question_type === 'yes_no') && (
                     <div className="flex gap-3">
-                      <div className="px-4 py-2 border border-white/10 rounded-lg text-white/40 text-sm">👍 Yes</div>
-                      <div className="px-4 py-2 border border-white/10 rounded-lg text-white/40 text-sm">👎 No</div>
+                      <div className="px-4 py-2 border border-surface-800 rounded-lg text-surface-400 text-sm">👍 Yes</div>
+                      <div className="px-4 py-2 border border-surface-800 rounded-lg text-surface-400 text-sm">👎 No</div>
                     </div>
                   )}
                   {(reviewQ.question_type === 'short_text') && (
-                    <div className="bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2 text-white/20 text-sm italic">Short text answer…</div>
+                    <div className="bg-surface-900/60 border border-surface-800 rounded-lg px-4 py-2 text-surface-600 text-sm italic">Short text answer…</div>
                   )}
                   {(reviewQ.question_type === 'long_text') && (
-                    <div className="bg-white/[0.03] border border-white/10 rounded-lg px-4 py-8 text-white/20 text-sm italic text-center">Long text answer…</div>
+                    <div className="bg-surface-900/60 border border-surface-800 rounded-lg px-4 py-8 text-surface-600 text-sm italic text-center">Long text answer…</div>
                   )}
                 </div>
 
@@ -554,7 +565,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     onClick={() => { toggleApprove(reviewQ); if (!reviewQ.is_approved) setReviewStep((s) => s + 1); }}
                     className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-colors ${
                       reviewQ.is_approved
-                        ? 'bg-white/5 hover:bg-white/10 text-white/40 border border-white/10'
+                        ? 'bg-white/5 hover:bg-white/10 text-surface-400 border border-surface-800'
                         : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                     }`}
                   >
@@ -562,7 +573,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                   </button>
                   <button
                     onClick={() => { setView('edit'); setEditingQ(reviewQ.id); setEditQText(reviewQ.question_text); setEditQType(reviewQ.question_type); setEditQOptions(Array.isArray(reviewQ.options) ? reviewQ.options.join('\n') : ''); setEditQRequired(reviewQ.is_required); }}
-                    className="px-4 py-3 border border-white/10 hover:border-white/30 text-white/40 hover:text-white text-sm rounded-xl transition-colors"
+                    className="px-4 py-3 border border-surface-800 hover:border-surface-600 text-surface-400 hover:text-white text-sm rounded-xl transition-colors"
                   >
                     Edit
                   </button>
@@ -570,11 +581,11 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
 
                 <div className="flex gap-3 mt-3">
                   {reviewStep > 0 && (
-                    <button onClick={() => setReviewStep((s) => s - 1)} className="text-sm text-white/30 hover:text-white transition-colors">
+                    <button onClick={() => setReviewStep((s) => s - 1)} className="text-sm text-surface-500 hover:text-white transition-colors">
                       ← Previous
                     </button>
                   )}
-                  <button onClick={() => setReviewStep((s) => s + 1)} className="text-sm text-white/30 hover:text-white transition-colors ml-auto">
+                  <button onClick={() => setReviewStep((s) => s + 1)} className="text-sm text-surface-500 hover:text-white transition-colors ml-auto">
                     Skip →
                   </button>
                 </div>
@@ -587,7 +598,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
         {view === 'results' && (
           <div>
             {!isLive && (
-              <div className="text-center py-10 text-white/30 text-sm">
+              <div className="text-center py-10 text-surface-500 text-sm">
                 Results will be available after the poll is published.
               </div>
             )}
@@ -599,7 +610,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
             {isLive && !loadingResults && results !== null && (
               <div className="space-y-8">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/40">
+                  <p className="text-sm text-surface-400">
                     <span className="text-white font-bold text-base">{session.response_count}</span> total response{session.response_count !== 1 ? 's' : ''}
                   </p>
                   <div className="flex items-center gap-3">
@@ -619,7 +630,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                         </>
                       )}
                     </button>
-                    <button onClick={() => { setResults(null); loadResults(); }} className="text-xs text-white/30 hover:text-white transition-colors">
+                    <button onClick={() => { setResults(null); loadResults(); }} className="text-xs text-surface-500 hover:text-white transition-colors">
                       Refresh
                     </button>
                   </div>
@@ -638,8 +649,9 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
             )}
           </div>
         )}
-      </main>
-    </div>
+      </motion.main>
+      </AnimatePresence>
+    </AdminPage>
   );
 }
 
@@ -687,13 +699,13 @@ function QuestionCard({
   }
 
   return (
-    <div className={`bg-white/[0.03] border rounded-xl p-4 ${question.is_approved ? 'border-emerald-500/20' : 'border-white/[0.06]'}`}>
+    <div className={`bg-surface-900/60 border rounded-xl p-4 ${question.is_approved ? 'border-emerald-500/20' : 'border-surface-800'}`}>
       <div className="flex items-start gap-3">
-        <span className="text-white/20 text-sm font-mono w-5 flex-shrink-0 pt-0.5">{index + 1}</span>
+        <span className="text-surface-600 text-sm font-mono w-5 flex-shrink-0 pt-0.5">{index + 1}</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-white font-medium leading-snug">{question.question_text}</p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="text-[11px] bg-white/8 text-white/40 px-1.5 py-0.5 rounded">
+            <span className="text-[11px] bg-white/8 text-surface-400 px-1.5 py-0.5 rounded">
               {QUESTION_TYPES.find((t) => t.value === question.question_type)?.label ?? question.question_type}
             </span>
             {!question.is_required && (
@@ -709,16 +721,16 @@ function QuestionCard({
         </div>
         {!locked && (
           <div className="flex items-center gap-1 flex-shrink-0">
-            <button aria-label="Move up" onClick={onMoveUp} disabled={index === 0} className="p-1 text-white/20 hover:text-white disabled:opacity-0 transition-colors">
+            <button aria-label="Move up" onClick={onMoveUp} disabled={index === 0} className="p-1 text-surface-600 hover:text-white disabled:opacity-0 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
             </button>
-            <button aria-label="Move down" onClick={onMoveDown} disabled={index === total - 1} className="p-1 text-white/20 hover:text-white disabled:opacity-0 transition-colors">
+            <button aria-label="Move down" onClick={onMoveDown} disabled={index === total - 1} className="p-1 text-surface-600 hover:text-white disabled:opacity-0 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
             </button>
-            <button aria-label="Edit" onClick={onStartEdit} className="p-1 text-white/30 hover:text-white transition-colors">
+            <button aria-label="Edit" onClick={onStartEdit} className="p-1 text-surface-500 hover:text-white transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
             </button>
-            <button aria-label="Delete" onClick={onDelete} className="p-1 text-white/20 hover:text-red-400 transition-colors">
+            <button aria-label="Delete" onClick={onDelete} className="p-1 text-surface-600 hover:text-red-400 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
           </div>
@@ -744,21 +756,21 @@ function QuestionForm({
   const needsOptions = ['single_select', 'multi_select', 'ranking'].includes(qType);
 
   return (
-    <div className="bg-white/[0.04] border border-brand-500/20 rounded-xl p-5">
+    <div className="bg-surface-950/60 border border-brand-500/20 rounded-xl p-5">
       <h3 className="text-sm font-semibold text-white mb-4">{title}</h3>
       <div className="space-y-4">
         <div>
-          <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Question</label>
+          <label className="block text-xs text-surface-400 mb-1.5 font-medium uppercase tracking-[0.04em]">Question</label>
           <input
             type="text"
             value={qText}
             onChange={(e) => setQText(e.target.value)}
             placeholder="What would you like to ask?"
-            className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50"
+            className="w-full bg-surface-950/60 border border-surface-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/50"
           />
         </div>
         <div>
-          <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">Type</label>
+          <label className="block text-xs text-surface-400 mb-1.5 font-medium uppercase tracking-[0.04em]">Type</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {QUESTION_TYPES.map((t) => (
               <button
@@ -767,36 +779,36 @@ function QuestionForm({
                 className={`px-3 py-2 rounded-lg border text-left transition-colors ${
                   qType === t.value
                     ? 'border-brand-500 bg-brand-500/10 text-white'
-                    : 'border-white/10 text-white/40 hover:border-white/20 hover:text-white'
+                    : 'border-surface-800 text-surface-400 hover:border-surface-700 hover:text-white'
                 }`}
               >
                 <p className="text-xs font-semibold">{t.label}</p>
-                <p className="text-[11px] text-white/30 mt-0.5">{t.desc}</p>
+                <p className="text-[11px] text-surface-500 mt-0.5">{t.desc}</p>
               </button>
             ))}
           </div>
         </div>
         {needsOptions && (
           <div>
-            <label className="block text-xs text-white/40 mb-1.5 font-medium uppercase tracking-[0.04em]">
-              Options <span className="normal-case text-white/20">(one per line)</span>
+            <label className="block text-xs text-surface-400 mb-1.5 font-medium uppercase tracking-[0.04em]">
+              Options <span className="normal-case text-surface-600">(one per line)</span>
             </label>
             <textarea
               rows={4}
               value={qOptions}
               onChange={(e) => setQOptions(e.target.value)}
               placeholder={"Option A\nOption B\nOption C"}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-500/50 resize-none font-mono"
+              className="w-full bg-surface-950/60 border border-surface-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-surface-600 focus:outline-none focus:border-brand-500/50 resize-none font-mono"
             />
           </div>
         )}
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={qRequired} onChange={(e) => setQRequired(e.target.checked)} className="w-4 h-4 accent-brand-500" />
-          <span className="text-sm text-white/60">Required</span>
+          <span className="text-sm text-surface-300">Required</span>
         </label>
       </div>
       <div className="flex gap-3 mt-5">
-        <button onClick={onCancel} className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-white/50 text-sm rounded-xl transition-colors">
+        <button onClick={onCancel} className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-surface-400 text-sm rounded-xl transition-colors">
           Cancel
         </button>
         <button
