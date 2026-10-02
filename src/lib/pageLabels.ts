@@ -8,7 +8,7 @@ export const PAGE_LABELS: Record<string, string> = {
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
   showcase: 'Showcase', share: 'Share', analytics: 'Analytics',
-  export: 'Advanced Export', casting: 'Casting', actors: 'Actors', 'ai-analysis': 'Script Analysis',
+  export: 'Advanced Export', drafts: 'Printed Drafts', revisions: 'Revisions', casting: 'Casting', actors: 'Actors', 'ai-analysis': 'Script Analysis',
   corkboard: 'Corkboard', 'beat-sheet': 'Beat Sheet', invoice: 'Invoice Generator',
   submissions: 'Submission Tracker', breakdown: 'Production Breakdown',
   continuity: 'Continuity Sheet', 'call-sheet': 'Call Sheet',

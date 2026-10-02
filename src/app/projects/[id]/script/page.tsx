@@ -40,6 +40,8 @@ import {
   deserializeVersionConfig,
 } from '@/lib/versioning';
 import { paginateScript, type PaginatedPage } from '@/lib/screenplay-paginator';
+import { createScriptDraft, draftStampText, draftStampCSS } from '@/lib/scripts/drafts';
+import { PRINT_REFLOW_SCRIPT, printReflowCSS } from '@/lib/scripts/print-reflow';
 import { logWork } from '@/lib/work-tracker';
 
 // Display Settings — persisted in localStorage
@@ -1277,12 +1279,32 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
   };
 
   // PDF Export
-  const handleExportPDF = useCallback(() => {
+  const handleExportPDF = useCallback(async () => {
     const store = useScriptStore.getState();
     const script = store.currentScript;
     // Filter by active version config (disabled versions excluded)
     const els = store.elements.filter((e) => isElementVisible(e, versionConfigRef.current.disabled));
     if (!script) return;
+
+    // Open the window before any await, or the popup blocker steps in.
+    const win = window.open('', '_blank');
+    if (!win) {
+      toast.warning('Please allow popups to export PDF.');
+      return;
+    }
+    win.document.write('<!DOCTYPE html><title>Preparing…</title><p style="font-family:sans-serif;color:#666;padding:2em">Preparing your script…</p>');
+
+    // Every print gets a tracked draft code, stamped at the foot of each page.
+    // If that fails (offline, desktop-only project) the script still prints.
+    let stamp = '';
+    try {
+      const draft = await createScriptDraft(script.id, { source: 'print', format: 'pdf' });
+      stamp = draftStampText(draft);
+      toast.success(`Printed as draft ${draft.code}`);
+    } catch (err) {
+      console.warn('Could not register printed draft:', err);
+    }
+    const stampHTML = stamp ? `<div class="draft-stamp">${stamp}</div>` : '';
 
     const titlePage = script.title_page_data || ({} as TitlePageData);
     const hasTitlePage = titlePage.title || titlePage.author;
@@ -1303,6 +1325,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
       <div class="page">
         <div class="page-content">${page.elements.map(elementHTML).join('')}</div>
         <div class="page-number">${i + 1}.</div>
+        ${stampHTML}
       </div>
     `).join('');
 
@@ -1326,8 +1349,11 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
             ${titlePage.notes ? `<div class="title-bottom-right" style="text-align: right; font-size: 10pt; max-width: 160pt; white-space: pre-wrap;">${titlePage.notes}</div>` : ''}
           </div>
         </div>
+        ${stampHTML}
       </div>
     ` : '';
+
+    const pageHeight = exportPageSize === 'a4' ? '297mm' : '11in';
 
     const html = `<!DOCTYPE html>
 <html>
@@ -1356,7 +1382,7 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     break-after: page;
     margin: 0 auto;
   }
-  .page:last-child { page-break-after: auto; break-after: auto; }
+  .page:last-of-type { page-break-after: auto; break-after: auto; }
 
   .page-number {
     position: absolute;
@@ -1364,6 +1390,9 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
     right: 1in;
     font-size: 12pt;
   }
+
+  ${draftStampCSS()}
+  ${printReflowCSS(pageHeight)}
 
   /* Title page */
   .title-page .page-number { display: none; }
@@ -1461,20 +1490,18 @@ export default function ScriptEditorPage({ params }: { params: { id: string } })
 <body>
 ${titlePageHTML}
 ${pageHTML}
+<script>${PRINT_REFLOW_SCRIPT}<\/script>
 <script>
-  // Auto-trigger print after fonts load
+  // Once fonts load, fix any page that overflowed its sheet, then print
   document.fonts.ready.then(() => {
+    window.__reflowPages();
     setTimeout(() => window.print(), 300);
   });
 <\/script>
 </body>
 </html>`;
 
-    const win = window.open('', '_blank');
-    if (!win) {
-      toast.warning('Please allow popups to export PDF.');
-      return;
-    }
+    win.document.open();
     win.document.write(html);
     win.document.close();
   }, []);

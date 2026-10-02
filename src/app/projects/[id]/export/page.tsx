@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
+import Link from 'next/link';
+import { createScriptDraft, draftStampText, draftStampMarginCSS, type ScriptDraft } from '@/lib/scripts/drafts';
 
 // Advanced Export — free for everyone
 // Branded PDF/DOCX/HTML/Fountain export with watermark & cover
@@ -84,6 +86,11 @@ export default function ExportPage({ params }: { params: { id: string } }) {
   const [exporting, setExporting] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   const [batchFormats, setBatchFormats] = useState<ExportFormat[]>(['pdf']);
+  // Printed-draft tracking: each export gets a code stamped on every page
+  const [trackDraft, setTrackDraft] = useState(true);
+  const [draftRecipient, setDraftRecipient] = useState('');
+  const [draftNotes, setDraftNotes] = useState('');
+  const [lastDraft, setLastDraft] = useState<ScriptDraft | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -135,9 +142,28 @@ export default function ExportPage({ params }: { params: { id: string } }) {
   };
 
   const handleExport = async () => {
+    const formats = batchMode ? batchFormats : [config.format];
+    // Open the PDF window before any await, or the popup blocker steps in.
+    const pdfWin = formats.includes('pdf') ? window.open('', '_blank') : null;
     setExporting(true);
     try {
-      const formats = batchMode ? batchFormats : [config.format];
+      // One draft code per export; every format in a batch carries the same one.
+      let draft: ScriptDraft | null = null;
+      if (trackDraft && selectedScript && (elements[selectedScript] || []).length > 0) {
+        try {
+          draft = await createScriptDraft(selectedScript, {
+            source: 'export',
+            format: formats.join(', '),
+            recipient: draftRecipient,
+            notes: draftNotes,
+          });
+          setLastDraft(draft);
+        } catch (err) {
+          console.warn('Could not register printed draft:', err);
+          toast('Could not register a draft code — exporting without one.', 'warning');
+        }
+      }
+
       for (const fmt of formats) {
         const script = scripts.find(s => s.id === selectedScript);
         if (!script) continue;
@@ -150,6 +176,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
 
         if (content.length === 0) {
           toast('No script content to export. Write your script first.', 'warning');
+          pdfWin?.close();
           setExporting(false);
           return;
         }
@@ -177,23 +204,21 @@ export default function ExportPage({ params }: { params: { id: string } }) {
           headerTemplate: branding?.header_template || 'minimal',
           primaryColor: branding?.primary_color || '#3B82F6',
           secondaryColor: branding?.secondary_color || '#F59E0B',
+          draftStamp: draft ? draftStampText(draft) : '',
+          draftCode: draft?.code || '',
         };
 
         if (fmt === 'pdf') {
           // PDF: generate HTML and open in a new tab for printing
           const html = generateScreenplayHTML(exportData);
-          const blob = new Blob([html], { type: 'text/html' });
-          const url = URL.createObjectURL(blob);
-          const win = window.open(url, '_blank');
-          if (win) {
-            win.onload = () => {
-              setTimeout(() => {
-                win.print();
-                URL.revokeObjectURL(url);
-              }, 300);
-            };
+          if (pdfWin) {
+            pdfWin.document.open();
+            pdfWin.document.write(html.replace('</body>', '<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},300)});<\/script></body>'));
+            pdfWin.document.close();
           } else {
             // Fallback: download as HTML if popup blocked
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `${script.title || 'script'}.html`;
@@ -213,8 +238,9 @@ export default function ExportPage({ params }: { params: { id: string } }) {
           URL.revokeObjectURL(url);
         }
       }
-      toast(`Exported ${formats.length} file${formats.length > 1 ? 's' : ''}`, 'success');
+      toast(`Exported ${formats.length} file${formats.length > 1 ? 's' : ''}${draft ? ` as draft ${draft.code}` : ''}`, 'success');
     } catch {
+      pdfWin?.close();
       toast('Export failed', 'error');
     }
     setExporting(false);
@@ -391,6 +417,52 @@ export default function ExportPage({ params }: { params: { id: string } }) {
               )}
             </Card>
 
+            {/* Printed draft tracking */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-surface-400">Track as printed draft</label>
+                <input
+                  type="checkbox"
+                  checked={trackDraft}
+                  onChange={e => setTrackDraft(e.target.checked)}
+                  className="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500"
+                />
+              </div>
+              <p className="text-[11px] text-surface-500 mb-3">
+                Gives this export a 5-character code, printed small at the foot of every page, and saves a snapshot so you can see later what changed.{' '}
+                <Link href={`/projects/${params.id}/drafts`} className="text-brand-400 hover:underline">All drafts</Link>
+              </p>
+              {trackDraft && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Given to (optional)</label>
+                    <input
+                      type="text"
+                      value={draftRecipient}
+                      onChange={e => setDraftRecipient(e.target.value)}
+                      placeholder="e.g. Jamie (producer)"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-[0.04em] text-surface-500 mb-1">Notes (optional)</label>
+                    <input
+                      type="text"
+                      value={draftNotes}
+                      onChange={e => setDraftNotes(e.target.value)}
+                      placeholder="e.g. Table read copy"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    />
+                  </div>
+                </div>
+              )}
+              {lastDraft && (
+                <p className="text-xs text-surface-400 mt-3">
+                  Last export: draft <span className="font-mono text-white tracking-[0.08em]">{lastDraft.code}</span>
+                </p>
+              )}
+            </Card>
+
             {/* Page Options */}
             <Card className="p-4">
               <label className="block text-xs font-medium text-surface-400 mb-3">Page Options</label>
@@ -536,6 +608,9 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 {config.pageNumbers && (
                   <div className="absolute bottom-1 right-2 text-[4px] text-gray-400">1.</div>
                 )}
+                {trackDraft && (
+                  <div className="absolute bottom-1 left-2 text-[4px] text-gray-500 font-mono tracking-[0.08em]">Draft ·····</div>
+                )}
               </div>
 
               <Button
@@ -551,6 +626,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 {batchMode ? batchFormats.map(f => f.toUpperCase()).join(' + ') : `${config.format.toUpperCase()} format`}
                 {config.watermarkEnabled && ' • Watermarked'}
                 {config.includeCover && ' • Cover page'}
+                {trackDraft && ' • Draft code'}
               </div>
             </Card>
           </div>
@@ -563,7 +639,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
 // Screenplay HTML builder (shared between PDF & HTML export)
 
 function generateScreenplayHTML(data: any): string {
-  const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, projectType } = data;
+  const { content, config: cfg, fontFamily, coverTitle, watermarkOpacity, headerTemplate, primaryColor, projectType, draftStamp } = data;
   const elements = Array.isArray(content) ? content : [];
   let sceneNum = 0;
   const font = fontFamily || 'Courier New';
@@ -583,6 +659,7 @@ function generateScreenplayHTML(data: any): string {
     if (cfg.coverSubtitle) bodyParts.push(`<div class="cover-subtitle">${esc(cfg.coverSubtitle)}</div>`);
     if (cfg.draftLabel) bodyParts.push(`<div class="cover-draft">${esc(cfg.draftLabel)}</div>`);
     if (cfg.contactInfo) bodyParts.push(`<div class="cover-contact">${esc(cfg.contactInfo)}</div>`);
+    if (draftStamp) bodyParts.push(`<div class="cover-draft-code">${esc(draftStamp)}</div>`);
     bodyParts.push('</div><div style="page-break-after:always"></div>');
   }
 
@@ -723,6 +800,8 @@ ${watermarkCSS}
 .cover-subtitle{font-size:12pt;color:#555;margin-bottom:8px;}
 .cover-draft{font-size:10pt;color:#888;margin-top:24px;}
 .cover-contact{font-size:10pt;color:#888;margin-top:48px;white-space:pre-line;}
+.cover-draft-code{font-size:8pt;letter-spacing:0.08em;color:#aaa;margin-top:36px;}
+${draftStamp ? draftStampMarginCSS(draftStamp) : ''}
 .page-header{display:flex;align-items:center;justify-content:space-between;font-size:8pt;color:#888;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:24px;}
 .header-company{font-weight:bold;color:#555;}
 .header-draft{margin-left:auto;margin-right:12px;}
@@ -762,6 +841,7 @@ function generateExport(data: any): Blob {
     if (cfg.coverSubtitle) fountain.push(`Author: ${cfg.coverSubtitle}`);
     if (cfg.draftLabel) fountain.push(`Draft date: ${cfg.draftLabel}`);
     if (cfg.contactInfo) fountain.push(`Contact: ${cfg.contactInfo}`);
+    if (data.draftCode) fountain.push(`Draft code: ${data.draftCode}`);
     fountain.push('', '===', '');
     for (const el of elements) {
       const type = (el.type || '').toLowerCase();

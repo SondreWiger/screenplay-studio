@@ -527,6 +527,8 @@ export interface Project {
   accent_color?: string | null;
   sidebar_tabs?: Record<string, boolean> | null;
   page_size?: 'letter' | 'a4' | null;
+  /** Let anyone look up this project's printed draft codes at /lookup */
+  drafts_public_lookup?: boolean;
   custom_branding?: {
     primary_color?: string;
     secondary_color?: string;

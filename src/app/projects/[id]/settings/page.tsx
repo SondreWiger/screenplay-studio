@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingSpinner, Toggle, toast } from '@/components/ui';
 import { applyProjectUpdate, deleteProject } from '@/lib/project-actions';
 import { DeleteProjectDialog } from '@/components/projects/ManageControls';
 import type { Project } from '@/lib/types';
@@ -46,6 +46,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const [pageSize, setPageSize] = useState<'letter' | 'a4'>('letter');
   const [savingCustom, setSavingCustom] = useState(false);
   const [savedCustom, setSavedCustom] = useState(false);
+  const [savingLookup, setSavingLookup] = useState(false);
 
   useEffect(() => { fetchProject(); }, [params.id]);
 
@@ -595,6 +596,42 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
             a.click(); URL.revokeObjectURL(url);
           }}>Export JSON</Button>
         </div>
+      </Card>
+
+      {/* Printed drafts */}
+      <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white mb-1">Printed Drafts</h2>
+            <p className="text-sm text-surface-400">
+              Prints and exports carry a 5-character draft code in the footer.
+            </p>
+          </div>
+          <Link
+            href={`/projects/${params.id}/drafts`}
+            className="px-4 py-2 text-sm font-medium text-brand-500 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 rounded-lg transition-colors shrink-0"
+          >
+            View drafts
+          </Link>
+        </div>
+        <Toggle
+          checked={!!project.drafts_public_lookup}
+          disabled={savingLookup}
+          label="Allow public code lookup"
+          description="Anyone with a code can check it at /lookup and see the print date, script title and whether it’s still current — never the script itself or who it was given to."
+          onChange={async (next) => {
+            setSavingLookup(true);
+            const supabase = createClient();
+            const { data, error } = await supabase.from('projects')
+              .update({ drafts_public_lookup: next }).eq('id', params.id).select('*');
+            setSavingLookup(false);
+            if (error) { toast.error('Could not save: ' + error.message); return; }
+            if (!data?.length) { toast.error('Only the project owner or an admin can change this.'); return; }
+            const updated = { ...project, ...data[0] } as Project;
+            applyProjectUpdate(updated);
+            setProject(updated);
+          }}
+        />
       </Card>
 
       {/* Showcase & Finished Production */}

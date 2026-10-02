@@ -78,6 +78,7 @@ export function getDefaultOtherIcons(
         'crew',
         // Technical / advanced
         'revisions',
+        'drafts',
         'coverage',
         'presskit',
         ...CAST_CREW_TOOLS,
@@ -163,6 +164,7 @@ export function getDefaultOtherIcons(
         'branding',
         // Advanced
         'revisions',
+        'drafts',
         'coverage',
         'presskit',
         ...CAST_CREW_TOOLS,

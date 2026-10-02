@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+### Printed drafts
+- Every print and export gets a 5-character draft code, printed small at the foot of each page, plus a snapshot of the script at that moment
+- New Printed Drafts page per project: pick a script, issue codes by hand, record who a copy went to, and see exactly what changed since it was printed
+- Look up any code at /lookup — project members see everything; others only see the print date and title, and only if the project allows public lookup (Settings → Printed Drafts)
+
+### Fixes
+- PDF export from the script editor no longer prints sheets with a single stray line: pages that run long now move their last lines to the next page instead of spilling onto an extra sheet
+
 ## [3.0.0] - 2026-10-01
 ### Out of beta
 Screenplay Studio leaves early access. This release is about reliability,

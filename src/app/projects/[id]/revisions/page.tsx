@@ -9,21 +9,10 @@ import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Badge, LoadingPage, Modal, toast, ToastContainer } from '@/components/ui';
 import { timeAgo } from '@/lib/utils';
+import { diffLines, snapshotToLines, type SnapshotElement } from '@/lib/scripts/diff';
 
 // Revisions (Diff Comparison) — free for everyone
 // Real snapshot-based revisions with side-by-side diff and restore.
-
-type SnapshotElement = {
-  id: string;
-  element_type: string;
-  content: string;
-  sort_order: number;
-  scene_number: string | null;
-  revision_color: string;
-  is_revised: boolean;
-  is_omitted: boolean;
-  metadata: Record<string, string | number | boolean | null>;
-};
 
 type Revision = {
   id: string;
@@ -65,54 +54,6 @@ function calcStats(elements: SnapshotElement[] | null): { pages: number; words: 
   if (!elements || elements.length === 0) return { pages: 0, words: 0 };
   const words = elements.reduce((sum, el) => sum + (el.content?.split(/\s+/).filter(Boolean).length || 0), 0);
   return { pages: Math.max(1, Math.ceil(elements.length / 56)), words };
-}
-
-/** LCS-based line diff. Falls back to set-based diff for very large scripts. */
-function diffLines(aLines: string[], bLines: string[]): { type: 'same' | 'added' | 'removed'; text: string }[] {
-  const m = aLines.length;
-  const n = bLines.length;
-  if (m * n > 500_000) return diffSimple(aLines, bLines);
-
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (aLines[i - 1] === bLines[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
-      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-    }
-  }
-  const stack: { type: 'same' | 'added' | 'removed'; text: string }[] = [];
-  let i = m, j = n;
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && aLines[i - 1] === bLines[j - 1]) {
-      stack.push({ type: 'same', text: aLines[i - 1] }); i--; j--;
-    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-      stack.push({ type: 'added', text: bLines[j - 1] }); j--;
-    } else {
-      stack.push({ type: 'removed', text: aLines[i - 1] }); i--;
-    }
-  }
-  stack.reverse();
-  return stack;
-}
-
-function diffSimple(aLines: string[], bLines: string[]): { type: 'same' | 'added' | 'removed'; text: string }[] {
-  const bSet = new Set(bLines);
-  const aSet = new Set(aLines);
-  const result: { type: 'same' | 'added' | 'removed'; text: string }[] = [];
-  for (const line of aLines) result.push({ type: bSet.has(line) ? 'same' : 'removed', text: line });
-  for (const line of bLines) { if (!aSet.has(line)) result.push({ type: 'added', text: line }); }
-  return result;
-}
-
-/** Convert snapshot elements into labelled text lines for diffing. */
-function snapshotToLines(elements: SnapshotElement[]): string[] {
-  return [...elements]
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .filter(el => !el.is_omitted)
-    .map(el => {
-      const prefix = el.element_type ? `[${el.element_type.toUpperCase().replace(/_/g, ' ')}] ` : '';
-      return prefix + (el.content || '');
-    });
 }
 
 export default function RevisionsPage() {
