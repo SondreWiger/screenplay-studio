@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
             type: 'security_alert',
             title: 'Suspicious Login Activity Detected',
             body: `We detected ${recentFailed.length} failed login attempts on your account from multiple locations. If this wasn't you, please change your password immediately.`,
-            url: '/settings/security',
+            link: '/settings/security',
           });
 
           if (notifErr) {

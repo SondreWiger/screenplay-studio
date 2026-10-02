@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         type: payload?.type ?? 'system',
         title: payload?.title ?? '🧪 Test Notification',
         body: payload?.body ?? 'This is a test notification from the dev panel.',
-        is_read: false,
+        read: false,
       }).select().single();
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json({ ok: true, notification: inserted });
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         type: 'system',
         title: `📧 Test Email: ${payload?.template ?? 'generic'}`,
         body: 'Email send was simulated — check server logs for actual delivery status.',
-        is_read: false,
+        read: false,
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json({ ok: true, simulated: true, template: payload?.template });
@@ -65,13 +65,14 @@ export async function POST(req: NextRequest) {
         .limit(1);
       if (!subs?.length) return NextResponse.json({ error: 'No push subscription found for your account.' }, { status: 400 });
       // Record a simulated push event
-      await supabase.from('notifications').insert({
+      const { error } = await supabase.from('notifications').insert({
         user_id: user.id,
         type: 'system',
         title: '🔔 Test Push',
         body: 'Push notification was triggered via dev panel.',
-        is_read: false,
+        read: false,
       });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json({ ok: true, subscription_endpoint: subs[0].endpoint?.slice(0, 60) + '...' });
     }
 
