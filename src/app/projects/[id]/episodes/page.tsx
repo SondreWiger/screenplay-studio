@@ -8,6 +8,7 @@ import { cn, timeAgo } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import Link from 'next/link';
 import type { Script } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Types
 
@@ -468,7 +469,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h1 className="text-2xl font-bold text-white">{currentProject?.title}</h1>
+            <PageTitle>{currentProject?.title}</PageTitle>
             <div className="flex items-center gap-1.5">
               {seasons.map(s => (
                 <span

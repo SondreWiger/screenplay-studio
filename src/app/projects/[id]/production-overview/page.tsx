@@ -6,6 +6,7 @@ import { useProjectStore } from '@/lib/stores';
 import { Card, LoadingSpinner, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 interface SceneSummary { total: number; completed: number }
 interface SafetyAlert { id: string; description: string | null; risk_level: string; scene_id: string | null }
@@ -67,7 +68,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
   return (
     <div className="p-4 md:p-8 max-w-5xl space-y-6">
       <div className="mb-2">
-        <h1 className="text-2xl font-bold text-white">Production War Room</h1>
+        <PageTitle>Production War Room</PageTitle>
         <p className="text-sm text-surface-400 mt-0.5">{currentProject?.title} — live production snapshot</p>
       </div>
 

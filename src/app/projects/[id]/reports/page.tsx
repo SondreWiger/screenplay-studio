@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingPage, toast, ToastContainer } from '@/components/ui';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 type ReportType = 'call_sheet' | 'dood' | 'daily_report' | 'progress' | 'wrap_report';
 
@@ -672,7 +673,7 @@ export default function ReportsPage() {
       <ToastContainer />
 
       <div>
-        <h1 className="text-2xl font-bold text-white">Production Reports</h1>
+        <PageTitle>Production Reports</PageTitle>
         <p className="text-sm text-surface-400 mt-1">
           Generate industry-standard production documents from live project data
         </p>

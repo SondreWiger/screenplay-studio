@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Card, Button, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Call Sheet Generator
 // Creates per-shoot-day call sheets with crew call times,
@@ -169,7 +170,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
       <div className="p-8 max-w-4xl mx-auto print:p-0 bg-white text-black">
         <div className="border-b-2 border-black pb-4 mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{currentProject?.title ?? 'Production'}</h1>
+            <PageTitle>{currentProject?.title ?? 'Production'}</PageTitle>
             <h2 className="text-lg font-bold">{selected.title ?? `Call Sheet — ${selected.shoot_date}`}</h2>
             <p className="text-sm text-gray-600">{selected.shoot_date}</p>
           </div>

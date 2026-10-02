@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import type { Project } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 type SetPhoto = {
   url: string;
@@ -103,7 +104,7 @@ export default function ShowcaseSettingsPage({ params }: { params: { id: string 
           </svg>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">Showcase Settings</h1>
+          <PageTitle>Showcase Settings</PageTitle>
           <p className="text-sm text-surface-400">Configure how your project appears in the community showcase.</p>
         </div>
       </div>

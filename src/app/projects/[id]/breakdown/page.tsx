@@ -6,6 +6,7 @@ import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { cn } from '@/lib/utils';
 import { SkeletonList } from '@/components/ui';
 import { useScriptStore } from '@/lib/stores';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 interface Scene {
   id: string;
@@ -225,7 +226,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3 print:hidden">
         <div>
-          <h1 className="text-xl font-bold text-white">Production Breakdown</h1>
+          <PageTitle>Production Breakdown</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {displayScenes.length} scenes &middot; {summary.totalPages.toFixed(1)} pages
             {summary.totalMins > 0 && (<> &middot; ~{Math.round(summary.totalMins)} min</>)}

@@ -7,6 +7,7 @@ import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Button, Badge, Input, EmptyState } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BrollItem, BrollStatus } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 const STATUS_COLORS: Record<BrollStatus, string> = {
   needed: 'bg-brand-500/20 text-brand-500',
@@ -132,7 +133,7 @@ export default function BRollPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">B-Roll</h1>
+          <PageTitle>B-Roll</PageTitle>
           <p className="text-surface-400 text-sm mt-1">
             Track supplementary footage for your video
           </p>

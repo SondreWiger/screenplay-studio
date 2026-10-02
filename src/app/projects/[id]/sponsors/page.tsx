@@ -7,6 +7,7 @@ import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Button, Badge, Input, Textarea, Select, EmptyState, Modal, toast } from '@/components/ui';
 import { cn, formatDate } from '@/lib/utils';
 import type { SponsorSegment, SponsorSegmentType } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 const SEGMENT_TYPES: { value: SponsorSegmentType; label: string; description: string }[] = [
   { value: 'pre_roll', label: 'Pre-roll', description: 'Beginning of video' },
@@ -213,7 +214,7 @@ export default function SponsorsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Sponsors & Segments</h1>
+          <PageTitle>Sponsors & Segments</PageTitle>
           <p className="text-surface-400 text-sm mt-1">
             Track sponsorships, ad reads, and payments
           </p>

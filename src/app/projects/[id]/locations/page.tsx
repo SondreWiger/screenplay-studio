@@ -9,6 +9,8 @@ import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner
 import { cn, formatCurrency } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Location, SceneLocationType } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
+import { StatGrid } from '@/components/kit';
 
 // Dynamic import with SSR disabled for Leaflet
 const LocationMap = dynamic(
@@ -159,7 +161,7 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
     <div className="p-3 sm:p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Locations</h1>
+          <PageTitle>Locations</PageTitle>
           <p className="text-xs sm:text-sm text-surface-400 mt-1">
             {locations.filter((l) => l.is_confirmed).length} confirmed / {locations.length} total
             {locations.filter(needsSetup).length > 0 && (
@@ -206,6 +208,18 @@ export default function LocationsPage({ params }: { params: { id: string } }) {
             <span className="sm:hidden">Add</span>
           </Button>}
         </div>
+      </div>
+      <div className="mb-6">
+        <StatGrid
+          cols={4}
+          layoutGroup="locations"
+          items={[
+            { label: 'All locations', value: locations.length, tone: 'aqua', onClick: () => setFilter('all'), active: filter === 'all' },
+            { label: 'Confirmed', value: locations.filter((l) => l.is_confirmed).length, tone: 'green', onClick: () => setFilter('confirmed'), active: filter === 'confirmed' },
+            { label: 'Still scouting', value: locations.filter((l) => !l.is_confirmed).length, tone: 'amber', onClick: () => setFilter('scouting'), active: filter === 'scouting' },
+            { label: 'Need setup', value: locations.filter(needsSetup).length, tone: 'red', onClick: () => setFilter('needs_setup'), active: filter === 'needs_setup', hint: 'No description or address, not confirmed' },
+          ]}
+        />
       </div>
 
       {viewMode === 'map' ? (

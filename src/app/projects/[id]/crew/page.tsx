@@ -8,6 +8,7 @@ import { useProjectStore } from '@/lib/stores';
 import { Badge, LoadingPage } from '@/components/ui';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import type { StageEnsembleMember, StageProductionTeamMember, ScheduleEvent } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Types
 interface CrewMember {
@@ -326,7 +327,7 @@ export default function CrewMobileView() {
         {/* Project header */}
         <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
           <div className="flex items-start justify-between gap-2 mb-3">
-            <h1 className="text-base font-semibold text-white leading-tight">{currentProject.title}</h1>
+            <PageTitle>{currentProject.title}</PageTitle>
             <button
               onClick={() => { setLoading(true); fetchAll(); }}
               className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-colors"

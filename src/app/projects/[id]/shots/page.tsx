@@ -8,6 +8,8 @@ import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, Loadin
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Shot, Scene, ShotType, ShotMovement } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
+import { StatGrid } from '@/components/kit';
 
 const SHOT_TYPES: { value: ShotType; label: string }[] = [
   { value: 'wide', label: 'Wide' }, { value: 'full', label: 'Full' },
@@ -105,7 +107,7 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Shot List</h1>
+          <PageTitle>Shot List</PageTitle>
           <p className="text-sm text-surface-400 mt-1">{completed}/{shots.length} shots completed</p>
         </div>
         <Link href={`/projects/${params.id}/script`}>
@@ -122,6 +124,17 @@ export default function ShotsPage({ params }: { params: { id: string } }) {
           </svg>
           Add Shot
         </Button>}
+      </div>
+      <div className="mb-6">
+        <StatGrid
+          cols={4}
+          items={[
+            { label: 'Shots', value: shots.length, tone: 'blue' },
+            { label: 'Completed', value: completed, tone: 'green', hint: `${shots.length ? Math.round((completed / shots.length) * 100) : 0}% done` },
+            { label: 'Remaining', value: shots.length - completed, tone: 'amber' },
+            { label: 'Scenes covered', value: new Set(shots.map((s) => s.scene_id).filter(Boolean)).size, tone: 'violet', hint: `of ${scenes.length} scenes` },
+          ]}
+        />
       </div>
 
       {shots.length > 0 && <Progress value={completed} max={Math.max(shots.length, 1)} label="Completion" color="#3b82f6" className="mb-6" />}

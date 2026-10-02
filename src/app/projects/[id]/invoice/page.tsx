@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card } from '@/components/ui';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Invoice Generator
 // Reads work_sessions for this project, generates printable
@@ -125,7 +126,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3 print:hidden">
         <div>
-          <h1 className="text-xl font-bold text-white">Invoice Generator</h1>
+          <PageTitle>Invoice Generator</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {totalHours.toFixed(2)} hrs across {sortedDates.length} days
           </p>

@@ -7,6 +7,7 @@ import { Button, Badge, Input, Modal, LoadingSpinner, toast } from '@/components
 import { cn } from '@/lib/utils';
 import type { BroadcastCommsChannel } from '@/lib/types';
 import { BROADCAST_COMMS_CHANNEL_TYPES } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Comms / Intercom — Production communication channels
 // Party lines, IFB channels, ISO talkback, GPIO triggers
@@ -130,7 +131,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
       {/* ── Header ─────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800">
         <div>
-          <h1 className="text-lg font-bold text-white">Comms / Intercom</h1>
+          <PageTitle>Comms / Intercom</PageTitle>
           <p className="text-xs text-surface-400">Production communication channels • Push-to-talk</p>
         </div>
         <div className="flex items-center gap-2">

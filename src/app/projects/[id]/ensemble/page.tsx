@@ -8,6 +8,7 @@ import { Button, Card, LoadingPage, Input, Modal, toast, ToastContainer } from '
 import { cn } from '@/lib/utils';
 import { STAGE_ENSEMBLE_GROUPS } from '@/lib/types';
 import type { StageEnsembleMember, StageEnsembleGroup } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 const GROUPS = STAGE_ENSEMBLE_GROUPS;
 
@@ -143,7 +144,7 @@ export default function EnsemblePage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Ensemble</h1>
+          <PageTitle>Ensemble</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {members.length} member{members.length !== 1 ? 's' : ''} · {currentProject?.title}
           </p>

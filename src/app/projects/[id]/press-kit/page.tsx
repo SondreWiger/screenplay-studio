@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { toast } from 'sonner';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 export default function PressKitSettingsPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -87,7 +88,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white">Press Kit</h1>
+          <PageTitle>Press Kit</PageTitle>
           <p className="text-surface-400 text-sm mt-1">
             Share a public-facing press kit for journalists, festivals, and industry contacts.
           </p>

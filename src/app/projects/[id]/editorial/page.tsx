@@ -10,6 +10,7 @@ import {
   BROADCAST_STORY_TYPES,
   formatBroadcastDuration,
 } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Editorial Board — Story pitching, assignment & status kanban
 // The morning meeting view: see every story, who owns it, where it is
@@ -180,7 +181,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
       {/* ── Header ─────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-800 bg-surface-900/60 flex-shrink-0">
         <div className="flex items-center gap-4">
-          <h1 className="text-sm font-bold text-white">Editorial Board</h1>
+          <PageTitle>Editorial Board</PageTitle>
           <span className="text-xs text-surface-500">
             {stories.length} stories · {formatBroadcastDuration(totalPlannedSeconds)} planned
           </span>

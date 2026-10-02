@@ -7,6 +7,7 @@ import { useProjectStore, useScriptStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import type { ProjectShareLink } from '@/lib/types';
 import { useTranslation } from '@/components/TranslationProvider';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Constants
 
@@ -171,7 +172,7 @@ export default function SharePage({ params }: { params: { id: string } }) {
       {/* Top bar */}
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
         <div>
-          <h1 className="text-base font-semibold text-white tracking-tight">{t('share.title')}</h1>
+          <PageTitle>{t('share.title')}</PageTitle>
           <p className="text-xs text-gray-500 mt-0.5">
             {t('share.links_for')}{' '}
             <span className="text-gray-400">{project?.title ?? 'this project'}</span>

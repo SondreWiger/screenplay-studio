@@ -8,6 +8,7 @@ import { Button, Card, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast
 import { cn, getInitials, randomColor } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Character } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Types
 
@@ -225,7 +226,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white">Voice Cast</h1>
+          <PageTitle>Voice Cast</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {isAudioDrama ? 'Voice actors and casting for your audio drama' : 'Manage voice actors and casting'}
             {scriptCount !== null && scriptCount > cast.length && (

@@ -8,6 +8,7 @@ import { Button, Card, LoadingPage, Input, Modal, toast, ToastContainer } from '
 import { cn } from '@/lib/utils';
 import type { StageCue, StageCueType } from '@/lib/types';
 import { STAGE_CUE_TYPE_CONFIG } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 const CUE_TYPES = Object.keys(STAGE_CUE_TYPE_CONFIG) as StageCueType[];
 
@@ -109,7 +110,7 @@ export default function CuePage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Cue Sheet</h1>
+          <PageTitle>Cue Sheet</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {cues.length} cue{cues.length !== 1 ? 's' : ''} · {currentProject?.title}
           </p>

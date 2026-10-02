@@ -7,6 +7,7 @@ import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, Badge, LoadingSpinner, Button } from '@/components/ui';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 type TimeRange = '7d' | '30d' | '90d' | 'all';
 
@@ -253,7 +254,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Analytics</h1>
+            <PageTitle>Analytics</PageTitle>
             <Badge variant="warning">Pro</Badge>
           </div>
           <p className="text-sm text-surface-400 mt-1">Real project metrics computed from your actual data.</p>

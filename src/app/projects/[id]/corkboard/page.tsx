@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { PageTitle } from '@/components/projects/PageTitle';
 // Corkboard — drag-and-drop index-card scene organiser
 // Cards reorder scenes by updating sort_order in the DB.
 
@@ -377,7 +378,7 @@ export default function CorkboardPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Corkboard</h1>
+          <PageTitle>Corkboard</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {scenes.length} scenes · {completedCount} completed
             {canEdit && ' · Drag to reorder'}

@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Badge, toast, Modal, Input, Progress } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { BUILTIN_FRAMEWORKS, SAVE_THE_CAT, type Beat, type BeatSheetData, type FrameworkKey } from '@/lib/beat-frameworks';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Beat Sheet — Story structure planning tool
 // Supports Save the Cat (15 beats), Three-Act, Hero's Journey
@@ -551,7 +552,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Beat Sheet</h1>
+          <PageTitle>Beat Sheet</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {filledCount}/{beats.length} beats filled · {completedCount}/{beats.length} completed
           </p>

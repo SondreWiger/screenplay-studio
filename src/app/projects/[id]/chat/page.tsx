@@ -10,6 +10,7 @@ import type { ProjectChannel, ChannelMessage, UserRole } from '@/lib/types';
 import { FormattedChatText } from '@/components/FormattedChatText';
 import { automodCheck } from '@/lib/automod';
 import { PRODUCTION_ROLES } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Role → colour mapping for chat name display
 
@@ -372,7 +373,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
           <button onClick={() => setShowChannelList((v) => !v)} className="md:hidden p-1 text-surface-400 hover:text-white">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
-          <h1 className="text-lg font-bold text-white">Project Chat</h1>
+          <PageTitle>Project Chat</PageTitle>
           {selectedChannel && (
             <span className="text-surface-500 text-sm hidden sm:inline">#{selectedChannel.name}</span>
           )}

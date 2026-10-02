@@ -9,6 +9,7 @@ import { useProFeatures } from '@/hooks/useProFeatures';
 import { useProjectStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 import { GROUP_ACCENT, PRO_TOOLS, proToolsByGroup, layoutFor } from '@/lib/pro-tools';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Index for the Pro tool suite — the sidebar links straight to individual tools,
 // this page is the map of what the tier includes.
@@ -90,7 +91,7 @@ export default function ProToolsIndexPage({ params }: { params: { id: string } }
     <div className="flex flex-col h-full overflow-hidden">
       <div className="border-b border-surface-800 px-6 py-4 shrink-0">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold text-white">Pro Tools</h1>
+          <PageTitle>Pro Tools</PageTitle>
           <span className="text-[11px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30 font-semibold uppercase tracking-[0.04em]">
             Pro
           </span>

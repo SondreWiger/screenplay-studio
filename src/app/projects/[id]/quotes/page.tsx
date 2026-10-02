@@ -6,6 +6,7 @@ import { QuoteCard } from '@/components/quotes/QuoteCard';
 import { QuoteForm } from '@/components/quotes/QuoteForm';
 import { createClient } from '@/lib/supabase/client';
 import type { Quote, QuoteInsert } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 export default function ProjectQuotesPage({ params }: { params: { id: string } }) {
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -120,7 +121,7 @@ export default function ProjectQuotesPage({ params }: { params: { id: string } }
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-white">Set Quotes</h1>
+          <PageTitle>Set Quotes</PageTitle>
           <p className="text-sm text-surface-400 mt-1">Fun quotes from set, saved forever</p>
         </div>
         <Button variant="primary" onClick={() => { setEditingQuote(null); setShowForm(true); }}>

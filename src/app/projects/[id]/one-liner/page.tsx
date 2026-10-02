@@ -7,6 +7,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 
 import { cn } from '@/lib/utils';
 import type { Scene, SceneStatus } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Scene status helpers
 const SCENE_STATUS_LABELS: Record<SceneStatus, string> = {
@@ -329,7 +330,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="border-b border-surface-800 px-6 py-4 flex items-center justify-between gap-4 shrink-0 no-print">
         <div>
-          <h1 className="text-lg font-bold text-white">One-liner</h1>
+          <PageTitle>One-liner</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {scenes.length} scene{scenes.length !== 1 ? 's' : ''} · {scriptTitle || 'Untitled'}
           </p>

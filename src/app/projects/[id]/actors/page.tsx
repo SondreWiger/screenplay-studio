@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Types
 
@@ -361,7 +362,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Actors & Actresses</h1>
+          <PageTitle>Actors & Actresses</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
             {stats.totalActors} cast member{stats.totalActors !== 1 ? 's' : ''} · {stats.signed} contracted · {formatCurrency(stats.totalOwed)} outstanding
           </p>

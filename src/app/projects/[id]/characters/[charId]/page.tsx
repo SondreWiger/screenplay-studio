@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Button, Badge, Input, Avatar, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Character, MindMapEdge } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Types
 type InspoImage = { url: string; caption: string };
@@ -270,7 +271,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
         <Avatar src={character.actor_photo_url ?? character.avatar_url} name={character.name} size="lg" color={character.color} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h1 className="text-3xl font-bold text-white">{character.name}</h1>
+            <PageTitle>{character.name}</PageTitle>
             <RoleBadge role={character.role} isMain={character.is_main} />
           </div>
           {character.full_name && character.full_name !== character.name && (

@@ -8,6 +8,7 @@ import { useScriptStore, useProjectStore } from '@/lib/stores';
 import { Card, Select, LoadingSpinner, Badge, EmptyState } from '@/components/ui';
 import Link from 'next/link';
 import type { ScriptElement } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
@@ -225,7 +226,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
             </svg>
             Back to Script
           </Link>
-          <h1 className="text-2xl font-bold text-white">Compare Versions</h1>
+          <PageTitle>Compare Versions</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
             {currentProject?.title || 'Project'} &bull; Side-by-side diff
           </p>

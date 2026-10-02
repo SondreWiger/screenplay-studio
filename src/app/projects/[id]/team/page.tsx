@@ -13,6 +13,8 @@ import type { ProjectMember, Profile, UserRole, UserPresence, ProductionRole, Ex
 import { PRODUCTION_ROLES } from '@/lib/types';
 import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
+import { PageTitle } from '@/components/projects/PageTitle';
+import { StatGrid } from '@/components/kit';
 
 const ROLES: { value: UserRole; labelKey: string; descKey: string }[] = [
   { value: 'owner', labelKey: 'team.role_owner', descKey: 'team.desc_owner' },
@@ -162,7 +164,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('team.title')}</h1>
+          <PageTitle>{t('team.title')}</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
             {members.length} member{members.length !== 1 ? 's' : ''}
             {onlineUsers.length > 0 && (
@@ -176,6 +178,17 @@ export default function TeamPage({ params }: { params: { id: string } }) {
             {t('team.invite')}
           </Button>
         )}
+      </div>
+      <div className="mb-6">
+        <StatGrid
+          cols={4}
+          items={[
+            { label: 'Members', value: members.length, tone: 'green' },
+            { label: 'Online now', value: onlineUsers.length, tone: 'aqua' },
+            { label: 'Roles', value: new Set(members.map((m) => m.role)).size, tone: 'violet' },
+            { label: 'External credits', value: externalCredits.length, tone: 'brand', hint: 'People credited without an account' },
+          ]}
+        />
       </div>
 
       {error && (

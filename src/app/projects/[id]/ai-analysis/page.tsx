@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Badge, LoadingPage, EmptyState } from '@/components/ui';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Script Analysis — free for everyone
 // Real computational analysis of actual script content
@@ -634,7 +635,7 @@ export default function AIAnalysisPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Script Analysis</h1>
+          <PageTitle>Script Analysis</PageTitle>
           <p className="text-sm text-surface-400 mt-1">Computed from {overview.totalElements.toLocaleString()} script elements</p>
         </div>
         <Button onClick={loadAnalysis}>

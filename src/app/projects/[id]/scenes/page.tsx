@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Scene, Location, Character, SceneLocationType, SceneTime, ScriptElement } from '@/lib/types';
 import { parseSceneHeading } from '@/lib/scripts/scene-heading';
+import { PageTitle } from '@/components/projects/PageTitle';
+import { StatGrid } from '@/components/kit';
 
 export default function ScenesPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -145,9 +147,9 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Scene Breakdown</h1>
+          <PageTitle>Scene Breakdown</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
-            {completed}/{scenes.length} scenes completed &bull; {totalPages} pages total
+            {completed}/{scenes.length} scenes completed &bull; {Number(totalPages.toFixed(1))} pages total
             {setupNeeded > 0 && <span className="text-amber-400"> &bull; {setupNeeded} need setup</span>}
           </p>
         </div>
@@ -183,6 +185,18 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
             </>
           )}
         </div>
+      </div>
+      <div className="mb-6">
+        <StatGrid
+          cols={5}
+          items={[
+            { label: 'Scenes', value: scenes.length, tone: 'amber' },
+            { label: 'Completed', value: completed, tone: 'green', hint: `${scenes.length ? Math.round((completed / scenes.length) * 100) : 0}% done` },
+            { label: 'Pages', value: totalPages, tone: 'blue', format: (n) => n.toFixed(1) },
+            { label: 'Est. runtime', value: scenes.reduce((m, s) => m + (s.estimated_duration_minutes || 0), 0), tone: 'violet', format: (n) => (n >= 60 ? `${Math.floor(n / 60)}h ${Math.round(n % 60)}m` : `${Math.round(n)}m`) },
+            { label: 'Need setup', value: setupNeeded, tone: 'red' },
+          ]}
+        />
       </div>
 
       {scenes.length > 0 && (
@@ -230,7 +244,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
                   )}
                   {scene.synopsis && <p className="text-sm text-surface-400 mt-1 line-clamp-1">{scene.synopsis}</p>}
                   <div className="flex items-center gap-4 mt-2 text-xs text-surface-500">
-                    {scene.page_count > 0 && <span>{scene.page_count} pgs</span>}
+                    {scene.page_count > 0 && <span>{Number(scene.page_count.toFixed(2))} pgs</span>}
                     {scene.estimated_duration_minutes && <span>{scene.estimated_duration_minutes} min</span>}
                     {scene.cast_ids.length > 0 && <span>{scene.cast_ids.length} cast</span>}
                     {scene.props.length > 0 && <span>{scene.props.length} props</span>}

@@ -8,6 +8,7 @@ import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Avatar, LoadingPage, Input, Textarea, Modal, toast, ToastContainer } from '@/components/ui';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Casting — free for everyone (Film/TV)
 // Connect characters with team members, assign actors,
@@ -435,7 +436,7 @@ export default function CastingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Casting</h1>
+          <PageTitle>Casting</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
             Connect characters with actors &amp; team members
           </p>

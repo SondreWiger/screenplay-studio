@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Badge, LoadingPage, Modal, toast, ToastContainer } from '@/components/ui';
 import { timeAgo } from '@/lib/utils';
 import { diffLines, snapshotToLines, type SnapshotElement } from '@/lib/scripts/diff';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Revisions (Diff Comparison) — free for everyone
 // Real snapshot-based revisions with side-by-side diff and restore.
@@ -267,7 +268,7 @@ export default function RevisionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">Revisions</h1>
+            <PageTitle>Revisions</PageTitle>
           </div>
           <p className="text-sm text-surface-400 mt-1">
             Track changes with industry-standard color-coded revisions

@@ -11,6 +11,7 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { timeAgo } from '@/lib/utils';
 import { diffLines, diffStats, snapshotToLines, type DiffLine, type SnapshotElement } from '@/lib/scripts/diff';
 import { createScriptDraft, normalizeDraftCode, type ScriptDraft } from '@/lib/scripts/drafts';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Printed Drafts — every print/export of a script gets a 5-character code and
 // a frozen snapshot, so a paper copy can be matched to exactly what was on it
@@ -188,7 +189,7 @@ export default function DraftsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Printed Drafts</h1>
+          <PageTitle>Printed Drafts</PageTitle>
           <p className="text-sm text-surface-400 mt-1 max-w-xl">
             Every print and export gets a 5-character code in the page footer and a snapshot of the script at that moment.
             Look up a code to see when it was printed, who had it, and what has changed since.

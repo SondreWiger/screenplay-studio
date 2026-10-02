@@ -6,6 +6,7 @@ import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Card, Button, LoadingSpinner, Modal, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Table Read / Script Timer
 // Live timer per scene during a table read session.
@@ -167,7 +168,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-white">Session Complete</h1>
+          <PageTitle>Session Complete</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">Total runtime: <span className="text-orange-400 font-bold text-base">{fmt(totalElapsed)}</span></p>
         </div>
         <div className="flex gap-2">

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Card, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Continuity Sheet
 // Per-scene × per-character grid tracking costume, hair,
@@ -154,7 +155,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
   return (
     <div className="p-4 md:p-8 max-w-7xl">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white">Continuity Sheet</h1>
+        <PageTitle>Continuity Sheet</PageTitle>
         <p className="text-sm text-surface-400 mt-0.5">Track costume, hair, makeup, props and wounds per scene per character.</p>
       </div>
 

@@ -7,6 +7,7 @@ import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Button, Badge, Input, Textarea, EmptyState, Modal, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Thumbnail } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 export default function ThumbnailsPage() {
   const params = useParams();
@@ -148,7 +149,7 @@ export default function ThumbnailsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Thumbnails</h1>
+          <PageTitle>Thumbnails</PageTitle>
           <p className="text-surface-400 text-sm mt-1">
             Design and A/B test thumbnail variants for your video
           </p>

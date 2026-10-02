@@ -37,6 +37,12 @@ import ProjectLoading from './loading';
 import { ZEN_MODE_EVENT } from '@/lib/zen-mode';
 import { getTourState, endTour } from '@/lib/tourState';
 import type { UsageIntent } from '@/lib/types';
+/** Canvas/editor tools that fill the viewport — they skip the page-load cascade. */
+const FULL_BLEED_TOOLS = /\/projects\/[^/]+\/(script|mindmap|corkboard|moodboard|storyboard|prompter|vision-mixer|multiviewer|master-control|arc-planner|beat-sheet|table-read|chat)(\/|$)/;
+
+/** Pages built on the shared kit animate themselves. */
+const OWN_MOTION = /^\/projects\/[^/]+\/?$/;
+
 const SidebarCustomiser = dynamic(() => import('@/components/SidebarCustomiser'), { ssr: false });
 const PopoutButton = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutButton })), { ssr: false });
 const PopoutBar = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutBar })), { ssr: false });
@@ -1086,7 +1092,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       )}
 
       {/* Main Content */}
-      <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-mobile-header md:pt-0')}>
+      <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-mobile-header md:pt-0', !FULL_BLEED_TOOLS.test(pathname) && !OWN_MOTION.test(pathname) && 'page-cascade')}>
         {/* Keyed by path so a crash in one tool doesn't stick when navigating to another */}
         <ErrorBoundary key={pathname}>
           {children}

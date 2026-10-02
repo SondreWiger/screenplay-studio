@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Card, LoadingPage, toast, ToastContainer } from '@/components/ui';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Custom Branding / Brand Kit — free for everyone
 // Project-level branding: colors, logos, watermarks, cover pages,
@@ -94,7 +95,7 @@ export default function BrandingPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">Brand Kit</h1>
+            <PageTitle>Brand Kit</PageTitle>
           </div>
           <p className="text-sm text-surface-400 mt-1">Customize the look of your exports and shared content</p>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { attachProfiles } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
@@ -8,10 +9,14 @@ import { getCachedByProject, getCachedByScript } from '@/lib/offline/db';
 import { renameProject, deleteProject, renameScript, deleteScript } from '@/lib/project-actions';
 import { MoreMenu, RenameDialog, DeleteProjectDialog, DeleteScriptDialog } from '@/components/projects/ManageControls';
 import { useRouter } from 'next/navigation';
-import { Card, Badge, Progress, Button, LoadingPage, toast } from '@/components/ui';
+import { LoadingPage, toast } from '@/components/ui';
+import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
+import {
+  AdminPage, AnimatedNumber, BarList, Meter, Panel, Pill, Reveal, StatGrid, TimeChart, TrendPanel, SERIES,
+} from '@/components/kit';
 import { formatDate, formatCurrency, timeAgo, cn } from '@/lib/utils';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
-import type { Script, Character, Location, Scene, Shot, Idea, BudgetItem, ScheduleEvent } from '@/lib/types';
+import type { Script, ScheduleEvent } from '@/lib/types';
 import Link from 'next/link';
 
 interface ActivityItem {
@@ -24,36 +29,9 @@ interface ActivityItem {
   color: string;
 }
 
-// Inline sparkline (no deps)
-function MiniSparkline({ values, color = '#6366f1' }: { values: number[]; color?: string }) {
-  if (values.length < 2) return null;
-  const max = Math.max(...values, 1);
-  const w = 160;
-  const h = 40;
-  const step = w / (values.length - 1);
-  const pts = values
-    .map((v, i) => `${i * step},${h - (v / max) * h}`)
-    .join(' ');
-  const fill = values
-    .map((v, i) => `${i * step},${h - (v / max) * h}`)
-    .concat([`${w},${h}`, `0,${h}`])
-    .join(' ');
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
-      <polygon points={fill} fill={color} fillOpacity={0.15} />
-      <polyline
-        points={pts}
-        fill="none"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+type GrowthKey = 'characters' | 'locations' | 'scenes' | 'shots' | 'ideas';
 
-// WorkTimeCard
+// Writing time
 interface WorkTimeData {
   my_total_seconds: number;
   team_total_seconds: number;
@@ -61,8 +39,10 @@ interface WorkTimeData {
   context_breakdown: Record<string, number>;
 }
 
-function WorkTimeCard({ projectId }: { projectId: string }) {
-  const [data, setData]     = useState<WorkTimeData | null>(null);
+const hoursFmt = (n: number) => formatWorkSeconds(Math.round(n));
+
+function WorkTimePanel({ projectId }: { projectId: string }) {
+  const [data, setData] = useState<WorkTimeData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,97 +52,63 @@ function WorkTimeCard({ projectId }: { projectId: string }) {
       .catch(() => setLoading(false));
   }, [projectId]);
 
-  const dailyValues = (data?.daily ?? []).map((d) => d.seconds);
-  const peakDay     = data?.daily?.reduce(
-    (best, d) => d.seconds > best.seconds ? d : best,
-    { date: '', seconds: 0 },
-  );
-
-  // Context labels
-  const ctxColour: Record<string, string> = {
-    script:       '#6366f1',
-    documents:    '#22d3ee',
-    'arc-planner': '#a855f7',
-    general:      '#6b7280',
-  };
-
-  const ctxEntries = Object.entries(data?.context_breakdown ?? {})
-    .sort(([, a], [, b]) => b - a);
+  const daily = data?.daily ?? [];
+  const buckets = daily.map((d) => Date.parse(`${d.date}T00:00:00Z`));
+  const values = daily.map((d) => d.seconds);
+  const peak = daily.reduce((best, d) => (d.seconds > best.seconds ? d : best), { date: '', seconds: 0 });
+  const activeDays = values.filter((v) => v > 0).length;
+  const contexts = Object.entries(data?.context_breakdown ?? {}).map(([label, count]) => ({ label: label.replace(/-/g, ' '), count })).sort((a, b) => b.count - a.count);
 
   return (
-    <Card className="p-6 border-surface-800/80">
-      <p className="section-title mb-5">Working Time</p>
-
+    <Panel title="Writing time" subtitle="Tracked while the script, documents or planners are open" className="lg:col-span-2">
       {loading ? (
         <p className="text-xs text-surface-500">Loading…</p>
       ) : !data ? (
         <p className="text-xs text-surface-500">No sessions yet — open the script or documents editor to start tracking.</p>
       ) : (
-        <>
-          {/* KPIs */}
-          <div className="grid grid-cols-2 gap-4 mb-5">
-            <div>
-              <p className="stat-label">My time</p>
-              <p className="text-3xl font-bold text-white leading-tight mt-1">{formatWorkSeconds(data.my_total_seconds)}</p>
-            </div>
-            <div>
-              <p className="stat-label">Team total</p>
-              <p className="text-3xl font-bold text-white leading-tight mt-1">{formatWorkSeconds(data.team_total_seconds)}</p>
-            </div>
-          </div>
-
-          {/* 30-day sparkline */}
-          {dailyValues.some((v) => v > 0) && (
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[11px] text-surface-500">Last 30 days</p>
-                {peakDay && peakDay.seconds > 0 && (
-                  <p className="text-[11px] text-surface-500">
-                    Peak: <span className="text-white">{formatWorkSeconds(peakDay.seconds)}</span> on {peakDay.date.slice(5)}
-                  </p>
-                )}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <div className="mb-3 flex flex-wrap gap-x-8 gap-y-2">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-surface-500">You</p>
+                <AnimatedNumber value={data.my_total_seconds} format={hoursFmt} className="text-2xl font-bold text-white" />
               </div>
-              <MiniSparkline values={dailyValues} color="#6366f1" />
-              <div className="flex justify-between text-[11px] text-surface-600 mt-0.5">
-                <span>{data.daily[0]?.date.slice(5)}</span>
-                <span>{data.daily[data.daily.length - 1]?.date.slice(5)}</span>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-surface-500">Whole team</p>
+                <AnimatedNumber value={data.team_total_seconds} format={hoursFmt} className="text-2xl font-bold text-white" />
               </div>
-            </div>
-          )}
-
-          {/* Context breakdown */}
-          {ctxEntries.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[11px] text-surface-500 uppercase tracking-[0.04em]">Where you worked</p>
-              {ctxEntries.map(([ctx, secs]) => (
-                <div key={ctx}>
-                  <div className="flex justify-between text-xs mb-0.5">
-                    <span className="text-surface-300 capitalize">{ctx.replace(/-/g, ' ')}</span>
-                    <span className="text-surface-400">{formatWorkSeconds(secs)}</span>
-                  </div>
-                  <div className="h-1.5 bg-surface-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        backgroundColor: ctxColour[ctx] ?? '#6366f1',
-                        width: `${data.my_total_seconds > 0 ? (secs / data.my_total_seconds) * 100 : 0}%`,
-                      }}
-                    />
-                  </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-surface-500">Active days · 30d</p>
+                <AnimatedNumber value={activeDays} className="text-2xl font-bold text-white" />
+              </div>
+              {peak.seconds > 0 && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-surface-500">Best day</p>
+                  <p className="text-2xl font-bold text-white">{formatWorkSeconds(peak.seconds)}</p>
+                  <p className="text-[10px] text-surface-500">{peak.date.slice(5)}</p>
                 </div>
-              ))}
+              )}
             </div>
-          )}
-
-          {/* Hourly rate helper note */}
-          <p className="text-[11px] text-surface-600 mt-4">
-            💡 Billing hourly? My time = {(data.my_total_seconds / 3600).toFixed(2)} hrs (exact)
-          </p>
-        </>
+            {buckets.length > 1 && values.some((v) => v > 0) ? (
+              <TimeChart animKey="work" buckets={buckets} unit="day" height={170} format={hoursFmt} bars series={[{ key: 'me', label: 'Your time', color: SERIES.violet, values }]} />
+            ) : (
+              <p className="py-8 text-center text-xs text-surface-600">No writing time in the last 30 days</p>
+            )}
+            <p className="mt-2 text-[11px] text-surface-600">Billing hourly? Your time is {(data.my_total_seconds / 3600).toFixed(2)} h exactly.</p>
+          </div>
+          <div>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-surface-500">Where you worked</p>
+            <BarList items={contexts} color={SERIES.violet} format={formatWorkSeconds} empty="No sessions yet" />
+          </div>
+        </div>
       )}
-    </Card>
+    </Panel>
   );
 }
+
+const STATUS_TONE: Record<string, 'green' | 'blue' | 'amber' | 'violet'> = {
+  production: 'green', completed: 'blue', post_production: 'blue', pre_production: 'amber',
+};
 
 export default function ProjectOverviewPage({ params }: { params: { id: string } }) {
   const { currentProject } = useProjectStore();
@@ -197,6 +143,8 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
   // Collapse Recent Activity by default to improve page form factor
   const [activityExpanded, setActivityExpanded] = useState(false);
   const [statsLoaded, setStatsLoaded] = useState(false);
+  // created_at per content type, for the growth chart
+  const [growth, setGrowth] = useState<Record<GrowthKey, { created_at?: string | null }[]>>({ characters: [], locations: [], scenes: [], shots: [], ideas: [] });
   const [isWelcomeDismissed, setIsWelcomeDismissed] = useState(false);
 
   useEffect(() => {
@@ -253,11 +201,11 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       const supabase = createClient();
       const [scripts, characters, locations, scenes, shots, ideas, budget, events, members, documents] = await Promise.all([
         supabase.from('scripts').select('*').eq('project_id', params.id).order('updated_at', { ascending: false }),
-        supabase.from('characters').select('id, name, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
-        supabase.from('locations').select('id, name, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
-        supabase.from('scenes').select('id, scene_number, is_completed, estimated_duration_minutes, page_count, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
-        supabase.from('shots').select('id, shot_number, is_completed, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
-        supabase.from('ideas').select('id, title, updated_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
+        supabase.from('characters').select('id, name, updated_at, created_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
+        supabase.from('locations').select('id, name, updated_at, created_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
+        supabase.from('scenes').select('id, scene_number, is_completed, estimated_duration_minutes, page_count, updated_at, created_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
+        supabase.from('shots').select('id, shot_number, is_completed, updated_at, created_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
+        supabase.from('ideas').select('id, title, updated_at, created_at').eq('project_id', params.id).order('updated_at', { ascending: false }),
         supabase.from('budget_items').select('estimated_amount, actual_amount, is_income').eq('project_id', params.id),
         supabase.from('production_schedule').select('*').eq('project_id', params.id).gte('start_time', new Date().toISOString()).order('start_time', { ascending: true }).limit(5),
         supabase.from('project_members').select('id').eq('project_id', params.id),
@@ -307,6 +255,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       });
       setRecentScripts((scripts.data || []).slice(0, 3));
       setUpcomingEvents((events.data || []).slice(0, 5));
+      setGrowth({ characters: characters.data || [], locations: locations.data || [], scenes: scenesData, shots: shotsData, ideas: ideas.data || [] });
 
       // Build activity timeline from recent changes across all tables
       const activityItems: ActivityItem[] = [];
@@ -465,6 +414,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
         setRecentScripts(scripts.slice(0, 3));
         setUpcomingEvents(events.slice(0, 5));
+        setGrowth({ characters, locations, scenes, shots, ideas });
 
         // Build activity timeline from offline cached records
         const activityItems: ActivityItem[] = [];
@@ -512,10 +462,27 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     (Date.now() - new Date(currentProject.created_at).getTime() < 60 * 60 * 1000)
   );
 
-  const statusColor =
-    currentProject.status === 'production' ? '#22c55e' :
-    currentProject.status === 'completed' || currentProject.status === 'post_production' ? '#60a5fa' :
-    currentProject.status === 'pre_production' ? '#f59e0b' : '#a78bfa';
+  const pid = params.id;
+  const go = (path: string) => () => router.push(`/projects/${pid}/${path}`);
+  const runtimePct = targetMinutes > 0 ? (estimatedMinutes / targetMinutes) * 100 : 0;
+  const scenePct = stats.scenes ? (stats.completedScenes / stats.scenes) * 100 : 0;
+  const shotPct = stats.shots ? (stats.completedShots / stats.shots) * 100 : 0;
+  const budgetPct = stats.budgetTotal ? (stats.budgetSpent / stats.budgetTotal) * 100 : 0;
+  const routeMap: Record<string, string> = { script: 'script', character: 'characters', scene: 'scenes', shot: 'shots', location: 'locations', idea: 'ideas', document: 'documents', comment: 'comments', cast: 'ensemble', cue: 'cues' };
+  const shownActivity = activityExpanded ? activity : activity.slice(0, 7);
+  const tools = isAudioDrama
+    ? [
+        { href: 'sound-design', label: 'Sound Design', sub: 'SFX · music · ambience', icon: 'sound-design' },
+        { href: 'voice-cast', label: 'Voice Cast', sub: `${stats.characters} characters`, icon: 'voice-cast' },
+        { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure', icon: 'arc-planner' },
+        { href: 'mindmap', label: 'Mind Map', sub: 'Character web', icon: 'mindmap' },
+      ]
+    : [
+        { href: 'mindmap', label: 'Mind Map', sub: 'Character web', icon: 'mindmap' },
+        { href: 'moodboard', label: 'Mood Board', sub: 'Visual references', icon: 'moodboard' },
+        { href: 'corkboard', label: 'Corkboard', sub: `${stats.scenes} scenes`, icon: 'corkboard' },
+        { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure', icon: 'arc-planner' },
+      ];
 
   return (
     <div className="page-root">
@@ -548,408 +515,328 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
         onConfirm={handleDeleteScript}
       />
 
-      {/* ── Breadcrumbs ──────────────────────────── */}
-      <nav aria-label="Breadcrumb" className="text-xs text-surface-500 mb-4 flex items-center gap-1.5">
-        <Link href="/dashboard" className="flex items-center gap-1.5 hover:text-surface-300 transition-colors group">
-          <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-surface-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-          Projects
-        </Link>
-        <svg className="w-3 h-3 text-surface-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-        <span className="text-surface-400 font-medium">{currentProject.title}</span>
-      </nav>
-
-      {/* ── Page Header ─────────────────────────────── */}
-      <div className="mb-10">
-        <div className="flex items-start justify-between gap-6">
-          <div className="min-w-0">
-            <div className="flex items-start gap-2">
-              <h1 className="page-title min-w-0 break-words">{currentProject.title}</h1>
-              <MoreMenu
-                alwaysVisible
-                align="left"
-                label="Project actions"
-                className="mt-1 shrink-0"
-                buttonClassName="bg-surface-800/60 hover:bg-surface-700"
-                items={[
-                  { label: 'Rename project', icon: 'rename', onSelect: () => setRenamingProject(true) },
-                  { label: 'Project settings', icon: 'settings', onSelect: () => router.push(`/projects/${params.id}/settings`) },
-                  {
-                    label: 'Delete project', icon: 'delete', danger: true, onSelect: () => setDeletingProject(true),
-                    disabledReason: currentProject.created_by === user?.id ? undefined : 'Only the creator can delete it',
-                  },
-                ]}
-              />
+      <AdminPage>
+        {/* ── Hero ─────────────────────────────────── */}
+        <Reveal className="relative overflow-hidden rounded-3xl border border-surface-800 bg-gradient-to-br from-surface-900 via-surface-900/80 to-brand-950/40 p-6 md:p-8">
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-500/10 blur-3xl"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <nav aria-label="Breadcrumb" className="relative mb-4 flex items-center gap-1.5 text-xs text-surface-500">
+            <Link href="/dashboard" className="transition-colors hover:text-surface-300">Projects</Link>
+            <span className="text-surface-700">/</span>
+            <span className="font-medium text-surface-400">{currentProject.title}</span>
+          </nav>
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-start gap-2">
+                <h1 className="page-title min-w-0 break-words">{currentProject.title}</h1>
+                <MoreMenu
+                  alwaysVisible
+                  align="left"
+                  label="Project actions"
+                  className="mt-1 shrink-0"
+                  buttonClassName="bg-surface-800/60 hover:bg-surface-700"
+                  items={[
+                    { label: 'Rename project', icon: 'rename', onSelect: () => setRenamingProject(true) },
+                    { label: 'Project settings', icon: 'settings', onSelect: () => router.push(`/projects/${pid}/settings`) },
+                    {
+                      label: 'Delete project', icon: 'delete', danger: true, onSelect: () => setDeletingProject(true),
+                      disabledReason: currentProject.created_by === user?.id ? undefined : 'Only the creator can delete it',
+                    },
+                  ]}
+                />
+              </div>
+              {currentProject.logline && <p className="page-subtitle mt-2 max-w-2xl">{currentProject.logline}</p>}
+              <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                <Pill tone={STATUS_TONE[currentProject.status] ?? 'violet'} dot>{currentProject.status.replace(/_/g, ' ')}</Pill>
+                <Pill tone="blue">{currentProject.format}</Pill>
+                {currentProject.genre?.map((g: string) => <Pill key={g}>{g}</Pill>)}
+                <span className="ml-1 text-[11px] text-surface-500">Created {timeAgo(currentProject.created_at)}</span>
+              </div>
             </div>
-            {currentProject.logline && (
-              <p className="page-subtitle max-w-2xl mt-2">{currentProject.logline}</p>
+            {estimatedMinutes > 0 && (
+              <div className="flex shrink-0 items-center gap-4 rounded-2xl border border-surface-800 bg-surface-950/40 px-5 py-4">
+                <RuntimeRing pct={targetMinutes > 0 ? Math.min(100, runtimePct) : 100} over={runtimePct > 105} />
+                <div>
+                  <p className="text-2xl font-bold tracking-tight" style={{ color: 'rgb(var(--brand-400))' }}>{durationStr}</p>
+                  <p className="text-[11px] uppercase tracking-wide text-surface-500">estimated runtime</p>
+                  {targetMinutes > 0 && (
+                    <p className={cn('mt-0.5 text-[11px]', runtimePct > 105 ? 'text-amber-400' : 'text-surface-500')}>
+                      {Math.round(runtimePct)}% of the {targetStr} target{runtimePct > 105 ? ' — running long' : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
-            <div className="flex flex-wrap items-center gap-2 mt-4">
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium uppercase tracking-wide"
-                style={{ background: statusColor + '18', color: statusColor, border: `1px solid ${statusColor}35` }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor }} />
-                {currentProject.status.replace(/_/g, ' ')}
-              </span>
-              <Badge variant="info">{currentProject.format}</Badge>
-              {currentProject.genre?.map((g: string) => (
-                <Badge key={g}>{g}</Badge>
-              ))}
-            </div>
           </div>
-          {estimatedMinutes > 0 && (
-            <div className="shrink-0 text-right hidden md:block">
-              <p className="stat-value" style={{ color: 'rgb(var(--brand-400))' }}>{durationStr}</p>
-              <p className="stat-label">estimated runtime</p>
-              {targetMinutes > 0 && (
-                <p className="text-[11px] text-surface-600 mt-1">target: {targetStr}</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+        </Reveal>
 
-      {/* ── Welcome Card ──────────────────────────────── */}
-      {showWelcomeCard && (
-        <div className="relative mb-8 p-6 rounded-xl border border-brand-500/20 bg-gradient-to-br from-brand-500/5 to-surface-900/50">
-          <button
-            onClick={() => {
-              setIsWelcomeDismissed(true);
-              localStorage.setItem(`project-onboarding-dismissed-${params.id}`, 'true');
-            }}
-            className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center text-surface-500 hover:text-white hover:bg-surface-800 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-500/15 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Welcome to your new project!</h2>
-              <p className="text-sm text-surface-400">Start building your screenplay project. Here are some first steps:</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Link href={`/projects/${params.id}/script`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-semibold text-white text-center">Write Your Script</p>
-              </div>
-            </Link>
-            <Link href={`/projects/${params.id}/characters`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-semibold text-white text-center">Add Characters</p>
-              </div>
-            </Link>
-            <Link href={`/projects/${params.id}/locations`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-semibold text-white text-center">Plan Locations</p>
-              </div>
-            </Link>
-            <Link href={`/projects/${params.id}/moodboard`}>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-surface-900/50 border border-surface-800/60 hover:border-brand-500/30 hover:bg-surface-800/50 transition-colors duration-200 group cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 transition-transform">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-semibold text-white text-center">Create Moodboard</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* ── Primary Stats ────────────────────────────── */}
-      <div className="mb-3">
-        <p className="section-title">Project Numbers</p>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-10 stagger-children">
-        {(isAudioDrama ? [
-          { label: 'Scripts',    value: stats.scripts,    href: 'script',     color: '#818cf8' },
-          { label: 'Characters', value: stats.characters, href: 'characters', color: '#f472b6' },
-          { label: 'Locations',  value: stats.locations,  href: 'locations',  color: '#2dd4bf' },
-          { label: 'Episodes',   value: stats.scenes,     href: 'scenes',     color: '#a78bfa' },
-          { label: 'Ideas',      value: stats.ideas,      href: 'ideas',      color: '#fb923c' },
-        ] : [
-          { label: 'Scripts',    value: stats.scripts,    href: 'script',     color: '#818cf8' },
-          { label: 'Characters', value: stats.characters, href: 'characters', color: '#f472b6' },
-          { label: 'Locations',  value: stats.locations,  href: 'locations',  color: '#2dd4bf' },
-          { label: 'Scenes',     value: stats.scenes,     href: 'scenes',     color: '#fbbf24' },
-          { label: 'Shots',      value: stats.shots,      href: 'shots',      color: '#60a5fa' },
-        ]).map((stat) => (
-          <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
-            <div
-              className="stat-card group"
-              style={{ '--stat-color': stat.color } as React.CSSProperties}
+        {/* ── Welcome ─────────────────────────────── */}
+        <AnimatePresence>
+          {showWelcomeCard && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0 }}
+              className="relative overflow-hidden rounded-2xl border border-brand-500/25 bg-gradient-to-br from-brand-500/[0.07] to-surface-900/50 p-6"
             >
-              <p className="stat-value group-hover:text-white" style={{ color: stat.color }}>{stat.value}</p>
-              <p className="stat-label">{stat.label}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* ── Secondary Stats ───────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-        {[
-          { label: 'Documents',    value: stats.documents,                  href: 'documents', color: '#22d3ee' },
-          { label: 'Script Lines', value: stats.scriptLines.toLocaleString(), href: 'script',  color: '#a78bfa' },
-          { label: 'Comments',     value: stats.comments,                   href: 'documents', color: '#fb923c' },
-          { label: 'Team Members', value: stats.members,                    href: 'team',      color: '#34d399' },
-        ].map((stat) => (
-          <Link key={stat.label} href={`/projects/${params.id}/${stat.href}`}>
-            <div className="card-row group hover:cursor-pointer">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-semibold transition-transform"
-                style={{ background: stat.color + '18', color: stat.color }}
-              >
-                {typeof stat.value === 'number' ? stat.value : <span className="text-xs">{stat.value}</span>}
-              </div>
-              <p className="stat-label leading-none">{stat.label}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* ── Main Content Grid ─────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-        {/* Production Progress */}
-        <Card className="p-6">
-          <p className="section-title">Production Progress</p>
-          <div className="space-y-5">
-            <Progress label="Scenes Complete" value={stats.completedScenes} max={Math.max(stats.scenes, 1)} color="#22c55e" />
-            <Progress label="Shots Complete"  value={stats.completedShots}  max={Math.max(stats.shots, 1)}  color="#60a5fa" />
-            <Progress
-              label="Budget Used"
-              value={stats.budgetSpent}
-              max={Math.max(stats.budgetTotal, 1)}
-              color={stats.budgetSpent > stats.budgetTotal * 0.9 ? '#ef4444' : '#f59e0b'}
-            />
-          </div>
-          {stats.budgetTotal > 0 && (
-            <div className="mt-5 pt-4 border-t border-surface-800/60 flex justify-between items-center">
-              <span className="text-xs text-surface-500">{formatCurrency(stats.budgetSpent)} spent of {formatCurrency(stats.budgetTotal)}</span>
-              <span className={cn('text-xs font-bold', stats.budgetSpent > stats.budgetTotal ? 'text-red-400' : 'text-green-400')}>
-                {formatCurrency(stats.budgetTotal - stats.budgetSpent)} left
-              </span>
-            </div>
-          )}
-        </Card>
-
-        {/* Working Time */}
-        <WorkTimeCard projectId={params.id} />
-
-        {/* Activity Timeline */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-5">
-            <p className="section-title mb-0">Recent Activity</p>
-            {activity.length > 0 && (
               <button
-                onClick={() => setActivityExpanded((v) => !v)}
-                className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-400 hover:text-white transition-colors"
+                onClick={() => { setIsWelcomeDismissed(true); localStorage.setItem(`project-onboarding-dismissed-${pid}`, 'true'); }}
+                className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full text-surface-500 transition-colors hover:bg-surface-800 hover:text-white"
+                aria-label="Dismiss"
               >
+                ✕
+              </button>
+              <h2 className="text-lg font-bold text-white">Welcome to your new project</h2>
+              <p className="mb-4 text-sm text-surface-400">A few good first steps:</p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { href: 'script', label: 'Write your script', icon: 'script' },
+                  { href: 'characters', label: 'Add characters', icon: 'characters' },
+                  { href: 'locations', label: 'Plan locations', icon: 'locations' },
+                  { href: 'moodboard', label: 'Build a mood board', icon: 'moodboard' },
+                ].map((step, i) => (
+                  <motion.div key={step.href} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06 }}>
+                    <Link href={`/projects/${pid}/${step.href}`} className="group flex flex-col items-center gap-2 rounded-xl border border-surface-800 bg-surface-900/60 p-4 transition-all hover:-translate-y-0.5 hover:border-brand-500/40">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400 [&>svg]:h-5 [&>svg]:w-5">{sidebarIcons[step.icon]}</span>
+                      <span className="text-center text-sm font-semibold text-white">{step.label}</span>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Numbers ─────────────────────────────── */}
+        <StatGrid
+          cols={5}
+          items={[
+            { label: 'Scripts', value: stats.scripts, tone: 'violet', onClick: go('script'), hint: 'Open the script editor' },
+            { label: 'Characters', value: stats.characters, tone: 'pink', onClick: go('characters'), spark: growthSpark(growth.characters) },
+            { label: 'Locations', value: stats.locations, tone: 'aqua', onClick: go('locations'), spark: growthSpark(growth.locations) },
+            isAudioDrama
+              ? { label: 'Episodes', value: stats.scenes, tone: 'amber', onClick: go('scenes') }
+              : { label: 'Scenes', value: stats.scenes, tone: 'amber', onClick: go('scenes'), spark: growthSpark(growth.scenes) },
+            isAudioDrama
+              ? { label: 'Ideas', value: stats.ideas, tone: 'brand', onClick: go('ideas') }
+              : { label: 'Shots', value: stats.shots, tone: 'blue', onClick: go('shots'), spark: growthSpark(growth.shots) },
+            { label: 'Script lines', value: stats.scriptLines, tone: 'violet', onClick: go('script') },
+            { label: 'Documents', value: stats.documents, tone: 'aqua', onClick: go('documents') },
+            { label: 'Open comments', value: stats.comments, tone: 'brand', onClick: go('comments') },
+            { label: 'Team', value: stats.members, tone: 'green', onClick: go('team') },
+            { label: 'Upcoming events', value: stats.upcomingEvents, tone: 'red', onClick: go('schedule') },
+          ]}
+        />
+
+        {/* ── Progress + runtime ──────────────────── */}
+        <div className="grid gap-5 lg:grid-cols-3">
+          <Panel title="Production progress" subtitle="How far along everything is">
+            <div className="space-y-4">
+              {[
+                { label: isAudioDrama ? 'Episodes complete' : 'Scenes complete', done: stats.completedScenes, total: stats.scenes, pct: scenePct, color: '#22c55e' },
+                ...(!isAudioDrama ? [{ label: 'Shots complete', done: stats.completedShots, total: stats.shots, pct: shotPct, color: SERIES.blue }] : []),
+              ].map((row) => (
+                <div key={row.label}>
+                  <div className="mb-1 flex justify-between text-xs">
+                    <span className="text-surface-300">{row.label}</span>
+                    <span className="tabular-nums text-surface-400"><span className="font-semibold text-white">{row.done}</span> / {row.total} · {Math.round(row.pct)}%</span>
+                  </div>
+                  <Meter value={row.pct} color={row.color} />
+                </div>
+              ))}
+              <div>
+                <div className="mb-1 flex justify-between text-xs">
+                  <span className="text-surface-300">Budget used</span>
+                  <span className="tabular-nums text-surface-400">{stats.budgetTotal > 0 ? `${Math.round(budgetPct)}%` : 'No budget yet'}</span>
+                </div>
+                <Meter value={budgetPct} color={budgetPct > 90 ? SERIES.red : SERIES.yellow} />
+                {stats.budgetTotal > 0 && (
+                  <p className="mt-1.5 flex justify-between text-[11px] text-surface-500">
+                    <span>{formatCurrency(stats.budgetSpent)} of {formatCurrency(stats.budgetTotal)}</span>
+                    <span className={cn('font-semibold', stats.budgetSpent > stats.budgetTotal ? 'text-red-400' : 'text-emerald-400')}>
+                      {formatCurrency(stats.budgetTotal - stats.budgetSpent)} left
+                    </span>
+                  </p>
+                )}
+              </div>
+            </div>
+          </Panel>
+          <WorkTimePanel projectId={pid} />
+        </div>
+
+        {/* ── Growth ──────────────────────────────── */}
+        {(growth.characters.length + growth.locations.length + growth.scenes.length + growth.shots.length + growth.ideas.length) > 0 && (
+          <TrendPanel
+            id="project-growth"
+            title="How the project has grown"
+            subtitle="New characters, locations, scenes, shots and ideas over time"
+            defaultRange="90d"
+            stacked
+            sources={[
+              { key: 'characters', label: 'Characters', color: SERIES.magenta, rows: growth.characters, time: (r: { created_at?: string | null }) => r.created_at },
+              { key: 'locations', label: 'Locations', color: SERIES.aqua, rows: growth.locations, time: (r: { created_at?: string | null }) => r.created_at },
+              { key: 'scenes', label: isAudioDrama ? 'Episodes' : 'Scenes', color: SERIES.yellow, rows: growth.scenes, time: (r: { created_at?: string | null }) => r.created_at },
+              ...(!isAudioDrama ? [{ key: 'shots', label: 'Shots', color: SERIES.blue, rows: growth.shots, time: (r: { created_at?: string | null }) => r.created_at }] : []),
+              { key: 'ideas', label: 'Ideas', color: SERIES.violet, rows: growth.ideas, time: (r: { created_at?: string | null }) => r.created_at },
+            ]}
+          />
+        )}
+
+        {/* ── Activity / schedule / scripts ───────── */}
+        <div className="grid gap-5 lg:grid-cols-3">
+          <Panel
+            title="Recent activity"
+            subtitle="Latest changes across the project"
+            className="lg:col-span-2"
+            action={activity.length > 7 ? (
+              <button onClick={() => setActivityExpanded((v) => !v)} className="text-[11px] font-semibold text-surface-400 hover:text-white">
                 {activityExpanded ? 'Show less' : `Show all (${activity.length})`}
               </button>
+            ) : null}
+          >
+            {activity.length === 0 ? (
+              <p className="text-sm text-surface-500">Get started by creating a script, adding characters, or planning scenes.</p>
+            ) : (
+              <ol className="relative">
+                <span className="absolute bottom-2 left-[15px] top-2 w-px bg-gradient-to-b from-brand-500/40 to-transparent" aria-hidden />
+                <AnimatePresence initial={false}>
+                  {shownActivity.map((item, i) => (
+                    <motion.li key={item.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ delay: Math.min(i, 10) * 0.03 }}>
+                      <Link href={`/projects/${pid}/${routeMap[item.type] || ''}`} className="group -mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-800/40">
+                        <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-4 ring-surface-900 [&>svg]:h-3.5 [&>svg]:w-3.5" style={{ backgroundColor: item.color + '22', color: item.color }}>
+                          {sidebarIcons[routeMap[item.type] || ''] ?? <span className="h-2 w-2 rounded-full" style={{ background: item.color }} />}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium text-white group-hover:text-brand-300">{item.label}</span>
+                          <span className="block text-[11px] text-surface-500">{item.detail}</span>
+                        </span>
+                        <span className="shrink-0 text-[11px] text-surface-500">{timeAgo(item.timestamp)}</span>
+                      </Link>
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </ol>
             )}
-          </div>
-          {activity.length === 0 ? (
-            <p className="text-sm text-surface-500">Get started by creating a script, adding characters, or planning scenes.</p>
-          ) : (
-            <div className="relative">
-              <div className="absolute left-3 top-1 bottom-1 w-px" style={{ background: 'linear-gradient(to bottom, rgb(var(--brand-500)/0.3), transparent)' }} />
-              <div className="space-y-2">
-                {(activityExpanded ? activity : activity.slice(0, 6)).map((item) => {
-                  const typeIcon = ({
-                    Script: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-                    Character: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
-                    Scene: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
-                    Shot: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>,
-                    Location: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-                    Idea: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>,
-                    Document: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-                    Comment: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>,
-                    Ensemble: <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
-                  } as Record<string, React.ReactNode>)[item.type] || null;
-                  const routeMap = { Script: 'script', Character: 'characters', Scene: 'scenes', Shot: 'shots', Location: 'locations', Idea: 'ideas', Document: 'documents', Comment: 'comments', Ensemble: 'ensemble' } as Record<string, string>;
-                  return (
-                    <Link key={item.id} href={`/projects/${params.id}/${routeMap[item.type] || ''}`}
-                      className="flex items-start gap-3 group rounded-lg transition-colors duration-150 hover:bg-white/[0.03] -mx-2 px-2 py-1.5"
-                    >
-                      <div
-                        className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center z-10 ring-2 ring-surface-950 transition-colors duration-150 group-hover:ring-brand-500/30"
-                        style={{ backgroundColor: item.color + '20' }}
-                      >
-                        {typeIcon ? (
-                          <span style={{ color: item.color }}>{typeIcon}</span>
-                        ) : (
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-white truncate group-hover:text-brand-500 transition-colors">{item.label}</p>
-                          <Badge size="sm">{item.type}</Badge>
-                        </div>
-                        <p className="text-[11px] text-surface-500 mt-0.5">{item.detail} · {timeAgo(item.timestamp)}</p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </Card>
+          </Panel>
 
-        {/* Upcoming Schedule */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-5">
-            <p className="section-title mb-0">Upcoming Schedule</p>
-            <Link href={`/projects/${params.id}/schedule`}>
-              <Button variant="ghost" size="sm">View All →</Button>
-            </Link>
-          </div>
-          {upcomingEvents.length === 0 ? (
-            <p className="text-sm text-surface-500">No upcoming events scheduled.</p>
-          ) : (
-            <div className="space-y-2">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="card-row">
-                  <div className="w-1 h-9 rounded-full shrink-0" style={{ backgroundColor: event.color || '#6366f1' }} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-white truncate">{event.title}</p>
-                    <p className="text-[11px] text-surface-500">{formatDate(event.start_time)} · {event.event_type.replace('_', ' ')}</p>
-                  </div>
-                  {event.is_confirmed && <Badge variant="success" size="sm">confirmed</Badge>}
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
+          <div className="space-y-5">
+            <Panel title="Coming up" action={<Link href={`/projects/${pid}/schedule`} className="text-[11px] font-semibold text-brand-400 hover:text-brand-300">Schedule →</Link>}>
+              {upcomingEvents.length === 0 ? (
+                <p className="text-sm text-surface-500">Nothing scheduled.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {upcomingEvents.map((event) => (
+                    <li key={event.id} className="flex items-center gap-3">
+                      <span className="flex w-10 shrink-0 flex-col items-center rounded-lg border border-surface-800 bg-surface-950/60 py-1 leading-none">
+                        <span className="text-[9px] uppercase text-surface-500">{new Date(event.start_time).toLocaleString('en', { month: 'short' })}</span>
+                        <span className="text-base font-bold text-white">{new Date(event.start_time).getDate()}</span>
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-white">{event.title}</span>
+                        <span className="block text-[11px] capitalize text-surface-500">{event.event_type.replace(/_/g, ' ')} · {formatDate(event.start_time)}</span>
+                      </span>
+                      {event.is_confirmed && <Pill tone="green">confirmed</Pill>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
 
-        {/* Scripts */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-5">
-            <p className="section-title mb-0">Scripts</p>
-            <Link href={`/projects/${params.id}/script`}>
-              <Button variant="ghost" size="sm">Open Editor →</Button>
-            </Link>
+            <Panel title="Scripts" action={<Link href={`/projects/${pid}/script`} className="text-[11px] font-semibold text-brand-400 hover:text-brand-300">Editor →</Link>}>
+              {recentScripts.length === 0 ? (
+                <p className="text-sm text-surface-500">No scripts yet — create one in the editor.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {recentScripts.map((script) => (
+                    <li key={script.id} className="group relative">
+                      <Link href={`/projects/${pid}/script?script_id=${script.id}`} className="flex items-center gap-3 rounded-lg px-2 py-2 pr-10 transition-colors hover:bg-surface-800/40">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300 [&>svg]:h-4 [&>svg]:w-4">{sidebarIcons.script}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium text-white group-hover:text-brand-300">{script.title}</span>
+                          <span className="block text-[11px] text-surface-500">v{script.version} · {timeAgo(script.updated_at)} · {script.revision_color}</span>
+                        </span>
+                      </Link>
+                      <MoreMenu
+                        className="absolute right-1 top-1/2 z-10 -translate-y-1/2"
+                        buttonClassName="bg-transparent hover:bg-surface-800 text-surface-400"
+                        label={`Actions for ${script.title}`}
+                        items={[
+                          { label: 'Open in editor', icon: 'open', onSelect: () => router.push(`/projects/${pid}/script?script_id=${script.id}`) },
+                          { label: 'Rename', icon: 'rename', onSelect: () => setScriptToRename(script) },
+                          { label: 'Delete script', icon: 'delete', danger: true, onSelect: () => setScriptToDelete(script) },
+                        ]}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
           </div>
-          {recentScripts.length === 0 ? (
-            <p className="text-sm text-surface-500">No scripts yet — create one in the editor.</p>
-          ) : (
-            <div className="space-y-2">
-              {recentScripts.map((script) => (
-                <div key={script.id} className="relative group">
-                  <Link href={`/projects/${params.id}/script?script_id=${script.id}`}>
-                    <div className="card-row">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgb(99 102 241 / 0.15)', color: '#818cf8' }}>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-white truncate group-hover:text-brand-400 transition-colors">{script.title}</p>
-                        <p className="text-[11px] text-surface-500">v{script.version} · {formatDate(script.updated_at)}</p>
-                      </div>
-                      <Badge size="sm">{script.revision_color}</Badge>
-                      <div className="w-8" /> {/* Spacer for the ⋯ menu */}
-                    </div>
+        </div>
+
+        {/* ── Tools + synopsis ────────────────────── */}
+        <div className="grid gap-5 lg:grid-cols-3">
+          <Panel title={isAudioDrama ? 'Audio drama tools' : 'Creative tools'} className={currentProject.synopsis ? '' : 'lg:col-span-3'}>
+            <div className={cn('grid gap-2.5', currentProject.synopsis ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4')}>
+              {tools.map((tool, i) => (
+                <motion.div key={tool.href} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }}>
+                  <Link href={`/projects/${pid}/${tool.href}`} className="group block rounded-xl border border-surface-800 bg-surface-950/40 p-4 transition-all hover:-translate-y-0.5 hover:border-surface-700 hover:shadow-lg hover:shadow-black/20">
+                    <span className="mb-2.5 block text-brand-400 transition-transform group-hover:scale-110 [&>svg]:h-5 [&>svg]:w-5">{sidebarIcons[tool.icon]}</span>
+                    <span className="block text-sm font-bold text-white">{tool.label}</span>
+                    <span className="mt-0.5 block text-[11px] text-surface-500">{tool.sub}</span>
                   </Link>
-                  <MoreMenu
-                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10"
-                    buttonClassName="bg-transparent hover:bg-surface-800 text-surface-400"
-                    label={`Actions for ${script.title}`}
-                    items={[
-                      { label: 'Open in editor', icon: 'open', onSelect: () => router.push(`/projects/${params.id}/script?script_id=${script.id}`) },
-                      { label: 'Rename', icon: 'rename', onSelect: () => setScriptToRename(script) },
-                      { label: 'Delete script', icon: 'delete', danger: true, onSelect: () => setScriptToDelete(script) },
-                    ]}
-                  />
-                </div>
+                </motion.div>
               ))}
             </div>
+          </Panel>
+          {currentProject.synopsis && (
+            <Panel title="Synopsis" className="lg:col-span-2">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-surface-300">{currentProject.synopsis}</p>
+            </Panel>
           )}
-        </Card>
-
-        {/* Creative Tools — conditional per project type */}
-        {isAudioDrama ? (
-          <Card className="p-6">
-            <p className="section-title">Audio Drama Tools</p>
-            <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { href: 'sound-design', label: 'Sound Design', sub: 'SFX · Music · Ambience', color: '#7c3aed', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
-                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg> },
-                { href: 'voice-cast',   label: 'Voice Cast',   sub: `${stats.characters} characters`, color: '#ec4899', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
-                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg> },
-                { href: 'arc-planner', label: 'Arc Planner',   sub: 'Story structure',      color: '#60a5fa', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
-                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
-                { href: 'mindmap',     label: 'Mind Map',      sub: 'Character web',        color: '#f97316', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',
-                  icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
-              ].map((tool) => (
-                <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
-                  <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border)}>
-                    <div className="mb-2.5 transition-transform" style={{ color: tool.color }}>{tool.icon}</div>
-                    <p className="text-sm font-bold text-white">{tool.label}</p>
-                    <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Card>
-        ) : (
-          <Card className="p-6">
-            <p className="section-title">Creative Tools</p>
-            <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { href: 'mindmap',   label: 'Mind Map',    sub: 'Character web',       color: '#f97316', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="2.5" strokeWidth={1.5}/><circle cx="5" cy="18" r="2.5" strokeWidth={1.5}/><circle cx="19" cy="18" r="2.5" strokeWidth={1.5}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 7.5v3m0 0l-5.5 5m5.5-5l5.5 5"/></svg> },
-                { href: 'moodboard', label: 'Mood Board',  sub: 'Visual references',   color: '#a855f7', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm10-2a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" /></svg> },
-                { href: 'corkboard', label: 'Corkboard',   sub: `${stats.scenes} scenes`,  color: '#fbbf24', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
-                { href: 'arc-planner', label: 'Arc Planner', sub: 'Story structure',    color: '#60a5fa', from: 'from-surface-800/50', to: 'to-surface-900/50', border: 'border-surface-700',   icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> },
-              ].map((tool) => (
-                <Link key={tool.href} href={`/projects/${params.id}/${tool.href}`}>
-                  <div className={cn('p-4 rounded-xl bg-gradient-to-br border transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20', tool.from, tool.to, tool.border, `hover:${tool.border.replace('20', '40')}`)}>
-                    <div className="mb-2.5 transition-transform" style={{ color: tool.color }}>{tool.icon}</div>
-                    <p className="text-sm font-bold text-white">{tool.label}</p>
-                    <p className="text-[11px] text-surface-500 mt-0.5">{tool.sub}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        {/* Synopsis */}
-        {currentProject.synopsis && (
-          <Card className="p-6 lg:col-span-2">
-            <p className="section-title">Synopsis</p>
-            <p className="text-sm text-surface-300 leading-relaxed whitespace-pre-wrap">{currentProject.synopsis}</p>
-          </Card>
-        )}
-
-      </div>
+        </div>
+      </AdminPage>
     </div>
   );
 }
 
+/** Daily counts of newly created items over the last 14 days. */
+function growthSpark(rows: { created_at?: string | null }[]): number[] {
+  const DAY = 86_400_000;
+  const today = Math.floor(Date.now() / DAY);
+  const out = new Array(14).fill(0);
+  rows.forEach((r) => {
+    if (!r.created_at) return;
+    const d = today - Math.floor(Date.parse(r.created_at) / DAY);
+    if (d >= 0 && d < 14) out[13 - d] += 1;
+  });
+  return out.some((v) => v > 0) ? out : [];
+}
+
+/** Circular progress toward the target runtime. */
+function RuntimeRing({ pct, over = false }: { pct: number; over?: boolean }) {
+  const r = 22;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width={56} height={56} viewBox="0 0 56 56" className="-rotate-90" aria-hidden>
+      <circle cx={28} cy={28} r={r} fill="none" stroke="rgb(var(--surface-800))" strokeWidth={5} />
+      <motion.circle
+        cx={28}
+        cy={28}
+        r={r}
+        fill="none"
+        stroke={over ? '#f59e0b' : 'rgb(var(--brand-500))'}
+        strokeWidth={5}
+        strokeLinecap="round"
+        strokeDasharray={c}
+        initial={{ strokeDashoffset: c }}
+        animate={{ strokeDashoffset: c * (1 - pct / 100) }}
+        transition={{ duration: 1.1, ease: [0.2, 0.8, 0.2, 1] }}
+      />
+    </svg>
+  );
+}

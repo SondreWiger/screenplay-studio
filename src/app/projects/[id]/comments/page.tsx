@@ -12,6 +12,7 @@ import { sendNotificationEmailAction } from '@/lib/email-actions';
 import type { Comment, Profile, CommentType, ScriptElement } from '@/lib/types';
 import logger from '@/lib/logger';
 import { ELEMENT_LABELS } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Recursive comment component for infinite nesting
 function CommentThread({ comment, allComments, depth, canEdit, userId, projectId, onReply, onResolve, onDelete }: {
@@ -330,7 +331,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Comments</h1>
+          <PageTitle>Comments</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
             {comments.length} comment{comments.length !== 1 ? 's' : ''}
             {scriptCommentCount > 0 && <span className="text-brand-500"> &bull; {scriptCommentCount} on script</span>}

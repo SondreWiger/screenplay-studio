@@ -12,6 +12,8 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { toast } from 'sonner';
 import type { Character } from '@/lib/types';
 import { useTranslation } from '@/components/TranslationProvider';
+import { PageTitle } from '@/components/projects/PageTitle';
+import { StatGrid } from '@/components/kit';
 
 export default function CharactersPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
@@ -185,7 +187,7 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('characters.title')}</h1>
+          <PageTitle>{t('characters.title')}</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
             {characters.length} characters in this project
             {characters.filter(needsSetup).length > 0 && (
@@ -221,6 +223,19 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
             Add Character
           </Button>}
         </div>
+      </div>
+      <div className="mb-6">
+        <StatGrid
+          cols={5}
+          layoutGroup="characters"
+          items={[
+            { label: 'All characters', value: characters.length, tone: 'pink', onClick: () => setFilter('all'), active: filter === 'all' },
+            { label: 'Leads', value: characters.filter((c) => ['protagonist', 'antagonist', 'main'].includes(c.role ?? '') || (!c.role && c.is_main)).length, tone: 'brand', onClick: () => setFilter('all_leads'), active: filter === 'all_leads', hint: 'Protagonists, antagonists and main characters' },
+            { label: 'Supporting', value: characters.filter((c) => (c.role ?? (c.is_main ? 'main' : 'supporting')) === 'supporting').length, tone: 'violet', onClick: () => setFilter('supporting'), active: filter === 'supporting' },
+            { label: 'Minor', value: characters.filter((c) => c.role === 'minor').length, tone: 'neutral', onClick: () => setFilter('minor'), active: filter === 'minor' },
+            { label: 'Need setup', value: characters.filter(needsSetup).length, tone: 'amber', onClick: () => setFilter('needs_setup'), active: filter === 'needs_setup', hint: 'No description, age, backstory or motivation yet' },
+          ]}
+        />
       </div>
 
       {/* Filter Tabs */}

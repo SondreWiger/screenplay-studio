@@ -8,6 +8,7 @@ import { Button, Card, LoadingPage, Input, Modal, toast, ToastContainer } from '
 import { cn } from '@/lib/utils';
 import type { StageProductionTeamMember, StageProductionDepartment } from '@/lib/types';
 import { STAGE_DEPARTMENTS } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 const DEPT_COLORS: Record<StageProductionDepartment, string> = {
   'Direction':          'text-brand-500 bg-brand-500/10 border-brand-500/20',
@@ -115,7 +116,7 @@ export default function ProductionTeamPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Production Team</h1>
+          <PageTitle>Production Team</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {members.length} member{members.length !== 1 ? 's' : ''} · {currentProject?.title}
           </p>

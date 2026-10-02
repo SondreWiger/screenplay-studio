@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Modal, Input, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import type { ScriptNotesRound, ScriptNote, NoteCategory, NoteStatus, NotesRoundStatus } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 const CATEGORY_LABELS: Record<NoteCategory, string> = {
   story: 'Story',
@@ -239,7 +240,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
       {/* Header */}
       <div className="border-b border-surface-800 px-6 py-4 flex items-center justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-lg font-bold text-white">Notes Rounds</h1>
+          <PageTitle>Notes Rounds</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">Track development notes from producers, directors, and executives</p>
         </div>
         {canEdit && (

@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Shot, Scene } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Types
 interface Stroke {
@@ -290,7 +291,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col gap-3 mb-5 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Storyboard</h1>
+            <PageTitle>Storyboard</PageTitle>
             <p className="text-xs sm:text-sm text-surface-400 mt-1">
               {shots.length} shot{shots.length !== 1 ? 's' : ''} &middot; {withContent} with storyboard
             </p>

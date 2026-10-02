@@ -6,6 +6,7 @@ import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Card, Button, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Camera & Sound Reports
 // Daily roll-based reports for camera and sound departments.
@@ -154,7 +155,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
   if (view === 'edit') return (
     <div className="p-4 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-xl font-bold text-white">{selected ? 'Edit' : `New ${activeTab === 'camera' ? 'Camera' : 'Sound'} Report`}</h1>
+        <PageTitle>{selected ? 'Edit' : `New ${activeTab === 'camera' ? 'Camera' : 'Sound'} Report`}</PageTitle>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => setView('list')}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>

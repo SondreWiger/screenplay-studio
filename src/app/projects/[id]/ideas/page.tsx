@@ -8,6 +8,8 @@ import { Button, Badge, Modal, Input, Textarea, LoadingSpinner, toast } from '@/
 import { cn, timeAgo } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Idea, IdeaStatus, IdeaCategory } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
+import { StatGrid, dailySpark, tally, windowCounts } from '@/components/kit';
 
 interface SceneHead {
   id: string;
@@ -219,13 +221,24 @@ export default function IdeasPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Ideas Board</h1>
+          <PageTitle>Ideas Board</PageTitle>
           <p className="text-sm text-surface-400 mt-1">{ideas.length} ideas captured</p>
         </div>
         {canEdit && <Button onClick={() => { setSelectedIdea(null); setShowEditor(true); }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Capture Idea
         </Button>}
+      </div>
+      <div className="mb-6">
+        <StatGrid
+          cols={4}
+          items={[
+            { label: 'Ideas', value: ideas.length, tone: 'violet', spark: dailySpark(ideas, (i) => i.created_at) },
+            { label: 'New this week', value: windowCounts(ideas, (i) => i.created_at, 7).current, delta: windowCounts(ideas, (i) => i.created_at, 7).delta, tone: 'brand' },
+            { label: 'Top category', value: tally(ideas, (i) => i.category)[0]?.count ?? 0, tone: 'aqua', hint: tally(ideas, (i) => i.category)[0]?.label ?? 'None yet' },
+            { label: 'Categories used', value: new Set(ideas.map((i) => i.category)).size, tone: 'blue', hint: `of ${CATEGORIES.length}` },
+          ]}
+        />
       </div>
 
       {/* Category filter */}

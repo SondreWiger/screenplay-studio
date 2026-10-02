@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useScriptStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 const FONT = 'Courier New';
 const FONT_SIZE_PT = 12;
@@ -345,7 +346,7 @@ function ExportDocxPageInner({ params }: { params: { id: string } }) {
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white tracking-tight">Export to DOCX</h1>
+          <PageTitle>Export to DOCX</PageTitle>
           <p className="text-sm text-surface-400 mt-1">
             Export your screenplay as a Word document.
           </p>

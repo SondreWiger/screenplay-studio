@@ -8,6 +8,7 @@ import { useScriptStore } from '@/lib/stores';
 import { Button, Badge, EmptyState, Progress, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { ScriptElement } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 type Category = 'props' | 'characters' | 'locations' | 'sfx' | 'vehicles' | 'costumes' | 'music' | 'weather';
 
@@ -252,7 +253,7 @@ export default function AutoBreakdownPage() {
             </svg>
             Back to Script
           </Link>
-          <h1 className="text-xl font-bold text-white">Auto-Breakdown</h1>
+          <PageTitle>Auto-Breakdown</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {elements.length} script elements loaded
             {scanComplete && <> &middot; {totalItems} items found</>}

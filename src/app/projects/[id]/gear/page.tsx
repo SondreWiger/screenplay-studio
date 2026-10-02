@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { ShootGear, GearCategory, GearOwnership, GearStatus } from '@/lib/types';
 import { GEAR_CATEGORIES } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Constants
 const OWNERSHIP_LABEL: Record<GearOwnership, string> = {
@@ -179,7 +180,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="border-b border-surface-800 px-6 py-4 flex items-center justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-lg font-bold text-white">Gear</h1>
+          <PageTitle>Gear</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {gear.length} item{gear.length !== 1 ? 's' : ''} · {fmt(totalCost)} committed
           </p>

@@ -6,6 +6,7 @@ import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Modal, toast } from '@/components/ui';
 import { pickToast, SUBMISSION_ADDED, SUBMISSION_ACCEPTED } from '@/lib/funToasts';
 import { cn } from '@/lib/utils';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Submission Tracker — track where your script has been sent
 // Table: script_submissions (see SQL migration)
@@ -162,7 +163,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Submission Tracker</h1>
+          <PageTitle>Submission Tracker</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">{submissions.length} total submissions</p>
         </div>
         {canEdit && (

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Card, Button, SkeletonList, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Day-Out-of-Days (DOOD)
 // The classic industry grid: characters across top,
@@ -175,7 +176,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-full">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Day Out of Days</h1>
+          <PageTitle>Day Out of Days</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5 hidden md:block">Click a cell to cycle through SW / W / WF / SWF / H / T / F</p>
           <p className="text-sm text-surface-400 mt-0.5 md:hidden">Tap a cell to cycle status</p>
         </div>

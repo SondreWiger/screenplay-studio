@@ -1845,3 +1845,21 @@ body.is-mac-electron header input,
 body.is-mac-electron header [role="button"] {
   -webkit-app-region: no-drag;
 }
+
+/* ── Project pages: cascade each top-level block in on navigation ──
+   `backwards` fill so no transform lingers after the animation (a lingering
+   transform would re-anchor position:fixed modals inside the page). */
+@keyframes page-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-cascade > * > * { animation: page-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+.page-cascade > * > *:nth-child(2) { animation-delay: 50ms; }
+.page-cascade > * > *:nth-child(3) { animation-delay: 100ms; }
+.page-cascade > * > *:nth-child(4) { animation-delay: 150ms; }
+.page-cascade > * > *:nth-child(5) { animation-delay: 200ms; }
+.page-cascade > * > *:nth-child(6) { animation-delay: 250ms; }
+.page-cascade > * > *:nth-child(n+7) { animation-delay: 300ms; }
+@media (prefers-reduced-motion: reduce) {
+  .page-cascade > * > * { animation: none; }
+}

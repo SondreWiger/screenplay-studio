@@ -6,6 +6,7 @@ import { useAuthStore } from '@/lib/stores';
 import { Button, Badge, Input, Modal, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastMosDevice, BroadcastMosDeviceType, BroadcastMosConnectionStatus } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // MOS Devices — MOS protocol device registry and monitoring
 // Graphics servers, video servers, prompters, routers, etc.
@@ -149,7 +150,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
       {/* ── Header ─────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-surface-800">
         <div>
-          <h1 className="text-lg font-bold text-white">MOS Devices</h1>
+          <PageTitle>MOS Devices</PageTitle>
           <p className="text-xs text-surface-400">Media Object Server protocol devices</p>
         </div>
         <div className="flex items-center gap-2">

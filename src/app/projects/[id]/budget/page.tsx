@@ -7,6 +7,7 @@ import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner
 import { cn, formatCurrency } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { BudgetItem, BudgetCategory } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // CATEGORY DEFINITIONS
 
@@ -321,7 +322,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Budget</h1>
+          <PageTitle>Budget</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             {items.length} line item{items.length !== 1 ? 's' : ''}
             {overdueCount > 0 && <span className="text-red-400 ml-2">· {overdueCount} overdue</span>}

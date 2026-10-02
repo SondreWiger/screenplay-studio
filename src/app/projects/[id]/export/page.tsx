@@ -7,6 +7,7 @@ import { useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingSpinner, toast, ToastContainer } from '@/components/ui';
 import Link from 'next/link';
 import { createScriptDraft, draftStampText, draftStampMarginCSS, type ScriptDraft } from '@/lib/scripts/drafts';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Advanced Export — free for everyone
 // Branded PDF/DOCX/HTML/Fountain export with watermark & cover
@@ -257,7 +258,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Advanced Export</h1>
+            <PageTitle>Advanced Export</PageTitle>
           </div>
           <p className="text-sm text-surface-400 mt-1">Branded, production-ready exports in multiple formats.</p>
         </div>

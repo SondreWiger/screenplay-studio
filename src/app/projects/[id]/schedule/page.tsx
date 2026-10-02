@@ -7,6 +7,8 @@ import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner
 import { cn, formatDate, formatTime } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { ScheduleEvent, Scene, Location as Loc, ScheduleEventType } from '@/lib/types';
+import { PageTitle } from '@/components/projects/PageTitle';
+import { StatGrid } from '@/components/kit';
 
 const EVENT_TYPES: { value: ScheduleEventType; label: string; color: string }[] = [
   { value: 'shooting', label: 'Shooting', color: 'bg-red-500' },
@@ -131,7 +133,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
     <div className="p-4 md:p-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white">Production Schedule</h1>
+          <PageTitle>Production Schedule</PageTitle>
           <p className="text-sm text-surface-400 mt-1">{events.length} events scheduled</p>
         </div>
         <div className="flex gap-3">
@@ -147,6 +149,17 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
             </Button>
           )}
         </div>
+      </div>
+      <div className="mb-6">
+        <StatGrid
+          cols={4}
+          items={[
+            { label: 'Events', value: events.length, tone: 'blue' },
+            { label: 'Upcoming', value: events.filter((e) => e.start_time >= new Date().toISOString()).length, tone: 'brand' },
+            { label: 'Next 7 days', value: events.filter((e) => { const t = Date.parse(e.start_time) - Date.now(); return t >= 0 && t < 7 * 86_400_000; }).length, tone: 'amber' },
+            { label: 'Confirmed', value: events.filter((e) => e.is_confirmed).length, tone: 'green', hint: `${events.length ? Math.round((events.filter((e) => e.is_confirmed).length / events.length) * 100) : 0}% of events` },
+          ]}
+        />
       </div>
 
       {/* Legend */}

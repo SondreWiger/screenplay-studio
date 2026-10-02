@@ -7,6 +7,7 @@ import { useProjectStore } from '@/lib/stores';
 import { Card, Button, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { PageTitle } from '@/components/projects/PageTitle';
 
 // Types
 
@@ -212,7 +213,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white">Sound Design</h1>
+          <PageTitle>Sound Design</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">
             All SFX, music and ambience cues auto-discovered from your scripts
           </p>
