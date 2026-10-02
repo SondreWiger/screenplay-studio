@@ -59,23 +59,23 @@ GRANT UPDATE (recipient, notes) ON public.printed_drafts TO authenticated;
 -- No INSERT policy: drafts are only created through create_printed_draft(),
 -- which takes the snapshot on the server so it matches what was saved.
 
--- Fingerprint of a script's visible text, used to tell whether a printed
+-- Fingerprint of the visible text of a script, used to tell whether a printed
 -- draft still matches the script.
 CREATE OR REPLACE FUNCTION public.script_content_hash(p_script_id UUID)
 RETURNS TEXT
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $fn$
   SELECT md5(COALESCE(string_agg(e.element_type || ':' || COALESCE(e.content, ''), E'\n' ORDER BY e.sort_order, e.id::text COLLATE "C"), ''))
   FROM public.script_elements e
   WHERE e.script_id = p_script_id AND NOT COALESCE(e.is_omitted, false);
-$$;
+$fn$;
 
 CREATE OR REPLACE FUNCTION public.snapshot_content_hash(p_snapshot JSONB)
 RETURNS TEXT
-LANGUAGE sql IMMUTABLE AS $$
+LANGUAGE sql IMMUTABLE AS $fn$
   SELECT md5(COALESCE(string_agg((el->>'element_type') || ':' || COALESCE(el->>'content', ''), E'\n' ORDER BY (el->>'sort_order')::numeric, (el->>'id') COLLATE "C"), ''))
   FROM jsonb_array_elements(p_snapshot) el
   WHERE NOT COALESCE((el->>'is_omitted')::boolean, false);
-$$;
+$fn$;
 
 CREATE OR REPLACE FUNCTION public.create_printed_draft(
   p_script_id UUID,
@@ -85,14 +85,14 @@ CREATE OR REPLACE FUNCTION public.create_printed_draft(
   p_format    TEXT DEFAULT NULL
 )
 RETURNS public.printed_drafts
-LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = public AS $$
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = public AS $fn$
 DECLARE
   v_uid      UUID := auth.uid();
   v_script   public.scripts%ROWTYPE;
   v_snapshot JSONB;
   v_words    INTEGER;
   v_count    INTEGER;
-  -- No 0/O or 1/I, so a code read off paper can't be mistyped.
+  -- No 0/O or 1/I, so a code read off paper cannot be mistyped.
   v_alphabet CONSTANT TEXT := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   v_code     TEXT;
   v_row      public.printed_drafts%ROWTYPE;
@@ -156,7 +156,7 @@ BEGIN
 
   RAISE EXCEPTION 'Could not allocate a unique draft code';
 END;
-$$;
+$fn$;
 
 REVOKE ALL ON FUNCTION public.create_printed_draft(UUID, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.create_printed_draft(UUID, TEXT, TEXT, TEXT, TEXT) TO authenticated;
@@ -168,7 +168,7 @@ GRANT EXECUTE ON FUNCTION public.create_printed_draft(UUID, TEXT, TEXT, TEXT, TE
 --  * Otherwise NULL, indistinguishable from an unknown code.
 CREATE OR REPLACE FUNCTION public.lookup_printed_draft(p_code TEXT, p_user_id UUID DEFAULT NULL)
 RETURNS JSONB
-LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $fn$
 DECLARE
   v_draft   public.printed_drafts%ROWTYPE;
   v_project public.projects%ROWTYPE;
@@ -208,7 +208,7 @@ BEGIN
     'format', v_draft.format
   ) ELSE '{}'::jsonb END;
 END;
-$$;
+$fn$;
 
 REVOKE ALL ON FUNCTION public.lookup_printed_draft(TEXT, UUID) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.lookup_printed_draft(TEXT, UUID) TO service_role;
