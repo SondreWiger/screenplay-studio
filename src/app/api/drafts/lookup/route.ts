@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   }
 
   const admin = createAdminSupabaseClient();
-  const { data, error } = await admin.rpc('lookup_script_draft', { p_code: code, p_user_id: userId });
+  const { data, error } = await admin.rpc('lookup_printed_draft', { p_code: code, p_user_id: userId });
   if (error) {
     return NextResponse.json({ error: 'Lookup failed' }, { status: 500 });
   }

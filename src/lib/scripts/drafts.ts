@@ -1,6 +1,6 @@
 /**
  * Printed drafts: each print/export of a script gets a short code and a frozen
- * snapshot (see supabase/migrations/20261002120000_script_drafts.sql).
+ * snapshot (see supabase/migrations/20261002120000_printed_drafts.sql).
  */
 
 import { createClient } from '@/lib/supabase/client';
@@ -48,7 +48,7 @@ export async function createScriptDraft(
 ): Promise<ScriptDraft> {
   await flushSyncQueue();
   const supabase = createClient();
-  const { data, error } = await supabase.rpc('create_script_draft', {
+  const { data, error } = await supabase.rpc('create_printed_draft', {
     p_script_id: scriptId,
     p_recipient: opts.recipient || null,
     p_notes: opts.notes || null,

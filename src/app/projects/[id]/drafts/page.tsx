@@ -55,7 +55,7 @@ export default function DraftsPage() {
     const supabase = createClient();
     const [scriptRes, draftRes] = await Promise.all([
       supabase.from('scripts').select('id, title').eq('project_id', projectId).order('created_at', { ascending: true }),
-      supabase.from('script_drafts').select('*').eq('project_id', projectId).order('printed_at', { ascending: false }),
+      supabase.from('printed_drafts').select('*').eq('project_id', projectId).order('printed_at', { ascending: false }),
     ]);
     if (draftRes.error) {
       toast(`Could not load drafts: ${draftRes.error.message}`, 'error');
@@ -148,7 +148,7 @@ export default function DraftsPage() {
   const saveDetails = async (d: DraftRow, recipient: string, notes: string) => {
     const supabase = createClient();
     const { data, error } = await supabase
-      .from('script_drafts')
+      .from('printed_drafts')
       .update({ recipient: recipient.trim() || null, notes: notes.trim() || null })
       .eq('id', d.id)
       .select('id');
@@ -169,7 +169,7 @@ export default function DraftsPage() {
     });
     if (!ok) return;
     const supabase = createClient();
-    const { data, error } = await supabase.from('script_drafts').delete().eq('id', d.id).select('id');
+    const { data, error } = await supabase.from('printed_drafts').delete().eq('id', d.id).select('id');
     if (error || !data?.length) {
       toast(error?.message || 'Only whoever issued the draft or a project admin can delete it', 'error');
       return;
