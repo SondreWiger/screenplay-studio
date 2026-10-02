@@ -138,12 +138,11 @@ export default function DevTestPage() {
     },
     {
       id: 'send_email',
-      title: 'Simulate Email Send',
-      description: 'Simulates triggering a transactional email. Logs a notification instead of actually sending.',
+      title: 'Send Test Email',
+      description: 'Sends a real email to your own address and shows the provider’s response (or the exact error).',
       icon: '📧',
       color: 'border-violet-500/20 hover:border-violet-500/40',
-      fields: [{ key: 'template', label: 'Template name', placeholder: 'welcome', default: 'welcome' }],
-      run: (v: Record<string, string>) => run('send_email', { template: v.template }),
+      run: () => run('send_email', {}),
     },
     {
       id: 'send_push',

@@ -1328,10 +1328,10 @@ export default function UserSettingsPage() {
               <div className="space-y-3">
                 {[
                   { label: t('settings.notif_invitations'), desc: 'When someone invites you to a project', column: 'email_project_invites' as const, value: emailProjectInvites, set: setEmailProjectInvites },
-                  { label: t('settings.notif_mentions'), desc: 'When someone mentions you or replies to your comments', column: 'email_mentions' as const, value: emailMentions, set: setEmailMentions },
-                  { label: t('settings.notif_dms'), desc: 'When someone sends you a direct message', column: 'email_direct_messages' as const, value: emailDirectMessages, set: setEmailDirectMessages },
+                  { label: t('settings.notif_mentions'), desc: 'New comments on your projects, replies, and when someone mentions you', column: 'email_mentions' as const, value: emailMentions, set: setEmailMentions },
+                  { label: t('settings.notif_dms'), desc: 'When someone sends you a direct message (at most one email per conversation every 30 minutes)', column: 'email_direct_messages' as const, value: emailDirectMessages, set: setEmailDirectMessages },
                   { label: t('settings.notif_support'), desc: 'When our team replies to your support ticket', column: 'email_ticket_replies' as const, value: emailTicketReplies, set: setEmailTicketReplies },
-                  { label: t('settings.notif_digest'), desc: 'Summary of your writing activity and project updates', column: 'email_weekly_digest' as const, value: emailWeeklyDigest, set: setEmailWeeklyDigest },
+                  { label: t('settings.notif_digest'), desc: 'An occasional nudge if you haven’t written in a while', column: 'email_weekly_digest' as const, value: emailWeeklyDigest, set: setEmailWeeklyDigest },
                 ].map((toggle) => (
                   <SettingSwitchRow
                     key={toggle.label}

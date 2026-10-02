@@ -1,10 +1,34 @@
 import { Resend } from 'resend';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const DEFAULT_FROM_EMAIL = process.env.EMAIL_FROM || 'Screenplay Studio <onboarding@resend.dev>';
 const DEFAULT_FROM_NAME = process.env.EMAIL_FROM_NAME || 'Screenplay Studio';
+// EMAIL_FROM may be a bare address ("noreply@…") or already "Name <address>".
+// Without it Resend's shared onboarding@resend.dev sender is used, which can
+// only deliver to the Resend account owner — every other recipient fails.
+const EMAIL_FROM = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+const DEFAULT_FROM_EMAIL = EMAIL_FROM.includes('<') ? EMAIL_FROM : `${DEFAULT_FROM_NAME} <${EMAIL_FROM}>`;
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+/** What the mailer is set up with, for diagnostics (no secrets). */
+export function getMailerStatus() {
+  return {
+    provider: 'resend',
+    apiKeyConfigured: !!RESEND_API_KEY,
+    from: DEFAULT_FROM_EMAIL,
+    fromConfigured: !!process.env.EMAIL_FROM,
+  };
+}
+
+/** Escape user-supplied text before putting it into email HTML. */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export interface EmailRecipient {
   email: string;
@@ -38,17 +62,21 @@ export async function sendEmail(options: SendEmailOptions): Promise<EmailResult>
     ? `${options.from.name || ''} <${options.from.email}>`.trim()
     : DEFAULT_FROM_EMAIL;
 
+  if (!options.html && !options.text) return { success: false, error: 'Email has no content' };
+
   try {
-    const result = await resend.emails.send({
+    const base = {
       from,
       to: recipients.map((r) => r.email),
       subject: options.subject,
-      text: options.text,
-      html: options.html,
-      // @ts-expect-error — Resend SDK uses snake_case for this field
-      reply_to: options.replyTo?.email,
+      replyTo: options.replyTo?.email,
       tags: options.tags?.map((t) => ({ name: t, value: t })),
-    });
+    };
+    const result = await resend.emails.send(
+      options.html
+        ? { ...base, html: options.html, ...(options.text ? { text: options.text } : {}) }
+        : { ...base, text: options.text as string },
+    );
 
     if (result.error) {
       console.error('[mailer] Resend error:', result.error);
@@ -99,7 +127,7 @@ export async function sendNotificationEmail({
     </div>
     <div style="text-align:center;margin-top:24px">
       <p style="font-size:11px;color:#52525b">You received this because you have an account on Screenplay Studio.</p>
-      <p style="font-size:11px;color:#52525b;margin-top:4px"><a href="${appUrl}/settings" style="color:#ef4444;text-decoration:none">Manage email preferences</a></p>
+      <p style="font-size:11px;color:#52525b;margin-top:4px"><a href="${appUrl}/settings?tab=notifications" style="color:#ef4444;text-decoration:none">Manage email preferences</a></p>
     </div>
   </div>
 </body>
@@ -120,7 +148,7 @@ export async function sendWelcomeEmail(to: EmailRecipient): Promise<EmailResult>
     to,
     subject: "You're in — Screenplay Studio",
     heading: 'Welcome!',
-    body: `Hey ${to.name || 'there'},<br><br>Glad you signed up. You've got a blank dashboard waiting — go create a project and start writing.<br><br>Everything's free. No limits, no paywalls. Just write.<br><br>If you hit anything weird or have ideas, reply to this email. I read every one.<br><br>— Sondre`,
+    body: `Hey ${escapeHtml(to.name || 'there')},<br><br>Glad you signed up. You've got a blank dashboard waiting — go create a project and start writing.<br><br>Everything's free. No limits, no paywalls. Just write.<br><br>If you hit anything weird or have ideas, reply to this email. I read every one.<br><br>— Sondre`,
     ctaLabel: 'Start Writing',
     ctaUrl: '/dashboard',
   });

@@ -32,6 +32,23 @@ export async function triggerSelfPush(
 }
 
 /**
+ * Ask the server to send the emails for notifications this user just created
+ * (it applies each recipient's email settings). Debounced so a burst — e.g.
+ * notifying every project member — is one request.
+ */
+let emailTimer: ReturnType<typeof setTimeout> | null = null;
+export function requestNotificationEmails(): void {
+  if (typeof window === 'undefined') return;
+  if (emailTimer) clearTimeout(emailTimer);
+  emailTimer = setTimeout(() => {
+    emailTimer = null;
+    fetch('/api/notifications/email', { method: 'POST', keepalive: true }).catch(() => {
+      // Email is best-effort; the in-app notification already exists
+    });
+  }, 400);
+}
+
+/**
  * Create a notification for a user. This inserts directly into the
  * notifications table from the client side — the realtime subscription
  * in useNotifications will pick it up and show it.
@@ -77,6 +94,7 @@ export async function sendNotification({
       entity_id: entityId || null,
       metadata,
     });
+    requestNotificationEmails();
     // Push delivery is handled by the recipient's useNotifications hook,
     // which triggers triggerSelfPush() after receiving the realtime event.
     // This allows proper session auth without exposing PUSH_API_SECRET client-side.

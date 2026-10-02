@@ -8,7 +8,7 @@ import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Input, Textarea, Modal, Select, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
-import { sendNotificationEmailAction } from '@/lib/email-actions';
+import { sendAdminEmailAction } from '@/lib/email-actions';
 
 const EMAIL_TEMPLATES = [
   { id: '', label: 'Custom (blank)' },
@@ -238,7 +238,7 @@ export default function AdminEmailPage() {
       const name = r.full_name || r.display_name || 'there';
       const vars: Record<string, string> = { name, email: r.email };
       const replace = (s: string) => Object.entries(vars).reduce((str, [k, v]) => str.replaceAll(`{${k}}`, v), s);
-      const result = await sendNotificationEmailAction(
+      const result = await sendAdminEmailAction(
         r.email,
         name,
         replace(subject),

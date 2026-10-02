@@ -151,7 +151,7 @@ const EN: Record<string, string> = {
   'settings.email_notifications_desc': 'Choose which emails you receive.',
   'settings.notif_invitations': 'Project invitations', 'settings.notif_mentions': 'Mentions & comments',
   'settings.notif_dms': 'Direct messages', 'settings.notif_support': 'Support ticket replies',
-  'settings.notif_digest': 'Weekly digest', 'settings.save_profile': 'Save Profile',
+  'settings.notif_digest': 'Writing reminders', 'settings.save_profile': 'Save Profile',
   'settings.saved': '✓ Saved', 'settings.changes_saved': 'Changes saved',
   'settings.how_use': 'How do you use Screenplay Studio?',
   'settings.adjusts_layout': 'This adjusts your default workspace layout.',

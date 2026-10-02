@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getMailerStatus, sendNotificationEmail } from '@/lib/mailer';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || '';
 
@@ -44,16 +45,22 @@ export async function POST(req: NextRequest) {
     }
 
     case 'send_email': {
-      // Trigger a no-op test email via a log entry
-      const { error } = await supabase.from('notifications').insert({
-        user_id: user.id,
-        type: 'system',
-        title: `📧 Test Email: ${payload?.template ?? 'generic'}`,
-        body: 'Email send was simulated — check server logs for actual delivery status.',
-        read: false,
+      // A real email to your own address, with the provider's answer, so
+      // delivery problems (missing key, unverified sender domain) show here.
+      const status = getMailerStatus();
+      if (!user.email) return NextResponse.json({ error: 'Your account has no email address', mailer: status }, { status: 400 });
+      const result = await sendNotificationEmail({
+        to: { email: user.email },
+        subject: 'Test email from Screenplay Studio',
+        heading: 'Email delivery works',
+        body: `This test was sent from the dev panel at ${new Date().toUTCString()}.`,
+        ctaLabel: 'Open notification settings',
+        ctaUrl: '/settings?tab=notifications',
       });
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      return NextResponse.json({ ok: true, simulated: true, template: payload?.template });
+      if (!result.success) {
+        return NextResponse.json({ error: result.error || 'Send failed', sent_to: user.email, mailer: status }, { status: 502 });
+      }
+      return NextResponse.json({ ok: true, sent_to: user.email, message_id: result.messageId, mailer: status });
     }
 
     case 'send_push': {

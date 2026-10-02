@@ -7,11 +7,9 @@ import { useAuthStore, usePresenceStore } from '@/lib/stores';
 import { Button, Card, Badge, Modal, Input, LoadingSpinner, Avatar, toast } from '@/components/ui';
 import { cn, formatDate } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
-import { sendProjectInviteEmailAction } from '@/lib/email-actions';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { ProjectMember, Profile, UserRole, UserPresence, ProductionRole, ExternalCredit, Character } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';
-import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
 
 const ROLES: { value: UserRole; labelKey: string; descKey: string }[] = [
@@ -542,16 +540,8 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
         entityId: projectId,
       });
 
-      // Send invitation email (best-effort) to the address that was entered
-      {
-        sendProjectInviteEmailAction(
-          email.trim(),
-          profile.display_name || profile.full_name || '',
-          project?.title || 'a project',
-          actorName,
-          projectId,
-        ).catch((err) => logger.error('Team', 'Failed to send project invite email:', err));
-      }
+      // The invitation email is sent server-side from this notification,
+      // following the invitee's notification settings.
 
       setLoading(false);
       onInvited();

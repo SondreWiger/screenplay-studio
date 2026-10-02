@@ -11,8 +11,7 @@ import { MindmapTab } from '@/components/admin/MindmapTab';
 import { Button, Badge, Card, Modal, Input, Textarea, LoadingPage, Avatar, Select, toast } from '@/components/ui';
 import { cn, formatDate, timeAgo, getChallengePhase, getPhaseLabel } from '@/lib/utils';
 import type { Profile, Project, BlogPost, BlogPostSection, BlogComment, CommunityPost, CommunityPostStatus, CommunityCategory, ChallengeTheme, CommunityChallenge, SupportTicket, TicketMessage, Badge as BadgeType } from '@/lib/types';
-import logger from '@/lib/logger';
-import { sendTicketReplyEmailAction } from '@/lib/email-actions';
+import { requestNotificationEmails } from '@/lib/notifications';
 
 
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
@@ -674,20 +673,9 @@ export default function AdminPage() {
           entity_type: 'support_ticket',
           entity_id: ticket.id,
         });
-        // Push delivery is handled by the recipient's useNotifications hook (triggerSelfPush)
-        // Trigger email notification
-        const { data: ownerProfile, error: profileError } = await supabase.from('profiles').select('id, email, full_name, display_name').eq('id', ticket.user_id).single();
-        // The address lives in profile_contact (staff can read it)
-        if (ownerProfile) await fillEmails(supabase, [ownerProfile]);
-        if (profileError) console.error('Failed to fetch ticket owner profile:', profileError.message);
-        if (ownerProfile?.email) {
-          sendTicketReplyEmailAction(
-            ownerProfile.email,
-            ownerProfile.display_name || ownerProfile.full_name || '',
-            ticket.subject,
-            ticket.id,
-          ).catch((err) => logger.error('Admin', 'Failed to send ticket reply email:', err));
-        }
+        // Push delivery is handled by the recipient's useNotifications hook (triggerSelfPush).
+        // Email goes out server-side, following the owner's notification settings.
+        requestNotificationEmails();
       }
     }
   };
