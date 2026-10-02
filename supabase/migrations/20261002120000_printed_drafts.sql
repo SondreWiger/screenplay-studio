@@ -59,6 +59,10 @@ GRANT UPDATE (recipient, notes) ON public.printed_drafts TO authenticated;
 -- No INSERT policy: drafts are only created through create_printed_draft(),
 -- which takes the snapshot on the server so it matches what was saved.
 
+-- All functions below are plain SQL with a single statement each (no
+-- semicolons inside the bodies), so SQL editors that split a file into
+-- statements cannot cut a function in half.
+
 -- Fingerprint of the visible text of a script, used to tell whether a printed
 -- draft still matches the script.
 CREATE OR REPLACE FUNCTION public.script_content_hash(p_script_id UUID)
@@ -66,7 +70,7 @@ RETURNS TEXT
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $fn$
   SELECT md5(COALESCE(string_agg(e.element_type || ':' || COALESCE(e.content, ''), E'\n' ORDER BY e.sort_order, e.id::text COLLATE "C"), ''))
   FROM public.script_elements e
-  WHERE e.script_id = p_script_id AND NOT COALESCE(e.is_omitted, false);
+  WHERE e.script_id = p_script_id AND NOT COALESCE(e.is_omitted, false)
 $fn$;
 
 CREATE OR REPLACE FUNCTION public.snapshot_content_hash(p_snapshot JSONB)
@@ -74,88 +78,80 @@ RETURNS TEXT
 LANGUAGE sql IMMUTABLE AS $fn$
   SELECT md5(COALESCE(string_agg((el->>'element_type') || ':' || COALESCE(el->>'content', ''), E'\n' ORDER BY (el->>'sort_order')::numeric, (el->>'id') COLLATE "C"), ''))
   FROM jsonb_array_elements(p_snapshot) el
-  WHERE NOT COALESCE((el->>'is_omitted')::boolean, false);
+  WHERE NOT COALESCE((el->>'is_omitted')::boolean, false)
 $fn$;
 
-CREATE OR REPLACE FUNCTION public.create_printed_draft(
+-- Issues a code and snapshots the script. Returns no row when the caller is
+-- signed out or has no access to the script.
+DROP FUNCTION IF EXISTS public.create_printed_draft(UUID, TEXT, TEXT, TEXT, TEXT);
+CREATE FUNCTION public.create_printed_draft(
   p_script_id UUID,
   p_recipient TEXT DEFAULT NULL,
   p_notes     TEXT DEFAULT NULL,
   p_source    TEXT DEFAULT 'manual',
   p_format    TEXT DEFAULT NULL
 )
-RETURNS public.printed_drafts
-LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = public AS $fn$
-DECLARE
-  v_uid      UUID := auth.uid();
-  v_script   public.scripts%ROWTYPE;
-  v_snapshot JSONB;
-  v_words    INTEGER;
-  v_count    INTEGER;
-  -- No 0/O or 1/I, so a code read off paper cannot be mistyped.
-  v_alphabet CONSTANT TEXT := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  v_code     TEXT;
-  v_row      public.printed_drafts%ROWTYPE;
-  i          INTEGER;
-BEGIN
-  IF v_uid IS NULL THEN
-    RAISE EXCEPTION 'Not signed in' USING ERRCODE = '42501';
-  END IF;
-
-  SELECT * INTO v_script FROM public.scripts WHERE id = p_script_id;
-  IF NOT FOUND OR NOT public.has_project_access(v_script.project_id, v_uid) THEN
-    RAISE EXCEPTION 'Script not found' USING ERRCODE = '42501';
-  END IF;
-
+RETURNS SETOF public.printed_drafts
+LANGUAGE sql VOLATILE SECURITY DEFINER SET search_path = public AS $fn$
+  WITH sc AS (
+    SELECT s.*
+    FROM public.scripts s
+    WHERE s.id = p_script_id
+      AND auth.uid() IS NOT NULL
+      AND public.has_project_access(s.project_id, auth.uid())
+  ),
+  snap AS (
+    SELECT
+      COALESCE(jsonb_agg(jsonb_build_object(
+        'id', e.id,
+        'element_type', e.element_type,
+        'content', e.content,
+        'sort_order', e.sort_order,
+        'scene_number', e.scene_number,
+        'revision_color', e.revision_color,
+        'is_revised', e.is_revised,
+        'is_omitted', e.is_omitted,
+        'metadata', e.metadata
+      ) ORDER BY e.sort_order, e.id::text COLLATE "C"), '[]'::jsonb) AS snapshot,
+      COUNT(*) FILTER (WHERE NOT COALESCE(e.is_omitted, false))::int AS element_count,
+      COALESCE(SUM(array_length(regexp_split_to_array(
+        trim(regexp_replace(COALESCE(e.content, ''), '<[^>]*>', '', 'g')), '\s+'), 1))
+        FILTER (WHERE NOT COALESCE(e.is_omitted, false)
+                AND trim(regexp_replace(COALESCE(e.content, ''), '<[^>]*>', '', 'g')) <> ''), 0)::int AS word_count
+    FROM public.script_elements e
+    WHERE e.script_id = p_script_id
+  ),
+  -- Ten random candidates from an alphabet without 0/O or 1/I (so a code read
+  -- off paper cannot be mistyped); the first one not already in use wins.
+  candidates AS (
+    SELECT g.n, (
+      SELECT string_agg(substr('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 1 + floor(random() * 32)::int, 1), '')
+      FROM generate_series(1, 5) c(k)
+      WHERE g.n IS NOT NULL
+    ) AS code
+    FROM generate_series(1, 10) g(n)
+  ),
+  pick AS (
+    SELECT c.code
+    FROM candidates c
+    WHERE NOT EXISTS (SELECT 1 FROM public.printed_drafts d WHERE d.code = c.code)
+    ORDER BY c.n
+    LIMIT 1
+  )
+  INSERT INTO public.printed_drafts (
+    code, project_id, script_id, script_title, snapshot, title_page,
+    content_hash, element_count, word_count, recipient, notes, source,
+    format, created_by
+  )
   SELECT
-    COALESCE(jsonb_agg(jsonb_build_object(
-      'id', e.id,
-      'element_type', e.element_type,
-      'content', e.content,
-      'sort_order', e.sort_order,
-      'scene_number', e.scene_number,
-      'revision_color', e.revision_color,
-      'is_revised', e.is_revised,
-      'is_omitted', e.is_omitted,
-      'metadata', e.metadata
-    ) ORDER BY e.sort_order, e.id::text COLLATE "C"), '[]'::jsonb),
-    COUNT(*) FILTER (WHERE NOT COALESCE(e.is_omitted, false)),
-    COALESCE(SUM(array_length(regexp_split_to_array(
-      trim(regexp_replace(COALESCE(e.content, ''), '<[^>]*>', '', 'g')), '\s+'), 1))
-      FILTER (WHERE NOT COALESCE(e.is_omitted, false)
-              AND trim(regexp_replace(COALESCE(e.content, ''), '<[^>]*>', '', 'g')) <> ''), 0)
-  INTO v_snapshot, v_count, v_words
-  FROM public.script_elements e
-  WHERE e.script_id = p_script_id;
-
-  FOR attempt IN 1..20 LOOP
-    v_code := '';
-    FOR i IN 1..5 LOOP
-      v_code := v_code || substr(v_alphabet, 1 + floor(random() * length(v_alphabet))::int, 1);
-    END LOOP;
-
-    BEGIN
-      INSERT INTO public.printed_drafts (
-        code, project_id, script_id, script_title, snapshot, title_page,
-        content_hash, element_count, word_count, recipient, notes, source,
-        format, created_by
-      ) VALUES (
-        v_code, v_script.project_id, v_script.id, COALESCE(v_script.title, ''),
-        v_snapshot, COALESCE(v_script.title_page_data, '{}'::jsonb),
-        public.snapshot_content_hash(v_snapshot), v_count, v_words,
-        NULLIF(trim(p_recipient), ''), NULLIF(trim(p_notes), ''),
-        CASE WHEN p_source IN ('manual', 'export', 'print') THEN p_source ELSE 'manual' END,
-        NULLIF(trim(p_format), ''), v_uid
-      )
-      RETURNING * INTO v_row;
-      RETURN v_row;
-    EXCEPTION WHEN unique_violation THEN
-      -- Code already taken; draw another.
-    END;
-  END LOOP;
-
-  RAISE EXCEPTION 'Could not allocate a unique draft code';
-END;
+    pick.code, sc.project_id, sc.id, COALESCE(sc.title, ''),
+    snap.snapshot, COALESCE(sc.title_page_data, '{}'::jsonb),
+    public.snapshot_content_hash(snap.snapshot), snap.element_count, snap.word_count,
+    NULLIF(trim(p_recipient), ''), NULLIF(trim(p_notes), ''),
+    CASE WHEN p_source IN ('manual', 'export', 'print') THEN p_source ELSE 'manual' END,
+    NULLIF(trim(p_format), ''), auth.uid()
+  FROM sc, snap, pick
+  RETURNING *
 $fn$;
 
 REVOKE ALL ON FUNCTION public.create_printed_draft(UUID, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC, anon;
@@ -164,50 +160,38 @@ GRANT EXECUTE ON FUNCTION public.create_printed_draft(UUID, TEXT, TEXT, TEXT, TE
 -- Code lookup for /lookup. Called only from the rate-limited API route with
 -- the service role, which passes the signed-in user (or NULL).
 --  * Project members get the full record, including recipient.
---  * Anyone else gets the basics — only if the project allows public lookup.
+--  * Anyone else gets the basics, and only if the project allows public lookup.
 --  * Otherwise NULL, indistinguishable from an unknown code.
-CREATE OR REPLACE FUNCTION public.lookup_printed_draft(p_code TEXT, p_user_id UUID DEFAULT NULL)
+DROP FUNCTION IF EXISTS public.lookup_printed_draft(TEXT, UUID);
+CREATE FUNCTION public.lookup_printed_draft(p_code TEXT, p_user_id UUID DEFAULT NULL)
 RETURNS JSONB
-LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $fn$
-DECLARE
-  v_draft   public.printed_drafts%ROWTYPE;
-  v_project public.projects%ROWTYPE;
-  v_member  BOOLEAN;
-  v_current BOOLEAN;
-BEGIN
-  SELECT * INTO v_draft FROM public.printed_drafts WHERE code = upper(trim(p_code));
-  IF NOT FOUND THEN RETURN NULL; END IF;
-
-  SELECT * INTO v_project FROM public.projects WHERE id = v_draft.project_id;
-  v_member := p_user_id IS NOT NULL AND public.has_project_access(v_draft.project_id, p_user_id);
-
-  IF NOT v_member AND NOT COALESCE(v_project.drafts_public_lookup, false) THEN
-    RETURN NULL;
-  END IF;
-
-  v_current := CASE
-    WHEN v_draft.script_id IS NULL THEN NULL
-    ELSE public.script_content_hash(v_draft.script_id) = v_draft.content_hash
-  END;
-
-  RETURN jsonb_build_object(
-    'code', v_draft.code,
-    'printed_at', v_draft.printed_at,
-    'script_title', v_draft.script_title,
-    'project_title', v_project.title,
-    'element_count', v_draft.element_count,
-    'word_count', v_draft.word_count,
-    'is_current', v_current,
-    'script_deleted', v_draft.script_id IS NULL,
-    'member', v_member
-  ) || CASE WHEN v_member THEN jsonb_build_object(
-    'id', v_draft.id,
-    'project_id', v_draft.project_id,
-    'recipient', v_draft.recipient,
-    'source', v_draft.source,
-    'format', v_draft.format
-  ) ELSE '{}'::jsonb END;
-END;
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $fn$
+  SELECT
+    jsonb_build_object(
+      'code', d.code,
+      'printed_at', d.printed_at,
+      'script_title', d.script_title,
+      'project_title', p.title,
+      'element_count', d.element_count,
+      'word_count', d.word_count,
+      'is_current', CASE WHEN d.script_id IS NULL THEN NULL
+                         ELSE public.script_content_hash(d.script_id) = d.content_hash END,
+      'script_deleted', d.script_id IS NULL,
+      'member', d.member
+    ) || CASE WHEN d.member THEN jsonb_build_object(
+      'id', d.id,
+      'project_id', d.project_id,
+      'recipient', d.recipient,
+      'source', d.source,
+      'format', d.format
+    ) ELSE '{}'::jsonb END
+  FROM (
+    SELECT x.*, (p_user_id IS NOT NULL AND public.has_project_access(x.project_id, p_user_id)) AS member
+    FROM public.printed_drafts x
+    WHERE x.code = upper(trim(p_code))
+  ) d
+  JOIN public.projects p ON p.id = d.project_id
+  WHERE d.member OR COALESCE(p.drafts_public_lookup, false)
 $fn$;
 
 REVOKE ALL ON FUNCTION public.lookup_printed_draft(TEXT, UUID) FROM PUBLIC, anon, authenticated;

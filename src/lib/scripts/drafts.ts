@@ -56,8 +56,10 @@ export async function createScriptDraft(
     p_format: opts.format || null,
   });
   if (error) throw new Error(error.message);
-  if (!data) throw new Error('No draft returned');
-  return data as ScriptDraft;
+  // The function returns no row when you can't access the script.
+  const row = (Array.isArray(data) ? data[0] : data) as ScriptDraft | undefined;
+  if (!row) throw new Error('You don’t have access to this script.');
+  return row;
 }
 
 /** Short date used in the printed stamp, e.g. "2 Oct 2026". */
