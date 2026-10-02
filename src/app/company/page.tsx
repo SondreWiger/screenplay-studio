@@ -881,8 +881,8 @@ export default function CompanyDashboard() {
                       <p className="text-sm font-medium text-white">{toggle.label}</p>
                       <p className="text-[11px] text-surface-400">{toggle.desc}</p>
                     </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-surface-900 shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[18px]' : 'left-0.5'}`} />
+                    <div className={`w-10 h-[22px] rounded-full shrink-0 transition-colors relative ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'bg-brand-500' : 'bg-surface-700'}`}>
+                      <div className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow transition-transform ${(settingsForm as Record<string, unknown>)[toggle.key] ? 'left-[20px]' : 'left-[2px]'}`} />
                     </div>
                   </button>
                 ))}

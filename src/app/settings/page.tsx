@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore, useThemeStore } from '@/lib/stores';
 import { encodeTheme } from '@/lib/theme';
+import { cn } from '@/lib/utils';
 import { isElectronMode } from '@/lib/supabase/electron-client';
 import { Button, Card, Input, Textarea, LoadingPage, Toggle, toast } from '@/components/ui';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -209,6 +210,58 @@ function PreMiDCard() {
 
 
 type SettingsTab = 'profile' | 'notifications' | 'preferences' | 'appearance' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
+
+/**
+ * A settings row with an on/off switch. The whole row is the control, and it
+ * says "On"/"Off" in words so the state is clear without relying on colour.
+ */
+function SettingSwitchRow({
+  label, description, checked, onChange, busy,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  busy?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-busy={busy || undefined}
+      disabled={busy}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'w-full flex items-center justify-between gap-4 p-3 rounded-lg border text-left transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+        checked ? 'border-brand-500/50 bg-brand-500/5 hover:border-brand-500/70' : 'border-surface-700 hover:border-surface-600',
+        busy && 'opacity-70 cursor-wait',
+      )}
+    >
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-white">{label}</p>
+        {description && <p className="text-[11px] text-surface-500">{description}</p>}
+      </div>
+      <div className="flex items-center gap-2.5 shrink-0">
+        <span className={cn('text-xs font-medium w-6 text-right', checked ? 'text-brand-400' : 'text-surface-500')}>
+          {checked ? 'On' : 'Off'}
+        </span>
+        <span
+          aria-hidden="true"
+          className={cn('relative inline-flex w-10 h-[22px] rounded-full transition-colors', checked ? 'bg-brand-500' : 'bg-surface-600')}
+        >
+          <span
+            className={cn(
+              'absolute top-[2px] left-[2px] w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
+              checked && 'translate-x-[18px]',
+            )}
+          />
+        </span>
+      </div>
+    </button>
+  );
+}
 
 function DeviceNotificationsCard() {
   const { user } = useAuthStore();
@@ -790,6 +843,7 @@ export default function UserSettingsPage() {
   const [emailTicketReplies, setEmailTicketReplies] = useState(true);
   const [emailWeeklyDigest, setEmailWeeklyDigest] = useState(false);
   const [prefSaved, setPrefSaved] = useState(false);
+  const [savingPref, setSavingPref] = useState<string | null>(null);
   const [sidebarTabs, setSidebarTabs] = useState<Record<string, boolean>>({
     script: true, scenes: true, characters: true, locations: true,
     shots: true, storyboard: true, schedule: true, budget: true,
@@ -920,10 +974,12 @@ export default function UserSettingsPage() {
     value: boolean,
     set: (v: boolean) => void,
   ) => {
-    if (!user) return;
+    if (!user || savingPref) return;
     set(value);
+    setSavingPref(column);
     const supabase = createClient();
     const { error } = await supabase.from('profiles').update({ [column]: value }).eq('id', user.id);
+    setSavingPref(null);
     if (error) {
       set(!value);
       toast.error('Could not save notification setting: ' + error.message);
@@ -1195,7 +1251,8 @@ export default function UserSettingsPage() {
             {/* Privacy & Visibility */}
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-2">{t('settings.privacy_visibility')}</h2>
-              <p className="text-sm text-surface-400 mb-6">{t('settings.privacy_desc')}</p>
+              <p className="text-sm text-surface-400 mb-1">{t('settings.privacy_desc')}</p>
+              <p className="text-xs text-surface-500 mb-6">Press Save at the bottom of this page to keep changes here.</p>
               <div className="space-y-3">
                 {[
                   { label: t('settings.show_email'), desc: 'Let visitors see your email address', value: showEmail, set: setShowEmail },
@@ -1203,19 +1260,13 @@ export default function UserSettingsPage() {
                   { label: t('settings.show_activity'), desc: 'Display recent activity and stats', value: showActivity, set: setShowActivity },
                   { label: t('settings.allow_dms'), desc: 'Let people message you from your profile', value: allowDms, set: setAllowDms },
                 ].map((toggle) => (
-                  <button
+                  <SettingSwitchRow
                     key={toggle.label}
-                    onClick={() => toggle.set(!toggle.value)}
-                    className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-surface-700 hover:border-surface-600 transition-colors text-left"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-white">{toggle.label}</p>
-                      <p className="text-[11px] text-surface-500">{toggle.desc}</p>
-                    </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
-                    </div>
-                  </button>
+                    label={toggle.label}
+                    description={toggle.desc}
+                    checked={toggle.value}
+                    onChange={toggle.set}
+                  />
                 ))}
               </div>
             </Card>
@@ -1282,21 +1333,14 @@ export default function UserSettingsPage() {
                   { label: t('settings.notif_support'), desc: 'When our team replies to your support ticket', column: 'email_ticket_replies' as const, value: emailTicketReplies, set: setEmailTicketReplies },
                   { label: t('settings.notif_digest'), desc: 'Summary of your writing activity and project updates', column: 'email_weekly_digest' as const, value: emailWeeklyDigest, set: setEmailWeeklyDigest },
                 ].map((toggle) => (
-                  <button
+                  <SettingSwitchRow
                     key={toggle.label}
-                    role="switch"
-                    aria-checked={toggle.value}
-                    onClick={() => saveEmailPref(toggle.column, !toggle.value, toggle.set)}
-                    className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-surface-700 hover:border-surface-600 transition-colors text-left"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-white">{toggle.label}</p>
-                      <p className="text-[11px] text-surface-500">{toggle.desc}</p>
-                    </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
-                    </div>
-                  </button>
+                    label={toggle.label}
+                    description={toggle.desc}
+                    checked={toggle.value}
+                    busy={savingPref === toggle.column}
+                    onChange={(on) => saveEmailPref(toggle.column, on, toggle.set)}
+                  />
                 ))}
               </div>
             </Card>
