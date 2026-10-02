@@ -105,6 +105,15 @@ function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; o
           >
             View all
           </Link>
+          <Link
+            href="/settings?tab=notifications"
+            onClick={onClose}
+            aria-label="Notification settings"
+            title="Notification settings"
+            className="p-1 -mr-1 rounded text-surface-400 hover:text-white hover:bg-surface-800 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          </Link>
         </div>
       </div>
 
@@ -134,8 +143,8 @@ function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; o
         </div>
       )}
 
-      {/* Push notifications toggle */}
-      {push.isSupported && (
+      {/* Push notifications toggle (only where it can work) */}
+      {push.isSupported && push.isConfigured && (
         <div className="border-t border-surface-800 px-4 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -147,6 +156,9 @@ function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; o
               </span>
             </div>
             <button
+              role="switch"
+              aria-checked={push.isSubscribed}
+              aria-label="Device notifications"
               onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
               disabled={push.loading}
               className={`relative w-9 h-5 rounded-full transition-colors ${
@@ -158,11 +170,16 @@ function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; o
               }`} />
             </button>
           </div>
-          {push.permission === 'denied' && (
+          {push.permission === 'denied' ? (
             <p className="text-[11px] text-red-400 mt-1">
               Notifications blocked — enable in browser settings
             </p>
+          ) : push.error && (
+            <p className="text-[11px] text-red-400 mt-1" role="alert">{push.error}</p>
           )}
+          <Link href="/settings?tab=notifications" onClick={onClose} className="block mt-1.5 text-[11px] text-brand-500 hover:text-brand-400">
+            Email & notification settings →
+          </Link>
         </div>
       )}
     </div>

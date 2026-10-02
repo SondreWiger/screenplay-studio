@@ -8,7 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore, useThemeStore } from '@/lib/stores';
 import { encodeTheme } from '@/lib/theme';
 import { isElectronMode } from '@/lib/supabase/electron-client';
-import { Button, Card, Input, Textarea, LoadingPage, toast } from '@/components/ui';
+import { Button, Card, Input, Textarea, LoadingPage, Toggle, toast } from '@/components/ui';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { Icon } from '@/components/ui/icons';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import type { UsageIntent, ScriptType, Company, Profile } from '@/lib/types';
@@ -207,7 +208,40 @@ function PreMiDCard() {
 
 
 
-type SettingsTab = 'profile' | 'preferences' | 'appearance' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
+type SettingsTab = 'profile' | 'notifications' | 'preferences' | 'appearance' | 'company' | 'privacy' | 'security' | 'gamification' | 'translations' | 'accountability';
+
+function DeviceNotificationsCard() {
+  const { user } = useAuthStore();
+  const push = usePushNotifications(user?.id || undefined);
+  const blocked = push.permission === 'denied';
+
+  let status: string;
+  if (!push.isSupported) status = "This browser doesn't support device notifications.";
+  else if (!push.isConfigured) status = "Device notifications aren't available yet.";
+  else if (blocked) status = 'Blocked by your browser. Allow notifications for this site in your browser’s site settings, then reload.';
+  else if (push.isSubscribed) status = 'On for this browser. Each device or browser is set up separately.';
+  else status = 'Get a pop-up on this device when someone invites, mentions or messages you — even when the tab is in the background.';
+
+  const unavailable = !push.isSupported || !push.isConfigured || blocked;
+
+  return (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold text-white mb-4">On this device</h2>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-white">Device notifications</p>
+          <p className="text-xs text-surface-500 mt-0.5">{status}</p>
+          {push.error && !unavailable && <p className="text-xs text-red-400 mt-1" role="alert">{push.error}</p>}
+        </div>
+        <Toggle
+          checked={push.isSubscribed}
+          disabled={unavailable || push.loading}
+          onChange={(on) => { if (on) push.subscribe(); else push.unsubscribe(); }}
+        />
+      </div>
+    </Card>
+  );
+}
 
 function AppearanceTab() {
   const { theme, isCustom, setEditorOpen, resetTheme } = useThemeStore();
@@ -755,6 +789,7 @@ export default function UserSettingsPage() {
   const [emailDirectMessages, setEmailDirectMessages] = useState(true);
   const [emailTicketReplies, setEmailTicketReplies] = useState(true);
   const [emailWeeklyDigest, setEmailWeeklyDigest] = useState(false);
+  const [prefSaved, setPrefSaved] = useState(false);
   const [sidebarTabs, setSidebarTabs] = useState<Record<string, boolean>>({
     script: true, scenes: true, characters: true, locations: true,
     shots: true, storyboard: true, schedule: true, budget: true,
@@ -899,6 +934,8 @@ export default function UserSettingsPage() {
       skipFormReset.current = true;
       useAuthStore.getState().setUser({ ...current, [column]: value });
     }
+    setPrefSaved(true);
+    window.setTimeout(() => setPrefSaved(false), 1500);
   };
 
   const savePreferences = async () => {
@@ -1183,36 +1220,14 @@ export default function UserSettingsPage() {
               </div>
             </Card>
 
-            {/* Email Notifications */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">{t('settings.email_notifications')}</h2>
-              <p className="text-sm text-surface-400 mb-6">{t('settings.email_notifications_desc')}</p>
-              <div className="space-y-3">
-                {[
-                  { label: t('settings.notif_invitations'), desc: 'When someone invites you to a project', column: 'email_project_invites' as const, value: emailProjectInvites, set: setEmailProjectInvites },
-                  { label: t('settings.notif_mentions'), desc: 'When someone mentions you or replies to your comments', column: 'email_mentions' as const, value: emailMentions, set: setEmailMentions },
-                  { label: t('settings.notif_dms'), desc: 'When someone sends you a direct message', column: 'email_direct_messages' as const, value: emailDirectMessages, set: setEmailDirectMessages },
-                  { label: t('settings.notif_support'), desc: 'When our team replies to your support ticket', column: 'email_ticket_replies' as const, value: emailTicketReplies, set: setEmailTicketReplies },
-                  { label: t('settings.notif_digest'), desc: 'Summary of your writing activity and project updates', column: 'email_weekly_digest' as const, value: emailWeeklyDigest, set: setEmailWeeklyDigest },
-                ].map((toggle) => (
-                  <button
-                    key={toggle.label}
-                    role="switch"
-                    aria-checked={toggle.value}
-                    onClick={() => saveEmailPref(toggle.column, !toggle.value, toggle.set)}
-                    className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-surface-700 hover:border-surface-600 transition-colors text-left"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-white">{toggle.label}</p>
-                      <p className="text-[11px] text-surface-500">{toggle.desc}</p>
-                    </div>
-                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
-                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
-                    </div>
-                  </button>
-                ))}
+            {/* Email notifications moved to their own tab */}
+            <Link href="/settings?tab=notifications" className="flex items-center justify-between gap-4 p-4 rounded-xl border border-surface-700 hover:border-surface-600 transition-colors">
+              <div>
+                <p className="text-sm font-medium text-white">{t('settings.email_notifications')}</p>
+                <p className="text-xs text-surface-500">Choose which emails and device notifications you get</p>
               </div>
-            </Card>
+              <span className="text-sm text-brand-500 shrink-0">Notifications →</span>
+            </Link>
 
             <Card className="p-6">
               <h2 className="text-lg font-semibold text-white mb-4">{t('settings.account_info')}</h2>
@@ -1244,6 +1259,62 @@ export default function UserSettingsPage() {
         )}
 
         {/* Preferences Tab */}
+        {tab === 'notifications' && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-xl font-bold text-white">Notifications</h1>
+              <p className="text-sm text-surface-400 mt-1">Decide how Screenplay Studio lets you know when something happens.</p>
+            </div>
+
+            {/* Email */}
+            <Card className="p-6">
+              <div className="flex items-start justify-between gap-4 mb-1">
+                <h2 className="text-lg font-semibold text-white">{t('settings.email_notifications')}</h2>
+                {prefSaved && <span className="text-xs text-green-400 shrink-0" role="status">✓ Saved</span>}
+              </div>
+              <p className="text-sm text-surface-400 mb-1">{t('settings.email_notifications_desc')}</p>
+              <p className="text-xs text-surface-500 mb-6">Sent to <span className="text-surface-300">{user.email}</span>. Changes save as soon as you switch them.</p>
+              <div className="space-y-3">
+                {[
+                  { label: t('settings.notif_invitations'), desc: 'When someone invites you to a project', column: 'email_project_invites' as const, value: emailProjectInvites, set: setEmailProjectInvites },
+                  { label: t('settings.notif_mentions'), desc: 'When someone mentions you or replies to your comments', column: 'email_mentions' as const, value: emailMentions, set: setEmailMentions },
+                  { label: t('settings.notif_dms'), desc: 'When someone sends you a direct message', column: 'email_direct_messages' as const, value: emailDirectMessages, set: setEmailDirectMessages },
+                  { label: t('settings.notif_support'), desc: 'When our team replies to your support ticket', column: 'email_ticket_replies' as const, value: emailTicketReplies, set: setEmailTicketReplies },
+                  { label: t('settings.notif_digest'), desc: 'Summary of your writing activity and project updates', column: 'email_weekly_digest' as const, value: emailWeeklyDigest, set: setEmailWeeklyDigest },
+                ].map((toggle) => (
+                  <button
+                    key={toggle.label}
+                    role="switch"
+                    aria-checked={toggle.value}
+                    onClick={() => saveEmailPref(toggle.column, !toggle.value, toggle.set)}
+                    className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-surface-700 hover:border-surface-600 transition-colors text-left"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white">{toggle.label}</p>
+                      <p className="text-[11px] text-surface-500">{toggle.desc}</p>
+                    </div>
+                    <div className={`w-10 h-5.5 rounded-full shrink-0 transition-colors relative ${toggle.value ? 'bg-brand-500' : 'bg-surface-700'}`}>
+                      <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${toggle.value ? 'left-[19px]' : 'left-0.5'}`} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            {/* This device */}
+            <DeviceNotificationsCard />
+
+            {/* In-app */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-white mb-2">In the app</h2>
+              <p className="text-sm text-surface-400">
+                Invitations, mentions, messages and replies always appear under the bell 🔔 at the top of the page.
+              </p>
+              <Link href="/notifications" className="inline-block mt-3 text-sm text-brand-500 hover:text-brand-400">See all notifications →</Link>
+            </Card>
+          </div>
+        )}
+
         {tab === 'preferences' && (
           <><div className="space-y-6">
             <Card className="p-6">

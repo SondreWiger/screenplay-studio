@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { attachProfiles } from '@/lib/supabase/fetch-all';
-import { useProjectStore, useScriptStore } from '@/lib/stores';
-import { getCachedByProject, getCachedByScript, deleteCached } from '@/lib/offline/db';
+import { useAuthStore, useProjectStore } from '@/lib/stores';
+import { getCachedByProject, getCachedByScript } from '@/lib/offline/db';
+import { renameProject, deleteProject, renameScript, deleteScript } from '@/lib/project-actions';
+import { MoreMenu, RenameDialog, DeleteProjectDialog, DeleteScriptDialog } from '@/components/projects/ManageControls';
+import { useRouter } from 'next/navigation';
 import { Card, Badge, Progress, Button, LoadingPage, toast } from '@/components/ui';
 import { formatDate, formatCurrency, timeAgo, cn } from '@/lib/utils';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
@@ -183,6 +186,12 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     comments: 0,
   });
   const [recentScripts, setRecentScripts] = useState<Script[]>([]);
+  const [scriptToRename, setScriptToRename] = useState<Script | null>(null);
+  const [scriptToDelete, setScriptToDelete] = useState<Script | null>(null);
+  const [renamingProject, setRenamingProject] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
+  const { user } = useAuthStore();
+  const router = useRouter();
   const [upcomingEvents, setUpcomingEvents] = useState<ScheduleEvent[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   // Collapse Recent Activity by default to improve page form factor
@@ -199,26 +208,41 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
     fetchStats();
   }, [params.id]);
 
-  const handleDeleteScript = async (e: React.MouseEvent, scriptId: string, title: string) => {
-    e.preventDefault();
-    if (!confirm(`Are you sure you want to delete the script "${title}"? This cannot be undone.`)) return;
-    const supabase = createClient();
-    // .select() so a delete blocked by row-level security (0 rows, no error)
-    // isn't treated as success — the script would reappear on reload.
-    const { data: deletedRows, error } = await supabase.from('scripts').delete().eq('id', scriptId).select('id');
-    if (error) {
-      toast.error('Failed to delete script: ' + error.message);
-      return;
-    }
-    if (!deletedRows?.length) {
-      toast.error('Only the project owner or an admin can delete scripts.');
-      return;
-    }
-    deleteCached('scripts', scriptId).catch(() => {});
-    useScriptStore.setState((state) => ({ scripts: state.scripts.filter((s) => s.id !== scriptId) }));
-    toast.success('Script deleted');
-    setRecentScripts(prev => prev.filter(s => s.id !== scriptId));
+  const handleRenameScript = async (title: string) => {
+    if (!scriptToRename) return true;
+    const res = await renameScript(scriptToRename.id, title);
+    if (!res.ok) { toast.error(res.message); return false; }
+    setRecentScripts(prev => prev.map(s => (s.id === res.data.id ? { ...s, title: res.data.title } : s)));
+    toast.success('Script renamed');
+    return true;
+  };
+
+  const handleDeleteScript = async () => {
+    if (!scriptToDelete) return true;
+    const res = await deleteScript(scriptToDelete.id);
+    if (!res.ok) { toast.error(res.message); return false; }
+    toast.success(`Deleted “${scriptToDelete.title}”`);
+    setRecentScripts(prev => prev.filter(s => s.id !== scriptToDelete.id));
     setStats(prev => ({ ...prev, scripts: Math.max(0, prev.scripts - 1) }));
+    return true;
+  };
+
+  const handleRenameProject = async (title: string) => {
+    if (!currentProject) return true;
+    const res = await renameProject(currentProject.id, title);
+    if (!res.ok) { toast.error(res.message); return false; }
+    toast.success('Project renamed');
+    return true;
+  };
+
+  const handleDeleteProject = async () => {
+    if (!currentProject) return true;
+    const title = currentProject.title;
+    const res = await deleteProject(currentProject.id);
+    if (!res.ok) { toast.error(res.message); return false; }
+    toast.success(`Deleted “${title}”`);
+    router.push('/dashboard');
+    return true;
   };
 
   const fetchStats = async () => {
@@ -495,6 +519,34 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
 
   return (
     <div className="page-root">
+      <RenameDialog
+        isOpen={renamingProject}
+        onClose={() => setRenamingProject(false)}
+        title="Rename project"
+        label="Project name"
+        initialValue={currentProject.title}
+        onSave={handleRenameProject}
+      />
+      <DeleteProjectDialog
+        isOpen={deletingProject}
+        onClose={() => setDeletingProject(false)}
+        projectTitle={currentProject.title}
+        onConfirm={handleDeleteProject}
+      />
+      <RenameDialog
+        isOpen={!!scriptToRename}
+        onClose={() => setScriptToRename(null)}
+        title="Rename script"
+        label="Script name"
+        initialValue={scriptToRename?.title || ''}
+        onSave={handleRenameScript}
+      />
+      <DeleteScriptDialog
+        isOpen={!!scriptToDelete}
+        onClose={() => setScriptToDelete(null)}
+        scriptTitle={scriptToDelete?.title || ''}
+        onConfirm={handleDeleteScript}
+      />
 
       {/* ── Breadcrumbs ──────────────────────────── */}
       <nav aria-label="Breadcrumb" className="text-xs text-surface-500 mb-4 flex items-center gap-1.5">
@@ -510,7 +562,24 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
       <div className="mb-10">
         <div className="flex items-start justify-between gap-6">
           <div className="min-w-0">
-            <h1 className="page-title">{currentProject.title}</h1>
+            <div className="flex items-start gap-2">
+              <h1 className="page-title min-w-0 break-words">{currentProject.title}</h1>
+              <MoreMenu
+                alwaysVisible
+                align="left"
+                label="Project actions"
+                className="mt-1 shrink-0"
+                buttonClassName="bg-surface-800/60 hover:bg-surface-700"
+                items={[
+                  { label: 'Rename project', icon: 'rename', onSelect: () => setRenamingProject(true) },
+                  { label: 'Project settings', icon: 'settings', onSelect: () => router.push(`/projects/${params.id}/settings`) },
+                  {
+                    label: 'Delete project', icon: 'delete', danger: true, onSelect: () => setDeletingProject(true),
+                    disabledReason: currentProject.created_by === user?.id ? undefined : 'Only the creator can delete it',
+                  },
+                ]}
+              />
+            </div>
             {currentProject.logline && (
               <p className="page-subtitle max-w-2xl mt-2">{currentProject.logline}</p>
             )}
@@ -793,7 +862,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
             <div className="space-y-2">
               {recentScripts.map((script) => (
                 <div key={script.id} className="relative group">
-                  <Link href={`/projects/${params.id}/script`}>
+                  <Link href={`/projects/${params.id}/script?script_id=${script.id}`}>
                     <div className="card-row">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgb(99 102 241 / 0.15)', color: '#818cf8' }}>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -805,19 +874,19 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
                         <p className="text-[11px] text-surface-500">v{script.version} · {formatDate(script.updated_at)}</p>
                       </div>
                       <Badge size="sm">{script.revision_color}</Badge>
-                      <div className="w-8" /> {/* Spacer for delete button */}
+                      <div className="w-8" /> {/* Spacer for the ⋯ menu */}
                     </div>
                   </Link>
-                  <button 
-                    onClick={(e) => handleDeleteScript(e, script.id, script.title)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-red-400 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100 transition-all z-10"
-                    title="Delete script"
-                    aria-label={`Delete script ${script.title}`}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  <MoreMenu
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10"
+                    buttonClassName="bg-transparent hover:bg-surface-800 text-surface-400"
+                    label={`Actions for ${script.title}`}
+                    items={[
+                      { label: 'Open in editor', icon: 'open', onSelect: () => router.push(`/projects/${params.id}/script?script_id=${script.id}`) },
+                      { label: 'Rename', icon: 'rename', onSelect: () => setScriptToRename(script) },
+                      { label: 'Delete script', icon: 'delete', danger: true, onSelect: () => setScriptToDelete(script) },
+                    ]}
+                  />
                 </div>
               ))}
             </div>

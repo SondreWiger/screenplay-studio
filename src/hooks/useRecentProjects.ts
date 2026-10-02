@@ -29,10 +29,23 @@ export function getRecentProjects(): RecentProject[] {
   return readStorage();
 }
 
+const CHANGED_EVENT = 'ss-recent-projects-changed';
+
 function writeStorage(items: RecentProject[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch {}
+}
+
+/** Keep the "recently viewed" list in step after a rename or delete. */
+export function updateRecentProject(id: string, change: { title: string } | 'deleted') {
+  if (typeof window === 'undefined') return;
+  const items = readStorage();
+  const next = change === 'deleted'
+    ? items.filter((p) => p.id !== id)
+    : items.map((p) => (p.id === id ? { ...p, title: change.title } : p));
+  writeStorage(next);
+  window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
 export function useRecentProjects() {
@@ -40,6 +53,9 @@ export function useRecentProjects() {
 
   useEffect(() => {
     setRecentProjects(readStorage());
+    const reload = () => setRecentProjects(readStorage());
+    window.addEventListener(CHANGED_EVENT, reload);
+    return () => window.removeEventListener(CHANGED_EVENT, reload);
   }, []);
 
   const recordView = useCallback((project: Omit<RecentProject, 'viewed_at'>) => {

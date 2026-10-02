@@ -4,7 +4,8 @@ import { useEffect, useState, useRef, useCallback, memo, useMemo, Fragment } fro
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { deleteCached } from '@/lib/offline/db';
+import { renameScript, deleteScript } from '@/lib/project-actions';
+import { MoreMenu, RenameDialog, DeleteScriptDialog } from '@/components/projects/ManageControls';
 import { replaceScriptElements } from '@/lib/scripts/replace-elements';
 import { isCharacterCue } from '@/lib/scripts/cues';
 import { SaveStatus } from '@/components/SaveStatus';
@@ -1734,25 +1735,31 @@ ${pageHTML}
     'menu:open-file': () => { handleElectronOpen(); },
   });
 
-  const handleDeleteScript = useCallback(async () => {
-    if (!currentScript) return;
-    if (!confirm(`Are you sure you want to delete the script "${currentScript.title}"? This cannot be undone.`)) return;
-    const supabase = createClient();
-    // .select() so a delete blocked by row-level security (0 rows, no error)
-    // isn't reported as success — the script would come back on reload.
-    const { data: deletedRows, error } = await supabase.from('scripts').delete().eq('id', currentScript.id).select('id');
-    if (error) {
-      toast.error('Failed to delete script: ' + error.message);
-      return;
-    }
-    if (!deletedRows?.length) {
-      toast.error('Only the project owner or an admin can delete scripts.');
-      return;
-    }
-    deleteCached('scripts', currentScript.id).catch(() => {});
-    toast.success('Script deleted');
-    window.location.href = `/projects/${currentScript.project_id}`;
+  // Rename / delete from the scripts sidebar ⋯ menu or the Export menu
+  const [scriptToRename, setScriptToRename] = useState<Script | null>(null);
+  const [scriptToDelete, setScriptToDelete] = useState<Script | null>(null);
+  const handleDeleteScript = useCallback(() => {
+    if (currentScript) setScriptToDelete(currentScript);
   }, [currentScript]);
+
+  const confirmDeleteScript = async () => {
+    if (!scriptToDelete) return true;
+    const deleted = scriptToDelete;
+    const res = await deleteScript(deleted.id);
+    if (!res.ok) { toast.error(res.message); return false; }
+    toast.success(`Deleted “${deleted.title}”`);
+    // Deleting the open script: reload the editor so it opens another one
+    if (deleted.id === currentScript?.id) window.location.href = `/projects/${deleted.project_id}/script`;
+    return true;
+  };
+
+  const confirmRenameScript = async (title: string) => {
+    if (!scriptToRename) return true;
+    const res = await renameScript(scriptToRename.id, title);
+    if (!res.ok) { toast.error(res.message); return false; }
+    toast.success('Script renamed');
+    return true;
+  };
 
   const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
@@ -1884,15 +1891,26 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             </button>
           </div>
           {scripts.map((script) => (
-            <button key={script.id} onClick={() => setCurrentScript(script)}
-              className={cn('w-full text-left px-2 py-1.5 rounded text-xs transition-colors mb-0.5',
-                currentScript?.id === script.id ? 'bg-brand-600/10 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
-              )}>
-              <div className="flex items-center justify-between">
-                <span className="truncate">{script.title}</span>
-                <span className="text-[11px] text-surface-600">v{script.version}</span>
-              </div>
-            </button>
+            <div key={script.id} className="relative group mb-0.5">
+              <button onClick={() => setCurrentScript(script)}
+                className={cn('w-full text-left pl-2 pr-8 py-1.5 rounded text-xs transition-colors',
+                  currentScript?.id === script.id ? 'bg-brand-600/10 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
+                )}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate">{script.title}</span>
+                  <span className="text-[11px] text-surface-600 shrink-0">v{script.version}</span>
+                </div>
+              </button>
+              <MoreMenu
+                className="absolute right-0.5 top-1/2 -translate-y-1/2"
+                buttonClassName="p-1 bg-transparent hover:bg-surface-800 text-surface-500"
+                label={`Actions for ${script.title}`}
+                items={[
+                  { label: 'Rename', icon: 'rename', onSelect: () => setScriptToRename(script) },
+                  { label: 'Delete script', icon: 'delete', danger: true, onSelect: () => setScriptToDelete(script) },
+                ]}
+              />
+            </div>
           ))}
         </div>
 
@@ -3136,6 +3154,20 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
 
       {/* Modals */}
       <TitlePageModal isOpen={showTitlePage} onClose={() => setShowTitlePage(false)} script={currentScript} />
+      <RenameDialog
+        isOpen={!!scriptToRename}
+        onClose={() => setScriptToRename(null)}
+        title="Rename script"
+        label="Script name"
+        initialValue={scriptToRename?.title || ''}
+        onSave={confirmRenameScript}
+      />
+      <DeleteScriptDialog
+        isOpen={!!scriptToDelete}
+        onClose={() => setScriptToDelete(null)}
+        scriptTitle={scriptToDelete?.title || ''}
+        onConfirm={confirmDeleteScript}
+      />
       <NewScriptModal isOpen={showNewScript} onClose={() => setShowNewScript(false)}
         projectId={params.id} userId={user?.id || ''}
         onCreated={() => { fetchScripts(params.id, { force: true }); setShowNewScript(false); }}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationStore } from '@/lib/stores';
 import { NotificationRow } from '@/components/notifications/NotificationBell';
@@ -70,7 +71,14 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-surface-950">
-      <AppHeader actions={unreadCount > 0 ? <Button variant="ghost" size="sm" onClick={markAllAsRead}>{t('notifications.mark_all_read')}</Button> : undefined} />
+      <AppHeader actions={
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && <Button variant="ghost" size="sm" onClick={markAllAsRead}>{t('notifications.mark_all_read')}</Button>}
+          <Link href="/settings?tab=notifications" className="text-sm text-surface-400 hover:text-white px-2 py-1 rounded-lg hover:bg-surface-800 transition-colors">
+            Notification settings
+          </Link>
+        </div>
+      } />
 
       <div className="max-w-3xl mx-auto px-6 py-6">
         {/* Filters */}

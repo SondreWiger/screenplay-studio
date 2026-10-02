@@ -2,11 +2,10 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Input, Textarea, LoadingSpinner, Modal, toast } from '@/components/ui';
-import { putCached, deleteCached } from '@/lib/offline/db';
-import { isElectronMode } from '@/lib/supabase/electron-client';
-import { removeProjectFromDisk } from '@/lib/local-files';
+import { useAuthStore } from '@/lib/stores';
+import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
+import { applyProjectUpdate, deleteProject } from '@/lib/project-actions';
+import { DeleteProjectDialog } from '@/components/projects/ManageControls';
 import type { Project } from '@/lib/types';
 import { GENRE_OPTIONS, FORMAT_OPTIONS, LANGUAGE_OPTIONS, SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -38,8 +37,6 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [language, setLanguage] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState('');
-  const [deleting, setDeleting] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Project customization
@@ -156,49 +153,24 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
     }
     // Sync Zustand store so sidebar/dashboard update immediately
     const updatedProject = { ...project, ...form, ...savedRows[0] } as Project;
-    putCached('projects', updatedProject as unknown as Record<string, unknown>).catch(() => {});
-    useProjectStore.getState().setCurrentProject(updatedProject);
-    useProjectStore.setState((state) => ({
-      projects: state.projects.map((p) => p.id === params.id ? { ...p, ...updatedProject } : p),
-    }));
+    applyProjectUpdate(updatedProject);
     setProject(updatedProject);
     setForm(updatedProject);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  // In-page dialog rather than window.prompt(): the desktop app (Electron)
-  // doesn't support prompt(), so deleting was impossible there.
   const handleDelete = async () => {
-    if (!project || deleteConfirm.trim() !== (project.title || '').trim()) return;
-    setDeleting(true);
-    const supabase = createClient();
-    // Related rows cascade. .select() so a delete blocked by row-level
-    // security (0 rows, no error) isn't reported as success.
-    const { data: deletedRows, error } = await supabase.from('projects').delete().eq('id', params.id).select('id');
-    setDeleting(false);
-    if (error) {
-      toast.error('Failed to delete project: ' + error.message);
-      return;
-    }
-    if (!deletedRows?.length) {
-      toast.error('Only the person who created this project can delete it.');
-      return;
-    }
-    // Drop every local copy so the dashboard doesn't show it again
-    useProjectStore.setState((state) => ({
-      projects: state.projects.filter((p) => p.id !== params.id),
-      currentProject: state.currentProject?.id === params.id ? null : state.currentProject,
-    }));
-    deleteCached('projects', params.id).catch(() => {});
-    if (isElectronMode()) removeProjectFromDisk(params.id).catch(() => {});
-    setShowDeleteModal(false);
-    toast.success('Project deleted');
+    const res = await deleteProject(params.id);
+    if (!res.ok) { toast.error(res.message); return false; }
+    toast.success(`Deleted “${project?.title}”`);
     router.push('/dashboard');
+    return true;
   };
 
   if (loading) return <LoadingSpinner className="py-32" />;
   if (!project) return <div className="p-8 text-surface-400">Project not found.</div>;
+  const isOwner = !!user && project.created_by === user.id;
 
   return (
     <div className="p-3 sm:p-4 md:p-8 max-w-3xl">
@@ -677,41 +649,24 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
 
       {/* Danger zone */}
       <Card className="p-6 border-red-500/20">
-        <h2 className="text-lg font-semibold text-red-400 mb-2">Danger Zone</h2>
+        <h2 className="text-lg font-semibold text-red-400 mb-2">Delete project</h2>
         <p className="text-sm text-surface-400 mb-4">
-          Deleting this project is permanent. All scripts, characters, locations, scenes, and production data will be lost forever.
+          Permanently deletes this project with all its scripts, characters, locations, scenes and production data.
+          To delete a single script instead, use the <span className="text-surface-200">⋯</span> menu next to it on the project overview or in the script editor.
         </p>
-        <Button variant="danger" onClick={() => { setDeleteConfirm(''); setShowDeleteModal(true); }}>{t('project.delete')}</Button>
+        {isOwner ? (
+          <Button variant="danger" onClick={() => setShowDeleteModal(true)}>{t('project.delete')}</Button>
+        ) : (
+          <p className="text-sm text-surface-500">Only the person who created this project can delete it.</p>
+        )}
       </Card>
 
-      <Modal isOpen={showDeleteModal} onClose={() => !deleting && setShowDeleteModal(false)} title={t('project.delete')} size="sm">
-        <form
-          className="space-y-4"
-          onSubmit={(e) => { e.preventDefault(); handleDelete(); }}
-        >
-          <p className="text-sm text-surface-300">
-            This permanently deletes <span className="font-semibold text-white">{project.title}</span> and all of its scripts and production data.
-          </p>
-          <Input
-            label="Type the project title to confirm"
-            value={deleteConfirm}
-            onChange={(e) => setDeleteConfirm(e.target.value)}
-            placeholder={project.title}
-            autoFocus
-          />
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setShowDeleteModal(false)} disabled={deleting}>Cancel</Button>
-            <Button
-              type="submit"
-              variant="danger"
-              loading={deleting}
-              disabled={deleteConfirm.trim() !== (project.title || '').trim()}
-            >
-              Delete permanently
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <DeleteProjectDialog
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        projectTitle={project.title}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

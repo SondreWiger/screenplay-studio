@@ -21,6 +21,10 @@ export function usePushNotifications(userId: string | undefined) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [loading, setLoading] = useState(false);
+  // Why the last attempt to turn notifications on failed, in plain words
+  const [error, setError] = useState<string | null>(null);
+  // Without a VAPID key the server can't send pushes, so the switch can't work
+  const isConfigured = !!VAPID_PUBLIC_KEY;
 
   useEffect(() => {
     const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -56,7 +60,10 @@ export function usePushNotifications(userId: string | undefined) {
   };
 
   const subscribe = useCallback(async () => {
-    if (!isSupported || !userId || !VAPID_PUBLIC_KEY) return false;
+    setError(null);
+    if (!isSupported) { setError("This browser doesn't support device notifications."); return false; }
+    if (!userId) { setError('Sign in to turn on device notifications.'); return false; }
+    if (!VAPID_PUBLIC_KEY) { setError("Device notifications aren't available yet."); return false; }
     setLoading(true);
 
     try {
@@ -64,6 +71,9 @@ export function usePushNotifications(userId: string | undefined) {
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== 'granted') {
+        setError(perm === 'denied'
+          ? 'Notifications are blocked for this site. Allow them in your browser’s site settings, then try again.'
+          : 'Notifications were not allowed. Try again and choose “Allow”.');
         setLoading(false);
         return false;
       }
@@ -71,6 +81,7 @@ export function usePushNotifications(userId: string | undefined) {
       // Register service worker
       const reg = await registerServiceWorker();
       if (!reg) {
+        setError('Could not set up notifications in this browser.');
         setLoading(false);
         return false;
       }
@@ -83,18 +94,26 @@ export function usePushNotifications(userId: string | undefined) {
 
       // Store subscription in database
       const supabase = createClient();
-      await supabase.from('push_subscriptions').upsert({
+      const { error: saveError } = await supabase.from('push_subscriptions').upsert({
         user_id: userId,
         endpoint: sub.endpoint,
         keys: JSON.stringify(sub.toJSON().keys),
         created_at: new Date().toISOString(),
       }, { onConflict: 'user_id,endpoint' });
+      if (saveError) {
+        // The server couldn't record it, so pushes would never arrive
+        await sub.unsubscribe().catch(() => {});
+        setError('Could not save the notification setting. Please try again.');
+        setLoading(false);
+        return false;
+      }
 
       setIsSubscribed(true);
       setLoading(false);
       return true;
     } catch (err) {
       console.error('Push subscription failed:', err);
+      setError('Could not turn on device notifications. Please try again.');
       setLoading(false);
       return false;
     }
@@ -102,6 +121,7 @@ export function usePushNotifications(userId: string | undefined) {
 
   const unsubscribe = useCallback(async () => {
     if (!isSupported) return;
+    setError(null);
     setLoading(true);
 
     try {
@@ -145,9 +165,11 @@ export function usePushNotifications(userId: string | undefined) {
 
   return {
     isSupported,
+    isConfigured,
     isSubscribed,
     permission,
     loading,
+    error,
     subscribe,
     unsubscribe,
     sendLocal,
