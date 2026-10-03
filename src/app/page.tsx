@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteVersion } from '@/components/SiteVersion';
+import { ArrowRight, CalendarDays, Clapperboard, FileDown, LayoutGrid, PenLine, Users } from 'lucide-react';
+import { HeroLines, Reveal, RevealGroup, RevealItem } from '@/components/landing/motion';
+import { ProductPreview } from '@/components/landing/ProductPreview';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -55,6 +58,20 @@ function GridLine({ orientation = 'h', className = '' }: { orientation?: 'h' | '
     return <div className={`w-full h-px bg-white/[0.04] ${className}`} />;
   }
   return <div className={`h-full w-px bg-white/[0.04] ${className}`} />;
+}
+
+function FeatureCard({ icon, title, body, children }: { icon: React.ReactNode; title: string; body: string; children?: React.ReactNode }) {
+  return (
+    <div className="group relative h-full overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 transition-colors duration-300 hover:border-white/[0.14] md:p-8">
+      <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: 'rgb(var(--brand-500) / 0.12)' }} />
+      <span className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]" style={{ color: 'rgb(var(--brand-500))' }}>
+        {icon}
+      </span>
+      <h3 className="relative mt-5 text-base font-semibold text-white">{title}</h3>
+      <p className="relative mt-1.5 text-[13px] leading-relaxed text-white/45">{body}</p>
+      {children}
+    </div>
+  );
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -188,7 +205,7 @@ export default async function LandingPage() {
       </div>
 
       {/* ═══════════════════ NAVIGATION ═══════════════════ */}
-      <nav className="relative z-10 border-b border-white/[0.04]">
+      <nav className="sticky top-0 z-30 border-b border-white/[0.06] bg-surface-950/75 backdrop-blur-xl">
         <div className="max-w-screen-xl mx-auto px-6 md:px-8 h-14 flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-3">
             <div
@@ -252,12 +269,14 @@ export default async function LandingPage() {
           <Cross className="absolute top-12 right-8 text-white/10 hidden md:block" />
           <Cross className="absolute top-40 left-[42%] text-white/10 hidden lg:block" />
 
-          {/* Section marker */}
-          <div className="flex items-center gap-4 mb-6">
-            <Mono className="text-white/15">001</Mono>
-            <div className="w-8 h-px bg-white/10" />
-            <Mono className="text-white/15">Hero</Mono>
-          </div>
+          {/* What this is, in one line */}
+          <Reveal className="mb-8">
+            <Link href="/changelog" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1 pr-3 text-[11px] text-white/60 transition-colors hover:border-white/20 hover:text-white">
+              <span className="rounded-full px-2 py-0.5 font-semibold text-white" style={{ background: 'rgb(var(--brand-500))' }}>Free</span>
+              Screenwriting &amp; production, in one place
+              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </Reveal>
 
           {/* SEO-invisible H1 */}
           <h1 className="sr-only">Free Professional Screenwriting Software and Production Suite</h1>
@@ -275,15 +294,19 @@ export default async function LandingPage() {
             <div
               className="select-none relative"
               style={{
-                fontSize: 'clamp(4.5rem, 15vw, 14rem)',
+                fontSize: 'clamp(3rem, 13.5vw, 14rem)',
                 fontWeight: 900,
                 lineHeight: 0.85,
                 letterSpacing: '-0.045em',
               }}
             >
-              <span className="block text-white">WRITE.</span>
-              <span className="block text-white/20">PLAN.</span>
-              <span className="block" style={{ color: 'rgb(var(--brand-500))' }}>PRODUCE.</span>
+              <HeroLines
+                lines={[
+                  { text: 'WRITE.', className: 'text-white' },
+                  { text: 'PLAN.', className: 'text-white/20' },
+                  { text: 'PRODUCE.', style: { color: 'rgb(var(--brand-500))' } },
+                ]}
+              />
             </div>
 
             {/* Side annotation column */}
@@ -316,16 +339,29 @@ export default async function LandingPage() {
               ))}
             </div>
             <div className="md:col-span-4 flex flex-col items-start md:items-end justify-end gap-3">
-              <Link
-                href={isLoggedIn ? '/dashboard' : '/auth/register'}
-                className="group inline-flex items-center gap-3 px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-white transition-all duration-200 hover:-translate-y-0.5"
-                style={{ background: 'rgb(var(--brand-500))', boxShadow: '0 12px 48px rgba(var(--brand-500), 0.15)' }}
-              >
-                {isLoggedIn ? 'Open Dashboard' : 'Start Writing — Free'}
-                <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
-              </Link>
-              <Mono className="text-white/12">Free forever · No credit card</Mono>
+              <div className="flex flex-wrap gap-2 md:justify-end">
+                <Link
+                  href={isLoggedIn ? '/dashboard' : '/auth/register'}
+                  className="group inline-flex items-center gap-3 rounded-xl px-7 py-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-white shadow-2xl shadow-brand-600/30 transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ background: 'rgb(var(--brand-500))' }}
+                >
+                  {isLoggedIn ? 'Open Dashboard' : 'Start Writing — Free'}
+                  <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                </Link>
+                <Link
+                  href="/tools"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.04em] text-white/60 transition-colors hover:border-white/25 hover:text-white"
+                >
+                  Explore tools
+                </Link>
+              </div>
+              <Mono className="text-white/25">Free forever · No credit card</Mono>
             </div>
+          </div>
+
+          {/* The product itself */}
+          <div className="py-16 md:py-20">
+            <ProductPreview />
           </div>
         </section>
 
@@ -409,10 +445,134 @@ export default async function LandingPage() {
           </div>
         </section>
 
+
+        {/* ═══════════════════ FEATURES ═══════════════════ */}
+        <section className="max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
+          <Reveal>
+            <div className="flex items-center gap-4 mb-4">
+              <Mono className="text-white/15">002</Mono>
+              <div className="w-8 h-px bg-white/10" />
+              <Mono className="text-white/15">Features</Mono>
+            </div>
+            <h2
+              className="mb-12 max-w-3xl font-semibold text-white"
+              style={{ fontSize: 'clamp(2.25rem, 5.5vw, 4.5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}
+            >
+              ONE PROJECT. <span className="text-white/25">EVERY DEPARTMENT.</span>
+            </h2>
+          </Reveal>
+
+          <RevealGroup className="grid gap-3 md:grid-cols-3">
+            <RevealItem className="md:col-span-2">
+              <FeatureCard
+                icon={<PenLine className="h-5 w-5" />}
+                title="A script editor that formats for you"
+                body="Tab between scene headings, action, character and dialogue. Industry formatting as you type, revision colours, title pages, and a focus mode for the long nights."
+              >
+                <div className="mt-6 flex flex-wrap gap-1.5">
+                  {['Scene heading', 'Action', 'Character', 'Parenthetical', 'Dialogue', 'Transition'].map((el, i) => (
+                    <span key={el} className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 font-mono text-[10px] text-white/50">
+                      <span className="mr-1.5 text-white/25">{i === 0 ? '↵' : 'Tab'}</span>{el}
+                    </span>
+                  ))}
+                </div>
+              </FeatureCard>
+            </RevealItem>
+            <RevealItem>
+              <FeatureCard
+                icon={<Users className="h-5 w-5" />}
+                title="Write together, live"
+                body="Everyone in the same draft at once — see who is where, leave inline comments, and stop emailing PDFs back and forth."
+              />
+            </RevealItem>
+            <RevealItem>
+              <FeatureCard
+                icon={<Clapperboard className="h-5 w-5" />}
+                title="Breakdowns & shot lists"
+                body="Tag cast, props and locations straight from the page, then turn every scene into shots with lens, movement and storyboard frames."
+              />
+            </RevealItem>
+            <RevealItem>
+              <FeatureCard
+                icon={<CalendarDays className="h-5 w-5" />}
+                title="Schedule & budget"
+                body="Shooting days, locations and calls on one calendar, with estimates and actuals tracked line by line."
+              />
+            </RevealItem>
+            <RevealItem>
+              <FeatureCard
+                icon={<LayoutGrid className="h-5 w-5" />}
+                title="Corkboard & beat sheets"
+                body="Shuffle index cards, plan arcs, and check your structure against Save the Cat, Syd Field — or your own."
+              />
+            </RevealItem>
+            <RevealItem className="md:col-span-3">
+              <div className="flex flex-col gap-5 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 transition-colors hover:border-white/[0.14] md:flex-row md:items-center md:justify-between md:p-8">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]" style={{ color: 'rgb(var(--brand-500))' }}>
+                    <FileDown className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h3 className="text-base font-semibold text-white">Your files, your formats</h3>
+                    <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-white/45">Import an existing script and keep going. Export to every format, free — no lock-in.</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {['FDX', 'PDF', 'Fountain', 'DOCX', 'HTML'].map((f) => (
+                    <span key={f} className="rounded-lg border border-white/10 px-3 py-1.5 font-mono text-[11px] font-semibold text-white/70">.{f.toLowerCase()}</span>
+                  ))}
+                </div>
+              </div>
+            </RevealItem>
+          </RevealGroup>
+        </section>
+
+        <GridLine />
+
+        {/* ═══════════════════ WORKFLOW ═══════════════════ */}
+        <section className="max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
+          <Reveal className="mb-12 grid gap-6 md:grid-cols-12">
+            <div className="md:col-span-7">
+              <div className="flex items-center gap-4 mb-4">
+                <Mono className="text-white/15">003</Mono>
+                <div className="w-8 h-px bg-white/10" />
+                <Mono className="text-white/15">Workflow</Mono>
+              </div>
+              <h2 className="font-semibold text-white" style={{ fontSize: 'clamp(2.25rem, 5.5vw, 4.5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}>
+                FIRST DRAFT<br />TO <span style={{ color: 'rgb(var(--brand-500))' }}>FINAL WRAP.</span>
+              </h2>
+            </div>
+            <p className="self-end text-[13px] leading-[2] text-white/40 md:col-span-5">
+              The script is the source of truth. Change a scene and the breakdown, shot list and schedule built on it are right there with it.
+            </p>
+          </Reveal>
+          <RevealGroup className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-4" stagger={0.12}>
+            <div className="pointer-events-none absolute left-0 right-0 top-[2.15rem] hidden h-px bg-gradient-to-r from-transparent via-white/15 to-transparent lg:block" />
+            {[
+              { n: '01', t: 'Write', d: 'Draft in a proper screenplay editor, alone or with your co-writers.' },
+              { n: '02', t: 'Break down', d: 'Tag what every scene needs: cast, props, wardrobe, locations, VFX.' },
+              { n: '03', t: 'Plan', d: 'Build shot lists, a shooting schedule and a budget from the breakdown.' },
+              { n: '04', t: 'Shoot & wrap', d: 'Call sheets, day-of changes and a team that sees the same plan.' },
+            ].map((step) => (
+              <RevealItem key={step.n}>
+                <div className="relative h-full rounded-2xl border border-white/[0.07] bg-surface-950 p-6 transition-colors hover:border-white/[0.14]">
+                  <span className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-surface-950 font-mono text-[11px] font-bold" style={{ color: 'rgb(var(--brand-500))' }}>
+                    {step.n}
+                  </span>
+                  <h3 className="mt-5 text-lg font-semibold text-white">{step.t}</h3>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">{step.d}</p>
+                </div>
+              </RevealItem>
+            ))}
+          </RevealGroup>
+        </section>
+
+        <GridLine />
+
         {/* ═══════════════════ TESTIMONIALS ═══════════════ */}
         <section className="max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
           <div className="flex items-center gap-4 mb-4">
-            <Mono className="text-white/15">002</Mono>
+            <Mono className="text-white/15">004</Mono>
             <div className="w-8 h-px bg-white/10" />
             <Mono className="text-white/15">Voices</Mono>
           </div>
@@ -446,7 +606,7 @@ export default async function LandingPage() {
         {/* ═══════════════════ TOOL MAP ═══════════════════ */}
         <section className="max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
           <div className="flex items-center gap-4 mb-4">
-            <Mono className="text-white/15">003</Mono>
+            <Mono className="text-white/15">005</Mono>
             <div className="w-8 h-px bg-white/10" />
             <Mono className="text-white/15">Stack</Mono>
           </div>
@@ -591,7 +751,7 @@ export default async function LandingPage() {
         {/* ═══════════════════ ABOUT ══════════════════════ */}
         <section className="max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
           <div className="flex items-center gap-4 mb-4">
-            <Mono className="text-white/15">004</Mono>
+            <Mono className="text-white/15">006</Mono>
             <div className="w-8 h-px bg-white/10" />
             <Mono className="text-white/15">Origin</Mono>
           </div>
@@ -634,7 +794,7 @@ export default async function LandingPage() {
         {/* ═══════════════════ FAQ ════════════════════════ */}
         <section className="max-w-screen-xl mx-auto px-6 md:px-8 py-20 md:py-28">
           <div className="flex items-center gap-4 mb-4">
-            <Mono className="text-white/15">005</Mono>
+            <Mono className="text-white/15">007</Mono>
             <div className="w-8 h-px bg-white/10" />
             <Mono className="text-white/15">FAQ</Mono>
           </div>
@@ -719,7 +879,7 @@ export default async function LandingPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-[11px] uppercase tracking-[0.04em] transition-colors duration-300"
-              style={{ color: 'rgba(var(--brand-500), 0.5)' }}
+              style={{ color: 'rgb(var(--brand-500) / 0.5)' }}
             >
               Northem Development ♥ Oslo
             </a>

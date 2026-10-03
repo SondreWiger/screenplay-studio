@@ -7,9 +7,11 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Badge, LoadingPage, EmptyState, SkeletonCard, Modal, Input, Textarea, Select, KeyboardShortcuts, toast } from '@/components/ui';
-import { motion } from 'framer-motion';
 import { ShellActions } from '@/components/shell/ShellActions';
-import { Pill, StatGrid, dailySpark } from '@/components/kit';
+import { Pill, Segmented } from '@/components/kit';
+import { DashboardOverview, PIPELINE, StageBadge, stageOf } from '@/components/dashboard/DashboardOverview';
+import { useFeatureAccess } from '@/components/FeatureGate';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 import { pickToast, NEW_PROJECT } from '@/lib/funToasts';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
 import { SupportButton } from '@/components/SupportButton';
@@ -58,6 +60,7 @@ function DashboardContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const { canUse: canUseFeature } = useFeatureAccess();
 
   // Company state
   const [companyMemberships, setCompanyMemberships] = useState<(CompanyMember & { company: Company })[]>([]);
@@ -472,15 +475,6 @@ function DashboardContent() {
 
   if (authLoading || (!user && loading)) return <LoadingPage />;
 
-  const statusColors: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
-    development: 'info',
-    pre_production: 'warning',
-    production: 'success',
-    post_production: 'warning',
-    completed: 'success',
-    archived: 'default',
-  };
-
   return (
     <div className="min-h-screen bg-surface-950" id="main-content">
       <ShellActions>
@@ -526,65 +520,16 @@ function DashboardContent() {
             ))}
           </div>
         )}
-        {/* Welcome */}
-        <div className="relative mb-5 overflow-hidden rounded-3xl border border-surface-800 bg-gradient-to-br from-surface-900 via-surface-900/80 to-brand-950/40 p-6 md:p-8">
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-500/10 blur-3xl"
-            animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <p className="relative mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-400">{t('dashboard.title')}</p>
-          <h1 className="relative flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight text-white md:text-3xl">
-            {/* "Welcome back" only once there's something to come back to */}
-            {t(!loading && projects.length === 0 ? 'dashboard.welcome' : 'dashboard.welcome_back')}{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}
-            {user?.is_pro && <Pill tone="amber">Pro</Pill>}
-            <StreakBadge />
-          </h1>
-          <p className="relative mt-1 text-sm text-surface-400">{t('dashboard.your_projects')}</p>
-        </div>
-        {(() => {
-          const allP = [...projects, ...Object.values(companyProjects).flat()];
-          const updatedThisWeek = allP.filter((p) => Date.now() - Date.parse(p.updated_at) < 7 * 86_400_000).length;
-          return (
-            <div className="mb-8">
-              <StatGrid
-                cols={5}
-                items={[
-                  { label: t('dashboard.projects'), value: allP.length, tone: 'brand' },
-                  { label: t('dashboard.in_dev'), value: allP.filter((p) => p.status === 'development').length, tone: 'violet' },
-                  { label: t('dashboard.in_prod'), value: allP.filter((p) => p.status === 'production').length, tone: 'green' },
-                  { label: t('dashboard.done'), value: allP.filter((p) => p.status === 'completed').length, tone: 'blue' },
-                  { label: 'Edited this week', value: updatedThisWeek, tone: 'aqua', spark: dailySpark(allP, (p) => p.updated_at) },
-                ]}
-              />
-            </div>
-          );
-        })()}
-
-        {/* Continue Writing CTA */}
-        {lastProject && (
-          <button
-            onClick={() => router.push(`/projects/${lastProject.id}/script`)}
-            className="w-full mb-8 group rounded-xl border border-surface-800 bg-gradient-to-r from-surface-900 to-surface-900/50 hover:border-brand-500/40 p-5 text-left transition-colors hover:shadow-lg hover:shadow-brand-500/5"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:bg-brand-500/20 transition-colors">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                </div>
-                <div>
-                  <p className="text-xs text-surface-400">{t('dashboard.continue_writing')}</p>
-                  <p className="text-sm font-semibold text-white">{lastProject.title}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-surface-500">
-                <span>{t('dashboard.last_edited')} {timeAgo(lastProject.updated_at)}</span>
-                <svg className="w-4 h-4 text-surface-600 group-hover:text-brand-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </div>
-            </div>
-          </button>
-        )}
+        <DashboardOverview
+          name={user?.full_name ? user.full_name.split(' ')[0] : user?.display_name ?? null}
+          badges={<>{user?.is_pro && <Pill tone="amber">Pro</Pill>}<StreakBadge /></>}
+          projects={allProjects}
+          lastProject={lastProject}
+          filterStatus={filterStatus}
+          onFilter={setFilterStatus}
+          onNewProject={() => setShowNewProject(true)}
+          showCommunity={canUseFeature('community') && isFeatureEnabled('community') && user?.show_community !== false && !isElectronMode()}
+        />
 
         {/* Onboarding Checklist */}
         {/* Only for people getting started — not a to-do list for veterans */}
@@ -612,22 +557,15 @@ function DashboardContent() {
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-surface-800 bg-surface-900/50 backdrop-blur-sm text-sm text-surface-50 placeholder:text-surface-500 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all duration-300 ease-spring"
             />
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {['all', 'development', 'pre_production', 'production', 'completed'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={cn(
-                  'px-3 py-2.5 md:py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap min-h-[44px] md:min-h-0',
-                  filterStatus === status
-                    ? 'bg-brand-600 text-white'
-                    : 'text-surface-400 hover:text-white hover:bg-surface-800'
-                )}
-              >
-                {status === 'all' ? 'All' : status === 'pre_production' ? 'Pre-Prod' : status.charAt(0).toUpperCase() + status.slice(1)}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            id="dashboard-status"
+            value={filterStatus}
+            onChange={setFilterStatus}
+            options={[
+              { key: 'all', label: 'All' },
+              ...PIPELINE.map((st) => ({ key: st.key as string, label: st.key === 'pre_production' ? 'Pre-prod' : st.key === 'post_production' ? 'Post' : st.label })),
+            ]}
+          />
         </div>
 
         {/* Recently Viewed Strip */}
@@ -854,13 +792,13 @@ function DashboardContent() {
                           viewMode === 'list' ? (
                             <div className="flex flex-col gap-2">
                               {folderProjects.map(project => (
-                                <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
+                                <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
                               ))}
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                               {folderProjects.map(project => (
-                                <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
+                                <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
                               ))}
                             </div>
                           )
@@ -912,13 +850,13 @@ function DashboardContent() {
                               ) : viewMode === 'list' ? (
                                 <div className="flex flex-col gap-2">
                                   {childProjects.map(project => (
-                                    <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
+                                    <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
                                   ))}
                                 </div>
                               ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                   {childProjects.map(project => (
-                                    <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
+                                    <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
                                   ))}
                                 </div>
                               )
@@ -965,13 +903,13 @@ function DashboardContent() {
                   ) : viewMode === 'list' ? (
                     <div className="flex flex-col gap-2">
                       {unfiled.map(project => (
-                        <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
+                        <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
                       ))}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {unfiled.map(project => (
-                        <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} statusColors={statusColors} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
+                        <ProjectCard key={project.id} project={project} folders={folders} moveToFolder={moveToFolder} draggingProjectId={draggingProjectId} setDraggingProjectId={setDraggingProjectId} viewMode={viewMode} currentUserId={user?.id} onRename={setRenameTarget} onDelete={setDeleteTarget} />
                       ))}
                     </div>
                   )}
@@ -1032,7 +970,10 @@ function DashboardContent() {
                   {cProjects.map((project) => (
                     <Link key={project.id} href={`/projects/${project.id}`}>
             <Card hover className="overflow-hidden group">
-              <div className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden">
+              <div
+            className="h-36 bg-gradient-to-br from-surface-800 to-surface-900 relative overflow-hidden"
+            style={{ backgroundImage: `radial-gradient(120% 90% at 100% 0%, ${stageOf(project.status).color}26, transparent 60%), linear-gradient(to bottom right, rgb(var(--surface-800)), rgb(var(--surface-900)))` }}
+          >
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-5xl font-bold text-surface-700/60 group-hover:text-surface-600/60 transition-colors select-none">{project.title[0]}</span>
                 </div>
@@ -1050,9 +991,7 @@ function DashboardContent() {
                             </div>
                           </div>
                           <div className="absolute top-2.5 right-2.5">
-                            <Badge variant={statusColors[project.status]}>
-                              {project.status.replace('_', ' ')}
-                            </Badge>
+                            <StageBadge status={project.status} />
                           </div>
                         </div>
                         <div className="p-4">
@@ -1150,13 +1089,12 @@ function DashboardContent() {
 }
 
 function ProjectCard({
-  project, folders, moveToFolder, statusColors,
+  project, folders, moveToFolder,
   draggingProjectId, setDraggingProjectId, viewMode, currentUserId, onRename, onDelete,
 }: {
   project: Project;
   folders: DashboardFolder[];
   moveToFolder: (projectId: string, folderId: string | null) => void;
-  statusColors: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'>;
   draggingProjectId: string | null;
   setDraggingProjectId: (id: string | null) => void;
   viewMode?: 'grid' | 'list';
@@ -1250,7 +1188,7 @@ function ProjectCard({
   livestream: 'Live',
   documentary: 'Doc',
 } as Record<string, string>)[project.project_type] || project.project_type}</Badge>
-              <Badge variant={statusColors[project.status]} size="sm">{project.status.replace('_', ' ')}</Badge>
+              <StageBadge status={project.status} size="sm" />
               <span className="text-[11px] text-surface-600 hidden sm:inline">{timeAgo(project.updated_at)}</span>
             </div>
           </div>
@@ -1295,9 +1233,7 @@ function ProjectCard({
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" />
             {/* Bottom corner: the top-right corner holds the "⋯" menu */}
             <div className="absolute bottom-2.5 right-2.5">
-              <Badge variant={statusColors[project.status]}>
-                {project.status.replace('_', ' ')}
-              </Badge>
+              <StageBadge status={project.status} />
             </div>
             {currentFolder && (
               <div className="absolute top-2.5 left-2.5">
