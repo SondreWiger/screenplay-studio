@@ -14,7 +14,6 @@ import { PRODUCTION_ROLES } from '@/lib/types';
 import { BadgeDisplay } from '@/components/BadgeDisplay';
 import ActivityGrid from '@/components/activity/ActivityGrid';
 import { fetchUserWorkLogs, calculateStreak, aggregateLogsByDate } from '@/lib/work-tracker';
-import { ShellBack } from '@/components/shell/ShellActions';
 
 // Public User Profile Page — /u/<username>
 
@@ -306,7 +305,6 @@ export default function UserProfilePage({ params }: { params: { username: string
 
   return (
     <div className="min-h-screen text-white bg-surface-950">
-      <ShellBack href="/people" label="People" />
 
       {/* Hero banner — larger, more dramatic */}
       <div className={`relative h-56 md:h-72 bg-gradient-to-br ${theme.gradient} overflow-hidden`}>

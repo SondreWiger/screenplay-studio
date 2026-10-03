@@ -345,7 +345,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
 
       {/* Community context bar */}
       {subCommunity && (
-        <div className="sticky top-14 md:top-0 z-20 backdrop-blur-md" style={{ background: 'rgba(7,7,16,0.88)', borderBottom: `1px solid ${subCommunity.accent_color ?? '#FF5F1F'}28` }}>
+        <div className="sticky top-14 z-20 backdrop-blur-md" style={{ background: 'rgba(7,7,16,0.88)', borderBottom: `1px solid ${subCommunity.accent_color ?? '#FF5F1F'}28` }}>
           <div className="max-w-4xl mx-auto px-6 h-11 flex items-center gap-3">
             <Link
               href={`/community/c/${subCommunity.slug}`}

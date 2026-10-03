@@ -40,7 +40,7 @@ export function CommunityNav() {
           {sub && sub !== 'create' && (
             <Link href={`/community/c/${sub}?compose=1`} className={btn}>+ Post</Link>
           )}
-          <div className="relative hidden sm:block">
+          <div className="relative hidden sm:block lg:hidden xl:block">
             <button
               onClick={() => setStatsOpen((v) => !v)}
               className={cn('rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors', statsOpen ? 'border-brand-500/50 text-white' : 'border-surface-800 text-surface-300 hover:text-white')}
@@ -52,11 +52,7 @@ export function CommunityNav() {
             {statsOpen && <CommunityStatsPanel user={user} onClose={() => setStatsOpen(false)} />}
           </div>
         </>
-      ) : (
-        <Link href={`/auth/login?redirect=${encodeURIComponent(pathname)}`} className="hidden rounded-xl border border-surface-800 px-3 py-1.5 text-xs font-semibold text-surface-300 hover:text-white md:inline-flex">
-          Sign in to post
-        </Link>
-      )}
+      ) : null}
     </ShellActions>
   );
 }

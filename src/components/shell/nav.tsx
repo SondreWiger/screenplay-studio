@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import {
-  Bell, BookOpen, Building2, CreditCard, Download, FileText, FlaskConical, GraduationCap, Heart, LayoutDashboard,
-  LifeBuoy, Lightbulb, MessageSquare, MessagesSquare, Megaphone, Newspaper, Palette, PenTool, Quote, Scale, ScrollText,
-  Settings, Shield, Sparkles, Target, Trophy, Users, UsersRound, Wrench, Languages,
+  Bell, BookOpen, Building2, CreditCard, Download, FlaskConical, Heart, LayoutDashboard,
+  LifeBuoy, Lightbulb, MessageSquare, Megaphone, Palette, PenTool, Quote, Scale, ScrollText,
+  Settings, Shield, Target, Users, UsersRound, Wrench, Languages,
 } from 'lucide-react';
 
 export interface ShellNavItem {
@@ -60,27 +60,15 @@ export function buildShellNav(ctx: ShellNavContext): ShellNavSection[] {
     });
   }
 
-  if (ctx.community && !ctx.isElectron) {
-    sections.push({
-      id: 'community',
-      label: 'Community',
-      items: [
-        { label: 'Feed', href: '/community', icon: <Newspaper className={ic} />, exact: true, match: ['/community/post', '/community/share'] },
-        { label: 'Communities', href: '/community/c', icon: <UsersRound className={ic} /> },
-        { label: 'Showcase', href: '/community/showcase', icon: <Sparkles className={ic} /> },
-        { label: 'Challenges', href: '/community/challenges', icon: <Trophy className={ic} /> },
-        { label: 'Courses', href: '/community/courses', icon: <GraduationCap className={ic} /> },
-        { label: 'Free Scripts', href: '/community/free-scripts', icon: <FileText className={ic} /> },
-        { label: 'Chat', href: '/community/chat', icon: <MessagesSquare className={ic} /> },
-        { label: 'People', href: '/people', icon: <Users className={ic} />, match: ['/u/'] },
-        { label: 'Quotes', href: '/quotes', icon: <Quote className={ic} /> },
-      ],
-    });
-  } else if (ctx.signedIn) {
+  // The community is its own site with its own navigation; the studio links into it once.
+  if (ctx.signedIn) {
     sections[0]?.items.push(
-      { label: 'People', href: '/people', icon: <Users className={ic} />, match: ['/u/'] },
+      ...(ctx.community && !ctx.isElectron ? [{ label: 'Community', href: '/community', icon: <UsersRound className={ic} />, match: ['/u/'] }] : []),
+      { label: 'People', href: '/people', icon: <Users className={ic} /> },
       { label: 'Quotes', href: '/quotes', icon: <Quote className={ic} /> },
     );
+  } else if (ctx.community && !ctx.isElectron) {
+    sections.push({ id: 'community', label: 'Community', items: [{ label: 'Community', href: '/community', icon: <UsersRound className={ic} /> }] });
   }
 
   sections.push({

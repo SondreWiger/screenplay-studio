@@ -22,8 +22,8 @@ import { ShellSlotContext } from './ShellActions';
 const ADMIN_UID = 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 const COLLAPSE_KEY = 'shell:sidebar:collapsed';
 const EASE = [0.2, 0.8, 0.2, 1] as const;
-/** Pages that fill the viewport under the topbar (chat, inbox, course player) skip the footer. */
-const FULL_HEIGHT = /^\/(messages|community\/chat|community\/c\/[^/]+\/chat|community\/courses\/(?!create$)[^/]+$|community\/showcase\/[^/]+\/mindmap)/;
+/** Pages that fill the viewport under the topbar (the inbox) skip the footer. */
+const FULL_HEIGHT = /^\/(messages)/;
 
 /**
  * The app shell for everything outside a project: one sidebar, one topbar,

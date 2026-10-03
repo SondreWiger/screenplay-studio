@@ -314,7 +314,7 @@ export default function DeepDiveScriptPage() {
       </div>
 
       {/* Top nav */}
-      <nav className="sticky top-14 md:top-0 z-30 bg-surface-950/95 backdrop-blur-lg border-b border-white/[0.06]">
+      <nav className="sticky top-14 z-30 bg-surface-950/95 backdrop-blur-lg border-b border-white/[0.06]">
         <div className="max-w-[1800px] mx-auto px-4 flex items-center justify-between h-12">
           <div className="flex items-center gap-3 min-w-0">
             <Link href={`/community/showcase/${params.id}`} className="flex items-center gap-2 text-white/50 hover:text-white transition shrink-0">

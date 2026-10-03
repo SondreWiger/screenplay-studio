@@ -404,7 +404,7 @@ export default function ShowcaseDetailPage() {
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white">
       {/* Nav */}
-      <nav className="sticky top-14 md:top-0 z-30 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-white/10">
+      <nav className="sticky top-14 z-30 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-14">
           <div className="flex items-center gap-4">
             <Link href="/community/showcase" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
