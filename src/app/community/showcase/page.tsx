@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SiteVersion } from '@/components/SiteVersion';
 import { timeAgo } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { Project } from '@/lib/types';
@@ -303,18 +302,6 @@ export default function ShowcasePage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/40">Screenplay Studio</span>
-          <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.04em] text-white/50">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/community" className="hover:text-white transition-colors">Community</Link>
-            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-            <SiteVersion />
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

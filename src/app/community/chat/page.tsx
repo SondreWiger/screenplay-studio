@@ -184,7 +184,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-56px)] flex flex-col bg-[#faf9f7]">
+    <div className="h-[calc(100dvh-3.5rem)] flex flex-col bg-[#faf9f7]">
 
 
       <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto">

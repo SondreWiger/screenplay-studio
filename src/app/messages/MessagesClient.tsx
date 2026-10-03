@@ -5,12 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { Button, Modal, Input, Avatar, Badge, LoadingSpinner } from '@/components/ui';
+import { Button, Modal, Input, Avatar, LoadingSpinner } from '@/components/ui';
+import { ShellActions } from '@/components/shell/ShellActions';
 import { cn, timeAgo, formatTime } from '@/lib/utils';
 import { notifyConversationMembers } from '@/lib/notifications';
 import { automodCheck } from '@/lib/automod';
-import Link from 'next/link';
 import { useTranslation } from '@/components/TranslationProvider';
 import type { Conversation, ConversationMember, DirectMessage, Profile } from '@/lib/types';
 import { FormattedChatText } from '@/components/FormattedChatText';
@@ -565,24 +564,14 @@ export default function MessagesClient() {
   if (authLoading) return <LoadingSpinner className="py-32" />;
 
   return (
-    <div className="h-screen flex flex-col bg-surface-950">
-      {/* Header */}
-      <header className="border-b border-surface-800 bg-surface-950 px-4 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-surface-400 hover:text-white transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          </Link>
-          <h1 className="text-lg font-bold text-white">{t('messages.title')}</h1>
-          <Badge variant="default">{conversations.length}</Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" onClick={() => setShowNewConvo(true)}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            {t('messages.new_message')}
-          </Button>
-          <NotificationBell />
-        </div>
-      </header>
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col bg-surface-950">
+      <ShellActions>
+        <span className="hidden text-xs text-surface-500 sm:inline">{conversations.length} conversations</span>
+        <Button size="sm" onClick={() => setShowNewConvo(true)}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          {t('messages.new_message')}
+        </Button>
+      </ShellActions>
 
       {/* Main layout */}
       <div className="flex-1 flex overflow-hidden">

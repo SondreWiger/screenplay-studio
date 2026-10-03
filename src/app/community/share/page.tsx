@@ -29,6 +29,7 @@ import {
   FORMAT_LABELS,
   type UploadableFormat,
 } from '@/lib/screenplay-parsers';
+import { ShellBack } from '@/components/shell/ShellActions';
 
 // Share Script — submit a script to the community
 
@@ -455,21 +456,11 @@ export default function ShareScriptPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
+    <div className="relative min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Dot-grid texture */}
-      <div className="pointer-events-none fixed inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 backdrop-blur-md" style={{ background: 'rgba(7,7,16,0.85)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Community
-          </Link>
-          <span className="text-sm font-semibold text-white/80">New Post</span>
-          <div className="w-16" />{/* spacer */}
-        </div>
-      </nav>
+      <ShellBack href="/community" label="Feed" />
 
       <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-3xl font-bold text-white tracking-tight mb-1">Create a Post</h1>

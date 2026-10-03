@@ -5,10 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SiteVersion } from '@/components/SiteVersion';
 import { timeAgo } from '@/lib/utils';
 import { TICKET_CATEGORY_OPTIONS } from '@/lib/types';
-import { useTranslation } from '@/components/TranslationProvider';
 import type { SupportTicket, TicketMessage, TicketCategory } from '@/lib/types';
 
 // Support — Ticket submission & conversation view
@@ -41,7 +39,6 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 function SupportPage() {
   const { user, loading: authLoading } = useAuth();
-  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
@@ -217,20 +214,7 @@ function SupportPage() {
 
   return (
     <div className="min-h-screen bg-surface-950">
-      {/* Header */}
-      <header className="bg-surface-900 border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-lg font-bold text-white">Screenplay Studio</Link>
-            <span className="text-white/20">/</span>
-            <h1 className="text-lg font-semibold text-white/70">{t('support.title')}</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm text-white/40 hover:text-white transition-colors">Dashboard</Link>
-            <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">Community</Link>
-          </div>
-        </div>
-      </header>
+
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex gap-6">
@@ -450,24 +434,6 @@ function SupportPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="max-w-6xl mx-auto px-4 py-6 mt-8 border-t border-white/10">
-        <div className="flex items-center justify-between">
-          <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">← Community</Link>
-          <div className="flex items-center gap-3">
-            <SiteVersion light />
-            <span className="text-white/10">·</span>
-            <a
-              href="https://development.northem.no/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
-            >
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

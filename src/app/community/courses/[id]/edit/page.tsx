@@ -345,7 +345,7 @@ export default function CourseEditPage() {
   return (
     <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Page sub-nav */}
-      <div className="sticky top-14 z-30 backdrop-blur-xl border-b border-white/[0.07]" style={{ background: 'rgba(7,7,16,0.95)' }}>
+      <div className="sticky top-14 z-30 md:top-0 backdrop-blur-xl border-b border-white/[0.07]" style={{ background: 'rgba(7,7,16,0.95)' }}>
         <div className="max-w-5xl mx-auto px-6 flex items-center gap-4 h-12">
           <Link href={`/community/courses/${courseId}`} className="text-[11px] text-white/55 hover:text-white/60 transition-colors uppercase tracking-[0.04em]">← Back</Link>
           <span className="text-white/10">|</span>

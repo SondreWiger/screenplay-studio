@@ -1,3 +1,4 @@
+import { AppShell } from '@/components/shell/AppShell';
 import { Metadata } from 'next';
 
 const BASE_URL = () => process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
@@ -28,5 +29,5 @@ export const metadata: Metadata = {
 };
 
 export default function TestimonialsLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <AppShell>{children}</AppShell>;
 }

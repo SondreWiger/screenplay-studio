@@ -583,10 +583,10 @@ export default function AccountabilityPage() {
   if (user.show_accountability === false) return <LoadingPage />;
 
   return (
-    <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
+    <div className="relative min-h-screen" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* Dot-grid texture */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.07]"
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
         style={{
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)',
           backgroundSize: '32px 32px',
@@ -936,31 +936,6 @@ export default function AccountabilityPage() {
           </>
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="mt-16 relative z-10" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] uppercase tracking-[0.04em]" style={{ color: 'rgba(255,255,255,0.4)' }}>Screenplay Studio — Accountability</span>
-          </div>
-          <div className="flex items-center gap-6">
-            {[
-              { href: '/dashboard', label: 'Dashboard' },
-              { href: '/community', label: 'Community' },
-              { href: '/settings', label: 'Settings' },
-            ].map(({ href, label }) => (
-              <Link key={href} href={href}
-                className="text-[11px] uppercase tracking-[0.04em] transition-colors hover:text-white/60"
-                style={{ color: 'rgba(255,255,255,0.25)' }}>
-                {label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </footer>
 
       {/* Modals */}
       {showLogModal && (

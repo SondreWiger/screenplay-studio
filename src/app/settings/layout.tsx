@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureAccess } from '@/components/FeatureGate';
-import { AppHeader } from '@/components/AppHeader';
+import { AppShell } from '@/components/shell/AppShell';
+import { SubNav } from '@/components/shell/SubNav';
+import { Pill, TabSkeleton } from '@/components/kit';
+import { Avatar } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const NAV_ITEMS = [
@@ -30,123 +33,80 @@ const BOTTOM_ITEMS = [
   { href: '/legal', label: 'Legal Center', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
 ];
 
+const icon = (d: string) => (
+  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={d} /></svg>
+);
+
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AppShell>
+      <SettingsFrame>{children}</SettingsFrame>
+    </AppShell>
+  );
+}
+
+function SettingsFrame({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { canUse: canUseFeature } = useFeatureAccess();
   const activeTab = searchParams.get('tab') || 'profile';
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-surface-950">
-        <AppHeader />
-        <div className="flex items-center justify-center py-32">
-          <div className="animate-spin h-8 w-8 border-2 border-surface-600 border-t-white rounded-full" />
-        </div>
-      </div>
-    );
-  }
+  if (authLoading) return <div className="p-6 md:p-8"><TabSkeleton /></div>;
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-surface-950">
-        <AppHeader />
-        <div className="flex items-center justify-center py-32">
-          <p className="text-surface-400">Please sign in to access settings.</p>
-        </div>
+      <div className="flex flex-col items-center justify-center px-6 py-32 text-center">
+        <p className="text-sm text-surface-400">Sign in to manage your settings.</p>
+        <Link href="/auth/login?redirect=/settings" className="mt-4 rounded-xl bg-brand-600 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-500">Sign in</Link>
       </div>
     );
   }
 
+  const onSettingsRoot = pathname === '/settings';
   const isActive = (item: typeof NAV_ITEMS[0]) => {
-    if (item.param) return activeTab === item.param;
+    if (item.param) return onSettingsRoot && activeTab === item.param;
     return pathname.startsWith(item.href.split('?')[0]);
   };
 
+  const all = [...NAV_ITEMS, ...PRO_ITEMS, ...BOTTOM_ITEMS];
+  const section = all.find((item) => ('param' in item && item.param ? onSettingsRoot && activeTab === item.param : pathname.startsWith(item.href.split('?')[0])));
+
   return (
-    <div className="min-h-screen bg-surface-950">
-      <AppHeader />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <aside className="w-full lg:w-56 shrink-0">
-            <nav className="lg:sticky lg:top-20">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 text-sm text-surface-400 hover:text-white transition-colors mb-4 px-3 py-1.5"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                Dashboard
-              </Link>
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-8">
+      {/* Who you are, and where in settings you are */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-surface-800 bg-gradient-to-br from-surface-900 via-surface-900/80 to-brand-950/30 p-5">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-600/10 blur-3xl" />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <Avatar src={user.avatar_url} name={user.display_name || user.full_name || user.email} size="lg" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-brand-400">Settings{section ? ` · ${section.label}` : ''}</p>
+            <h1 className="mt-0.5 flex items-center gap-2 truncate text-xl font-bold tracking-tight text-white">
+              {user.display_name || user.full_name || 'Your account'}
+              {user.is_pro && <Pill tone="amber">Pro</Pill>}
+            </h1>
+            <p className="truncate text-xs text-surface-500">{user.username ? `@${user.username} · ` : ''}{user.email}</p>
+          </div>
+          {user.username && (
+            <Link href={`/u/${user.username}`} className="hidden rounded-xl border border-surface-800 px-3 py-1.5 sm:inline-flex text-xs font-semibold text-surface-300 transition-colors hover:border-surface-700 hover:text-white">
+              View public profile →
+            </Link>
+          )}
+        </div>
+      </div>
 
-              <div className="mb-2 px-3">
-                <span className="text-[11px] uppercase tracking-[0.04em] text-surface-500">Settings</span>
-              </div>
-              <div className="space-y-0.5">
-                {NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive(item) ? 'bg-white/5 text-white font-medium' : 'text-surface-400 hover:text-white hover:bg-white/[0.03]'
-                    }`}
-                  >
-                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
-                    </svg>
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              {canUseFeature('pro_subscription') && (
-                <>
-                  <div className="my-3 mx-3 border-t border-surface-800" />
-                  <div className="mb-2 px-3">
-                    <span className="text-[11px] uppercase tracking-[0.04em] text-surface-500">Pro</span>
-                  </div>
-                  <div className="space-y-0.5">
-                    {PRO_ITEMS.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
-                          pathname.startsWith(item.href) ? 'bg-white/5 text-white font-medium' : 'text-surface-400 hover:text-white hover:bg-white/[0.03]'
-                        }`}
-                      >
-                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
-                        </svg>
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              <div className="my-3 mx-3 border-t border-surface-800" />
-              <div className="space-y-0.5">
-                {BOTTOM_ITEMS.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      pathname.startsWith(item.href) ? 'bg-white/5 text-white font-medium' : 'text-surface-400 hover:text-white hover:bg-white/[0.03]'
-                    }`}
-                  >
-                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
-                    </svg>
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </nav>
-          </aside>
-
-          <main className="flex-1 min-w-0 pb-16">
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </main>
+      <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
+        <SubNav
+          id="settings"
+          title="Settings"
+          groups={[
+            { items: NAV_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: isActive(item) })) },
+            ...(canUseFeature('pro_subscription') ? [{ label: 'Pro', items: PRO_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: pathname.startsWith(item.href) })) }] : []),
+            { label: 'More', items: BOTTOM_ITEMS.map((item) => ({ label: item.label, href: item.href, icon: icon(item.icon), active: pathname.startsWith(item.href) })) },
+          ]}
+        />
+        <div className="min-w-0 flex-1 pb-16">
+          <ErrorBoundary>{children}</ErrorBoundary>
         </div>
       </div>
     </div>

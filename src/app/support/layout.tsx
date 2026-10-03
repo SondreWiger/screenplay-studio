@@ -1,3 +1,4 @@
+import { AppShell } from '@/components/shell/AppShell';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -17,5 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function SupportLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <AppShell>{children}</AppShell>;
 }

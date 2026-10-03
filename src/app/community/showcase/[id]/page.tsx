@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo } from '@/lib/utils';
 import { toast } from '@/components/ui';
 import { PRODUCTION_ROLES, LANGUAGE_OPTIONS } from '@/lib/types';
@@ -405,7 +404,7 @@ export default function ShowcaseDetailPage() {
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white">
       {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-white/10">
+      <nav className="sticky top-14 md:top-0 z-30 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-14">
           <div className="flex items-center gap-4">
             <Link href="/community/showcase" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
@@ -1311,18 +1310,6 @@ export default function ShowcaseDetailPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-10 px-6 mt-10">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-semibold text-white/50">Screenplay Studio</span>
-          <div className="flex items-center gap-6 text-sm text-white/50">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/community/showcase" className="hover:text-white transition-colors">Showcase</Link>
-            <Link href="/community" className="hover:text-white transition-colors">Community</Link>
-            <SiteVersion light />
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

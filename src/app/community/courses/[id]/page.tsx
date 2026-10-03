@@ -723,7 +723,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
   const isCompleted = enrollment?.completed_at != null;
 
   return (
-    <div className="flex h-[calc(100vh-56px)] overflow-hidden" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
+    <div className="flex h-[calc(100dvh-3.5rem)] overflow-hidden" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       {/* ─── Sidebar ─── */}
       <div className={cn(
         'flex-shrink-0 border-r border-white/[0.07] transition-[width] duration-200 overflow-hidden',

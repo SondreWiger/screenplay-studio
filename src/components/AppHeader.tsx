@@ -15,6 +15,7 @@ import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { useTranslation } from '@/components/TranslationProvider';
 import { createClient } from '@/lib/supabase/client';
 import logger from '@/lib/logger';
+import { ShellActions, useInShell } from '@/components/shell/ShellActions';
 
 // AppHeader — Shared navigation header for all top-level pages
 // Provides consistent navigation across dashboard, settings,
@@ -38,6 +39,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
   const { canUse: canUseFeature } = useFeatureAccess();
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
+  const inShell = useInShell();
 
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -91,6 +93,22 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
     if (link.match) return link.match.some(m => pathname.startsWith(m));
     return false;
   };
+
+  // Inside the app shell the sidebar/topbar already carry navigation; only
+  // page actions (and a back link for minimal headers) are forwarded.
+  if (inShell) {
+    if (!actions && !minimal) return null;
+    return (
+      <ShellActions>
+        {minimal && (
+          <Link href={backHref || '/dashboard'} className="rounded-xl border border-surface-800 px-3 py-1.5 text-xs font-semibold text-surface-300 hover:text-white">
+            ← {backLabel || 'Back'}
+          </Link>
+        )}
+        {actions}
+      </ShellActions>
+    );
+  }
 
   if (minimal) {
     return (

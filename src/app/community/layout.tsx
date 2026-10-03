@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { SupportButton } from '@/components/SupportButton';
 import { CommunityNav } from '@/components/CommunityNav';
+import { AppShell } from '@/components/shell/AppShell';
 
 const BASE_URL = () => process.env.NEXT_PUBLIC_SITE_URL || 'https://screenplaystudio.fun';
 
@@ -31,10 +32,10 @@ export const metadata: Metadata = {
 
 export default function CommunityLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <AppShell>
       <CommunityNav />
       {children}
       <SupportButton />
-    </>
+    </AppShell>
   );
 }

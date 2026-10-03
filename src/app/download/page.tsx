@@ -115,7 +115,7 @@ export default function DownloadPage() {
     <div className="min-h-screen relative bg-surface-950 text-white">
       {/* dot-grid texture */}
       <div
-        className="fixed inset-0 pointer-events-none z-0"
+        className="absolute inset-0 pointer-events-none z-0"
         style={{
           opacity: 0.032,
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
@@ -138,29 +138,7 @@ export default function DownloadPage() {
         </div>
       </div>
 
-      {/* NAV */}
-      <nav className="relative z-10 max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between border-b border-white/5">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <div className="w-7 h-7 flex items-center justify-center text-[11px] font-semibold text-white shrink-0 bg-brand-500">SS</div>
-          <div className="leading-none">
-            <div className="text-[11px] font-bold tracking-[-0.03em] text-white/90">SCREENPLAY STUDIO</div>
-          </div>
-        </Link>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/auth"
-            className="h-8 px-4 flex items-center text-[11px] font-medium uppercase tracking-[0.04em] text-white/60 hover:text-white transition-colors"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/download"
-            className="h-8 px-4 flex items-center text-[11px] font-medium uppercase tracking-[0.04em] text-white border border-brand-500 bg-brand-500/10 transition-colors"
-          >
-            Download
-          </Link>
-        </div>
-      </nav>
+
 
       {/* MAIN */}
       <main className="relative z-10 max-w-screen-xl mx-auto px-6 py-20">

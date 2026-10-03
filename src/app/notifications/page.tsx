@@ -6,8 +6,12 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotificationStore } from '@/lib/stores';
 import { NotificationRow } from '@/components/notifications/NotificationBell';
-import { Button, Card, LoadingPage } from '@/components/ui';
-import { AppHeader } from '@/components/AppHeader';
+import { LoadingPage } from '@/components/ui';
+import { ShellActions } from '@/components/shell/ShellActions';
+import { ActionButton, AdminPage, EmptyState, PageHeader, Reveal, StatGrid, dailySpark } from '@/components/kit';
+import { motion } from 'framer-motion';
+import { Bell, BellOff, CheckCheck, Settings2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useTranslation } from '@/components/TranslationProvider';
 import type { NotificationType } from '@/lib/types';
 
@@ -69,77 +73,102 @@ export default function NotificationsPage() {
   if (yesterdayItems.length) groups.push({ label: 'Yesterday', items: yesterdayItems });
   if (olderItems.length) groups.push({ label: 'Earlier', items: olderItems });
 
+  const weekAgo = Date.now() - 7 * 864e5;
+  const counts = {
+    total: notifications.length,
+    unread: notifications.filter((n) => !n.read).length,
+    today: notifications.filter((n) => isToday(n.created_at)).length,
+    week: notifications.filter((n) => new Date(n.created_at).getTime() >= weekAgo).length,
+  };
+  const typeCounts = new Map<string, number>();
+  notifications.forEach((n) => typeCounts.set(n.type, (typeCounts.get(n.type) ?? 0) + 1));
+  // Only offer filters that match something (plus All and the active one)
+  const filters = FILTER_OPTIONS.filter((o) => o.key === 'all' || o.key === filter || typeCounts.has(o.key));
+
   return (
     <div className="min-h-screen bg-surface-950">
-      <AppHeader actions={
-        <div className="flex items-center gap-2">
-          {unreadCount > 0 && <Button variant="ghost" size="sm" onClick={markAllAsRead}>{t('notifications.mark_all_read')}</Button>}
-          <Link href="/settings?tab=notifications" className="text-sm text-surface-400 hover:text-white px-2 py-1 rounded-lg hover:bg-surface-800 transition-colors">
-            Notification settings
-          </Link>
-        </div>
-      } />
+      <ShellActions>
+        <Link href="/settings?tab=notifications" className="inline-flex items-center gap-1.5 rounded-xl border border-surface-800 px-3 py-1.5 text-xs font-semibold text-surface-300 transition-colors hover:text-white">
+          <Settings2 className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Settings</span>
+        </Link>
+      </ShellActions>
 
-      <div className="max-w-3xl mx-auto px-6 py-6">
-        {/* Filters */}
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
-          {FILTER_OPTIONS.map((opt) => (
+      <AdminPage className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+        <PageHeader
+          icon={<Bell className="h-5 w-5" />}
+          title="Notifications"
+          description={counts.unread > 0 ? `${counts.unread} unread of ${counts.total}` : 'You\'re all caught up'}
+          actions={counts.unread > 0 && (
+            <ActionButton variant="primary" icon={<CheckCheck className="h-3.5 w-3.5" />} onClick={markAllAsRead}>
+              {t('notifications.mark_all_read')}
+            </ActionButton>
+          )}
+        />
+
+        <StatGrid
+          cols={4}
+          items={[
+            { label: 'Unread', value: counts.unread, tone: 'brand', onClick: () => setShowUnreadOnly(!showUnreadOnly), active: showUnreadOnly, hint: 'Show unread only' },
+            { label: 'Today', value: counts.today, tone: 'blue' },
+            { label: 'This week', value: counts.week, tone: 'green', spark: dailySpark(notifications, (n) => n.created_at, 14) },
+            { label: 'All time', value: counts.total, tone: 'neutral' },
+          ]}
+        />
+
+        <Reveal className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          {filters.map((opt) => (
             <button
               key={opt.key}
               onClick={() => setFilter(opt.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                filter === opt.key
-                  ? 'bg-brand-600 text-white'
-                  : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
-              }`}
+              className={cn(
+                'relative shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
+                filter === opt.key ? 'text-white' : 'text-surface-400 hover:text-white',
+              )}
             >
-              {opt.label}
+              {filter === opt.key && <motion.span layoutId="notif-filter" className="absolute inset-0 rounded-lg bg-brand-600/20 ring-1 ring-brand-500/40" />}
+              <span className="relative">
+                {opt.label}
+                {opt.key !== 'all' && typeCounts.get(opt.key) ? <span className="ml-1.5 text-surface-500">{typeCounts.get(opt.key)}</span> : null}
+              </span>
             </button>
           ))}
-          <div className="ml-auto shrink-0">
-            <button
-              onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                showUnreadOnly
-                  ? 'bg-brand-600 text-white'
-                  : 'bg-surface-800 text-surface-400 hover:bg-surface-700 hover:text-white'
-              }`}
-            >
-              Unread only
-            </button>
-          </div>
-        </div>
+          <button
+            onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+            className={cn(
+              'ml-auto shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors',
+              showUnreadOnly ? 'border-brand-500/40 bg-brand-600/20 text-white' : 'border-surface-800 text-surface-400 hover:text-white',
+            )}
+          >
+            Unread only
+          </button>
+        </Reveal>
 
-        {/* Content */}
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <span className="text-5xl mb-4">🔔</span>
-            <h2 className="text-lg font-semibold text-white mb-1">
-              {notifications.length === 0 ? t('notifications.no_notifications') : 'No matching notifications'}
-            </h2>
-            <p className="text-sm text-surface-400 max-w-xs">
-              {notifications.length === 0
-                ? "When someone comments on your posts, likes your scripts, or invites you to a project, you'll see it here."
-                : 'Try adjusting your filters to see more.'}
-            </p>
-          </div>
+          <EmptyState
+            icon={<BellOff className="h-8 w-8" />}
+            title={notifications.length === 0 ? t('notifications.no_notifications') : 'No matching notifications'}
+            description={notifications.length === 0
+              ? "When someone comments on your posts, likes your scripts, or invites you to a project, you'll see it here."
+              : 'Try adjusting your filters to see more.'}
+          />
         ) : (
           <div className="space-y-6">
             {groups.map((group) => (
-              <div key={group.label}>
-                <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em] mb-2 px-1">
-                  {group.label}
+              <Reveal key={group.label}>
+                <h3 className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-500">
+                  {group.label} <span className="text-surface-700">· {group.items.length}</span>
                 </h3>
-                <Card className="divide-y divide-surface-800 overflow-hidden">
+                <div className="divide-y divide-surface-800 overflow-hidden rounded-2xl border border-surface-800 bg-surface-900/60">
                   {group.items.map((n) => (
                     <NotificationRow key={n.id} notification={n} showDate={group.label === 'Earlier'} />
                   ))}
-                </Card>
-              </div>
+                </div>
+              </Reveal>
             ))}
           </div>
         )}
-      </div>
+      </AdminPage>
     </div>
   );
 }

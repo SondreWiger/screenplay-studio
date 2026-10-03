@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SiteVersion } from '@/components/SiteVersion';
 import { timeAgo } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { CommunityPost, CommunityCategory } from '@/lib/types';
@@ -292,28 +291,6 @@ export default function FreeScriptsPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-10 px-6 mt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/40">Screenplay Studio Community</span>
-          <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.04em] text-white/50">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/community" className="hover:text-white transition-colors">Feed</Link>
-            <Link href="/community/challenges" className="hover:text-white transition-colors">Challenges</Link>
-            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-            <SiteVersion />
-            <span className="text-white/10">·</span>
-            <a
-              href="https://development.northem.no/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
-            >
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

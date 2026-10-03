@@ -283,7 +283,7 @@ function CommunityChatUI({
   };
 
   return (
-    <div className="h-[calc(100vh-3rem)] md:h-screen flex flex-col bg-surface-950 -mx-4 -my-6">
+    <div className="h-[calc(100dvh-3.5rem)] flex flex-col bg-surface-950 -mx-4 -my-6">
 
       {/* ── Top bar ── */}
       <header className="border-b border-surface-800 px-4 py-2.5 flex items-center justify-between shrink-0">

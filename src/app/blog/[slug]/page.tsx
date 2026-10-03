@@ -2,12 +2,11 @@
 
 import { useEffect, useState, useRef, type ReactNode } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { BlogPost, BlogComment, Profile } from '@/lib/types';
 import { formatDate, timeAgo } from '@/lib/utils';
-import { SiteVersion } from '@/components/SiteVersion';
+import { ShellBack } from '@/components/shell/ShellActions';
 
 // Lightweight inline markdown renderer (links + bold, no deps)
 function renderInline(text: string): ReactNode[] {
@@ -33,14 +32,7 @@ function renderInline(text: string): ReactNode[] {
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const { user } = useAuth();
-  const router = useRouter();
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    try { sessionStorage.removeItem('ss_session_active'); } catch {}
-    await supabase.auth.signOut();
-    router.refresh();
-  };
   const [post, setPost] = useState<BlogPost | null>(null);
   const [comments, setComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -190,14 +182,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   if (!post) {
     return (
       <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
-        <nav className="backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="max-w-4xl mx-auto px-6 h-16 flex items-center">
-            <Link href="/blog" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Back to Blog
-            </Link>
-          </div>
-        </nav>
+        <ShellBack href="/blog" label="All posts" />
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-10 h-10 mb-6" style={{ background: '#FF5F1F' }} />
           <h1 className="text-3xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>POST NOT FOUND</h1>
@@ -215,43 +200,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/blog" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Blog
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
-              Home
-            </Link>
-            <Link href="/community" className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
-              Community
-            </Link>
-            {user ? (
-              <>
-                <button onClick={handleSignOut} className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
-                  Sign Out
-                </button>
-                <div className="flex items-center gap-2">
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || 'User avatar'} className="w-7 h-7 rounded-full" loading="lazy" />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white">
-                      {(user.full_name || user.email || '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <Link href={`/auth/login?redirect=/blog/${params.slug}`} className="text-xs uppercase tracking-[0.04em] text-white/40 hover:text-white transition-colors">
-                Sign In
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
+      <ShellBack href="/blog" label="All posts" />
 
       <div className="max-w-4xl mx-auto px-6 relative">
         <div className={hasToC ? 'lg:pr-72' : ''}>
@@ -469,30 +418,6 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgb(var(--surface-950))' }}>
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/blog" className="text-xs uppercase tracking-[0.04em] text-white/55 hover:text-white transition-colors">
-            ← Back to all posts
-          </Link>
-          <div className="flex items-center gap-6 text-xs font-mono text-white/30">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <a href="https://ko-fi.com/northemdevelopment" target="_blank" rel="noopener noreferrer" className="hover:text-brand-500 transition-colors">
-              Support
-            </a>
-            <SiteVersion />
-            <span className="text-white/10">·</span>
-            <a
-              href="https://development.northem.no/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
-            >
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

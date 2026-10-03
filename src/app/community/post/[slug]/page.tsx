@@ -6,13 +6,13 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SiteVersion } from '@/components/SiteVersion';
 import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import { formatDate, timeAgo, cn } from '@/lib/utils';
 import { sendNotification } from '@/lib/notifications';
 import { MentionTextarea } from '@/components/community/MentionTextarea';
 import { toast } from '@/components/ui';
 import type { CommunityPost, CommunityComment, CommunityDistro, CommunityCategory, ScriptProduction, Profile, SubCommunity } from '@/lib/types';
+import { ShellBack } from '@/components/shell/ShellActions';
 
 // Post Detail — view a community-shared script
 
@@ -325,14 +325,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
   if (!post) {
     return (
       <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
-        <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}>
-          <div className="max-w-4xl mx-auto px-6 h-14 flex items-center">
-            <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Community
-            </Link>
-          </div>
-        </nav>
+        <ShellBack href="/community" label="Feed" />
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-3xl font-bold text-white mb-2">Post not found</h1>
@@ -352,7 +345,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
 
       {/* Community context bar */}
       {subCommunity && (
-        <div className="sticky top-0 z-20 backdrop-blur-md" style={{ background: 'rgba(7,7,16,0.88)', borderBottom: `1px solid ${subCommunity.accent_color ?? '#FF5F1F'}28` }}>
+        <div className="sticky top-14 md:top-0 z-20 backdrop-blur-md" style={{ background: 'rgba(7,7,16,0.88)', borderBottom: `1px solid ${subCommunity.accent_color ?? '#FF5F1F'}28` }}>
           <div className="max-w-4xl mx-auto px-6 h-11 flex items-center gap-3">
             <Link
               href={`/community/c/${subCommunity.slug}`}
@@ -757,26 +750,6 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-[#faf9f7] border-t border-white/10 py-10 px-6 mt-10">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors">← Back to Community</Link>
-          <div className="flex items-center gap-6 text-sm text-white/40">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-            <SiteVersion light />
-            <span className="text-white/10">·</span>
-            <a
-              href="https://development.northem.no/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
-            >
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

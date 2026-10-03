@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { toast } from '@/components/ui';
 import { FeedbackSubmitModal } from '@/components/feedback/FeedbackSubmitModal';
-import { SiteVersion } from '@/components/SiteVersion';
 import { STATUS_META, TYPE_META } from './config';
 import type { FeedbackStatus, FeedbackType, FeedbackSort, FeedbackItem } from './config';
 
@@ -98,7 +97,7 @@ function FeedbackCard({ item, userVoted, onVote }: {
 }
 
 export default function FeedbackPage() {
-  const { user, signOut, initialized } = useAuthStore();
+  const { user, initialized } = useAuthStore();
   const router = useRouter();
 
   const [items, setItems] = useState<FeedbackItem[]>([]);
@@ -226,47 +225,7 @@ export default function FeedbackPage() {
   return (
     <div className="min-h-screen bg-surface-950 text-white">
 
-      {/* Nav */}
-      <nav
-        className="sticky top-0 z-30 backdrop-blur-xl"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}
-      >
-        <div className="max-w-screen-lg mx-auto px-6 flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors">
-              Screenplay Studio
-            </span>
-          </Link>
-          <div className="hidden sm:flex items-center gap-6">
-            <span className="text-[11px] uppercase tracking-[0.04em] font-medium" style={{ color: '#FF5F1F' }}>Feedback</span>
-            <Link href="/blog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Blog</Link>
-            <Link href="/community" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Community</Link>
-            {user ? (
-              <>
-                <Link href="/dashboard" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Dashboard</Link>
-                <button onClick={() => signOut()} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign Out</button>
-                <div className="flex items-center">
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-6 h-6 rounded-full" loading="lazy" />
-                  ) : (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: '#FF5F1F' }}>
-                      {(user.full_name || user.email || '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/login?redirect=/feedback" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign In</Link>
-                <Link href="/auth/register?redirect=/feedback" className="ss-btn-orange" style={{ padding: '0.35rem 0.9rem', fontSize: '10px' }}>Get Started</Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+
 
       {/* Header */}
       <div className="border-b border-surface-800">
@@ -420,42 +379,6 @@ export default function FeedbackPage() {
           <TestimonialsStrip />
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="py-10 px-6 mt-16" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-screen-lg mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Studio</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-6">
-            {[
-              { href: '/', label: 'Home' },
-              { href: '/feedback', label: 'Feedback' },
-              { href: '/changelog', label: 'Changelog' },
-              { href: 'https://ko-fi.com/northemdevelopment', label: 'Support', external: true },
-            ].map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                target={l.external ? '_blank' : undefined}
-                rel={l.external ? 'noopener noreferrer' : undefined}
-                className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors"
-              >
-                {l.label}
-              </Link>
-            ))}
-            <SiteVersion light />
-            <span className="text-white/10">·</span>
-            <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80">
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
 
       {showSubmit && (
         <FeedbackSubmitModal

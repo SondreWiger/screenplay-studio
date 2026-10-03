@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SiteVersion } from '@/components/SiteVersion';
 import { ScriptContentViewer } from '@/components/ScreenplayRenderer';
 import { CommunityScriptInfoPanel } from '@/components/community/CommunityScriptReader';
 import { formatDateTime, getChallengePhase, getPhaseLabel, timeUntil, timeAgo, cn } from '@/lib/utils';
@@ -698,27 +697,6 @@ export default function ChallengeDetailPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="border-t py-10 px-6 mt-10" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-semibold text-white/70">Screenplay Studio Community</span>
-          <div className="flex items-center gap-6 text-sm text-white/40">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/community" className="hover:text-white transition-colors">Feed</Link>
-            <Link href="/community/challenges" className="hover:text-white transition-colors">Challenges</Link>
-            <SiteVersion light />
-            <span className="text-white/10">·</span>
-            <a
-              href="https://development.northem.no/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
-            >
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

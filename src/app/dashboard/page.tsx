@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
-import { Button, Card, Badge, Avatar, LoadingPage, EmptyState, SkeletonCard, Modal, Input, Textarea, Select, KeyboardShortcuts, toast } from '@/components/ui';
+import { Button, Card, Badge, LoadingPage, EmptyState, SkeletonCard, Modal, Input, Textarea, Select, KeyboardShortcuts, toast } from '@/components/ui';
+import { motion } from 'framer-motion';
+import { ShellActions } from '@/components/shell/ShellActions';
+import { Pill, StatGrid, dailySpark } from '@/components/kit';
 import { pickToast, NEW_PROJECT } from '@/lib/funToasts';
 import { useCommandPalette } from '@/components/ui/CommandPalette';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SupportButton } from '@/components/SupportButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import dynamic from 'next/dynamic';
@@ -21,7 +23,6 @@ const GuidedTour = dynamic(() => import('@/components/GuidedTour').then(m => ({ 
 const OnboardingChecklist = dynamic(() => import('@/components/OnboardingChecklist').then(m => ({ default: m.OnboardingChecklist })), { ssr: false });
 import { useGamification } from '@/hooks/useGamification';
 import { Icon } from '@/components/ui/icons';
-import { useFeatureAccess } from '@/components/FeatureGate';
 import { useNotifications } from '@/hooks/useNotifications';
 import { timeAgo, cn } from '@/lib/utils';
 import { useRecentProjects } from '@/hooks/useRecentProjects';
@@ -36,7 +37,6 @@ import { MoreMenu, RenameDialog, DeleteProjectDialog, type MoreMenuItem } from '
 
 const WritingGoalWidget = dynamic(() => import('@/components/WritingGoalWidget').then(m => ({ default: m.WritingGoalWidget })), { ssr: false });
 
-const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || '';
 
 export default function DashboardPage() {
   return (
@@ -52,11 +52,9 @@ function DashboardContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
-  const { canUse: canUseFeature } = useFeatureAccess();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewProject, setShowNewProject] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -485,140 +483,23 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-surface-950" id="main-content">
-      {/* Top Bar */}
-      <header
-        className="sticky top-0 z-40 bg-surface-950/80 backdrop-blur-md border-b border-surface-800"
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
-              <span className="font-semibold text-white text-sm" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <h1 className="hidden sm:block whitespace-nowrap text-sm sm:text-base font-semibold text-white uppercase" style={{ letterSpacing: '-0.02em' }}>Screenplay Studio</h1>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link href="/blog" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
-              Blog
-            </Link>
-            <Link href="/idea-boards" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
-              Ideas
-            </Link>
-            <Link href="/people" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
-              People
-            </Link>
-            <Link href="/about" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
-              About
-            </Link>
-            <Link href="/quotes" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden xl:inline">
-              Quotes
-            </Link>
-            {user?.show_community !== false && canUseFeature('community') && (
-              <Link href="/community" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
-                Community
-              </Link>
-            )}
-            {companyMemberships.length > 0 && (
-              <Link href="/company" className="text-xs text-surface-500 hover:text-surface-300 transition-colors hidden lg:inline">
-                Company
-              </Link>
-            )}
-            {(user?.id === ADMIN_UID || user?.role === 'moderator' || user?.role === 'admin') && (
-              <Link href="/admin" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${user?.role === 'admin' || user?.id === ADMIN_UID ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20 border-red-500/20' : 'text-green-400 bg-green-500/10 hover:bg-green-500/20 border-green-500/20'}`}>
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                {user?.role === 'admin' || user?.id === ADMIN_UID ? 'Admin' : 'Mod Panel'}
-              </Link>
-            )}
-            <Link href="/dashboard/import" title="Import a script" className="inline-flex items-center gap-2 px-3 md:px-4 py-2 text-sm font-medium rounded-xl border border-surface-700 bg-surface-800 text-surface-50 hover:bg-surface-700 hover:border-surface-600 shadow-sm transition-all duration-300 ease-spring whitespace-nowrap">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-              </svg>
-              <span className="hidden md:inline">Import</span>
-            </Link>
-            <Button onClick={() => setShowNewProject(true)} className="whitespace-nowrap" title="New project (⌘N)">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-              </svg>
-              <span className="hidden sm:inline">New Project</span>
-            </Button>
-            <Link href="/messages" className="p-2 rounded-lg text-surface-400 hover:text-white hover:bg-white/5 transition-colors relative" title="Messages">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-            </Link>
-            <NotificationBell />
-            {/* User avatar with dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 p-1 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                <Avatar src={user?.avatar_url} name={user?.full_name} size="md" />
-              </button>
-              {showUserMenu && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-surface-800 bg-surface-900/90 backdrop-blur-md shadow-lg shadow-black/20 py-1.5 animate-scale-in origin-top-right">
-                    <div className="px-4 py-2.5 border-b border-surface-800">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-white truncate">{user?.display_name || user?.full_name || 'User'}</p>
-                        {user?.is_pro && <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 font-semibold">PRO</span>}
-                      </div>
-                      <p className="text-[11px] text-surface-500 truncate">{user?.email}</p>
-                    </div>
-                    {!user?.is_pro && (
-                      <Link href="/settings" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
-                        onClick={() => setShowUserMenu(false)}>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        Settings
-                      </Link>
-                    )}
-                    {user?.is_pro && canUseFeature('pro_subscription') && (
-                      <Link href="/settings/billing" className="flex items-center gap-2.5 px-4 py-2 text-xs text-amber-400 hover:bg-amber-500/10 transition-colors"
-                        onClick={() => setShowUserMenu(false)}>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l3.057 7.811L12 7.5l3.943 3.311L19 3M5 3l.783 4M19 3l-.783 4M5.783 7L3 21h18l-2.783-14M5.783 7h12.434" /></svg>
-                        Pro &amp; Billing
-                      </Link>
-                    )}
-                    {user?.is_pro && (
-                      <Link href="/settings" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
-                        onClick={() => setShowUserMenu(false)}>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        Settings
-                      </Link>
-                    )}
-                    <Link href="/notifications" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
-                      onClick={() => setShowUserMenu(false)}>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
-                      Notifications
-                    </Link>
-                    {user?.show_community === false && canUseFeature('community') && (
-                      <Link href="/community" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
-                        onClick={() => setShowUserMenu(false)}>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        Community
-                      </Link>
-                    )}
-                    {user?.company_id && (
-                      <Link href="/company" className="flex items-center gap-2.5 px-4 py-2 text-xs text-surface-300 hover:bg-white/5 hover:text-white transition-colors"
-                        onClick={() => setShowUserMenu(false)}>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        Company
-                      </Link>
-                    )}
-                    <div className="border-t border-surface-800 mt-1.5 pt-1.5">
-                      <button
-                        onClick={() => useAuthStore.getState().signOut().then(() => router.replace('/auth/login'))}
-                        className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <ShellActions>
+        <button
+          onClick={() => setShowShortcuts(true)}
+          className="hidden items-center rounded-lg px-1.5 py-1 text-surface-500 transition-colors hover:text-white lg:flex"
+          title="Keyboard shortcuts"
+        >
+          <kbd className="rounded border border-surface-700 bg-surface-800 px-1.5 py-0.5 font-mono text-[11px]">⌘/</kbd>
+        </button>
+        <Link href="/dashboard/import" title="Import a script" className="inline-flex items-center gap-1.5 rounded-xl border border-surface-800 px-3 py-1.5 text-xs font-semibold text-surface-300 transition-colors hover:text-white">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+          <span className="hidden sm:inline">Import</span>
+        </Link>
+        <button onClick={() => setShowNewProject(true)} title="New project (⌘N)" className="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-brand-600/20 transition-colors hover:bg-brand-500">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+          <span className="hidden sm:inline">New project</span>
+        </button>
+      </ShellActions>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Pending Company Invitations Banner */}
@@ -645,41 +526,41 @@ function DashboardContent() {
             ))}
           </div>
         )}
-        {/* Welcome + Stats row */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="ss-label">{t('dashboard.title')}</span>
-            </div>
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2 flex-wrap" style={{ letterSpacing: '-0.03em' }}>
-              {/* "Welcome back" only once there's something to come back to */}
-              {t(!loading && projects.length === 0 ? 'dashboard.welcome' : 'dashboard.welcome_back')}{user?.full_name ? `, ${user.full_name.split(' ')[0].toUpperCase()}` : ''}
-              {user?.is_pro && <span className="text-xs px-2 py-0.5 font-semibold uppercase tracking-[0.04em]" style={{ background: 'rgba(255,95,31,0.12)', color: '#FF5F1F', border: '1px solid rgba(255,95,31,0.2)' }}>Pro</span>}
-              <StreakBadge />
-            </h2>
-            <p className="mt-1 text-sm text-white/30">{t('dashboard.your_projects')}</p>
-          </div>
-          {/* Inline Stats */}
-          {(() => {
-            const allP = [...projects, ...Object.values(companyProjects).flat()];
-            return (
-              <div className="flex flex-wrap items-center gap-3 sm:gap-6">
-                {[
-                  { label: t('dashboard.projects'), value: allP.length },
-                  { label: t('dashboard.in_dev'), value: allP.filter(p => p.status === 'development').length },
-                  { label: t('dashboard.in_prod'), value: allP.filter(p => p.status === 'production').length },
-                  { label: t('dashboard.done'), value: allP.filter(p => p.status === 'completed').length },
-                ].map((s) => (
-                  <div key={s.label} className="text-center">
-                    <p className="text-xl font-bold text-white ss-stat-num">{s.value}</p>
-                    <p className="text-[11px] text-white/55 uppercase tracking-[0.04em]">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-            );
-          })()}
+        {/* Welcome */}
+        <div className="relative mb-5 overflow-hidden rounded-3xl border border-surface-800 bg-gradient-to-br from-surface-900 via-surface-900/80 to-brand-950/40 p-6 md:p-8">
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-500/10 blur-3xl"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <p className="relative mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-400">{t('dashboard.title')}</p>
+          <h1 className="relative flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            {/* "Welcome back" only once there's something to come back to */}
+            {t(!loading && projects.length === 0 ? 'dashboard.welcome' : 'dashboard.welcome_back')}{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}
+            {user?.is_pro && <Pill tone="amber">Pro</Pill>}
+            <StreakBadge />
+          </h1>
+          <p className="relative mt-1 text-sm text-surface-400">{t('dashboard.your_projects')}</p>
         </div>
+        {(() => {
+          const allP = [...projects, ...Object.values(companyProjects).flat()];
+          const updatedThisWeek = allP.filter((p) => Date.now() - Date.parse(p.updated_at) < 7 * 86_400_000).length;
+          return (
+            <div className="mb-8">
+              <StatGrid
+                cols={5}
+                items={[
+                  { label: t('dashboard.projects'), value: allP.length, tone: 'brand' },
+                  { label: t('dashboard.in_dev'), value: allP.filter((p) => p.status === 'development').length, tone: 'violet' },
+                  { label: t('dashboard.in_prod'), value: allP.filter((p) => p.status === 'production').length, tone: 'green' },
+                  { label: t('dashboard.done'), value: allP.filter((p) => p.status === 'completed').length, tone: 'blue' },
+                  { label: 'Edited this week', value: updatedThisWeek, tone: 'aqua', spark: dailySpark(allP, (p) => p.updated_at) },
+                ]}
+              />
+            </div>
+          );
+        })()}
 
         {/* Continue Writing CTA */}
         {lastProject && (
@@ -1247,17 +1128,6 @@ function DashboardContent() {
 
       {/* Keyboard Shortcuts */}
       <KeyboardShortcuts isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
-
-      {/* Keyboard hint */}
-      <div className="fixed bottom-4 left-4 z-20">
-        <button
-          onClick={() => setShowShortcuts(true)}
-          className="text-[11px] text-surface-600 hover:text-surface-400 transition-colors flex items-center gap-1.5"
-        >
-          <kbd className="px-1.5 py-0.5 text-[11px] font-mono bg-surface-800 border border-surface-700 rounded shadow-sm">⌘/</kbd>
-          <span>shortcuts</span>
-        </button>
-      </div>
 
       <SupportButton />
 

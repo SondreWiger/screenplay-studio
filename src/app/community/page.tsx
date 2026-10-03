@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/components/TranslationProvider';
-import { SiteVersion } from '@/components/SiteVersion';
 import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, timeUntil } from '@/lib/utils';
 import type { CommunityPost, CommunityCategory, CommunityChallenge, SubCommunity } from '@/lib/types';
 
@@ -456,7 +455,7 @@ export default function CommunityPage() {
 
       {/* Mobile category bar */}
       <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-2 z-20"
+        className="lg:hidden sticky bottom-0 px-4 py-2 z-20"
         style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgb(var(--surface-950))' }}
       >
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
@@ -484,25 +483,6 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-10 px-6 mt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] text-white/50 uppercase tracking-[0.04em]">Screenplay Studio Community</span>
-          </div>
-          <div className="flex items-center gap-6">
-            {['/', '/blog', '/community/challenges'].map((href, i) => (
-              <Link key={href} href={href} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">
-                {['Home', 'Blog', 'Challenges'][i]}
-              </Link>
-            ))}
-            <SiteVersion light />
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

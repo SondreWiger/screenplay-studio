@@ -57,7 +57,7 @@ export default function ToolsPage() {
   return (
     <div className="min-h-screen relative" style={{ background: 'rgb(var(--surface-950))', color: '#fff' }}>
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.032]"
+        className="pointer-events-none absolute inset-0 opacity-[0.032]"
         style={{
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
           backgroundSize: '24px 24px',
@@ -76,34 +76,7 @@ export default function ToolsPage() {
         </div>
       </div>
 
-      <nav className="relative z-10 border-b border-white/5">
-        <div className="max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="group flex items-center gap-2.5">
-            <div className="w-7 h-7 flex items-center justify-center bg-brand-500 text-[11px] font-semibold text-white shrink-0">
-              SS
-            </div>
-            <div className="leading-none">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white/80 leading-none">SCREENPLAY</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.04em] leading-none text-brand-500">STUDIO</p>
-            </div>
-          </Link>
-          <div className="flex items-center gap-5">
-            <Link href="/tools" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/60 hover:text-white transition-colors">
-              Tools
-            </Link>
-            <Link href="/dashboard" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/70 transition-colors">
-              Dashboard
-            </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-white bg-brand-500 transition-all duration-150 hover:-translate-y-px"
-            >
-              Open App
-              <span className="transition-transform duration-150">→</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+
 
       <main className="relative z-10">
         <section className="max-w-screen-xl mx-auto px-6 pt-20 pb-16">
@@ -155,20 +128,6 @@ export default function ToolsPage() {
         ))}
       </main>
 
-      <footer className="relative z-10 border-t border-white/5">
-        <div className="max-w-screen-xl mx-auto px-6 py-8 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 flex items-center justify-center bg-brand-500">
-              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <Label>SCREENPLAY STUDIO</Label>
-          </div>
-          <div className="flex items-center gap-5">
-            <Link href="/" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/50 transition-colors">Home</Link>
-            <Link href="/dashboard" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/50 transition-colors">Dashboard</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

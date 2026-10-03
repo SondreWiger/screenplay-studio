@@ -14,6 +14,7 @@ import { PRODUCTION_ROLES } from '@/lib/types';
 import { BadgeDisplay } from '@/components/BadgeDisplay';
 import ActivityGrid from '@/components/activity/ActivityGrid';
 import { fetchUserWorkLogs, calculateStreak, aggregateLogsByDate } from '@/lib/work-tracker';
+import { ShellBack } from '@/components/shell/ShellActions';
 
 // Public User Profile Page — /u/<username>
 
@@ -305,25 +306,7 @@ export default function UserProfilePage({ params }: { params: { username: string
 
   return (
     <div className="min-h-screen text-white bg-surface-950">
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: 'rgba(7,7,16,0.92)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/community" className="text-sm text-white/40 hover:text-white transition-colors flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Community
-          </Link>
-          <div className="flex items-center gap-3">
-            {currentUser ? (
-              <>
-                <Link href="/dashboard" className="text-xs text-white/40 hover:text-white transition-colors">Dashboard</Link>
-                <Link href="/messages" className="text-xs text-white/40 hover:text-white transition-colors">Messages</Link>
-              </>
-            ) : (
-              <Link href="/auth/login" className="text-sm text-white/40 hover:text-white transition-colors">Sign In</Link>
-            )}
-          </div>
-        </div>
-      </nav>
+      <ShellBack href="/people" label="People" />
 
       {/* Hero banner — larger, more dramatic */}
       <div className={`relative h-56 md:h-72 bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
@@ -912,29 +895,6 @@ export default function UserProfilePage({ params }: { params: { username: string
 
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-10 px-6 mt-20">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm text-white/30">
-            {displayName}&apos;s profile on{' '}
-            <Link href="/" className="text-white/50 hover:text-white font-medium transition-colors">Screenplay Studio</Link>
-          </span>
-          <div className="flex items-center gap-6 text-sm text-white/30">
-            <Link href="/community" className="hover:text-white transition-colors">Community</Link>
-            <Link href="/community/showcase" className="hover:text-white transition-colors">Showcase</Link>
-            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-            <span className="text-white/10">·</span>
-            <a
-              href="https://development.northem.no/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] transition-colors text-brand-500/40 hover:text-brand-500/80"
-            >
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

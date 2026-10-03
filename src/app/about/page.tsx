@@ -83,32 +83,13 @@ export default async function AboutPage() {
 
       {/* dot-grid texture */}
       <div
-        className="fixed inset-0 pointer-events-none z-0"
+        className="absolute inset-0 pointer-events-none z-0"
         style={{
           opacity: 0.032,
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
           backgroundSize: '24px 24px',
         }}
       />
-
-      {/* Top bar */}
-      <div className="relative z-10 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-        <div className="max-w-screen-lg mx-auto px-6 h-12 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-semibold text-white text-xs" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-xs font-semibold text-white uppercase tracking-tight hidden sm:inline">Screenplay Studio</span>
-          </Link>
-          <div className="flex items-center gap-5">
-            <Link href="/" className="text-xs text-white/35 hover:text-white/70 transition-colors">Home</Link>
-            <Link href="/blog" className="text-xs text-white/35 hover:text-white/70 transition-colors">Blog</Link>
-            <Link href="/dashboard" className="text-xs px-3 py-1.5 font-semibold transition-colors" style={{ background: ORANGE, color: '#fff' }}>
-              Open App
-            </Link>
-          </div>
-        </div>
-      </div>
 
       <main className="relative z-10">
 

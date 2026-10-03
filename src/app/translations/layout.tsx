@@ -1,12 +1,5 @@
-'use client';
-
-import { AppHeader } from '@/components/AppHeader';
+import { AppShell } from '@/components/shell/AppShell';
 
 export default function TranslationsLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <AppHeader />
-      {children}
-    </>
-  );
+  return <AppShell>{children}</AppShell>;
 }

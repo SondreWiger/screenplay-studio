@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { AppHeader } from '@/components/AppHeader';
+import { StatGrid, dailySpark } from '@/components/kit';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
@@ -255,6 +256,20 @@ export default function PeoplePage() {
           </button>
         </div>
       </div>
+
+      {people.length > 0 && (
+        <div className="mb-6">
+          <StatGrid
+            cols={4}
+            items={[
+              { label: 'In your book', value: people.length, tone: 'brand', spark: dailySpark(people, (p) => p.created_at, 30) },
+              { label: 'First call', value: people.filter((p) => p.is_favourite).length, tone: 'amber' },
+              { label: 'Crew', value: people.filter((p) => p.category === 'crew').length, tone: 'blue' },
+              { label: 'Talent', value: people.filter((p) => p.category === 'talent').length, tone: 'violet' },
+            ]}
+          />
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 mb-5">

@@ -501,7 +501,7 @@ export default function CreateCoursePage() {
       />
 
       {/* Nav */}
-      <nav className="sticky top-14 z-30 backdrop-blur-xl border-b border-white/[0.07]" style={{ background: 'rgba(7,7,16,0.95)' }}>
+      <nav className="sticky top-14 z-30 backdrop-blur-xl border-b border-white/[0.07] md:top-0" style={{ background: 'rgba(7,7,16,0.95)' }}>
         <div className="max-w-5xl mx-auto px-6 flex items-center gap-4 h-14">
           <Link href="/community/courses" className="text-[11px] text-white/55 hover:text-white/60 transition-colors uppercase tracking-[0.04em]">← Courses</Link>
           <span className="text-white/10">|</span>

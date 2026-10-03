@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/stores';
 import { cn, timeAgo } from '@/lib/utils';
-import { SiteVersion } from '@/components/SiteVersion';
 import { toast } from '@/components/ui';
 import { X, MessageSquare, ChevronUp, User, Star } from 'lucide-react';
 
@@ -240,7 +239,6 @@ function TestimonialModal({
 export default function TestimonialsPage() {
   // useAuth() initializes the auth store — without this call, user stays null forever
   const { user, loading: authLoading } = useAuth();
-  const { signOut } = useAuthStore();
   const [items, setItems] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStar, setFilterStar] = useState<number | null>(null);
@@ -280,49 +278,7 @@ export default function TestimonialsPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'rgb(var(--surface-950))', color: '#fff' }}>
 
-      {/* ── Nav ─────────────────────────────────────────────────────────── */}
-      <nav
-        className="sticky top-0 z-30 backdrop-blur-xl"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(7,7,16,0.9)' }}
-      >
-        <div className="max-w-screen-xl mx-auto px-6 flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: ORANGE }}>
-              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] group-hover:text-white/70 transition-colors">
-              Screenplay Studio
-            </span>
-          </Link>
-          <div className="hidden sm:flex items-center gap-6">
-            <Link href="/testimonials" className="text-[11px] uppercase tracking-[0.04em] font-medium" style={{ color: ORANGE }}>Reviews</Link>
-            <Link href="/feedback" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Feedback</Link>
-            <Link href="/changelog" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Changelog</Link>
-            {user ? (
-              <>
-                <Link href="/dashboard" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Dashboard</Link>
-                <button onClick={() => signOut()} className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign Out</button>
-                <div className="flex items-center">
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="w-6 h-6 rounded-full" loading="lazy" />
-                  ) : (
-                    <div className="w-6 h-6 flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: ORANGE }}>
-                      {(user.full_name || user.email || '?')[0].toUpperCase()}
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/login" className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors">Sign In</Link>
-                <Link href="/auth/register" className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white px-4 py-2" style={{ background: ORANGE }}>
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+
 
       {/* ── Hero / Stats ─────────────────────────────────────────────────── */}
       <section className="max-w-screen-xl mx-auto px-6 pt-20 pb-16 w-full">
@@ -587,43 +543,6 @@ export default function TestimonialsPage() {
           </div>
         )}
       </main>
-
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 flex items-center justify-center" style={{ background: ORANGE }}>
-              <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
-            </div>
-            <span className="text-[11px] text-white/55 uppercase tracking-[0.04em]">Screenplay Studio</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-6">
-            {[
-              { href: '/', label: 'Home' },
-              { href: '/testimonials', label: 'Reviews' },
-              { href: '/feedback', label: 'Feedback' },
-              { href: '/changelog', label: 'Changelog' },
-              { href: 'https://ko-fi.com/northemdevelopment', label: 'Support', external: true },
-            ].map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                target={(l as any).external ? '_blank' : undefined}
-                rel={(l as any).external ? 'noopener noreferrer' : undefined}
-                className="text-[11px] text-white/55 uppercase tracking-[0.04em] hover:text-white/60 transition-colors"
-              >
-                {l.label}
-              </Link>
-            ))}
-            <SiteVersion light />
-            <span className="text-white/10">·</span>
-            <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.04em] text-brand-500/40 hover:text-brand-500/80 transition-colors">
-              Northem ♥
-            </a>
-          </div>
-        </div>
-      </footer>
 
       {/* ── Detail modal ─────────────────────────────────────────────────── */}
       {selected && (

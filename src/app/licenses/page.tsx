@@ -220,22 +220,10 @@ const categories = [
 export default function LicensesPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--surface-950))' }}>
-      {/* Header */}
-      <div className="border-b border-surface-800/60 sticky top-0 z-10 backdrop-blur-xl" style={{ backgroundColor: 'rgba(7,7,16,0.92)' }}>
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/" className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center text-xs font-semibold text-white shrink-0">
-            SS
-          </Link>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base font-bold text-white">Content Licenses Explained</h1>
-            <p className="text-xs text-surface-500 hidden sm:block">A plain-English guide to script and creative work licensing</p>
-          </div>
-          <Link href="/dashboard" className="text-xs text-surface-500 hover:text-white transition-colors">
-            ← Back to app
-          </Link>
-        </div>
+      <div className="mx-auto max-w-4xl px-4 pt-10">
+        <h1 className="text-2xl font-bold tracking-tight text-white">Content Licenses Explained</h1>
+        <p className="mt-1 text-sm text-surface-400">A plain-English guide to script and creative work licensing</p>
       </div>
-
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-12">
         {/* Intro */}
         <div>
