@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDate, getChallengePhase, getPhaseLabel, getPhaseColor, timeUntil } from '@/lib/utils';
 import type { CommunityChallenge } from '@/lib/types';
+import { CommunityTitle } from '@/components/community/CommunityTitle';
 
 export default function ChallengesPage() {
   const { user } = useAuth();
@@ -51,10 +52,15 @@ export default function ChallengesPage() {
       <div className="max-w-5xl mx-auto px-6 py-10">
         {/* Page header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>WRITING CHALLENGES</h1>
-          <p className="text-white/60 mt-2 max-w-xl text-sm">
-            Weekly challenges to sharpen your craft. A new theme drops every Monday — submit your script, then vote for the winner.
-          </p>
+          <CommunityTitle
+            eyebrow="Challenges"
+            title="Writing challenges"
+            description="Weekly challenges to sharpen your craft. A new theme drops every Monday — submit your script, then vote for the winner."
+            stats={loading ? undefined : [
+              { label: 'past challenges', value: pastChallenges.length },
+              { label: 'upcoming', value: upcomingChallenges.length },
+            ]}
+          />
         </div>
 
         {loading ? (

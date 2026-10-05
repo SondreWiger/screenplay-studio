@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import type { Course, CourseEnrollment, CourseDifficulty } from '@/lib/types';
+import { CommunityTitle } from '@/components/community/CommunityTitle';
 
 // Community Courses — catalog page
 
@@ -225,18 +226,11 @@ export default function CoursesPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div>
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="text-[11px] font-medium text-brand-500 uppercase tracking-[0.04em]">Community</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
-              SCREENWRITING<br />COURSES
-            </h1>
-            <p className="text-white/50 text-sm mt-2 max-w-md">
-              Structured learning paths for every stage — from strict formatting rules to unlocking your creative voice.
-            </p>
-          </div>
+          <CommunityTitle
+            eyebrow="Courses"
+            title={<>Screenwriting<br />courses</>}
+            description="Structured learning paths for every stage — from strict formatting rules to unlocking your creative voice."
+          />
 
           {/* User stats */}
           {user && enrolledCount > 0 && (
@@ -278,13 +272,6 @@ export default function CoursesPage() {
             ))}
           </div>
 
-          {canCreate && (
-            <Link href="/community/courses/create"
-              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-[0.04em] bg-brand-500/10 text-brand-500 border border-brand-500/30 rounded-xl hover:bg-brand-500/20 transition-colors">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              Create Course
-            </Link>
-          )}
         </div>
 
         {loading ? (

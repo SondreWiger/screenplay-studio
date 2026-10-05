@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { timeAgo } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { CommunityPost, CommunityCategory } from '@/lib/types';
+import { CommunityTitle } from '@/components/community/CommunityTitle';
 
 type EnrichedPost = CommunityPost & { _productionCount?: number };
 
@@ -104,12 +105,11 @@ export default function FreeScriptsPage() {
       <div className="max-w-6xl mx-auto px-6 py-10">
         {/* Page header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>FREE-TO-USE SCRIPTS</h1>
-            <p className="text-white/60 mt-1 max-w-xl text-sm">
-              Scripts shared by writers for filmmakers to produce. Read, adapt, and create — always credit the author.
-            </p>
-          </div>
+          <CommunityTitle
+            eyebrow="Free scripts"
+            title="Free-to-use scripts"
+            description="Scripts shared by writers for filmmakers to produce. Read, adapt, and create — always credit the author."
+          />
           <div className="flex items-center gap-2">
             {(['newest', 'popular'] as const).map((s) => (
               <button

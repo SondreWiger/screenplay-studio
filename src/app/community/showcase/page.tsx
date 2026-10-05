@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { timeAgo } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/types';
 import type { Project } from '@/lib/types';
+import { CommunityTitle } from '@/components/community/CommunityTitle';
 
 // Finished Projects — IMDB-style gallery of showcased productions
 
@@ -94,22 +95,13 @@ export default function ShowcasePage() {
 
 
       {/* Hero */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="text-[11px] uppercase tracking-[0.04em] mb-3" style={{ color: '#FF5F1F' }}>
-            <span className="inline-block w-3 h-px bg-brand-500 mr-2 align-middle" />Community Showcase
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
-            FINISHED PROJECTS
-          </h1>
-          <p className="text-lg text-white/60 mt-3 max-w-xl text-sm">
-            Watch completed productions from the Screenplay Studio community. From short films to features — see what others have created.
-          </p>
-          <div className="flex items-center gap-3 mt-6 text-xs font-mono text-white/50">
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5" style={{ background: '#FF5F1F' }} />
-              {projects.length} projects
-            </span>
-          </div>
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-8">
+          <CommunityTitle
+            eyebrow="Showcase"
+            title="Finished projects"
+            description="Watch completed productions from the Screenplay Studio community. From short films to features — see what others have created."
+            stats={[{ label: 'projects', value: projects.length }]}
+          />
       </div>
 
       {/* Filters */}

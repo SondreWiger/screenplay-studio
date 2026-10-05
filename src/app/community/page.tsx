@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/components/TranslationProvider';
 import { formatDate, timeAgo, getChallengePhase, getPhaseLabel, timeUntil } from '@/lib/utils';
 import type { CommunityPost, CommunityCategory, CommunityChallenge, SubCommunity } from '@/lib/types';
+import { CommunityTitle } from '@/components/community/CommunityTitle';
 
 export default function CommunityPage() {
   const { user } = useAuth();
@@ -187,12 +188,7 @@ export default function CommunityPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-              <span className="ss-label">{t('community.title')}</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>{t('community.scripts')}</h1>
-            <p className="text-white/50 text-sm mt-1">{t('community.discover')}</p>
+            <CommunityTitle eyebrow={t('community.title')} title={t('community.scripts')} description={t('community.discover')} />
             {user && (
               <div className="flex items-center gap-1 mt-3 p-0.5 rounded-lg w-fit" style={{ background: 'rgba(255,255,255,0.05)' }}>
                 {(['all', 'yours'] as const).map(m => (

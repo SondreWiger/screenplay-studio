@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { SubCommunity } from '@/lib/types';
+import { CommunityTitle } from '@/components/community/CommunityTitle';
 
 export default function BrowseCommunitiesPage() {
   const { user } = useAuth();
@@ -69,13 +70,7 @@ export default function BrowseCommunitiesPage() {
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <p className="text-[11px] text-brand-500 uppercase tracking-[0.04em] mb-1">Communities</p>
-            <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
-              BROWSE COMMUNITIES
-            </h1>
-            <p className="text-white/40 text-sm mt-1">Find your people. Create your space.</p>
-          </div>
+          <CommunityTitle eyebrow="Communities" title="Browse communities" description="Find your people. Create your space." />
           {user && (
             <Link
               href="/community/c/create"
