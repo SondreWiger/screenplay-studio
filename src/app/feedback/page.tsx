@@ -7,17 +7,18 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn, timeAgo } from '@/lib/utils';
 import {
-  ChevronUp, MessageSquare, Search, Plus,
+  ChevronUp, Megaphone, MessageSquare, Search, Plus,
   TrendingUp, Clock,
   Sparkles,
   ArrowRight, Star,
 } from 'lucide-react';
 import { toast } from '@/components/ui';
+import { ShellActions } from '@/components/shell/ShellActions';
+import { ActionButton, AdminPage, PageHeader, StatGrid } from '@/components/kit';
 import { FeedbackSubmitModal } from '@/components/feedback/FeedbackSubmitModal';
 import { STATUS_META, TYPE_META } from './config';
 import type { FeedbackStatus, FeedbackType, FeedbackSort, FeedbackItem } from './config';
 
-const ORANGE = '#FF5F1F';
 
 function StatusBadge({ status }: { status: FeedbackStatus }) {
   const m = STATUS_META[status];
@@ -227,47 +228,26 @@ export default function FeedbackPage() {
 
 
 
-      {/* Header */}
-      <div className="border-b border-surface-800">
-        <div className="max-w-screen-lg mx-auto px-6 py-10">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Link href="/" className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 hover:text-white transition-colors">
-                  Screenplay Studio
-                </Link>
-                <span className="text-surface-700">/</span>
-                <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-brand-500">Feedback</span>
-              </div>
-              <h1 className="text-4xl font-bold tracking-tight mb-2">Feedback & Roadmap</h1>
-              <p className="text-surface-400 text-sm max-w-xl leading-relaxed">
-                Report bugs, request features, and follow what&apos;s being built. Your input shapes the product directly.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowSubmit(true)}
-              className="flex items-center gap-2 px-5 py-3 font-bold text-sm text-white transition-all hover:-translate-y-px"
-              style={{ background: ORANGE }}
-            >
-              <Plus size={16} /> Submit Feedback
-            </button>
-          </div>
+      <ShellActions>
+        <ActionButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowSubmit(true)}>Submit feedback</ActionButton>
+      </ShellActions>
 
-          {/* Stats strip */}
-          <div className="mt-8 grid grid-cols-3 gap-3 max-w-sm">
-            {[
-              { label: 'Open',        val: stats.open,         color: '#3b82f6' },
-              { label: 'In Progress', val: stats.in_progress,  color: '#f59e0b' },
-              { label: 'Fixed (30d)', val: stats.resolved_30d, color: '#22c55e' },
-            ].map(s => (
-              <div key={s.label} className="rounded-lg border border-surface-800 bg-surface-900 px-3 py-2.5 text-center">
-                <div className="text-2xl font-bold" style={{ color: s.color }}>{s.val}</div>
-                <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-surface-500 mt-0.5">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <AdminPage className="max-w-screen-lg mx-auto px-6 pt-8">
+        <PageHeader
+          icon={<Megaphone className="h-5 w-5" />}
+          title="Feedback & Roadmap"
+          description="Report bugs, request features, and follow what's being built. Your input shapes the product directly."
+        />
+        <StatGrid
+          cols={4}
+          items={[
+            { label: 'Open', value: stats.open, tone: 'blue', onClick: () => setStatusFilter(statusFilter === 'open' ? 'active' : 'open'), active: statusFilter === 'open', hint: 'Show open items' },
+            { label: 'In progress', value: stats.in_progress, tone: 'amber', onClick: () => setStatusFilter(statusFilter === 'in_progress' ? 'active' : 'in_progress'), active: statusFilter === 'in_progress', hint: 'Show items in progress' },
+            { label: 'Fixed in 30 days', value: stats.resolved_30d, tone: 'green', onClick: () => setStatusFilter(statusFilter === 'resolved' ? 'active' : 'resolved'), active: statusFilter === 'resolved', hint: 'Show resolved items' },
+            { label: 'Matching now', value: total, tone: 'brand' },
+          ]}
+        />
+      </AdminPage>
 
       <div className="max-w-screen-lg mx-auto px-6 py-8">
         {/* Filters bar */}

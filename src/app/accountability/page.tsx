@@ -11,6 +11,8 @@ import type { AccountabilityBuddy, AccountabilityGroup, AccountabilityGroupMembe
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/AppHeader';
+import { PageHeader } from '@/components/kit';
+import { FileText, Flame, Target } from 'lucide-react';
 
 type Tab = 'stats' | 'buddies' | 'groups';
 
@@ -595,44 +597,26 @@ export default function AccountabilityPage() {
 
       <AppHeader />
 
-      {/* Hero */}
-      <div className="relative overflow-hidden" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* Glow orbs */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-32 -right-20 w-96 h-96 rounded-full opacity-10"
-            style={{ background: 'radial-gradient(circle, #FF5F1F 0%, transparent 70%)' }} />
-          <div className="absolute bottom-0 left-1/4 w-64 h-32 rounded-full opacity-5"
-            style={{ background: 'radial-gradient(circle, #FF5F1F 0%, transparent 70%)' }} />
-        </div>
-        <div className="max-w-5xl mx-auto px-6 py-10 relative">
-          <div className="flex items-start justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-3 h-px shrink-0" style={{ background: '#FF5F1F' }} />
-                <span className="text-[11px] uppercase tracking-[0.04em]" style={{ color: 'rgba(255,255,255,0.4)' }}>work tracking</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>
-                ACCOUNTABILITY
-              </h1>
-              <p className="text-sm mt-2 max-w-md" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Track your writing, stay consistent, keep each other going.
-              </p>
-            </div>
-            {/* Quick summary chips */}
-            {!loading && (
-              <div className="hidden sm:flex items-center gap-3 shrink-0 mt-2">
-                <div className="text-center px-4 py-2.5 rounded-xl" style={{ border: '1px solid rgba(255,95,31,0.2)', background: 'rgba(255,95,31,0.06)' }}>
-                  <p className="text-2xl font-bold" style={{ color: '#FF5F1F', letterSpacing: '-0.02em' }}>{streak}</p>
-                  <p className="text-[11px] uppercase tracking-[0.04em] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>day streak</p>
-                </div>
-                <div className="text-center px-4 py-2.5 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-                  <p className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.02em' }}>{totalPages.toFixed(0)}</p>
-                  <p className="text-[11px] uppercase tracking-[0.04em] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>pages</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="relative mx-auto max-w-5xl px-6 pt-8">
+        <PageHeader
+          icon={<Target className="h-5 w-5" />}
+          title="Accountability"
+          description="Track your writing, stay consistent, keep each other going."
+          actions={!loading && (
+            <>
+              <span className="flex items-center gap-2 rounded-xl border border-brand-500/25 bg-brand-500/[0.08] px-3 py-2">
+                <Flame className="h-4 w-4 text-brand-400" />
+                <span className="text-lg font-bold leading-none text-white">{streak}</span>
+                <span className="text-[10px] uppercase tracking-[0.06em] text-surface-400">day streak</span>
+              </span>
+              <span className="flex items-center gap-2 rounded-xl border border-surface-800 bg-surface-900/60 px-3 py-2">
+                <FileText className="h-4 w-4 text-surface-400" />
+                <span className="text-lg font-bold leading-none text-white">{totalPages.toFixed(0)}</span>
+                <span className="text-[10px] uppercase tracking-[0.06em] text-surface-400">pages</span>
+              </span>
+            </>
+          )}
+        />
       </div>
 
       {/* Tab bar */}

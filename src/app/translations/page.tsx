@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Card, Modal, Input, LoadingPage, toast } from '@/components/ui';
+import { PageHeader, StatGrid } from '@/components/kit';
+import { Languages } from 'lucide-react';
 
 interface Language {
   id: string;
@@ -155,12 +157,12 @@ export default function TranslationsPage() {
     <div>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}
-        <div className="mb-10">
-          <p className="text-xs font-medium text-brand-500 uppercase tracking-[0.04em] mb-3">Community</p>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Translator Hub</h1>
-          <p className="text-surface-400 mt-2 max-w-xl">
-            Help translate Screenplay Studio into your language. Suggest translations, vote on the best ones, and make the app accessible to creators worldwide.
-          </p>
+        <div className="mb-8">
+          <PageHeader
+            icon={<Languages className="h-5 w-5" />}
+            title="Translator Hub"
+            description="Help translate Screenplay Studio into your language. Suggest translations, vote on the best ones, and make the app accessible to creators worldwide."
+          />
         </div>
 
         {/* Agreement gate */}
@@ -191,19 +193,15 @@ export default function TranslationsPage() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <Card className="p-5">
-            <p className="text-xs text-surface-500 uppercase tracking-[0.04em]">Languages</p>
-            <p className="text-2xl font-bold text-white mt-1">{languages.length}</p>
-          </Card>
-          <Card className="p-5">
-            <p className="text-xs text-surface-500 uppercase tracking-[0.04em]">Translation Keys</p>
-            <p className="text-2xl font-bold text-white mt-1">{totalKeys}</p>
-          </Card>
-          <Card className="p-5">
-            <p className="text-xs text-surface-500 uppercase tracking-[0.04em]">Contributors</p>
-            <p className="text-2xl font-bold text-white mt-1">{contributors.length}</p>
-          </Card>
+        <div className="mb-8">
+          <StatGrid
+            cols={3}
+            items={[
+              { label: 'Languages', value: languages.length, tone: 'brand' },
+              { label: 'Translation keys', value: totalKeys, tone: 'blue' },
+              { label: 'Contributors', value: contributors.length, tone: 'green' },
+            ]}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
