@@ -5,6 +5,8 @@ import { Button, SearchInput, EmptyState, LoadingSpinner, toast } from '@/compon
 import { QuoteForm } from '@/components/quotes/QuoteForm';
 import { GroupManager } from '@/components/quotes/GroupManager';
 import { AppHeader } from '@/components/AppHeader';
+import { PageHeader, StatGrid, dailySpark } from '@/components/kit';
+import { Quote as QuoteIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Quote, QuoteInsert, QuoteGroup } from '@/lib/types';
 
@@ -185,24 +187,31 @@ export default function QuotesPage() {
         </div>
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/15 to-brand-500/15 border border-amber-500/10 mb-4">
-              <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              The Quote Wall
-            </h1>
-            <p className="text-sm text-surface-500 mt-2 max-w-md mx-auto">
-              A cozy corner for the words that stuck with you
-            </p>
+          <div className="mb-6">
+            <PageHeader
+              icon={<QuoteIcon className="h-5 w-5 text-amber-400" />}
+              title="The Quote Wall"
+              description="A cozy corner for the words that stuck with you"
+            />
           </div>
 
+          {!loading && quoteCount > 0 && (
+            <div className="mb-6">
+              <StatGrid
+                cols={4}
+                items={[
+                  { label: 'Quotes', value: quoteCount, tone: 'amber', spark: dailySpark(quotes, (q) => q.created_at, 30) },
+                  { label: 'This month', value: quotes.filter((q) => q.created_at && Date.now() - Date.parse(q.created_at) < 30 * 864e5).length, tone: 'brand' },
+                  { label: 'People quoted', value: new Set(quotes.map((q) => q.said_by?.trim().toLowerCase()).filter(Boolean)).size, tone: 'violet' },
+                  { label: 'Groups', value: groups.length + sharedGroups.length, tone: 'blue' },
+                ]}
+              />
+            </div>
+          )}
+
           {/* Toolbar */}
-          <div className="flex items-center gap-2 flex-wrap mb-8 justify-center">
-            <div className="w-full max-w-xs">
+          <div className="flex items-center gap-2 flex-wrap mb-8">
+            <div className="w-full sm:max-w-xs sm:flex-1">
               <SearchInput
                 value={searchInput}
                 onChange={setSearchInput}
@@ -302,18 +311,6 @@ export default function QuotesPage() {
                 onSubmit={handleSubmit}
                 onCancel={() => setShowQuickForm(false)}
               />
-            </div>
-          )}
-
-          {/* Quote count */}
-          {!loading && quoteCount > 0 && (
-            <div className="text-center mb-6">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-surface-400 bg-surface-900/50 px-3 py-1.5 rounded-full border border-surface-800/50">
-                <svg className="w-3 h-3 text-amber-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                </svg>
-                {quoteCount} quote{quoteCount !== 1 ? 's' : ''} saved
-              </span>
             </div>
           )}
 

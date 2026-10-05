@@ -1,5 +1,6 @@
 'use client';
 
+import { Building2, FolderKanban, Plus, ShieldCheck, Users } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -365,19 +366,33 @@ export default function CompanyDashboard() {
   // No company found — show create/join prompt
   if (!company) {
     return (
-      <div className="min-h-screen bg-surface-950 flex items-center justify-center">
-        <div className="max-w-md w-full px-6 text-center">
-          <div className="w-16 h-16 rounded-xl bg-surface-800 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <div className="relative overflow-hidden rounded-3xl border border-surface-800 bg-gradient-to-br from-surface-900 via-surface-900/80 to-brand-950/40 p-8 md:p-10">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-500/10 blur-3xl" />
+          <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-surface-700 bg-surface-900 text-brand-400">
+            <Building2 className="h-6 w-6" />
+          </span>
+          <h1 className="relative mt-5 text-2xl font-bold tracking-tight text-white">No company yet</h1>
+          <p className="relative mt-1.5 max-w-lg text-sm text-surface-400">Create a company to collaborate with your team, manage projects together, and set granular permissions.</p>
+          <div className="relative mt-6 grid gap-2 sm:grid-cols-3">
+            {[
+              { icon: Users, t: 'Members & teams', d: 'Invite people and group them into teams.' },
+              { icon: FolderKanban, t: 'Shared projects', d: 'Every production in one company space.' },
+              { icon: ShieldCheck, t: 'Permissions', d: 'Decide who can see and change what.' },
+            ].map((f) => (
+              <div key={f.t} className="rounded-xl border border-surface-800 bg-surface-950/40 p-3">
+                <f.icon className="h-4 w-4 text-brand-400" />
+                <p className="mt-2 text-xs font-semibold text-white">{f.t}</p>
+                <p className="mt-0.5 text-[11px] text-surface-500">{f.d}</p>
+              </div>
+            ))}
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">No Company Yet</h1>
-          <p className="text-surface-400 mb-8">Create a company to collaborate with your team, manage projects together, and set granular permissions.</p>
-          <div className="flex gap-3 justify-center">
-            <Link href="/settings">
-              <Button>Create Company</Button>
+          <div className="relative mt-6 flex flex-wrap gap-2">
+            <Link href="/settings?tab=company" className="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-brand-600/20 hover:bg-brand-500">
+              <Plus className="h-3.5 w-3.5" /> Create company
             </Link>
-            <Link href="/dashboard">
-              <Button variant="ghost">Back to Dashboard</Button>
+            <Link href="/dashboard" className="inline-flex items-center rounded-xl border border-surface-800 px-4 py-2 text-xs font-semibold text-surface-300 hover:text-white">
+              Back to dashboard
             </Link>
           </div>
         </div>

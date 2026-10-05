@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { AppHeader } from '@/components/AppHeader';
-import { StatGrid, dailySpark } from '@/components/kit';
+import { ActionButton, PageHeader, StatGrid, dailySpark } from '@/components/kit';
+import { Download, UserPlus, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
@@ -230,31 +231,18 @@ export default function PeoplePage() {
     <>
       <AppHeader />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">People</h1>
-          <p className="text-sm text-surface-400 mt-1">
-            Everyone you&apos;ve worked with — {people.length} in your book
-            {people.filter((p) => p.is_favourite).length > 0 && (
-              <> · {people.filter((p) => p.is_favourite).length} first-call</>
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setImportOpen(true)}
-            className="text-sm px-3 py-2 min-h-[40px] rounded-lg border border-surface-700 text-surface-300 hover:text-white hover:border-surface-500 transition-colors"
-          >
-            Import from a production
-          </button>
-          <button
-            onClick={openNew}
-            className="text-sm px-4 py-2 min-h-[40px] rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition-colors"
-          >
-            Add person
-          </button>
-        </div>
+      <div className="mb-6">
+        <PageHeader
+          icon={<Users className="h-5 w-5" />}
+          title="People"
+          description={<>Everyone you&apos;ve worked with — {people.length} in your book{people.filter((p) => p.is_favourite).length > 0 && <> · {people.filter((p) => p.is_favourite).length} first-call</>}</>}
+          actions={
+            <>
+              <ActionButton icon={<Download className="h-3.5 w-3.5" />} onClick={() => setImportOpen(true)}>Import from a production</ActionButton>
+              <ActionButton variant="primary" icon={<UserPlus className="h-3.5 w-3.5" />} onClick={openNew}>Add person</ActionButton>
+            </>
+          }
+        />
       </div>
 
       {people.length > 0 && (

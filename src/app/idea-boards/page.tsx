@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { AppHeader } from '@/components/AppHeader';
+import { ShellActions } from '@/components/shell/ShellActions';
+import { ActionButton, AdminPage, EmptyState, PageHeader, Reveal, Segmented, StatGrid, dailySpark } from '@/components/kit';
+import { Lightbulb, Plus } from 'lucide-react';
 import { Button, Input, Modal, LoadingPage, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -141,60 +143,56 @@ export default function IdeaBoardsPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
-      <AppHeader />
+      <ShellActions>
+        <ActionButton variant="primary" icon={<Plus className="h-3.5 w-3.5" />} onClick={() => setShowCreate(true)}>New board</ActionButton>
+      </ShellActions>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {/* Page header */}
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Idea Boards</h1>
-            <p className="text-sm text-surface-400 mt-1">
-              Capture ideas, collaborate, link to projects — no pressure, just notes.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowArchived(v => !v)}
-              className={cn(
-                'px-3 py-2 text-xs uppercase tracking-[0.04em] transition-colors rounded-lg border',
-                showArchived
-                  ? 'border-surface-600 text-white bg-surface-800'
-                  : 'border-surface-700 text-surface-500 hover:text-white hover:border-surface-600'
-              )}
-            >
-              {showArchived ? 'Active boards' : 'Archived'}
-            </button>
-            <Button onClick={() => setShowCreate(true)} style={{ background: '#FF5F1F' }}>
-              + New board
-            </Button>
-          </div>
-        </div>
+      <AdminPage className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <PageHeader
+          icon={<Lightbulb className="h-5 w-5" />}
+          title="Idea Boards"
+          description="Capture ideas, collaborate, link to projects — no pressure, just notes."
+          actions={
+            <Segmented
+              id="idea-boards-archive"
+              value={showArchived ? 'archived' : 'active'}
+              onChange={(v) => setShowArchived(v === 'archived')}
+              options={[
+                { key: 'active', label: `Active · ${boards.filter((b) => !b.is_archived).length}` },
+                { key: 'archived', label: `Archived · ${boards.filter((b) => b.is_archived).length}` },
+              ]}
+            />
+          }
+        />
 
-        {/* Empty state */}
+        {boards.length > 0 && (
+          <StatGrid
+            cols={4}
+            items={[
+              { label: 'Boards', value: boards.filter((b) => !b.is_archived).length, tone: 'brand', spark: dailySpark(boards, (b) => b.created_at, 30) },
+              { label: 'Mine', value: boards.filter((b) => !b.is_archived && b.owner_id === user?.id).length, tone: 'amber' },
+              { label: 'Shared with me', value: boards.filter((b) => !b.is_archived && b.owner_id !== user?.id).length, tone: 'blue' },
+              { label: 'Linked to a project', value: boards.filter((b) => !b.is_archived && b.linked_project_id).length, tone: 'green' },
+            ]}
+          />
+        )}
+
         {visibleBoards.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="text-6xl mb-4">💡</div>
-            <h2 className="text-lg font-bold text-white mb-2">
-              {showArchived ? 'No archived boards' : 'No boards yet'}
-            </h2>
-            <p className="text-sm text-surface-400 mb-6 max-w-xs">
-              {showArchived
-                ? 'Archived boards will appear here.'
-                : 'Create your first board to start capturing ideas, notes, and links.'}
-            </p>
-            {!showArchived && (
-              <Button onClick={() => setShowCreate(true)} style={{ background: '#FF5F1F' }}>
-                Create first board
-              </Button>
+          <EmptyState
+            icon={<Lightbulb className="h-8 w-8" />}
+            title={showArchived ? 'No archived boards' : 'No boards yet'}
+            description={showArchived ? 'Archived boards will appear here.' : 'Create your first board to start capturing ideas, notes, and links.'}
+            action={!showArchived && (
+              <ActionButton variant="primary" icon={<Plus className="h-3.5 w-3.5" />} onClick={() => setShowCreate(true)}>Create first board</ActionButton>
             )}
-          </div>
+          />
         )}
 
         {/* My boards */}
         {myBoards.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-xs uppercase tracking-[0.04em] text-surface-500 mb-4">
-              My boards
+          <Reveal>
+            <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-500">
+              My boards <span className="text-surface-700">· {myBoards.length}</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {myBoards.map(board => (
@@ -206,23 +204,23 @@ export default function IdeaBoardsPage() {
                 />
               ))}
             </div>
-          </section>
+          </Reveal>
         )}
 
         {/* Shared with me */}
         {sharedBoards.length > 0 && (
-          <section>
-            <h2 className="text-xs uppercase tracking-[0.04em] text-surface-500 mb-4">
-              Shared with me
+          <Reveal>
+            <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-500">
+              Shared with me <span className="text-surface-700">· {sharedBoards.length}</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {sharedBoards.map(board => (
                 <BoardCard key={board.id} board={board} isOwner={false} />
               ))}
             </div>
-          </section>
+          </Reveal>
         )}
-      </main>
+      </AdminPage>
 
       {/* Create board modal */}
       <Modal

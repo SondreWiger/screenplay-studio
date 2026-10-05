@@ -1,5 +1,6 @@
 'use client';
 
+import { Clapperboard, Crown, HardDrive, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 import { PRO_TOOLS } from '@/lib/pro-tools/tools';
@@ -138,26 +139,40 @@ export default function ProUpgradePage() {
   // Already Pro
   if (isPro) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'rgb(var(--surface-950))' }}>
-        <div className="max-w-md text-center">
-          <div className="w-16 h-16 mx-auto mb-8 flex items-center justify-center" style={{ background: '#FF5F1F' }}>
-            <Icon name="star" size="xl" className="text-white" />
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-br from-surface-900 via-surface-900/80 to-amber-950/30 p-8 md:p-10">
+          <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl" />
+          <div className="relative flex items-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-brand-500 text-white shadow-lg shadow-amber-500/20">
+              <Crown className="h-6 w-6" />
+            </span>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-400">Your plan</p>
+              <h1 className="text-2xl font-bold tracking-tight text-white">You&apos;re on Pro</h1>
+            </div>
           </div>
-          <div className="flex items-center gap-2.5 mb-4 justify-center">
-            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
-            <span className="ss-label">Already Pro</span>
-            <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>YOU’RE ALREADY ON PRO.</h1>
-          <p className="text-white/30 text-sm mb-8 leading-relaxed">
-            You have access to all Pro features. Thank you for supporting Screenplay Studio.
+          <p className="relative mt-4 max-w-lg text-sm text-surface-400">
+            You have access to all Pro features. Thank you for supporting Screenplay Studio — it keeps the free product free.
           </p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <Link href="/settings/billing">
-              <Button variant="secondary">{t('pro.manage')}</Button>
+          <div className="relative mt-6 grid gap-2 sm:grid-cols-3">
+            {[
+              { icon: HardDrive, t: '200 GB storage', d: 'Room for scripts, boards and media.' },
+              { icon: Clapperboard, t: 'Cinderra Pro', d: 'Included with your plan.' },
+              { icon: Users, t: 'CastingCall Pro', d: 'Included with your plan.' },
+            ].map((f) => (
+              <div key={f.t} className="rounded-xl border border-surface-800 bg-surface-950/40 p-3">
+                <f.icon className="h-4 w-4 text-amber-400" />
+                <p className="mt-2 text-xs font-semibold text-white">{f.t}</p>
+                <p className="mt-0.5 text-[11px] text-surface-500">{f.d}</p>
+              </div>
+            ))}
+          </div>
+          <div className="relative mt-6 flex flex-wrap gap-2">
+            <Link href="/settings/billing" className="inline-flex items-center rounded-xl border border-surface-700 px-4 py-2 text-xs font-semibold text-surface-200 hover:text-white">
+              {t('pro.manage')}
             </Link>
-            <Link href="/pro/team">
-              <Button>Buy Team Licenses</Button>
+            <Link href="/pro/team" className="inline-flex items-center rounded-xl bg-brand-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-brand-600/20 hover:bg-brand-500">
+              Buy team licenses
             </Link>
           </div>
         </div>

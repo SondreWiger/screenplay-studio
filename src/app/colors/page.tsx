@@ -4,8 +4,10 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/AppHeader';
-import { Button, Input, Card, Badge, toast } from '@/components/ui';
+import { Input, Card, Badge, toast } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
+import { EmptyState, PageHeader, Segmented, StatGrid, dailySpark } from '@/components/kit';
+import { Palette, Plus } from 'lucide-react';
 import { THEME_CATEGORIES, type ThemeCategory } from '@/lib/theme';
 import { useThemeStore, useAuthStore } from '@/lib/stores';
 import type { AppTheme } from '@/lib/theme';
@@ -135,16 +137,32 @@ export default function ColorsStorePage() {
     <div className="min-h-screen bg-surface-950">
       <AppHeader />
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-8">
-        {/* Hero */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-white mb-3">Theme Store</h1>
-          <p className="text-surface-400 max-w-xl mx-auto">
-            Browse community-created color themes. Find the perfect look for your screenwriting workspace.
-          </p>
-          <Link href="/settings?tab=appearance">
-            <Button className="mt-4">Create Your Own</Button>
-          </Link>
+        <div className="mb-6">
+          <PageHeader
+            icon={<Palette className="h-5 w-5" />}
+            title="Theme Store"
+            description="Browse community-created colour themes. Find the perfect look for your writing workspace."
+            actions={
+              <Link href="/settings?tab=appearance" className="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-brand-600/20 hover:bg-brand-500">
+                <Plus className="h-3.5 w-3.5" /> Create your own
+              </Link>
+            }
+          />
         </div>
+
+        {!loading && themes.length > 0 && (
+          <div className="mb-8">
+            <StatGrid
+              cols={4}
+              items={[
+                { label: 'Themes', value: themes.length, tone: 'brand', spark: dailySpark(themes, (t) => t.created_at, 30) },
+                { label: 'Staff picks', value: themes.filter((t) => t.is_staff_pick).length, tone: 'amber', onClick: () => setSortBy('staff_picks'), active: sortBy === 'staff_picks' },
+                { label: 'Times applied', value: themes.reduce((n, t) => n + (t.use_count || 0), 0), tone: 'green' },
+                { label: 'Creators', value: new Set(themes.map((t) => t.author_id).filter(Boolean)).size, tone: 'violet' },
+              ]}
+            />
+          </div>
+        )}
 
         {/* Staff Picks */}
         {staffPicks.length > 0 && sortBy !== 'staff_picks' && (
@@ -179,19 +197,16 @@ export default function ColorsStorePage() {
               icon="palette"
             />
           </div>
-          <div className="flex gap-1 bg-surface-900 rounded-lg p-1 border border-surface-700">
-            {(['popular', 'newest', 'staff_picks'] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => setSortBy(s)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  sortBy === s ? 'bg-white/10 text-white' : 'text-surface-400 hover:text-white'
-                }`}
-              >
-                {s === 'popular' ? 'Popular' : s === 'newest' ? 'Newest' : 'Staff Picks'}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            id="theme-sort"
+            value={sortBy}
+            onChange={setSortBy}
+            options={[
+              { key: 'popular', label: 'Popular' },
+              { key: 'newest', label: 'Newest' },
+              { key: 'staff_picks', label: 'Staff picks' },
+            ]}
+          />
         </div>
 
         {/* Categories */}
@@ -220,11 +235,7 @@ export default function ColorsStorePage() {
             ))}
           </div>
         ) : filteredThemes.length === 0 ? (
-          <div className="text-center py-20">
-            <Icon name="palette" size="lg" className="text-surface-600 mx-auto mb-4" />
-            <p className="text-surface-400 mb-2">No themes found</p>
-            <p className="text-sm text-surface-500">Try a different search or category</p>
-          </div>
+          <EmptyState icon={<Palette className="h-8 w-8" />} title="No themes found" description="Try a different search or category." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredThemes.map((theme) => (
