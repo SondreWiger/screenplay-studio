@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHeader } from '@/components/kit';
+import { CreditCard } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -64,7 +66,7 @@ export default function BillingPage() {
 
   return (
     <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>Billing & Subscription</h1>
+        <PageHeader icon={<CreditCard className="h-5 w-5" />} title="Billing & Subscription" description="Your plan, storage, bundled apps and team licenses." />
 
         {/* Current Plan */}
         <Card className="p-6 mb-6">

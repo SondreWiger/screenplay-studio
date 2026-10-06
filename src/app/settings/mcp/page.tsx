@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHeader } from '@/components/kit';
+import { Bot } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -180,13 +182,11 @@ export default function McpSettingsPage() {
   return (
     <div className="space-y-6">
       <ConfirmDialog />
-      <div>
-        <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>Claude & MCP</h1>
-        <p className="text-sm text-surface-400 mt-1 max-w-2xl">
-          Connect Claude, or any AI assistant that speaks the Model Context Protocol, to your Screenplay Studio account.
-          It can then write and edit scripts, break them down, plan beats and arcs, build schedules and budgets, and manage your team — in the projects you already have access to.
-        </p>
-      </div>
+      <PageHeader
+        icon={<Bot className="h-5 w-5" />}
+        title="Claude & MCP"
+        description={<span className="block max-w-2xl">Connect Claude, or any AI assistant that speaks the Model Context Protocol, to your Screenplay Studio account. It can then write and edit scripts, break them down, plan beats and arcs, build schedules and budgets, and manage your team — in the projects you already have access to.</span>}
+      />
 
       {!eligible ? (
         <Card className="p-6">

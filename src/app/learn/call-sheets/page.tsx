@@ -1,15 +1,10 @@
 'use client';
 
+import ModuleLayout from '@/components/learn/ModuleLayout';
+
 export default function CallSheetsModule() {
   return (
-    <div className="space-y-12 pb-24">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-4">Call Sheets</h1>
-        <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
-          Organise your shoot day. Call Sheets tell your cast and crew where to be, when to be there, and what they'll be doing.
-        </p>
-      </div>
+    <ModuleLayout title="Call Sheets" description="Organise your shoot day. Call Sheets tell your cast and crew where to be, when to be there, and what they'll be doing." icon="">
 
       {/* Generating a Call Sheet */}
       <section className="space-y-6">
@@ -100,6 +95,6 @@ export default function CallSheetsModule() {
           </div>
         </div>
       </section>
-    </div>
+    </ModuleLayout>
   );
 }

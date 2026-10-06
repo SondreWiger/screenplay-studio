@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHeader } from '@/components/kit';
+import { Megaphone } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -178,10 +180,7 @@ export default function CreatorSettingsPage() {
 
   return (
     <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>Creator Program</h1>
-          <p className="text-surface-400 text-sm mt-1">Share your referral link, grow the community, earn when payouts go live.</p>
-        </div>
+        <PageHeader icon={<Megaphone className="h-5 w-5" />} title="Creator Program" description="Share your referral link, grow the community, earn when payouts go live." />
 
         {/* Program disabled banner */}
         {!programEnabled && !creator && (

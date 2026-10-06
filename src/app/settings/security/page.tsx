@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHeader } from '@/components/kit';
+import { ShieldCheck } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -219,7 +221,7 @@ export default function SecuritySettingsPage() {
 
   return (
     <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-white" style={{ letterSpacing: '-0.03em' }}>Security & Privacy</h1>
+        <PageHeader icon={<ShieldCheck className="h-5 w-5" />} title="Security & Privacy" description="Sign-in history, your current session and security events on your account." />
 
         {message && (
           <div className={`px-4 py-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-900/40 text-green-300 border border-green-800' : 'bg-red-900/40 text-red-300 border border-red-800'}`}>

@@ -1,34 +1,53 @@
 import React from 'react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/kit';
+import { GUIDES } from './guides';
 
 interface ModuleLayoutProps {
   title: string;
   description: string;
+  /** Fallback when the guide isn't in GUIDES. */
   icon: string;
   children: React.ReactNode;
 }
 
 export default function ModuleLayout({ title, description, icon, children }: ModuleLayoutProps) {
+  const index = GUIDES.findIndex((g) => g.title === title);
+  const guide = index >= 0 ? GUIDES[index] : null;
+  const prev = index > 0 ? GUIDES[index - 1] : null;
+  const next = index >= 0 && index < GUIDES.length - 1 ? GUIDES[index + 1] : null;
+
   return (
-    <div className="animate-fade-in max-w-4xl">
-      <div className="mb-8">
-        <Link href="/learn" className="inline-flex items-center text-sm font-medium text-surface-400 hover:text-white transition-colors mb-4">
-          <span className="mr-2">←</span> Back to Hub
-        </Link>
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-surface-900 border border-surface-800 flex items-center justify-center text-3xl shadow-sm">
-            {icon}
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">{title}</h1>
-            <p className="text-surface-400 mt-1">{description}</p>
-          </div>
-        </div>
+    <div className="max-w-4xl">
+      <div className="mb-10">
+        <PageHeader
+          icon={guide?.icon ?? <span className="text-lg">{icon}</span>}
+          title={title}
+          description={description}
+          meta={guide && <>{guide.group} · guide {index + 1} of {GUIDES.length}</>}
+        />
       </div>
-      
+
       <div className="space-y-12">
         {children}
       </div>
+
+      {(prev || next) && (
+        <nav className="mt-14 grid gap-3 border-t border-surface-800 pt-6 sm:grid-cols-2" aria-label="More guides">
+          {prev ? (
+            <Link href={prev.href} className="group rounded-xl border border-surface-800 p-4 transition-colors hover:border-surface-700">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-500">← Previous</span>
+              <p className="mt-1 text-sm font-semibold text-white group-hover:text-brand-300">{prev.title}</p>
+            </Link>
+          ) : <span />}
+          {next && (
+            <Link href={next.href} className="group rounded-xl border border-surface-800 p-4 text-right transition-colors hover:border-surface-700">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-500">Next →</span>
+              <p className="mt-1 text-sm font-semibold text-white group-hover:text-brand-300">{next.title}</p>
+            </Link>
+          )}
+        </nav>
+      )}
     </div>
   );
 }

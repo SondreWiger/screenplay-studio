@@ -1,15 +1,10 @@
 'use client';
 
+import ModuleLayout from '@/components/learn/ModuleLayout';
+
 export default function BudgetModule() {
   return (
-    <div className="space-y-12 pb-24">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-4">Budget</h1>
-        <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
-          Track your production costs. The Budget tool provides a straightforward way to estimate expenses, track actual spending, and manage your financial resources across different departments.
-        </p>
-      </div>
+    <ModuleLayout title="Budgeting" description="Track your production costs. The Budget tool provides a straightforward way to estimate expenses, track actual spending, and manage your financial resources across different departments." icon="">
 
       {/* Adding Items */}
       <section className="space-y-6">
@@ -107,6 +102,6 @@ export default function BudgetModule() {
           </div>
         </div>
       </section>
-    </div>
+    </ModuleLayout>
   );
 }

@@ -1,15 +1,10 @@
 'use client';
 
+import ModuleLayout from '@/components/learn/ModuleLayout';
+
 export default function KeybindsModule() {
   return (
-    <div className="space-y-12 pb-24">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-4">Keybinds & Shortcuts</h1>
-        <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
-          Write at the speed of thought. Screenplay Studio is designed to keep your hands on the keyboard. Mastering these shortcuts will significantly improve your writing flow.
-        </p>
-      </div>
+    <ModuleLayout title="Keyboard Shortcuts" description="Write at the speed of thought. Screenplay Studio is designed to keep your hands on the keyboard. Mastering these shortcuts will significantly improve your writing flow." icon="">
 
       {/* Script Formatting Shortcuts */}
       <section className="space-y-6">
@@ -132,6 +127,6 @@ export default function KeybindsModule() {
           </table>
         </div>
       </section>
-    </div>
+    </ModuleLayout>
   );
 }

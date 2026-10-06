@@ -1,15 +1,10 @@
 'use client';
 
+import ModuleLayout from '@/components/learn/ModuleLayout';
+
 export default function ShotListModule() {
   return (
-    <div className="space-y-12 pb-24">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-4">Shot List</h1>
-        <p className="text-surface-300 text-lg leading-relaxed max-w-3xl">
-          Translate your script into visual directions. The Shot List tool helps you plan the camera angles, movements, and framing required to bring your scenes to life on set.
-        </p>
-      </div>
+    <ModuleLayout title="Shot List" description="Translate your script into visual directions. The Shot List tool helps you plan the camera angles, movements, and framing required to bring your scenes to life on set." icon="">
 
       {/* Anatomy of a Shot */}
       <section className="space-y-6">
@@ -110,6 +105,6 @@ export default function ShotListModule() {
           </p>
         </div>
       </section>
-    </div>
+    </ModuleLayout>
   );
 }
