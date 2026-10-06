@@ -83,7 +83,7 @@ export function DashboardOverview({
 
           {lastProject ? (
             <Link
-              href={`/projects/${lastProject.id}/script`}
+              href={`/projects/${lastProject.id}/${lastProject.project_type === 'novel' ? 'manuscript' : 'script'}`}
               className="group relative mt-5 flex items-center gap-4 rounded-2xl border border-surface-700/60 bg-surface-950/50 p-3 pr-4 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-brand-500/40 hover:shadow-xl hover:shadow-brand-600/10"
             >
               <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-500/30 to-surface-800 text-lg font-bold text-white">

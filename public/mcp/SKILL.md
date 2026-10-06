@@ -1,6 +1,6 @@
 ---
 name: screenplay-studio
-description: Write, plan and produce films, series, plays, podcasts and videos in Screenplay Studio through its MCP server. Use when the user wants to create or edit a screenplay or episode, develop a story (loglines, beat sheets, arcs, characters, worldbuilding, treatments), break down a script (scenes, props, cast, shots, storyboards), plan a production (schedule, shoot days, call sheets, budget, gear, locations, safety), run development notes, coverage and submissions, manage a project team, or administer the Screenplay Studio platform. Requires the screenplay-studio MCP tools.
+description: Write, plan and produce films, series, plays, novels, podcasts and videos in Screenplay Studio through its MCP server. Use when the user wants to create or edit a screenplay or episode, develop a story (loglines, beat sheets, arcs, characters, worldbuilding, treatments), break down a script (scenes, props, cast, shots, storyboards), plan a production (schedule, shoot days, call sheets, budget, gear, locations, safety), run development notes, coverage and submissions, manage a project team, or administer the Screenplay Studio platform. Requires the screenplay-studio MCP tools.
 ---
 
 # Screenplay Studio
@@ -100,6 +100,17 @@ Use `create_records` with many rows per call rather than one call per row.
 
 - YouTube/TikTok/podcast: `hooks`, `chapters`, `video_seo`, `thumbnails`, `broll`, `sponsors`, `upload_checklist`.
 - Stage: `stage_cues`, `ensemble`, `production_team`.
+
+## Novels and short stories
+
+Projects with `project_type: novel` have no screenplay. Their prose lives in `novel_chapters` records, not in a script — don't use `write_script` for them.
+
+- `novel_chapters` is the binder in reading order (`sort_order`): `kind` is `part`, `chapter`, `front_matter` or `back_matter`. A part groups the chapters after it. Chapter numbers are worked out from the order; put only the chapter's own title in `title`.
+- `content` is HTML: one `<p>` per paragraph, `<em>`/`<strong>` inline, `<blockquote>` for letters and epigraphs, `<hr>` for a scene break. `word_count` is computed by the database.
+- Track each chapter with `status` (`idea` → `outline` → `draft` → `revised` → `final`), `synopsis`, `pov_character_id` and `tense`.
+- `novel_timeline` holds story chronology (the order things happen, not the order they're told); link events to a chapter with `chapter_id`.
+- Characters, locations (shown as Places), worldbuilding, ideas and beat sheets work as for any project. Beat sheets offer novel structures too (`seven_point`, `story_circle`, `freytag`, `kishotenketsu`).
+- `submissions` takes `publisher`, `magazine` and `contest` recipients for novels.
 
 ## The user's own space
 

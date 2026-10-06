@@ -47,8 +47,8 @@ export function getDefaultOtherIcons(
 
   const isTvProduction = projectType === 'tv_production';
 
-  // TV / Broadcast has its own fixed nav — no "Other" logic needed
-  if (isTvProduction) return new Set();
+  // TV / Broadcast and Novel have their own fixed nav — no "Other" logic needed
+  if (isTvProduction || projectType === 'novel' || scriptType === 'novel') return new Set();
 
   switch (intent) {
     // Writer — wants to write, not plan a full production

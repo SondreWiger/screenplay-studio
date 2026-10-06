@@ -8,7 +8,7 @@
  * where scope is 'project', 'ep_{scriptId}' or 'season_{n}'.
  */
 
-export type FrameworkKey = 'save_the_cat' | 'three_act' | 'hero_journey' | `custom_${string}`;
+export type FrameworkKey = 'save_the_cat' | 'three_act' | 'hero_journey' | 'seven_point' | 'story_circle' | 'freytag' | 'kishotenketsu' | `custom_${string}`;
 
 export interface Beat {
   id: string;
@@ -72,8 +72,51 @@ export const HERO_JOURNEY: Beat[] = [
   { id: 'return_elixir',   label: 'Return with the Elixir', description: 'Hero returns transformed, with knowledge or treasure to share with ordinary world.',    pageHint: 'p. 105–110',pagePercent: 98, color: '#7c3aed', notes: '', scenes: [] },
 ];
 
+// Structures common in prose fiction. Hints are percentages, since a novel's
+// length is counted in words rather than screenplay pages.
+export const SEVEN_POINT: Beat[] = [
+  { id: 'sp_hook',        label: 'Hook',              description: 'The starting state: the protagonist before the story changes them — often the opposite of the resolution.', pageHint: '0–5%',   pagePercent: 2,  color: '#6366f1', notes: '', scenes: [] },
+  { id: 'sp_turn1',       label: 'Plot Turn 1',       description: 'The call to adventure: something new enters and sets the story moving.',                                  pageHint: '~15%',   pagePercent: 15, color: '#ec4899', notes: '', scenes: [] },
+  { id: 'sp_pinch1',      label: 'Pinch 1',           description: 'Pressure applied: the antagonist shows its strength and forces the protagonist to act.',                  pageHint: '~35%',   pagePercent: 35, color: '#f97316', notes: '', scenes: [] },
+  { id: 'sp_midpoint',    label: 'Midpoint',          description: 'The protagonist moves from reacting to acting — they decide to take the fight to the problem.',           pageHint: '50%',    pagePercent: 50, color: '#14b8a6', notes: '', scenes: [] },
+  { id: 'sp_pinch2',      label: 'Pinch 2',           description: 'More pressure: the plan fails, allies fall away, the jaws of defeat close.',                              pageHint: '~65%',   pagePercent: 65, color: '#ef4444', notes: '', scenes: [] },
+  { id: 'sp_turn2',       label: 'Plot Turn 2',       description: 'The final piece: the protagonist gets what they need to win.',                                           pageHint: '~85%',   pagePercent: 85, color: '#9333ea', notes: '', scenes: [] },
+  { id: 'sp_resolution',  label: 'Resolution',        description: 'The climax and new state: everything the story has built pays off.',                                     pageHint: '90–100%', pagePercent: 96, color: '#7c3aed', notes: '', scenes: [] },
+];
+
+export const STORY_CIRCLE: Beat[] = [
+  { id: 'sc_you',     label: '1. You',     description: 'A character in a zone of comfort.',              pageHint: '0–12%',   pagePercent: 6,  color: '#6366f1', notes: '', scenes: [] },
+  { id: 'sc_need',    label: '2. Need',    description: 'But they want something.',                       pageHint: '12–25%',  pagePercent: 18, color: '#8b5cf6', notes: '', scenes: [] },
+  { id: 'sc_go',      label: '3. Go',      description: 'They enter an unfamiliar situation.',            pageHint: '25–37%',  pagePercent: 31, color: '#ec4899', notes: '', scenes: [] },
+  { id: 'sc_search',  label: '4. Search',  description: 'Adapt to it.',                                   pageHint: '37–50%',  pagePercent: 43, color: '#f97316', notes: '', scenes: [] },
+  { id: 'sc_find',    label: '5. Find',    description: 'Get what they wanted.',                          pageHint: '50–62%',  pagePercent: 56, color: '#14b8a6', notes: '', scenes: [] },
+  { id: 'sc_take',    label: '6. Take',    description: 'Pay a heavy price for it.',                      pageHint: '62–75%',  pagePercent: 68, color: '#ef4444', notes: '', scenes: [] },
+  { id: 'sc_return',  label: '7. Return',  description: 'Return to their familiar situation.',            pageHint: '75–87%',  pagePercent: 81, color: '#3b82f6', notes: '', scenes: [] },
+  { id: 'sc_change',  label: '8. Change',  description: 'Having changed.',                                pageHint: '87–100%', pagePercent: 94, color: '#7c3aed', notes: '', scenes: [] },
+];
+
+export const FREYTAG: Beat[] = [
+  { id: 'fr_exposition',  label: 'Exposition',      description: 'Setting, characters and the situation before conflict.',          pageHint: '0–12%',   pagePercent: 6,  color: '#6366f1', notes: '', scenes: [] },
+  { id: 'fr_inciting',    label: 'Inciting Moment', description: 'The event that begins the conflict.',                            pageHint: '~12%',    pagePercent: 12, color: '#ec4899', notes: '', scenes: [] },
+  { id: 'fr_rising',      label: 'Rising Action',   description: 'Complications build; tension and stakes climb.',                 pageHint: '12–50%',  pagePercent: 30, color: '#f97316', notes: '', scenes: [] },
+  { id: 'fr_climax',      label: 'Climax',          description: 'The turning point: the peak of tension, after which fortunes reverse.', pageHint: '~50–60%', pagePercent: 55, color: '#ef4444', notes: '', scenes: [] },
+  { id: 'fr_falling',     label: 'Falling Action',  description: 'Consequences of the climax unwind; a last moment of suspense.',    pageHint: '60–88%',  pagePercent: 74, color: '#3b82f6', notes: '', scenes: [] },
+  { id: 'fr_denouement',  label: 'Dénouement',      description: 'Conflict resolved; a new normal, or catastrophe in a tragedy.',     pageHint: '88–100%', pagePercent: 94, color: '#7c3aed', notes: '', scenes: [] },
+];
+
+export const KISHOTENKETSU: Beat[] = [
+  { id: 'ki_ki',      label: 'Ki — Introduction', description: 'Characters and setting are introduced.',                                     pageHint: '0–25%',   pagePercent: 12, color: '#6366f1', notes: '', scenes: [] },
+  { id: 'ki_sho',     label: 'Shō — Development', description: 'The situation deepens; we follow the characters without major conflict.',   pageHint: '25–50%',  pagePercent: 37, color: '#14b8a6', notes: '', scenes: [] },
+  { id: 'ki_ten',     label: 'Ten — Twist',       description: 'An unexpected turn that recasts what came before.',                        pageHint: '50–75%',  pagePercent: 62, color: '#ec4899', notes: '', scenes: [] },
+  { id: 'ki_ketsu',   label: 'Ketsu — Reconciliation', description: 'The parts come together; the twist and the setup make a new whole.',   pageHint: '75–100%', pagePercent: 88, color: '#7c3aed', notes: '', scenes: [] },
+];
+
 export const BUILTIN_FRAMEWORKS: Record<string, { label: string; beats: Beat[] }> = {
   save_the_cat:  { label: 'Save the Cat',     beats: SAVE_THE_CAT },
   three_act:     { label: 'Three-Act',        beats: THREE_ACT },
   hero_journey:  { label: "Hero's Journey",   beats: HERO_JOURNEY },
+  seven_point:   { label: 'Seven-Point',      beats: SEVEN_POINT },
+  story_circle:  { label: 'Story Circle',     beats: STORY_CIRCLE },
+  freytag:       { label: "Freytag's Pyramid", beats: FREYTAG },
+  kishotenketsu: { label: 'Kishōtenketsu',    beats: KISHOTENKETSU },
 };

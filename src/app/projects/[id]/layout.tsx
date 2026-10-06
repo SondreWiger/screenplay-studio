@@ -570,11 +570,11 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
   const showProduction = user?.show_production_tools !== false;
   const showCollab = user?.show_collaboration !== false;
   
-  const { isContentCreator, isTvProduction, isAudioDrama, isStagePlay, isEpisodic } =
+  const { isContentCreator, isTvProduction, isAudioDrama, isStagePlay, isEpisodic, isNovel } =
     getProjectNavFlags(currentProject, isViewer);
 
   const navCategories = getNavCategories(params.id, {
-    isTvProduction, isAudioDrama, isStagePlay, isContentCreator, isEpisodic, isViewer,
+    isTvProduction, isAudioDrama, isStagePlay, isContentCreator, isEpisodic, isNovel, isViewer,
   });
 
   // Sidebar Layout Customisation helpers
@@ -651,7 +651,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       <div className="relative overflow-hidden border-b border-surface-800/60 px-4 py-4">
         {/* Ambient glow behind the logo */}
         <div className="absolute -top-6 -left-4 w-24 h-24 rounded-full blur-2xl opacity-30 pointer-events-none"
-          style={{ background: isTvProduction ? '#d97706' : isAudioDrama ? '#7c3aed' : 'rgb(var(--brand-600))' }} />
+          style={{ background: isTvProduction ? '#d97706' : isAudioDrama ? '#7c3aed' : isNovel ? '#0d9488' : 'rgb(var(--brand-600))' }} />
 
         <div className="relative flex items-center gap-3">
           <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="shrink-0 group">
@@ -662,11 +662,15 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                   ? 'linear-gradient(135deg, #d97706, #92400e)'
                   : isAudioDrama
                   ? 'linear-gradient(135deg, #7c3aed, #4c1d95)'
+                  : isNovel
+                  ? 'linear-gradient(135deg, #0d9488, #134e4a)'
                   : 'linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-700)))',
                 boxShadow: isTvProduction
                   ? '0 2px 12px rgba(217, 119, 6, 0.5)'
                   : isAudioDrama
                   ? '0 2px 12px rgba(124, 58, 237, 0.5)'
+                  : isNovel
+                  ? '0 2px 12px rgba(13, 148, 136, 0.5)'
                   : '0 2px 12px rgb(var(--brand-600) / 0.5)',
               }}
             >

@@ -29,6 +29,13 @@ export const PAGE_LABELS: Record<string, string> = {
   'mos-devices': 'MOS Devices',
   ensemble: 'Ensemble',
   cues: 'Cue Sheet',
+  // Novel
+  manuscript: 'Manuscript',
+  'writing-goals': 'Goals & Sprints',
+  timeline: 'Story Timeline',
+  'prose-analysis': 'Prose Analysis',
+  'book-export': 'Export Book',
+  'query-kit': 'Query Kit',
   'production-team': 'Production Team',
   rehearsal: 'Rehearsal',
 

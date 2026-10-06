@@ -18,6 +18,7 @@ import { formatDate, formatCurrency, timeAgo, cn } from '@/lib/utils';
 import { formatWorkSeconds } from '@/hooks/useWorkTimeTracker';
 import type { Script, ScheduleEvent } from '@/lib/types';
 import Link from 'next/link';
+import { NovelOverview } from '@/components/novel/NovelOverview';
 
 interface ActivityItem {
   id: string;
@@ -447,6 +448,7 @@ export default function ProjectOverviewPage({ params }: { params: { id: string }
   };
 
   if (!currentProject) return <LoadingPage />;
+  if (currentProject.project_type === 'novel' || currentProject.script_type === 'novel') return <NovelOverview project={currentProject} />;
 
   // Duration display logic
   const estimatedMinutes = stats.totalDurationMinutes || Math.round(stats.totalPageCount * 1);

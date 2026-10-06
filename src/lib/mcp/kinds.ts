@@ -32,7 +32,7 @@ export type KindScope =
 
 export type KindGroup =
   | 'story' | 'planning' | 'production' | 'people' | 'documents'
-  | 'creator' | 'stage' | 'personal' | 'admin';
+  | 'creator' | 'stage' | 'novel' | 'personal' | 'admin';
 
 export interface RecordKind {
   table: string;
@@ -227,7 +227,7 @@ export const KINDS: Record<string, RecordKind> = {
   },
   submissions: {
     table: 'script_submissions', group: 'documents', scope: 'project', title: 'recipient_name', order: '-date_sent', stamp: 'created_by',
-    about: 'Submission tracker: agents, managers, festivals, production companies.',
+    about: 'Submission tracker: agents, managers, festivals, production companies; publishers, magazines and contests for novels.',
     fields: {
       recipient_name: 'text!', recipient_type: 'text', script_id: 'uuid', date_sent: 'date', status: 'text', notes: 'text',
       response_date: 'date', next_follow_up: 'date',
@@ -452,6 +452,31 @@ export const KINDS: Record<string, RecordKind> = {
       name: 'text!', role: 'text!', user_id: 'uuid',
       department: 'Direction|Stage Management|Lighting|Sound|Musical Direction|Choreography|Design|Technical|Marketing|Other',
       contact_email: 'text', phone: 'text', notes: 'text', sort_order: 'int',
+    },
+  },
+
+  // ── Novel ────────────────────────────────────────────────────────────────
+  novel_chapters: {
+    table: 'novel_chapters', group: 'novel', scope: 'project', title: 'title', order: 'sort_order', stamp: 'created_by',
+    about: 'The manuscript of a novel or short story: parts, chapters and front/back matter in reading order. Word count is computed by the database.',
+    search: ['title', 'synopsis', 'content', 'notes'],
+    fields: {
+      kind: 'part|chapter|front_matter|back_matter', title: 'text', content: 'text', synopsis: 'text',
+      status: 'idea|outline|draft|revised|final', pov_character_id: 'uuid', pov: 'text', tense: 'past|present|future|mixed',
+      label_color: 'text', target_words: 'int', notes: 'text', include_in_export: 'bool', sort_order: 'int',
+    },
+    hints: {
+      content: 'HTML prose: one <p> per paragraph; <em>, <strong>, <blockquote>, <h2>; <hr> for a scene break.',
+      kind: 'A part groups the chapters that follow it until the next part.',
+    },
+  },
+  novel_timeline: {
+    table: 'novel_timeline_events', group: 'novel', scope: 'project', title: 'title', order: 'sort_order', stamp: 'created_by',
+    about: 'Story chronology for a novel, in the order events happen (not the order they are told).',
+    search: ['title', 'description', 'story_date'],
+    fields: {
+      title: 'text!', story_date: 'text', description: 'text', chapter_id: 'uuid', character_ids: 'uuid[]',
+      color: 'text', sort_order: 'int',
     },
   },
 

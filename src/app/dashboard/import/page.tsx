@@ -38,6 +38,8 @@ const PROJECT_TYPE_MAP: Record<ScriptType, ProjectType> = {
   youtube: 'youtube',
   tiktok: 'tiktok',
   videogame: 'videogame',
+  // Not offered below: novels import their prose in the Manuscript page.
+  novel: 'novel',
 };
 
 const ACCEPTED = '.fdx,.fountain,.txt,.starc';
@@ -416,7 +418,7 @@ export default function BulkImportPage() {
                         className="w-full px-3 py-2 text-sm bg-surface-800 border border-surface-700 rounded-lg text-white focus:border-brand-500 focus:outline-none transition-colors"
                         disabled={importing}
                       >
-                        {SCRIPT_TYPE_OPTIONS.map((opt) => (
+                        {SCRIPT_TYPE_OPTIONS.filter((opt) => opt.value !== 'novel').map((opt) => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                       </select>

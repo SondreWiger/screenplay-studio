@@ -10,7 +10,7 @@ import { pickToast, NEW_PROJECT } from '@/lib/funToasts';
 import { Icon } from '@/components/ui/icons';
 import { useTranslation } from '@/components/TranslationProvider';
 import type { ScriptType, ProjectType, Company, CompanyMember, CompanyRole } from '@/lib/types';
-import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS } from '@/lib/types';
+import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS, NOVEL_FORMAT_OPTIONS, NOVEL_GENRE_OPTIONS } from '@/lib/types';
 import { isElectronMode, isLocalMode, setLocalMode } from '@/lib/supabase/electron-client';
 import { putCached } from '@/lib/offline/db';
 
@@ -73,6 +73,7 @@ export function NewProjectModal({
   const isAudioOrPodcast = scriptType === 'podcast' || scriptType === 'audio_drama';
   const isAudioDrama = (isAudioOrPodcast && ['bbc_radio', 'us_radio', 'starc_standard'].includes(format)) || projectType === 'audio_drama';
   const isEpisodic = scriptType === 'episodic';
+  const isNovel = scriptType === 'novel';
 
   // Only companies where user has create permissions
   const creatableCompanies = companyMemberships.filter((m) =>
@@ -96,6 +97,7 @@ export function NewProjectModal({
       else if (scriptType === 'youtube') finalProjectType = 'youtube';
       else if (scriptType === 'tiktok') finalProjectType = 'tiktok';
       else if (scriptType === 'videogame') finalProjectType = 'videogame';
+      else if (scriptType === 'novel') finalProjectType = 'novel';
       else finalProjectType = 'film';
 
       const projectId = crypto.randomUUID();
@@ -163,7 +165,7 @@ export function NewProjectModal({
         }
 
         toast.success(pickToast(NEW_PROJECT));
-        router.push(`/projects/${projectId}`);
+        router.push(scriptType === 'novel' ? `/projects/${projectId}/manuscript` : `/projects/${projectId}`);
         onCreated();
       } else {
         // ── Cloud project: write to Supabase ─────────────────
@@ -197,7 +199,11 @@ export function NewProjectModal({
 
         if (data) {
           toast.success(pickToast(NEW_PROJECT));
-          router.push(scriptType === 'episodic' ? `/projects/${data.id}/episodes` : `/projects/${data.id}`);
+          router.push(
+            scriptType === 'episodic' ? `/projects/${data.id}/episodes`
+            : scriptType === 'novel' ? `/projects/${data.id}/manuscript`
+            : `/projects/${data.id}`,
+          );
           onCreated();
         }
       }
@@ -254,7 +260,7 @@ export function NewProjectModal({
                 type="button"
                 onClick={() => {
                   setScriptType(opt.value);
-                  if (opt.value === 'youtube' || opt.value === 'tiktok' || opt.value === 'videogame' || opt.value === 'podcast' || opt.value === 'audio_drama') {
+                  if (opt.value === 'youtube' || opt.value === 'tiktok' || opt.value === 'videogame' || opt.value === 'podcast' || opt.value === 'audio_drama' || opt.value === 'novel') {
                      setProjectType(opt.value as ProjectType);
                   } else {
                      setProjectType('film');
@@ -262,6 +268,7 @@ export function NewProjectModal({
                   if (opt.value === 'podcast') setFormat('starc_standard');
                   else if (opt.value === 'episodic') setFormat('series');
                   else if (opt.value === 'videogame') setFormat('game');
+                  else if (opt.value === 'novel') setFormat('novel');
                   else setFormat('feature');
                 }}
                 className={`text-left p-4 rounded-xl border-2 transition-colors ${
@@ -431,7 +438,7 @@ export function NewProjectModal({
 
           <Input
             label={t('new_project.project_title')}
-            placeholder={isTvProduction ? 'Dagsrevyen 24. desember' : isContentCreator ? 'How I Make $10k/Month as a Creator' : isAudioOrPodcast ? 'Dark Waters: Episode 1' : 'The Midnight Hour'}
+            placeholder={isTvProduction ? 'Dagsrevyen 24. desember' : isContentCreator ? 'How I Make $10k/Month as a Creator' : isAudioOrPodcast ? 'Dark Waters: Episode 1' : isNovel ? 'The Lighthouse Keeper\'s Daughter' : 'The Midnight Hour'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -439,13 +446,15 @@ export function NewProjectModal({
           />
 
           <Textarea
-            label={isTvProduction ? 'Production Description' : isContentCreator ? 'Video Concept' : isAudioOrPodcast ? 'Episode Premise' : t('project.logline')}
+            label={isTvProduction ? 'Production Description' : isContentCreator ? 'Video Concept' : isAudioOrPodcast ? 'Episode Premise' : isNovel ? 'Premise' : t('project.logline')}
             placeholder={isTvProduction 
               ? 'Live broadcast from Studio 1, 45 minutes, 3-camera setup...'
               : isContentCreator 
               ? 'In this video, I break down my exact strategies for...'
               : isAudioOrPodcast
               ? 'A detective investigates a string of disappearances in a fog-bound coastal town...'
+              : isNovel
+              ? 'A lighthouse keeper on a dying island finds letters from the woman who kept the light before her...'
               : 'A hard-boiled detective uncovers a conspiracy that reaches the highest levels of power...'}
             value={logline}
             onChange={(e) => setLogline(e.target.value)}
@@ -454,12 +463,35 @@ export function NewProjectModal({
 
           {!isContentCreator && !isTvProduction && !isAudioOrPodcast && (
             <>
-              <Select
-                label="Format"
-                value={format}
-                onChange={(e) => setFormat(e.target.value)}
-                options={FORMAT_OPTIONS}
-              />
+              {isNovel ? (
+                <div>
+                  <label className="block text-sm font-medium text-surface-300 mb-3">Length</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {NOVEL_FORMAT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setFormat(opt.value)}
+                        className={`text-left p-3 rounded-xl border-2 transition-colors ${
+                          format === opt.value
+                            ? 'border-brand-500 bg-brand-500/10 ring-1 ring-brand-500/30'
+                            : 'border-surface-700 bg-surface-800/50 hover:border-surface-600'
+                        }`}
+                      >
+                        <h3 className={`text-sm font-semibold ${format === opt.value ? 'text-brand-500' : 'text-white'}`}>{opt.label}</h3>
+                        <p className="mt-0.5 text-[11px] text-surface-500">{opt.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Select
+                  label="Format"
+                  value={format}
+                  onChange={(e) => setFormat(e.target.value)}
+                  options={FORMAT_OPTIONS}
+                />
+              )}
 
               {isEpisodic && (
                 <div className="grid grid-cols-2 gap-4">
@@ -471,7 +503,7 @@ export function NewProjectModal({
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-surface-300">{t('new_project.genre')}</label>
                 <div className="flex flex-wrap gap-2">
-                  {GENRE_OPTIONS.map((g) => (
+                  {(isNovel ? NOVEL_GENRE_OPTIONS : GENRE_OPTIONS).map((g) => (
                     <button
                       key={g}
                       type="button"

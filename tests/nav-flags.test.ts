@@ -12,6 +12,7 @@ describe('getProjectNavFlags', () => {
       isAudioDrama: false,
       isStagePlay: false,
       isEpisodic: false,
+      isNovel: false,
       isViewer: false,
     });
   });
@@ -47,6 +48,11 @@ describe('getProjectNavFlags', () => {
     expect(getProjectNavFlags({ script_type: 'tiktok' }).isContentCreator).toBe(true);
   });
 
+  it('detects novels from either project or script type', () => {
+    expect(getProjectNavFlags({ project_type: 'novel' }).isNovel).toBe(true);
+    expect(getProjectNavFlags({ script_type: 'novel' }).isNovel).toBe(true);
+  });
+
   it('detects episodic scripts', () => {
     expect(getProjectNavFlags({ script_type: 'episodic' }).isEpisodic).toBe(true);
   });
@@ -78,6 +84,16 @@ describe('getNavCategories via the flags', () => {
     }
   });
 
+  it('gives novels a manuscript nav with no screenplay or production tools', () => {
+    const items = nav({ project_type: 'novel', script_type: 'novel' }).flatMap((c) => c.items);
+    const hrefs = items.map((i) => i.href.replace('/projects/p1', ''));
+    expect(hrefs).toContain('/manuscript');
+    expect(hrefs).toContain('/book-export');
+    for (const gone of ['/script', '/shots', '/scenes', '/storyboard', '/schedule', '/budget', '/call-sheet', '/pro']) {
+      expect(hrefs, gone).not.toContain(gone);
+    }
+  });
+
   it('only shows Episodes when the script is episodic', () => {
     const labels = (p: Record<string, string>) => nav(p).flatMap((c) => c.items).map((i) => i.label);
     expect(labels({ project_type: 'film', script_type: 'episodic' })).toContain('Episodes');
@@ -85,7 +101,7 @@ describe('getNavCategories via the flags', () => {
   });
 
   it('every nav item has a destination', () => {
-    for (const project of [{ project_type: 'film' }, { project_type: 'tv_production' }, { project_type: 'youtube' }]) {
+    for (const project of [{ project_type: 'film' }, { project_type: 'tv_production' }, { project_type: 'youtube' }, { project_type: 'novel' }]) {
       for (const item of nav(project).flatMap((c) => c.items)) {
         expect(item.href, `${item.label} has no href`).toBeTruthy();
         expect(item.href.startsWith('/projects/p1'), `${item.label} → ${item.href}`).toBe(true);

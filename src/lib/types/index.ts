@@ -8,3 +8,4 @@ export * from './content-creator';
 export * from './broadcast';
 export * from './stage';
 export * from './people';
+export * from './novel';

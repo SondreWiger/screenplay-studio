@@ -194,7 +194,9 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
         scopeMap['project'] = parseScopeData(legacySheet);
       }
 
-      const projectData = scopeMap['project'] ?? DEFAULT_SCOPE;
+      // A novel runs ~320 book pages (250 words a page), not 110 screenplay pages.
+      const isNovel = currentProject?.project_type === 'novel';
+      const projectData = scopeMap['project'] ?? (isNovel ? { ...DEFAULT_SCOPE, totalPages: 320 } : DEFAULT_SCOPE);
       setFramework(projectData.framework);
       setTotalPages(projectData.totalPages);
       setBeatNotes(projectData.beatNotes);

@@ -11,7 +11,7 @@ import { PageTitle } from '@/components/projects/PageTitle';
 // Submission Tracker — track where your script has been sent
 // Table: script_submissions (see SQL migration)
 
-type RecipientType = 'agent' | 'manager' | 'producer' | 'festival' | 'network' | 'studio' | 'other';
+type RecipientType = 'agent' | 'manager' | 'producer' | 'festival' | 'network' | 'studio' | 'other' | 'publisher' | 'magazine' | 'contest';
 type SubmissionStatus = 'pending' | 'passed' | 'request' | 'offer' | 'accepted' | 'withdrawn';
 
 interface Submission {
@@ -40,7 +40,12 @@ const STATUS_CONFIG: Record<SubmissionStatus, { label: string; color: string; do
 const TYPE_LABELS: Record<RecipientType, string> = {
   agent: 'Agent', manager: 'Manager', producer: 'Producer',
   festival: 'Festival', network: 'Network', studio: 'Studio', other: 'Other',
+  publisher: 'Publisher', magazine: 'Magazine', contest: 'Contest',
 };
+
+// Who a manuscript goes to vs. who a script goes to.
+const NOVEL_TYPES: RecipientType[] = ['agent', 'publisher', 'magazine', 'contest', 'other'];
+const SCRIPT_TYPES: RecipientType[] = ['agent', 'manager', 'producer', 'festival', 'network', 'studio', 'other'];
 
 const EMPTY_FORM = (): Omit<Submission, 'id' | 'project_id' | 'created_at'> => ({
   script_id: null,
@@ -59,6 +64,8 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
   const currentUserRole             = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : 'viewer');
   const canEdit                     = currentUserRole !== 'viewer';
+  const isNovel                     = currentProject?.project_type === 'novel';
+  const recipientTypes              = isNovel ? NOVEL_TYPES : SCRIPT_TYPES;
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -83,7 +90,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
 
   const openAdd = () => {
     setEditing(null);
-    setForm(EMPTY_FORM());
+    setForm({ ...EMPTY_FORM(), recipient_type: isNovel ? 'agent' : 'producer' });
     setModalOpen(true);
   };
 
@@ -164,7 +171,7 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <PageTitle>Submission Tracker</PageTitle>
-          <p className="text-sm text-surface-400 mt-0.5">{submissions.length} total submissions</p>
+          <p className="text-sm text-surface-400 mt-0.5">{submissions.length} total submissions{isNovel ? ' · queries, partials, fulls and short-fiction submissions' : ''}</p>
         </div>
         {canEdit && (
           <Button onClick={openAdd} size="sm">
@@ -295,8 +302,9 @@ export default function SubmissionsPage({ params }: { params: { id: string } }) 
                 onChange={(e) => setForm((f) => ({ ...f, recipient_type: e.target.value as RecipientType }))}
                 className="w-full px-3 py-2 bg-surface-800/60 border border-surface-700 rounded-lg text-sm text-white focus:outline-none"
               >
-                {(Object.entries(TYPE_LABELS) as [RecipientType, string][]).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                {/* Keep a saved type selectable even if it's not offered for this project type */}
+                {Array.from(new Set([...recipientTypes, form.recipient_type])).map((k) => (
+                  <option key={k} value={k}>{TYPE_LABELS[k]}</option>
                 ))}
               </select>
             </div>

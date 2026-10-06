@@ -244,6 +244,7 @@ export const SCRIPT_TYPE_OPTIONS: { value: ScriptType; label: string; descriptio
   { value: 'youtube', label: 'YouTube Video', description: 'Long-form video content with hooks & CTAs', icon: 'play' },
   { value: 'tiktok', label: 'TikTok / Reels / Shorts', description: 'Short-form vertical video content', icon: 'phone' },
   { value: 'videogame', label: 'Video Game', description: 'Interactive storytelling, branching dialogue, worldbuilding', icon: 'gamepad' },
+  { value: 'novel', label: 'Novel & Short Story', description: 'Books, novellas and short fiction — chapters, prose tools, EPUB export', icon: 'feather' },
 ];
 
 // Audio-drama-specific format options shown in step 1 when podcast/audio drama type is selected
@@ -264,6 +265,7 @@ export const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string; descript
   { value: 'livestream', label: 'Livestream', description: 'Live streaming content planning', icon: 'radio' },
   { value: 'tv_production', label: 'TV Production', description: 'Professional broadcast & studio production', icon: 'broadcast' },
   { value: 'stage_play',    label: 'Stage Play',    description: 'Theatre productions, musicals and stage shows', icon: 'theater' },
+  { value: 'novel',         label: 'Novel',         description: 'Books, novellas and short stories', icon: 'feather' },
 ];
 
 // Content Creator Types

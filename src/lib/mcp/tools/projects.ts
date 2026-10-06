@@ -5,8 +5,8 @@ import { compact, must, tool } from '../tool';
 import { writeFountain } from './scripts';
 import { fillEmails } from '@/lib/private-profile';
 
-const SCRIPT_TYPES = ['screenplay', 'stageplay', 'episodic', 'sketch', 'comic', 'podcast', 'audio_drama', 'youtube', 'tiktok', 'videogame'] as const;
-const PROJECT_TYPES = ['film', 'youtube', 'tiktok', 'podcast', 'audio_drama', 'documentary', 'educational', 'livestream', 'tv_production', 'stage_play', 'videogame'] as const;
+const SCRIPT_TYPES = ['screenplay', 'stageplay', 'episodic', 'sketch', 'comic', 'podcast', 'audio_drama', 'youtube', 'tiktok', 'videogame', 'novel'] as const;
+const PROJECT_TYPES = ['film', 'youtube', 'tiktok', 'podcast', 'audio_drama', 'documentary', 'educational', 'livestream', 'tv_production', 'stage_play', 'videogame', 'novel'] as const;
 const PROJECT_STATUS = ['development', 'pre_production', 'production', 'post_production', 'completed', 'archived'] as const;
 
 /** The project columns a client may change. Ownership and billing columns are deliberately absent. */
@@ -148,7 +148,7 @@ export const projectTools = [
       logline: s.string(),
       synopsis: s.string(),
       project_type: s.enum(PROJECT_TYPES, 'What is being made (default film)'),
-      script_type: s.enum(SCRIPT_TYPES, 'Writing format (default screenplay). Use episodic for series.'),
+      script_type: s.enum(SCRIPT_TYPES, 'Writing format (default screenplay). Use episodic for series. Use novel (with project_type novel) for books and short stories; their prose lives in novel_chapters records, not the script.'),
       format: s.string('e.g. feature, short, pilot, web series'),
       genre: s.array(s.string()),
       status: s.enum(PROJECT_STATUS),

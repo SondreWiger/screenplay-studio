@@ -14,6 +14,7 @@ export type ProjectNavFlags = {
   isStagePlay: boolean;
   isContentCreator: boolean;
   isEpisodic: boolean;
+  isNovel: boolean;
   isViewer: boolean;
 };
 
@@ -36,6 +37,7 @@ export function getProjectNavFlags(
     isAudioDrama: projectType === 'audio_drama' || scriptType === 'audio_drama',
     isStagePlay: projectType === 'stage_play' || scriptType === 'stageplay',
     isEpisodic: scriptType === 'episodic',
+    isNovel: projectType === 'novel' || scriptType === 'novel',
     isViewer,
   };
 }
@@ -48,13 +50,15 @@ export function getNavCategories(
     isStagePlay: boolean;
     isContentCreator: boolean;
     isEpisodic: boolean;
+    isNovel?: boolean;
     isViewer: boolean;
   }
 ): NavCategory[] {
-  const { isTvProduction, isAudioDrama, isStagePlay, isContentCreator, isEpisodic, isViewer } = options;
+  const { isTvProduction, isAudioDrama, isStagePlay, isContentCreator, isEpisodic, isNovel, isViewer } = options;
   const p = `/projects/${projectId}`;
 
   if (isTvProduction) return tvNav(p);
+  if (isNovel) return novelNav(p, isViewer);
   if (isAudioDrama) return audioDramaNav(p);
   if (isStagePlay) return stagePlayNav(p, isViewer);
   if (isContentCreator) return contentCreatorNav(p);
@@ -222,6 +226,63 @@ function tvNav(p: string): NavCategory[] {
         { label: 'Set Quotes', href: `${p}/quotes`, icon: 'quotes', always: true },
       ],
     },
+  ];
+}
+
+// Books and short stories: no scenes, shots or production. Everything here is
+// free — none of these icon keys map to a gated feature flag.
+function novelNav(p: string, isViewer: boolean): NavCategory[] {
+  return [
+    { category: '', items: [{ label: 'Overview', href: p, icon: 'overview', always: true }] },
+    {
+      category: 'Write',
+      items: [
+        { label: 'Manuscript', href: `${p}/manuscript`, icon: 'manuscript', always: true },
+        { label: 'Goals & Sprints', href: `${p}/writing-goals`, icon: 'writing-goals', always: true },
+        { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
+        { label: 'Research', href: `${p}/documents`, icon: 'documents', always: true },
+      ],
+    },
+    {
+      category: 'Story Bible',
+      items: [
+        { label: 'Characters', href: `${p}/characters`, icon: 'characters', always: true },
+        { label: 'Places', href: `${p}/locations`, icon: 'locations', always: true },
+        { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
+        { label: 'Timeline', href: `${p}/timeline`, icon: 'story-timeline', always: true },
+        { label: 'Plot Structure', href: `${p}/beat-sheet`, icon: 'beat-sheet', always: true },
+        { label: 'Arc Planner', href: `${p}/arc-planner`, icon: 'arc-planner', always: true },
+        { label: 'Mind Map', href: `${p}/mindmap`, icon: 'mindmap', always: true },
+        { label: 'Mood Board', href: `${p}/moodboard`, icon: 'moodboard', always: true },
+      ],
+    },
+    {
+      category: 'Revise',
+      items: [
+        { label: 'Prose Analysis', href: `${p}/prose-analysis`, icon: 'prose-analysis', always: true },
+        { label: 'Notes Rounds', href: `${p}/notes-rounds`, icon: 'notes-rounds', always: true },
+        { label: 'Comments', href: `${p}/comments`, icon: 'comments', collab: true },
+      ],
+    },
+    {
+      category: 'Publish',
+      items: [
+        { label: 'Export Book', href: `${p}/book-export`, icon: 'book-export', always: true },
+        { label: 'Query Kit', href: `${p}/query-kit`, icon: 'query-kit', always: true },
+        { label: 'Submissions', href: `${p}/submissions`, icon: 'submissions', always: true },
+      ],
+    },
+    {
+      category: 'Collaboration',
+      items: [
+        { label: 'Chat', href: `${p}/chat`, icon: 'chat', collab: true },
+        { label: 'Team', href: `${p}/team`, icon: 'team', collab: true },
+      ],
+    },
+    ...(!isViewer ? [{ category: '', items: [
+      { label: 'Showcase', href: `${p}/showcase`, icon: 'showcase', always: true },
+      { label: 'Settings', href: `${p}/settings`, icon: 'settings', always: true },
+    ] }] : []),
   ];
 }
 

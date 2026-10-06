@@ -470,7 +470,18 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               const isContentCreator = ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(pt);
               const isTvProduction = pt === 'tv_production';
               const isAudioDrama = pt === 'audio_drama';
-              const allTabs = [
+              const isNovel = pt === 'novel';
+              const allTabs = isNovel ? [
+                { key: 'manuscript', label: 'Manuscript', show: true },
+                { key: 'characters', label: 'Characters', show: true },
+                { key: 'locations', label: 'Places', show: true },
+                { key: 'story-timeline', label: 'Timeline', show: true },
+                { key: 'documents', label: 'Research', show: true },
+                { key: 'ideas', label: 'Ideas', show: true },
+                { key: 'mindmap', label: 'Mind Map', show: true },
+                { key: 'moodboard', label: 'Mood Board', show: true },
+                { key: 'team', label: 'Team', show: true },
+              ] : [
                 // Core — always shown
                 { key: 'script', label: 'Script', show: true },
                 { key: 'scenes', label: 'Scenes', show: !isTvProduction },
