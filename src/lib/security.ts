@@ -69,7 +69,6 @@ export function enableContentProtection() {
  * This deters unauthorized screenshots by embedding user info.
  */
 export function generateWatermarkCSS(username: string): string {
-  const encoded = btoa(username + ' - ' + new Date().toISOString().split('T')[0]);
   return `
     position: relative;
     &::after {

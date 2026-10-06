@@ -16,7 +16,6 @@ interface Props {
 type Tab = 'classes' | 'assignments' | 'submissions';
 
 export function OrgEducation({ companyId, userId, canManage }: Props) {
-  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('classes');
   const [classes, setClasses] = useState<OrgClass[]>([]);
   const [assignments, setAssignments] = useState<OrgClassAssignment[]>([]);

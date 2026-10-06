@@ -25,7 +25,7 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number, label: string): Pro
 }
 
 export function useAuth() {
-  const { user, loading, initialized, setUser, setLoading, setInitialized } = useAuthStore();
+  const { user, loading, setUser, setLoading, setInitialized } = useAuthStore();
 
   useEffect(() => {
     // Use the store's `initialized` flag so that multiple components calling useAuth()

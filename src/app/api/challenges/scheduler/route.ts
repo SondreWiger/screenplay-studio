@@ -4,7 +4,7 @@ import { rejectUnlessCron } from '@/lib/cron-auth';
 import { createClient } from '@/lib/supabase/client';
 import { getChallengePhase, formatDateTime } from '@/lib/utils';
 import { sendDiscordWebhook, announceChallenge, announceBlogPost, announceBlogPostWithSeries, type DiscordEmbed } from '@/lib/discord';
-import { getThemeEmoji, getPhaseEmoji } from '@/lib/constants';
+import { getThemeEmoji } from '@/lib/constants';
 import type { ChallengeSubmission } from '@/lib/types/gamification';
 
 interface ChallengeQueryResult {
@@ -190,45 +190,6 @@ export async function GET(req: Request) {
   }
 }
 
-async function announceChallengeStart(challenge: ChallengeQueryResult): Promise<void> {
-  const phaseEmoji = getPhaseEmoji('upcoming');
-  const themeEmoji = getThemeEmoji(challenge.theme_id);
-
-  await sendDiscordWebhook({
-    content: `🔥 **NEW CHALLENGE DROPPED!** ${themeEmoji} **${challenge.title}**\n\n🎭 The theme is set! Get ready to write. The challenge just kicked off! 🎭\n\n🏃 Hurry, submissions close soon! Time to create something special. ✨`,
-    embeds: [
-      {
-        title: `🔥 ${challenge.title}`,
-        description: getChallengeDescription(challenge),
-        color: 0xFF5F1F,
-        fields: [
-          {
-            name: '⏰ Starting Right Now!',
-            value: `The challenge just launched! Get writing! 🎯\\n\\n*Current time:* ${formatDateTime(new Date().toISOString())}`,            inline: false
-          },
-          {
-            name: '📝 How to Participate',
-            value: `1️⃣ Write your script\n2️⃣ Submit via the challenge page\n3️⃣ Wait for voting!\n\n🚀 Ready? Let the words flow!`,            inline: false
-          },
-          {
-            name: '💰 Prize',
-            value: challenge.prize_title || 'TBD',
-            inline: true
-          },
-          {
-            name: '👥 Current Submissions',
-            value: challenge.submission_count.toString(),
-            inline: true
-          }
-        ],
-        footer: { text: 'Screenplay Studio Weekly Challenge' },
-        timestamp: new Date().toISOString(),
-      }
-    ],
-    username: 'Screenplay Studio Bot',
-    avatar_url: 'https://screenplay.studio/logo.png',
-  });
-}
 
 async function announcePhaseChange(challenge: ChallengeQueryResult, fromPhase: string, toPhase: string): Promise<void> {
   const themeEmoji = getThemeEmoji(challenge.theme_id);

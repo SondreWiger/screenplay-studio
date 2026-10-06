@@ -3,8 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Input, Textarea, Card, Modal } from '@/components/ui';
-import { useTranslation } from '@/components/TranslationProvider';
+import { Button, Input, Textarea, Card } from '@/components/ui';
 import { WorldEntity, WorldEntityCategory, WorldEntityRelationship } from '@/lib/types';
 
 import { cn } from '@/lib/utils';
@@ -24,7 +23,6 @@ const CATEGORIES: { value: WorldEntityCategory; label: string; icon: string }[] 
 export default function WorldbuildingPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
   const { currentProject, members } = useProjectStore();
-  const { t } = useTranslation();
   
   const currentUserRole = members.find((m) => m.user_id === user?.id)?.role
     || (currentProject?.created_by === user?.id ? 'owner' : undefined);
@@ -36,7 +34,6 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
   // Worldbuilding tables come from a migration; if it hasn't been applied the
   // page explains that instead of silently showing nothing.
   const [unavailable, setUnavailable] = useState(false);
-  const [saving, setSaving] = useState(false);
   
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<WorldEntityCategory>('lore');
@@ -228,7 +225,7 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
                       try {
                         const parsed = e.target.value.trim() ? JSON.parse(e.target.value) : {};
                         handleUpdateEntity(selectedEntity.id, { properties: parsed });
-                      } catch (err) {}
+                      } catch {}
                     }}
                     placeholder='{"Population": "10,000", "Leader": "King Arthur"}'
                     rows={3}

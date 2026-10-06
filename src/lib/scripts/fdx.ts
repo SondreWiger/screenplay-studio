@@ -247,7 +247,7 @@ export interface FDXExportOptions {
  * Generate an FDX XML string from script elements and title page data.
  */
 export function generateFDX(options: FDXExportOptions): string {
-  const { titlePage, elements, scriptTitle } = options;
+  const { titlePage, elements } = options;
 
   const lines: string[] = [];
   lines.push('<?xml version="1.0" encoding="UTF-8" standalone="no"?>');

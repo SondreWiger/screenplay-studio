@@ -153,7 +153,7 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
         try {
           const errData = await res.json();
           errMessage = errData.error || errMessage;
-        } catch (e) {
+        } catch {
           // ignore parsing error
         }
         throw new Error(errMessage);

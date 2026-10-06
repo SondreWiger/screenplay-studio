@@ -25,7 +25,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { EmailSpamNotice } from '@/components/notifications/EmailSpamNotice';
 import { ShortcutPicker } from '@/components/sidebar/ShortcutPicker';
 import { cn } from '@/lib/utils';
-import { PAGE_LABELS, getPageSection, getPageLabelKey } from '@/lib/pageLabels';
+import { PAGE_LABELS, getPageLabelKey } from '@/lib/pageLabels';
 import { getNavCategories, getProjectNavFlags, type NavItem, type NavCategory } from '@/lib/navCategories';
 import { sidebarIcons } from '@/components/sidebar/SidebarIcons';
 import type { UserRole, UserPresence, SidebarSection } from '@/lib/types';
@@ -105,7 +105,7 @@ export default function ProjectLayout({
   const { onlineUsers } = usePresenceStore();
   const { updatePresence } = useRealtime(params.id);
   useCrossToolSync(params.id);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   // Why the project couldn't be shown. Transient failures never navigate away —
   // the user gets a retry screen instead of being dropped on the dashboard.
   const [loadError, setLoadError] = useState<null | 'not_found' | 'no_access' | 'network'>(null);

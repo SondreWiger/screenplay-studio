@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useThemeStore, useAuthStore } from '@/lib/stores';
-import { DEFAULT_THEME, THEME_COLOR_FIELDS, encodeTheme, THEME_CATEGORIES, type AppTheme, type ThemeColors } from '@/lib/theme';
-import { Button, Input, toast } from '@/components/ui';
+import { DEFAULT_THEME, THEME_COLOR_FIELDS, encodeTheme, THEME_CATEGORIES, type ThemeColors } from '@/lib/theme';
+import { Button, toast } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
 
 // ── Simplified screenplay preview ──────────────────────────────

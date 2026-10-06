@@ -303,7 +303,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
             <div className="p-8">
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-white mb-1">What kind of organization?</h2>
-                <p className="text-surface-400 text-sm">We'll customize recommendations based on your type.</p>
+                <p className="text-surface-400 text-sm">We&apos;ll customize recommendations based on your type.</p>
               </div>
 
               <div className="grid grid-cols-1 gap-3 max-w-md mx-auto mb-8">
@@ -424,7 +424,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
             <div className="p-8">
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-white mb-1">Ready to launch</h2>
-                <p className="text-surface-400 text-sm">Here's what we're setting up for you.</p>
+                <p className="text-surface-400 text-sm">Here&apos;s what we&apos;re setting up for you.</p>
               </div>
 
               <div className="max-w-md mx-auto space-y-4">

@@ -319,7 +319,6 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const [lang, setLang] = useState('en');
   const [loading, setLoading] = useState(false);
   const prevLang = useRef<string>('en');
-  const inited = useRef(false);
 
   const loadTranslations = useCallback(async (language: string) => {
     const supabase = createClient();

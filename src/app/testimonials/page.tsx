@@ -152,7 +152,7 @@ function TestimonialModal({
         <div className="flex-1 overflow-y-auto">
           {/* Quote */}
           <div className="px-6 py-6">
-            <div className="text-4xl font-bold leading-none mb-4" style={{ color: ORANGE }}>"</div>
+            <div className="text-4xl font-bold leading-none mb-4" style={{ color: ORANGE }}>&quot;</div>
             <p className="text-sm text-white/60 leading-[1.9] whitespace-pre-wrap">{t.body}</p>
           </div>
 
@@ -238,7 +238,7 @@ function TestimonialModal({
 
 export default function TestimonialsPage() {
   // useAuth() initializes the auth store — without this call, user stays null forever
-  const { user, loading: authLoading } = useAuth();
+  useAuth();
   const [items, setItems] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStar, setFilterStar] = useState<number | null>(null);
@@ -431,10 +431,6 @@ export default function TestimonialsPage() {
             >
               {filtered.map((t, i) => {
                 const cols = 3; // lg breakpoint
-                const rows = Math.ceil(filtered.length / cols);
-                const col = i % cols;
-                const row = Math.floor(i / cols);
-                const totalRows = Math.ceil(filtered.length / cols);
 
                 return (
                   <button
@@ -468,7 +464,7 @@ export default function TestimonialsPage() {
                       className="mt-3 text-3xl font-bold leading-none opacity-20 group-hover:opacity-60 transition-opacity duration-150"
                       style={{ color: ORANGE }}
                     >
-                      "
+                      &quot;
                     </div>
 
                     {/* Body */}

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button, Card, Input, Textarea, Modal, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import { useTranslation } from '@/components/TranslationProvider';
-import type { OrgScriptAssignment, ScriptAssignmentStatus, Profile, Project } from '@/lib/types';
+import type { OrgScriptAssignment, ScriptAssignmentStatus, Profile } from '@/lib/types';
 
 interface Props {
   companyId: string;

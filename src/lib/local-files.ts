@@ -4,7 +4,6 @@
  *   ~/ScreenplayStudio/projects/{project-id}/project.json
  */
 
-import { isElectronMode } from '@/lib/supabase/electron-client';
 import type { Project, Script, ScriptElement } from '@/lib/types';
 
 const PROJECTS_DIR = 'ScreenplayStudio/projects';

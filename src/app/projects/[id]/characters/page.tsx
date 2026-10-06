@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
@@ -36,7 +36,6 @@ export default function CharactersPage({ params }: { params: { id: string } }) {
   const [showBulkEditor, setShowBulkEditor] = useState(false);
 
 
-  const hasSynced = useRef(false);
 
   // Auto-open editor when ?edit=charId is in the URL
   useEffect(() => {
@@ -840,7 +839,7 @@ function CharacterEditor({
                   try {
                     const parsed = e.target.value.trim() ? JSON.parse(e.target.value) : {};
                     setForm({ ...form, stats: parsed });
-                  } catch (err) {
+                  } catch {
                     // Ignore parse errors while typing, ideally we'd show an error state
                   }
                 }} 

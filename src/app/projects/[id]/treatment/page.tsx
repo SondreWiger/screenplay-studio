@@ -282,7 +282,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
   const addArc = () => { const id = uid(); setForm(f => ({ ...f, character_arcs: [...f.character_arcs, { id, name: '', role: '', arc: '' }] })); setExpandedArcs(s => new Set(Array.from(s).concat(id))); };
   const updateArc = (id: string, field: keyof CharacterArc, val: string) => setForm(f => ({ ...f, character_arcs: f.character_arcs.map(c => c.id === id ? { ...c, [field]: val } : c) }));
   const removeArc = (id: string) => setForm(f => ({ ...f, character_arcs: f.character_arcs.filter(c => c.id !== id) }));
-  const toggleArc = (id: string) => setExpandedArcs(s => { const n = new Set(Array.from(s)); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleArc = (id: string) => setExpandedArcs(s => { const n = new Set(Array.from(s)); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
   const addEvent = () => setForm(f => ({ ...f, timeline: [...f.timeline, { id: uid(), date: '', event: '', type: 'world' as const }] }));
   const updateEvent = (id: string, field: keyof TimelineEvent, val: string) => setForm(f => ({ ...f, timeline: f.timeline.map(e => e.id === id ? { ...e, [field]: val } : e) }));

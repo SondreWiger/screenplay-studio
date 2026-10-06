@@ -317,7 +317,7 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
       {/* Project Customization */}
       <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
         <h2 className="text-lg font-semibold text-white mb-2">Project Customization</h2>
-        <p className="text-sm text-surface-400 mb-6">Override your global preferences for this project only. Leave on "Default" to use your account settings.</p>
+        <p className="text-sm text-surface-400 mb-6">Override your global preferences for this project only. Leave on &quot;Default&quot; to use your account settings.</p>
 
         {/* Script Page Size */}
         <div className="mb-6">
@@ -470,7 +470,6 @@ export default function SettingsPage({ params }: { params: { id: string } }) {
               const isContentCreator = ['youtube', 'tiktok', 'podcast', 'educational', 'livestream'].includes(pt);
               const isTvProduction = pt === 'tv_production';
               const isAudioDrama = pt === 'audio_drama';
-              const isStagePlay = pt === 'stage_play';
               const allTabs = [
                 // Core — always shown
                 { key: 'script', label: 'Script', show: true },

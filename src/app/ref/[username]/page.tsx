@@ -119,7 +119,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
             WRITE BETTER.
           </h1>
           <p className="text-white/50 text-sm max-w-sm mx-auto mt-4 leading-relaxed">
-            You've been invited to try Screenplay Studio — the full professional screenwriting and production platform. Free, forever.
+            You&apos;ve been invited to try Screenplay Studio — the full professional screenwriting and production platform. Free, forever.
           </p>
 
           {/* Social links */}

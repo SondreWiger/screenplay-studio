@@ -121,9 +121,6 @@ function getPhaseColor(phase: string): number {
   }
 }
 
-function formatDate(dateString: string): string {
-  return formatDateUtil(dateString);
-}
 
 function getWinnerInfo(challenge: { submissions?: Array<{ author?: { full_name?: string } }> }): string {
   if (!challenge.submissions || challenge.submissions.length === 0) return 'No submissions';

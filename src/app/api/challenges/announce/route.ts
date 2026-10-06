@@ -15,7 +15,6 @@ export async function GET(req: Request) {
   try {
     const supabase = createClient();
 
-    const now = new Date().toISOString();
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     // Get challenges that have changed in the last 24 hours

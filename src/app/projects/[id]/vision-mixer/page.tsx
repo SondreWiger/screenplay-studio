@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/stores';
 import { Badge, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type {
-  BroadcastSource, BroadcastSwitcherState, BroadcastTransitionType,
+  BroadcastSource, BroadcastSwitcherState,
 } from '@/lib/types';
 import { BROADCAST_TRANSITION_TYPES } from '@/lib/types';
 
@@ -198,11 +198,6 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
     return sources.find(s => s.id === id)?.name || 'Unknown';
   };
 
-  const getSourceShort = (id: string | null) => {
-    if (!id) return '—';
-    const s = sources.find(s => s.id === id);
-    return s?.short_name || s?.name?.substring(0, 6) || '?';
-  };
 
   // Render
 

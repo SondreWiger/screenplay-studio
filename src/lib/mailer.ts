@@ -3,7 +3,6 @@ import { Resend } from 'resend';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const DEFAULT_FROM_EMAIL = process.env.EMAIL_FROM || 'Screenplay Studio <onboarding@resend.dev>';
-const DEFAULT_FROM_NAME = process.env.EMAIL_FROM_NAME || 'Screenplay Studio';
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 

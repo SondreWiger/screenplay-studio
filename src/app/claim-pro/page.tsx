@@ -106,7 +106,7 @@ export default function ClaimProPage() {
         <div className="bg-surface-900 border border-surface-700 rounded-2xl p-8">
           <h1 className="text-2xl font-bold text-white mb-2">Claim Your Pro Access</h1>
           <p className="text-surface-400 mb-6">
-            Thank you for your donation! If it hasn't activated automatically, enter your Ko-Fi transaction ID below to activate 2 months of Pro.
+            Thank you for your donation! If it hasn&apos;t activated automatically, enter your Ko-Fi transaction ID below to activate 2 months of Pro.
           </p>
 
           <div className="space-y-4">

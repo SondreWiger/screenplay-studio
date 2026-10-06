@@ -4,12 +4,12 @@ import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
 import { clearLocalUser, isLocalMode, isElectronMode } from '@/lib/supabase/electron-client';
 import { loadProjectFromDisk, listLocalProjects } from '@/lib/local-files';
-import { putCached, deleteCached, cacheRows, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById, pendingSyncCount } from '@/lib/offline/db';
+import { putCached, deleteCached, cacheRows, getCachedProjects, getCachedByProject, getCachedByScript, getCachedById } from '@/lib/offline/db';
 import { offlineUpsert, offlineDelete, offlineUpsertMany } from '@/lib/offline/sync';
 import logger from '@/lib/logger';
 import type {
-  Project, Script, ScriptElement, Character, Location,
-  Scene, Shot, Idea, BudgetItem, ScheduleEvent, Comment,
+  Project, Script, ScriptElement, 
+  
   Profile, ProjectMember, UserPresence, Notification
 } from '@/lib/types';
 

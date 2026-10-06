@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
 import { isElectronMode } from '@/lib/supabase/electron-client';
 

@@ -24,7 +24,7 @@ interface UseSidebarLayoutReturn {
   activeScope: SaveScope | null;
 }
 
-export function useSidebarLayout(projectId: string, userId: string | undefined, isAdmin: boolean): UseSidebarLayoutReturn {
+export function useSidebarLayout(projectId: string, userId: string | undefined, _isAdmin: boolean): UseSidebarLayoutReturn {
   const [layout, setLayout] = useState<SidebarLayout | null>(null);
   const [activeScope, setActiveScope] = useState<SaveScope | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,7 +110,6 @@ export function useSidebarLayout(projectId: string, userId: string | undefined, 
     const stored = layout.sections;
 
     // Build a map of section id → stored section
-    const storedMap = new Map(stored.map(s => [s.id, s]));
 
     // Ordered result following stored order first, then any new sections
     const result: SidebarSection[] = [];
@@ -126,7 +125,6 @@ export function useSidebarLayout(projectId: string, userId: string | undefined, 
       const storedItems = storedSection.items ?? [];
 
       // Build ordered items list
-      const storedItemMap = new Map(storedItems.map(i => [i.icon, i]));
       const orderedItems: SidebarNavItem[] = [];
       const seenItems = new Set<string>();
 

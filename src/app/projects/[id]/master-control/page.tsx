@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
 import { Button, Badge, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastPlayoutItem, BroadcastPlayoutItemType } from '@/lib/types';
@@ -12,7 +11,6 @@ import { BROADCAST_PLAYOUT_ITEM_TYPES, formatBroadcastDuration } from '@/lib/typ
 // Play, Cue, Next, transport controls, chain-of-events
 
 export default function MasterControlPage({ params }: { params: { id: string } }) {
-  const { user } = useAuthStore();
   const projectId = params.id;
 
   const [loading, setLoading] = useState(true);

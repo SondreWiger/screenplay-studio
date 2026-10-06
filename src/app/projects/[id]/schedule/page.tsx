@@ -488,7 +488,7 @@ function ScheduleEditor({ isOpen, onClose, event, projectId, userId, scenes, loc
         const { error } = await supabase.from('production_schedule').insert(payload);
         if (error) { toast.error(error.message); setLoading(false); return; }
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to save event');
     }
     setLoading(false);

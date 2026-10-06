@@ -25,7 +25,7 @@ export default function ScriptEditorLearnPage() {
 
       <ModuleSection title="Keyboard Navigation">
         <p className="mb-4">
-          You don't need to use your mouse to change formatting. Use the <kbd className="px-2 py-1 bg-surface-800 rounded border border-surface-700 text-brand-300 font-mono text-xs shadow-sm">Tab</kbd> key to cycle through element types on the current line.
+          You don&apos;t need to use your mouse to change formatting. Use the <kbd className="px-2 py-1 bg-surface-800 rounded border border-surface-700 text-brand-300 font-mono text-xs shadow-sm">Tab</kbd> key to cycle through element types on the current line.
         </p>
         <KeybindTable 
           binds={[
@@ -41,7 +41,7 @@ export default function ScriptEditorLearnPage() {
 
       <ModuleSection title="The Sidebar (Gutter)">
         <p className="mb-4">
-          To the left of your script is the "gutter". Hovering over the gutter reveals the element picker button. 
+          To the left of your script is the &quot;gutter&quot;. Hovering over the gutter reveals the element picker button. 
         </p>
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 flex-shrink-0 bg-surface-800 rounded-lg border border-surface-700 flex items-center justify-center text-surface-400">

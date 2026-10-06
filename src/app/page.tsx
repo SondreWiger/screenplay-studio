@@ -633,7 +633,7 @@ export default async function LandingPage() {
 
           {/* Tool Grid — editorial data-vis style */}
           <div className="border-t border-white/[0.04]">
-            {tools.map((tool, i) => (
+            {tools.map((tool, _i) => (
               <div
                 key={tool.n}
                 className="grid grid-cols-12 items-center border-b border-white/[0.04] group cursor-default hover:bg-white/[0.015] transition-colors duration-400"

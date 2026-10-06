@@ -15,7 +15,6 @@ import { Icon } from '@/components/ui/icons';
 import { SCRIPT_TYPE_OPTIONS } from '@/lib/types';
 import type { UsageIntent, ScriptType, Company, Profile } from '@/lib/types';
 import type { InsiderTier } from '@/hooks/useFeatureFlags';
-import { useFeatureAccess } from '@/components/FeatureGate';
 import { useGamification } from '@/hooks/useGamification';
 import { ThemePreview } from '@/components/ThemePreview';
 import { BadgeDisplay, getDisplayBadges } from '@/components/BadgeDisplay';
@@ -25,7 +24,6 @@ import { useTranslation } from '@/components/TranslationProvider';
 
 function InsiderProgramCard() {
   const { user } = useAuth();
-  const { t } = useTranslation();
   const [tier, setTier] = useState<InsiderTier>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -94,7 +92,6 @@ function InsiderProgramCard() {
 }
 
 function PreMiDCard() {
-  const { t } = useTranslation();
   const read = (key: string, def: boolean): boolean => {
     if (typeof window === 'undefined') return def;
     const v = localStorage.getItem(key);
@@ -622,7 +619,7 @@ function TranslationsSettingsTab() {
   const [preferredLang, setPreferredLang] = useState<string>(user?.preferred_language || '');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [, setShowAddModal] = useState(false);
   const [newLang, setNewLang] = useState({ code: '', name: '', native_name: '' });
 
   useEffect(() => {
@@ -803,7 +800,6 @@ export default function UserSettingsPage() {
   const tab = (searchParams.get('tab') as SettingsTab) || 'profile';
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const { canUse: canUseFeature } = useFeatureAccess();
 
   // Profile form
   const [fullName, setFullName] = useState('');

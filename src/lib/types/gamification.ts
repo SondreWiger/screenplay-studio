@@ -1,4 +1,4 @@
-import type { Profile, CommunityPostStatus, ChallengeType, ChallengeDifficulty, ProductionStatus } from './base';
+import type { Profile, CommunityPostStatus, ChallengeType, ChallengeDifficulty } from './base';
 import type { SubCommunity } from './community';
 
 // Blog Types

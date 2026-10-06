@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
-import { useProjectStore } from '@/lib/stores';
 import { Card, Button, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -65,7 +64,6 @@ const CUE_ICONS: Record<string, string> = {
 
 
 export default function SoundDesignPage({ params }: { params: { id: string } }) {
-  const { currentProject } = useProjectStore();
   const [cues, setCues] = useState<AudioCue[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<CueType>('ALL');
@@ -304,7 +302,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
                     <p className="text-xs text-surface-500 max-w-sm mx-auto">
                       Add cue lines to your script starting with <code className="text-violet-400">SFX:</code>,{' '}
                       <code className="text-violet-400">MUSIC:</code>, or{' '}
-                      <code className="text-violet-400">AMBIENCE:</code> — they'll appear here automatically.
+                      <code className="text-violet-400">AMBIENCE:</code> — they&apos;ll appear here automatically.
                     </p>
                     <Link href={`/projects/${params.id}/script`}>
                       <Button variant="ghost" size="sm" className="mt-4">Open Script Editor</Button>

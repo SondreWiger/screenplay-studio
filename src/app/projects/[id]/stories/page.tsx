@@ -18,7 +18,7 @@ import { PageTitle } from '@/components/projects/PageTitle';
 
 export default function StoriesPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
-  const { currentProject, members } = useProjectStore();
+  const { members } = useProjectStore();
   const projectId = params.id;
 
   // State

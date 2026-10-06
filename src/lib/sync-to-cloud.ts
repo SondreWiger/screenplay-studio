@@ -11,8 +11,8 @@ import {
   getCachedProjects,
   getCachedByProject,
   getCachedByScript,
-  putCached,
-  type Row,
+  
+  
 } from '@/lib/offline/db';
 import { isElectronMode } from '@/lib/supabase/electron-client';
 import { listLocalProjects, loadProjectFromDisk } from '@/lib/local-files';

@@ -128,7 +128,7 @@ export function MindmapTab({ projects }: { projects: ProjectWithMembers[] }) {
     });
 
     // Step 3: Add unique user nodes
-    userNodesMap.forEach((user, userId) => {
+    userNodesMap.forEach((user, _userId) => {
       // Place users orbiting randomly around center
       const angle = Math.random() * Math.PI * 2;
       const radius = 180 + Math.random() * 80;

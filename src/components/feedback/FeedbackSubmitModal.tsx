@@ -38,7 +38,7 @@ const TYPES: { value: FeedbackType; label: string; icon: React.ElementType; desc
 
 const STEP_TITLES = ['Choose Type', 'Details', 'Review & Submit'];
 
-export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefillTitle, prefillBody, isErrorReport }: Props) {
+export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefillTitle, prefillBody, isErrorReport: _isErrorReport }: Props) {
   const { user } = useAuthStore();
   const [step, setStep] = useState<0 | 1 | 2>(defaultType ? 1 : 0);
   const [type, setType] = useState<FeedbackType>(defaultType ?? 'bug_report');

@@ -68,7 +68,6 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
   }, [pollId]);
 
   const questions = session?.questions ?? [];
-  const totalSteps = questions.length + 2; // intro + questions + done
   const currentQuestion = step >= 1 && step <= questions.length ? questions[step - 1] : null;
 
   const setAnswer = useCallback((qId: string, value: AnswerValue) => {

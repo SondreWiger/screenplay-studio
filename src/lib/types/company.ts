@@ -1,4 +1,4 @@
-import type { Profile, CompanyPlan, CompanyRole, ScriptElement } from './base';
+import type { Profile, CompanyPlan, CompanyRole } from './base';
 
 // Company Types
 

@@ -36,7 +36,7 @@ export default function NotificationsPage() {
   const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
-  const { notifications, unreadCount, loading, markAllAsRead, fetchNotifications } = useNotificationStore();
+  const { notifications, loading, markAllAsRead, fetchNotifications } = useNotificationStore();
   const [filter, setFilter] = useState<'all' | NotificationType>('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 

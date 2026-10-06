@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore, useProjectStore, useScriptStore } from '@/lib/stores';
 import Link from 'next/link';
-import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { Shot, Scene, ShotType, ShotMovement } from '@/lib/types';
@@ -254,7 +254,7 @@ function ShotEditor({ isOpen, onClose, shot, projectId, userId, scenes, onSaved,
         const { error } = await supabase.from('shots').insert(payload);
         if (error) { toast.error(error.message); setLoading(false); return; }
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to save shot');
     }
     setLoading(false);

@@ -321,7 +321,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
                       <p className="text-[11px] text-surface-500 mt-1 line-clamp-2">{c.description}</p>
                     )}
                     {extra.voice_direction && (
-                      <p className="text-[11px] text-surface-500 mt-1 italic line-clamp-1">"{extra.voice_direction}"</p>
+                      <p className="text-[11px] text-surface-500 mt-1 italic line-clamp-1">&quot;{extra.voice_direction}&quot;</p>
                     )}
                   </div>
                 </div>

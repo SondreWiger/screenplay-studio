@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
 import { Button, Modal, Input, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastSource, BroadcastSourceType, BroadcastSourceProtocol, BroadcastTallyState } from '@/lib/types';
@@ -37,7 +36,6 @@ const TALLY_COLORS: Record<BroadcastTallyState, string> = {
 };
 
 export default function SourcesPage({ params }: { params: { id: string } }) {
-  const { user } = useAuthStore();
   const projectId = params.id;
 
   const [loading, setLoading] = useState(true);

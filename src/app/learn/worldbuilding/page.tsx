@@ -65,7 +65,7 @@ export default function WorldbuildingModule() {
         <h2 className="text-xl font-bold text-white border-b border-surface-800 pb-2">Creating an Entity</h2>
         <div className="bg-surface-900/50 border border-surface-800 rounded-2xl p-6">
           <p className="text-sm text-surface-300 leading-relaxed mb-6">
-            Each piece of lore or character is an "Entity".
+            Each piece of lore or character is an &quot;Entity&quot;.
           </p>
           <div className="space-y-4">
             <div className="flex gap-4">
@@ -79,7 +79,7 @@ export default function WorldbuildingModule() {
               <div className="w-8 h-8 rounded-full bg-surface-800 text-surface-400 flex items-center justify-center shrink-0 font-bold">2</div>
               <div>
                 <h4 className="font-medium text-surface-50">Select Category</h4>
-                <p className="text-sm text-surface-400">Choose whether it's a Character, Location, Item, or general Lore.</p>
+                <p className="text-sm text-surface-400">Choose whether it&apos;s a Character, Location, Item, or general Lore.</p>
               </div>
             </div>
             <div className="flex gap-4">

@@ -2,15 +2,12 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/AppHeader';
-import { Input, Card, Badge, toast } from '@/components/ui';
+import { Input, Badge } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
 import { EmptyState, PageHeader, Segmented, StatGrid, dailySpark } from '@/components/kit';
 import { Palette, Plus } from 'lucide-react';
 import { THEME_CATEGORIES, type ThemeCategory } from '@/lib/theme';
-import { useThemeStore, useAuthStore } from '@/lib/stores';
-import type { AppTheme } from '@/lib/theme';
 
 interface ThemeRow {
   id: string;
@@ -71,7 +68,6 @@ function ThemeCard({ theme }: { theme: ThemeRow }) {
 }
 
 export default function ColorsStorePage() {
-  const router = useRouter();
   const [themes, setThemes] = useState<ThemeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<ThemeCategory>('all');

@@ -191,7 +191,7 @@ export default function CreatorSettingsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-white mb-1">Creator Program coming soon</h3>
-                <p className="text-sm text-surface-400">Applications aren't open yet. Check back soon — we'll announce it when the program launches.</p>
+                <p className="text-sm text-surface-400">Applications aren&apos;t open yet. Check back soon — we&apos;ll announce it when the program launches.</p>
               </div>
             </div>
           </Card>
@@ -239,7 +239,7 @@ export default function CreatorSettingsPage() {
             <div className="flex items-center gap-3 mb-3">
               <span className="text-[11px] font-semibold uppercase tracking-[0.04em] px-2 py-1 rounded border text-amber-400 border-amber-500/30 bg-amber-500/10">Under Review</span>
             </div>
-            <p className="text-sm text-surface-300">Your application is in the queue. We'll notify you once it's reviewed — usually within a few days.</p>
+            <p className="text-sm text-surface-300">Your application is in the queue. We&apos;ll notify you once it&apos;s reviewed — usually within a few days.</p>
             <p className="text-xs text-surface-500 mt-2">Applied {new Date(creator.applied_at).toLocaleDateString()}</p>
           </div>
         )}

@@ -43,8 +43,6 @@ const SQLITE_MAGIC = new Uint8Array([0x53, 0x51, 0x4c, 0x69, 0x74, 0x65, 0x20, 0
  *   104xx   = stage play documents
  *   2xxxx   = character/location/world data
  */
-/** Document types that represent script/text content (not metadata) */
-const SCRIPT_DOCUMENT_TYPES = new Set([10101, 10102, 10103, 10104, 10201, 10202, 10203, 10301, 10302, 10303, 10401, 10402]);
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -402,7 +400,7 @@ export async function parseStarcFile(file: File): Promise<StarcImportResult> {
 
   // ── Open database in memory (WASM sandbox — no filesystem access) ──
   const SQL = await initSqlJs({
-    locateFile: (path: string) => `/sql-wasm.wasm`,
+    locateFile: (_path: string) => `/sql-wasm.wasm`,
   });
   let db;
   try {

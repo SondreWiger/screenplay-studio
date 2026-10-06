@@ -72,7 +72,6 @@ export function OrgResources({ companyId, userId, canManage }: Props) {
 
   if (loading) return <div className="text-center py-12 text-surface-500">Loading resources...</div>;
 
-  const categories = Array.from(new Set(resources.map(r => r.category).filter(Boolean)));
 
   const filtered = resources.filter(r => {
     if (filter !== 'all' && r.resource_type !== filter) return false;

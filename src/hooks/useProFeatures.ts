@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores';
-import { PRO_LIMITS, type Subscription, type TeamLicense } from '@/lib/types';
+import { PRO_LIMITS, type Subscription } from '@/lib/types';
 
 // useProFeatures — DaVinci Resolve model
 // Free is fully functional; nothing is taken away to make Pro.

@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePlaybackStore } from '@/lib/playbackStore';
 import { useScriptStore } from '@/lib/stores';
-import { cn } from '@/lib/utils';
 import { useProjectStore } from '@/lib/stores';
 
 export function PlaybackController({ characterVoices }: { characterVoices: Record<string, string> }) {

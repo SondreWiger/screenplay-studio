@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useProjectStore, useAuthStore } from '@/lib/stores';
 import { Button, Badge, Input, Textarea, Select, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { VideoSEO, VideoChapter, Thumbnail } from '@/lib/types';
+import type { VideoSEO, VideoChapter } from '@/lib/types';
 
 const YOUTUBE_CATEGORIES = [
   { value: '', label: 'Select category' },

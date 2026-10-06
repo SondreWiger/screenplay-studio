@@ -231,7 +231,7 @@ export function VersionPanel({
   const toggleExpand = (prefix: string) => {
     setExpandedGroups((prev) => {
       const s = new Set(prev);
-      s.has(prefix) ? s.delete(prefix) : s.add(prefix);
+      if (s.has(prefix)) s.delete(prefix); else s.add(prefix);
       return s;
     });
   };

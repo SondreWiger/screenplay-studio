@@ -25,7 +25,7 @@ export function XPBar({
   animated = false,
   className = '',
 }: Props) {
-  const { progressPercent, xpForCurrentLevel, xpForNextLevel } = getLevelInfo(xpTotal);
+  const { progressPercent, xpForNextLevel } = getLevelInfo(xpTotal);
   const title = getLevelTitle(level);
   const glowTier = getGlowTier(level);
   const glowClass = GLOW_CLASSES[glowTier];

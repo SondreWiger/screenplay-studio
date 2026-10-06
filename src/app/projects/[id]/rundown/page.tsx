@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore, useProjectStore } from '@/lib/stores';
+import { useAuthStore } from '@/lib/stores';
 import { Button, Modal, Input, Textarea, EmptyState, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type {
   BroadcastRundown, BroadcastRundownItem, BroadcastRundownItemType,
-  BroadcastRundownStatus, BroadcastRundownItemStatus, BroadcastStory,
+  BroadcastStory,
 } from '@/lib/types';
 import {
   BROADCAST_ITEM_TYPES, BROADCAST_RUNDOWN_STATUS_OPTIONS, BROADCAST_STORY_STATUS_OPTIONS,
@@ -18,7 +18,6 @@ import {
 
 export default function RundownPage({ params }: { params: { id: string } }) {
   const { user } = useAuthStore();
-  const { currentProject } = useProjectStore();
   const projectId = params.id;
 
   // State
@@ -179,17 +178,6 @@ export default function RundownPage({ params }: { params: { id: string } }) {
     if (!activeRundown) return new Map<string, Date>();
     return calculateBackTimes(items, new Date(activeRundown.scheduled_end));
   }, [items, activeRundown?.scheduled_end]);
-
-  const cumulativeMap = useMemo(() => {
-    const map = new Map<string, number>();
-    let cum = 0;
-    for (const item of items) {
-      if (item.status === 'killed' || item.status === 'skipped') continue;
-      cum += item.planned_duration;
-      map.set(item.id, cum);
-    }
-    return map;
-  }, [items]);
 
   const totalPlannedDuration = useMemo(() => {
     return items
@@ -525,7 +513,6 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                 const isDone = item.status === 'done';
                 const isKilled = item.status === 'killed' || item.status === 'skipped';
                 const bt = backTimeMap.get(item.id);
-                const cum = cumulativeMap.get(item.id) || 0;
                 const itemOnAirElapsed = isOnAir && item.on_air_at
                   ? Math.floor((wallClock.getTime() - new Date(item.on_air_at).getTime()) / 1000)
                   : null;

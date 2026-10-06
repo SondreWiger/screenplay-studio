@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useProjectStore } from '@/lib/stores';
 import { Button, Card, LoadingPage, toast, ToastContainer } from '@/components/ui';
 import { PageTitle } from '@/components/projects/PageTitle';
@@ -159,7 +158,6 @@ interface GeneratedReport {
 export default function ReportsPage() {
   const params = useParams();
   const projectId = params.id as string;
-  const { user } = useAuth();
   const { currentProject } = useProjectStore();
 
   const supabase = useMemo(() => createClient(), []);
@@ -171,7 +169,6 @@ export default function ReportsPage() {
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [members, setMembers] = useState<ProjectMember[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<ReportType | null>(null);
@@ -203,13 +200,6 @@ export default function ReportsPage() {
       setLocations((loRes.data as Location[]) || []);
       setMembers((meRes.data as ProjectMember[]) || []);
 
-      // Fetch profiles for members
-      const memberUserIds = (meRes.data || []).map((m: ProjectMember) => m.user_id).filter(Boolean);
-      if (memberUserIds.length > 0) {
-        const prRes = await supabase.from('profiles').select('*').in('id', memberUserIds);
-        setProfiles((prRes.data as Profile[]) || []);
-      }
-
       setLoading(false);
     };
 
@@ -228,11 +218,6 @@ export default function ReportsPage() {
     return m;
   }, [locations]);
 
-  const profileMap = useMemo(() => {
-    const m = new Map<string, Profile>();
-    profiles.forEach(p => m.set(p.id, p));
-    return m;
-  }, [profiles]);
 
   const generateCallSheet = useCallback((): GeneratedReport | null => {
     const event = scheduleEvents.find(e => e.id === selectedEventId);

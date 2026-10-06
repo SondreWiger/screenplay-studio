@@ -98,7 +98,7 @@ export default function ActivityGrid({
   showDayLabels = true,
   showLegend = true,
   className = '',
-  year,
+  year: _year,
 }: ActivityGridProps) {
   const [tooltip, setTooltip] = useState<{
     text: string;
@@ -170,7 +170,6 @@ export default function ActivityGrid({
 
   const step = cellSize + cellGap;
   const gridWidth  = weeks.length * step;
-  const gridHeight = 7 * step;
 
   const dayLabelWidth = showDayLabels ? 28 : 0;
   const monthLabelHeight = showMonthLabels ? 18 : 0;

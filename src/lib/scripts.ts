@@ -41,12 +41,6 @@ function unescapeXml(str: string): string {
     .replace(/&apos;/g, "'");
 }
 
-// Simple XML text extraction — gets inner text of a tag
-function getTagContent(xml: string, tag: string): string {
-  const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i');
-  const match = xml.match(regex);
-  return match ? unescapeXml(match[1].trim()) : '';
-}
 
 function getAllTagContents(xml: string, tag: string): string[] {
   const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'gi');
@@ -210,7 +204,7 @@ const ELEMENT_TO_FDX: Record<ScriptElementType, string> = {
   comic_caption: 'Action',
 };
 
-export function generateFDX({ titlePage, elements, scriptTitle }: GenerateFDXOptions): string {
+export function generateFDX({ titlePage, elements, scriptTitle: _scriptTitle }: GenerateFDXOptions): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<FinalDraft DocumentType="Script" Template="No" Version="4">\n';
 

@@ -177,7 +177,6 @@ function classifyElements(text: string): { elements: Partial<ScriptElement>[]; c
   const scenePattern = /^(INT|EXT|EST|INT\.\/EXT|INT\/EXT|I\/E)[\.\s]/i;
   const transitionPattern = /^(?:FADE IN:|FADE OUT\.?|CUT TO:|DISSOLVE TO:|SMASH CUT TO:|MATCH CUT TO:|JUMP CUT TO:)[\s]*$/i;
   const transitionEndPattern = /^(?:FADE TO BLACK\.?|FADE OUT\.?|THE END)[\s]*$/i;
-  const characterPattern = /^[A-Z][A-Z\s.'\-()]+$/;
   const parenPattern = /^\(.+\)$/;
   const centeredPattern = /^(?:\s*>\s*|\s*<\s*)(.+?)(?:\s*>\s*|\s*<\s*)$/;
 

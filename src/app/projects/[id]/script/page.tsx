@@ -14,12 +14,12 @@ import { useScriptStore, useAuthStore, usePresenceStore } from '@/lib/stores';
 import { useProjectStore } from '@/lib/stores';
 import { usePlaybackStore } from '@/lib/playbackStore';
 import { PlaybackController } from './PlaybackController';
-import { Button, Modal, Input, Select, Avatar, Textarea, toast } from '@/components/ui';
+import { Button, Modal, Input, Avatar, Textarea, toast } from '@/components/ui';
 import logger from '@/lib/logger';
 import { cn, timeAgo } from '@/lib/utils';
 import { parseFDX, generateFDX, parseFountain, generateFountain } from '@/lib/scripts';
 import { isElectronMode } from '@/lib/supabase/electron-client';
-import { getCachedSavePath, setCachedSavePath, saveProjectToDisk } from '@/lib/local-files';
+import { getCachedSavePath, setCachedSavePath } from '@/lib/local-files';
 import { setZenMode } from '@/lib/zen-mode';
 import { useElectronMenu } from '@/hooks/useElectronMenu';
 import { useWorkTimeTracker } from '@/hooks/useWorkTimeTracker';
@@ -1834,7 +1834,7 @@ ${pageHTML}
             
             <div className="p-6">
               <p className="text-surface-300 mb-4">
-                Unlike traditional screenplays, content creator scripts focus on what you'll <strong className="text-white">say</strong> and what viewers will <strong className="text-white">see</strong>. 
+                Unlike traditional screenplays, content creator scripts focus on what you&apos;ll <strong className="text-white">say</strong> and what viewers will <strong className="text-white">see</strong>. 
                 Our format helps you organize your video structure clearly.
               </p>
               
@@ -1946,7 +1946,7 @@ $ SPONSOR: Bored VPN - Get 60% off with code...`}
             <>
               <p className="text-xs font-medium text-surface-500 uppercase tracking-[0.04em] mb-2">Chapters ({chapterMarkers.length})</p>
               <div className="space-y-0.5">
-                {chapterMarkers.map((chapter, i) => (
+                {chapterMarkers.map((chapter, _i) => (
                   <button key={chapter.id} onClick={() => {
                     document.getElementById(`el-${chapter.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }} className="w-full text-left px-2 py-1.5 rounded text-xs text-surface-400 hover:text-white hover:bg-surface-900/5 transition-colors">
@@ -4054,7 +4054,6 @@ const LineEditor = memo(function LineEditor({
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0 || !divRef.current) return { atStart: false, atEnd: false };
     const range = sel.getRangeAt(0);
-    const text = divRef.current.textContent || '';
 
     // Check if at start
     const preRange = document.createRange();

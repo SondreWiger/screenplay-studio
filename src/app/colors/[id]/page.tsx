@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AppHeader } from '@/components/AppHeader';
 import { Button, Input, Card, Badge, toast } from '@/components/ui';
 import { Icon } from '@/components/ui/icons';
-import { applyTheme, type AppTheme } from '@/lib/theme';
+import { type AppTheme } from '@/lib/theme';
 import { useThemeStore, useAuthStore } from '@/lib/stores';
 import { THEME_CATEGORIES } from '@/lib/theme';
 import { timeAgo } from '@/lib/utils';
@@ -33,24 +33,6 @@ interface Comment {
   created_at: string;
 }
 
-function ColorSwatch({ colors }: { colors: Record<string, string> }) {
-  return (
-    <div className="space-y-3">
-      {Object.entries(colors).map(([key, val]) => (
-        <div key={key} className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-lg border border-surface-700 flex-shrink-0"
-            style={{ background: val }}
-          />
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium text-surface-300">{key}</div>
-            <div className="text-[11px] text-surface-500 font-mono">{val}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function MiniScriptPreview({ colors }: { colors: any }) {
   return (
@@ -76,7 +58,6 @@ function MiniScriptPreview({ colors }: { colors: any }) {
 
 export default function ThemeDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const themeId = params.id as string;
   const { setTheme, setEditorOpen } = useThemeStore();
   const user = useAuthStore((s) => s.user);

@@ -10,7 +10,7 @@ import { useProFeatures, formatBytes } from '@/hooks/useProFeatures';
 import { Button, Card, Badge, LoadingPage, Progress } from '@/components/ui';
 import { useFeatureAccess } from '@/components/FeatureGate';
 import { BundleCodes } from '@/components/BundleCodes';
-import type { Subscription, TeamLicense } from '@/lib/types';
+import type { TeamLicense } from '@/lib/types';
 
 // Settings / Billing — Subscription management
 
@@ -96,7 +96,7 @@ export default function BillingPage() {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-surface-400">You're on the free plan. All core features are included.</p>
+                <p className="text-sm text-surface-400">You&apos;re on the free plan. All core features are included.</p>
               )}
             </div>
             <div>

@@ -81,7 +81,7 @@ export function NotificationBellInner() {
 // DROPDOWN PANEL — shown when bell is clicked
 
 function NotificationsDropdown({ onClose, onOpenPoll }: { onClose: () => void; onOpenPoll?: (pollId: string) => void }) {
-  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { notifications, markAllAsRead } = useNotificationStore();
   const { user } = useAuthStore();
   const push = usePushNotifications(user?.id || undefined);
   const latest = notifications.slice(0, 20);
@@ -316,7 +316,7 @@ function CompanyInviteActions({ notification }: { notification: Notification }) 
 
     // Use SECURITY DEFINER RPC — this bypasses RLS so the user
     // can actually be inserted into company_members
-    const { data, error } = await supabase.rpc('accept_company_invitation', {
+    const { error } = await supabase.rpc('accept_company_invitation', {
       p_invitation_id: meta.invitation_id,
     });
 

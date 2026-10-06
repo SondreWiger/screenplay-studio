@@ -402,7 +402,7 @@ export default function NotesRoundsPage({ params }: { params: { id: string } }) 
                       {notes.length === 0 ? 'No notes yet' : 'No notes match your filters'}
                     </p>
                     {notes.length === 0 && canEdit && (
-                      <p className="text-surface-500 text-sm mt-1">Click "Add Note" to start entering notes for this round.</p>
+                      <p className="text-surface-500 text-sm mt-1">Click &quot;Add Note&quot; to start entering notes for this round.</p>
                     )}
                   </div>
                 ) : (

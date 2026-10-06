@@ -8,7 +8,6 @@ import { createLocalUser, isElectronMode } from '@/lib/supabase/electron-client'
 import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
 import { ResendConfirmation } from '@/components/ResendConfirmation';
-import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 function friendlyAuthError(msg: string): string {
   const m = msg.toLowerCase();
@@ -41,7 +40,6 @@ export default function LoginPage() {
 function LoginForm() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
-  const { hasAccess } = useFeatureFlags();
   // const googleAuthEnabled = hasAccess('google_auth_enabled');
   const googleAuthEnabled = false;
   

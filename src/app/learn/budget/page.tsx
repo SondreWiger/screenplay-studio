@@ -33,7 +33,7 @@ export default function BudgetModule() {
                 <div className="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">3</div>
                 <div>
                   <h4 className="font-medium text-surface-50 text-sm">Description</h4>
-                  <p className="text-xs text-surface-400">Be specific (e.g., "Lead Actor Day Rate", "Cinema Camera Rental").</p>
+                  <p className="text-xs text-surface-400">Be specific (e.g., &quot;Lead Actor Day Rate&quot;, &quot;Cinema Camera Rental&quot;).</p>
                 </div>
               </div>
             </div>
@@ -65,7 +65,7 @@ export default function BudgetModule() {
           <div className="bg-surface-900/50 border border-surface-800 rounded-2xl p-6">
             <h3 className="text-brand-400 font-semibold mb-2 text-lg">Estimated vs. Actual</h3>
             <p className="text-sm text-surface-400 leading-relaxed mb-4">
-              Your budget isn't just for planning; it's a living document.
+              Your budget isn&apos;t just for planning; it&apos;s a living document.
             </p>
             <ul className="space-y-2 text-sm text-surface-300">
               <li className="flex items-start gap-2">

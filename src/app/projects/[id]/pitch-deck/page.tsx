@@ -277,7 +277,7 @@ export default function PitchDeckPage() {
                   <div className="w-full h-full flex flex-col justify-center max-w-5xl mx-auto">
                     <h2 className="text-brand-500 font-medium tracking-[0.04em] uppercase mb-4">Logline</h2>
                     <p className="text-4xl md:text-5xl font-medium text-white leading-tight mb-16">
-                      "{project.logline || 'No logline written yet.'}"
+                      &quot;{project.logline || 'No logline written yet.'}&quot;
                     </p>
                     
                     <div className="grid grid-cols-3 gap-12 pt-12 border-t border-white/10">

@@ -40,7 +40,7 @@ export function DonationModal({ onClose, kofiUrl }: DonationModalProps) {
           <h2 className="text-2xl font-bold text-white mb-3">Help Keep Screenplay Studio Running</h2>
 
           <p className="text-surface-300 mb-4">
-            Hey! I'm the developer behind Screenplay Studio, and I'm in a real crunch right now. Your support helps me keep this service alive and continue building amazing features for you.
+            Hey! I&apos;m the developer behind Screenplay Studio, and I&apos;m in a real crunch right now. Your support helps me keep this service alive and continue building amazing features for you.
           </p>
 
           <div className="bg-brand-600/10 border border-brand-600/30 rounded-lg p-4 mb-6">
@@ -73,7 +73,7 @@ export function DonationModal({ onClose, kofiUrl }: DonationModalProps) {
         </div>
 
         <p className="text-xs text-surface-500 text-center mt-4">
-          After donating on Ko-Fi, your Pro access activates automatically. Just visit <a href="/claim-pro" className="text-brand-400 hover:text-brand-300 underline">screenplaystudio.fun/claim-pro</a> to confirm it's active.
+          After donating on Ko-Fi, your Pro access activates automatically. Just visit <a href="/claim-pro" className="text-brand-400 hover:text-brand-300 underline">screenplaystudio.fun/claim-pro</a> to confirm it&apos;s active.
         </p>
       </div>
     </div>

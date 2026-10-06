@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
 import { Button, LoadingSpinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { BroadcastRundown, BroadcastRundownItem } from '@/lib/types';
@@ -12,7 +11,6 @@ import { formatBroadcastDuration } from '@/lib/types';
 // Shows rundown item prompter text in large, scrollable format
 
 export default function PrompterPage({ params }: { params: { id: string } }) {
-  const { user } = useAuthStore();
   const projectId = params.id;
 
   const [loading, setLoading] = useState(true);
@@ -292,7 +290,7 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
 
             {/* End marker */}
             <div className={cn('text-center py-20', mirror && 'transform scale-x-[-1]')}>
-              <span className="text-2xl text-surface-700 font-bold">/// END ///</span>
+              <span className="text-2xl text-surface-700 font-bold">{'/// END ///'}</span>
             </div>
           </div>
         )}

@@ -59,7 +59,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
   const toggleSectionExpand = (id: string) => {
     setExpandedSections(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };

@@ -124,9 +124,6 @@ function uid() {
   return crypto.randomUUID();
 }
 
-function emptyMap(): MindmapData {
-  return { nodes: [], edges: [], version: 1 };
-}
 
 function nodeCenter(n: MapNode) {
   return { x: n.x + nodeW(n) / 2, y: n.y + nodeH(n) / 2 };
@@ -704,7 +701,7 @@ export function ArcMindmap({
     }
   }, [zoom, drawingEdge, panX, panY]);
 
-  const onCanvasMouseUp = useCallback((e: React.MouseEvent) => {
+  const onCanvasMouseUp = useCallback((_e: React.MouseEvent) => {
     if (resizing.current) {
       markDirty();
       resizing.current = null;

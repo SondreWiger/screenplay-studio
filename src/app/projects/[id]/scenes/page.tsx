@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
-import { Button, Card, Badge, Modal, Input, Textarea, Select, EmptyState, LoadingSpinner, Progress, SkeletonList, toast } from '@/components/ui';
+import { Button, Card, Badge, Modal, Input, Textarea, EmptyState, LoadingSpinner, Progress, SkeletonList, toast } from '@/components/ui';
 import { useScriptStore } from '@/lib/stores';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -279,7 +279,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
   );
 }
 
-function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations, characters, onSaved, onDelete, canEdit }: {
+function SceneEditor({ isOpen, onClose, scene, projectId, userId, locations: _locations, characters, onSaved, onDelete, canEdit }: {
   isOpen: boolean; onClose: () => void; scene: Scene | null; projectId: string; userId: string;
   locations: Location[]; characters: Character[];
   onSaved: () => void; onDelete: (id: string) => void; canEdit: boolean;

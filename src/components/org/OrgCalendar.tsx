@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button, Card, Input, Textarea, Modal, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { OrgCalendarEvent, Project } from '@/lib/types';
+import type { OrgCalendarEvent } from '@/lib/types';
 
 interface Props {
   companyId: string;

@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
-import { Avatar } from '@/components/ui';
 import { formatDate, timeAgo } from '@/lib/utils';
 import type { Profile, Project, CommunityPost, ProductionRole, UserBadge } from '@/lib/types';
 import { PRODUCTION_ROLES } from '@/lib/types';

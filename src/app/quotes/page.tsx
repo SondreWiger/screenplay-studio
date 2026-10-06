@@ -10,7 +10,6 @@ import { Quote as QuoteIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Quote, QuoteInsert, QuoteGroup } from '@/lib/types';
 
-type SortField = 'created_at' | 'said_by';
 
 function groupQuotesByTime(quotes: Quote[]): { label: string; quotes: Quote[] }[] {
   const now = new Date();

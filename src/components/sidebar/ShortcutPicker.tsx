@@ -16,7 +16,7 @@ interface ShortcutPickerProps {
   anchorEl: HTMLButtonElement | null;
 }
 
-export function ShortcutPicker({ projectId, userId, shortcuts, onToggle, onClose, anchorEl }: ShortcutPickerProps) {
+export function ShortcutPicker({ projectId, userId: _userId, shortcuts, onToggle, onClose, anchorEl }: ShortcutPickerProps) {
   const [items, setItems] = useState<Shortcut[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');

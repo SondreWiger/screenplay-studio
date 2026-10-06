@@ -564,7 +564,7 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
 
       setLoading(false);
       onInvited();
-    } catch (err) {
+    } catch {
       setError('Failed to invite member. Please try again.');
       setLoading(false);
     }

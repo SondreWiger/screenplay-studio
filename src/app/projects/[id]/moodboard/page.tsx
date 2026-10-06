@@ -298,7 +298,7 @@ export default function MoodBoardPage({ params }: { params: { id: string } }) {
     }
   }, [draggingItem, items]);
 
-  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+  const handleCanvasClick = useCallback((_e: React.MouseEvent) => {
     // If clicking the canvas background (not an item), cancel connecting
     if (connectingFrom) {
       setConnectingFrom(null);

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores';
 import { Button, Card, Input, Textarea, LoadingSpinner, toast } from '@/components/ui';
 import type { Project } from '@/lib/types';
 import { PageTitle } from '@/components/projects/PageTitle';
@@ -15,7 +14,6 @@ type SetPhoto = {
 };
 
 export default function ShowcaseSettingsPage({ params }: { params: { id: string } }) {
-  const { user } = useAuthStore();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

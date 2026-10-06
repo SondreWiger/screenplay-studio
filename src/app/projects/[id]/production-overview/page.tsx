@@ -12,7 +12,6 @@ interface SceneSummary { total: number; completed: number }
 interface SafetyAlert { id: string; description: string | null; risk_level: string; scene_id: string | null }
 interface CallSheetItem { id: string; title: string | null; shoot_date: string; general_call: string | null }
 interface DOODEntry { character_name: string; shoot_date: string; status: string }
-interface CameraReportCount { count: number }
 
 export default function ProductionOverviewPage({ params }: { params: { id: string } }) {
   const { currentProject } = useProjectStore();

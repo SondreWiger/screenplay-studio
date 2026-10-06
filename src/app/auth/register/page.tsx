@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { validatePassword } from '@/lib/security';
-import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { sendWelcomeEmailAction } from '@/lib/email-actions';
 import logger from '@/lib/logger';
 import { useTranslation } from '@/components/TranslationProvider';
@@ -33,9 +32,7 @@ function friendlyAuthError(msg: string): string {
 }
 
 function RegisterForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { hasAccess } = useFeatureFlags();
   const { t } = useTranslation();
   // const googleAuthEnabled = hasAccess('google_auth_enabled');
   const googleAuthEnabled = false;
