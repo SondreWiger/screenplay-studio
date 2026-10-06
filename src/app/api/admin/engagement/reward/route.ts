@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { rejectUnlessAdmin } from '@/lib/require-admin';
 import { fillEmails } from '@/lib/private-profile';
 import { sendNotificationEmail } from '@/lib/mailer';
+import { recordEmailSent } from '@/lib/email-sent-notice';
 
 const MAX_RECIPIENTS = 500;
 const PRO_MONTHS = [1, 3, 6, 12];
@@ -154,7 +155,7 @@ export async function POST(req: NextRequest) {
           ctaLabel: msg.ctaLabel ? html(msg.ctaLabel) : undefined,
           ctaUrl: msg.ctaUrl || undefined,
         });
-        if (r.success) { result.emailed++; sent.push('email'); }
+        if (r.success) { result.emailed++; sent.push('email'); await recordEmailSent(db, id, fill(msg.subject, vars)); }
         else logger.warn('[reward]', `email for ${id} failed: ${r.error}`);
         // Stay well under the mail provider's rate limit
         await new Promise((res) => setTimeout(res, 120));

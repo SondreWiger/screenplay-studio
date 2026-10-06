@@ -13,6 +13,7 @@ import { useAuthStore, useNotificationStore } from '@/lib/stores';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { EmailSpamNotice } from '@/components/notifications/EmailSpamNotice';
 import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { SiteVersion } from '@/components/SiteVersion';
@@ -331,6 +332,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               )}
             </div>
           </header>
+
+          {user && <EmailSpamNotice />}
+
 
           <main className="shell-main page-cascade min-w-0 flex-1">
             <ErrorBoundary key={pathname}>{children}</ErrorBoundary>

@@ -4,6 +4,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { fillEmails } from '@/lib/private-profile';
 import { rejectUnlessAdmin } from '@/lib/require-admin';
 import { sendNotificationEmail } from '@/lib/mailer';
+import { recordEmailSent } from '@/lib/email-sent-notice';
 
 function replaceVars(str: string, vars: Record<string, string>): string {
   let result = str;
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
 
     if (result.success) {
       sent++;
+      await recordEmailSent(adminSupabase, userId, replaceVars(subject, vars));
     } else {
       failed++;
       errors.push(`${userId}: ${result.error ?? 'unknown error'}`);

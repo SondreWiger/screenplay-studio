@@ -22,6 +22,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { EmailSpamNotice } from '@/components/notifications/EmailSpamNotice';
 import { ShortcutPicker } from '@/components/sidebar/ShortcutPicker';
 import { cn } from '@/lib/utils';
 import { PAGE_LABELS, getPageSection, getPageLabelKey } from '@/lib/pageLabels';
@@ -1093,6 +1094,8 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
 
       {/* Main Content */}
       <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-mobile-header md:pt-0', !FULL_BLEED_TOOLS.test(pathname) && !OWN_MOTION.test(pathname) && 'page-cascade')}>
+        {/* Not over full-screen tools: it would push the editor down */}
+        {!zenMode && !FULL_BLEED_TOOLS.test(pathname) && <EmailSpamNotice />}
         {/* Keyed by path so a crash in one tool doesn't stick when navigating to another */}
         <ErrorBoundary key={pathname}>
           {children}

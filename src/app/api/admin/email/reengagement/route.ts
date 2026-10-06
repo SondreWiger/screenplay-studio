@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { fillEmails } from '@/lib/private-profile';
 import { sendNotificationEmail } from '@/lib/mailer';
+import { recordEmailSent } from '@/lib/email-sent-notice';
 
 const CRON_SECRET = process.env.CRON_SECRET || '';
 
@@ -65,6 +66,7 @@ export async function GET(req: Request) {
 
     if (result.success) {
       sent++;
+      await recordEmailSent(supabase, user.id, `We miss you, ${name}! 🎬`);
       // Log to reengagement_log
       await supabase.from('reengagement_log').insert({
         user_id: user.id,

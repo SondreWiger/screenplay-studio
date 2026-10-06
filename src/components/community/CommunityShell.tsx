@@ -10,6 +10,7 @@ import { isFeatureEnabled } from '@/lib/feature-flags';
 import { useAuthStore, useNotificationStore } from '@/lib/stores';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { EmailSpamNotice } from '@/components/notifications/EmailSpamNotice';
 import { SiteVersion } from '@/components/SiteVersion';
 import { Avatar } from '@/components/ui';
 import { ShellSlotContext } from '@/components/shell/ShellActions';
@@ -193,6 +194,9 @@ export function CommunityShell({ children }: { children: ReactNode }) {
             )}
           </AnimatePresence>
         </header>
+
+        {user && <EmailSpamNotice />}
+
 
         <main className="shell-main page-cascade min-w-0 flex-1">
           <ErrorBoundary key={pathname}>{children}</ErrorBoundary>

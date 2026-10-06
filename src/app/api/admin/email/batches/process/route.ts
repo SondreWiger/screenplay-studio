@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { sendNotificationEmail } from '@/lib/mailer';
+import { recordEmailSent } from '@/lib/email-sent-notice';
 
 function replaceVars(str: string, vars: Record<string, string>): string {
   let result = str;
@@ -80,6 +81,7 @@ export async function GET(req: NextRequest) {
 
     if (result.success) {
       sent++;
+      await recordEmailSent(adminSupabase, recipient.user_id, replaceVars(batch.subject, vars));
       await adminSupabase
         .from('email_batch_recipients')
         .update({ sent: true, sent_at: new Date().toISOString() })

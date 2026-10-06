@@ -14,7 +14,6 @@ import {
   ActionButton, AdminPage, AnimatedNumber, BarList, Dialog, Dots, EmptyState, Field, Meter, PageHeader, Panel, Pill,
   SearchInput, Segmented, StatGrid, TabSkeleton, TrendPanel, fieldClass, tally, SERIES,
 } from '@/components/admin/kit';
-import { sendNotificationEmailAction } from '@/lib/email-actions';
 
 const EMAIL_TEMPLATES = [
   { id: '', label: 'Custom (blank)' },
@@ -241,28 +240,9 @@ export default function AdminEmailPage() {
     setSending(true);
     setSendProgress({ sent: 0, total: recipients.length });
 
-    if (recipients.length === 1) {
-      const r = recipients[0];
-      const name = r.full_name || r.display_name || 'there';
-      const vars: Record<string, string> = { name, email: r.email };
-      const replace = (s: string) => Object.entries(vars).reduce((str, [k, v]) => str.replaceAll(`{${k}}`, v), s);
-      const result = await sendNotificationEmailAction(
-        r.email,
-        name,
-        replace(subject),
-        replace(heading),
-        replace(body),
-        ctaLabel ? replace(ctaLabel) : undefined,
-        ctaUrl ? replace(ctaUrl) : undefined,
-      );
-      setSendProgress({ sent: 1, total: 1 });
-      if (result.success) {
-        toast.success('Email sent!');
-        logEmail(1);
-      } else {
-        toast.error(result.error || 'Failed to send email');
-      }
-    } else if (activeTab === 'all') {
+    // Every send goes through the server so each recipient also gets the
+    // in-app "check your spam folder" notice.
+    if (activeTab === 'all') {
       // Use batch system for "send to all" — 100 per day to stay under limits
       try {
         const supabase = createClient();
