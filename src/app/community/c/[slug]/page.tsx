@@ -105,14 +105,14 @@ export default function CommunityFeedPage() {
             {(['newest', 'hot', 'top'] as Sort[]).map(s => (
               <button key={s} onClick={() => setSort(s)}
                 className={cn('px-2.5 py-1 text-xs font-medium rounded-md transition-colors capitalize',
-                  sort === s ? 'text-white' : 'text-white/40 hover:text-white/70')}
+                  sort === s ? 'text-white' : 'text-white/50 hover:text-white/70')}
                 style={sort === s ? { background: accent + '33', color: accent } : undefined}>
                 {s}
               </button>
             ))}
           </div>
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search posts…"
-            className="flex-1 px-3 py-1.5 text-sm text-white placeholder:text-white/25 rounded-lg outline-none"
+            className="flex-1 px-3 py-1.5 text-sm text-white placeholder:text-white/45 rounded-lg outline-none"
             style={{ background: 'rgba(255,255,255,0.05)' }} />
           {canPost && (
             <Link href={`/community/share?community=${community.slug}`}
@@ -131,7 +131,7 @@ export default function CommunityFeedPage() {
         ) : posts.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-3xl mb-3">🏜️</p>
-            <p className="text-white/40 text-sm mb-4">
+            <p className="text-white/50 text-sm mb-4">
               {query ? 'No posts matching your search.' : 'No posts yet. Be the first to share a script!'}
             </p>
             {canPost && !query && (
@@ -240,19 +240,19 @@ export default function CommunityFeedPage() {
                         )}
                       </div>
                       <span className="text-white/20 text-[11px]">·</span>
-                      <span className="text-[11px] text-white/30">{timeAgo(post.created_at!)}</span>
+                      <span className="text-[11px] text-white/45">{timeAgo(post.created_at!)}</span>
                       <span className="text-white/20 text-[11px]">·</span>
-                      <span className="text-[11px] text-white/30">💬 {post.comment_count ?? 0}</span>
+                      <span className="text-[11px] text-white/45">💬 {post.comment_count ?? 0}</span>
                       {(post.distro_count ?? 0) > 0 && (
                         <>
                           <span className="text-white/20 text-[11px]">·</span>
-                          <span className="text-[11px] text-white/30">🔀 {post.distro_count}</span>
+                          <span className="text-[11px] text-white/45">🔀 {post.distro_count}</span>
                         </>
                       )}
                       {(post.view_count ?? 0) > 0 && (
                         <>
                           <span className="text-white/20 text-[11px]">·</span>
-                          <span className="text-[11px] text-white/30">👁 {post.view_count}</span>
+                          <span className="text-[11px] text-white/45">👁 {post.view_count}</span>
                         </>
                       )}
 
@@ -286,13 +286,13 @@ export default function CommunityFeedPage() {
       <aside className="w-56 flex-shrink-0 space-y-4 hidden lg:block">
         <div className="rounded-xl p-4 space-y-3"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <h3 className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em]">About</h3>
+          <h3 className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em]">About</h3>
           {community.description && <p className="text-xs text-white/60 leading-relaxed">{community.description}</p>}
           <div className="flex flex-col gap-1.5">
             <Link href={`/community/c/${community.slug}/about`}
-              className="text-xs text-white/40 hover:text-white transition">Rules &amp; Staff →</Link>
+              className="text-xs text-white/50 hover:text-white transition">Rules &amp; Staff →</Link>
             <Link href={`/community/c/${community.slug}/contests`}
-              className="text-xs text-white/40 hover:text-white transition">Contests →</Link>
+              className="text-xs text-white/50 hover:text-white transition">Contests →</Link>
             {isMod && (
               <Link href={`/community/c/${community.slug}/settings`}
                 className="text-xs font-medium hover:opacity-80 transition" style={{ color: accent }}>⚙ Mod Tools →</Link>

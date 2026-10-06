@@ -243,7 +243,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
                   </td>
                   <td className="px-1.5 py-2">
                     <button onClick={() => setCamTakes((p) => p.filter((_, idx) => idx !== i))}
-                      className="w-6 h-6 flex items-center justify-center text-surface-600 hover:text-red-400 text-base rounded transition-colors">×</button>
+                      className="w-6 h-6 flex items-center justify-center text-surface-500 hover:text-red-400 text-base rounded transition-colors">×</button>
                   </td>
                 </tr>
               ))}
@@ -294,7 +294,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
                   </td>
                   <td className="px-1.5 py-2">
                     <button onClick={() => setSndTakes((p) => p.filter((_, idx) => idx !== i))}
-                      className="w-6 h-6 flex items-center justify-center text-surface-600 hover:text-red-400 text-base rounded transition-colors">×</button>
+                      className="w-6 h-6 flex items-center justify-center text-surface-500 hover:text-red-400 text-base rounded transition-colors">×</button>
                   </td>
                 </tr>
               ))}
@@ -339,7 +339,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
             className={cn('px-4 py-1.5 rounded-lg text-sm font-medium transition-colors',
               activeTab === t ? 'bg-surface-700 text-white' : 'text-surface-500 hover:text-surface-300')}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
-            <span className={cn('ml-1.5 text-[11px]', activeTab === t ? 'text-orange-400' : 'text-surface-600')}>
+            <span className={cn('ml-1.5 text-[11px]', activeTab === t ? 'text-orange-400' : 'text-surface-500')}>
               {t === 'camera' ? cameraReports.length : soundReports.length}
             </span>
           </button>

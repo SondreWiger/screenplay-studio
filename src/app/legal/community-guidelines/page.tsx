@@ -317,7 +317,7 @@ export default function CommunityGuidelinesPage() {
           <Link href="/legal/content-policy" className="hover:text-red-400 transition-colors">Content Policy</Link>
           <Link href="/legal/dmca" className="hover:text-red-400 transition-colors">DMCA Policy</Link>
         </div>
-        <p className="text-xs text-surface-600 mt-4">
+        <p className="text-xs text-surface-500 mt-4">
           Questions about these guidelines? Contact us at{' '}
           <a href="mailto:community@screenplaystudio.fun" className="text-red-400 hover:text-red-300">community@screenplaystudio.fun</a>
         </p>

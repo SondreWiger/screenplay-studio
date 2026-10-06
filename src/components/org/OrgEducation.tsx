@@ -166,7 +166,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                   <h3 className="font-semibold text-white">{cls.name}</h3>
                 </div>
                 {canManage && (
-                  <button onClick={() => toggleArchiveClass(cls.id, cls.is_active)} className="text-xs text-surface-600 hover:text-white">
+                  <button onClick={() => toggleArchiveClass(cls.id, cls.is_active)} className="text-xs text-surface-500 hover:text-white">
                     {cls.is_active ? 'Deactivate' : 'Activate'}
                   </button>
                 )}
@@ -205,7 +205,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                           Due: {new Date(a.due_date).toLocaleDateString()}
                         </span>
                       )}
-                      <span className="text-[11px] text-surface-600">{a.max_points} pts</span>
+                      <span className="text-[11px] text-surface-500">{a.max_points} pts</span>
                     </div>
                     {a.description && <p className="text-sm text-surface-400 mb-2">{a.description}</p>}
                     <div className="flex gap-3 text-xs text-surface-500">
@@ -232,7 +232,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                       <div key={sub.id} className="bg-surface-900 rounded p-3">
                         <p className="text-sm text-surface-300 whitespace-pre-wrap line-clamp-4">{sub.content}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <span className="text-[11px] text-surface-600">{sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
+                          <span className="text-[11px] text-surface-500">{sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
                           {sub.grade != null ? (
                             <span className="text-xs text-green-400">{sub.grade}/{a.max_points}</span>
                           ) : (
@@ -245,7 +245,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                         </div>
                         {expandedSubmission === sub.id && (
                           <div className="mt-3 space-y-2">
-                            {peerReviews.length === 0 && <p className="text-xs text-surface-600">No peer reviews yet</p>}
+                            {peerReviews.length === 0 && <p className="text-xs text-surface-500">No peer reviews yet</p>}
                             {peerReviews.map(pr => (
                               <div key={pr.id} className="bg-surface-800 rounded p-2 text-xs text-surface-400">
                                 <p>{pr.overall_comment}</p>
@@ -298,7 +298,7 @@ export function OrgEducation({ companyId, userId, canManage }: Props) {
                     <p className="text-xs text-surface-300">{sub.feedback}</p>
                   </div>
                 )}
-                <span className="text-[11px] text-surface-600 mt-2 block">Submitted: {sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
+                <span className="text-[11px] text-surface-500 mt-2 block">Submitted: {sub.submitted_at ? new Date(sub.submitted_at).toLocaleString() : 'Not submitted'}</span>
               </Card>
             );
           })}

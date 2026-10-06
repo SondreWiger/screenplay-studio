@@ -87,7 +87,7 @@ export function GamificationOptIn() {
 
           <button
             onClick={skip}
-            className="mt-2 w-full text-center text-[11px] text-white/20 hover:text-white/40 transition-colors"
+            className="mt-2 w-full text-center text-[11px] text-white/20 hover:text-white/50 transition-colors"
           >
             Decide later
           </button>

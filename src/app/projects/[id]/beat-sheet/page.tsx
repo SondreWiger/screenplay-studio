@@ -634,7 +634,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
         {/* Ruler */}
         <div className="relative h-5 mb-1">
           {[0, 25, 50, 75, 100].map((pct) => (
-            <div key={pct} className="absolute text-[11px] text-surface-600 font-mono" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
+            <div key={pct} className="absolute text-[11px] text-surface-500 font-mono" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
               {Math.round((pct / 100) * totalPages)}
             </div>
           ))}
@@ -664,7 +664,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
           ))}
         </div>
         {/* Act labels */}
-        <div className="flex justify-between text-[11px] text-surface-600 mt-1 px-0.5">
+        <div className="flex justify-between text-[11px] text-surface-500 mt-1 px-0.5">
           <span>p. 1</span>
           <span>Act 1</span>
           <span>Act 2</span>
@@ -706,7 +706,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                   {/* Drag handle + completion checkbox */}
                   <div className="flex flex-col items-center gap-1.5 shrink-0 w-10 text-center">
                     {isCustomFramework && (
-                      <div className="text-surface-600 hover:text-surface-400 cursor-grab" title="Drag to reorder">
+                      <div className="text-surface-500 hover:text-surface-400 cursor-grab" title="Drag to reorder">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
                         </svg>
@@ -735,7 +735,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                     </button>
                     {/* Color dot */}
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: beat.color }} />
-                    <span className="text-[11px] text-surface-600 font-mono">p.{page}</span>
+                    <span className="text-[11px] text-surface-500 font-mono">p.{page}</span>
                   </div>
 
                   <div
@@ -744,7 +744,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                   >
                     <div className="flex items-center gap-2 mb-0.5">
                       <h3 className={cn('text-sm font-semibold', isCompleted ? 'text-green-400 line-through' : 'text-white')}>{beat.label}</h3>
-                      <span className="text-[11px] text-surface-600 font-mono shrink-0">{beat.pageHint}</span>
+                      <span className="text-[11px] text-surface-500 font-mono shrink-0">{beat.pageHint}</span>
                       {hasNote && (
                         <Badge size="sm" variant="success">✓</Badge>
                       )}
@@ -905,7 +905,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
                     draggedBeatIdx === idx && 'opacity-40',
                   )}
                 >
-                  <div className="text-surface-600 hover:text-surface-400 cursor-grab shrink-0" title="Drag to reorder">
+                  <div className="text-surface-500 hover:text-surface-400 cursor-grab shrink-0" title="Drag to reorder">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
                     </svg>
@@ -946,7 +946,7 @@ export default function BeatSheetPage({ params }: { params: { id: string } }) {
 
                   <button
                     onClick={() => removeBuilderBeat(idx)}
-                    className="text-surface-600 hover:text-red-400 transition-colors shrink-0 p-1"
+                    className="text-surface-500 hover:text-red-400 transition-colors shrink-0 p-1"
                     title="Remove beat"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

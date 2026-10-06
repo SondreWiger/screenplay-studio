@@ -77,7 +77,7 @@ function Value({ field, record, projectId, resolveRef }: {
       </Link>
     );
   }
-  return text ? <>{text}</> : <span className="text-surface-600">—</span>;
+  return text ? <>{text}</> : <span className="text-surface-500">—</span>;
 }
 
 // ── Table ───────────────────────────────────────────────────────────────────
@@ -201,7 +201,7 @@ export function LedgerView(props: ViewProps) {
               </td>
               {moneyFields.map((f) => (
                 <td key={f.key} className="px-4 py-2.5 text-right tabular-nums text-sm font-medium text-white">
-                  {formatField(f, record.data[f.key]) || <span className="text-surface-600">—</span>}
+                  {formatField(f, record.data[f.key]) || <span className="text-surface-500">—</span>}
                 </td>
               ))}
               {canEdit && (
@@ -249,11 +249,11 @@ export function BoardView(props: ViewProps) {
             <div className="flex items-center gap-2 px-1 pb-2">
               <span className={cn('w-1.5 h-1.5 rounded-full', accent.rule)} />
               <h3 className="text-[11px] font-semibold text-surface-300 uppercase tracking-[0.04em]">{status.label}</h3>
-              <span className="text-[11px] text-surface-600">{inColumn.length}</span>
+              <span className="text-[11px] text-surface-500">{inColumn.length}</span>
             </div>
             <div className="flex-1 space-y-2 rounded-xl bg-surface-900/40 border border-surface-800/60 p-2 min-h-[6rem]">
               {inColumn.length === 0 && (
-                <p className="text-[11px] text-surface-600 text-center py-6">Nothing here</p>
+                <p className="text-[11px] text-surface-500 text-center py-6">Nothing here</p>
               )}
               {inColumn.map((record) => (
                 <div key={record.id} className="rounded-lg border border-surface-800 bg-surface-900 p-3 group hover:border-surface-700 transition-colors">
@@ -272,7 +272,7 @@ export function BoardView(props: ViewProps) {
                     if (!text) return null;
                     return (
                       <p key={f.key} className="text-[11px] text-surface-400 mt-1.5">
-                        <span className="text-surface-600">{f.label}: </span>
+                        <span className="text-surface-500">{f.label}: </span>
                         <Value field={f} record={record} projectId={projectId} resolveRef={resolveRef} />
                       </p>
                     );
@@ -327,7 +327,7 @@ export function CardsView(props: ViewProps) {
               if (!text) return null;
               return (
                 <div key={f.key} className="flex items-baseline gap-2 text-xs">
-                  <dt className="text-surface-600 shrink-0">{f.label}</dt>
+                  <dt className="text-surface-500 shrink-0">{f.label}</dt>
                   <dd className="text-surface-300 min-w-0 truncate">
                     <Value field={f} record={record} projectId={projectId} resolveRef={resolveRef} />
                   </dd>

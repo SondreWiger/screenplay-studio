@@ -52,7 +52,7 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
       <aside className="w-52 shrink-0 border-r border-white/[0.06] flex flex-col py-6 px-3 sticky top-0 h-screen">
         {/* Logo / Back */}
         <div className="mb-6 px-2">
-          <Link href="/dashboard" className="flex items-center gap-2 text-white/40 hover:text-white/60 transition-colors text-xs mb-4">
+          <Link href="/dashboard" className="flex items-center gap-2 text-white/50 hover:text-white/60 transition-colors text-xs mb-4">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             Dashboard
           </Link>
@@ -79,7 +79,7 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
                     : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                 )}
               >
-                <span className={active ? 'text-violet-400' : 'text-white/40'}>{item.icon}</span>
+                <span className={active ? 'text-violet-400' : 'text-white/50'}>{item.icon}</span>
                 <span className="flex-1">{item.label}</span>
                 {item.badge && (
                   <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold uppercase tracking-wide border border-emerald-500/20">

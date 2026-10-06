@@ -233,13 +233,13 @@ const RULES = [
 const PRIORITY_STYLE: Record<string, React.CSSProperties> = {
   HIGH: { color: ORANGE, background: `${ORANGE}18`, borderColor: `${ORANGE}30` },
   MED:  { color: '#a3e635', background: 'rgba(163,230,53,0.1)', borderColor: 'rgba(163,230,53,0.25)' },
-  LOW:  { color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.12)' },
+  LOW:  { color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.12)' },
 };
 
 const TYPE_STYLE: Record<string, React.CSSProperties> = {
   CODE:        { color: '#60a5fa', borderColor: 'rgba(96,165,250,0.25)' },
   DESIGN:      { color: '#e879f9', borderColor: 'rgba(232,121,249,0.25)' },
-  DOCS:        { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.12)' },
+  DOCS:        { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.12)' },
   TESTING:     { color: '#34d399', borderColor: 'rgba(52,211,153,0.25)' },
   TRANSLATION: { color: '#fbbf24', borderColor: 'rgba(251,191,36,0.25)' },
 };
@@ -315,7 +315,7 @@ export default function ContributePage() {
         <span className="text-6xl">🔒</span>
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>Coming soon</h1>
-          <p className="text-sm text-white/40 max-w-sm">The open-source section of Screenplay Studio is not yet publicly available.</p>
+          <p className="text-sm text-white/50 max-w-sm">The open-source section of Screenplay Studio is not yet publicly available.</p>
         </div>
         <Link href="/" className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg" style={{ background: '#FF5F1F' }}>
           Back to Home
@@ -393,7 +393,7 @@ export default function ContributePage() {
             }}
           >
             <div>
-              <p className="text-base sm:text-lg text-white/40 leading-relaxed max-w-md">
+              <p className="text-base sm:text-lg text-white/50 leading-relaxed max-w-md">
                 Screenplay Studio is open-source. Its quality depends entirely on
                 people who care enough to look at the code and make it better.
                 That includes you.
@@ -503,7 +503,7 @@ export default function ContributePage() {
                       style={{ background: ORANGE }}
                     />
 
-                    <div className="mb-4 text-white/30 group-hover:text-white/60 transition-colors duration-200">
+                    <div className="mb-4 text-white/45 group-hover:text-white/60 transition-colors duration-200">
                       {ct.icon}
                     </div>
 
@@ -522,7 +522,7 @@ export default function ContributePage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-white/25 leading-relaxed group-hover:text-white/45 transition-colors duration-200">
+                    <p className="text-[11px] text-white/45 leading-relaxed group-hover:text-white/45 transition-colors duration-200">
                       {ct.body}
                     </p>
                   </div>
@@ -578,7 +578,7 @@ export default function ContributePage() {
                       >
                         {step.title}
                       </h3>
-                      <p className="text-xs text-white/40 leading-relaxed mb-4">{step.body}</p>
+                      <p className="text-xs text-white/50 leading-relaxed mb-4">{step.body}</p>
                       <Code label={step.codeLabel}>{step.code}</Code>
                     </div>
                   </div>
@@ -639,7 +639,7 @@ export default function ContributePage() {
                       </span>
                     </div>
                     <p className="text-sm font-semibold text-white mb-1 group-hover:text-white transition-colors">{issue.label}</p>
-                    <p className="text-[11px] text-white/35 leading-relaxed">{issue.desc}</p>
+                    <p className="text-[11px] text-white/50 leading-relaxed">{issue.desc}</p>
                   </div>
                 </div>
               </Reveal>
@@ -648,7 +648,7 @@ export default function ContributePage() {
 
           <Reveal delay={400}>
             <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-8 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-              <p className="text-xs text-white/30 leading-relaxed max-w-sm">
+              <p className="text-xs text-white/45 leading-relaxed max-w-sm">
                 For the full list with discussion threads, labels, and assignees, head to the GitHub Issues tab.
               </p>
               <a
@@ -723,7 +723,7 @@ export default function ContributePage() {
                       }}
                     >
                       <div
-                        className="px-6 pb-6 pt-1 text-sm text-white/40 leading-relaxed border-t"
+                        className="px-6 pb-6 pt-1 text-sm text-white/50 leading-relaxed border-t"
                         style={{ borderColor: 'rgba(255,255,255,0.05)', marginLeft: '3.25rem' }}
                       >
                         {rule.body}
@@ -749,7 +749,7 @@ export default function ContributePage() {
               YOUR NAME<br />
               <span style={{ color: ORANGE }}>IN THE BUILD.</span>
             </h2>
-            <p className="text-sm text-white/40 max-w-2xl leading-relaxed mb-12">
+            <p className="text-sm text-white/50 max-w-2xl leading-relaxed mb-12">
               Every contributor is credited. Your GitHub handle appears in the automatic changelog, the CONTRIBUTORS.md file, and the in-app credits page as soon as your first PR is merged.
             </p>
           </Reveal>
@@ -779,7 +779,7 @@ export default function ContributePage() {
                 >
                   <span className="text-3xl mb-4 block">{item.icon}</span>
                   <h3 className="text-xs font-semibold text-white uppercase tracking-tight mb-2">{item.title}</h3>
-                  <p className="text-xs text-white/35 leading-relaxed">{item.body}</p>
+                  <p className="text-xs text-white/50 leading-relaxed">{item.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -799,7 +799,7 @@ export default function ContributePage() {
               CURRENT<br />
               <span style={{ color: ORANGE }}>CONTRIBUTORS.</span>
             </h2>
-            <p className="text-sm text-white/40 max-w-xl leading-relaxed mb-10">
+            <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-10">
               Everyone who has contributed to the platform in any form. Get your name on this list by opening a pull request or helping the community.
             </p>
           </Reveal>
@@ -837,7 +837,7 @@ export default function ContributePage() {
                   style={{ border: '1px solid rgba(255,255,255,0.07)' }}
                 >
                   <p className="text-xs font-semibold text-white/70 group-hover:text-white transition-colors mb-0.5">{t.name}</p>
-                  <p className="text-[11px] text-white/25">{t.note}</p>
+                  <p className="text-[11px] text-white/45">{t.note}</p>
                 </div>
               </Reveal>
             ))}
@@ -934,14 +934,14 @@ export default function ContributePage() {
             <span className="text-xs text-white/20">Screenplay Studio — open-source &amp; free forever</span>
           </div>
           <div className="flex items-center gap-5 flex-wrap">
-            <Link href="/about" className="text-xs text-white/25 hover:text-white/50 transition-colors">About</Link>
-            <Link href="/blog" className="text-xs text-white/25 hover:text-white/50 transition-colors">Blog</Link>
-            <Link href="/legal/privacy" className="text-xs text-white/25 hover:text-white/50 transition-colors">Privacy</Link>
+            <Link href="/about" className="text-xs text-white/45 hover:text-white/50 transition-colors">About</Link>
+            <Link href="/blog" className="text-xs text-white/45 hover:text-white/50 transition-colors">Blog</Link>
+            <Link href="/legal/privacy" className="text-xs text-white/45 hover:text-white/50 transition-colors">Privacy</Link>
             <a
               href="https://github.com/SondreWiger/screenplay-studio"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-white/25 hover:text-white/50 transition-colors"
+              className="text-xs text-white/45 hover:text-white/50 transition-colors"
             >
               GitHub
             </a>

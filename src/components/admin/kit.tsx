@@ -277,7 +277,7 @@ export function SearchInput({ value, onChange, placeholder = 'Search…', classN
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full min-w-0 bg-transparent text-sm text-white placeholder:text-surface-600 focus:outline-none"
+        className="w-full min-w-0 bg-transparent text-sm text-white placeholder:text-surface-500 focus:outline-none"
       />
       {value && (
         <button onClick={() => onChange('')} className="rounded p-0.5 hover:text-white" aria-label="Clear search">
@@ -295,7 +295,7 @@ export function EmptyState({ icon, title, description, action }: { icon?: ReactN
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-surface-800 px-6 py-14 text-center"
     >
-      {icon && <div className="mb-3 text-surface-600">{icon}</div>}
+      {icon && <div className="mb-3 text-surface-500">{icon}</div>}
       <p className="text-sm font-semibold text-surface-200">{title}</p>
       {description && <p className="mt-1 max-w-sm text-xs text-surface-500">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
@@ -449,13 +449,13 @@ export function Dialog({ open, onClose, title, description, children, footer, si
   );
 }
 
-export const fieldClass = 'w-full rounded-xl border border-surface-800 bg-surface-950/60 px-3 py-2 text-sm text-white placeholder:text-surface-600 focus:border-brand-500/50 focus:outline-none';
+export const fieldClass = 'w-full rounded-xl border border-surface-800 bg-surface-950/60 px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:border-brand-500/50 focus:outline-none';
 
 export function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-surface-500">
-        {label} {hint && <span className="font-normal normal-case tracking-normal text-surface-600">{hint}</span>}
+        {label} {hint && <span className="font-normal normal-case tracking-normal text-surface-500">{hint}</span>}
       </span>
       {children}
     </label>

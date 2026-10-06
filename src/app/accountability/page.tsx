@@ -66,7 +66,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
         <h2 className="text-lg font-semibold text-white mb-4">Log today&apos;s work</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs text-white/40 uppercase tracking-[0.04em] block mb-1">Pages written</label>
+            <label className="text-xs text-white/50 uppercase tracking-[0.04em] block mb-1">Pages written</label>
             <input
               type="number" min="0" step="0.5" value={pages}
               onChange={e => setPages(e.target.value)}
@@ -75,7 +75,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
             />
           </div>
           <div>
-            <label className="text-xs text-white/40 uppercase tracking-[0.04em] block mb-1">Time spent (minutes)</label>
+            <label className="text-xs text-white/50 uppercase tracking-[0.04em] block mb-1">Time spent (minutes)</label>
             <input
               type="number" min="0" step="5" value={minutes}
               onChange={e => setMinutes(e.target.value)}
@@ -84,7 +84,7 @@ function ManualLogModal({ onClose, onSave }: { onClose: () => void; onSave: () =
             />
           </div>
           <div>
-            <label className="text-xs text-white/40 uppercase tracking-[0.04em] block mb-1">Note (optional)</label>
+            <label className="text-xs text-white/50 uppercase tracking-[0.04em] block mb-1">Note (optional)</label>
             <textarea
               value={note} onChange={e => setNote(e.target.value)}
               rows={2} placeholder="What did you work on?"
@@ -158,7 +158,7 @@ function BuddyCard({
         {profile.avatar_url ? (
           <img src={profile.avatar_url} alt={profile.display_name || ''} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white/30 text-lg font-bold">
+          <div className="w-full h-full flex items-center justify-center text-white/45 text-lg font-bold">
             {(profile.display_name || profile.username || '?')[0].toUpperCase()}
           </div>
         )}
@@ -170,12 +170,12 @@ function BuddyCard({
           {profile.display_name || profile.username || 'Anonymous'}
         </Link>
         {isPending && (
-          <p className="text-xs text-white/30 mt-0.5">
+          <p className="text-xs text-white/45 mt-0.5">
             {isRequester ? 'Request sent · waiting for response' : 'Wants to be your accountability buddy'}
           </p>
         )}
         {isAccepted && (
-          <p className="text-xs text-white/30 mt-0.5">Accountability buddy</p>
+          <p className="text-xs text-white/45 mt-0.5">Accountability buddy</p>
         )}
       </div>
 
@@ -195,7 +195,7 @@ function BuddyCard({
         )}
         {(isAccepted || (isPending && isRequester)) && (
           <button onClick={remove} disabled={acting}
-            className="text-xs px-3 py-1.5 bg-white/5 text-white/30 hover:text-red-400 rounded-lg transition-colors disabled:opacity-40">
+            className="text-xs px-3 py-1.5 bg-white/5 text-white/45 hover:text-red-400 rounded-lg transition-colors disabled:opacity-40">
             {isPending ? 'Cancel' : 'Remove'}
           </button>
         )}
@@ -213,13 +213,13 @@ function GroupCard({ group, myRole, onEnter }: { group: AccountabilityGroup; myR
         {group.avatar_url ? (
           <img src={group.avatar_url} alt={group.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white/40 text-lg">🎯</div>
+          <div className="w-full h-full flex items-center justify-center text-white/50 text-lg">🎯</div>
         )}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">{group.name}</p>
         {group.description && (
-          <p className="text-xs text-white/30 mt-0.5 truncate">{group.description}</p>
+          <p className="text-xs text-white/45 mt-0.5 truncate">{group.description}</p>
         )}
         <p className="text-xs text-white/20 mt-0.5 capitalize">{myRole}</p>
       </div>
@@ -299,10 +299,10 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
           <h2 className="text-base font-semibold text-white">{group.name}</h2>
           <div className="flex items-center gap-2">
             <button onClick={copyInvite}
-              className="text-xs px-2.5 py-1 bg-white/5 text-white/40 hover:text-white/70 rounded-lg transition-colors">
+              className="text-xs px-2.5 py-1 bg-white/5 text-white/50 hover:text-white/70 rounded-lg transition-colors">
               {copied ? '✓ Copied' : '📎 Invite'}
             </button>
-            <button onClick={onClose} className="text-white/30 hover:text-white/70 transition-colors text-xl leading-none">×</button>
+            <button onClick={onClose} className="text-white/45 hover:text-white/70 transition-colors text-xl leading-none">×</button>
           </div>
         </div>
 
@@ -323,14 +323,14 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                     {m.profile.avatar_url ? (
                       <img src={m.profile.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[11px] text-white/40 font-bold">
+                      <div className="w-full h-full flex items-center justify-center text-[11px] text-white/50 font-bold">
                         {(m.profile.display_name || m.profile.username || '?')[0].toUpperCase()}
                       </div>
                     )}
                   </Link>
                 ))}
                 {members.length > 8 && (
-                  <div className="w-7 h-7 rounded-full border-2 border-surface-800 bg-white/10 flex items-center justify-center text-[11px] text-white/30">
+                  <div className="w-7 h-7 rounded-full border-2 border-surface-800 bg-white/10 flex items-center justify-center text-[11px] text-white/45">
                     +{members.length - 8}
                   </div>
                 )}
@@ -348,7 +348,7 @@ function GroupModal({ group, onClose, onUpdated: _onUpdated }: {
                       {(post.author as any)?.avatar_url ? (
                         <img src={(post.author as any).avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[11px] text-white/30 font-bold">
+                        <div className="w-full h-full flex items-center justify-center text-[11px] text-white/45 font-bold">
                           {((post.author as any)?.display_name || '?')[0]}
                         </div>
                       )}
@@ -633,7 +633,7 @@ export default function AccountabilityPage() {
               className="flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-[0.04em] rounded-lg transition-colors"
               style={tab === t.key
                 ? { background: '#FF5F1F', color: '#fff' }
-                : { color: 'rgba(255,255,255,0.4)' }}
+                : { color: 'rgba(255,255,255,0.5)' }}
             >
               <span>{t.icon}</span>
               <span>{t.label}</span>
@@ -678,7 +678,7 @@ export default function AccountabilityPage() {
                         {stat.value}
                         <span className="text-xs font-normal ml-1.5" style={{ color: stat.accentColor }}>{stat.suffix}</span>
                       </p>
-                      <p className="text-[11px] uppercase tracking-[0.04em] mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{stat.label}</p>
+                      <p className="text-[11px] uppercase tracking-[0.04em] mt-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{stat.label}</p>
                     </div>
                   ))}
                 </div>
@@ -688,7 +688,7 @@ export default function AccountabilityPage() {
                   <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <div>
                       <p className="text-sm font-semibold text-white">Activity — Past Year</p>
-                      <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{daysWorked} session{daysWorked !== 1 ? 's' : ''} logged</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{daysWorked} session{daysWorked !== 1 ? 's' : ''} logged</p>
                     </div>
                     <button
                       onClick={() => setShowLogModal(true)}
@@ -758,7 +758,7 @@ export default function AccountabilityPage() {
               <div className="space-y-6">
                 {/* Search / add */}
                 <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Find a buddy</p>
+                  <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>Find a buddy</p>
                   <input
                     value={buddySearch}
                     onChange={e => setBuddySearch(e.target.value)}
@@ -774,7 +774,7 @@ export default function AccountabilityPage() {
                             {r.avatar_url ? (
                               <img src={r.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                              <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: 'rgba(255,255,255,0.45)' }}>
                                 {(r.display_name || r.username || '?')[0]}
                               </div>
                             )}
@@ -797,7 +797,7 @@ export default function AccountabilityPage() {
                 {/* Pending incoming */}
                 {pendingIncoming.length > 0 && (
                   <div>
-                    <p className="text-xs uppercase tracking-[0.04em] mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.45)' }}>
                       Pending requests
                       <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[11px] font-semibold text-white" style={{ background: '#FF5F1F' }}>
                         {pendingIncoming.length}
@@ -816,13 +816,13 @@ export default function AccountabilityPage() {
 
                 {/* Buddies list */}
                 <div>
-                  <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>
                     Your buddies ({buddies.filter(b => b.status === 'accepted').length})
                   </p>
                   {buddies.filter(b => b.status === 'accepted').length === 0 ? (
                     <div className="rounded-xl py-16 text-center" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                       <div className="text-4xl mb-3">🤝</div>
-                      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>No buddies yet.</p>
+                      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>No buddies yet.</p>
                       <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.2)' }}>Search above to add one.</p>
                     </div>
                   ) : (
@@ -840,7 +840,7 @@ export default function AccountabilityPage() {
                 {/* Sent-pending */}
                 {buddies.filter(b => b.status === 'pending' && b.requester_id === user.id).length > 0 && (
                   <div>
-                    <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Sent requests</p>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>Sent requests</p>
                     <div className="space-y-2">
                       {buddies.filter(b => b.status === 'pending' && b.requester_id === user.id).map(b => {
                         const profile = buddyProfiles[b.addressee_id];
@@ -859,7 +859,7 @@ export default function AccountabilityPage() {
                 {/* Your groups */}
                 {groups.length > 0 && (
                   <div>
-                    <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Your groups</p>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>Your groups</p>
                     <div className="space-y-2">
                       {groups.map(g => (
                         <GroupCard key={g.id} group={g} myRole={myRoles[g.id] || 'member'} onEnter={() => setOpenGroup(g)} />
@@ -871,7 +871,7 @@ export default function AccountabilityPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   {/* Create */}
                   <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-xs uppercase tracking-[0.04em] mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Create a group</p>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>Create a group</p>
                     <form onSubmit={createGroup} className="space-y-3">
                       <input
                         value={createName} onChange={e => setCreateName(e.target.value)}
@@ -895,8 +895,8 @@ export default function AccountabilityPage() {
 
                   {/* Join by invite */}
                   <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-xs uppercase tracking-[0.04em] mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Join with invite code</p>
-                    <p className="text-xs mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    <p className="text-xs uppercase tracking-[0.04em] mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>Join with invite code</p>
+                    <p className="text-xs mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
                       Have a code? Paste it below to join an existing accountability group instantly.
                     </p>
                     <form onSubmit={joinByInvite} className="space-y-3">

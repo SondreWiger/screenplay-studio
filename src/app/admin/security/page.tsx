@@ -467,7 +467,7 @@ export default function SecurityPage() {
                             )}
                             <span className="ml-auto text-[11px] text-surface-500" title={formatDate(evt.created_at)}>{timeAgo(evt.created_at)}</span>
                           </div>
-                          <p className="mt-1 truncate text-[11px] text-surface-600" title={evt.user_agent ?? ''}>{truncateUA(evt.user_agent)}</p>
+                          <p className="mt-1 truncate text-[11px] text-surface-500" title={evt.user_agent ?? ''}>{truncateUA(evt.user_agent)}</p>
                           {evt.metadata && Object.keys(evt.metadata).length > 0 && (
                             <code className="mt-1 block truncate rounded bg-surface-950 px-1.5 py-0.5 text-[11px] text-surface-400">{JSON.stringify(evt.metadata)}</code>
                           )}
@@ -479,7 +479,7 @@ export default function SecurityPage() {
                 <div className="space-y-5">
                   <Panel title="By type" subtitle="In the current view"><BarList items={tally(visibleEvents, e => e.event_type)} color={SERIES.red} limit={7} /></Panel>
                   <Panel title="Top IP addresses" subtitle="Click one to filter">
-                    {topIps.length === 0 ? <p className="py-4 text-center text-xs text-surface-600">No IPs recorded</p> : (
+                    {topIps.length === 0 ? <p className="py-4 text-center text-xs text-surface-500">No IPs recorded</p> : (
                       <ul className="space-y-1">
                         {topIps.map(ip => (
                           <li key={ip.label}>
@@ -518,7 +518,7 @@ export default function SecurityPage() {
                               {entry.user_id ? <Link href={`/u/${entry.user_id}`} className="font-medium text-brand-400 hover:underline">{userName(entry.profiles)}</Link> : <span className="text-surface-400">System</span>}{' '}
                               <code className="rounded bg-surface-800 px-1.5 py-0.5 text-xs text-surface-200">{entry.action}</code>{' '}
                               <span className="text-surface-400">{entry.entity_type}</span>{' '}
-                              {entry.entity_id && <span className="font-mono text-[11px] text-surface-600" title={entry.entity_id}>{entry.entity_id.slice(0, 8)}</span>}
+                              {entry.entity_id && <span className="font-mono text-[11px] text-surface-500" title={entry.entity_id}>{entry.entity_id.slice(0, 8)}</span>}
                             </p>
                             <p className="text-[11px] text-surface-500">
                               {formatDate(entry.created_at)} · {timeAgo(entry.created_at)}{entry.ip_address && <> · <span className="font-mono">{entry.ip_address}</span></>}

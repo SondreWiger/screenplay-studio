@@ -239,7 +239,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
                 {isOverdue ? '⚠ ' : ''}Due {new Date(item.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
             )}
-            {item.invoice_ref && <span className="text-[11px] text-surface-600">#{item.invoice_ref}</span>}
+            {item.invoice_ref && <span className="text-[11px] text-surface-500">#{item.invoice_ref}</span>}
           </div>
         </div>
         {/* Quantity */}

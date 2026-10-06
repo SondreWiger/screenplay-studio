@@ -587,7 +587,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
           <div className="py-16 text-center border border-dashed border-surface-800 rounded-xl">
             <div className="text-4xl mb-3">✏️</div>
             <p className="text-surface-400 text-sm mb-1">Start typing your ideas</p>
-            <p className="text-surface-600 text-xs">Use the blocks above to add headings, notes, checklists, and more</p>
+            <p className="text-surface-500 text-xs">Use the blocks above to add headings, notes, checklists, and more</p>
           </div>
         )}
         {sortedNodes.length === 0 && !isEditor && (
@@ -632,7 +632,7 @@ export default function BoardPage({ params }: { params: { id: string } }) {
                     {isOwner && (
                       <button
                         onClick={() => removeMember(m.id)}
-                        className="p-1 text-surface-600 hover:text-red-400 transition-colors shrink-0"
+                        className="p-1 text-surface-500 hover:text-red-400 transition-colors shrink-0"
                         title="Remove member"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1147,7 +1147,7 @@ function NodeControls({
       {idx > 0 && (
         <button
           onClick={() => onMove(nodeId, 'up')}
-          className="p-1 text-surface-600 hover:text-white rounded transition-colors"
+          className="p-1 text-surface-500 hover:text-white rounded transition-colors"
           title="Move up"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1158,7 +1158,7 @@ function NodeControls({
       {idx < total - 1 && (
         <button
           onClick={() => onMove(nodeId, 'down')}
-          className="p-1 text-surface-600 hover:text-white rounded transition-colors"
+          className="p-1 text-surface-500 hover:text-white rounded transition-colors"
           title="Move down"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1171,7 +1171,7 @@ function NodeControls({
       <div className="relative">
         <button
           onClick={() => setAddMenuOpen(!addMenuOpen)}
-          className="p-1 text-surface-600 hover:text-white rounded transition-colors"
+          className="p-1 text-surface-500 hover:text-white rounded transition-colors"
           title="Insert block below"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1199,7 +1199,7 @@ function NodeControls({
 
       <button
         onClick={() => onDelete(nodeId)}
-        className="p-1 text-surface-600 hover:text-red-400 rounded transition-colors"
+        className="p-1 text-surface-500 hover:text-red-400 rounded transition-colors"
         title="Delete block"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

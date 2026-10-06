@@ -273,7 +273,7 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
           </span>
           <button
             onClick={dismiss}
-            className="text-surface-600 hover:text-surface-400 transition-colors"
+            className="text-surface-500 hover:text-surface-400 transition-colors"
             title="Dismiss"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -308,7 +308,7 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
               <p className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{item.label}</p>
               <p className="text-[11px] text-surface-500 mt-0.5">{item.description}</p>
             </div>
-            <svg className="w-4 h-4 text-surface-600 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-surface-500 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -317,7 +317,7 @@ export function OnboardingChecklist({ projectId }: { projectId?: string | null }
         {/* Completed items (collapsed) */}
         {state.completed.length > 0 && (
           <details className="group">
-            <summary className="flex items-center gap-2 px-3 py-1.5 cursor-pointer text-[11px] text-surface-600 hover:text-surface-400 transition-colors">
+            <summary className="flex items-center gap-2 px-3 py-1.5 cursor-pointer text-[11px] text-surface-500 hover:text-surface-400 transition-colors">
               <svg className="w-2.5 h-2.5 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

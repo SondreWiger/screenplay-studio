@@ -415,7 +415,7 @@ export default function ModerationPage() {
                           <Pill tone={STATUS_TONE[flag.status] ?? 'neutral'}>{flag.status.replace(/_/g, ' ')}</Pill>
                           <Pill>{CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}</Pill>
                           <span className="text-xs text-surface-500">{timeAgo(flag.detected_at)}</span>
-                          <span className="ml-auto font-mono text-[11px] text-surface-600">{flag.id.slice(0, 8)}</span>
+                          <span className="ml-auto font-mono text-[11px] text-surface-500">{flag.id.slice(0, 8)}</span>
                         </div>
                         <div className="mb-3 flex flex-wrap gap-1">
                           {flag.matched_terms.map((term, i) => (
@@ -524,7 +524,7 @@ export default function ModerationPage() {
                       </motion.li>
                     );
                   })}
-                  {filteredProjects.length > 200 && <p className="py-2 text-center text-[11px] text-surface-600">Showing 200 of {filteredProjects.length} — search to narrow down</p>}
+                  {filteredProjects.length > 200 && <p className="py-2 text-center text-[11px] text-surface-500">Showing 200 of {filteredProjects.length} — search to narrow down</p>}
                 </ul>
               )}
             </>
@@ -542,7 +542,7 @@ export default function ModerationPage() {
                       <div className="mb-3 flex items-center gap-3">
                         <Pill tone="violet">{CONTENT_TYPE_LABELS[ev.content_type] || ev.content_type}</Pill>
                         <span className="text-xs text-surface-500">{timeAgo(ev.captured_at)}</span>
-                        <span className="ml-auto font-mono text-[11px] text-surface-600" title="SHA-256 integrity hash">#{ev.content_hash.slice(0, 16)}…</span>
+                        <span className="ml-auto font-mono text-[11px] text-surface-500" title="SHA-256 integrity hash">#{ev.content_hash.slice(0, 16)}…</span>
                       </div>
                       <p className="mb-3 whitespace-pre-wrap break-words rounded-xl border border-surface-800 bg-surface-950 p-3 font-mono text-sm text-surface-300">{ev.full_content}</p>
                       <div className="flex flex-wrap items-center gap-4 text-xs text-surface-500">

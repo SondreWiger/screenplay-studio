@@ -487,7 +487,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 <div className="text-center py-12 text-surface-500">
                   <GitBranch size={30} className="mx-auto mb-3 opacity-25" />
                   <p className="text-sm">No plot threads yet.</p>
-                  <p className="text-xs mt-1 text-surface-600">Add your A, B, C plots and subplots.</p>
+                  <p className="text-xs mt-1 text-surface-500">Add your A, B, C plots and subplots.</p>
                 </div>
               )}
             </div>
@@ -515,7 +515,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                                 {TIMELINE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                               </select>
                             : <span className="ml-auto text-xs px-2" style={{ color: ti.color }}>{ti.label}</span>}
-                          {canEdit && <button onClick={() => removeEvent(ev.id)} className="text-surface-600 hover:text-red-400 transition-colors ml-1"><Trash2 size={11} /></button>}
+                          {canEdit && <button onClick={() => removeEvent(ev.id)} className="text-surface-500 hover:text-red-400 transition-colors ml-1"><Trash2 size={11} /></button>}
                         </div>
                         <div className="px-3 py-2">
                           {canEdit
@@ -555,7 +555,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                       <p className="text-xs text-surface-500 truncate">{c.role || 'No role set'}</p>
                     </div>
                     {canEdit && (
-                      <button onClick={e => { e.stopPropagation(); removeArc(c.id); }} className="text-surface-600 hover:text-red-400 transition-colors p-1">
+                      <button onClick={e => { e.stopPropagation(); removeArc(c.id); }} className="text-surface-500 hover:text-red-400 transition-colors p-1">
                         <Trash2 size={12} />
                       </button>
                     )}
@@ -601,7 +601,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 <div key={ep.id} className="bg-surface-800/40 border border-surface-700/50 rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-700/40" style={{ background: '#818cf812' }}>
                     <span className="text-xs font-semibold text-indigo-400 uppercase tracking-[0.04em]">Episode {idx + 1}</span>
-                    {canEdit && <button onClick={() => removeEpisode(ep.id)} className="text-surface-600 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>}
+                    {canEdit && <button onClick={() => removeEpisode(ep.id)} className="text-surface-500 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>}
                   </div>
                   <div className="p-4 space-y-3">
                     <Field label="Title"><Input value={ep.title} onChange={e => updateEpisode(ep.id, 'title', e.target.value)} placeholder="Episode title" readOnly={!canEdit} /></Field>
@@ -656,7 +656,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                       ? <input value={cs.title} onChange={e => updateCustom(cs.id, 'title', e.target.value)} className="flex-1 bg-transparent text-sm font-bold text-white placeholder-surface-500 focus:outline-none" placeholder="Section title…" />
                       : <span className="flex-1 text-sm font-bold text-white">{cs.title || 'Custom Section'}</span>}
                     {canEdit && (
-                      <button onClick={() => removeCustom(cs.id)} className="text-surface-600 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
+                      <button onClick={() => removeCustom(cs.id)} className="text-surface-500 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
                     )}
                   </div>
                   <div className="p-4">
@@ -673,7 +673,7 @@ export default function TreatmentPage({ params }: { params: { id: string } }) {
                 <div className="text-center py-12 text-surface-500">
                   <Layers size={30} className="mx-auto mb-3 opacity-25" />
                   <p className="text-sm">No custom sections yet.</p>
-                  <p className="text-xs mt-1 text-surface-600">Research, influences, production notes, or anything else.</p>
+                  <p className="text-xs mt-1 text-surface-500">Research, influences, production notes, or anything else.</p>
                 </div>
               )}
             </div>

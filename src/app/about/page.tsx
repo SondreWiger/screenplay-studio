@@ -159,10 +159,10 @@ export default async function AboutPage() {
             <p className="text-base sm:text-lg text-white/60 leading-relaxed">
               Screenplay Studio started as a script formatter and it quickly became obvious that the problem was bigger than formatting. The script is just the start of a production. Breakdown, schedule, budget, casting, crew — all of it flows from the same document, and all of it was living in a dozen different places.
             </p>
-            <p className="text-base sm:text-lg text-white/40 leading-relaxed">
+            <p className="text-base sm:text-lg text-white/50 leading-relaxed">
               The platform supports film, TV, audio drama, stage, podcast, and content creation because the core problem is the same across all of them. Screenplay Studio carries the production from first draft to final wrap — in one workspace.
             </p>
-            <p className="text-base sm:text-lg text-white/25 leading-relaxed">
+            <p className="text-base sm:text-lg text-white/45 leading-relaxed">
               No investor roadmap. No enterprise pivot. Built by one developer in Norway and shaped by the people who actually use it. That is the whole model.
             </p>
           </div>
@@ -194,7 +194,7 @@ export default async function AboutPage() {
                   <div className="shrink-0 w-2.5 h-2.5 rounded-full mt-1 hidden sm:block" style={{ background: i === TIMELINE.length - 1 ? ORANGE : 'rgba(255,255,255,0.2)' }} />
                   <div>
                     <p className="text-sm font-semibold text-white mb-1">{t.label}</p>
-                    <p className="text-xs text-white/35 leading-relaxed">{t.detail}</p>
+                    <p className="text-xs text-white/50 leading-relaxed">{t.detail}</p>
                   </div>
                 </div>
               ))}
@@ -241,7 +241,7 @@ export default async function AboutPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
             Built by the community
           </h2>
-          <p className="text-sm text-white/40 max-w-xl leading-relaxed mb-8">
+          <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-8">
             Screenplay Studio is open source. These are the people who have contributed to the codebase, design, documentation, and community.
           </p>
           <ContributorsList />
@@ -260,7 +260,7 @@ export default async function AboutPage() {
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
             Just try it.
           </h2>
-          <p className="text-sm text-white/40 mb-8">Free. No card. No time limit.</p>
+          <p className="text-sm text-white/50 mb-8">Free. No card. No time limit.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/register"
@@ -301,9 +301,9 @@ export default async function AboutPage() {
             </div>
           </div>
           <div className="flex items-center gap-5 flex-wrap">
-            <Link href="/blog" className="text-xs text-white/25 hover:text-white/50 transition-colors">Blog</Link>
-            <Link href="/legal/privacy" className="text-xs text-white/25 hover:text-white/50 transition-colors">Privacy</Link>
-            <Link href="/legal/terms" className="text-xs text-white/25 hover:text-white/50 transition-colors">Terms</Link>
+            <Link href="/blog" className="text-xs text-white/45 hover:text-white/50 transition-colors">Blog</Link>
+            <Link href="/legal/privacy" className="text-xs text-white/45 hover:text-white/50 transition-colors">Privacy</Link>
+            <Link href="/legal/terms" className="text-xs text-white/45 hover:text-white/50 transition-colors">Terms</Link>
             <span className="text-white/10">·</span>
             <a
               href="https://development.northem.no/"

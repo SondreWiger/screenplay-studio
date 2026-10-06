@@ -86,7 +86,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
         <h1 className="text-3xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>PAGE NOT FOUND</h1>
-        <p className="text-white/40 mb-6 font-mono text-sm">This company page doesn&apos;t exist or isn&apos;t public.</p>
+        <p className="text-white/50 mb-6 font-mono text-sm">This company page doesn&apos;t exist or isn&apos;t public.</p>
         <Link href="/" className="ss-btn-orange text-sm">
           Go Home
         </Link>
@@ -152,11 +152,11 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                   )}
                   <div className="p-5">
                     <h3 className="font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>{project.title}</h3>
-                    {project.logline && <p className="text-sm text-white/40 mt-1 line-clamp-2">{project.logline}</p>}
+                    {project.logline && <p className="text-sm text-white/50 mt-1 line-clamp-2">{project.logline}</p>}
                     <div className="flex items-center gap-2 mt-3">
-                      <span className="text-xs font-mono text-white/30 capitalize">{project.format}</span>
+                      <span className="text-xs font-mono text-white/45 capitalize">{project.format}</span>
                       {project.genre.length > 0 && (
-                        <span className="text-xs font-mono text-white/30">· {project.genre.join(', ')}</span>
+                        <span className="text-xs font-mono text-white/45">· {project.genre.join(', ')}</span>
                       )}
                     </div>
                   </div>
@@ -178,14 +178,14 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt={profile.full_name || profile.username || 'Team member'} className="w-24 h-24 rounded-full mx-auto object-cover" loading="lazy" />
                     ) : (
-                      <div className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white/40 bg-white/10">
+                      <div className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white/50 bg-white/10">
                         {(profile?.display_name || profile?.full_name || '?')[0].toUpperCase()}
                       </div>
                     )}
                     <h3 className="font-semibold text-white mt-3" style={{ letterSpacing: '-0.02em' }}>{profile?.display_name || profile?.full_name || 'Team Member'}</h3>
                     <p className="text-sm text-white/50 font-mono">{m.job_title || m.role}</p>
-                    {m.department && <p className="text-xs text-white/30 font-mono">{m.department}</p>}
-                    {m.bio && <p className="text-xs text-white/30 mt-1 line-clamp-2">{m.bio}</p>}
+                    {m.department && <p className="text-xs text-white/45 font-mono">{m.department}</p>}
+                    {m.bio && <p className="text-xs text-white/45 mt-1 line-clamp-2">{m.bio}</p>}
                   </div>
                 );
               })}
@@ -218,13 +218,13 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
                   <div className="p-4">
                     {post.pinned && <span className="text-[11px] uppercase tracking-[0.04em] text-brand-500 mb-1 block">Pinned</span>}
                     <h3 className="font-semibold text-white line-clamp-2" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
-                    {post.excerpt && <p className="text-sm text-white/40 mt-1 line-clamp-2">{post.excerpt}</p>}
+                    {post.excerpt && <p className="text-sm text-white/50 mt-1 line-clamp-2">{post.excerpt}</p>}
                     <div className="flex items-center gap-2 mt-3">
                       {post.tags?.length > 0 && post.tags.slice(0, 2).map((tag: string) => (
-                        <span key={tag} className="text-[11px] px-2 py-0.5 uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{tag}</span>
+                        <span key={tag} className="text-[11px] px-2 py-0.5 uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{tag}</span>
                       ))}
                       {post.published_at && (
-                        <span className="text-xs font-mono text-white/30 ml-auto">{new Date(post.published_at).toLocaleDateString()}</span>
+                        <span className="text-xs font-mono text-white/45 ml-auto">{new Date(post.published_at).toLocaleDateString()}</span>
                       )}
                     </div>
                   </div>
@@ -236,7 +236,7 @@ export default function CompanyPublicPage({ params }: { params: { slug: string }
 
         {/* Footer */}
         <footer className="pt-8 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <p className="text-xs font-mono text-white/30">
+          <p className="text-xs font-mono text-white/45">
             {company.name} · Powered by <Link href="/" className="text-white/50 hover:text-white transition-colors">Screenplay Studio</Link>
           </p>
         </footer>

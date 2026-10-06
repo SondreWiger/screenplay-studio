@@ -32,11 +32,11 @@ function StatCard({ label, value, sub, color = 'text-white', icon }: StatCardPro
   return (
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium">{label}</span>
+        <span className="text-[11px] text-white/50 uppercase tracking-[0.04em] font-medium">{label}</span>
         {icon && <span className="text-white/20">{icon}</span>}
       </div>
       <span className={cn('text-2xl font-bold tabular-nums', color)}>{value}</span>
-      {sub && <span className="text-[11px] text-white/30">{sub}</span>}
+      {sub && <span className="text-[11px] text-white/45">{sub}</span>}
     </div>
   );
 }
@@ -44,7 +44,7 @@ function StatCard({ label, value, sub, color = 'text-white', icon }: StatCardPro
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="text-xs font-semibold text-white/40 uppercase tracking-[0.04em] mb-3">{title}</h2>
+      <h2 className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-3">{title}</h2>
       {children}
     </div>
   );
@@ -58,13 +58,13 @@ function MiniBar({ label, value, max, color = 'bg-violet-500' }: { label: string
       <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
         <div className={cn('h-full rounded-full transition-[width] duration-700', color)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[11px] text-white/40 tabular-nums w-12 text-right">{fmt(value)}</span>
+      <span className="text-[11px] text-white/50 tabular-nums w-12 text-right">{fmt(value)}</span>
     </div>
   );
 }
 
 function SignupSparkline({ data }: { data: { date: string; count: number }[] }) {
-  if (!data.length) return <p className="text-white/30 text-xs">No data</p>;
+  if (!data.length) return <p className="text-white/45 text-xs">No data</p>;
   const max = Math.max(...data.map(d => d.count), 1);
   const w = 600, h = 80;
   const pts = data.map((d, i) => {
@@ -75,8 +75,8 @@ function SignupSparkline({ data }: { data: { date: string; count: number }[] }) 
   return (
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium">Daily signups — last 30 days</span>
-        <span className="text-[11px] text-white/30">{data.reduce((a, d) => a + d.count, 0)} total</span>
+        <span className="text-[11px] text-white/50 uppercase tracking-[0.04em] font-medium">Daily signups — last 30 days</span>
+        <span className="text-[11px] text-white/45">{data.reduce((a, d) => a + d.count, 0)} total</span>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 80 }} preserveAspectRatio="none">
         <defs>
@@ -165,7 +165,7 @@ export default function DevStatsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Platform Stats</h1>
-          <p className="text-white/40 text-sm mt-0.5">
+          <p className="text-white/50 text-sm mt-0.5">
             {lastRefresh ? `Last refreshed ${lastRefresh.toLocaleTimeString()}` : ''}
             {meta?.siteVersion ? ` · v${meta.siteVersion}` : ''}
           </p>
@@ -220,14 +220,14 @@ export default function DevStatsPage() {
         {/* ── Breakdowns ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
-            <h3 className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium mb-4">Script Types</h3>
+            <h3 className="text-[11px] text-white/50 uppercase tracking-[0.04em] font-medium mb-4">Script Types</h3>
             {(db?.scriptTypeBreakdown ?? []).map((r: any, i: number) => (
               <MiniBar key={r.type} label={r.type} value={r.count} max={db?.scriptTypeBreakdown?.[0]?.count ?? 1} color={colors[i % colors.length]} />
             ))}
             {!db?.scriptTypeBreakdown?.length && <p className="text-white/20 text-xs">No data</p>}
           </div>
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
-            <h3 className="text-[11px] text-white/40 uppercase tracking-[0.04em] font-medium mb-4">Project Types</h3>
+            <h3 className="text-[11px] text-white/50 uppercase tracking-[0.04em] font-medium mb-4">Project Types</h3>
             {(db?.projectTypeBreakdown ?? []).map((r: any, i: number) => (
               <MiniBar key={r.type} label={r.type} value={r.count} max={db?.projectTypeBreakdown?.[0]?.count ?? 1} color={colors[i % colors.length]} />
             ))}
@@ -246,9 +246,9 @@ export default function DevStatsPage() {
             <StatCard label="SQL Lines" value={fmt(codebase?.sqlLines)} />
           </div>
           <div className="mt-3 bg-white/[0.03] border border-white/[0.06] rounded-xl px-5 py-3">
-            <p className="text-[11px] text-white/30">
+            <p className="text-[11px] text-white/45">
               Total source size: <span className="text-white/60 font-mono">{fmtBytes(codebase?.totalBytes ?? 0)}</span>
-              {' · '}Scanned from <span className="text-white/40 font-mono">src/</span> and <span className="text-white/40 font-mono">supabase/</span>
+              {' · '}Scanned from <span className="text-white/50 font-mono">src/</span> and <span className="text-white/50 font-mono">supabase/</span>
             </p>
           </div>
         </Section>

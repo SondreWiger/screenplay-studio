@@ -26,7 +26,7 @@ export function PollResultCard({ result }: { result: QuestionResult }) {
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
       <div className="flex items-start justify-between gap-3 mb-4">
         <p className="font-semibold text-white">{question_text}</p>
-        <span className="text-xs text-white/30 flex-shrink-0">
+        <span className="text-xs text-white/45 flex-shrink-0">
           {total_answers} answer{total_answers !== 1 ? 's' : ''}
         </span>
       </div>
@@ -45,7 +45,7 @@ export function PollResultCard({ result }: { result: QuestionResult }) {
               <div key={opt.label}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm text-white/70 truncate mr-3">{opt.label}</span>
-                  <span className="text-xs text-white/40 flex-shrink-0 tabular-nums">
+                  <span className="text-xs text-white/50 flex-shrink-0 tabular-nums">
                     {opt.count} · {pct}%
                   </span>
                 </div>
@@ -64,7 +64,7 @@ export function PollResultCard({ result }: { result: QuestionResult }) {
       {/* Ranking results */}
       {question_type === 'ranking' && total_answers > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-white/30 mb-3">Average rank (lower = more preferred)</p>
+          <p className="text-xs text-white/45 mb-3">Average rank (lower = more preferred)</p>
           {ranking_scores.map((r, i) => {
             const maxRank = ranking_scores.length;
             const barPct = maxRank > 1 ? Math.round((1 - (r.avg_rank - 1) / (maxRank - 1)) * 100) : 100;
@@ -76,7 +76,7 @@ export function PollResultCard({ result }: { result: QuestionResult }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-white truncate">{r.label}</span>
-                    <span className="text-xs text-white/30 flex-shrink-0 ml-2 tabular-nums">
+                    <span className="text-xs text-white/45 flex-shrink-0 ml-2 tabular-nums">
                       avg {r.avg_rank.toFixed(1)}
                     </span>
                   </div>

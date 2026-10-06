@@ -73,7 +73,7 @@ function VideoLesson({ content }: { content: LessonContentVideo }) {
         <p className="text-sm text-white/50 italic text-center">{content.caption}</p>
       )}
       {content.duration_seconds && (
-        <div className="flex items-center gap-1.5 text-xs text-white/30">
+        <div className="flex items-center gap-1.5 text-xs text-white/45">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           {Math.floor(content.duration_seconds / 60)}:{String(content.duration_seconds % 60).padStart(2, '0')} video
         </div>
@@ -185,7 +185,7 @@ function QuizLesson({
             'w-full py-3 rounded-xl text-sm font-semibold transition-colors',
             allAnswered
               ? 'bg-brand-500 text-white hover:bg-brand-600'
-              : 'bg-white/5 text-white/30 cursor-not-allowed',
+              : 'bg-white/5 text-white/45 cursor-not-allowed',
           )}
         >
           {allAnswered ? 'Submit Answers' : `Answer all ${content.questions.length} questions to submit`}
@@ -221,7 +221,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
                 !showResult && isSelected  && 'border-brand-500/40 text-white bg-brand-500/10',
                 showResult && isCorrect    && 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10',
                 showResult && !isCorrect && isSelected && !opt.is_correct && 'border-red-500/40 text-red-400 bg-red-500/10',
-                showResult && !isCorrect && !isSelected && 'border-white/5 text-white/30',
+                showResult && !isCorrect && !isSelected && 'border-white/5 text-white/45',
               )}
             >
               <div className="flex items-center gap-3">
@@ -239,7 +239,7 @@ function QuizQuestionView({ q, idx, answer, submitted, onSelect }: {
       </div>
       {submitted && q.explanation && (
         <div className="mt-4 ml-9 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white/60">
-          <span className="text-white/40 font-semibold uppercase tracking-[0.04em] text-[11px] block mb-1">Explanation</span>
+          <span className="text-white/50 font-semibold uppercase tracking-[0.04em] text-[11px] block mb-1">Explanation</span>
           {q.explanation}
         </div>
       )}
@@ -287,7 +287,7 @@ function ScriptEditorLesson({
                     'px-1.5 py-0.5 text-[11px] rounded font-mono',
                     text.toLowerCase().includes(kw.toLowerCase())
                       ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-white/5 text-white/30',
+                      : 'bg-white/5 text-white/45',
                   )}>{kw}</span>
                 ))}
               </div>
@@ -323,7 +323,7 @@ function ScriptEditorLesson({
 
       {/* Fountain formatting reference */}
       <details className="rounded-xl border border-white/[0.08] overflow-hidden">
-        <summary className="px-4 py-3 bg-white/[0.03] text-xs text-white/40 cursor-pointer hover:text-white/60 transition-colors flex items-center gap-2">
+        <summary className="px-4 py-3 bg-white/[0.03] text-xs text-white/50 cursor-pointer hover:text-white/60 transition-colors flex items-center gap-2">
           <span>📋</span> Fountain Formatting Quick Reference
         </summary>
         <div className="px-4 py-3 grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs font-mono">
@@ -339,7 +339,7 @@ function ScriptEditorLesson({
           ].map(([syntax, desc]) => (
             <div key={syntax} className="flex gap-2">
               <code className="text-brand-500 shrink-0 w-32">{syntax}</code>
-              <span className="text-white/30">{desc}</span>
+              <span className="text-white/45">{desc}</span>
             </div>
           ))}
         </div>
@@ -348,7 +348,7 @@ function ScriptEditorLesson({
       {content.hint && (
         <div className="flex items-start gap-3">
           <button onClick={() => setShowHint(v => !v)}
-            className="text-xs text-white/30 hover:text-white/60 transition-colors underline underline-offset-2 whitespace-nowrap">
+            className="text-xs text-white/45 hover:text-white/60 transition-colors underline underline-offset-2 whitespace-nowrap">
             {showHint ? 'Hide hint' : 'Show hint'}
           </button>
           {showHint && <p className="text-xs text-white/50 italic">{content.hint}</p>}
@@ -488,7 +488,7 @@ function ProgressSidebar({
         <h2 className="text-sm font-bold text-white leading-snug">{course.title}</h2>
         {enrollment && (
           <div className="mt-3">
-            <div className="flex items-center justify-between text-[11px] text-white/40 mb-1">
+            <div className="flex items-center justify-between text-[11px] text-white/50 mb-1">
               <span>Progress</span>
               <span className="text-white/60">{enrollment.progress_percent}%</span>
             </div>
@@ -534,7 +534,7 @@ function ProgressSidebar({
                     <span className="block leading-snug line-clamp-2">{lesson.title}</span>
                     <span className={cn(
                       'text-[11px] uppercase tracking-[0.04em] mt-0.5 block',
-                      active ? 'text-brand-500/70' : 'text-white/25',
+                      active ? 'text-brand-500/70' : 'text-white/45',
                     )}>
                       {LESSON_TYPE_LABEL[lesson.lesson_type]} · {lesson.xp_reward} XP
                     </span>
@@ -549,7 +549,7 @@ function ProgressSidebar({
       {/* XP summary */}
       <div className="p-4 border-t border-white/[0.06]">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-white/30">Course reward</span>
+          <span className="text-white/45">Course reward</span>
           <span className="text-brand-500 font-bold">+{course.xp_reward} XP</span>
         </div>
       </div>
@@ -747,7 +747,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
         <header className="flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-white/[0.07] bg-[rgba(7,7,16,0.95)] shrink-0">
           <button
             onClick={() => setSidebarOpen(v => !v)}
-            className="text-white/40 hover:text-white/70 transition-colors p-1.5 rounded-lg hover:bg-white/5"
+            className="text-white/50 hover:text-white/70 transition-colors p-1.5 rounded-lg hover:bg-white/5"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -778,7 +778,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xl">{LESSON_TYPE_ICON[activeLesson.lesson_type]}</span>
-                  <span className="text-[11px] text-white/40 uppercase tracking-[0.04em]">
+                  <span className="text-[11px] text-white/50 uppercase tracking-[0.04em]">
                     {LESSON_TYPE_LABEL[activeLesson.lesson_type]}
                   </span>
                   <span className="text-[11px] text-brand-500/70">+{activeLesson.xp_reward} XP</span>
@@ -885,7 +885,7 @@ export default function CourseViewerPage({ params }: { params: { id: string } })
                 </button>
               ))}
             </div>
-            <button onClick={() => setShowRating(false)} className="text-xs text-white/30 hover:text-white/60 transition-colors">Skip rating</button>
+            <button onClick={() => setShowRating(false)} className="text-xs text-white/45 hover:text-white/60 transition-colors">Skip rating</button>
           </div>
         </div>
       )}

@@ -21,7 +21,7 @@ export function CommunityTitle({ eyebrow, title, description, stats, children }:
       <h1 className="text-3xl font-bold uppercase text-white sm:text-4xl" style={{ letterSpacing: '-0.03em', lineHeight: 0.95 }}>{title}</h1>
       {description && <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/55">{description}</p>}
       {stats && stats.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-[11px] uppercase tracking-[0.06em] text-white/40">
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-[11px] uppercase tracking-[0.06em] text-white/50">
           {stats.map((s) => (
             <span key={s.label} className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 bg-brand-500" />

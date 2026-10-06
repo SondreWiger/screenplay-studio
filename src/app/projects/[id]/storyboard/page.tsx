@@ -376,14 +376,14 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
                     <p className="text-[11px] text-surface-500 mt-1 line-clamp-1">{shot.description}</p>
                   )}
                   {shot.storyboard_notes && viewSize !== 'sm' && (
-                    <p className="text-[11px] text-surface-600 mt-0.5 line-clamp-1 italic">{shot.storyboard_notes}</p>
+                    <p className="text-[11px] text-surface-500 mt-0.5 line-clamp-1 italic">{shot.storyboard_notes}</p>
                   )}
                   {(shot.storyboard_references?.length || 0) > 0 && viewSize !== 'sm' && (
                     <div className="flex items-center gap-1 mt-1">
-                      <svg className="w-3 h-3 text-surface-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
                       </svg>
-                      <span className="text-[11px] text-surface-600">{shot.storyboard_references!.length} ref{shot.storyboard_references!.length > 1 ? 's' : ''}</span>
+                      <span className="text-[11px] text-surface-500">{shot.storyboard_references!.length} ref{shot.storyboard_references!.length > 1 ? 's' : ''}</span>
                     </div>
                   )}
                 </div>
@@ -447,7 +447,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
                 </button>
               </div>
               <DrawingCanvas strokes={drawStrokes} onChange={setDrawStrokes} width={640} height={360} tool={drawTool} color={drawColor} brushSize={brushSize} />
-              <p className="text-[11px] text-surface-600">Draw directly on the canvas. Touch or mouse. 16:9 ratio.</p>
+              <p className="text-[11px] text-surface-500">Draw directly on the canvas. Touch or mouse. 16:9 ratio.</p>
             </div>
           )}
 

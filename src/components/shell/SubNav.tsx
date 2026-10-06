@@ -48,7 +48,7 @@ export function SubNav({ title, groups, id, footer }: { title?: string; groups: 
         <div className="space-y-4">
           {groups.map((group, gi) => (
             <div key={group.label ?? gi}>
-              {group.label && <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-600">{group.label}</p>}
+              {group.label && <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-surface-500">{group.label}</p>}
               <div className="space-y-0.5">
                 {group.items.map((item) => (
                   <Link

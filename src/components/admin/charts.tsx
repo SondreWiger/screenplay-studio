@@ -359,7 +359,7 @@ export function BarList({ items, color = SERIES.blue, format = compact, empty = 
   const rows = limit ? items.slice(0, limit) : items;
   const max = Math.max(1, ...rows.map((r) => r.count));
   const total = items.reduce((s, r) => s + r.count, 0) || 1;
-  if (!rows.length) return <p className="py-6 text-center text-xs text-surface-600">{empty}</p>;
+  if (!rows.length) return <p className="py-6 text-center text-xs text-surface-500">{empty}</p>;
   return (
     <ul className="space-y-2.5">
       {rows.map((r, i) => (
@@ -368,7 +368,7 @@ export function BarList({ items, color = SERIES.blue, format = compact, empty = 
             <span className="truncate capitalize text-surface-300">{labelFormat ? labelFormat(r.label) : r.label.replace(/_/g, ' ')}</span>
             <span className="shrink-0 tabular-nums text-surface-400">
               <span className="font-semibold text-surface-100">{format(r.count)}</span>
-              <span className="ml-1.5 text-surface-600">{Math.round((r.count / total) * 100)}%</span>
+              <span className="ml-1.5 text-surface-500">{Math.round((r.count / total) * 100)}%</span>
             </span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-surface-800">
@@ -399,7 +399,7 @@ export function Heatmap({ grid, label = 'events' }: { grid: number[][]; label?: 
         <div className="min-w-[520px]">
           <div className="ml-9 grid grid-cols-[repeat(24,minmax(0,1fr))] gap-[3px] pb-1">
             {Array.from({ length: 24 }).map((_, h) => (
-              <span key={h} className="text-center text-[9px] text-surface-600">{h % 3 === 0 ? h : ''}</span>
+              <span key={h} className="text-center text-[9px] text-surface-500">{h % 3 === 0 ? h : ''}</span>
             ))}
           </div>
           {grid.map((row, d) => (
@@ -471,7 +471,7 @@ export function Funnel({ steps }: { steps: { label: string; value: number; hint?
                 {stepPct != null && pct > 18 && <span>{stepPct}% of previous</span>}
               </motion.div>
             </div>
-            {s.hint && <p className="mt-0.5 text-[10px] text-surface-600">{s.hint}</p>}
+            {s.hint && <p className="mt-0.5 text-[10px] text-surface-500">{s.hint}</p>}
           </li>
         );
       })}

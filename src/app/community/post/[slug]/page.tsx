@@ -329,7 +329,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-3xl font-bold text-white mb-2">Post not found</h1>
-          <p className="text-white/40">This post may have been removed or doesn&apos;t exist.</p>
+          <p className="text-white/50">This post may have been removed or doesn&apos;t exist.</p>
           <Link href="/community" className="mt-8 px-6 py-3 bg-brand-600 text-white font-medium rounded-lg">Browse Community</Link>
         </div>
       </div>
@@ -359,7 +359,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               <span>c/{subCommunity.slug}</span>
             </Link>
             <span className="text-white/15 text-xs">{'/'}</span>
-            <span className="text-xs text-white/35 truncate max-w-xs">{post.title}</span>
+            <span className="text-xs text-white/50 truncate max-w-xs">{post.title}</span>
           </div>
         </div>
       )}
@@ -384,7 +384,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
           )}
 
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{post.title}</h1>
-          {post.description && <p className="mt-3 text-lg text-white/40">{post.description}</p>}
+          {post.description && <p className="mt-3 text-lg text-white/50">{post.description}</p>}
 
           {/* Author & meta */}
           <div className="mt-6 flex items-center justify-between pb-6 border-b border-white/10">
@@ -547,7 +547,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                activeTab === tab.key ? 'bg-surface-900 text-white shadow-sm' : 'text-white/40 hover:text-white/70'
+                activeTab === tab.key ? 'bg-surface-900 text-white shadow-sm' : 'text-white/50 hover:text-white/70'
               }`}
             >
               {tab.label}
@@ -628,7 +628,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="text-sm font-semibold text-white">{distro.title}</h4>
-                        {distro.description && <p className="text-xs text-white/40 mt-1">{distro.description}</p>}
+                        {distro.description && <p className="text-xs text-white/50 mt-1">{distro.description}</p>}
                         <div className="flex items-center gap-2 mt-2 text-xs text-white/50">
                           <span>by <Link href={`/u/${distro.author?.username || distro.author?.id || ''}`} className="hover:text-white/70 transition-colors">{distro.author?.full_name || 'Anonymous'}</Link></span>
                           <span>·</span>
@@ -664,7 +664,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
                       </div>
                     )}
                     <h4 className="text-sm font-semibold text-white">{prod.title}</h4>
-                    {prod.description && <p className="text-xs text-white/40 mt-1 line-clamp-2">{prod.description}</p>}
+                    {prod.description && <p className="text-xs text-white/50 mt-1 line-clamp-2">{prod.description}</p>}
                     <div className="text-xs text-white/50 mt-2">
                       by {prod.submitter?.full_name || 'Anonymous'} · {formatDate(prod.created_at)}
                     </div>
@@ -684,7 +684,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
               <div className="text-center py-8">
                 <div className="text-5xl mb-4">🎬</div>
                 <h3 className="text-xl font-bold text-white mb-2">Film Submitted!</h3>
-                <p className="text-sm text-white/40 mb-6">Your film has been sent for review. You&apos;ll be notified once it&apos;s approved.</p>
+                <p className="text-sm text-white/50 mb-6">Your film has been sent for review. You&apos;ll be notified once it&apos;s approved.</p>
                 <button onClick={() => { setShowFilmModal(false); setFilmSubmitted(false); }}
                   className="px-6 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-600 transition-colors">
                   Done
@@ -693,7 +693,7 @@ export default function PostDetailPage({ params }: { params: { slug: string } })
             ) : (
               <>
                 <h3 className="text-lg font-bold text-white mb-1">Submit Your Film</h3>
-                <p className="text-sm text-white/40 mb-5">
+                <p className="text-sm text-white/50 mb-5">
                   Made a film based on this script? Submit it for review — once approved, it&apos;ll appear on this page and the original creator will be notified.
                 </p>
                 <div className="space-y-4">
@@ -784,7 +784,7 @@ function CommunityCommentThread({ comment, allComments, depth, user, replyingTo,
             {comment.author?.avatar_url ? (
               <img src={comment.author.avatar_url} alt={comment.author.full_name || 'Commenter avatar'} className={cn(isRoot ? 'w-8 h-8' : 'w-6 h-6', 'rounded-full hover:ring-2 ring-brand-500 transition-colors')} loading="lazy" />
             ) : (
-              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[11px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/40 hover:ring-2 ring-brand-500 transition-colors')}>
+              <div className={cn(isRoot ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[11px]', 'rounded-full bg-surface-700 flex items-center justify-center font-bold text-white/50 hover:ring-2 ring-brand-500 transition-colors')}>
                 {(comment.author?.full_name || '?')[0]}
               </div>
             )}

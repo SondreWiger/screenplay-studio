@@ -167,7 +167,7 @@ function VersionRow({
             'shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-colors',
             confirming
               ? 'opacity-100 bg-red-500/20 text-red-400 hover:bg-red-500/30'
-              : 'opacity-0 group-hover/row:opacity-100 text-surface-600 hover:text-red-400',
+              : 'opacity-0 group-hover/row:opacity-100 text-surface-500 hover:text-red-400',
           )}
         >
           <TrashIcon />
@@ -281,7 +281,7 @@ export function VersionPanel({
               {selectedCount} element{selectedCount !== 1 ? 's' : ''} selected
             </span>
           ) : (
-            <span className="text-[11px] text-surface-600">\u2318+click elements, then tag below</span>
+            <span className="text-[11px] text-surface-500">\u2318+click elements, then tag below</span>
           )}
         </div>
       )}
@@ -296,7 +296,7 @@ export function VersionPanel({
             <p className="text-[11px] text-surface-500">No versions yet.</p>
             {mode === 'script' && (
               <p className="text-[11px] text-surface-700 leading-relaxed">
-                Use <span className="font-mono text-surface-600">Group/Name</span> to nest versions inside groups.
+                Use <span className="font-mono text-surface-500">Group/Name</span> to nest versions inside groups.
               </p>
             )}
           </div>
@@ -305,10 +305,10 @@ export function VersionPanel({
             {versions.length > 1 && (
               <div className="flex items-center gap-2 px-2 pb-2 border-b border-surface-800/40 mb-1">
                 <button onClick={() => onChange({ ...config, disabled: [] })}
-                  className="text-[11px] text-surface-600 hover:text-surface-300 transition-colors">show all</button>
+                  className="text-[11px] text-surface-500 hover:text-surface-300 transition-colors">show all</button>
                 <span className="text-surface-800">·</span>
                 <button onClick={() => onChange({ ...config, disabled: [...versions] })}
-                  className="text-[11px] text-surface-600 hover:text-surface-300 transition-colors">hide all</button>
+                  className="text-[11px] text-surface-500 hover:text-surface-300 transition-colors">hide all</button>
                 {config.disabled.length > 0 && (
                   <span className="ml-auto text-[11px] text-surface-700 tabular-nums">{config.disabled.length} hidden</span>
                 )}
@@ -348,7 +348,7 @@ export function VersionPanel({
                       <ChevronIcon open={isOpen} />
                       <span className={cn(
                         'text-[11px] font-semibold truncate',
-                        groupAllEnabled ? 'text-surface-300' : 'text-surface-600',
+                        groupAllEnabled ? 'text-surface-300' : 'text-surface-500',
                       )}>
                         {prefix}
                       </span>
@@ -416,7 +416,7 @@ export function VersionPanel({
               if (e.key === 'Escape') { e.preventDefault(); onClose(); }
             }}
             placeholder={mode === 'script' ? 'New version (use / to nest)' : 'version name\u2026'}
-            className="flex-1 min-w-0 bg-surface-800 border border-surface-700/80 rounded-md text-[11px] text-white placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
+            className="flex-1 min-w-0 bg-surface-800 border border-surface-700/80 rounded-md text-[11px] text-white placeholder:text-surface-500 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
           />
           <button
             type="button"

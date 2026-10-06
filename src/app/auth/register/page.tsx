@@ -228,7 +228,7 @@ function RegisterForm() {
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
           <h1 className="text-2xl font-semibold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>{t('auth.check_email')}</h1>
-          <p className="text-sm text-white/35 mb-8 leading-relaxed">
+          <p className="text-sm text-white/50 mb-8 leading-relaxed">
             {t('auth.verification_sent')}{' '}
             <span className="text-white font-mono">{successEmail}</span>.
             {t('auth.click_to_activate')}
@@ -287,7 +287,7 @@ function RegisterForm() {
             <h1 className="text-2xl font-semibold text-white" style={{ letterSpacing: '-0.03em' }}>
               {t('auth.create_account')}
             </h1>
-            <p className="mt-1 text-sm text-white/30">{t('auth.free_no_card')}</p>
+            <p className="mt-1 text-sm text-white/45">{t('auth.free_no_card')}</p>
           </div>
 
           <form onSubmit={handleRegister} noValidate className="space-y-5">

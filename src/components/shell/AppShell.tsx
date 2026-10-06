@@ -170,7 +170,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 if (e.key === 'Enter' && filtered[0]?.items[0]) { router.push(filtered[0].items[0].href); setQuery(''); }
               }}
               placeholder="Jump to…"
-              className="w-full bg-transparent text-xs text-white placeholder:text-surface-600 focus:outline-none"
+              className="w-full bg-transparent text-xs text-white placeholder:text-surface-500 focus:outline-none"
             />
             <kbd className="rounded border border-surface-700 px-1 text-[10px] text-surface-500">/</kbd>
           </label>
@@ -186,7 +186,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         ))}
-        {filtered.length === 0 && <p className="px-3 text-xs text-surface-600">No matches</p>}
+        {filtered.length === 0 && <p className="px-3 text-xs text-surface-500">No matches</p>}
       </nav>
 
       {/* Account */}

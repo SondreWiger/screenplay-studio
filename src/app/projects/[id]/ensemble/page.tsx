@@ -221,7 +221,7 @@ export default function EnsemblePage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-surface-300">
-                      {m.character_name || <span className="text-surface-600 italic">Ensemble</span>}
+                      {m.character_name || <span className="text-surface-500 italic">Ensemble</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium border', GROUP_COLORS[m.ensemble_group] || GROUP_COLORS.Other)}>
@@ -238,7 +238,7 @@ export default function EnsemblePage() {
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => handleDelete(m.id)}
-                        className="text-surface-600 hover:text-red-400 transition-colors p-1"
+                        className="text-surface-500 hover:text-red-400 transition-colors p-1"
                         title="Remove"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

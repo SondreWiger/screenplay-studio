@@ -161,11 +161,11 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
         <div className="flex items-center justify-between px-5 pt-4 pb-3 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-lg">📊</span>
-            <span className="text-xs text-white/40 font-medium uppercase tracking-[0.04em]">
+            <span className="text-xs text-white/50 font-medium uppercase tracking-[0.04em]">
               {step === 0 ? 'Survey' : step > questions.length ? 'Done' : `Question ${step} of ${questions.length}`}
             </span>
           </div>
-          <button aria-label="Close" onClick={onClose} className="text-white/30 hover:text-white/60 transition-colors p-1">
+          <button aria-label="Close" onClick={onClose} className="text-white/45 hover:text-white/60 transition-colors p-1">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -183,7 +183,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
           {error && !loading && (
             <div className="text-center py-12">
               <p className="text-red-400 text-sm">{error}</p>
-              <button onClick={onClose} className="mt-4 text-xs text-white/40 hover:text-white/60 underline">Close</button>
+              <button onClick={onClose} className="mt-4 text-xs text-white/50 hover:text-white/60 underline">Close</button>
             </div>
           )}
 
@@ -198,10 +198,10 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
                 <span className="text-xl">🎮</span>
                 <div>
                   <p className="text-sm font-semibold text-white">Earn {xpAwarded} XP</p>
-                  <p className="text-xs text-white/40">Just for completing this survey</p>
+                  <p className="text-xs text-white/50">Just for completing this survey</p>
                 </div>
               </div>
-              <p className="text-xs text-white/30 mt-4">
+              <p className="text-xs text-white/45 mt-4">
                 {questions.length} question{questions.length !== 1 ? 's' : ''} · Takes about 2 minutes
               </p>
             </div>
@@ -229,7 +229,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
               {!hasResponded && (
                 <div className="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 rounded-full px-5 py-2">
                   <span className="text-brand-500 font-bold">+{xpAwarded} XP</span>
-                  <span className="text-white/40 text-sm">added to your account</span>
+                  <span className="text-white/50 text-sm">added to your account</span>
                 </div>
               )}
             </div>
@@ -242,7 +242,7 @@ export function PollModal({ pollId, onClose }: PollModalProps) {
             {step > 0 ? (
               <button
                 onClick={() => setStep((s) => s - 1)}
-                className="px-4 py-2 text-sm text-white/40 hover:text-white transition-colors"
+                className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors"
               >
                 ← Back
               </button>
@@ -290,7 +290,7 @@ function QuestionStep({
     <div className="py-4">
       <p className="text-base font-semibold text-white mb-1 leading-snug">{question.question_text}</p>
       {!question.is_required && (
-        <p className="text-xs text-white/30 mb-4">Optional</p>
+        <p className="text-xs text-white/45 mb-4">Optional</p>
       )}
       {question.is_required && <div className="mb-4" />}
 
@@ -338,7 +338,7 @@ function QuestionStep({
       {/* Multi select */}
       {question.question_type === 'multi_select' && (
         <div className="space-y-2">
-          <p className="text-xs text-white/30 mb-3">Select all that apply</p>
+          <p className="text-xs text-white/45 mb-3">Select all that apply</p>
           {(question.options ?? []).map((opt) => {
             const selected = Array.isArray(answer) && answer.includes(opt);
             const toggle = () => {
@@ -377,7 +377,7 @@ function QuestionStep({
       {/* Ranking */}
       {question.question_type === 'ranking' && Array.isArray(answer) && (
         <div className="space-y-2">
-          <p className="text-xs text-white/30 mb-3">Drag to reorder — top = most preferred</p>
+          <p className="text-xs text-white/45 mb-3">Drag to reorder — top = most preferred</p>
           {(answer as string[]).map((opt, idx) => (
             <div key={opt} className="flex items-center gap-3 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3">
               <span className="text-brand-500 font-bold text-sm w-5 flex-shrink-0">{idx + 1}</span>
@@ -390,7 +390,7 @@ function QuestionStep({
                     [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
                     onChange(arr);
                   }}
-                  className="p-0.5 text-white/30 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  className="p-0.5 text-white/45 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -403,7 +403,7 @@ function QuestionStep({
                     [arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]];
                     onChange(arr);
                   }}
-                  className="p-0.5 text-white/30 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  className="p-0.5 text-white/45 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

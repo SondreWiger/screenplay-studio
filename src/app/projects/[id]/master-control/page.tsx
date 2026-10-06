@@ -279,7 +279,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                           !isPlaying && !isCued && !isDone && 'hover:bg-surface-800/30'
                         )}
                       >
-                        <td className="px-2 py-2 text-surface-600 font-mono">{idx + 1}</td>
+                        <td className="px-2 py-2 text-surface-500 font-mono">{idx + 1}</td>
                         <td className="px-2 py-2">
                           <span className={cn(
                             'px-1.5 py-0.5 rounded text-[11px] font-medium uppercase',
@@ -287,7 +287,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                             isCued && 'bg-amber-600 text-black',
                             isDone && 'bg-surface-700 text-surface-400',
                             item.status === 'queued' && 'bg-surface-800 text-surface-500',
-                            item.status === 'skipped' && 'bg-surface-800 text-surface-600 line-through',
+                            item.status === 'skipped' && 'bg-surface-800 text-surface-500 line-through',
                           )}>
                             {item.status}
                           </span>
@@ -312,7 +312,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                           {isPlaying ? (
                             <span className="text-red-400">{formatBroadcastDuration(elapsed)}</span>
                           ) : isDone ? (
-                            <span className="text-surface-600">{formatBroadcastDuration(item.duration_seconds)}</span>
+                            <span className="text-surface-500">{formatBroadcastDuration(item.duration_seconds)}</span>
                           ) : ''}
                         </td>
                         <td className="px-2 py-2 text-center">
@@ -337,7 +337,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                             )}
                             <button
                               onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
-                              className="p-1 rounded hover:bg-red-600/20 text-surface-600 hover:text-red-400"
+                              className="p-1 rounded hover:bg-red-600/20 text-surface-500 hover:text-red-400"
                               title="Delete"
                             >
                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -400,7 +400,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                 )}
               </div>
             ) : (
-              <div className="text-surface-600 text-sm">No item playing</div>
+              <div className="text-surface-500 text-sm">No item playing</div>
             )}
           </div>
 
@@ -419,7 +419,7 @@ export default function MasterControlPage({ params }: { params: { id: string } }
                 <Button size="sm" onClick={() => playItem(nextItem)}>Play</Button>
               </div>
             ) : (
-              <div className="text-surface-600 text-xs">No next item</div>
+              <div className="text-surface-500 text-xs">No next item</div>
             )}
           </div>
 

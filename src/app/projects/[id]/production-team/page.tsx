@@ -149,10 +149,10 @@ export default function ProductionTeamPage() {
               <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-semibold border', DEPT_COLORS[dept as StageProductionDepartment])}>
                 {dept}
               </span>
-              <span className="text-[11px] text-surface-600">({deptMembers.length})</span>
+              <span className="text-[11px] text-surface-500">({deptMembers.length})</span>
               <button
                 onClick={() => openAdd(dept as StageProductionDepartment)}
-                className="ml-auto text-xs text-surface-600 hover:text-surface-400 transition-colors flex items-center gap-1"
+                className="ml-auto text-xs text-surface-500 hover:text-surface-400 transition-colors flex items-center gap-1"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -179,7 +179,7 @@ export default function ProductionTeamPage() {
                     </div>
                     <button
                       onClick={e => { e.stopPropagation(); handleDelete(m.id); }}
-                      className="opacity-0 group-hover/card:opacity-100 text-surface-600 hover:text-red-400 transition-opacity p-0.5 flex-shrink-0"
+                      className="opacity-0 group-hover/card:opacity-100 text-surface-500 hover:text-red-400 transition-opacity p-0.5 flex-shrink-0"
                       title="Remove"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -202,7 +202,7 @@ export default function ProductionTeamPage() {
                         </a>
                       )}
                       {m.phone && (
-                        <p className="text-[11px] text-surface-600 flex items-center gap-1.5">
+                        <p className="text-[11px] text-surface-500 flex items-center gap-1.5">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
@@ -212,7 +212,7 @@ export default function ProductionTeamPage() {
                     </div>
                   )}
                   {m.notes && (
-                    <p className="mt-2 text-[11px] text-surface-600 line-clamp-2">{m.notes}</p>
+                    <p className="mt-2 text-[11px] text-surface-500 line-clamp-2">{m.notes}</p>
                   )}
                 </div>
               ))}

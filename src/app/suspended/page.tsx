@@ -45,7 +45,7 @@ function SuspendedContent() {
           </div>
         )}
 
-        <p className="text-sm text-white/40 mb-8">
+        <p className="text-sm text-white/50 mb-8">
           If you believe this was done in error, you may submit an appeal.
         </p>
 

@@ -330,9 +330,9 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
                       {priorityOpt?.label || story.priority}
                     </span>
                     <span className="text-[11px] text-surface-500">{feedName}</span>
-                    {story.category && <span className="text-[11px] text-surface-600">· {story.category}</span>}
+                    {story.category && <span className="text-[11px] text-surface-500">· {story.category}</span>}
                     {story.is_used && <span className="text-[11px] text-green-500 font-bold">USED</span>}
-                    <span className="text-[11px] text-surface-600 ml-auto">
+                    <span className="text-[11px] text-surface-500 ml-auto">
                       {story.published_at
                         ? new Date(story.published_at).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })
                         : ''}

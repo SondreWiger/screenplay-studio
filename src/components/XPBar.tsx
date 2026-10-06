@@ -62,7 +62,7 @@ export function XPBar({
               {multiplier}× XP
             </span>
           )}
-          <span className="text-[11px] text-white/25 font-mono">
+          <span className="text-[11px] text-white/45 font-mono">
             {xpTotal.toLocaleString()} XP
           </span>
         </div>

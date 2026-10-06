@@ -84,11 +84,11 @@ export default function CharacterReportPage() {
                   const pct = (c.lines / (chars[0]?.lines || 1)) * 100;
                   return (
                     <div key={c.name} className="flex items-center gap-3">
-                      <span className="text-[11px] text-white/40 w-24 truncate text-right font-mono">{c.name}</span>
+                      <span className="text-[11px] text-white/50 w-24 truncate text-right font-mono">{c.name}</span>
                       <div className="flex-1 h-3 bg-white/[0.04] overflow-hidden">
                         <div className="h-full bg-brand-500 transition-all duration-300" style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="text-[11px] text-white/30 w-8 text-right font-mono">{c.lines}</span>
+                      <span className="text-[11px] text-white/45 w-8 text-right font-mono">{c.lines}</span>
                     </div>
                   );
                 })}
@@ -107,10 +107,10 @@ export default function CharacterReportPage() {
                   {chars.map(c => (
                     <tr key={c.name} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
                       <td className="px-4 py-2.5 font-mono text-white/60">{c.name}</td>
-                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.lines}</td>
-                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.words.toLocaleString()}</td>
-                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.lines > 0 ? Math.round(c.words / c.lines) : 0}</td>
-                      <td className="px-4 py-2.5 text-right text-white/40 font-mono">{c.parens}</td>
+                      <td className="px-4 py-2.5 text-right text-white/50 font-mono">{c.lines}</td>
+                      <td className="px-4 py-2.5 text-right text-white/50 font-mono">{c.words.toLocaleString()}</td>
+                      <td className="px-4 py-2.5 text-right text-white/50 font-mono">{c.lines > 0 ? Math.round(c.words / c.lines) : 0}</td>
+                      <td className="px-4 py-2.5 text-right text-white/50 font-mono">{c.parens}</td>
                     </tr>
                   ))}
                 </tbody>

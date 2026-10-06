@@ -29,7 +29,7 @@ export function SiteVersion({ light = false }: { light?: boolean }) {
       className={
         light
           ? 'text-[11px] font-mono text-stone-400'
-          : 'text-[11px] font-mono text-surface-600'
+          : 'text-[11px] font-mono text-surface-500'
       }
     >
       v{version}

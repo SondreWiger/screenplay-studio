@@ -81,7 +81,7 @@ export function LevelUpCelebration({ level, unlocks, onDismiss }: Props) {
       {/* Dismiss */}
       <button
         onClick={() => { setVisible(false); setTimeout(onDismiss, 400); }}
-        className="absolute top-3 right-3 text-white/30 hover:text-white/60 transition-colors text-xs"
+        className="absolute top-3 right-3 text-white/45 hover:text-white/60 transition-colors text-xs"
       >
         ✕
       </button>

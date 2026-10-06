@@ -104,7 +104,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
 
             <div className="flex-1 min-w-0 pb-1">
               <h2 className="text-lg font-bold leading-tight" style={{ letterSpacing: '-0.02em' }}>{community.name}</h2>
-              <p className="text-[11px] text-white/40">c/{community.slug}</p>
+              <p className="text-[11px] text-white/50">c/{community.slug}</p>
             </div>
 
             {/* Action buttons */}
@@ -139,7 +139,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
               return (
                 <Link key={t.href} href={t.href}
                   className={cn('px-3 py-2 text-xs font-medium relative transition-colors',
-                    active ? 'text-white' : 'text-white/40 hover:text-white/70')}>
+                    active ? 'text-white' : 'text-white/50 hover:text-white/70')}>
                   {t.label}
                   {active && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: accent }} />
@@ -147,7 +147,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
                 </Link>
               );
             })}
-            <div className="ml-auto flex items-center gap-2 pb-1 text-[11px] text-white/35">
+            <div className="ml-auto flex items-center gap-2 pb-1 text-[11px] text-white/50">
               <span>{community.member_count ?? 0} members</span>
               <span>·</span>
               <span>{community.post_count ?? 0} posts</span>

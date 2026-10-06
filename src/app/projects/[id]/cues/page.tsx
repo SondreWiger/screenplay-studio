@@ -219,7 +219,7 @@ export default function CuePage() {
                       <td className="px-4 py-3 text-surface-400">{c.operator || '—'}</td>
                       <td className="px-4 py-3 text-surface-500 max-w-[160px] truncate">{c.notes || '—'}</td>
                       <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => handleDelete(c.id)} className="text-surface-600 hover:text-red-400 transition-colors p-1" title="Delete">
+                        <button onClick={() => handleDelete(c.id)} className="text-surface-500 hover:text-red-400 transition-colors p-1" title="Delete">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                           </svg>

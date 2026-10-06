@@ -61,7 +61,7 @@ export default function TourBanner({ onResume }: TourBannerProps) {
       </button>
       <button
         onClick={handleDismiss}
-        className="ml-1 rounded-lg px-2 py-1.5 text-[12px] text-white/40 transition hover:text-white/70"
+        className="ml-1 rounded-lg px-2 py-1.5 text-[12px] text-white/50 transition hover:text-white/70"
         aria-label="Dismiss tour"
       >
         ✕

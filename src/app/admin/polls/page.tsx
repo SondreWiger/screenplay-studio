@@ -145,7 +145,7 @@ export default function AdminPollsPage() {
                   <div className="mb-2 flex items-center gap-2">
                     <Pill tone={STATUS_TONE[s.status] ?? 'neutral'} dot>{s.status}</Pill>
                     {s.questions && <span className="text-[11px] text-surface-500">{s.questions.length} question{s.questions.length !== 1 ? 's' : ''}</span>}
-                    <span className="ml-auto text-[11px] text-surface-600" title={formatDate(s.created_at)}>{timeAgo(s.created_at)}</span>
+                    <span className="ml-auto text-[11px] text-surface-500" title={formatDate(s.created_at)}>{timeAgo(s.created_at)}</span>
                   </div>
                   <h2 className="truncate font-semibold text-white transition-colors group-hover:text-brand-300">{s.title}</h2>
                   {s.preface && <p className="mt-1 line-clamp-2 text-sm text-surface-400">{s.preface}</p>}

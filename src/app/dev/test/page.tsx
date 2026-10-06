@@ -31,13 +31,13 @@ function TestCard({ title, description, icon, color, fields = [], onRun, loading
         <span className="text-2xl">{icon}</span>
         <div className="flex-1">
           <h3 className="text-white font-semibold text-sm">{title}</h3>
-          <p className="text-white/40 text-xs mt-0.5 leading-relaxed">{description}</p>
+          <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{description}</p>
         </div>
       </div>
 
       {fields.map(f => (
         <div key={f.key}>
-          <label className="text-[11px] text-white/40 uppercase tracking-wide block mb-1">{f.label}</label>
+          <label className="text-[11px] text-white/50 uppercase tracking-wide block mb-1">{f.label}</label>
           <input
             value={values[f.key] ?? ''}
             onChange={e => setValues(v => ({ ...v, [f.key]: e.target.value }))}
@@ -53,7 +53,7 @@ function TestCard({ title, description, icon, color, fields = [], onRun, loading
         className={cn(
           'w-full py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
           loading
-            ? 'bg-white/5 text-white/30 cursor-not-allowed'
+            ? 'bg-white/5 text-white/45 cursor-not-allowed'
             : 'bg-violet-600 hover:bg-violet-500 text-white'
         )}
       >
@@ -179,7 +179,7 @@ export default function DevTestPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white tracking-tight">Test Bench</h1>
-        <p className="text-white/40 text-sm mt-0.5">Trigger events and test platform functions. All actions run against your own account.</p>
+        <p className="text-white/50 text-sm mt-0.5">Trigger events and test platform functions. All actions run against your own account.</p>
       </div>
 
       {/* Warning */}

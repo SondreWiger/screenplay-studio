@@ -116,7 +116,7 @@ export default function FreeScriptsPage() {
                 key={s}
                 onClick={() => setSortBy(s)}
                 className={`px-3 py-1.5 text-xs uppercase tracking-[0.04em] capitalize transition-colors ${
-                  sortBy === s ? 'text-white' : 'text-white/40 hover:text-white'
+                  sortBy === s ? 'text-white' : 'text-white/50 hover:text-white'
                 }`}
                 style={sortBy === s ? { background: '#FF5F1F' } : { border: '1px solid rgba(255,255,255,0.1)' }}
               >
@@ -162,7 +162,7 @@ export default function FreeScriptsPage() {
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`w-full text-left px-3 py-2 text-xs uppercase tracking-[0.04em] transition-colors ${
-                  !selectedCategory ? 'text-brand-500' : 'text-white/40 hover:text-white'
+                  !selectedCategory ? 'text-brand-500' : 'text-white/50 hover:text-white'
                 }`}
               >
                 All Scripts
@@ -172,7 +172,7 @@ export default function FreeScriptsPage() {
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug)}
                   className={`w-full text-left px-3 py-2 text-xs uppercase tracking-[0.04em] transition-colors flex items-center gap-2 ${
-                    selectedCategory === cat.slug ? 'text-brand-500' : 'text-white/40 hover:text-white'
+                    selectedCategory === cat.slug ? 'text-brand-500' : 'text-white/50 hover:text-white'
                   }`}
                 >
                   <span>{cat.icon}</span> {cat.name}
@@ -237,7 +237,7 @@ export default function FreeScriptsPage() {
 
                       <h3 className="text-base font-semibold text-white line-clamp-1" style={{ letterSpacing: '-0.02em' }}>{post.title}</h3>
                       {post.description && (
-                        <p className="text-sm text-white/40 mt-1 line-clamp-2">{post.description}</p>
+                        <p className="text-sm text-white/50 mt-1 line-clamp-2">{post.description}</p>
                       )}
 
                       {/* Author + meta */}

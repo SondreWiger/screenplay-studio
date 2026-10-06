@@ -336,7 +336,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                 </div>
                 <div>
                   <label className="block text-xs text-surface-400 mb-1.5 font-medium uppercase tracking-[0.04em]">
-                    Preface <span className="normal-case text-surface-600">(displayed on the intro page)</span>
+                    Preface <span className="normal-case text-surface-500">(displayed on the intro page)</span>
                   </label>
                   <textarea
                     rows={4}
@@ -540,7 +540,7 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     <div className="space-y-2">
                       {reviewQ.options.map((opt, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm text-surface-400">
-                          <span className="text-surface-600">{i + 1}.</span> {opt}
+                          <span className="text-surface-500">{i + 1}.</span> {opt}
                         </div>
                       ))}
                     </div>
@@ -552,10 +552,10 @@ export default function AdminPollDetailPage({ params }: { params: { id: string }
                     </div>
                   )}
                   {(reviewQ.question_type === 'short_text') && (
-                    <div className="bg-surface-900/60 border border-surface-800 rounded-lg px-4 py-2 text-surface-600 text-sm italic">Short text answer…</div>
+                    <div className="bg-surface-900/60 border border-surface-800 rounded-lg px-4 py-2 text-surface-500 text-sm italic">Short text answer…</div>
                   )}
                   {(reviewQ.question_type === 'long_text') && (
-                    <div className="bg-surface-900/60 border border-surface-800 rounded-lg px-4 py-8 text-surface-600 text-sm italic text-center">Long text answer…</div>
+                    <div className="bg-surface-900/60 border border-surface-800 rounded-lg px-4 py-8 text-surface-500 text-sm italic text-center">Long text answer…</div>
                   )}
                 </div>
 
@@ -701,7 +701,7 @@ function QuestionCard({
   return (
     <div className={`bg-surface-900/60 border rounded-xl p-4 ${question.is_approved ? 'border-emerald-500/20' : 'border-surface-800'}`}>
       <div className="flex items-start gap-3">
-        <span className="text-surface-600 text-sm font-mono w-5 flex-shrink-0 pt-0.5">{index + 1}</span>
+        <span className="text-surface-500 text-sm font-mono w-5 flex-shrink-0 pt-0.5">{index + 1}</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-white font-medium leading-snug">{question.question_text}</p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -709,10 +709,10 @@ function QuestionCard({
               {QUESTION_TYPES.find((t) => t.value === question.question_type)?.label ?? question.question_type}
             </span>
             {!question.is_required && (
-              <span className="text-[11px] text-white/25">optional</span>
+              <span className="text-[11px] text-white/45">optional</span>
             )}
             {Array.isArray(question.options) && (
-              <span className="text-[11px] text-white/25">{question.options.length} options</span>
+              <span className="text-[11px] text-white/45">{question.options.length} options</span>
             )}
             {question.is_approved && (
               <span className="text-[11px] text-emerald-400">✓ approved</span>
@@ -721,16 +721,16 @@ function QuestionCard({
         </div>
         {!locked && (
           <div className="flex items-center gap-1 flex-shrink-0">
-            <button aria-label="Move up" onClick={onMoveUp} disabled={index === 0} className="p-1 text-surface-600 hover:text-white disabled:opacity-0 transition-colors">
+            <button aria-label="Move up" onClick={onMoveUp} disabled={index === 0} className="p-1 text-surface-500 hover:text-white disabled:opacity-0 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
             </button>
-            <button aria-label="Move down" onClick={onMoveDown} disabled={index === total - 1} className="p-1 text-surface-600 hover:text-white disabled:opacity-0 transition-colors">
+            <button aria-label="Move down" onClick={onMoveDown} disabled={index === total - 1} className="p-1 text-surface-500 hover:text-white disabled:opacity-0 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
             </button>
             <button aria-label="Edit" onClick={onStartEdit} className="p-1 text-surface-500 hover:text-white transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
             </button>
-            <button aria-label="Delete" onClick={onDelete} className="p-1 text-surface-600 hover:text-red-400 transition-colors">
+            <button aria-label="Delete" onClick={onDelete} className="p-1 text-surface-500 hover:text-red-400 transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
           </div>
@@ -791,7 +791,7 @@ function QuestionForm({
         {needsOptions && (
           <div>
             <label className="block text-xs text-surface-400 mb-1.5 font-medium uppercase tracking-[0.04em]">
-              Options <span className="normal-case text-surface-600">(one per line)</span>
+              Options <span className="normal-case text-surface-500">(one per line)</span>
             </label>
             <textarea
               rows={4}

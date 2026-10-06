@@ -150,7 +150,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel', pageCount }: Script
             }}
           />
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-surface-600">
+        <div className="flex items-center gap-3 text-[11px] text-surface-500">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-sm inline-block" style={{ background: 'var(--theme-brand, #FF5F1F)' }} />
             Dialogue
@@ -173,7 +173,7 @@ export function ScriptStatsPanel({ elements, mode = 'panel', pageCount }: Script
               <div key={name} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-medium text-surface-300 truncate max-w-[120px]">{name}</span>
-                  <span className="text-[11px] text-surface-600 font-mono">{words.toLocaleString()}w</span>
+                  <span className="text-[11px] text-surface-500 font-mono">{words.toLocaleString()}w</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-surface-800 overflow-hidden">
                   <div

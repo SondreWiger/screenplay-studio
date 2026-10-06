@@ -261,7 +261,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
                 </span>
                 <span className={cn('text-right font-mono font-bold',
                   entry.deviation_seconds > 0 ? 'text-red-400' :
-                  entry.deviation_seconds < 0 ? 'text-blue-400' : 'text-surface-600'
+                  entry.deviation_seconds < 0 ? 'text-blue-400' : 'text-surface-500'
                 )}>
                   {entry.deviation_seconds !== 0
                     ? `${entry.deviation_seconds > 0 ? '+' : ''}${entry.deviation_seconds}s`
@@ -311,7 +311,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
               </div>
             ))}
             {entries.filter(e => e.event_type === 'manual_note').length === 0 && (
-              <p className="text-[11px] text-surface-600">No notes</p>
+              <p className="text-[11px] text-surface-500">No notes</p>
             )}
           </div>
         </div>

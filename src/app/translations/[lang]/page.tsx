@@ -202,7 +202,7 @@ export default function LanguageTranslationPage() {
             placeholder="Search keys..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-3 py-1.5 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-brand-500/70 focus:outline-none"
+            className="flex-1 px-3 py-1.5 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-500 focus:border-brand-500/70 focus:outline-none"
           />
         </div>
 
@@ -284,7 +284,7 @@ export default function LanguageTranslationPage() {
                           <div className="mt-3 pt-3 border-t border-surface-800/60">
                             <p className="text-xs text-surface-500">
                               Your suggestion: <span className="text-white">{userSuggestion.translated_text}</span>
-                              <span className="ml-2 text-[11px] font-mono text-surface-600">
+                              <span className="ml-2 text-[11px] font-mono text-surface-500">
                                 {userSuggestion.net_votes > 0 ? '+' : ''}{userSuggestion.net_votes} votes
                               </span>
                             </p>
@@ -301,7 +301,7 @@ export default function LanguageTranslationPage() {
                                 onChange={(e) => setEditText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && submitSuggestion(k.id)}
                                 placeholder="Enter your translation..."
-                                className="flex-1 px-3 py-2 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-600 focus:border-brand-500/70 focus:outline-none"
+                                className="flex-1 px-3 py-2 rounded-lg bg-surface-900/80 border border-surface-700/80 text-sm text-white placeholder:text-surface-500 focus:border-brand-500/70 focus:outline-none"
                                 autoFocus
                               />
                               <Button size="sm" onClick={() => submitSuggestion(k.id)} loading={submitting} disabled={!editText.trim()}>

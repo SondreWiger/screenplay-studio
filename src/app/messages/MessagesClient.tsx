@@ -672,7 +672,7 @@ export default function MessagesClient() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <p className="text-surface-500 text-lg">Select a conversation</p>
-                <p className="text-surface-600 text-sm mt-1">Choose from your existing conversations or start a new one</p>
+                <p className="text-surface-500 text-sm mt-1">Choose from your existing conversations or start a new one</p>
               </div>
             </div>
           ) : (
@@ -729,7 +729,7 @@ export default function MessagesClient() {
                   <div className="flex items-center justify-center h-full text-center">
                     <div>
                       <p className="text-surface-500">{t('messages.no_messages')}</p>
-                      <p className="text-surface-600 text-sm mt-1">Say hello!</p>
+                      <p className="text-surface-500 text-sm mt-1">Say hello!</p>
                     </div>
                   </div>
                 ) : (
@@ -762,7 +762,7 @@ export default function MessagesClient() {
                           {showAvatar && (
                             <div className={cn('flex items-center gap-2 mb-0.5', isOwn && 'flex-row-reverse')}>
                               <span className="text-xs font-medium text-surface-400">{msg.sender?.full_name || 'User'}</span>
-                              <span className="text-[11px] text-surface-600">{formatTime(msg.created_at)}</span>
+                              <span className="text-[11px] text-surface-500">{formatTime(msg.created_at)}</span>
                             </div>
                           )}
                           <div className={cn(
@@ -775,7 +775,7 @@ export default function MessagesClient() {
                           </div>
                         </div>
                         {/* Timestamp on hover */}
-                        <span className="text-[11px] text-surface-600 self-end opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <span className="text-[11px] text-surface-500 self-end opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                           {formatTime(msg.created_at)}
                         </span>
                       </div>

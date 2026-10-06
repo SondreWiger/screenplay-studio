@@ -124,20 +124,20 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
             <p className="text-[13px] font-semibold text-white leading-tight">
               {user.full_name || user.username || 'My Stats'}
             </p>
-            <p className="text-[11px] text-white/40 font-mono">community stats</p>
+            <p className="text-[11px] text-white/50 font-mono">community stats</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
           <Link
             href={`/u/${user.username || user.id}`}
-            className="text-[11px] uppercase tracking-[0.04em] text-white/40 hover:text-brand-500 transition-colors"
+            className="text-[11px] uppercase tracking-[0.04em] text-white/50 hover:text-brand-500 transition-colors"
             onClick={onClose}
           >
             Profile ↗
           </Link>
           <button aria-label="Close"
             onClick={onClose}
-            className="p-1 text-white/30 hover:text-white/80 transition-colors"
+            className="p-1 text-white/45 hover:text-white/80 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -158,7 +158,7 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
               <span className="text-lg font-bold text-white tabular-nums">
                 {value.toLocaleString()}
               </span>
-              <span className="text-[11px] uppercase tracking-[0.04em] text-white/40">
+              <span className="text-[11px] uppercase tracking-[0.04em] text-white/50">
                 {label}
               </span>
             </div>
@@ -169,12 +169,12 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
       {/* Post list */}
       <div className="overflow-y-auto max-h-72 divide-y divide-white/5">
         {loading && (
-          <div className="flex items-center justify-center py-10 text-white/30 text-sm">
+          <div className="flex items-center justify-center py-10 text-white/45 text-sm">
             Loading…
           </div>
         )}
         {!loading && posts.length === 0 && (
-          <div className="flex flex-col items-center gap-2 py-10 text-white/30 text-sm">
+          <div className="flex flex-col items-center gap-2 py-10 text-white/45 text-sm">
             <span>No posts yet.</span>
             <Link
               href="/community/share"
@@ -196,7 +196,7 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
               <p className="text-[13px] text-white/80 group-hover:text-white truncate leading-snug">
                 {p.title || 'Untitled Post'}
               </p>
-              <div className="flex items-center gap-3 mt-1 text-[11px] font-mono text-white/30">
+              <div className="flex items-center gap-3 mt-1 text-[11px] font-mono text-white/45">
                 <span>↑ {p.upvote_count || 0}</span>
                 <span>💬 {p.comment_count || 0}</span>
                 <span>👁 {p.view_count || 0}</span>
@@ -218,7 +218,7 @@ export function CommunityStatsPanel({ user, onClose }: Props) {
       <div className="px-4 py-2.5 border-t border-white/8 flex items-center justify-between">
         <Link
           href="/community"
-          className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors"
+          className="text-[11px] font-mono text-white/45 hover:text-white/60 transition-colors"
           onClick={onClose}
         >
           All posts ↗

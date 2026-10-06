@@ -247,7 +247,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
                           <div className={cn('text-[11px] font-mono text-surface-500 text-center', isComplete && 'text-green-400')}>
                             D{i + 1}
                           </div>
-                          <div className="text-[11px] text-surface-600 text-center font-mono">{day.slice(5)}</div>
+                          <div className="text-[11px] text-surface-500 text-center font-mono">{day.slice(5)}</div>
                           <button
                             onClick={() => cycleStatus(char, day)}
                             disabled={!canEdit || saving}
@@ -255,7 +255,7 @@ export default function DOODPage({ params }: { params: { id: string } }) {
                               'w-14 h-10 rounded-lg font-semibold text-xs transition-colors border',
                               status
                                 ? cn(meta.bg, meta.color, 'border-transparent')
-                                : 'bg-surface-800/40 border-surface-700/60 text-surface-600',
+                                : 'bg-surface-800/40 border-surface-700/60 text-surface-500',
                               canEdit && !saving ? 'active:scale-95' : 'opacity-60',
                             )}
                           >

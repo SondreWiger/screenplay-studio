@@ -131,7 +131,7 @@ function ContributorCard({ c, large = false }: { c: Contributor; large?: boolean
           )}
         </div>
         {large && c.bio && (
-          <p className="text-[11px] text-white/30 truncate max-w-[160px]">{c.bio}</p>
+          <p className="text-[11px] text-white/45 truncate max-w-[160px]">{c.bio}</p>
         )}
         {c.contribution_areas?.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-0.5">

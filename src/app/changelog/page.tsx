@@ -137,7 +137,7 @@ export default function ChangelogPage() {
         >
           CHANGELOG
         </h1>
-        <p className="mt-6 text-base text-white/30 max-w-2xl leading-relaxed">
+        <p className="mt-6 text-base text-white/45 max-w-2xl leading-relaxed">
           Every feature shipped, every bug squashed, every improvement made — in order, with receipts.
         </p>
       </header>
@@ -262,7 +262,7 @@ export default function ChangelogPage() {
 
                           {/* Summary */}
                           {release.summary && (
-                            <p className="mt-2 text-[13px] text-white/30 leading-relaxed">
+                            <p className="mt-2 text-[13px] text-white/45 leading-relaxed">
                               {release.summary}
                             </p>
                           )}
@@ -335,7 +335,7 @@ export default function ChangelogPage() {
                                       {entry.title}
                                     </p>
                                     {entry.description && (
-                                      <p className="mt-0.5 text-[11px] text-white/25 leading-relaxed">
+                                      <p className="mt-0.5 text-[11px] text-white/45 leading-relaxed">
                                         {entry.description}
                                       </p>
                                     )}

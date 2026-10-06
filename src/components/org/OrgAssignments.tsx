@@ -137,7 +137,7 @@ export function OrgAssignments({ companyId, userId, canManage }: Props) {
                     </span>
                   )}
                   <span>🔄 Rev {a.revision_count}/{a.max_revisions}</span>
-                  <span className="text-surface-600">{timeAgo(a.created_at)}</span>
+                  <span className="text-surface-500">{timeAgo(a.created_at)}</span>
                 </div>
               </div>
               <div className="flex gap-1 shrink-0">

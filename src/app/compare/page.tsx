@@ -208,9 +208,9 @@ export default function ComparePage() {
                     <td className="py-3 px-4" style={{ color: ORANGE }}>
                       {row.screenplay}
                     </td>
-                    <td className="py-3 px-4 text-white/35">{row.finalDraft}</td>
-                    <td className="py-3 px-4 text-white/35">{row.writerDuet}</td>
-                    <td className="py-3 px-4 text-white/35">{row.arcStudio}</td>
+                    <td className="py-3 px-4 text-white/50">{row.finalDraft}</td>
+                    <td className="py-3 px-4 text-white/50">{row.writerDuet}</td>
+                    <td className="py-3 px-4 text-white/50">{row.arcStudio}</td>
                   </tr>
                 ))}
               </tbody>
@@ -253,7 +253,7 @@ export default function ComparePage() {
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 <p className="text-sm font-bold text-white mb-2">{item.title}</p>
-                <p className="text-xs text-white/40 leading-relaxed mb-3">{item.desc}</p>
+                <p className="text-xs text-white/50 leading-relaxed mb-3">{item.desc}</p>
                 <p className="text-xs font-semibold" style={{ color: ORANGE }}>{item.highlight}</p>
               </div>
             ))}
@@ -270,7 +270,7 @@ export default function ComparePage() {
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
                 {comp.name}: {comp.tagline}
               </h2>
-              <p className="text-sm text-white/40 mb-6">{comp.price}</p>
+              <p className="text-sm text-white/50 mb-6">{comp.price}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <p className="text-xs font-medium text-white/60 mb-3 uppercase tracking-[0.04em]">What {comp.name} does well</p>
@@ -287,7 +287,7 @@ export default function ComparePage() {
                   <p className="text-xs font-medium text-white/60 mb-3 uppercase tracking-[0.04em]">What Screenplay Studio covers that {comp.name} does not</p>
                   <ul className="space-y-2">
                     {comp.cons.map((con) => (
-                      <li key={con} className="flex items-start gap-2 text-xs text-white/35 leading-relaxed">
+                      <li key={con} className="flex items-start gap-2 text-xs text-white/50 leading-relaxed">
                         <span className="text-white/20">−</span>
                         {con}
                       </li>
@@ -341,7 +341,7 @@ export default function ComparePage() {
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ letterSpacing: '-0.04em' }}>
             See for yourself.
           </h2>
-          <p className="text-sm text-white/40 mb-8">No card. No limit. No watermarks.</p>
+          <p className="text-sm text-white/50 mb-8">No card. No limit. No watermarks.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/register"

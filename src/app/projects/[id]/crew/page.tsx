@@ -144,7 +144,7 @@ function DesktopPersonCard({ name, role, email, phone, color }: {
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-white/90 truncate leading-tight">{name}</p>
-        {role && <p className="text-[11px] text-white/35 truncate mt-0.5">{role}</p>}
+        {role && <p className="text-[11px] text-white/50 truncate mt-0.5">{role}</p>}
         <div className="flex items-center gap-2 mt-1.5">
           {phone && (
             <a href={`tel:${phone}`} title={phone}
@@ -330,7 +330,7 @@ export default function CrewMobileView() {
             <PageTitle>{currentProject.title}</PageTitle>
             <button
               onClick={() => { setLoading(true); fetchAll(); }}
-              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-colors"
+              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-md bg-white/5 text-white/45 hover:text-white hover:bg-white/10 transition-colors"
               title="Refresh"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -339,7 +339,7 @@ export default function CrewMobileView() {
             </button>
           </div>
           {currentProject.logline && (
-            <p className="text-[11px] text-white/40 leading-relaxed mb-3 line-clamp-3">{currentProject.logline}</p>
+            <p className="text-[11px] text-white/50 leading-relaxed mb-3 line-clamp-3">{currentProject.logline}</p>
           )}
           {headerBadges}
         </div>
@@ -370,7 +370,7 @@ export default function CrewMobileView() {
                   <div className="w-0.5 rounded-full self-stretch shrink-0" style={{ backgroundColor: event.color || '#6366f1' }} />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-white/80 leading-snug">{event.title}</p>
-                    <p className="text-[11px] text-white/30 mt-0.5">
+                    <p className="text-[11px] text-white/45 mt-0.5">
                       {new Date(event.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {event.end_time && ` – ${new Date(event.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                     </p>
@@ -460,8 +460,8 @@ export default function CrewMobileView() {
                           </span>
                         </td>
                         <td className="px-4 py-2.5 text-xs text-white/50">{cue.description || '—'}</td>
-                        <td className="px-4 py-2.5 text-xs text-white/35 font-mono">{cue.scene_ref || '—'}</td>
-                        <td className="px-4 py-2.5 text-xs text-white/35">{cue.timing_note || '—'}</td>
+                        <td className="px-4 py-2.5 text-xs text-white/50 font-mono">{cue.scene_ref || '—'}</td>
+                        <td className="px-4 py-2.5 text-xs text-white/50">{cue.timing_note || '—'}</td>
                       </tr>
                     );
                   })}
@@ -501,7 +501,7 @@ export default function CrewMobileView() {
         </div>
         {headerBadges}
         {lastUpdated && (
-          <p className="text-[11px] text-surface-600 mt-2">Updated {timeAgo(lastUpdated.toISOString())}</p>
+          <p className="text-[11px] text-surface-500 mt-2">Updated {timeAgo(lastUpdated.toISOString())}</p>
         )}
       </div>
 
@@ -569,7 +569,7 @@ export default function CrewMobileView() {
                     <p className="text-sm font-bold text-white">{cue.cue_number}</p>
                     {cue.description && <p className="text-[11px] text-surface-400 mt-0.5 leading-snug">{cue.description}</p>}
                     {(cue.scene_ref || cue.timing_note) && (
-                      <p className="text-[11px] text-surface-600 mt-0.5">
+                      <p className="text-[11px] text-surface-500 mt-0.5">
                         {cue.scene_ref && `Scene: ${cue.scene_ref}`}
                         {cue.scene_ref && cue.timing_note && ' · '}
                         {cue.timing_note}

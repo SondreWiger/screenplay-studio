@@ -186,7 +186,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-10 h-10 mb-6" style={{ background: '#FF5F1F' }} />
           <h1 className="text-3xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>POST NOT FOUND</h1>
-          <p className="text-white/40">This post may have been removed or doesn&apos;t exist.</p>
+          <p className="text-white/50">This post may have been removed or doesn&apos;t exist.</p>
           <Link href="/blog" className="mt-8 px-6 py-3 text-sm font-semibold text-white uppercase tracking-[0.04em] transition-opacity hover:opacity-80" style={{ background: '#FF5F1F' }}>
             Browse all posts
           </Link>
@@ -233,7 +233,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 <p className="text-sm font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
                   {post.author?.full_name || 'Screenplay Studio'}
                 </p>
-                <p className="text-xs font-mono text-white/40">
+                <p className="text-xs font-mono text-white/50">
                   {post.published_at ? formatDate(post.published_at) : ''}
                   {post.view_count > 0 && (
                     <> · {post.view_count.toLocaleString()} views</>
@@ -283,7 +283,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                   ))}
               </div>
             ) : (
-              <p className="text-white/30 italic">This post has no content yet.</p>
+              <p className="text-white/45 italic">This post has no content yet.</p>
             )}
           </article>
 
@@ -312,7 +312,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               <h2 className="text-2xl font-bold text-white mb-8" style={{ letterSpacing: '-0.03em' }}>
                 COMMENTS
                 {comments.length > 0 && (
-                  <span className="ml-2 text-sm font-normal text-white/30">
+                  <span className="ml-2 text-sm font-normal text-white/45">
                     ({comments.length + comments.reduce((n, c) => n + (c.replies?.length || 0), 0)})
                   </span>
                 )}
@@ -365,7 +365,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
               {/* Comments list */}
               {comments.length === 0 && (
-                <p className="text-sm text-white/30 font-mono text-center py-8">No comments yet. Be the first!</p>
+                <p className="text-sm text-white/45 font-mono text-center py-8">No comments yet. Be the first!</p>
               )}
 
               <div className="space-y-6">
@@ -405,7 +405,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                         className={`block w-full text-left text-xs py-1.5 pl-3 border-l-2 transition-colors uppercase tracking-wide ${
                           activeSection === idx
                             ? 'border-brand-500 text-brand-500'
-                            : 'border-transparent text-white/30 hover:text-white/60'
+                            : 'border-transparent text-white/45 hover:text-white/60'
                         }`}
                       >
                         {section.heading}
@@ -459,7 +459,7 @@ function CommentCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>{authorName}</span>
-            <span className="text-xs font-mono text-white/30">
+            <span className="text-xs font-mono text-white/45">
               {timeAgo(comment.created_at)}
             </span>
             {comment.is_pinned && (
@@ -475,7 +475,7 @@ function CommentCard({
           {user && (
             <button
               onClick={() => onSetReplyingTo(replyingTo === comment.id ? null : comment.id)}
-              className="mt-2 text-xs font-mono text-white/30 hover:text-brand-500 transition-colors"
+              className="mt-2 text-xs font-mono text-white/45 hover:text-brand-500 transition-colors"
             >
               Reply
             </button>
@@ -500,7 +500,7 @@ function CommentCard({
                 </button>
                 <button
                   onClick={() => { onSetReplyingTo(null); onSetReplyText(''); }}
-                  className="px-3 py-1.5 text-xs font-mono text-white/30 hover:text-white transition-colors"
+                  className="px-3 py-1.5 text-xs font-mono text-white/45 hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -524,7 +524,7 @@ function CommentCard({
                       <span className="text-sm font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
                         {reply.author?.full_name || reply.author_name || 'Anonymous'}
                       </span>
-                      <span className="text-xs font-mono text-white/30">{timeAgo(reply.created_at)}</span>
+                      <span className="text-xs font-mono text-white/45">{timeAgo(reply.created_at)}</span>
                     </div>
                     <p className="mt-0.5 text-sm text-white/50 whitespace-pre-wrap">{reply.content}</p>
                   </div>

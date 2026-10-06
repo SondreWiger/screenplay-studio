@@ -47,7 +47,7 @@ export function ConverterLayout({ title, description, children }: ConverterLayou
           >
             {title}
           </h1>
-          <p className="text-base text-white/40 leading-relaxed max-w-lg">{description}</p>
+          <p className="text-base text-white/50 leading-relaxed max-w-lg">{description}</p>
         </section>
 
         <div className="max-w-screen-lg mx-auto px-6">

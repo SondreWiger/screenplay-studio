@@ -427,7 +427,7 @@ export default function ReportsPage() {
                     <Pill tone={typeFilter === t.label ? 'brand' : 'neutral'}>{t.label} <span className="text-white">{t.count}</span></Pill>
                   </button>
                 ))}
-                {openReports.length === 0 && <span className="text-xs text-surface-600">Nothing open</span>}
+                {openReports.length === 0 && <span className="text-xs text-surface-500">Nothing open</span>}
               </div>
             </div>
           </Panel>
@@ -486,7 +486,7 @@ export default function ReportsPage() {
                               <Pill tone={STATUS_TONE[report.status] ?? 'neutral'}>{report.status}</Pill>
                               <span className="text-[11px] text-surface-500" title={formatDate(report.created_at)}>{timeAgo(report.created_at)}</span>
                             </div>
-                            <p className="mt-1 truncate text-sm text-surface-300">{report.description || <span className="text-surface-600">No description</span>}</p>
+                            <p className="mt-1 truncate text-sm text-surface-300">{report.description || <span className="text-surface-500">No description</span>}</p>
                             <p className="text-[11px] text-surface-500">by <Link href={`/u/${report.reporter_id}`} className="text-brand-400 hover:underline">{userName(report.reporter)}</Link></p>
                           </div>
                         </div>

@@ -210,7 +210,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                       <div className="font-bold text-white text-sm">{t.label}</div>
                       <div className="text-xs text-surface-500 mt-0.5">{t.desc}</div>
                     </div>
-                    <ArrowRight size={16} className="ml-auto text-surface-600" />
+                    <ArrowRight size={16} className="ml-auto text-surface-500" />
                   </button>
                 );
               })}
@@ -232,7 +232,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                   className="w-full px-4 py-3 bg-surface-800 border border-surface-700 rounded-xl text-white text-sm placeholder-surface-500 focus:outline-none focus:border-surface-500"
                   maxLength={200}
                 />
-                <div className="text-right text-[11px] text-surface-600 mt-0.5">{title.length}/200</div>
+                <div className="text-right text-[11px] text-surface-500 mt-0.5">{title.length}/200</div>
               </div>
 
               {/* Similar items warning */}
@@ -317,7 +317,7 @@ export function FeedbackSubmitModal({ onClose, onSubmitted, defaultType, prefill
                         placeholder="What happens instead?" className="w-full px-3 py-2 bg-surface-800 border border-surface-700 rounded-xl text-white text-xs placeholder-surface-500 focus:outline-none focus:border-surface-500 resize-none" />
                     </div>
                   </div>
-                  <div className="text-xs text-surface-600 bg-surface-800 rounded-lg px-3 py-2 font-mono">
+                  <div className="text-xs text-surface-500 bg-surface-800 rounded-lg px-3 py-2 font-mono">
                     🌐 Browser info will be auto-attached: {browserInfo.ua?.slice(0, 60)}…
                   </div>
                 </div>

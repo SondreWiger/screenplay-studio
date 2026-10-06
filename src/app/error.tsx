@@ -26,7 +26,7 @@ export default function GlobalError({
         An unexpected error occurred. You can try again or go back to the dashboard.
       </p>
       {error.digest && (
-        <p className="mt-2 font-mono text-xs text-surface-600">Error ID: {error.digest}</p>
+        <p className="mt-2 font-mono text-xs text-surface-500">Error ID: {error.digest}</p>
       )}
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button

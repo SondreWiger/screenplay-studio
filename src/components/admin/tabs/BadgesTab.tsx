@@ -62,7 +62,7 @@ export function BadgesAdminTab() {
       <Card className="bg-white/5 border border-white/10 p-6">
         <h3 className="text-sm font-semibold text-white/70 uppercase tracking-[0.04em] mb-4">All Badges</h3>
         {loading ? (
-          <p className="text-white/40 text-sm">Loading…</p>
+          <p className="text-white/50 text-sm">Loading…</p>
         ) : (
           <div className="space-y-3">
             {badges.map(badge => (
@@ -76,10 +76,10 @@ export function BadgesAdminTab() {
                     <span>{badge.name}</span>
                   </span>
                   {badge.is_system && (
-                    <span className="text-xs text-white/30 italic">system</span>
+                    <span className="text-xs text-white/45 italic">system</span>
                   )}
                   {badge.description && (
-                    <span className="text-xs text-white/40">{badge.description}</span>
+                    <span className="text-xs text-white/50">{badge.description}</span>
                   )}
                 </div>
                 {!badge.is_system && (

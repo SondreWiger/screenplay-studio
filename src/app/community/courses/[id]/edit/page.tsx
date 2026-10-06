@@ -116,7 +116,7 @@ function LessonContentForm({ type, value, onChange }: {
               className="w-full bg-white/[0.04] border border-white/10 rounded-lg text-sm text-white/70 px-3 py-2 outline-none" />
           </div>
         ))}
-        <button onClick={addQ} className="w-full py-2 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/15 hover:border-white/30 rounded-xl transition-colors">+ Add Question</button>
+        <button onClick={addQ} className="w-full py-2 text-xs text-white/50 hover:text-white/70 border border-dashed border-white/15 hover:border-white/30 rounded-xl transition-colors">+ Add Question</button>
       </div>
     );
   }
@@ -354,7 +354,7 @@ export default function CourseEditPage() {
           <div className="flex items-center gap-1 ml-auto">
             {(['meta','build'] as const).map((s, i) => (
               <button key={s} onClick={() => setStep(s)}
-                className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors', step === s ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/60')}>
+                className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors', step === s ? 'bg-brand-500 text-white' : 'text-white/50 hover:text-white/60')}>
                 <span className="w-3.5 h-3.5 rounded-full bg-current/20 flex items-center justify-center text-[11px]">{i+1}</span>
                 {s === 'meta' ? 'Details' : 'Build'}
               </button>
@@ -369,7 +369,7 @@ export default function CourseEditPage() {
           <div className="max-w-2xl space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
-              <p className="text-sm text-white/40">Update the information about your course.</p>
+              <p className="text-sm text-white/50">Update the information about your course.</p>
             </div>
 
             <div className="space-y-4">
@@ -446,10 +446,10 @@ export default function CourseEditPage() {
               <div>
                 <h2 className="text-xl font-bold text-white mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
                 <div className="flex items-center gap-3 text-xs">
-                  <span className={cn('px-2 py-0.5 rounded border font-medium uppercase tracking-[0.04em]', status === 'published' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-white/15 text-white/40')}>
+                  <span className={cn('px-2 py-0.5 rounded border font-medium uppercase tracking-[0.04em]', status === 'published' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-white/15 text-white/50')}>
                     {status}
                   </span>
-                  <span className="text-white/30">{sections.reduce((n, s) => n + s.lessons.length, 0)} lessons</span>
+                  <span className="text-white/45">{sections.reduce((n, s) => n + s.lessons.length, 0)} lessons</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -478,17 +478,17 @@ export default function CourseEditPage() {
                       <span className="text-sm">{LESSON_TYPES.find(t => t.value === lesson.lesson_type)?.icon}</span>
                       <div className="flex-1 min-w-0">
                         <span className="text-sm text-white/80 block truncate">{lesson.title}</span>
-                        <span className="text-[11px] text-white/30">{LESSON_TYPES.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
+                        <span className="text-[11px] text-white/45">{LESSON_TYPES.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
                       </div>
                       <button onClick={() => setEditingLesson({ secId: sec.id, lesson: { ...lesson } })}
-                        className="text-xs text-white/40 hover:text-white/80 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg transition-colors">Edit</button>
+                        className="text-xs text-white/50 hover:text-white/80 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg transition-colors">Edit</button>
                       <button onClick={() => removeLesson(sec.id, lesson.id)} className="text-xs text-red-400/50 hover:text-red-400 transition-colors">×</button>
                     </div>
                   ))}
                 </div>
                 <div className="p-3">
                   <button onClick={() => addLesson(sec.id)}
-                    className="w-full py-2 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 rounded-xl transition-colors flex items-center gap-1.5 justify-center">
+                    className="w-full py-2 text-xs text-white/50 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 rounded-xl transition-colors flex items-center gap-1.5 justify-center">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                     Add Lesson
                   </button>
@@ -497,7 +497,7 @@ export default function CourseEditPage() {
             ))}
 
             <button onClick={addSection}
-              className="w-full py-4 text-sm text-white/40 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 rounded-xl transition-colors flex items-center gap-2 justify-center">
+              className="w-full py-4 text-sm text-white/50 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 rounded-xl transition-colors flex items-center gap-2 justify-center">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
               Add Section
             </button>
@@ -511,7 +511,7 @@ export default function CourseEditPage() {
           <div className="w-full sm:max-w-2xl bg-surface-950 rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-surface-950 z-10">
               <h3 className="text-sm font-bold text-white">Edit Lesson</h3>
-              <button onClick={() => setEditingLesson(null)} className="text-white/40 hover:text-white">
+              <button onClick={() => setEditingLesson(null)} className="text-white/50 hover:text-white">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
@@ -549,7 +549,7 @@ export default function CourseEditPage() {
                       <span className="text-lg leading-none">{opt.icon}</span>
                       <div>
                         <div className="text-xs font-semibold text-white">{opt.label}</div>
-                        <div className="text-[11px] text-white/40 leading-snug">{opt.desc}</div>
+                        <div className="text-[11px] text-white/50 leading-snug">{opt.desc}</div>
                       </div>
                     </button>
                   ))}

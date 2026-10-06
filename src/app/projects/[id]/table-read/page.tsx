@@ -200,7 +200,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
               <tr key={t.scene_id} className="border-t border-surface-800 hover:bg-surface-800/30">
                 <td className="px-4 py-2.5 text-surface-500">{i + 1}</td>
                 <td className="px-4 py-2.5 text-surface-300 text-xs line-clamp-1">{t.heading}</td>
-                <td className={cn('px-4 py-2.5 text-right font-mono font-semibold', t.seconds === 0 ? 'text-surface-600' : 'text-white')}>
+                <td className={cn('px-4 py-2.5 text-right font-mono font-semibold', t.seconds === 0 ? 'text-surface-500' : 'text-white')}>
                   {t.seconds === 0 ? '—' : fmt(t.seconds)}
                 </td>
               </tr>
@@ -236,7 +236,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
           <p className="text-xs text-surface-500 uppercase tracking-[0.04em] mb-2">Current Scene</p>
           <p className="text-base font-semibold text-white mb-1 line-clamp-3">{scene.scene_heading ?? `Scene ${scene.scene_number}`}</p>
           {scene.page_count && <p className="text-xs text-surface-500">{scene.page_count} pages</p>}
-          <div className={cn('text-5xl font-bold font-mono mt-6 tabular-nums', running ? 'text-orange-400' : 'text-surface-600')}>
+          <div className={cn('text-5xl font-bold font-mono mt-6 tabular-nums', running ? 'text-orange-400' : 'text-surface-500')}>
             {fmt(elapsed)}
           </div>
           <p className="text-xs text-surface-500 mt-2">Total: {fmt(totalElapsed)}</p>
@@ -337,7 +337,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
             {((detailSession.scene_timings ?? []) as SceneTiming[]).map((t, i) => (
               <div key={i} className="flex items-center justify-between py-1.5 border-b border-surface-800 last:border-0">
                 <span className="text-sm text-surface-300 truncate flex-1">{t.heading}</span>
-                <span className="font-mono text-sm text-orange-400 ml-3 shrink-0">{t.seconds > 0 ? fmt(t.seconds) : <span className="text-surface-600">skipped</span>}</span>
+                <span className="font-mono text-sm text-orange-400 ml-3 shrink-0">{t.seconds > 0 ? fmt(t.seconds) : <span className="text-surface-500">skipped</span>}</span>
               </div>
             ))}
           </div>

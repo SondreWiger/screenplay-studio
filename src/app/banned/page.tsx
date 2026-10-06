@@ -33,13 +33,13 @@ function BannedContent() {
         </div>
 
         {isIpBan && (
-          <p className="text-sm text-white/40 mb-6">
+          <p className="text-sm text-white/50 mb-6">
             This IP address has been banned from Screenplay Studio.
             Creating new accounts will not bypass this restriction.
           </p>
         )}
 
-        <p className="text-sm text-white/40 mb-8">
+        <p className="text-sm text-white/50 mb-8">
           If you believe this was done in error, you may submit an appeal.
         </p>
 

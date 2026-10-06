@@ -275,7 +275,7 @@ export default function EngagementPanel() {
                         <div className="flex-1"><Meter value={u.score} max={100} color={u.score >= 60 ? '#22c55e' : u.score >= 30 ? '#38bdf8' : '#f59e0b'} /></div>
                       </div>
                     </td>
-                    <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-surface-200">{u.activeDays}<span className="text-surface-600"> /{u.activeWeeks}w</span></td>
+                    <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-surface-200">{u.activeDays}<span className="text-surface-500"> /{u.activeWeeks}w</span></td>
                     <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-surface-200">{u.workHours}</td>
                     <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-surface-200">{u.contentEdits.toLocaleString()}</td>
                     <td className="py-2.5 pr-3 text-right font-mono tabular-nums text-surface-200">{u.projects}</td>
@@ -283,7 +283,7 @@ export default function EngagementPanel() {
                     <td className="py-2.5 pr-5 text-surface-400">
                       {u.perks.count > 0
                         ? <span title={`${u.perks.count} perk(s), last: ${u.perks.last_perk}`} className="inline-flex items-center gap-1"><Gift className="h-3 w-3 text-brand-400" />{u.perks.count} · {timeAgo(u.perks.last_at!)}</span>
-                        : <span className="text-surface-600">—</span>}
+                        : <span className="text-surface-500">—</span>}
                     </td>
                   </motion.tr>
                 ))}
@@ -464,7 +464,7 @@ function RewardDialog({ open, onClose, recipients, onDone }: {
             <div className="flex flex-wrap items-center gap-4 text-xs text-surface-300">
               <label className="flex items-center gap-2"><input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="accent-brand-500" /> In-app notification</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={email} onChange={(e) => setEmail(e.target.checked)} className="accent-brand-500" /> Email</label>
-              <span className="text-surface-600">Use {'{name}'}, {'{months}'}, {'{badge}'}</span>
+              <span className="text-surface-500">Use {'{name}'}, {'{months}'}, {'{badge}'}</span>
             </div>
             {(notify || email) && (
               <>

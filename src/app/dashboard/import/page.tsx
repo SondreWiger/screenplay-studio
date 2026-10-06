@@ -298,7 +298,7 @@ export default function BulkImportPage() {
               </svg>
               Dashboard
             </Link>
-            <span className="text-surface-600">/</span>
+            <span className="text-surface-500">/</span>
             <h1 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Bulk Import</h1>
           </div>
           {files.length > 0 && (

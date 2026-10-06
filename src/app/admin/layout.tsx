@@ -95,7 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Escape') { setQuery(''); e.currentTarget.blur(); } }}
               placeholder="Jump to…"
-              className="w-full bg-transparent text-xs text-white placeholder:text-surface-600 focus:outline-none"
+              className="w-full bg-transparent text-xs text-white placeholder:text-surface-500 focus:outline-none"
             />
             <kbd className="rounded border border-surface-700 px-1 text-[10px] text-surface-500">/</kbd>
           </label>
@@ -141,7 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
         ))}
-        {sections.length === 0 && <p className="px-3 text-xs text-surface-600">No matches</p>}
+        {sections.length === 0 && <p className="px-3 text-xs text-surface-500">No matches</p>}
       </nav>
 
       <div className={cn('flex items-center border-t border-surface-800 p-3', compact ? 'flex-col gap-2' : 'justify-between')}>

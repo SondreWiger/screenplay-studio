@@ -152,7 +152,7 @@ export default function DownloadPage() {
             WRITE.<br />OFFLINE.<br />
             <span className="text-brand-500">SYNC.</span>
           </h1>
-          <p className="text-base text-white/40 leading-relaxed max-w-lg">
+          <p className="text-base text-white/50 leading-relaxed max-w-lg">
             Screenplay Studio runs natively on your desktop. Write without an internet connection,
             save files locally, and optionally sync to the cloud when you sign in.
           </p>
@@ -175,10 +175,10 @@ export default function DownloadPage() {
                       : 'border-white/5 bg-transparent hover:border-white/10 hover:bg-white/[0.02]'
                   }`}
                 >
-                  <Icon size={18} className={selected === p.key ? 'text-brand-500' : 'text-white/30'} />
+                  <Icon size={18} className={selected === p.key ? 'text-brand-500' : 'text-white/45'} />
                   <div>
                     <div className="text-sm font-bold text-white/90">{p.label}</div>
-                    <div className="text-[11px] text-white/30 font-mono">{p.format}</div>
+                    <div className="text-[11px] text-white/45 font-mono">{p.format}</div>
                   </div>
                   {isDetected && (
                     <span className="ml-auto text-[11px] font-medium uppercase tracking-[0.04em] px-1.5 py-0.5 border border-brand-500/40 text-brand-500">
@@ -199,7 +199,7 @@ export default function DownloadPage() {
               <h2 className="text-2xl font-bold text-white mb-3" style={{ letterSpacing: '-0.02em' }}>
                 Screenplay Studio for {dl.label}
               </h2>
-              <p className="text-xs text-white/40 leading-relaxed mb-4">
+              <p className="text-xs text-white/50 leading-relaxed mb-4">
                 Native desktop app with full offline support. Save projects to your hard drive,
                 open .screenplay files, and sync when you&apos;re ready.
               </p>
@@ -219,17 +219,17 @@ export default function DownloadPage() {
                         }`}
                       >
                         <div className="text-xs font-bold text-white/90">{arch.label}</div>
-                        <div className="text-[11px] text-white/30">{arch.desc}</div>
+                        <div className="text-[11px] text-white/45">{arch.desc}</div>
                       </button>
                     ))}
                   </div>
-                  <p className="text-[11px] text-white/30 leading-relaxed mb-4 border-l-2 border-brand-500 pl-3">
+                  <p className="text-[11px] text-white/45 leading-relaxed mb-4 border-l-2 border-brand-500 pl-3">
                     macOS may show a security warning on first launch. Right-click the app → Open → Open to bypass.
                   </p>
                 </>
               )}
 
-              <div className="flex flex-wrap gap-3 text-[11px] text-white/30 mb-8">
+              <div className="flex flex-wrap gap-3 text-[11px] text-white/45 mb-8">
                 <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Free forever</span>
                 <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> No account required</span>
                 <span className="flex items-center gap-1"><Check size={12} className="text-brand-500" /> Auto-updates</span>
@@ -260,7 +260,7 @@ export default function DownloadPage() {
                 <div key={f.title} className="p-6 border border-white/[0.07] bg-white/[0.02]">
                   <Icon size={20} className="text-brand-500 mb-4" />
                   <h3 className="text-sm font-bold text-white mb-2">{f.title}</h3>
-                  <p className="text-xs text-white/40 leading-relaxed">{f.desc}</p>
+                  <p className="text-xs text-white/50 leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -273,19 +273,19 @@ export default function DownloadPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-sm font-bold text-white mb-2">macOS</h3>
-              <p className="text-xs text-white/40 leading-relaxed">
+              <p className="text-xs text-white/50 leading-relaxed">
                 macOS 11 (Big Sur) or later. Intel or Apple Silicon (M1/M2/M3/M4).
               </p>
             </div>
             <div>
               <h3 className="text-sm font-bold text-white mb-2">Windows</h3>
-              <p className="text-xs text-white/40 leading-relaxed">
+              <p className="text-xs text-white/50 leading-relaxed">
                 Windows 10 (64-bit) or later. x86_64 processor.
               </p>
             </div>
             <div>
               <h3 className="text-sm font-bold text-white mb-2">Linux</h3>
-              <p className="text-xs text-white/40 leading-relaxed">
+              <p className="text-xs text-white/50 leading-relaxed">
                 Ubuntu 20.04+, Debian 11+, Fedora 36+, or equivalent. x86_64.
               </p>
             </div>

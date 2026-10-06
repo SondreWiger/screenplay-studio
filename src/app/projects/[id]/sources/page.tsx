@@ -307,7 +307,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                           </span>
                         )}
                         {source.is_primary && <span className="text-[11px] text-amber-400 font-bold">PRIMARY</span>}
-                        {!source.is_active && <span className="text-[11px] text-surface-600">INACTIVE</span>}
+                        {!source.is_active && <span className="text-[11px] text-surface-500">INACTIVE</span>}
                       </div>
                     </button>
                   ))}
@@ -355,22 +355,22 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
                   ) : selectedSource.protocol === 'ndi' || selectedSource.source_type === 'ndi' ? (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">NDI SOURCE</div>
-                      <div className="text-white/30 text-[11px]">Requires NDI bridge</div>
+                      <div className="text-white/45 text-[11px]">Requires NDI bridge</div>
                     </>
                   ) : selectedSource.protocol === 'srt' || selectedSource.source_type === 'srt' ? (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">SRT STREAM</div>
-                      <div className="text-white/30 text-[11px]">Requires SRT ingest</div>
+                      <div className="text-white/45 text-[11px]">Requires SRT ingest</div>
                     </>
                   ) : selectedSource.protocol === 'webrtc' ? (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">WebRTC</div>
-                      <div className="text-white/30 text-[11px]">Requires WebRTC bridge</div>
+                      <div className="text-white/45 text-[11px]">Requires WebRTC bridge</div>
                     </>
                   ) : (
                     <>
                       <div className="text-white/60 text-xs font-bold mb-1">{(selectedSource.short_name || selectedSource.source_type).toUpperCase()}</div>
-                      <div className="text-white/30 text-[11px]">{selectedSource.protocol ? `${selectedSource.protocol.toUpperCase()} signal` : 'No signal'}</div>
+                      <div className="text-white/45 text-[11px]">{selectedSource.protocol ? `${selectedSource.protocol.toUpperCase()} signal` : 'No signal'}</div>
                     </>
                   )}
                 </div>

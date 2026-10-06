@@ -37,7 +37,7 @@ export function UploadZone({ onFile, accept, label, sublabel, children }: Upload
       {children || (
         <>
           <p className="text-sm font-bold text-white/70">{label}</p>
-          <p className="text-xs text-white/25 mt-1.5">{sublabel}</p>
+          <p className="text-xs text-white/45 mt-1.5">{sublabel}</p>
         </>
       )}
     </div>

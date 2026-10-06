@@ -337,7 +337,7 @@ export default function TutorialsPage() {
                 </div>
               </div>
 
-              <p className="text-sm sm:text-base text-white/40 leading-relaxed mb-10 max-w-3xl">
+              <p className="text-sm sm:text-base text-white/50 leading-relaxed mb-10 max-w-3xl">
                 {tutorial.description}
               </p>
 
@@ -448,7 +448,7 @@ export default function TutorialsPage() {
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ letterSpacing: '-0.03em' }}>
             Ready to start?
           </h2>
-          <p className="text-sm sm:text-base text-white/40 mb-8 max-w-lg mx-auto">
+          <p className="text-sm sm:text-base text-white/50 mb-8 max-w-lg mx-auto">
             Everything above is included in the free plan. No trial, no time limit. Jump in and start writing.
           </p>
           <Link

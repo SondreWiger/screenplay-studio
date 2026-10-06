@@ -443,7 +443,7 @@ function DraftDetail({
                 <div className="max-h-[50vh] overflow-auto space-y-0.5 rounded-lg bg-surface-950/50 p-2">
                   {shown.map((d, i) => (
                     <div key={i}>
-                      {d.gap && <p className="text-[11px] text-surface-600 px-2 py-1">⋯</p>}
+                      {d.gap && <p className="text-[11px] text-surface-500 px-2 py-1">⋯</p>}
                       <p
                         className={`px-2 py-0.5 rounded text-xs font-mono whitespace-pre-wrap ${
                           d.type === 'added' ? 'bg-green-500/10 text-green-300 border-l-2 border-green-500/50'

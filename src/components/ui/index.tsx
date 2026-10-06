@@ -705,7 +705,7 @@ export function KeyboardShortcuts({ isOpen, onClose, groups = defaultGroups }: K
                     <div className="flex items-center gap-1">
                       {sc.keys.map((key, ki) => (
                         <React.Fragment key={ki}>
-                          {ki > 0 && <span className="text-surface-600 text-xs">+</span>}
+                          {ki > 0 && <span className="text-surface-500 text-xs">+</span>}
                           <kbd className="px-2 py-0.5 text-xs font-mono text-surface-300 bg-surface-800 border border-surface-700 rounded-md shadow-sm">
                             {key}
                           </kbd>
@@ -828,7 +828,7 @@ export function SearchInput({ value, onChange, placeholder, className, autoFocus
         autoFocus={autoFocus}
         className={cn(
           'w-full rounded-lg border bg-surface-900/80 pl-10 pr-8 py-2.5 text-sm text-white font-medium',
-          'border-surface-700/80 placeholder:text-surface-600',
+          'border-surface-700/80 placeholder:text-surface-500',
           'focus:border-brand-500/70 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-surface-800/80',
           'transition-colors duration-200'
         )}

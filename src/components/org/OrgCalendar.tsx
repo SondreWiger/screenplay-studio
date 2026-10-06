@@ -117,11 +117,11 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
                       <div className="flex items-center gap-3 text-xs text-surface-500 mt-0.5">
                         <span>{ev.all_day ? 'All day' : new Date(ev.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         {ev.location && <span>📍 {ev.location}</span>}
-                        <span className="text-surface-600">{ev.event_type.replace('_', ' ')}</span>
+                        <span className="text-surface-500">{ev.event_type.replace('_', ' ')}</span>
                       </div>
                     </div>
                     {(canManage || ev.created_by === userId) && (
-                      <button onClick={() => cancelEvent(ev.id)} className="text-xs text-surface-600 hover:text-red-400">Cancel</button>
+                      <button onClick={() => cancelEvent(ev.id)} className="text-xs text-surface-500 hover:text-red-400">Cancel</button>
                     )}
                   </Card>
                 ))}
@@ -137,7 +137,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
                   <Card key={ev.id} className="p-3 flex items-center gap-3">
                     <span className="text-sm">{EVENT_ICONS[ev.event_type]}</span>
                     <span className="text-sm text-surface-400 line-through">{ev.title}</span>
-                    <span className="text-[11px] text-surface-600 ml-auto">{new Date(ev.start_at).toLocaleDateString()}</span>
+                    <span className="text-[11px] text-surface-500 ml-auto">{new Date(ev.start_at).toLocaleDateString()}</span>
                   </Card>
                 ))}
               </div>
@@ -154,7 +154,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
           </div>
           <div className="grid grid-cols-7 gap-px">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-              <div key={d} className="text-[11px] text-surface-600 text-center py-1 font-medium">{d}</div>
+              <div key={d} className="text-[11px] text-surface-500 text-center py-1 font-medium">{d}</div>
             ))}
             {(() => {
               const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
@@ -174,7 +174,7 @@ export function OrgCalendar({ companyId, userId, canManage }: Props) {
                         {ev.title}
                       </div>
                     ))}
-                    {dayEvents.length > 3 && <span className="text-[11px] text-surface-600">+{dayEvents.length - 3}</span>}
+                    {dayEvents.length > 3 && <span className="text-[11px] text-surface-500">+{dayEvents.length - 3}</span>}
                   </div>
                 );
               }

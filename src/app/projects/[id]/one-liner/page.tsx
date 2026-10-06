@@ -320,7 +320,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
           <svg className="w-8 h-8 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
         </div>
         <p className="text-surface-400 font-medium">No script found</p>
-        <p className="text-surface-600 text-sm mt-1">Create a script in the Script Editor first.</p>
+        <p className="text-surface-500 text-sm mt-1">Create a script in the Script Editor first.</p>
       </div>
     </div>
   );
@@ -372,7 +372,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
                 <svg className="w-8 h-8 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
               </div>
               <p className="text-surface-400 font-medium">No scene headings found</p>
-              <p className="text-surface-600 text-sm mt-1">Add scene headings in the Script Editor to see them here.</p>
+              <p className="text-surface-500 text-sm mt-1">Add scene headings in the Script Editor to see them here.</p>
             </div>
           </div>
         ) : (
@@ -457,7 +457,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
                         onClick={() => startEditSynopsis(scene)}
                         title={canEdit ? 'Click to edit one-liner' : undefined}
                       >
-                        {scene.synopsis || (canEdit ? <span className="text-surface-600 italic">Add one-liner…</span> : '—')}
+                        {scene.synopsis || (canEdit ? <span className="text-surface-500 italic">Add one-liner…</span> : '—')}
                       </div>
                     )}
                   </td>

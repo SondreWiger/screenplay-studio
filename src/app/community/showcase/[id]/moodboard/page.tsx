@@ -83,7 +83,7 @@ export default function DeepDiveMoodboardPage() {
       <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">🎨</div>
         <h1 className="text-2xl font-bold">Not Available</h1>
-        <p className="text-white/40">{error || 'Something went wrong.'}</p>
+        <p className="text-white/50">{error || 'Something went wrong.'}</p>
         <Link href={`/community/showcase/${params.id}`} className="mt-4 px-5 py-2.5 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">
           Back to Project
         </Link>
@@ -102,7 +102,7 @@ export default function DeepDiveMoodboardPage() {
               <span className="text-sm font-medium">Back to Project</span>
             </Link>
             <div className="h-4 w-px bg-surface-900/10" />
-            <span className="text-sm text-white/40 truncate max-w-[200px]">{project.title}</span>
+            <span className="text-sm text-white/50 truncate max-w-[200px]">{project.title}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.04em] text-pink-400 bg-pink-500/10 rounded-full border border-pink-500/20">
@@ -122,7 +122,7 @@ export default function DeepDiveMoodboardPage() {
             <svg className="w-6 h-6 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             <h1 className="text-2xl font-bold">Moodboard</h1>
           </div>
-          <p className="text-white/40 text-sm">
+          <p className="text-white/50 text-sm">
             Visual inspiration and references for <span className="text-white/60 font-medium">{project.title}</span>
           </p>
           <p className="text-xs text-white/20 mt-1">{items.length} item{items.length !== 1 ? 's' : ''}</p>
@@ -137,7 +137,7 @@ export default function DeepDiveMoodboardPage() {
             className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
               activeSection === 'all'
                 ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
-                : 'text-white/40 hover:text-white/60 bg-surface-900/[0.04] border border-white/[0.06]'
+                : 'text-white/50 hover:text-white/60 bg-surface-900/[0.04] border border-white/[0.06]'
             }`}
           >
             All ({items.length})
@@ -149,7 +149,7 @@ export default function DeepDiveMoodboardPage() {
               className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                 activeSection === section.value
                   ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
-                  : 'text-white/40 hover:text-white/60 bg-surface-900/[0.04] border border-white/[0.06]'
+                  : 'text-white/50 hover:text-white/60 bg-surface-900/[0.04] border border-white/[0.06]'
               }`}
             >
               {section.icon} {section.label} ({section.count})
@@ -217,7 +217,7 @@ export default function DeepDiveMoodboardPage() {
                       <p className="text-sm font-semibold text-white/80 mb-1 line-clamp-2">{item.title}</p>
                     )}
                     {item.content && (
-                      <p className="text-xs text-white/40 line-clamp-3 whitespace-pre-wrap">{item.content}</p>
+                      <p className="text-xs text-white/50 line-clamp-3 whitespace-pre-wrap">{item.content}</p>
                     )}
                   </div>
                 )}

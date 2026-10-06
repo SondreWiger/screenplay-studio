@@ -172,7 +172,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                 {/* Section header */}
                 <div className="flex items-center gap-1 px-3 py-1.5 group">
                   {/* Expand toggle */}
-                  <button onClick={() => toggleSectionExpand(section.id)} className="text-surface-600 hover:text-surface-300 p-0.5 transition-colors shrink-0">
+                  <button onClick={() => toggleSectionExpand(section.id)} className="text-surface-500 hover:text-surface-300 p-0.5 transition-colors shrink-0">
                     <svg className={cn('w-3.5 h-3.5 transition-transform', isExpanded && 'rotate-90')} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </button>
 
@@ -188,7 +188,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                     />
                   ) : (
                     <span
-                      className={cn('flex-1 text-[11px] font-semibold uppercase tracking-[0.04em] cursor-pointer', isUnlabelled ? 'text-surface-600 italic' : 'text-surface-400', 'hover:text-white transition-colors')}
+                      className={cn('flex-1 text-[11px] font-semibold uppercase tracking-[0.04em] cursor-pointer', isUnlabelled ? 'text-surface-500 italic' : 'text-surface-400', 'hover:text-white transition-colors')}
                       onDoubleClick={() => startRenameSection(section)}
                       title="Double-click to rename"
                     >
@@ -199,15 +199,15 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                   {/* Section move buttons */}
                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => moveSection(sIdx, -1)} disabled={sIdx === 0}
-                      className="text-surface-600 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move up">
+                      className="text-surface-500 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move up">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
                     </button>
                     <button onClick={() => moveSection(sIdx, 1)} disabled={sIdx === sections.length - 1}
-                      className="text-surface-600 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move down">
+                      className="text-surface-500 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move down">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     <button onClick={() => startRenameSection(section)}
-                      className="text-surface-600 hover:text-surface-300 p-0.5 rounded transition-colors" title="Rename">
+                      className="text-surface-500 hover:text-surface-300 p-0.5 rounded transition-colors" title="Rename">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </button>
                     {section.id.startsWith('custom-') && (
@@ -268,11 +268,11 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                               : 'opacity-0 group-hover/item:opacity-100'
                           )}>
                             <button onClick={() => moveItem(section.id, iIdx, -1)} disabled={iIdx === 0}
-                              className="text-surface-600 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move up">
+                              className="text-surface-500 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move up">
                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
                             </button>
                             <button onClick={() => moveItem(section.id, iIdx, 1)} disabled={iIdx === section.items.length - 1}
-                              className="text-surface-600 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move down">
+                              className="text-surface-500 hover:text-surface-300 p-0.5 rounded disabled:opacity-20 transition-colors" title="Move down">
                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                             </button>
 
@@ -280,7 +280,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                             {sections.filter(s => s.id !== section.id).length > 0 && (
                               <div className="relative">
                                 <button
-                                  className="text-surface-600 hover:text-surface-300 p-0.5 rounded transition-colors"
+                                  className="text-surface-500 hover:text-surface-300 p-0.5 rounded transition-colors"
                                   title="Move to section"
                                   onClick={() => {
                                     const key = `${section.id}::${item.icon}`;
@@ -336,7 +336,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                 <button onClick={() => { setShowNewSection(false); setNewSectionName(''); }} className="text-surface-500 hover:text-white text-xs transition-colors">✕</button>
               </div>
             ) : (
-              <button onClick={() => setShowNewSection(true)} className="flex items-center gap-1.5 text-xs text-surface-600 hover:text-brand-500 transition-colors py-1">
+              <button onClick={() => setShowNewSection(true)} className="flex items-center gap-1.5 text-xs text-surface-500 hover:text-brand-500 transition-colors py-1">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 Add section
               </button>
@@ -360,7 +360,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
                     className="mt-0.5 accent-brand-500" />
                   <span>
                     <span className="text-xs font-medium text-surface-200 group-hover:text-white transition-colors block">{opt.label}</span>
-                    <span className="text-[11px] text-surface-600">{opt.desc}</span>
+                    <span className="text-[11px] text-surface-500">{opt.desc}</span>
                   </span>
                 </label>
               ))}
@@ -405,7 +405,7 @@ export default function SidebarCustomiser({ sections: initialSections, onClose, 
           </div>
 
           {activeScope && (
-            <p className="text-[11px] text-surface-600 text-center">
+            <p className="text-[11px] text-surface-500 text-center">
               Currently using: {activeScope === 'user-project' ? 'project override' : activeScope === 'user-global' ? 'global default' : 'project admin default'}
             </p>
           )}

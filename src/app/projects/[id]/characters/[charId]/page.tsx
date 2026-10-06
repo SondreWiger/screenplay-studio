@@ -701,7 +701,7 @@ export default function CharacterDetailPage({ params }: { params: { id: string; 
           {relations.length === 0 ? (
             <div className="rounded-xl border border-dashed border-surface-700 p-10 text-center">
               <p className="text-surface-500 mb-3">No connections yet</p>
-              <p className="text-xs text-surface-600 mb-4">
+              <p className="text-xs text-surface-500 mb-4">
                 Import this character into the Mind Map and draw connections to other characters.
               </p>
               <Button variant="secondary" onClick={() => router.push(`/projects/${params.id}/mindmap`)}>

@@ -42,7 +42,7 @@ function TextForm({ value, onChange }: { value: LessonContentText; onChange: (v:
         className="w-full bg-white/[0.04] border border-white/10 rounded-xl font-mono text-sm text-white/80 p-4 outline-none focus:border-white/30 resize-y"
         placeholder="# Lesson Title&#10;&#10;Your content here. **Bold**, *italic*, `code`, > blockquote&#10;&#10;## Sub-heading"
       />
-      <p className="text-[11px] text-white/25">Supports Markdown headings, bold, italic, inline code, blockquotes, lists, and links.</p>
+      <p className="text-[11px] text-white/45">Supports Markdown headings, bold, italic, inline code, blockquotes, lists, and links.</p>
     </div>
   );
 }
@@ -64,7 +64,7 @@ function VideoForm({ value, onChange }: { value: LessonContentVideo; onChange: (
           className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white/80 px-4 py-2.5 outline-none focus:border-white/30"
         />
         {value.embed_url && (
-          <p className="text-[11px] text-white/30 mt-1">Detected provider: {value.provider}</p>
+          <p className="text-[11px] text-white/45 mt-1">Detected provider: {value.provider}</p>
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -165,7 +165,7 @@ function QuizForm({ value, onChange }: { value: LessonContentQuiz; onChange: (v:
               </div>
             ))}
             {q.options.length < 6 && (
-              <button onClick={() => addOpt(q.id)} className="text-xs text-white/30 hover:text-white/60 transition-colors pl-6">+ Add option</button>
+              <button onClick={() => addOpt(q.id)} className="text-xs text-white/45 hover:text-white/60 transition-colors pl-6">+ Add option</button>
             )}
           </div>
           <div>
@@ -342,7 +342,7 @@ function ExampleForm({ value, onChange }: { value: LessonContentExample; onChang
         </div>
         {(value.annotations || []).map((a, i) => (
           <div key={i} className="flex items-center gap-2 text-xs text-white/50 mb-1">
-            <span className="text-white/30 w-14">Line {a.line}:</span>
+            <span className="text-white/45 w-14">Line {a.line}:</span>
             <span className="flex-1">{a.note}</span>
             <button onClick={() => onChange({ ...value, annotations: (value.annotations||[]).filter((_,j) => j !== i) })} className="text-red-400/50 hover:text-red-400">×</button>
           </div>
@@ -513,7 +513,7 @@ export default function CreateCoursePage() {
               <button key={s} onClick={() => step === 'build' || s === 'meta' ? setStep(s) : undefined}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
-                  step === s ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/60',
+                  step === s ? 'bg-brand-500 text-white' : 'text-white/50 hover:text-white/60',
                 )}>
                 <span className="w-4 h-4 rounded-full bg-current/20 flex items-center justify-center text-[11px]">{i+1}</span>
                 {s === 'meta' ? 'Details' : 'Build'}
@@ -529,7 +529,7 @@ export default function CreateCoursePage() {
           <div className="max-w-2xl space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Course Details</h2>
-              <p className="text-sm text-white/40">Fill in the basic information about your course.</p>
+              <p className="text-sm text-white/50">Fill in the basic information about your course.</p>
             </div>
 
             <div className="space-y-4">
@@ -547,7 +547,7 @@ export default function CreateCoursePage() {
                   maxLength={100}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white px-4 py-2.5 outline-none focus:border-white/30 placeholder-white/20"
                 />
-                <p className="text-[11px] text-white/25 mt-1">{shortDesc.length}/100</p>
+                <p className="text-[11px] text-white/45 mt-1">{shortDesc.length}/100</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Full Description</label>
@@ -625,7 +625,7 @@ export default function CreateCoursePage() {
             <div className="flex items-end justify-between">
               <div>
                 <h2 className="text-xl font-bold text-white mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
-                <p className="text-sm text-white/40">Build your sections and lessons.</p>
+                <p className="text-sm text-white/50">Build your sections and lessons.</p>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => handleSave('draft')} disabled={saving}
@@ -662,10 +662,10 @@ export default function CreateCoursePage() {
                       <span className="text-sm">{LESSON_TYPE_OPTIONS.find(t => t.value === lesson.lesson_type)?.icon}</span>
                       <div className="flex-1 min-w-0">
                         <span className="text-sm text-white/80 block truncate">{lesson.title}</span>
-                        <span className="text-[11px] text-white/30">{LESSON_TYPE_OPTIONS.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
+                        <span className="text-[11px] text-white/45">{LESSON_TYPE_OPTIONS.find(t => t.value === lesson.lesson_type)?.label} · {lesson.xp_reward} XP</span>
                       </div>
                       <button onClick={() => openEditLesson(sec.id, lesson)}
-                        className="text-xs text-white/40 hover:text-white/80 transition-colors px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg">
+                        className="text-xs text-white/50 hover:text-white/80 transition-colors px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg">
                         Edit
                       </button>
                       <button onClick={() => removeLesson(sec.id, lesson.id)}
@@ -677,7 +677,7 @@ export default function CreateCoursePage() {
                 {/* Add lesson button */}
                 <div className="p-3">
                   <button onClick={() => addLesson(sec.id)}
-                    className="flex items-center gap-1.5 w-full justify-center px-4 py-2.5 text-xs text-white/40 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 transition-colors">
+                    className="flex items-center gap-1.5 w-full justify-center px-4 py-2.5 text-xs text-white/50 hover:text-white/70 border border-dashed border-white/10 hover:border-white/25 transition-colors">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                     Add Lesson
                   </button>
@@ -686,7 +686,7 @@ export default function CreateCoursePage() {
             ))}
 
             <button onClick={addSection}
-              className="flex items-center gap-2 w-full justify-center px-6 py-4 text-sm text-white/40 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 transition-colors">
+              className="flex items-center gap-2 w-full justify-center px-6 py-4 text-sm text-white/50 hover:text-white/70 border-2 border-dashed border-white/10 hover:border-white/25 transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
               Add Section
             </button>
@@ -700,7 +700,7 @@ export default function CreateCoursePage() {
           <div className="w-full sm:max-w-2xl bg-surface-950 rounded-t-3xl sm:rounded-xl border border-white/[0.08] shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-surface-950 z-10">
               <h3 className="text-sm font-bold text-white">Edit Lesson</h3>
-              <button onClick={() => setEditingLesson(null)} className="text-white/40 hover:text-white transition-colors">
+              <button onClick={() => setEditingLesson(null)} className="text-white/50 hover:text-white transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
@@ -752,7 +752,7 @@ export default function CreateCoursePage() {
                       <span className="text-lg leading-none">{opt.icon}</span>
                       <div>
                         <div className="text-xs font-semibold text-white">{opt.label}</div>
-                        <div className="text-[11px] text-white/40 mt-0.5 leading-snug">{opt.desc}</div>
+                        <div className="text-[11px] text-white/50 mt-0.5 leading-snug">{opt.desc}</div>
                       </div>
                     </button>
                   ))}

@@ -349,7 +349,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       value={config.coverCompanyName}
                       onChange={e => updateConfig('coverCompanyName', e.target.value)}
                       placeholder="Acme Productions"
-                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                     />
                   </div>
                   <div>
@@ -359,7 +359,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       value={config.coverSubtitle}
                       onChange={e => updateConfig('coverSubtitle', e.target.value)}
                       placeholder="Original Screenplay by..."
-                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                     />
                   </div>
                   <div>
@@ -369,7 +369,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       value={config.contactInfo}
                       onChange={e => updateConfig('contactInfo', e.target.value)}
                       placeholder="agent@example.com"
-                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                     />
                   </div>
                   <div>
@@ -379,7 +379,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       value={config.draftLabel}
                       onChange={e => updateConfig('draftLabel', e.target.value)}
                       placeholder="THIRD DRAFT — June 2025"
-                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                     />
                   </div>
                   <div>
@@ -389,7 +389,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       value={config.coverLogoUrl}
                       onChange={e => updateConfig('coverLogoUrl', e.target.value)}
                       placeholder="https://..."
-                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                     />
                   </div>
                 </div>
@@ -413,7 +413,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   value={config.watermarkText}
                   onChange={e => updateConfig('watermarkText', e.target.value)}
                   placeholder="CONFIDENTIAL"
-                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                  className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                 />
               )}
             </Card>
@@ -442,7 +442,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       value={draftRecipient}
                       onChange={e => setDraftRecipient(e.target.value)}
                       placeholder="e.g. Jamie (producer)"
-                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                     />
                   </div>
                   <div>
@@ -452,7 +452,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                       value={draftNotes}
                       onChange={e => setDraftNotes(e.target.value)}
                       placeholder="e.g. Table read copy"
-                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                      className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                     />
                   </div>
                 </div>
@@ -513,7 +513,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     value={config.headerLeft}
                     onChange={e => updateConfig('headerLeft', e.target.value)}
                     placeholder="Project name..."
-                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                   />
                 </div>
                 <div>
@@ -523,7 +523,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                     value={config.headerRight}
                     onChange={e => updateConfig('headerRight', e.target.value)}
                     placeholder="Date..."
-                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600"
+                    className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500"
                   />
                 </div>
               </div>
@@ -571,7 +571,7 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                 onChange={e => updateConfig('fontSize', Number(e.target.value))}
                 className="w-full accent-brand-500"
               />
-              <div className="flex justify-between text-[11px] text-surface-600 mt-1">
+              <div className="flex justify-between text-[11px] text-surface-500 mt-1">
                 <span>8pt</span><span>12pt</span><span>16pt</span>
               </div>
             </Card>
@@ -586,9 +586,9 @@ export default function ExportPage({ params }: { params: { id: string } }) {
                   {config.includeCover && (
                     <div className="text-center mb-4">
                       {config.coverLogoUrl && <div className="mb-1 text-[4px] text-gray-400">[Logo]</div>}
-                      {config.coverCompanyName && <div className="text-[5px] text-white/40 mb-1">{config.coverCompanyName}</div>}
+                      {config.coverCompanyName && <div className="text-[5px] text-white/50 mb-1">{config.coverCompanyName}</div>}
                       <div className="text-[11px] font-bold mb-0.5">{currentProject?.title || 'Script Title'}</div>
-                      {config.coverSubtitle && <div className="text-[5px] text-white/40">{config.coverSubtitle}</div>}
+                      {config.coverSubtitle && <div className="text-[5px] text-white/50">{config.coverSubtitle}</div>}
                       {config.draftLabel && <div className="text-[4px] text-gray-400 mt-1">{config.draftLabel}</div>}
                       <div className="border-b border-white/10 mt-2 mb-2" />
                     </div>

@@ -398,7 +398,7 @@ function BoardCard({
                 </span>
               )}
             </div>
-            <span className="text-[11px] text-surface-600">
+            <span className="text-[11px] text-surface-500">
               {new Date(board.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
             </span>
           </div>

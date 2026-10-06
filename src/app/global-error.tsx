@@ -22,7 +22,7 @@ export default function GlobalError({
             A critical error occurred. Please try again.
           </p>
           {error.digest && (
-            <p className="text-xs text-surface-600 font-mono mb-8">Error ID: {error.digest}</p>
+            <p className="text-xs text-surface-500 font-mono mb-8">Error ID: {error.digest}</p>
           )}
           <div className="flex gap-3">
             <button

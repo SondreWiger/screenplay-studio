@@ -238,7 +238,7 @@ export default function TranslationsPage() {
                             <div className="flex items-center gap-3">
                               <span className="text-lg font-semibold text-white">{lang.name}</span>
                               <span className="text-sm text-surface-500">({lang.native_name})</span>
-                              <span className="text-xs font-mono text-surface-600 bg-surface-800 px-2 py-0.5 rounded">{lang.code}</span>
+                              <span className="text-xs font-mono text-surface-500 bg-surface-800 px-2 py-0.5 rounded">{lang.code}</span>
                               {lang.status === 'pending' && (
                                 <span className="text-[11px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">PENDING ADMIN APPROVAL</span>
                               )}
@@ -276,7 +276,7 @@ export default function TranslationsPage() {
               <Card className="divide-y divide-surface-800/60">
                 {contributors.slice(0, 10).map((c, i) => (
                   <div key={c.user_id} className="flex items-center gap-3 p-4">
-                    <span className="text-xs font-mono text-surface-600 w-5">#{i + 1}</span>
+                    <span className="text-xs font-mono text-surface-500 w-5">#{i + 1}</span>
                     <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center overflow-hidden">
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" className="w-full h-full object-cover" />

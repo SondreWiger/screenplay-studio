@@ -848,7 +848,7 @@ export function ArcMindmap({
         <div className="flex-1" />
         {/* Zoom controls */}
         <button onClick={() => setZoom((z) => Math.min(z + 0.15, MAX_ZOOM))} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white flex items-center justify-center text-lg leading-none transition-colors">+</button>
-        <div className="text-[11px] text-white/30 font-mono">{Math.round(zoom * 100)}%</div>
+        <div className="text-[11px] text-white/45 font-mono">{Math.round(zoom * 100)}%</div>
         <button onClick={() => setZoom((z) => Math.max(z - 0.15, MIN_ZOOM))} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white flex items-center justify-center text-lg leading-none transition-colors">−</button>
         <button onClick={zoomToFit} title="Fit all nodes" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1083,7 +1083,7 @@ export function ArcMindmap({
                 });
               }}
               disabled={arcUndoStack.length === 0}
-              className="p-1 rounded text-white/30 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              className="p-1 rounded text-white/45 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               title={`Undo (Cmd+Z)${arcUndoStack.length > 0 ? ` · ${arcUndoStack.length}` : ''}`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
@@ -1101,7 +1101,7 @@ export function ArcMindmap({
                 });
               }}
               disabled={arcRedoStack.length === 0}
-              className="p-1 rounded text-white/30 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              className="p-1 rounded text-white/45 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               title={`Redo (Cmd+Shift+Z)${arcRedoStack.length > 0 ? ` · ${arcRedoStack.length}` : ''}`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
@@ -1114,7 +1114,7 @@ export function ArcMindmap({
                 'px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors',
                 dirty && !saving
                   ? 'bg-brand-600 text-white hover:bg-brand-500'
-                  : 'bg-white/5 text-white/30 cursor-default',
+                  : 'bg-white/5 text-white/45 cursor-default',
               )}
             >
               {saving ? 'Saving…' : dirty ? 'Save' : 'Saved'}
@@ -1186,7 +1186,7 @@ export function ArcMindmap({
                   ['⌘ S', 'Save'],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between text-[11px]">
-                    <span className="text-white/30">{v}</span>
+                    <span className="text-white/45">{v}</span>
                     <kbd className="px-1 bg-white/5 rounded text-white/20 font-mono">{k}</kbd>
                   </div>
                 ))}
@@ -1196,7 +1196,7 @@ export function ArcMindmap({
         </div>
 
         {/* Stats footer */}
-        <div className="p-3 border-t border-white/5 flex justify-between text-[11px] text-white/30">
+        <div className="p-3 border-t border-white/5 flex justify-between text-[11px] text-white/45">
           <span>{nodes.length} nodes</span>
           <span>{edges.length} edges</span>
           <span>{episodes.length} episodes</span>
@@ -1232,7 +1232,7 @@ function PropertiesPanel({
           </svg>
         </span>
         <div>
-          <div className="text-[11px] text-white/40 uppercase tracking-[0.04em]">{NODE_LABEL[node.type]}</div>
+          <div className="text-[11px] text-white/50 uppercase tracking-[0.04em]">{NODE_LABEL[node.type]}</div>
           <div className="text-xs font-semibold text-white truncate max-w-[140px]">{node.label}</div>
         </div>
       </div>
@@ -1240,7 +1240,7 @@ function PropertiesPanel({
       {canEdit ? (
         <>
           <div>
-            <label className="block text-[11px] text-white/40 mb-1">Label</label>
+            <label className="block text-[11px] text-white/50 mb-1">Label</label>
             <input
               className="w-full px-2 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:border-white/30 focus:outline-none"
               value={node.label}
@@ -1248,7 +1248,7 @@ function PropertiesPanel({
             />
           </div>
           <div>
-            <label className="block text-[11px] text-white/40 mb-1">Notes / Body</label>
+            <label className="block text-[11px] text-white/50 mb-1">Notes / Body</label>
             <textarea
               className="w-full px-2 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:border-white/30 focus:outline-none resize-none"
               rows={4}
@@ -1258,7 +1258,7 @@ function PropertiesPanel({
             />
           </div>
           <div>
-            <label className="block text-[11px] text-white/40 mb-2">Accent colour</label>
+            <label className="block text-[11px] text-white/50 mb-2">Accent colour</label>
             <div className="flex flex-wrap gap-1.5">
               {Object.values(NODE_COLORS).filter((v, i, a) => a.indexOf(v) === i).map((c) => (
                 <button
@@ -1274,7 +1274,7 @@ function PropertiesPanel({
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <label className="text-[11px] text-white/40">Locked</label>
+            <label className="text-[11px] text-white/50">Locked</label>
             <button
               onClick={() => updateNode(node.id, 'locked', !node.locked)}
               className={cn(
@@ -1319,12 +1319,12 @@ function EdgePropertiesPanel({
         <svg width="28" height="8">
           <line x1="0" y1="4" x2="28" y2="4" stroke={def.color} strokeWidth="2" strokeDasharray={def.dash ?? ''} strokeLinecap="round" />
         </svg>
-        <div className="text-[11px] text-white/40 uppercase tracking-[0.04em]">{def.label}</div>
+        <div className="text-[11px] text-white/50 uppercase tracking-[0.04em]">{def.label}</div>
       </div>
       {canEdit ? (
         <>
           <div>
-            <label className="block text-[11px] text-white/40 mb-1">Label (optional)</label>
+            <label className="block text-[11px] text-white/50 mb-1">Label (optional)</label>
             <input
               className="w-full px-2 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white focus:border-white/30 focus:outline-none"
               value={edge.label ?? ''}
@@ -1333,7 +1333,7 @@ function EdgePropertiesPanel({
             />
           </div>
           <div>
-            <label className="block text-[11px] text-white/40 mb-1">Connection type</label>
+            <label className="block text-[11px] text-white/50 mb-1">Connection type</label>
             <div className="space-y-1">
               {(Object.keys(EDGE_DEFS) as EdgeType[]).map((t) => (
                 <button

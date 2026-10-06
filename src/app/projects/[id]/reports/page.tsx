@@ -842,7 +842,7 @@ export default function ReportsPage() {
         <div className="text-center py-12 text-surface-500">
           <div className="text-4xl mb-3 font-bold text-surface-400">R</div>
           <p className="text-sm">Select a report type above to generate real production reports from your project data.</p>
-          <p className="text-xs mt-2 text-surface-600">
+          <p className="text-xs mt-2 text-surface-500">
             {scenes.length} scenes · {shots.length} shots · {characters.length} characters loaded
           </p>
         </div>

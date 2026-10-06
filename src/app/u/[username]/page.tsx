@@ -293,7 +293,7 @@ export default function UserProfilePage({ params }: { params: { username: string
       <div className="min-h-screen bg-surface-950 flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">👤</div>
         <h1 className="text-3xl font-bold text-white">User not found</h1>
-        <p className="text-white/40">This profile doesn&apos;t exist or has been removed.</p>
+        <p className="text-white/50">This profile doesn&apos;t exist or has been removed.</p>
         <Link href="/community" className="mt-2 px-6 py-3 bg-amber-500 text-black rounded-lg font-semibold hover:bg-amber-400 transition-colors">
           Browse Community
         </Link>
@@ -356,7 +356,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                     </div>
                   )}
                   {profile.username && (
-                    <p className="text-sm text-white/30 mt-1 font-mono">@{profile.username}</p>
+                    <p className="text-sm text-white/45 mt-1 font-mono">@{profile.username}</p>
                   )}
                   {profile.headline && (
                     <p className={`text-base mt-2 leading-relaxed ${theme.textAccent}`}>{profile.headline}</p>
@@ -414,14 +414,14 @@ export default function UserProfilePage({ params }: { params: { username: string
                 )}
                 {profile.location && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-white/70 bg-white/[0.06] rounded-full border border-white/[0.08]">
-                    <svg className="w-3 h-3 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <svg className="w-3 h-3 text-white/45" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     {profile.location}
                   </span>
                 )}
                 {profile.website && (
                   <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-white/70 bg-white/[0.06] hover:bg-white/[0.1] rounded-full border border-white/[0.08] transition-colors">
-                    <svg className="w-3 h-3 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                    <svg className="w-3 h-3 text-white/45" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     {profile.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                   </a>
                 )}
@@ -520,7 +520,7 @@ export default function UserProfilePage({ params }: { params: { username: string
           <div className={`rounded-xl ${theme.cardBg} border border-white/[0.06] p-5 mb-8`}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xs font-semibold text-white/55 uppercase tracking-[0.04em]">Activity — past year</h2>
-              <div className="flex items-center gap-3 text-xs text-white/25">
+              <div className="flex items-center gap-3 text-xs text-white/45">
                 <span>🔥 {calculateStreak(workLogs)} day streak</span>
                 <span>·</span>
                 <span>{aggregateLogsByDate(workLogs).size} days active</span>
@@ -561,10 +561,10 @@ export default function UserProfilePage({ params }: { params: { username: string
                   </div>
                   <div className="p-5">
                     <h3 className="font-semibold text-white truncate">{project.title}</h3>
-                    {project.logline && <p className="text-xs text-white/40 mt-1.5 line-clamp-2 leading-relaxed">{project.logline}</p>}
+                    {project.logline && <p className="text-xs text-white/50 mt-1.5 line-clamp-2 leading-relaxed">{project.logline}</p>}
                     <div className="flex items-center gap-2 mt-3">
-                      <span className="text-[11px] text-white/30 capitalize">{project.format}</span>
-                      {project.genre.length > 0 && <span className="text-[11px] text-white/30">· {project.genre.join(', ')}</span>}
+                      <span className="text-[11px] text-white/45 capitalize">{project.format}</span>
+                      {project.genre.length > 0 && <span className="text-[11px] text-white/45">· {project.genre.join(', ')}</span>}
                     </div>
                   </div>
                 </div>
@@ -611,12 +611,12 @@ export default function UserProfilePage({ params }: { params: { username: string
                           <span className="text-xs text-amber-400/70">as {project.character_name}</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-1.5 text-[11px] text-white/25">
+                      <div className="flex items-center gap-2 mt-1.5 text-[11px] text-white/45">
                         {project.format && <span className="capitalize">{project.format}</span>}
                         {project.genre && project.genre.length > 0 && <span>· {project.genre.join(', ')}</span>}
                       </div>
                     </div>
-                    <svg className="w-4 h-4 text-white/15 group-hover:text-white/40 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    <svg className="w-4 h-4 text-white/15 group-hover:text-white/50 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </Link>
                 );
               })}
@@ -638,12 +638,12 @@ export default function UserProfilePage({ params }: { params: { username: string
               className={`px-5 py-2 text-sm font-medium rounded-lg transition-colors ${
                 activeTab === tab.key
                   ? 'bg-white/10 text-white shadow-sm'
-                  : 'text-white/40 hover:text-white/60'
+                  : 'text-white/50 hover:text-white/60'
               }`}
             >
               {tab.label}
               {tab.count > 0 && (
-                <span className="ml-2 text-xs text-white/30">{tab.count}</span>
+                <span className="ml-2 text-xs text-white/45">{tab.count}</span>
               )}
             </button>
           ))}
@@ -655,7 +655,7 @@ export default function UserProfilePage({ params }: { params: { username: string
             {posts.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-5xl mb-3">📝</div>
-                <p className="text-white/40">No published scripts yet.</p>
+                <p className="text-white/50">No published scripts yet.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -672,8 +672,8 @@ export default function UserProfilePage({ params }: { params: { username: string
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-1">{post.title}</h3>
-                        {post.description && <p className="text-sm text-white/40 mt-1.5 line-clamp-2 leading-relaxed">{post.description}</p>}
-                        <div className="flex items-center gap-4 mt-3 text-xs text-white/25">
+                        {post.description && <p className="text-sm text-white/50 mt-1.5 line-clamp-2 leading-relaxed">{post.description}</p>}
+                        <div className="flex items-center gap-4 mt-3 text-xs text-white/45">
                           <span>{timeAgo(post.created_at)}</span>
                           <span className="flex items-center gap-1">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -705,7 +705,7 @@ export default function UserProfilePage({ params }: { params: { username: string
             {publicProjects.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-5xl mb-3">🎬</div>
-                <p className="text-white/40">No projects to show.</p>
+                <p className="text-white/50">No projects to show.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -724,14 +724,14 @@ export default function UserProfilePage({ params }: { params: { username: string
                         <span className={`px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.04em] rounded-md ${
                           project.status === 'completed' ? 'text-green-400 bg-green-500/10 border border-green-500/20'
                           : project.status === 'production' ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
-                          : 'text-white/40 bg-white/[0.04] border border-white/[0.08]'
+                          : 'text-white/50 bg-white/[0.04] border border-white/[0.08]'
                         }`}>
                           {project.status?.replace('_', ' ')}
                         </span>
                       </div>
                       <h3 className="font-semibold text-white truncate">{project.title}</h3>
-                      {project.logline && <p className="text-xs text-white/40 mt-1.5 line-clamp-2 leading-relaxed">{project.logline}</p>}
-                      <div className="flex items-center gap-2 mt-3 text-[11px] text-white/25">
+                      {project.logline && <p className="text-xs text-white/50 mt-1.5 line-clamp-2 leading-relaxed">{project.logline}</p>}
+                      <div className="flex items-center gap-2 mt-3 text-[11px] text-white/45">
                         <span className="capitalize">{project.format}</span>
                         {project.genre.length > 0 && <span>· {project.genre.join(', ')}</span>}
                       </div>
@@ -760,7 +760,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                     { label: 'Member since', value: formatDate(profile.created_at) },
                   ].filter(Boolean).map((item: any) => (
                     <div key={item.label} className="flex justify-between items-center">
-                      <dt className="text-sm text-white/30">{item.label}</dt>
+                      <dt className="text-sm text-white/45">{item.label}</dt>
                       <dd className={`text-sm font-medium text-white/70 ${item.capitalize ? 'capitalize' : ''}`}>
                         {item.isEmail ? (
                           <a href={`mailto:${item.value}`} className={`${theme.textAccent} hover:underline transition-colors`}>{item.value}</a>
@@ -797,7 +797,7 @@ export default function UserProfilePage({ params }: { params: { username: string
                         <span className="text-lg">{SOCIAL_ICONS[platform] || '🔗'}</span>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white/70 capitalize">{platform}</p>
-                          <p className={`text-[11px] text-white/25 truncate group-hover:${theme.textAccent} transition-colors`}>{url.replace(/^https?:\/\//, '')}</p>
+                          <p className={`text-[11px] text-white/45 truncate group-hover:${theme.textAccent} transition-colors`}>{url.replace(/^https?:\/\//, '')}</p>
                         </div>
                         <svg className="w-3.5 h-3.5 text-white/15 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                       </a>
@@ -811,19 +811,19 @@ export default function UserProfilePage({ params }: { params: { username: string
                 <h3 className="text-xs font-semibold text-white/55 uppercase tracking-[0.04em] mb-4">Activity</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/40">Published Scripts</span>
+                    <span className="text-sm text-white/50">Published Scripts</span>
                     <span className="text-lg font-bold text-white">{posts.length}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/40">Projects</span>
+                    <span className="text-sm text-white/50">Projects</span>
                     <span className="text-lg font-bold text-white">{publicProjects.length}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/40">Total Upvotes</span>
+                    <span className="text-sm text-white/50">Total Upvotes</span>
                     <span className="text-lg font-bold text-white">{posts.reduce((sum, p) => sum + p.upvote_count, 0)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/40">Filmography</span>
+                    <span className="text-sm text-white/50">Filmography</span>
                     <span className="text-lg font-bold text-white">{filmography.length}</span>
                   </div>
                 </div>
@@ -838,7 +838,7 @@ export default function UserProfilePage({ params }: { params: { username: string
             {profileCourses.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-5xl mb-3">📚</div>
-                <p className="text-white/40">No courses enrolled yet.</p>
+                <p className="text-white/50">No courses enrolled yet.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -871,11 +871,11 @@ export default function UserProfilePage({ params }: { params: { username: string
                           )}
                         </div>
                         <h3 className="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors line-clamp-2 leading-snug">{course.title}</h3>
-                        {course.short_desc && <p className="text-xs text-white/40 mt-1 line-clamp-1">{course.short_desc}</p>}
+                        {course.short_desc && <p className="text-xs text-white/50 mt-1 line-clamp-1">{course.short_desc}</p>}
                         {/* Progress bar */}
                         <div className="mt-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] text-white/30">Progress</span>
+                            <span className="text-[11px] text-white/45">Progress</span>
                             <span className="text-[11px] text-white/50 font-medium">{progress_percent}%</span>
                           </div>
                           <div className="w-full h-1 bg-white/[0.08] rounded-full overflow-hidden">

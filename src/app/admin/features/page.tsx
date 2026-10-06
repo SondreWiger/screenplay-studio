@@ -244,7 +244,7 @@ export default function FeatureFlagsPage() {
                         <code className="hidden rounded bg-surface-800 px-1.5 py-0.5 font-mono text-[11px] text-surface-500 sm:inline">{flag.key}</code>
                       </div>
                       {flag.description && <p className="ml-[18px] mt-0.5 text-xs text-surface-500">{flag.description}</p>}
-                      {flag.updated_at && <p className="ml-[18px] mt-0.5 text-[10px] text-surface-600">Updated {timeAgo(flag.updated_at)}</p>}
+                      {flag.updated_at && <p className="ml-[18px] mt-0.5 text-[10px] text-surface-500">Updated {timeAgo(flag.updated_at)}</p>}
                     </div>
 
                     <div className="flex items-center gap-1 rounded-lg border border-surface-800 bg-surface-950/60 p-0.5" role="radiogroup" aria-label={`${flag.name} tier`}>
@@ -272,7 +272,7 @@ export default function FeatureFlagsPage() {
                       })}
                     </div>
 
-                    <button onClick={() => deleteFlag(flag.id)} className="self-end p-1.5 text-surface-600 transition-all hover:text-red-400 sm:self-auto sm:opacity-0 sm:group-hover:opacity-100" aria-label={`Delete ${flag.name}`}>
+                    <button onClick={() => deleteFlag(flag.id)} className="self-end p-1.5 text-surface-500 transition-all hover:text-red-400 sm:self-auto sm:opacity-0 sm:group-hover:opacity-100" aria-label={`Delete ${flag.name}`}>
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </AnimatedItem>

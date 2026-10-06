@@ -232,7 +232,7 @@ export function OrgOnboarding({ userId, onComplete, onCancel }: Props) {
                       type="text"
                       value={data.slug}
                       onChange={(e) => setData(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 transition-colors"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 transition-colors"
                       placeholder="acme-pictures"
                     />
                   </div>

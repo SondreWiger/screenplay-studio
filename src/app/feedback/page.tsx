@@ -85,7 +85,7 @@ function FeedbackCard({ item, userVoted, onVote }: {
           {item.title}
         </h3>
         <p className="text-xs text-surface-500 line-clamp-2 leading-relaxed mb-2">{item.body}</p>
-        <div className="flex items-center gap-3 text-[11px] text-surface-600">
+        <div className="flex items-center gap-3 text-[11px] text-surface-500">
           <span className="flex items-center gap-1">
             <MessageSquare size={10} /> {item.comment_count} comments
           </span>

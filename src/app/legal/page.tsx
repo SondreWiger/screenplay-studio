@@ -145,7 +145,7 @@ export default function LegalCenterPage() {
             >
               Northem Development
             </a>
-            <p className="mt-1 text-sm text-white/40 leading-relaxed">
+            <p className="mt-1 text-sm text-white/50 leading-relaxed">
               Screenplay Studio is developed and operated by Northem Development, a Norwegian software
               development company. All legal obligations, data processing, and service responsibilities
               described in these documents are held by Northem Development.
@@ -164,7 +164,7 @@ export default function LegalCenterPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>
-            <span className="text-[11px] text-white/25">Made with ♥ in Norway</span>
+            <span className="text-[11px] text-white/45">Made with ♥ in Norway</span>
           </div>
         </div>
       </section>

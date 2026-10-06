@@ -115,10 +115,10 @@ export default function RefLandingPage({ params }: { params: { username: string 
           </p>
           <h1 className="font-semibold text-white mb-3" style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', letterSpacing: '-0.03em', lineHeight: 0.95 }}>
             {displayName.toUpperCase()}<br />
-            <span style={{ color: 'rgba(255,255,255,0.3)' }}>WANTS YOU TO</span><br />
+            <span style={{ color: 'rgba(255,255,255,0.45)' }}>WANTS YOU TO</span><br />
             WRITE BETTER.
           </h1>
-          <p className="text-white/40 text-sm max-w-sm mx-auto mt-4 leading-relaxed">
+          <p className="text-white/50 text-sm max-w-sm mx-auto mt-4 leading-relaxed">
             You've been invited to try Screenplay Studio — the full professional screenwriting and production platform. Free, forever.
           </p>
 
@@ -183,7 +183,7 @@ export default function RefLandingPage({ params }: { params: { username: string 
                   <span className="text-[11px] font-semibold font-mono shrink-0 pt-0.5 opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: ORANGE }}>{f.n}</span>
                   <div>
                     <h3 className="text-[11px] font-semibold uppercase leading-tight mb-2 text-white/50 group-hover:text-white transition-colors" style={{ letterSpacing: '0.1em' }}>{f.title}</h3>
-                    <p className="text-[11px] text-white/20 leading-relaxed group-hover:text-white/40 transition-colors">{f.desc}</p>
+                    <p className="text-[11px] text-white/20 leading-relaxed group-hover:text-white/50 transition-colors">{f.desc}</p>
                   </div>
                 </div>
               </div>

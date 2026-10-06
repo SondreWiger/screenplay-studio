@@ -248,13 +248,13 @@ export default function CommunityPage() {
 
             {/* Quick links */}
             <div className="mt-8 pt-6 border-t border-white/10">
-              <Link href="/community/showcase" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
+              <Link href="/community/showcase" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors py-1.5">
                 {t('community.finished')}
               </Link>
-              <Link href="/community/challenges" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
+              <Link href="/community/challenges" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors py-1.5">
                 {t('community.challenges')}
               </Link>
-              <Link href="/community/free-scripts" className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors py-1.5">
+              <Link href="/community/free-scripts" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors py-1.5">
                 {t('community.free_scripts')}
               </Link>
             </div>
@@ -294,9 +294,9 @@ export default function CommunityPage() {
                         <p className="text-xs font-medium text-white/80 group-hover:text-white transition-colors line-clamp-1">{c.title}</p>
                         <div className="flex items-center gap-1.5 mt-1">
                           <span className={`text-[11px] font-semibold uppercase tracking-wide ${diffColor}`}>{c.difficulty}</span>
-                          <span className="text-[11px] text-white/25">·</span>
+                          <span className="text-[11px] text-white/45">·</span>
                           <span className="text-[11px] text-brand-500">{c.xp_reward} XP</span>
-                          {c.enrollment_count > 0 && <span className="text-[11px] text-white/25 ml-auto">{c.enrollment_count} {t('community.enrolled')}</span>}
+                          {c.enrollment_count > 0 && <span className="text-[11px] text-white/45 ml-auto">{c.enrollment_count} {t('community.enrolled')}</span>}
                         </div>
                       </Link>
                     );
@@ -316,7 +316,7 @@ export default function CommunityPage() {
               <div className="text-center py-20">
                 <div className="text-5xl mb-4 font-bold text-white/20">S</div>
                 <p className="text-lg font-semibold text-white/70 mb-2">{t('community.no_posts')}</p>
-                <p className="text-sm text-white/40 mb-6">{t('community.be_first')}</p>
+                <p className="text-sm text-white/50 mb-6">{t('community.be_first')}</p>
                 {user && (
                   <Link href="/community/share" className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors">
                     {t('community.share_script')}
@@ -388,7 +388,7 @@ export default function CommunityPage() {
                             {post.author?.avatar_url ? (
                               <img src={post.author.avatar_url} alt={post.author.full_name || 'Author avatar'} className="w-4 h-4 rounded-full" loading="lazy" />
                             ) : (
-                              <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[11px] font-bold text-white/40">
+                              <div className="w-4 h-4 rounded-full bg-surface-700 flex items-center justify-center text-[11px] font-bold text-white/50">
                                 {(post.author?.full_name || '?')[0]}
                               </div>
                             )}

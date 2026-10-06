@@ -160,7 +160,7 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
                       <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: sc.color + '20', color: sc.color }}>
                         {sc.label}
                       </span>
-                      {pitch.genre && <span className="text-[11px] text-surface-600">{pitch.genre}</span>}
+                      {pitch.genre && <span className="text-[11px] text-surface-500">{pitch.genre}</span>}
                     </div>
                     <h3 className="font-semibold text-white">{pitch.title}</h3>
                     <p className="text-sm text-surface-400 mt-1">{pitch.logline}</p>
@@ -215,11 +215,11 @@ export function OrgPitches({ companyId, userId, canManage }: Props) {
                   {/* Comments */}
                   <div className="space-y-2">
                     <h4 className="text-xs font-semibold text-surface-500 uppercase">Comments</h4>
-                    {comments.length === 0 && <p className="text-xs text-surface-600">No comments yet</p>}
+                    {comments.length === 0 && <p className="text-xs text-surface-500">No comments yet</p>}
                     {comments.map(c => (
                       <div key={c.id} className="bg-surface-900 rounded p-2">
                         <p className="text-sm text-surface-300">{c.content}</p>
-                        <span className="text-[11px] text-surface-600">{new Date(c.created_at).toLocaleString()}</span>
+                        <span className="text-[11px] text-surface-500">{new Date(c.created_at).toLocaleString()}</span>
                       </div>
                     ))}
                     <div className="flex gap-2">

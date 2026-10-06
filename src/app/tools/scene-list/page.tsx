@@ -85,12 +85,12 @@ export default function SceneListPage() {
                 <tbody>
                   {scenes.map(s => (
                     <tr key={s.number} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
-                      <td className="px-4 py-2.5 text-white/30 font-mono">{s.number}</td>
+                      <td className="px-4 py-2.5 text-white/45 font-mono">{s.number}</td>
                       <td className="px-4 py-2.5 text-white/50 font-mono text-[11px]">{s.heading}</td>
-                      <td className="px-4 py-2.5 text-white/30 text-[11px] truncate max-w-[200px]">{s.location}</td>
-                      <td className="px-4 py-2.5 text-white/30 text-[11px]">{s.timeOfDay}</td>
-                      <td className="px-4 py-2.5 text-right text-white/30 font-mono">{s.wordCount.toLocaleString()}</td>
-                      <td className="px-4 py-2.5 text-right text-white/30 font-mono">{s.pageEstimate}</td>
+                      <td className="px-4 py-2.5 text-white/45 text-[11px] truncate max-w-[200px]">{s.location}</td>
+                      <td className="px-4 py-2.5 text-white/45 text-[11px]">{s.timeOfDay}</td>
+                      <td className="px-4 py-2.5 text-right text-white/45 font-mono">{s.wordCount.toLocaleString()}</td>
+                      <td className="px-4 py-2.5 text-right text-white/45 font-mono">{s.pageEstimate}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -365,7 +365,7 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
               </p>
               {records.length === 0 && canEdit && (
                 <>
-                  <p className="text-surface-600 text-sm mt-1">{tool.tagline}</p>
+                  <p className="text-surface-500 text-sm mt-1">{tool.tagline}</p>
                   {tool.starters && tool.starters.length > 0 && (
                     <div className="flex flex-wrap gap-2 justify-center mt-4">
                       {tool.starters.map((s) => (
@@ -390,7 +390,7 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
                 <div className="flex items-center gap-2 mb-2">
                   <span className={cn('w-1 h-3.5 rounded-full', accent.rule)} />
                   <h2 className="text-[11px] font-semibold text-surface-300 uppercase tracking-[0.04em]">{key}</h2>
-                  <span className="text-[11px] text-surface-600">{rows.length}</span>
+                  <span className="text-[11px] text-surface-500">{rows.length}</span>
                 </div>
               )}
               <View
@@ -413,14 +413,14 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
         {canEdit && (
           <div className="rounded-xl border border-dashed border-surface-800 hover:border-surface-700 transition-colors">
             <div className="flex items-center gap-2 px-4 py-2.5">
-              <svg className="w-4 h-4 text-surface-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              <svg className="w-4 h-4 text-surface-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               <input
                 ref={quickRef}
                 value={quickTitle}
                 onChange={(e) => setQuickTitle(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleQuickAdd(); }}
                 placeholder={`Add a ${tool.noun}…`}
-                className="flex-1 bg-transparent text-sm text-white placeholder:text-surface-600 outline-none"
+                className="flex-1 bg-transparent text-sm text-white placeholder:text-surface-500 outline-none"
               />
               {quickTitle.trim() && (
                 <button
@@ -504,7 +504,7 @@ export function ProToolShell({ tool, projectId }: { tool: ProTool; projectId: st
                     refOptions={field.refSource ? refOptions[field.refSource] ?? [] : []}
                     onChange={(v) => setForm((f) => ({ ...f, data: { ...f.data, [field.key]: v } }))}
                   />
-                  {field.hint && <p className="text-[11px] text-surface-600 mt-1">{field.hint}</p>}
+                  {field.hint && <p className="text-[11px] text-surface-500 mt-1">{field.hint}</p>}
                 </div>
               ))}
             </div>

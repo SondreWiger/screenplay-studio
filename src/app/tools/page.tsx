@@ -89,7 +89,7 @@ export default function ToolsPage() {
             <br />
             <span className="text-brand-500">TOOLS.</span>
           </h1>
-          <p className="text-base text-white/40 leading-relaxed max-w-lg">
+          <p className="text-base text-white/50 leading-relaxed max-w-lg">
             Convert, analyze, and prepare your screenplays. Free. No sign-up required.
           </p>
         </section>
@@ -102,7 +102,7 @@ export default function ToolsPage() {
               <div className="w-1 h-1 rounded-full bg-brand-500" />
               <Label>{section.tag}</Label>
               <span className="text-white/10">·</span>
-              <span className="text-xs text-white/30 font-medium">{section.title}</span>
+              <span className="text-xs text-white/45 font-medium">{section.title}</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -118,7 +118,7 @@ export default function ToolsPage() {
                     </h3>
                     <span className="text-xs text-brand-500 transition-transform duration-200 group-hover:translate-x-0.5">→</span>
                   </div>
-                  <p className="text-xs text-white/30 leading-relaxed">{tool.desc}</p>
+                  <p className="text-xs text-white/45 leading-relaxed">{tool.desc}</p>
                 </Link>
               ))}
             </div>

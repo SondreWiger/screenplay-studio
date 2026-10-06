@@ -528,7 +528,7 @@ function DetailDrawer({
             {loadingComments ? (
               <div className="flex justify-center py-4"><LoadingSpinner /></div>
             ) : comments.length === 0 ? (
-              <p className="text-sm text-surface-600 italic">No comments yet.</p>
+              <p className="text-sm text-surface-500 italic">No comments yet.</p>
             ) : (
               <div className="relative space-y-0">
                 <div className="absolute left-[11px] top-0 bottom-0 w-px bg-surface-800" />
@@ -542,7 +542,7 @@ function DetailDrawer({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className={cn('text-[11px] font-semibold', meta.color)}>{meta.label}</span>
-                          <span className="text-[11px] text-surface-600">{timeAgo(c.created_at)}</span>
+                          <span className="text-[11px] text-surface-500">{timeAgo(c.created_at)}</span>
                           {!c.is_public && <span className="text-[11px] px-1 py-0.5 rounded bg-surface-800 text-surface-500 uppercase tracking-wide">internal</span>}
                         </div>
                         {c.comment_type === 'status_change' && c.metadata && (
@@ -812,7 +812,7 @@ export default function AdminFeedbackPage() {
               </motion.li>
             ))}
           </ul>
-          {visible.length > 300 && <p className="border-t border-surface-800 py-2 text-center text-[11px] text-surface-600">Showing 300 of {visible.length} — narrow the filters to see more</p>}
+          {visible.length > 300 && <p className="border-t border-surface-800 py-2 text-center text-[11px] text-surface-500">Showing 300 of {visible.length} — narrow the filters to see more</p>}
         </Reveal>
       )}
 

@@ -27,7 +27,7 @@ const PHASE_STYLE: Record<Phase, string> = {
   upcoming:  'bg-blue-500/20 text-blue-400',
   active:    'bg-green-500/20 text-green-400',
   voting:    'bg-yellow-500/20 text-yellow-400',
-  completed: 'bg-white/10 text-white/40',
+  completed: 'bg-white/10 text-white/50',
   cancelled: 'bg-red-500/15 text-red-500/70',
 };
 const PHASE_LABEL: Record<Phase, string> = {
@@ -176,7 +176,7 @@ export default function ContestsPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-bold">Contests</h2>
-          <p className="text-xs text-white/40 mt-0.5">Community writing challenges &amp; competitions</p>
+          <p className="text-xs text-white/50 mt-0.5">Community writing challenges &amp; competitions</p>
         </div>
         {isMod && <Button onClick={() => setShowCreate(true)}>+ New Contest</Button>}
       </div>
@@ -184,7 +184,7 @@ export default function ContestsPage() {
       {contests.length === 0 ? (
         <div className="text-center py-20">
           <div className="text-5xl mb-4">🏆</div>
-          <p className="text-white/40 text-sm">No contests yet.{isMod ? ' Create the first one!' : ' Check back soon.'}</p>
+          <p className="text-white/50 text-sm">No contests yet.{isMod ? ' Create the first one!' : ' Check back soon.'}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -209,11 +209,11 @@ export default function ContestsPage() {
                           {PHASE_LABEL[phase]}
                         </span>
                         {contest.prize && <span className="text-[11px] text-amber-400/70">🏅 {contest.prize}</span>}
-                        <span className="text-[11px] text-white/25">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
+                        <span className="text-[11px] text-white/45">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
                       </div>
                       <h3 className="text-sm font-bold mb-1">{contest.title}</h3>
                       {contest.description && <p className="text-xs text-white/50 line-clamp-2">{contest.description}</p>}
-                      <div className="flex gap-4 mt-1.5 text-[11px] text-white/25">
+                      <div className="flex gap-4 mt-1.5 text-[11px] text-white/45">
                         <span>Opens {new Date(contest.starts_at).toLocaleDateString()}</span>
                         <span>Closes {new Date(contest.ends_at).toLocaleDateString()}</span>
                         {contest.voting_ends_at && <span>Vote by {new Date(contest.voting_ends_at).toLocaleDateString()}</span>}
@@ -252,7 +252,7 @@ export default function ContestsPage() {
                       </p>
                       {entries.length > 3 && (
                         <button onClick={() => setExpanded(isExp ? null : contest.id)}
-                          className="text-[11px] text-white/40 hover:text-white/70">
+                          className="text-[11px] text-white/50 hover:text-white/70">
                           {isExp ? 'Show less ↑' : `See all ${entries.length} ↓`}
                         </button>
                       )}
@@ -271,7 +271,7 @@ export default function ContestsPage() {
                         <Avatar src={entry.user?.avatar_url} name={entry.user?.full_name ?? undefined} size="sm" className="shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-white/90 truncate">{entry.title ?? 'Untitled entry'}</p>
-                          <p className="text-[11px] text-white/30">{entry.user?.full_name ?? 'Anonymous'}</p>
+                          <p className="text-[11px] text-white/45">{entry.user?.full_name ?? 'Anonymous'}</p>
                         </div>
                         <button
                           onClick={() => canVote && toggleVote(entry)}
@@ -289,7 +289,7 @@ export default function ContestsPage() {
                 )}
                 {entries.length === 0 && phase === 'active' && (
                   <div className="border-t border-white/5 px-4 py-4 text-center">
-                    <p className="text-xs text-white/30">No entries yet — be the first!</p>
+                    <p className="text-xs text-white/45">No entries yet — be the first!</p>
                   </div>
                 )}
               </div>

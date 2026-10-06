@@ -607,12 +607,12 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-2.5 mb-2 px-1">
                   <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seasonColor }} />
                   <h2 className="text-sm font-bold text-white">{seasonName}</h2>
-                  <span className="text-[11px] text-surface-600 font-mono">{seasonEps.length} ep{seasonEps.length !== 1 ? 's' : ''}</span>
+                  <span className="text-[11px] text-surface-500 font-mono">{seasonEps.length} ep{seasonEps.length !== 1 ? 's' : ''}</span>
                   <div className="flex-1 h-px bg-surface-800" />
                 </div>
 
                 {seasonEps.length === 0 ? (
-                  <p className="text-xs text-surface-600 italic px-5 mb-2">No episodes assigned to this season yet.</p>
+                  <p className="text-xs text-surface-500 italic px-5 mb-2">No episodes assigned to this season yet.</p>
                 ) : (
                   <div className="space-y-1.5">
                     {seasonEps.map((script, index) => {
@@ -670,7 +670,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                           </div>
 
                           {/* Last edited */}
-                          <span className="text-[11px] text-surface-600 shrink-0 hidden md:block">
+                          <span className="text-[11px] text-surface-500 shrink-0 hidden md:block">
                             {timeAgo(script.updated_at)}
                           </span>
 
@@ -787,7 +787,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                                 <button
                                   onClick={() => moveEpisode(script.id, 'up')}
                                   disabled={globalIdx === 0}
-                                  className="w-5 h-4 flex items-center justify-center rounded text-surface-600 hover:text-white hover:bg-surface-800 disabled:opacity-20 transition-colors"
+                                  className="w-5 h-4 flex items-center justify-center rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-20 transition-colors"
                                 >
                                   <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -796,7 +796,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                                 <button
                                   onClick={() => moveEpisode(script.id, 'down')}
                                   disabled={globalIdx === scripts.length - 1}
-                                  className="w-5 h-4 flex items-center justify-center rounded text-surface-600 hover:text-white hover:bg-surface-800 disabled:opacity-20 transition-colors"
+                                  className="w-5 h-4 flex items-center justify-center rounded text-surface-500 hover:text-white hover:bg-surface-800 disabled:opacity-20 transition-colors"
                                 >
                                   <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7 7" />
@@ -998,15 +998,15 @@ function SeasonManager({
               </div>
               {/* Name input */}
               <input
-                className="flex-1 min-w-0 bg-transparent border-b border-surface-600 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500/60 py-0.5 transition-colors"
+                className="flex-1 min-w-0 bg-transparent border-b border-surface-600 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500/60 py-0.5 transition-colors"
                 value={s.name}
                 onChange={e => updateName(s.num, e.target.value)}
                 placeholder={`Season ${s.num}`}
               />
-              <span className="text-[11px] text-surface-600 font-mono shrink-0">S{s.num}</span>
+              <span className="text-[11px] text-surface-500 font-mono shrink-0">S{s.num}</span>
               <button
                 onClick={() => removeSeason(s.num)}
-                className="shrink-0 text-surface-600 hover:text-red-400 transition-colors"
+                className="shrink-0 text-surface-500 hover:text-red-400 transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1015,7 +1015,7 @@ function SeasonManager({
             </div>
             {/* Logline */}
             <input
-              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
+              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-500 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
               value={s.logline ?? ''}
               onChange={e => updateLogline(s.num, e.target.value)}
               placeholder="Logline — one sentence that captures this season…"
@@ -1023,7 +1023,7 @@ function SeasonManager({
             {/* Synopsis */}
             <textarea
               rows={2}
-              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors resize-none"
+              className="w-full bg-surface-900/60 border border-surface-700/60 rounded-lg text-xs text-surface-200 placeholder:text-surface-500 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors resize-none"
               value={s.synopsis ?? ''}
               onChange={e => updateSynopsis(s.num, e.target.value)}
               placeholder="Synopsis — brief overview of this season's arc…"
@@ -1034,7 +1034,7 @@ function SeasonManager({
         {/* Add season */}
         <div className="flex items-center gap-2 pt-1">
           <input
-            className="flex-1 min-w-0 bg-surface-800 border border-surface-700 rounded-lg text-sm text-white placeholder:text-surface-600 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
+            className="flex-1 min-w-0 bg-surface-800 border border-surface-700 rounded-lg text-sm text-white placeholder:text-surface-500 px-2.5 py-1.5 outline-none focus:border-brand-500/40 transition-colors"
             value={newName}
             onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSeason(); } }}

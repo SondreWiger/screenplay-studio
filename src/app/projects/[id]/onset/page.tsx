@@ -209,7 +209,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                           <p className="text-xs text-surface-400 mt-1 line-clamp-2">{shot.description}</p>
                         )}
                         {scene && (
-                          <p className="text-[11px] text-surface-600 mt-1">
+                          <p className="text-[11px] text-surface-500 mt-1">
                             Scene {scene.scene_number} — {scene.location_name || scene.scene_heading}
                           </p>
                         )}
@@ -302,7 +302,7 @@ export default function OnSetPage({ params }: { params: { id: string } }) {
                             <span className="text-[11px] text-surface-500 shrink-0">{sceneShotsComplete}/{sceneShots.length} shots</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-3 mt-1 text-[11px] text-surface-600">
+                        <div className="flex items-center gap-3 mt-1 text-[11px] text-surface-500">
                           {scene.page_count > 0 && <span>{scene.page_count} pgs</span>}
                           {scene.cast_ids.length > 0 && <span>{scene.cast_ids.length} cast</span>}
                           {scene.estimated_duration_minutes && <span>~{scene.estimated_duration_minutes}m</span>}

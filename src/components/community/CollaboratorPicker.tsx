@@ -94,7 +94,7 @@ export function CollaboratorPicker({
                 <button
                   type="button"
                   onClick={() => removeCollaborator(c.id)}
-                  className="text-white/30 hover:text-white/80 transition-colors ml-0.5"
+                  className="text-white/45 hover:text-white/80 transition-colors ml-0.5"
                 >
                   ×
                 </button>
@@ -114,7 +114,7 @@ export function CollaboratorPicker({
           className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-brand-500/50 transition-colors"
         />
         {searching && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs">…</div>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/45 text-xs">…</div>
         )}
 
         {/* Results dropdown */}
@@ -147,7 +147,7 @@ export function CollaboratorPicker({
                       {p.display_name || p.username}
                     </p>
                     {p.username && (
-                      <p className="text-[11px] text-white/40 font-mono truncate">@{p.username}</p>
+                      <p className="text-[11px] text-white/50 font-mono truncate">@{p.username}</p>
                     )}
                   </div>
                   <span className="ml-auto text-[11px] text-brand-500 shrink-0">+ Add</span>
@@ -159,7 +159,7 @@ export function CollaboratorPicker({
       </div>
 
       {collaborators.length >= maxCollaborators && (
-        <p className="text-[11px] text-white/30 font-mono">
+        <p className="text-[11px] text-white/45 font-mono">
           Max {maxCollaborators} collaborators reached.
         </p>
       )}

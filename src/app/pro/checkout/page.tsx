@@ -143,7 +143,7 @@ function CheckoutContent() {
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">Something went wrong</h1>
             <p className="text-surface-400 mb-2">{error}</p>
-            <p className="text-xs text-surface-600 mb-6">
+            <p className="text-xs text-surface-500 mb-6">
               If you were charged, please contact support at support@screenplaystudio.dev
             </p>
             <div className="flex gap-3">

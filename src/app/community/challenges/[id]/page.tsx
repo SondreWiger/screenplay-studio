@@ -264,7 +264,7 @@ export default function ChallengeDetailPage() {
                   phase === 'submissions' ? 'bg-green-500/20 text-green-300' :
                   phase === 'voting' ? 'bg-amber-500/20 text-amber-300' :
                   phase === 'reveal_pending' ? 'bg-purple-500/20 text-purple-300' :
-                  phase === 'completed' ? 'bg-white/10 text-white/40' :
+                  phase === 'completed' ? 'bg-white/10 text-white/50' :
                   'bg-blue-500/20 text-blue-300'
                 }`}>
                   {getPhaseLabel(phase!)}
@@ -293,7 +293,7 @@ export default function ChallengeDetailPage() {
               return (
                 <div key={t.label} className={`rounded-lg p-3 ${isCurrent ? 'bg-surface-900/15' : 'bg-surface-900/5'}`}>
                   <div className={`font-medium mb-1 ${isCurrent ? 'text-white' : 'text-white/50'}`}>{t.label}</div>
-                  <div className={`${isPast ? 'text-white/40' : 'text-white/80'}`}>{formatDateTime(t.date)}</div>
+                  <div className={`${isPast ? 'text-white/50' : 'text-white/80'}`}>{formatDateTime(t.date)}</div>
                   {isCurrent && !isPast && (
                     <div className="text-brand-400 font-semibold mt-1">{timeUntil(t.date)} left</div>
                   )}
@@ -349,7 +349,7 @@ export default function ChallengeDetailPage() {
                             'flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors border',
                             scriptSource === 'project'
                               ? 'bg-brand-500/10 text-brand-600 border-brand-500/40'
-                              : 'text-white/40 hover:text-white/70 border-white/10 hover:bg-surface-900'
+                              : 'text-white/50 hover:text-white/70 border-white/10 hover:bg-surface-900'
                           )}
                         >
                           📁 From My Projects
@@ -360,7 +360,7 @@ export default function ChallengeDetailPage() {
                             'flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors border',
                             scriptSource === 'text'
                               ? 'bg-brand-500/10 text-brand-600 border-brand-500/40'
-                              : 'text-white/40 hover:text-white/70 border-white/10 hover:bg-surface-900'
+                              : 'text-white/50 hover:text-white/70 border-white/10 hover:bg-surface-900'
                           )}
                         >
                           ✏️ Plain Text
@@ -388,7 +388,7 @@ export default function ChallengeDetailPage() {
                                 )}
                               >
                                 <div className="flex items-center gap-2">
-                                  <div className="w-7 h-7 rounded-md bg-surface-800 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
+                                  <div className="w-7 h-7 rounded-md bg-surface-800 flex items-center justify-center text-xs font-bold text-white/50 shrink-0">
                                     {(project.title || 'P')[0]}
                                   </div>
                                   <div className="flex-1 min-w-0">
@@ -417,7 +417,7 @@ export default function ChallengeDetailPage() {
                             ) : (
                               <div className="rounded-lg border border-white/10 bg-surface-900 p-4 max-h-56 overflow-y-auto">
                                 <div className="flex items-center justify-between mb-2">
-                                  <span className="text-xs font-medium text-white/40">{scriptElements.length} elements</span>
+                                  <span className="text-xs font-medium text-white/50">{scriptElements.length} elements</span>
                                   <span className="text-[11px] text-green-600 font-medium">✓ Formatting preserved</span>
                                 </div>
                                 <ScriptContentViewer content={JSON.stringify(scriptElements)} />
@@ -437,7 +437,7 @@ export default function ChallengeDetailPage() {
                           onChange={(e) => setSubContent(e.target.value)}
                           rows={14}
                           placeholder="Paste or write your screenplay here..."
-                          className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-y font-mono"
+                          className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-y font-mono"
                         />
                       </div>
                     )}
@@ -448,7 +448,7 @@ export default function ChallengeDetailPage() {
                         value={subTitle}
                         onChange={(e) => setSubTitle(e.target.value)}
                         placeholder="Your script title"
-                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
+                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500"
                       />
                     </div>
                     <div>
@@ -458,7 +458,7 @@ export default function ChallengeDetailPage() {
                         onChange={(e) => setSubDesc(e.target.value)}
                         rows={2}
                         placeholder="Brief description of your approach to the theme"
-                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-none"
+                        className="w-full px-4 py-2.5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 resize-none"
                       />
                     </div>
                     <div className="flex items-center gap-3 pt-2">
@@ -471,7 +471,7 @@ export default function ChallengeDetailPage() {
                       </button>
                       <button
                         onClick={() => setShowSubmitForm(false)}
-                        className="px-4 py-2.5 text-sm text-white/40 hover:text-white transition-colors"
+                        className="px-4 py-2.5 text-sm text-white/50 hover:text-white transition-colors"
                       >
                         Cancel
                       </button>
@@ -481,7 +481,7 @@ export default function ChallengeDetailPage() {
               )
             ) : (
               <div className="rounded-xl border border-white/10 bg-surface-900 py-10 text-center">
-                <p className="text-sm text-white/40 mb-3">Sign in to submit your script</p>
+                <p className="text-sm text-white/50 mb-3">Sign in to submit your script</p>
                 <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors">
                   Sign In
                 </Link>
@@ -497,7 +497,7 @@ export default function ChallengeDetailPage() {
                 <div className="space-y-2">
                   {submissions.map((sub) => (
                     <div key={sub.id} className="flex items-center gap-3 rounded-lg border border-white/07 bg-surface-900 px-4 py-3">
-                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[11px] font-bold text-white/40 shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-surface-800 flex items-center justify-center text-[11px] font-bold text-white/50 shrink-0">
                         {(sub.author?.full_name || '?')[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -519,7 +519,7 @@ export default function ChallengeDetailPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-bold text-white">Vote for the Best Script</h2>
-                <p className="text-sm text-white/40 mt-1">
+                <p className="text-sm text-white/50 mt-1">
                   Read the submissions below and cast your vote. You get one vote per challenge.
                   {myVote && ' You\'ve already voted!'}
                 </p>
@@ -531,7 +531,7 @@ export default function ChallengeDetailPage() {
 
             {!user && (
               <div className="rounded-xl border border-white/10 bg-surface-900 py-6 text-center mb-6">
-                <p className="text-sm text-white/40 mb-3">Sign in to vote</p>
+                <p className="text-sm text-white/50 mb-3">Sign in to vote</p>
                 <Link href={`/auth/login?redirect=/community/challenges/${id}`} className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-600 rounded-lg transition-colors">
                   Sign In
                 </Link>
@@ -553,7 +553,7 @@ export default function ChallengeDetailPage() {
                           <span>{timeAgo(sub.submitted_at)}</span>
                           {isOwn && <span className="px-1.5 py-0.5 text-[11px] font-semibold text-blue-700 bg-blue-50 rounded">You</span>}
                         </div>
-                        {sub.description && <p className="text-sm text-white/40 mt-2">{sub.description}</p>}
+                        {sub.description && <p className="text-sm text-white/50 mt-2">{sub.description}</p>}
                       </div>
 
                       {/* Vote button */}
@@ -599,7 +599,7 @@ export default function ChallengeDetailPage() {
           <section className="mb-10 text-center py-16">
             <div className="text-5xl mb-4">⏳</div>
             <h2 className="text-xl font-bold text-white mb-2">Results coming soon!</h2>
-            <p className="text-sm text-white/40 mb-4">
+            <p className="text-sm text-white/50 mb-4">
               Voting has closed. The results will be revealed in <strong>{timeUntil(challenge.reveal_at)}</strong>.
             </p>
             <p className="text-xs text-white/50">Final reveal: {formatDateTime(challenge.reveal_at)}</p>
@@ -638,7 +638,7 @@ export default function ChallengeDetailPage() {
                           placement === 1 ? 'bg-amber-400 text-white text-lg' :
                           placement === 2 ? 'bg-white/20 text-white' :
                           placement === 3 ? 'bg-orange-300 text-white' :
-                          'bg-surface-800 text-white/40'
+                          'bg-surface-800 text-white/50'
                         }`}>
                           {placement === 1 ? '🏆' : placement === 2 ? '🥈' : placement === 3 ? '🥉' : `#${placement}`}
                         </div>
@@ -689,7 +689,7 @@ export default function ChallengeDetailPage() {
           <section className="mb-10 text-center py-16">
             <div className="text-5xl mb-4">🚀</div>
             <h2 className="text-xl font-bold text-white mb-2">Challenge starts soon!</h2>
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-white/50">
               Submissions open in <strong>{timeUntil(challenge.starts_at)}</strong>
             </p>
             <p className="text-xs text-white/50 mt-2">{formatDateTime(challenge.starts_at)}</p>

@@ -34,7 +34,7 @@ export function ThemePreview({ theme, accentColor, className }: ThemePreviewProp
           <div className="w-2 h-2 rounded-full bg-white/10" />
           <div className="w-2 h-2 rounded-full bg-white/10" />
         </div>
-        <span className="text-[11px] text-white/30 font-medium ml-1 tracking-wide">screenplay.studio</span>
+        <span className="text-[11px] text-white/45 font-medium ml-1 tracking-wide">screenplay.studio</span>
       </div>
 
       {/* Script content */}

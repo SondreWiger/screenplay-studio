@@ -88,7 +88,7 @@ function InsiderProgramCard() {
         ))}
       </div>
 
-      <p className="text-[11px] text-surface-600 mt-3">Alpha includes all beta features. You can switch back at any time.</p>
+      <p className="text-[11px] text-surface-500 mt-3">Alpha includes all beta features. You can switch back at any time.</p>
     </Card>
   );
 }
@@ -199,7 +199,7 @@ function PreMiDCard() {
         ))}
       </div>
 
-      <p className="text-[11px] text-surface-600 mt-4 leading-relaxed">
+      <p className="text-[11px] text-surface-500 mt-4 leading-relaxed">
         Project name is <span className="text-surface-400">off by default</span> — only enable it if you are comfortable with Discord contacts seeing it.
         These settings take effect immediately without saving.
       </p>
@@ -1163,7 +1163,7 @@ export default function UserSettingsPage() {
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500"
                       placeholder="your-username"
                     />
                   </div>
@@ -1241,7 +1241,7 @@ export default function UserSettingsPage() {
                       value={socialLinks[social.key] || ''}
                       onChange={(e) => setSocialLinks((prev) => ({ ...prev, [social.key]: e.target.value }))}
                       placeholder={social.placeholder}
-                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 transition-colors"
+                      className="flex-1 rounded-lg border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 transition-colors"
                     />
                   </div>
                 ))}
@@ -1798,7 +1798,7 @@ export default function UserSettingsPage() {
                       type="text"
                       value={companySlug}
                       onChange={(e) => setCompanySlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500"
+                      className="flex-1 rounded-r-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500"
                       placeholder="acme-pictures"
                     />
                   </div>
@@ -1897,7 +1897,7 @@ export default function UserSettingsPage() {
               }}>
                 {t('settings.delete_button')}
               </Button>
-              <p className="text-[11px] text-surface-600 mt-3">
+              <p className="text-[11px] text-surface-500 mt-3">
                 {t('settings.delete_warning')}
                 <br />
                 <a href="/legal/privacy" className="text-brand-500 hover:text-brand-400">Read our Privacy Policy</a>

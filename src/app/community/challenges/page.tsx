@@ -117,7 +117,7 @@ export default function ChallengesPage() {
                             )}
                           </div>
                           <h3 className="text-base font-semibold text-white">{c.title}</h3>
-                          <p className="text-sm text-white/40 mt-1 line-clamp-1">{c.description}</p>
+                          <p className="text-sm text-white/50 mt-1 line-clamp-1">{c.description}</p>
                         </div>
                         <div className="text-right text-xs text-white/50 shrink-0">
                           <div>Starts {formatDate(c.starts_at)}</div>
@@ -145,13 +145,13 @@ export default function ChallengesPage() {
                       style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="px-2 py-0.5 text-[11px] uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <span className="px-2 py-0.5 text-[11px] uppercase text-white/50" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
                           {c.challenge_type === 'weekly' ? `Week ${c.week_number}, ${c.year}` : 'Custom'}
                         </span>
                         <span className="text-xs text-white/50">{c.submission_count} submissions</span>
                       </div>
                       <h3 className="text-base font-semibold text-white line-clamp-1" style={{ letterSpacing: '-0.02em' }}>{c.title}</h3>
-                      <p className="text-sm text-white/40 mt-1 line-clamp-2">{c.description}</p>
+                      <p className="text-sm text-white/50 mt-1 line-clamp-2">{c.description}</p>
                       <div className="flex items-center gap-3 mt-3 text-xs font-mono text-white/50">
                         <span>{formatDate(c.starts_at)} — {formatDate(c.reveal_at)}</span>
                         {c.prize_title && <span className="text-brand-500">★ {c.prize_title}</span>}
@@ -242,7 +242,7 @@ function ActiveChallengeCard({ challenge, user }: { challenge: CommunityChalleng
                 <div key={step.key} className="flex-1 flex items-center gap-2">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`text-xs font-medium ${isActive ? 'text-white' : isPast ? 'text-white/40' : 'text-white/50'}`}>
+                      <span className={`text-xs font-medium ${isActive ? 'text-white' : isPast ? 'text-white/50' : 'text-white/50'}`}>
                         {step.label}
                       </span>
                       {isActive && (

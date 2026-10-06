@@ -67,7 +67,7 @@ export default function CreateCommunityPage() {
 
   if (!user) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgb(var(--surface-950))' }}>
-      <p className="text-white/40 text-sm">Sign in to create a community.</p>
+      <p className="text-white/50 text-sm">Sign in to create a community.</p>
     </div>
   );
 
@@ -77,13 +77,13 @@ export default function CreateCommunityPage() {
         <div className="mb-8">
           <p className="text-[11px] text-brand-500 uppercase tracking-[0.04em] mb-1">New Community</p>
           <h1 className="text-2xl font-bold" style={{ letterSpacing: '-0.03em' }}>CREATE YOUR SPACE</h1>
-          <p className="text-white/40 text-sm mt-1">Build a community for writers who share your passion.</p>
+          <p className="text-white/50 text-sm mt-1">Build a community for writers who share your passion.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Icon */}
           <div>
-            <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-2">Icon</label>
+            <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Icon</label>
             <div className="flex flex-wrap gap-1.5">
               {ICON_OPTIONS.map(i => (
                 <button key={i} type="button" onClick={() => setIcon(i)}
@@ -97,39 +97,39 @@ export default function CreateCommunityPage() {
 
           {/* Name */}
           <div>
-            <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-1.5">Community Name *</label>
+            <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] mb-1.5">Community Name *</label>
             <input required value={name} onChange={e => onNameChange(e.target.value)} maxLength={80}
               placeholder="Screenplay Writers"
-              className="w-full px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 rounded-xl outline-none"
+              className="w-full px-3.5 py-2.5 text-sm text-white placeholder:text-white/45 rounded-xl outline-none"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }} />
           </div>
 
           {/* Slug */}
           <div>
-            <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-1.5">URL Slug *</label>
+            <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] mb-1.5">URL Slug *</label>
             <div className="flex items-center rounded-xl overflow-hidden"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}>
-              <span className="pl-3.5 text-white/30 text-sm shrink-0">c/</span>
+              <span className="pl-3.5 text-white/45 text-sm shrink-0">c/</span>
               <input required value={slug}
                 onChange={e => { setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')); setSlugyEdited(true); }}
                 maxLength={30} placeholder="screenplay-writers"
                 className="flex-1 px-1 py-2.5 text-sm text-white bg-transparent outline-none" />
             </div>
-            <p className="text-[11px] text-white/25 mt-1">3–30 chars. Cannot be changed later.</p>
+            <p className="text-[11px] text-white/45 mt-1">3–30 chars. Cannot be changed later.</p>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-1.5">Description</label>
+            <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] mb-1.5">Description</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} maxLength={500}
               placeholder="What's this community about?"
-              className="w-full px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 rounded-xl outline-none resize-none"
+              className="w-full px-3.5 py-2.5 text-sm text-white placeholder:text-white/45 rounded-xl outline-none resize-none"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }} />
           </div>
 
           {/* Accent colour */}
           <div>
-            <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-2">Accent Colour</label>
+            <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Accent Colour</label>
             <div className="flex items-center gap-2 flex-wrap">
               {ACCENT_PRESETS.map(c => (
                 <button key={c} type="button" onClick={() => setAccent(c)}
@@ -144,7 +144,7 @@ export default function CreateCommunityPage() {
 
           {/* Visibility */}
           <div>
-            <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-2">Visibility</label>
+            <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Visibility</label>
             <div className="grid grid-cols-3 gap-2">
               {([
                 ['public',     '🌍', 'Anyone can discover it'],
@@ -158,7 +158,7 @@ export default function CreateCommunityPage() {
                     : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="text-base mb-1">{ico}</div>
                   <p className="text-[11px] font-semibold text-white capitalize">{v}</p>
-                  <p className="text-[11px] text-white/35 leading-tight">{desc}</p>
+                  <p className="text-[11px] text-white/50 leading-tight">{desc}</p>
                 </button>
               ))}
             </div>
@@ -166,7 +166,7 @@ export default function CreateCommunityPage() {
 
           {/* Posting mode */}
           <div>
-            <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] mb-2">Posting Mode</label>
+            <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] mb-2">Posting Mode</label>
             <div className="space-y-2">
               {([
                 ['open',             '✍️', 'Any member can post immediately'],
@@ -181,7 +181,7 @@ export default function CreateCommunityPage() {
                   <span className="text-base">{ico}</span>
                   <div>
                     <p className="text-xs font-semibold text-white">{v.replace(/_/g,' ')}</p>
-                    <p className="text-[11px] text-white/35">{desc}</p>
+                    <p className="text-[11px] text-white/50">{desc}</p>
                   </div>
                 </button>
               ))}

@@ -194,7 +194,7 @@ export function DashboardOverview({
                 <span className="min-w-0">
                   <span className="line-clamp-1 text-xs font-medium text-surface-200">{n.title}</span>
                   {n.body && <span className="line-clamp-1 text-[11px] text-surface-500">{n.body}</span>}
-                  <span className="text-[10px] text-surface-600">{timeAgo(n.created_at)}</span>
+                  <span className="text-[10px] text-surface-500">{timeAgo(n.created_at)}</span>
                 </span>
               </>
             );

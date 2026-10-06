@@ -63,7 +63,7 @@ export default function CommunityChatPage() {
             Join the Discord server
           </a>
         ) : (
-          <p className="text-surface-600 text-sm italic">No invite link configured yet.</p>
+          <p className="text-surface-500 text-sm italic">No invite link configured yet.</p>
         )}
       </div>
     );
@@ -298,7 +298,7 @@ function CommunityChatUI({
             <span className="text-surface-500 text-sm hidden sm:inline">
               #{activeChannel.name}
               {activeChannel.description && (
-                <span className="text-surface-600 ml-2 hidden md:inline">— {activeChannel.description}</span>
+                <span className="text-surface-500 ml-2 hidden md:inline">— {activeChannel.description}</span>
               )}
             </span>
           )}
@@ -410,7 +410,7 @@ function CommunityChatUI({
                 );
               })}
               {channels.length === 0 && (
-                <p className="px-4 py-4 text-[11px] text-surface-600 text-center">No channels yet</p>
+                <p className="px-4 py-4 text-[11px] text-surface-500 text-center">No channels yet</p>
               )}
             </nav>
           )}
@@ -448,7 +448,7 @@ function CommunityChatUI({
                     )}
                     {isMod && (
                       <button onClick={openEditChannel}
-                        className="p-0.5 rounded hover:bg-surface-800 text-surface-600 hover:text-surface-300 transition-colors" title="Edit channel">
+                        className="p-0.5 rounded hover:bg-surface-800 text-surface-500 hover:text-surface-300 transition-colors" title="Edit channel">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                         </svg>
@@ -470,7 +470,7 @@ function CommunityChatUI({
                     <div>
                       <div className="text-4xl mb-3">{channelPrefix(activeChannel.type)}</div>
                       <p className="text-surface-400 font-semibold">Welcome to #{activeChannel.name}</p>
-                      <p className="text-surface-600 text-sm mt-1">
+                      <p className="text-surface-500 text-sm mt-1">
                         {activeChannel.description ?? 'This is the start of the channel.'}
                       </p>
                     </div>
@@ -497,8 +497,8 @@ function CommunityChatUI({
                                 <span className="text-sm font-semibold" style={{ color: isOwn ? accent : '#d1d5db' }}>
                                   {displayName}
                                 </span>
-                                <span className="text-[11px] text-surface-600">{formatTime(msg.created_at)}</span>
-                                {msg.edited_at && <span className="text-[11px] text-surface-600 italic">(edited)</span>}
+                                <span className="text-[11px] text-surface-500">{formatTime(msg.created_at)}</span>
+                                {msg.edited_at && <span className="text-[11px] text-surface-500 italic">(edited)</span>}
                               </div>
                               {editingMsgId === msg.id ? (
                                 <EditBox value={editingMsgContent} onChange={setEditingMsgContent}
@@ -615,7 +615,7 @@ function CommunityChatUI({
                 );
               })}
               {members.length === 0 && !loadingMembers && (
-                <p className="text-[11px] text-surface-600 text-center px-2 mt-2">No members yet</p>
+                <p className="text-[11px] text-surface-500 text-center px-2 mt-2">No members yet</p>
               )}
             </div>
           </aside>
@@ -640,7 +640,7 @@ function CommunityChatUI({
                 autoFocus
               />
             </div>
-            <p className="text-[11px] text-surface-600 mt-1">Lowercase, hyphens, no spaces</p>
+            <p className="text-[11px] text-surface-500 mt-1">Lowercase, hyphens, no spaces</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">Description (optional)</label>
@@ -660,7 +660,7 @@ function CommunityChatUI({
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-surface-600 mt-1.5">
+            <p className="text-[11px] text-surface-500 mt-1.5">
               {newType === 'text'         && 'Members can post freely'}
               {newType === 'announcement' && 'Only mods can post \u2014 great for pinned updates'}
               {newType === 'readonly'     && 'Nobody posts \u2014 pinboard style'}
@@ -725,7 +725,7 @@ function EditBox({ value, onChange, onSave, onCancel, accent }: {
           style={{ background: accent }}>Save</button>
         <button onClick={onCancel}
           className="px-2 py-0.5 rounded-lg text-xs bg-surface-800 text-surface-300 hover:text-white">Cancel</button>
-        <span className="text-surface-600">esc to cancel \u00b7 enter to save</span>
+        <span className="text-surface-500">esc to cancel \u00b7 enter to save</span>
       </div>
     </div>
   );
@@ -739,7 +739,7 @@ function MsgActions({ isOwn, canDel, onEdit, onDelete, timestamp }: {
       <span className="text-[11px] text-surface-700 mr-1 select-none">{timestamp}</span>
       {isOwn && (
         <button onClick={onEdit}
-          className="p-1 rounded hover:bg-surface-800 text-surface-600 hover:text-surface-300 transition-colors" title="Edit">
+          className="p-1 rounded hover:bg-surface-800 text-surface-500 hover:text-surface-300 transition-colors" title="Edit">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
           </svg>
@@ -747,7 +747,7 @@ function MsgActions({ isOwn, canDel, onEdit, onDelete, timestamp }: {
       )}
       {canDel && (
         <button onClick={onDelete}
-          className="p-1 rounded hover:bg-red-500/10 text-surface-600 hover:text-red-400 transition-colors" title="Delete">
+          className="p-1 rounded hover:bg-red-500/10 text-surface-500 hover:text-red-400 transition-colors" title="Delete">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
           </svg>

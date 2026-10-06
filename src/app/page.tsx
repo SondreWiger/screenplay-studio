@@ -111,7 +111,7 @@ async function TestimonialsRow() {
               {(t.display_name ?? 'A')[0].toUpperCase()}
             </div>
             <div>
-              <Mono className="text-white/30 block">{t.display_name ?? 'Anonymous'}</Mono>
+              <Mono className="text-white/45 block">{t.display_name ?? 'Anonymous'}</Mono>
               {t.rating && (
                 <div className="text-[11px] mt-0.5" style={{ color: 'rgb(var(--brand-500))' }}>
                   {'●'.repeat(t.rating)}{'○'.repeat(5 - t.rating)}
@@ -119,7 +119,7 @@ async function TestimonialsRow() {
               )}
             </div>
           </div>
-          <p className="text-[13px] text-white/40 leading-[2] group-hover:text-white/60 transition-colors duration-500">
+          <p className="text-[13px] text-white/50 leading-[2] group-hover:text-white/60 transition-colors duration-500">
             &ldquo;{t.body}&rdquo;
           </p>
         </div>
@@ -334,7 +334,7 @@ export default async function LandingPage() {
               {['Script Editor', 'Shot Lists', 'Corkboard', 'Beat Sheet', 'Team Access', 'AI Analysis'].map(t => (
                 <div key={t} className="flex items-center gap-2">
                   <div className="w-1 h-1 shrink-0" style={{ background: 'rgb(var(--brand-500))' }} />
-                  <span className="text-[11px] text-white/30 font-medium">{t}</span>
+                  <span className="text-[11px] text-white/45 font-medium">{t}</span>
                 </div>
               ))}
             </div>
@@ -355,7 +355,7 @@ export default async function LandingPage() {
                   Explore tools
                 </Link>
               </div>
-              <Mono className="text-white/25">Free forever · No credit card</Mono>
+              <Mono className="text-white/45">Free forever · No credit card</Mono>
             </div>
           </div>
 
@@ -379,7 +379,7 @@ export default async function LandingPage() {
                 <div className="flex items-center gap-3 mb-4">
                   <Mono className="text-white/20">01.0</Mono>
                   <div className="w-6 h-px bg-white/10" />
-                  <Mono className="text-white/25">STATEMENT</Mono>
+                  <Mono className="text-white/45">STATEMENT</Mono>
                 </div>
                 <h3 className="text-lg font-semibold uppercase tracking-[0.04em] text-white">
                   WHY WE BUILT THIS.
@@ -391,7 +391,7 @@ export default async function LandingPage() {
                   or proprietary file formats. We believe the tools to tell stories should be universally accessible. Screenplay Studio 
                   was built from a simple premise: a writer needs focus, collaborative speed, and absolute ownership of their files.
                 </p>
-                <p className="text-[13px] text-white/35 leading-[2.2] font-light">
+                <p className="text-[13px] text-white/50 leading-[2.2] font-light">
                   The whole writing and production toolkit is free, and will stay free: no limits on projects or scripts, every
                   export format, version history, sharing and collaboration included. Pro adds storage and our sister apps; Studio
                   adds a production-office suite for large shoots. You focus on the page; paying is for when you need more.
@@ -458,7 +458,7 @@ export default async function LandingPage() {
               className="mb-12 max-w-3xl font-semibold text-white"
               style={{ fontSize: 'clamp(2.25rem, 5.5vw, 4.5rem)', letterSpacing: '-0.04em', lineHeight: 0.92 }}
             >
-              ONE PROJECT. <span className="text-white/25">EVERY DEPARTMENT.</span>
+              ONE PROJECT. <span className="text-white/45">EVERY DEPARTMENT.</span>
             </h2>
           </Reveal>
 
@@ -472,7 +472,7 @@ export default async function LandingPage() {
                 <div className="mt-6 flex flex-wrap gap-1.5">
                   {['Scene heading', 'Action', 'Character', 'Parenthetical', 'Dialogue', 'Transition'].map((el, i) => (
                     <span key={el} className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 font-mono text-[10px] text-white/50">
-                      <span className="mr-1.5 text-white/25">{i === 0 ? '↵' : 'Tab'}</span>{el}
+                      <span className="mr-1.5 text-white/45">{i === 0 ? '↵' : 'Tab'}</span>{el}
                     </span>
                   ))}
                 </div>
@@ -542,7 +542,7 @@ export default async function LandingPage() {
                 FIRST DRAFT<br />TO <span style={{ color: 'rgb(var(--brand-500))' }}>FINAL WRAP.</span>
               </h2>
             </div>
-            <p className="self-end text-[13px] leading-[2] text-white/40 md:col-span-5">
+            <p className="self-end text-[13px] leading-[2] text-white/50 md:col-span-5">
               The script is the source of truth. Change a scene and the breakdown, shot list and schedule built on it are right there with it.
             </p>
           </Reveal>
@@ -623,7 +623,7 @@ export default async function LandingPage() {
               </h2>
             </div>
             <div className="lg:col-span-5 flex flex-col justify-end gap-4">
-              <p className="text-[13px] text-white/35 leading-[2]">
+              <p className="text-[13px] text-white/50 leading-[2]">
                 Thirteen of the tools that cover every stage of film production — from first draft to final wrap.
                 No switching between apps. No exporting between tools. Everything lives in one place.
               </p>
@@ -650,14 +650,14 @@ export default async function LandingPage() {
 
                 {/* Name */}
                 <div className="col-span-6 md:col-span-5 py-5 px-4">
-                  <span className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.1em] text-white/40 group-hover:text-white transition-colors duration-300">
+                  <span className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.1em] text-white/50 group-hover:text-white transition-colors duration-300">
                     {tool.name}
                   </span>
                 </div>
 
                 {/* Sub */}
                 <div className="col-span-4 md:col-span-5 py-5 px-4 text-right md:text-left">
-                  <span className="text-[11px] text-white/15 font-mono group-hover:text-white/30 transition-colors duration-300">
+                  <span className="text-[11px] text-white/15 font-mono group-hover:text-white/45 transition-colors duration-300">
                     {tool.sub}
                   </span>
                 </div>
@@ -768,7 +768,7 @@ export default async function LandingPage() {
               </h2>
             </div>
             <div className="md:col-span-6 flex flex-col gap-6">
-              <p className="text-[13px] text-white/30 leading-[2]">
+              <p className="text-[13px] text-white/45 leading-[2]">
                 Built and maintained by one developer at Northem Development in Norway — no team,
                 no VC funding, no enterprise roadmap. The tool gets better when people use it
                 and say what is broken.
@@ -824,7 +824,7 @@ export default async function LandingPage() {
                   {faq.q}
                   <span className="font-mono text-lg transition-transform duration-200 group-open:rotate-45" style={{ color: 'rgb(var(--brand-500))' }}>+</span>
                 </summary>
-                <p className="pb-5 text-[13px] text-white/30 leading-[2] pr-8">
+                <p className="pb-5 text-[13px] text-white/45 leading-[2] pr-8">
                   {faq.a}
                 </p>
               </details>
@@ -868,7 +868,7 @@ export default async function LandingPage() {
                 <a
                   key={href}
                   href={href}
-                  className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/10 hover:text-white/40 transition-colors duration-300"
+                  className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/10 hover:text-white/50 transition-colors duration-300"
                 >
                   {label}
                 </a>

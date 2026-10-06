@@ -558,7 +558,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                         isLive && 'cursor-default opacity-0 pointer-events-none',
                       )}
                     >
-                      <svg className="w-3 h-3 text-surface-600 hover:text-surface-400 transition-colors" viewBox="0 0 10 16" fill="currentColor">
+                      <svg className="w-3 h-3 text-surface-500 hover:text-surface-400 transition-colors" viewBox="0 0 10 16" fill="currentColor">
                         <circle cx="2" cy="2" r="1.5" /><circle cx="8" cy="2" r="1.5" />
                         <circle cx="2" cy="8" r="1.5" /><circle cx="8" cy="8" r="1.5" />
                         <circle cx="2" cy="14" r="1.5" /><circle cx="8" cy="14" r="1.5" />
@@ -685,7 +685,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                           <button
                             onClick={() => handleMoveItem(item.id, 'up')}
                             disabled={idx === 0}
-                            className="p-0.5 text-surface-600 hover:text-white transition-colors disabled:opacity-20"
+                            className="p-0.5 text-surface-500 hover:text-white transition-colors disabled:opacity-20"
                             title="Move up"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
@@ -693,7 +693,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                           <button
                             onClick={() => handleMoveItem(item.id, 'down')}
                             disabled={idx === items.length - 1}
-                            className="p-0.5 text-surface-600 hover:text-white transition-colors disabled:opacity-20"
+                            className="p-0.5 text-surface-500 hover:text-white transition-colors disabled:opacity-20"
                             title="Move down"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
@@ -861,14 +861,14 @@ export default function RundownPage({ params }: { params: { id: string } }) {
                     <div key={item.id} className="flex items-center gap-2 text-xs">
                       <button
                         onClick={() => handleSkipItem(item.id)}
-                        className="text-surface-600 hover:text-amber-400 shrink-0"
+                        className="text-surface-500 hover:text-amber-400 shrink-0"
                         title="Skip"
                       >
                         ⏭
                       </button>
                       <button
                         onClick={() => handleKillItem(item.id)}
-                        className="text-surface-600 hover:text-red-400 shrink-0"
+                        className="text-surface-500 hover:text-red-400 shrink-0"
                         title="Kill"
                       >
                         ✕
@@ -928,7 +928,7 @@ export default function RundownPage({ params }: { params: { id: string } }) {
 
           {/* Story link */}
           <div>
-            <label className="text-xs font-medium text-surface-400 block mb-1">Link to Story <span className="text-surface-600">(optional)</span></label>
+            <label className="text-xs font-medium text-surface-400 block mb-1">Link to Story <span className="text-surface-500">(optional)</span></label>
             <select
               value={itemForm.story_id || ''}
               onChange={(e) => {

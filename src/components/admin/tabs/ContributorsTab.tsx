@@ -143,11 +143,11 @@ export function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeature
             {/* GitHub + Bio */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-surface-400 block mb-1.5">GitHub handle <span className="text-surface-600">(optional)</span></label>
+                <label className="text-xs text-surface-400 block mb-1.5">GitHub handle <span className="text-surface-500">(optional)</span></label>
                 <Input value={github} onChange={e => setGithub(e.target.value)} placeholder="e.g. johndoe" />
               </div>
               <div>
-                <label className="text-xs text-surface-400 block mb-1.5">Short bio <span className="text-surface-600">(optional)</span></label>
+                <label className="text-xs text-surface-400 block mb-1.5">Short bio <span className="text-surface-500">(optional)</span></label>
                 <Input value={bio} onChange={e => setBio(e.target.value)} placeholder="e.g. Frontend dev" />
               </div>
             </div>
@@ -264,7 +264,7 @@ export function ContributorsTab({ contributors, onRemove, onAdd, onToggleFeature
                   >
                     {c.is_featured ? '⭐ Featured' : '☆ Feature'}
                   </button>
-                  <span className="text-[11px] text-surface-600 hidden sm:inline">{formatDate(c.added_at)}</span>
+                  <span className="text-[11px] text-surface-500 hidden sm:inline">{formatDate(c.added_at)}</span>
                   <button
                     onClick={() => onRemove(c.id)}
                     title="Remove contributor"

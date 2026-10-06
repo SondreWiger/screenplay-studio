@@ -203,7 +203,7 @@ export function MentionTextarea({
                     {s.display_name || s.username}
                   </p>
                   {s.username && (
-                    <p className="text-[11px] text-white/40 font-mono truncate">@{s.username}</p>
+                    <p className="text-[11px] text-white/50 font-mono truncate">@{s.username}</p>
                   )}
                 </div>
               </button>

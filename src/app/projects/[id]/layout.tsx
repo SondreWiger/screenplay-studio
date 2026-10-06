@@ -737,7 +737,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                 >
                   <span className={cn(
                     'text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors',
-                    hasActivePage ? 'text-brand-500' : 'text-surface-600 group-hover:text-surface-400'
+                    hasActivePage ? 'text-brand-500' : 'text-surface-500 group-hover:text-surface-400'
                   )}>
                     {sidebarCatT(cat.category)}
                   </span>
@@ -825,7 +825,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                             if (user) saveOtherIcons(user.id, params.id, next);
                           }}
                           title="Move to main sidebar"
-                          className="mr-1 p-1 rounded opacity-0 group-hover/other:opacity-100 transition-opacity text-surface-600 hover:text-brand-500"
+                          className="mr-1 p-1 rounded opacity-0 group-hover/other:opacity-100 transition-opacity text-surface-500 hover:text-brand-500"
                         >
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -892,7 +892,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
           {shortcuts.length === 0 ? (
             <button
               onClick={(e) => { setPickerAnchorEl(e.currentTarget); setShowShortcutPicker(true); }}
-              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg border border-dashed border-surface-800 text-surface-600 hover:border-surface-700 hover:text-surface-400 transition-colors text-xs"
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg border border-dashed border-surface-800 text-surface-500 hover:border-surface-700 hover:text-surface-400 transition-colors text-xs"
             >
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
@@ -927,7 +927,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
                     </Link>
                     <button
                       onClick={() => saveShortcuts(shortcuts.filter((s) => s.id !== sc.id))}
-                      className="mr-0.5 p-1 rounded opacity-0 group-hover/sc:opacity-100 text-surface-600 hover:text-red-400 transition-opacity shrink-0"
+                      className="mr-0.5 p-1 rounded opacity-0 group-hover/sc:opacity-100 text-surface-500 hover:text-red-400 transition-opacity shrink-0"
                       title="Unpin"
                     >
                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -972,13 +972,13 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             <div className="flex items-center gap-1">
               <OfflineIndicator />
               {isFeatureEnabled('directMessages') && (
-                <Link href="/messages" className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors" title="Messages">
+                <Link href="/messages" className="p-2 rounded-lg text-surface-500 hover:text-white hover:bg-surface-900/5 transition-colors" title="Messages">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                 </Link>
               )}
               <button
                 onClick={() => { setTemplateName(currentProject?.title || ''); setShowSaveTemplate(true); }}
-                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors"
+                className="p-2 rounded-lg text-surface-500 hover:text-white hover:bg-surface-900/5 transition-colors"
                 title="Save as template"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
@@ -990,7 +990,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
               />
               <button
                 onClick={() => setShowCustomiser(true)}
-                className="p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors"
+                className="p-2 rounded-lg text-surface-500 hover:text-white hover:bg-surface-900/5 transition-colors"
                 title="Customise sidebar"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -1002,7 +1002,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
             aria-label={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             title={sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
             className={cn(
-              'flex items-center justify-center p-2 rounded-lg text-surface-600 hover:text-white hover:bg-surface-900/5 transition-colors',
+              'flex items-center justify-center p-2 rounded-lg text-surface-500 hover:text-white hover:bg-surface-900/5 transition-colors',
               sidebarCollapsed && 'w-full'
             )}
           >

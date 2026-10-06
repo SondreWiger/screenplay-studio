@@ -213,7 +213,7 @@ export default function PitchDeckPage() {
           <div className="mt-8 p-4 rounded-xl bg-surface-900 border border-surface-800">
             <h3 className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em] mb-2">Tips</h3>
             <p className="text-xs text-surface-500 leading-relaxed mb-3">To edit the content of these slides, update the details in your project settings, synopsis, and character profiles.</p>
-            <p className="text-[11px] text-surface-600 font-mono">Use arrow keys to navigate</p>
+            <p className="text-[11px] text-surface-500 font-mono">Use arrow keys to navigate</p>
           </div>
         </div>
 

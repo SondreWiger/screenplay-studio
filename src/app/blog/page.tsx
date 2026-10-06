@@ -64,7 +64,7 @@ export default function BlogPage() {
         <h1 className="font-semibold text-white" style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)', letterSpacing: '-0.04em', lineHeight: 0.88 }}>
           THE STUDIO BLOG
         </h1>
-        <p className="mt-6 text-base text-white/30 max-w-2xl leading-relaxed">
+        <p className="mt-6 text-base text-white/45 max-w-2xl leading-relaxed">
           Updates, insights, and behind-the-scenes from the development of Screenplay Studio.
         </p>
       </header>
@@ -110,7 +110,7 @@ export default function BlogPage() {
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>NO POSTS YET</h2>
-          <p className="text-sm text-white/30">Check back soon for updates.</p>
+          <p className="text-sm text-white/45">Check back soon for updates.</p>
         </div>
       )}
 
@@ -151,7 +151,7 @@ export default function BlogPage() {
                     {featured.title}
                   </h2>
                   {featured.excerpt && (
-                    <p className="mt-4 text-sm text-white/30 leading-relaxed line-clamp-3">
+                    <p className="mt-4 text-sm text-white/45 leading-relaxed line-clamp-3">
                       {featured.excerpt}
                     </p>
                   )}
@@ -163,7 +163,7 @@ export default function BlogPage() {
                         {(featured.author?.full_name || 'A')[0]}
                       </div>
                     )}
-                    <div className="text-[11px] font-mono text-white/30">
+                    <div className="text-[11px] font-mono text-white/45">
                       <span>{featured.author?.full_name || 'Screenplay Studio'}</span>
                       <span className="mx-2 opacity-40">·</span>
                       <time>{featured.published_at ? formatDate(featured.published_at) : ''}</time>
@@ -212,7 +212,7 @@ export default function BlogPage() {
                         {post.title}
                       </h3>
                       {post.excerpt && (
-                        <p className="text-xs text-white/25 leading-relaxed line-clamp-2 flex-1">
+                        <p className="text-xs text-white/45 leading-relaxed line-clamp-2 flex-1">
                           {post.excerpt}
                         </p>
                       )}
@@ -303,7 +303,7 @@ export default function BlogPage() {
                     <br />
                     <span style={{ color: '#FF5F1F' }}>CHANGELOG</span>
                   </h2>
-                  <p className="mt-3 text-sm text-white/30 max-w-md leading-relaxed">
+                  <p className="mt-3 text-sm text-white/45 max-w-md leading-relaxed">
                     Every feature shipped, every bug fixed, every improvement made — tracked by version, area, and type.
                   </p>
                 </div>

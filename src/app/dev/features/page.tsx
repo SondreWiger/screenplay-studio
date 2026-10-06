@@ -691,7 +691,7 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
       <div className={cn('p-5 h-full flex flex-col transition-colors duration-150', expanded ? 'bg-white/[0.025]' : 'group-hover:bg-white/[0.018]')}>
         <div className="mb-auto">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/50 group-hover:text-white transition-colors duration-150 leading-tight">{feature.name}</p>
-          <p className="text-[11px] text-white/22 mt-0.5 leading-snug group-hover:text-white/40 transition-colors duration-150">{feature.tagline}</p>
+          <p className="text-[11px] text-white/22 mt-0.5 leading-snug group-hover:text-white/50 transition-colors duration-150">{feature.tagline}</p>
         </div>
 
         {/* Expanded content */}
@@ -702,11 +702,11 @@ function FeatureCard({ feature, expanded, onExpand }: { feature: Feature; expand
             transition={{ delay: 0.08, duration: 0.2 }}
             className="mt-3 space-y-2"
           >
-            <p className="text-[11px] text-white/40 leading-relaxed">{feature.description}</p>
+            <p className="text-[11px] text-white/50 leading-relaxed">{feature.description}</p>
             {feature.bullets && (
               <ul className="space-y-1">
                 {feature.bullets.map(b => (
-                  <li key={b} className="flex items-center gap-1.5 text-[11px] text-white/30">
+                  <li key={b} className="flex items-center gap-1.5 text-[11px] text-white/45">
                     <div className="w-0.5 h-0.5 bg-white/30 rounded-full shrink-0" />
                     {b}
                   </li>
@@ -738,7 +738,7 @@ export default function DevFeaturesPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white tracking-tight mb-2">What Screenplay Studio does</h1>
-        <p className="text-white/40 text-base max-w-xl">
+        <p className="text-white/50 text-base max-w-xl">
           Every feature, every tool — from the script editor to live broadcast. Hover any card to learn more.
         </p>
       </div>
@@ -753,7 +753,7 @@ export default function DevFeaturesPage() {
               'px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors border',
               activeCategory === cat
                 ? 'border-white/20 text-white bg-white/[0.06]'
-                : 'border-white/[0.07] text-white/30 hover:text-white/60 hover:border-white/15'
+                : 'border-white/[0.07] text-white/45 hover:text-white/60 hover:border-white/15'
             )}
           >
             {cat}

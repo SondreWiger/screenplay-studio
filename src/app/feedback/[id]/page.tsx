@@ -232,12 +232,12 @@ export default function FeedbackItemPage() {
                   </div>
                 )}
                 {item.browser_info && (
-                  <div className="flex items-center gap-2 text-xs text-surface-600 bg-surface-900 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2 text-xs text-surface-500 bg-surface-900 rounded-lg px-3 py-2">
                     <Monitor size={12} /><span className="font-mono">{(item.browser_info as any)?.ua?.slice(0, 80)}</span>
                   </div>
                 )}
                 {item.url_where_occurred && (
-                  <div className="flex items-center gap-2 text-xs text-surface-600">
+                  <div className="flex items-center gap-2 text-xs text-surface-500">
                     <Globe size={12} /><span className="font-mono">{item.url_where_occurred}</span>
                   </div>
                 )}
@@ -274,13 +274,13 @@ export default function FeedbackItemPage() {
                         <div className="flex-1 pb-6">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-[11px] font-medium uppercase tracking-[0.04em]" style={{ color: cs.color }}>{cs.label}</span>
-                            <span className="text-[11px] text-surface-600">{timeAgo(c.created_at)}</span>
+                            <span className="text-[11px] text-surface-500">{timeAgo(c.created_at)}</span>
                           </div>
                           <div className="bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-sm text-surface-300 leading-relaxed whitespace-pre-wrap">
                             {c.content}
                           </div>
                           {c.metadata?.from_status && c.metadata?.to_status && (
-                            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-surface-600">
+                            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-surface-500">
                               <StatusBadge status={c.metadata.from_status as FeedbackStatus} />
                               <span>→</span>
                               <StatusBadge status={c.metadata.to_status as FeedbackStatus} />
@@ -312,7 +312,7 @@ export default function FeedbackItemPage() {
                         <div className="bg-surface-900 border border-surface-800 rounded-xl px-4 py-3 text-sm text-surface-300 whitespace-pre-wrap">
                           {c.content}
                         </div>
-                        <p className="text-[11px] text-surface-600 mt-1">{timeAgo(c.created_at)}</p>
+                        <p className="text-[11px] text-surface-500 mt-1">{timeAgo(c.created_at)}</p>
                       </div>
                     </div>
                   ))}
@@ -426,7 +426,7 @@ export default function FeedbackItemPage() {
                       <ChevronUp size={11} className="text-surface-500 mt-0.5 shrink-0" />
                       <div className="min-w-0">
                         <p className="text-xs text-white line-clamp-2 leading-snug">{s.title}</p>
-                        <p className="text-[11px] text-surface-600 mt-0.5">{s.vote_count} votes · {s.status}</p>
+                        <p className="text-[11px] text-surface-500 mt-0.5">{s.vote_count} votes · {s.status}</p>
                       </div>
                     </Link>
                   ))}

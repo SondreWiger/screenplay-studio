@@ -564,7 +564,7 @@ export default function BreakdownPage({ params }: { params: { id: string } }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-surface-600 text-xs italic">None assigned</p>
+                <p className="text-surface-500 text-xs italic">None assigned</p>
               )}
             </div>
           ))}

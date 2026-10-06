@@ -119,7 +119,7 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
             </button>
           ))}
           {channels.length === 0 && (
-            <p className="text-xs text-surface-600 text-center py-4">No channels yet</p>
+            <p className="text-xs text-surface-500 text-center py-4">No channels yet</p>
           )}
         </div>
       </div>
@@ -154,7 +154,7 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-white">{msg.author?.full_name || 'Unknown'}</span>
-                      <span className="text-[11px] text-surface-600">{timeAgo(msg.created_at)}</span>
+                      <span className="text-[11px] text-surface-500">{timeAgo(msg.created_at)}</span>
                       {msg.is_pinned && <span className="text-[11px] text-amber-400">📌 Pinned</span>}
                       <div className="ml-auto opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
                         {canManage && (
@@ -184,7 +184,7 @@ export function OrgChannels({ companyId, userId, canManage }: Props) {
                   onChange={(e) => setMessageText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                   placeholder={`Message #${activeChannelData.name}`}
-                  className="flex-1 bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500"
+                  className="flex-1 bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500"
                 />
                 <Button size="sm" onClick={sendMessage} disabled={!messageText.trim() || sending}>Send</Button>
               </div>

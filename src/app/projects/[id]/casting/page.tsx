@@ -668,7 +668,7 @@ export default function CastingPage() {
             <>
               <div className="text-4xl mb-3">🎭</div>
               <p className="text-sm">No characters in this project yet.</p>
-              <p className="text-xs text-surface-600 mt-1">Add characters in the Characters section first.</p>
+              <p className="text-xs text-surface-500 mt-1">Add characters in the Characters section first.</p>
             </>
           ) : (
             <p className="text-sm">No characters match your filter.</p>
@@ -889,7 +889,7 @@ export default function CastingPage() {
                               {member.department ? ` · ${member.department}` : ''}
                             </p>
                           </div>
-                          <svg className="w-4 h-4 text-surface-600 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-4 h-4 text-surface-500 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
                         </button>

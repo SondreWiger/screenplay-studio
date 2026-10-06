@@ -45,7 +45,7 @@ export function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefre
               <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 opensourceEnabled
                   ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-                  : 'text-white/30 border-white/10 bg-white/5'
+                  : 'text-white/45 border-white/10 bg-white/5'
               }`}>
                 {opensourceEnabled ? 'ON' : 'OFF'}
               </span>
@@ -82,7 +82,7 @@ export function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefre
               Pro Feature Gating
               <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 proGatingEnabled
-                  ? 'text-white/30 border-white/10 bg-white/5'
+                  ? 'text-white/45 border-white/10 bg-white/5'
                   : 'text-brand-500 border-brand-500/30 bg-brand-500/10'
               }`}>
                 {proGatingEnabled ? 'ON' : 'ALL FREE'}
@@ -121,7 +121,7 @@ export function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefre
               <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 creatorProgramEnabled
                   ? 'text-brand-500 border-brand-500/30 bg-brand-500/10'
-                  : 'text-white/30 border-white/10 bg-white/5'
+                  : 'text-white/45 border-white/10 bg-white/5'
               }`}>
                 {creatorProgramEnabled ? 'ON' : 'OFF'}
               </span>
@@ -159,7 +159,7 @@ export function SystemTab({ rebootStatus, onSoftReboot, onClearPresence, onRefre
               <span className={`text-[11px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded border ${
                 creatorPayoutEnabled
                   ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-                  : 'text-white/30 border-white/10 bg-white/5'
+                  : 'text-white/45 border-white/10 bg-white/5'
               }`}>
                 {creatorPayoutEnabled ? 'ON' : 'OFF'}
               </span>

@@ -930,7 +930,7 @@ export default function AIAnalysisPage() {
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="text-sm font-semibold text-white">{issue.title}</h4>
                             {issue.lineRef && (
-                              <span className="text-[11px] text-surface-600 font-mono">L{issue.lineRef}</span>
+                              <span className="text-[11px] text-surface-500 font-mono">L{issue.lineRef}</span>
                             )}
                           </div>
                           <p className="text-xs text-surface-400 mb-2">{issue.detail}</p>
@@ -1208,7 +1208,7 @@ export default function AIAnalysisPage() {
                 );
               })}
             </div>
-            <div className="flex justify-between text-[11px] text-surface-600 mt-1">
+            <div className="flex justify-between text-[11px] text-surface-500 mt-1">
               <span>Scene 1</span>
               <span>Scene {sceneAnalyses.length}</span>
             </div>
@@ -1250,7 +1250,7 @@ export default function AIAnalysisPage() {
               <div className="space-y-2">
                 {[...characterDialogues].sort((a, b) => a.firstScene - b.firstScene).map((cd, i) => (
                   <div key={cd.name} className="flex items-center gap-3">
-                    <span className="text-xs text-surface-600 w-6 text-right">#{i + 1}</span>
+                    <span className="text-xs text-surface-500 w-6 text-right">#{i + 1}</span>
                     <span className="w-7 h-7 rounded-full bg-surface-800 flex items-center justify-center text-xs font-semibold text-amber-400 shrink-0">
                       {cd.name[0]}
                     </span>
@@ -1339,7 +1339,7 @@ export default function AIAnalysisPage() {
                 );
               })}
             </div>
-            <div className="flex justify-between text-[11px] text-surface-600 mt-1">
+            <div className="flex justify-between text-[11px] text-surface-500 mt-1">
               <span>Scene 1</span>
               <span>Scene {sceneAnalyses.length}</span>
             </div>

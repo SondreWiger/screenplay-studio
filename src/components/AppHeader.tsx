@@ -114,7 +114,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
     return (
       <header className="sticky top-0 z-40 bg-surface-950" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
-          <Link href={backHref || '/dashboard'} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
+          <Link href={backHref || '/dashboard'} className="flex items-center gap-2 text-white/50 hover:text-white transition-colors group">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             <span className="text-sm font-medium">{backLabel || 'Back'}</span>
           </Link>
@@ -144,7 +144,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
             </div>
             <div className="hidden sm:flex flex-col leading-none">
               <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-white">Screenplay</span>
-              <span className="text-[11px] uppercase tracking-[0.04em] text-white/40">Studio</span>
+              <span className="text-[11px] uppercase tracking-[0.04em] text-white/50">Studio</span>
             </div>
           </Link>
 
@@ -161,7 +161,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                   <button
                     key={link.href}
                     onClick={() => openExternal(link.external!)}
-                    className="relative px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] transition-colors duration-150 text-white/40 hover:text-white/70"
+                    className="relative px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] transition-colors duration-150 text-white/50 hover:text-white/70"
                   >
                     <span className="relative">{link.label}</span>
                   </button>
@@ -178,7 +178,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                       ? 'text-white/15 cursor-not-allowed'
                       : active
                         ? 'text-white'
-                        : 'text-white/40 hover:text-white/70'
+                        : 'text-white/50 hover:text-white/70'
                   )}
                   title={disabled ? 'Offline — unavailable' : undefined}
                 >
@@ -218,7 +218,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
               onClick={(e) => { if (!isOnline) e.preventDefault(); }}
               className={cn(
                 'p-2 transition-colors',
-                isOnline ? 'text-white/30 hover:text-white hover:bg-white/5' : 'text-white/10 cursor-not-allowed'
+                isOnline ? 'text-white/45 hover:text-white hover:bg-white/5' : 'text-white/10 cursor-not-allowed'
               )}
               aria-label="Messages"
             >
@@ -256,7 +256,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                 >
                   <p className="text-[11px] uppercase tracking-[0.04em] text-brand-500 mb-1">Signed in as</p>
                   <p className="text-sm font-semibold text-white truncate" style={{ letterSpacing: '-0.02em' }}>{user?.full_name || 'Your Account'}</p>
-                  <p className="text-[11px] text-white/40 truncate mt-0.5">{user?.email}</p>
+                  <p className="text-[11px] text-white/50 truncate mt-0.5">{user?.email}</p>
                 </div>
 
                 {/* Menu items */}
@@ -275,7 +275,7 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                       role="menuitem"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-white/50 hover:text-white hover:bg-white/5 transition-colors group"
                     >
-                      <svg className="w-4 h-4 text-white/30 group-hover:text-brand-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">{item.icon}</svg>
+                      <svg className="w-4 h-4 text-white/45 group-hover:text-brand-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">{item.icon}</svg>
                       {item.label}
                     </Link>
                   ))}
@@ -293,9 +293,9 @@ export function AppHeader({ actions, minimal, backHref, backLabel }: AppHeaderPr
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-brand-500" style={{ letterSpacing: '-0.02em' }}>UPGRADE TO PRO</p>
-                      <p className="text-[11px] font-mono text-white/40">Unlock all features</p>
+                      <p className="text-[11px] font-mono text-white/50">Unlock all features</p>
                     </div>
-                    <svg className="w-3.5 h-3.5 text-white/30 group-hover:text-brand-500 ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    <svg className="w-3.5 h-3.5 text-white/45 group-hover:text-brand-500 ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </Link>
                 </div>
                 )}

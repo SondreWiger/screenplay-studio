@@ -261,7 +261,7 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
                     </span>
                     <span className="text-base text-surface-400 font-medium">{item.title}</span>
                     {item.planned_duration && (
-                      <span className="text-sm text-surface-600">{formatBroadcastDuration(item.planned_duration)}</span>
+                      <span className="text-sm text-surface-500">{formatBroadcastDuration(item.planned_duration)}</span>
                     )}
                     {isOnAir && <span className="text-sm text-red-400 font-bold animate-pulse ml-auto">ON AIR</span>}
                   </div>

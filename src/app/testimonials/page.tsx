@@ -143,7 +143,7 @@ function TestimonialModal({
             </p>
           </div>
           <button onClick={onClose}
-            className="text-white/30 hover:text-white transition-colors shrink-0 mt-1">
+            className="text-white/45 hover:text-white transition-colors shrink-0 mt-1">
             <X size={20} />
           </button>
         </div>
@@ -164,7 +164,7 @@ function TestimonialModal({
                 'flex items-center gap-2 px-4 py-2 text-sm font-bold border transition-colors',
                 voted
                   ? 'text-white'
-                  : 'border-white/10 text-white/30 hover:text-white hover:border-white/30'
+                  : 'border-white/10 text-white/45 hover:text-white hover:border-white/30'
               )}
               style={voted ? { background: ORANGE, borderColor: ORANGE } : {}}
             >
@@ -186,7 +186,7 @@ function TestimonialModal({
               {comments.map(c => (
                 <div key={c.id} className="flex gap-3">
                   <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center bg-white/5 border border-white/10">
-                    <User size={13} className="text-white/30" />
+                    <User size={13} className="text-white/45" />
                   </div>
                   <div className="flex-1">
                     <div className="text-sm text-white/50 leading-relaxed p-3 whitespace-pre-wrap"
@@ -296,7 +296,7 @@ export default function TestimonialsPage() {
             >
               WHAT WRITERS<br />ARE SAYING.
             </h1>
-            <p className="mt-6 text-sm text-white/35 max-w-md leading-relaxed">
+            <p className="mt-6 text-sm text-white/50 max-w-md leading-relaxed">
               Real feedback from writers using Screenplay Studio every day.
               Unfiltered, unedited, from the community.
             </p>
@@ -365,7 +365,7 @@ export default function TestimonialsPage() {
             'flex items-center gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] transition-colors',
             filterStar === null
               ? 'text-white'
-              : 'text-white/30 hover:text-white/60'
+              : 'text-white/45 hover:text-white/60'
           )}
           style={filterStar === null ? { background: ORANGE } : { border: '1px solid rgba(255,255,255,0.1)' }}
         >
@@ -382,7 +382,7 @@ export default function TestimonialsPage() {
                 'flex items-center gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] transition-colors',
                 filterStar === s
                   ? 'text-white'
-                  : 'text-white/30 hover:text-white/60'
+                  : 'text-white/45 hover:text-white/60'
               )}
               style={filterStar === s ? { background: ORANGE } : { border: '1px solid rgba(255,255,255,0.1)' }}
             >
@@ -409,7 +409,7 @@ export default function TestimonialsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-white/25 text-sm">No reviews for this rating yet.</p>
+            <p className="text-white/45 text-sm">No reviews for this rating yet.</p>
           </div>
         ) : (
           <div className="relative">
@@ -472,7 +472,7 @@ export default function TestimonialsPage() {
                     </div>
 
                     {/* Body */}
-                    <p className="mt-1 text-[13px] text-white/40 leading-[1.85] group-hover:text-white/65 transition-colors duration-150 line-clamp-5">
+                    <p className="mt-1 text-[13px] text-white/50 leading-[1.85] group-hover:text-white/65 transition-colors duration-150 line-clamp-5">
                       {t.body}
                     </p>
 

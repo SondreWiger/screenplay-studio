@@ -573,7 +573,7 @@ function DashboardContent() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-[0.04em]">{t('dashboard.recently_viewed')}</h3>
-              <button onClick={clearRecent} className="text-[11px] text-surface-600 hover:text-surface-400 transition-colors">{t('dashboard.clear')}</button>
+              <button onClick={clearRecent} className="text-[11px] text-surface-500 hover:text-surface-400 transition-colors">{t('dashboard.clear')}</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
               {recentProjects.map(rp => (
@@ -748,7 +748,7 @@ function DashboardContent() {
                         {folder.name}
                       </button>
                     )}
-                    <span className="text-[11px] text-surface-600">({folderProjects.length + childFolders.reduce((acc, c) => acc + filteredProjects.filter(p => p.folder_id === c.id).length, 0)})</span>
+                    <span className="text-[11px] text-surface-500">({folderProjects.length + childFolders.reduce((acc, c) => acc + filteredProjects.filter(p => p.folder_id === c.id).length, 0)})</span>
                     {/* Folder actions */}
                     <div className="ml-1 flex items-center gap-1 opacity-0 group-hover/folder:opacity-100 transition-opacity">
                       <button
@@ -762,7 +762,7 @@ function DashboardContent() {
                       >+ Sub</button>
                       <button
                         onClick={() => deleteFolder(folder.id)}
-                        className="text-[11px] text-surface-600 hover:text-red-400 px-1.5 py-0.5 rounded hover:bg-surface-800"
+                        className="text-[11px] text-surface-500 hover:text-red-400 px-1.5 py-0.5 rounded hover:bg-surface-800"
                       >Delete</button>
                     </div>
                   </div>
@@ -784,7 +784,7 @@ function DashboardContent() {
                   {!isCollapsed && (
                     <>
                       {folderProjects.length === 0 && childFolders.length === 0 ? (
-                        <div className={cn('border border-dashed rounded-xl p-6 text-center text-xs transition-colors', isDragOver ? 'border-current bg-current/10' : 'border-surface-800 text-surface-600')} style={isDragOver ? { borderColor: folder.color, color: folder.color } : {}}>
+                        <div className={cn('border border-dashed rounded-xl p-6 text-center text-xs transition-colors', isDragOver ? 'border-current bg-current/10' : 'border-surface-800 text-surface-500')} style={isDragOver ? { borderColor: folder.color, color: folder.color } : {}}>
                           {isDragOver ? `Drop here →` : 'No projects in this folder yet.'}
                         </div>
                       ) : (
@@ -839,7 +839,7 @@ function DashboardContent() {
                               <span className="text-[11px] text-surface-700">({childProjects.length})</span>
                               <div className="ml-1 flex items-center gap-1 opacity-0 group-hover/child:opacity-100 transition-opacity">
                                 <button onClick={() => { setRenamingFolderId(child.id); setRenamingName(child.name); }} className="text-[11px] text-surface-500 hover:text-white px-1 py-0.5 rounded hover:bg-surface-800">Rename</button>
-                                <button onClick={() => deleteFolder(child.id)} className="text-[11px] text-surface-600 hover:text-red-400 px-1 py-0.5 rounded hover:bg-surface-800">Delete</button>
+                                <button onClick={() => deleteFolder(child.id)} className="text-[11px] text-surface-500 hover:text-red-400 px-1 py-0.5 rounded hover:bg-surface-800">Delete</button>
                               </div>
                             </div>
                             {!childCollapsed && (
@@ -1010,7 +1010,7 @@ function DashboardContent() {
                                 <span className="text-[11px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
                               )}
                             </div>
-                            <span className="text-[11px] text-surface-600">{timeAgo(project.updated_at)}</span>
+                            <span className="text-[11px] text-surface-500">{timeAgo(project.updated_at)}</span>
                           </div>
                         </div>
                       </Card>
@@ -1164,7 +1164,7 @@ function ProjectCard({
             {/* Thumbnail */}
             <div className="relative w-10 h-10 rounded-xl bg-surface-800 flex items-center justify-center shrink-0 overflow-hidden">
               <div className="w-full h-full flex items-center justify-center">
-                <span className="text-lg font-bold text-surface-600">{project.title[0]}</span>
+                <span className="text-lg font-bold text-surface-500">{project.title[0]}</span>
               </div>
               {project.cover_url && (
                 <img src={project.cover_url} alt={project.title || 'Project cover'} loading="lazy" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget).style.display = 'none'; }} />
@@ -1189,7 +1189,7 @@ function ProjectCard({
   documentary: 'Doc',
 } as Record<string, string>)[project.project_type] || project.project_type}</Badge>
               <StageBadge status={project.status} size="sm" />
-              <span className="text-[11px] text-surface-600 hidden sm:inline">{timeAgo(project.updated_at)}</span>
+              <span className="text-[11px] text-surface-500 hidden sm:inline">{timeAgo(project.updated_at)}</span>
             </div>
           </div>
         </Link>
@@ -1273,7 +1273,7 @@ function ProjectCard({
                   <span className="text-[11px] text-surface-500">+{(project.genre?.length || 0) - 2}</span>
                 )}
               </div>
-              <span className="text-[11px] text-surface-600">{timeAgo(project.updated_at)}</span>
+              <span className="text-[11px] text-surface-500">{timeAgo(project.updated_at)}</span>
             </div>
           </div>
         </Card>

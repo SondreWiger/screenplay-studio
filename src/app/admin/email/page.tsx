@@ -522,10 +522,10 @@ export default function AdminEmailPage() {
                             <span className="block truncate text-[11px] text-surface-500">{u.email}</span>
                           </span>
                           {u.is_pro && <Pill tone="amber">Pro</Pill>}
-                          <span className="shrink-0 text-[11px] text-surface-600">{userProjectCounts[u.id] || 0} proj</span>
+                          <span className="shrink-0 text-[11px] text-surface-500">{userProjectCounts[u.id] || 0} proj</span>
                         </label>
                       ))}
-                      {targetUsers.length > 300 && <p className="py-2 text-center text-[11px] text-surface-600">Showing 300 of {targetUsers.length.toLocaleString()} — refine the search</p>}
+                      {targetUsers.length > 300 && <p className="py-2 text-center text-[11px] text-surface-500">Showing 300 of {targetUsers.length.toLocaleString()} — refine the search</p>}
                     </div>
                   </div>
                 )}

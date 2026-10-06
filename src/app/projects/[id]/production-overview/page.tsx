@@ -161,7 +161,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
             <div>
               <p className="text-xs text-surface-500 mb-1.5">Today <span className="font-mono">{today.slice(5)}</span></p>
               {todayChars.length === 0 ? (
-                <p className="text-xs text-surface-600 italic">No characters scheduled</p>
+                <p className="text-xs text-surface-500 italic">No characters scheduled</p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {todayChars.map((name) => (
@@ -173,7 +173,7 @@ export default function ProductionOverviewPage({ params }: { params: { id: strin
             <div>
               <p className="text-xs text-surface-500 mb-1.5">Tomorrow <span className="font-mono">{tomorrow.slice(5)}</span></p>
               {tomorrowChars.length === 0 ? (
-                <p className="text-xs text-surface-600 italic">No characters scheduled</p>
+                <p className="text-xs text-surface-500 italic">No characters scheduled</p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {tomorrowChars.map((name) => (

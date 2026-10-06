@@ -72,7 +72,7 @@ function CommentThread({ comment, allComments, depth, canEdit, userId, projectId
             </Badge>
           )}
           {comment.is_resolved && <Badge size="sm" variant="success">Resolved</Badge>}
-          <span className="text-[11px] text-surface-600">{timeAgo(comment.created_at)}</span>
+          <span className="text-[11px] text-surface-500">{timeAgo(comment.created_at)}</span>
           {replies.length > 0 && (
             <button onClick={() => setCollapsed(!collapsed)} className="text-[11px] text-surface-500 hover:text-white ml-auto">
               {collapsed ? `+${replies.length} replies` : ''}

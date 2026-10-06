@@ -244,13 +244,13 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         <div className="flex justify-between items-start mb-10">
           <div>
             <div className="text-3xl font-bold text-white tracking-tight">INVOICE</div>
-            <div className="text-white/40 mt-1 text-sm">{settings.invoiceNumber}</div>
+            <div className="text-white/50 mt-1 text-sm">{settings.invoiceNumber}</div>
           </div>
           <div className="text-right text-sm text-white/70">
             <div className="font-semibold text-base">{settings.freelancerName || '—'}</div>
-            {settings.freelancerEmail && <div className="text-white/40">{settings.freelancerEmail}</div>}
+            {settings.freelancerEmail && <div className="text-white/50">{settings.freelancerEmail}</div>}
             {settings.freelancerAddress && (
-              <div className="text-white/40 whitespace-pre-line mt-1">{settings.freelancerAddress}</div>
+              <div className="text-white/50 whitespace-pre-line mt-1">{settings.freelancerAddress}</div>
             )}
           </div>
         </div>
@@ -265,20 +265,20 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
             {settings.clientCompany && settings.clientName && (
               <div className="text-white/60 text-sm">{settings.clientName}</div>
             )}
-            {settings.clientEmail && <div className="text-white/40 text-sm">{settings.clientEmail}</div>}
+            {settings.clientEmail && <div className="text-white/50 text-sm">{settings.clientEmail}</div>}
           </div>
           <div className="text-right">
             <div className="text-xs font-medium text-gray-400 uppercase tracking-[0.04em] mb-2">Details</div>
             <div className="text-sm">
-              <span className="text-white/40">Date: </span>
+              <span className="text-white/50">Date: </span>
               <span>{fmtDate(today)}</span>
             </div>
             <div className="text-sm mt-1">
-              <span className="text-white/40">Project: </span>
+              <span className="text-white/50">Project: </span>
               <span>{currentProject?.title ?? 'Screenplay'}</span>
             </div>
             <div className="text-sm mt-1">
-              <span className="text-white/40">Terms: </span>
+              <span className="text-white/50">Terms: </span>
               <span>{settings.paymentTerms}</span>
             </div>
           </div>
@@ -289,11 +289,11 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         <table className="w-full text-sm mb-8 border-collapse min-w-[400px]">
           <thead>
             <tr className="border-b-2 border-white/15">
-              <th className="text-left py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Date</th>
-              <th className="text-left py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Description</th>
-              <th className="text-right py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Hours</th>
-              <th className="text-right py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Rate</th>
-              <th className="text-right py-2 text-xs font-medium text-white/40 uppercase tracking-[0.04em]">Amount</th>
+              <th className="text-left py-2 text-xs font-medium text-white/50 uppercase tracking-[0.04em]">Date</th>
+              <th className="text-left py-2 text-xs font-medium text-white/50 uppercase tracking-[0.04em]">Description</th>
+              <th className="text-right py-2 text-xs font-medium text-white/50 uppercase tracking-[0.04em]">Hours</th>
+              <th className="text-right py-2 text-xs font-medium text-white/50 uppercase tracking-[0.04em]">Rate</th>
+              <th className="text-right py-2 text-xs font-medium text-white/50 uppercase tracking-[0.04em]">Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -324,7 +324,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         <div className="flex justify-end mb-8">
           <div className="w-56">
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-white/40">Subtotal ({totalHours.toFixed(2)} hrs)</span>
+              <span className="text-white/50">Subtotal ({totalHours.toFixed(2)} hrs)</span>
               <span className="tabular-nums">{fmtMoney(totalAmount, settings.currency)}</span>
             </div>
             <div className="h-px bg-gray-200 my-2" />

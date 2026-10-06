@@ -254,7 +254,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                 ) : (
                   <div className="text-center">
                     <div className="text-3xl font-bold text-green-400/40">{previewSource.short_name || previewSource.name}</div>
-                    <div className="text-xs text-surface-600 mt-1">{previewSource.source_type}</div>
+                    <div className="text-xs text-surface-500 mt-1">{previewSource.source_type}</div>
                   </div>
                 )
               ) : (
@@ -517,7 +517,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
                         ? 'bg-red-600 text-white ring-1 ring-red-400'
                         : src.id === switcherState?.preview_source_id
                         ? 'bg-green-600 text-white ring-1 ring-green-400'
-                        : 'bg-surface-900 text-surface-600'
+                        : 'bg-surface-900 text-surface-500'
                     )}
                   >
                     {src.short_name || src.name?.substring(0, 5)}
@@ -533,7 +533,7 @@ export default function VisionMixerPage({ params }: { params: { id: string } }) 
               <EmptyState
                 title="No sources configured"
                 description="Add sources in the Sources page, then return here to switch between them live."
-                icon={<svg className="w-12 h-12 text-surface-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>}
+                icon={<svg className="w-12 h-12 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>}
               />
             </div>
           )}

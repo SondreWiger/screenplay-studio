@@ -92,9 +92,9 @@ function WorkTimePanel({ projectId }: { projectId: string }) {
             {buckets.length > 1 && values.some((v) => v > 0) ? (
               <TimeChart animKey="work" buckets={buckets} unit="day" height={170} format={hoursFmt} bars series={[{ key: 'me', label: 'Your time', color: SERIES.violet, values }]} />
             ) : (
-              <p className="py-8 text-center text-xs text-surface-600">No writing time in the last 30 days</p>
+              <p className="py-8 text-center text-xs text-surface-500">No writing time in the last 30 days</p>
             )}
-            <p className="mt-2 text-[11px] text-surface-600">Billing hourly? Your time is {(data.my_total_seconds / 3600).toFixed(2)} h exactly.</p>
+            <p className="mt-2 text-[11px] text-surface-500">Billing hourly? Your time is {(data.my_total_seconds / 3600).toFixed(2)} h exactly.</p>
           </div>
           <div>
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-surface-500">Where you worked</p>

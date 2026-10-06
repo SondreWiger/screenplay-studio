@@ -44,7 +44,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
               <a href="mailto:legal@screenplaystudio.fun" className="text-brand-400 hover:text-brand-300">legal@screenplaystudio.fun</a>
               <p className="mt-4 uppercase tracking-wide text-surface-500">Developed by</p>
               <a href="https://development.northem.no/" target="_blank" rel="noopener noreferrer" className="block font-semibold text-surface-300 hover:text-white">Northem Development</a>
-              <p className="text-surface-600">Made with ♥ in Norway</p>
+              <p className="text-surface-500">Made with ♥ in Norway</p>
             </div>
           }
         />

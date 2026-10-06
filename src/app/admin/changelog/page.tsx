@@ -317,7 +317,7 @@ export default function AdminChangelogPage() {
         <Panel title="Releases" subtitle={`${visibleReleases.length} shown`} bodyClassName="space-y-2">
           <SearchInput value={query} onChange={setQuery} placeholder="Version or title…" />
           <div className="max-h-[60vh] space-y-1.5 overflow-y-auto pr-1 lg:max-h-[calc(100vh-260px)]">
-            {visibleReleases.length === 0 && <p className="py-6 text-center text-xs text-surface-600">No releases match</p>}
+            {visibleReleases.length === 0 && <p className="py-6 text-center text-xs text-surface-500">No releases match</p>}
             {visibleReleases.map(r => {
               const active = selectedId === r.id;
               return (
@@ -427,7 +427,7 @@ export default function AdminChangelogPage() {
                             </div>
                           </div>
                           {selectedRelease.status === 'draft' && (
-                            <button onClick={() => handleDeleteEntry(entry.id)} className="p-1 text-surface-600 transition-all hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100" aria-label="Delete entry">
+                            <button onClick={() => handleDeleteEntry(entry.id)} className="p-1 text-surface-500 transition-all hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100" aria-label="Delete entry">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           )}

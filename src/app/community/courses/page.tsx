@@ -90,7 +90,7 @@ function CourseCard({
         </div>
 
         {/* Meta */}
-        <div className="flex items-center gap-3 text-xs text-white/40">
+        <div className="flex items-center gap-3 text-xs text-white/50">
           <span className="flex items-center gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             {course.estimated_minutes}m
@@ -111,7 +111,7 @@ function CourseCard({
         {course.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {course.tags.slice(0, 3).map(t => (
-              <span key={t} className="px-1.5 py-0.5 text-[11px] font-medium bg-white/5 text-white/40 rounded">{t}</span>
+              <span key={t} className="px-1.5 py-0.5 text-[11px] font-medium bg-white/5 text-white/50 rounded">{t}</span>
             ))}
           </div>
         )}
@@ -120,7 +120,7 @@ function CourseCard({
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
           <span className="text-xs font-semibold text-brand-500">+{course.xp_reward} XP</span>
           {course.type === 'user' && course.creator && (
-            <Link href={`/u/${course.creator.username || ''}`} className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
+            <Link href={`/u/${course.creator.username || ''}`} className="text-[11px] text-white/45 hover:text-white/60 transition-colors">
               by {course.creator.full_name || 'Anonymous'}
             </Link>
           )}
@@ -237,11 +237,11 @@ export default function CoursesPage() {
             <div className="flex items-center gap-4 text-center">
               <div className="px-5 py-3 bg-white/[0.04] rounded-xl border border-white/[0.08]">
                 <div className="text-2xl font-bold text-white">{enrolledCount}</div>
-                <div className="text-[11px] text-white/40 uppercase tracking-[0.04em] mt-0.5">Enrolled</div>
+                <div className="text-[11px] text-white/50 uppercase tracking-[0.04em] mt-0.5">Enrolled</div>
               </div>
               <div className="px-5 py-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
                 <div className="text-2xl font-bold text-emerald-400">{completedCount}</div>
-                <div className="text-[11px] text-white/40 uppercase tracking-[0.04em] mt-0.5">Completed</div>
+                <div className="text-[11px] text-white/50 uppercase tracking-[0.04em] mt-0.5">Completed</div>
               </div>
             </div>
           )}
@@ -254,7 +254,7 @@ export default function CoursesPage() {
             {([['all','All'],['system','Official'],['user','Community'],['enrolled','My Courses']] as const).map(([v,label]) => (
               <button key={v} onClick={() => setFilter(v as any)}
                 className={cn('px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] rounded-lg transition-colors',
-                  filter === v ? 'bg-brand-500 text-white' : 'text-white/40 hover:text-white/70'
+                  filter === v ? 'bg-brand-500 text-white' : 'text-white/50 hover:text-white/70'
                 )}>
                 {label}
               </button>
@@ -265,7 +265,7 @@ export default function CoursesPage() {
             {([['all','All'],['beginner','Beginner'],['intermediate','Intermediate'],['advanced','Advanced']] as const).map(([v,label]) => (
               <button key={v} onClick={() => setDifficulty(v as any)}
                 className={cn('px-3 py-1.5 text-[11px] uppercase tracking-[0.04em] rounded-lg transition-colors',
-                  difficulty === v ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'
+                  difficulty === v ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white/70'
                 )}>
                 {label}
               </button>
@@ -287,7 +287,7 @@ export default function CoursesPage() {
                   <span className="text-base">🎓</span>
                   <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Official Courses</h2>
                   <div className="flex-1 h-px bg-white/[0.08]" />
-                  <span className="text-xs text-white/30">{systemCourses.length} courses</span>
+                  <span className="text-xs text-white/45">{systemCourses.length} courses</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {systemCourses.map(c => (
@@ -304,7 +304,7 @@ export default function CoursesPage() {
                   <span className="text-base">📚</span>
                   <h2 className="text-sm font-medium text-white uppercase tracking-[0.04em]">Community Courses</h2>
                   <div className="flex-1 h-px bg-white/[0.08]" />
-                  <span className="text-xs text-white/30">{userCourses.length} courses</span>
+                  <span className="text-xs text-white/45">{userCourses.length} courses</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {userCourses.map(c => (
@@ -317,7 +317,7 @@ export default function CoursesPage() {
             {filtered.length === 0 && (
               <div className="text-center py-24">
                 <div className="text-5xl mb-4">📖</div>
-                <p className="text-white/40">No courses found for this filter.</p>
+                <p className="text-white/50">No courses found for this filter.</p>
                 {!user && <Link href="/auth/register" className="mt-4 inline-block text-sm text-brand-500 hover:underline">Sign up to create one →</Link>}
               </div>
             )}
@@ -327,13 +327,13 @@ export default function CoursesPage() {
               <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-8 text-center">
                 <div className="text-3xl mb-3">✍️</div>
                 <h3 className="text-base font-bold text-white mb-1">Want to create a course?</h3>
-                <p className="text-sm text-white/40 max-w-sm mx-auto">
+                <p className="text-sm text-white/50 max-w-sm mx-auto">
                   Reach <span className="text-white/70 font-semibold">Level 10</span> to unlock course creation. You&apos;re at Level {userLevel}.
                 </p>
                 <div className="mt-4 h-2 max-w-xs mx-auto bg-white/5 rounded-full overflow-hidden">
                   <div className="h-full bg-brand-500 rounded-full transition-[width]" style={{ width: `${Math.min((userLevel / 10) * 100, 100)}%` }} />
                 </div>
-                <p className="text-[11px] text-white/30 mt-2">{userLevel} / 10</p>
+                <p className="text-[11px] text-white/45 mt-2">{userLevel} / 10</p>
               </div>
             )}
           </div>

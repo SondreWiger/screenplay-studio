@@ -195,7 +195,7 @@ export default function ActivityGrid({
               top: 0,
               left: dayLabelWidth + col * step,
               fontSize: '9px',
-              color: 'rgba(255,255,255,0.3)',
+              color: 'rgba(255,255,255,0.45)',
               letterSpacing: '0.05em',
               lineHeight: '14px',
               pointerEvents: 'none',
@@ -223,7 +223,7 @@ export default function ActivityGrid({
                 style={{
                   height: cellSize,
                   fontSize: '9px',
-                  color: 'rgba(255,255,255,0.25)',
+                  color: 'rgba(255,255,255,0.45)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'flex-end',
@@ -314,7 +314,7 @@ export default function ActivityGrid({
           marginTop: 8,
           marginLeft: dayLabelWidth,
         }}>
-          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', marginRight: 2 }}>Less</span>
+          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.45)', marginRight: 2 }}>Less</span>
           {([0, 1, 2, 3, 4] as const).map((lvl) => (
             <div
               key={lvl}
@@ -326,7 +326,7 @@ export default function ActivityGrid({
               }}
             />
           ))}
-          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', marginLeft: 2 }}>More</span>
+          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.45)', marginLeft: 2 }}>More</span>
         </div>
       )}
     </div>

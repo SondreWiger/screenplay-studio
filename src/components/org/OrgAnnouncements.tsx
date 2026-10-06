@@ -115,7 +115,7 @@ export function OrgAnnouncements({ companyId, userId, canManage }: Props) {
                   </div>
                   <h3 className="font-semibold text-white text-base">{ann.title}</h3>
                   <p className="text-sm text-surface-400 mt-2 whitespace-pre-wrap">{ann.content}</p>
-                  <span className="text-[11px] text-surface-600 mt-3 block">{new Date(ann.created_at).toLocaleString()}</span>
+                  <span className="text-[11px] text-surface-500 mt-3 block">{new Date(ann.created_at).toLocaleString()}</span>
                 </div>
                 {canManage && (
                   <div className="flex gap-1 shrink-0">

@@ -73,7 +73,7 @@ function PageHeaderInner({
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="mt-2 text-sm text-white/35 leading-relaxed max-w-lg">
+          <p className="mt-2 text-sm text-white/50 leading-relaxed max-w-lg">
             {subtitle}
           </p>
         )}
@@ -165,7 +165,7 @@ export function EmptySlate({ label, title, description, action, icon }: EmptySla
         {title}
       </h3>
       {description && (
-        <p className="text-sm text-white/30 max-w-xs leading-relaxed mb-6">{description}</p>
+        <p className="text-sm text-white/45 max-w-xs leading-relaxed mb-6">{description}</p>
       )}
       {action && <div>{action}</div>}
     </div>

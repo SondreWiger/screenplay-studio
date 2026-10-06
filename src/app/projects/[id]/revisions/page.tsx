@@ -439,7 +439,7 @@ export default function RevisionsPage() {
                         onClick={() => { setEditingNotes(rev.id); setNotesValue(rev.notes || ''); }}
                         title="Click to edit notes"
                       >
-                        {rev.notes || <span className="italic text-surface-600">Click to add notes...</span>}
+                        {rev.notes || <span className="italic text-surface-500">Click to add notes...</span>}
                       </p>
                     )}
 

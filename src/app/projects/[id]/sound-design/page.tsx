@@ -371,7 +371,7 @@ export default function SoundDesignPage({ params }: { params: { id: string } }) 
               rows={28}
               className="w-full bg-surface-900/60 border border-surface-800 rounded-xl p-4 text-sm text-surface-200 placeholder-surface-600 outline-none focus:border-violet-500/40 resize-none font-mono leading-relaxed"
             />
-            <p className="text-[11px] text-surface-600">
+            <p className="text-[11px] text-surface-500">
               Tip: This document is also accessible from the Documents section.
             </p>
           </div>

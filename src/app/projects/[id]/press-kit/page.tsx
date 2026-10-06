@@ -161,7 +161,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1.5">
               Tagline
-              <span className="text-surface-600 font-normal ml-1.5">optional</span>
+              <span className="text-surface-500 font-normal ml-1.5">optional</span>
             </label>
             <input
               value={tagline}
@@ -176,7 +176,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1.5">
               Press Contact Email
-              <span className="text-surface-600 font-normal ml-1.5">optional</span>
+              <span className="text-surface-500 font-normal ml-1.5">optional</span>
             </label>
             <input
               type="email"
@@ -186,14 +186,14 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               placeholder="press@example.com"
               className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <p className="text-xs text-surface-600 mt-1.5">Shown as a clickable &quot;Contact Press Team&quot; button on the public page.</p>
+            <p className="text-xs text-surface-500 mt-1.5">Shown as a clickable &quot;Contact Press Team&quot; button on the public page.</p>
           </div>
 
           {/* Password protection */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1.5">
               Password Protection
-              <span className="text-surface-600 font-normal ml-1.5">optional</span>
+              <span className="text-surface-500 font-normal ml-1.5">optional</span>
             </label>
             <input
               type="text"
@@ -204,7 +204,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               autoComplete="off"
               className="w-full px-3.5 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-white placeholder-surface-600 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <p className="text-xs text-surface-600 mt-1.5">Visitors will be asked to enter this password before viewing the press kit.</p>
+            <p className="text-xs text-surface-500 mt-1.5">Visitors will be asked to enter this password before viewing the press kit.</p>
           </div>
         </div>
 
@@ -227,7 +227,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
               </li>
             ))}
           </ul>
-          <p className="text-xs text-surface-600 mt-3">
+          <p className="text-xs text-surface-500 mt-3">
             Edit your logline, synopsis and images in{' '}
             <a href={`/projects/${params.id}/settings`} className="text-brand-500 hover:underline">
               Project Settings
@@ -250,7 +250,7 @@ export default function PressKitSettingsPage({ params }: { params: { id: string 
         )}
 
         {!canEdit && (
-          <p className="text-center text-sm text-surface-600">Only owners and admins can edit press kit settings.</p>
+          <p className="text-center text-sm text-surface-500">Only owners and admins can edit press kit settings.</p>
         )}
       </div>
     </div>

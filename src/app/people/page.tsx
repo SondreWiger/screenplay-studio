@@ -316,7 +316,7 @@ export default function PeoplePage() {
             {people.length === 0 ? 'Your book is empty' : 'Nobody matches those filters'}
           </p>
           {people.length === 0 && (
-            <p className="text-surface-600 text-sm mt-1 max-w-sm mx-auto">
+            <p className="text-surface-500 text-sm mt-1 max-w-sm mx-auto">
               Add the crew and talent you&apos;ve worked with, or import them from a
               production you&apos;ve already run.
             </p>
@@ -359,7 +359,7 @@ export default function PeoplePage() {
                     aria-label={person.is_favourite ? 'Remove from first call' : 'Mark first call'}
                     className={cn(
                       'shrink-0 text-sm transition-colors',
-                      person.is_favourite ? 'text-brand-500' : 'text-surface-600 hover:text-surface-300',
+                      person.is_favourite ? 'text-brand-500' : 'text-surface-500 hover:text-surface-300',
                     )}
                   >
                     ★
@@ -405,7 +405,7 @@ export default function PeoplePage() {
                   </button>
                   <button
                     onClick={() => handleDelete(person)}
-                    className="text-[11px] text-surface-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-[11px] text-surface-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     Remove
                   </button>
@@ -416,8 +416,8 @@ export default function PeoplePage() {
                     {personCredits.map((c) => (
                       <li key={c.id} className="text-[11px] text-surface-400">
                         {projectTitle(c.project_id) ?? c.production_name}
-                        {c.role && <span className="text-surface-600"> — {c.role}</span>}
-                        {c.year && <span className="text-surface-600"> ({c.year})</span>}
+                        {c.role && <span className="text-surface-500"> — {c.role}</span>}
+                        {c.year && <span className="text-surface-500"> ({c.year})</span>}
                       </li>
                     ))}
                   </ul>

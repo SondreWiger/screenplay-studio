@@ -29,11 +29,11 @@ const STATUS_COLORS: Record<string, string> = {
   open: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30',
   in_progress: 'text-sky-300 bg-sky-500/10 border-sky-500/30',
   resolved: 'text-white/60 bg-surface-800 border-white/10',
-  closed: 'text-white/30 bg-surface-900 border-white/10',
+  closed: 'text-white/45 bg-surface-900 border-white/10',
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: 'text-white/40',
+  low: 'text-white/50',
   normal: 'text-white/70',
   high: 'text-amber-400',
   urgent: 'text-red-400',
@@ -278,9 +278,9 @@ function SupportPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[11px] text-white/30 capitalize">{ticket.category.replace('_', ' ')}</span>
+                      <span className="text-[11px] text-white/45 capitalize">{ticket.category.replace('_', ' ')}</span>
                       <span className="text-[11px] text-white/20">·</span>
-                      <span className="text-[11px] text-white/30">{timeAgo(ticket.updated_at)}</span>
+                      <span className="text-[11px] text-white/45">{timeAgo(ticket.updated_at)}</span>
                       {ticket.priority !== 'normal' && (
                         <span className={`text-[11px] font-semibold capitalize ${PRIORITY_COLORS[ticket.priority]}`}>
                           {ticket.priority}
@@ -345,7 +345,7 @@ function SupportPage() {
                     </button>
                     <button
                       onClick={() => setShowNewForm(false)}
-                      className="px-4 py-2.5 text-sm text-white/40 hover:text-white/70 transition-colors"
+                      className="px-4 py-2.5 text-sm text-white/50 hover:text-white/70 transition-colors"
                     >
                       Cancel
                     </button>
@@ -360,7 +360,7 @@ function SupportPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <h2 className="text-lg font-bold text-white/90">{selectedTicket.subject}</h2>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-white/30">
+                      <div className="flex items-center gap-3 mt-1 text-xs text-white/45">
                         <span className="capitalize">{selectedTicket.category.replace('_', ' ')}</span>
                         <span className={`px-1.5 py-0.5 text-[11px] font-semibold rounded border ${STATUS_COLORS[selectedTicket.status]}`}>
                           {selectedTicket.status.replace('_', ' ')}
@@ -371,7 +371,7 @@ function SupportPage() {
                         <span>{timeAgo(selectedTicket.created_at)}</span>
                       </div>
                       {selectedTicket.reported_content_type && (
-                        <p className="text-xs text-white/30 mt-1">
+                        <p className="text-xs text-white/45 mt-1">
                           Reported: {selectedTicket.reported_content_type} · {selectedTicket.reported_content_id?.slice(0, 8)}…
                         </p>
                       )}
@@ -387,7 +387,7 @@ function SupportPage() {
                         {msg.profile?.avatar_url ? (
                           <img src={msg.profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" loading="lazy" />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-white/40">
+                          <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-white/50">
                             {(msg.profile?.full_name || '?')[0].toUpperCase()}
                           </div>
                         )}
@@ -400,7 +400,7 @@ function SupportPage() {
                           {msg.is_staff && (
                             <span className="rounded border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-bold text-sky-300">STAFF</span>
                           )}
-                          <span className="text-[11px] text-white/30">{timeAgo(msg.created_at)}</span>
+                          <span className="text-[11px] text-white/45">{timeAgo(msg.created_at)}</span>
                         </div>
                         <div className={`inline-block px-4 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                           msg.is_staff
@@ -413,7 +413,7 @@ function SupportPage() {
                     </div>
                   ))}
                   {messages.length === 0 && (
-                    <p className="text-sm text-white/30 text-center py-8">No messages yet.</p>
+                    <p className="text-sm text-white/45 text-center py-8">No messages yet.</p>
                   )}
                 </div>
 
@@ -425,7 +425,7 @@ function SupportPage() {
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/30 focus:border-brand-500 focus:outline-none"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-white/10 bg-surface-900 text-white text-sm placeholder:text-white/45 focus:border-brand-500 focus:outline-none"
                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
                       />
                       <button
@@ -440,7 +440,7 @@ function SupportPage() {
                 )}
                 {(selectedTicket.status === 'resolved' || selectedTicket.status === 'closed') && (
                   <div className="px-6 py-3 border-t border-white/10 bg-surface-900 text-center">
-                    <p className="text-xs text-white/30">This ticket is {selectedTicket.status}.</p>
+                    <p className="text-xs text-white/45">This ticket is {selectedTicket.status}.</p>
                   </div>
                 )}
               </div>

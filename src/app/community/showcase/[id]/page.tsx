@@ -278,7 +278,7 @@ export default function ShowcaseDetailPage() {
       <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col items-center justify-center gap-4">
         <div className="text-6xl">🎬</div>
         <h1 className="text-2xl font-bold">Project not found</h1>
-        <p className="text-white/40">This project may not be showcased or doesn&apos;t exist.</p>
+        <p className="text-white/50">This project may not be showcased or doesn&apos;t exist.</p>
         <Link href="/community/showcase" className="mt-4 px-5 py-2.5 text-sm font-medium text-black bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors">
           Browse Projects
         </Link>
@@ -413,8 +413,8 @@ export default function ShowcaseDetailPage() {
             </Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/community" className="text-xs text-white/40 hover:text-white transition-colors">Community</Link>
-            {user && <Link href="/dashboard" className="text-xs text-white/40 hover:text-white transition-colors">Dashboard</Link>}
+            <Link href="/community" className="text-xs text-white/50 hover:text-white transition-colors">Community</Link>
+            {user && <Link href="/dashboard" className="text-xs text-white/50 hover:text-white transition-colors">Dashboard</Link>}
           </div>
         </div>
       </nav>
@@ -456,7 +456,7 @@ export default function ShowcaseDetailPage() {
                   href={project.wrap_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-col items-center gap-3 text-white/40 hover:text-amber-400 transition-colors"
+                  className="flex flex-col items-center gap-3 text-white/50 hover:text-amber-400 transition-colors"
                 >
                   <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <span className="text-sm font-medium">Watch on external site ↗</span>
@@ -499,7 +499,7 @@ export default function ShowcaseDetailPage() {
                     </span>
                   ))}
                   {project.target_length_minutes && (
-                    <span className="text-xs text-white/40">{project.target_length_minutes} min</span>
+                    <span className="text-xs text-white/50">{project.target_length_minutes} min</span>
                   )}
                   {project.status === 'completed' && (
                     <span className="px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.04em] text-green-400 bg-green-500/10 rounded-full border border-green-500/20">
@@ -605,7 +605,7 @@ export default function ShowcaseDetailPage() {
                       {card.actorAvatar ? (
                         <img src={card.actorAvatar} alt={card.actorName || card.characterName || 'Cast avatar'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                       ) : (
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${card.actorName ? 'bg-surface-900/10 text-white/40' : 'bg-amber-500/10 text-amber-400/60'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${card.actorName ? 'bg-surface-900/10 text-white/50' : 'bg-amber-500/10 text-amber-400/60'}`}>
                           {(card.actorName || card.characterName || '?')[0].toUpperCase()}
                         </div>
                       )}
@@ -660,7 +660,7 @@ export default function ShowcaseDetailPage() {
                       {member.profile?.avatar_url ? (
                         <img src={member.profile.avatar_url} alt={member.profile.full_name || 'Team member'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/40">
+                        <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/50">
                           {(member.profile?.full_name || '?')[0]}
                         </div>
                       )}
@@ -680,7 +680,7 @@ export default function ShowcaseDetailPage() {
                       {credit.avatar_url ? (
                         <img src={credit.avatar_url} alt={credit.name || 'Credit avatar'} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/40">
+                        <div className="w-10 h-10 rounded-full bg-surface-900/10 flex items-center justify-center text-sm font-bold text-white/50">
                           {credit.name[0].toUpperCase()}
                         </div>
                       )}
@@ -833,11 +833,11 @@ export default function ShowcaseDetailPage() {
                 <div className="bg-surface-900/[0.03] border border-white/[0.08] rounded-xl p-5 mb-4">
                   <h3 className="text-sm font-semibold text-white/70 mb-3">{userReview ? 'Edit Your Review' : 'Your Review'}</h3>
                   <div className="mb-4">
-                    <label className="text-xs text-white/40 mb-1.5 block">Rating</label>
+                    <label className="text-xs text-white/50 mb-1.5 block">Rating</label>
                     <StarRating rating={reviewRating} size="lg" interactive onChange={setReviewRating} />
                   </div>
                   <div className="mb-3">
-                    <label className="text-xs text-white/40 mb-1.5 block">Title (optional)</label>
+                    <label className="text-xs text-white/50 mb-1.5 block">Title (optional)</label>
                     <input
                       value={reviewTitle}
                       onChange={(e) => setReviewTitle(e.target.value)}
@@ -846,7 +846,7 @@ export default function ShowcaseDetailPage() {
                     />
                   </div>
                   <div className="mb-4">
-                    <label className="text-xs text-white/40 mb-1.5 block">Review (optional)</label>
+                    <label className="text-xs text-white/50 mb-1.5 block">Review (optional)</label>
                     <textarea
                       value={reviewContent}
                       onChange={(e) => setReviewContent(e.target.value)}
@@ -858,7 +858,7 @@ export default function ShowcaseDetailPage() {
                   <div className="flex items-center justify-end gap-3">
                     <button
                       onClick={() => { setShowReviewForm(false); setReviewRating(userReview?.rating || 0); setReviewTitle(userReview?.title || ''); setReviewContent(userReview?.content || ''); }}
-                      className="px-4 py-1.5 text-xs text-white/40 hover:text-white/60 transition-colors"
+                      className="px-4 py-1.5 text-xs text-white/50 hover:text-white/60 transition-colors"
                     >
                       Cancel
                     </button>
@@ -885,7 +885,7 @@ export default function ShowcaseDetailPage() {
                     <div className="flex-1 space-y-1">
                       {ratingDistribution.map(({ star, count, pct }) => (
                         <div key={star} className="flex items-center gap-2">
-                          <span className="text-xs text-white/40 w-3 text-right">{star}</span>
+                          <span className="text-xs text-white/50 w-3 text-right">{star}</span>
                           <svg className="w-3 h-3 text-amber-400/60" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
                           <div className="flex-1 h-2 bg-surface-900/[0.06] rounded-full overflow-hidden">
                             <div className="h-full bg-amber-400/60 rounded-full transition-[width]" style={{ width: `${pct}%` }} />
@@ -907,7 +907,7 @@ export default function ShowcaseDetailPage() {
                         {review.profile?.avatar_url ? (
                           <img src={review.profile.avatar_url} alt={review.profile.full_name || 'Reviewer avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" loading="lazy" />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/50 shrink-0">
                             {(review.profile?.full_name || '?')[0].toUpperCase()}
                           </div>
                         )}
@@ -958,7 +958,7 @@ export default function ShowcaseDetailPage() {
               {/* Sign-in prompt */}
               {!user && (
                 <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-4 mt-3 text-center">
-                  <p className="text-sm text-white/40">
+                  <p className="text-sm text-white/50">
                     <Link href="/auth/login" className="text-amber-400 hover:text-amber-300 transition-colors">Sign in</Link> to leave a review
                   </p>
                 </div>
@@ -1000,7 +1000,7 @@ export default function ShowcaseDetailPage() {
                 </div>
               ) : (
                 <div className="bg-surface-900/[0.03] border border-white/[0.06] rounded-lg p-4 mb-4 text-center">
-                  <p className="text-sm text-white/40">
+                  <p className="text-sm text-white/50">
                     <Link href="/auth/login" className="text-amber-400 hover:text-amber-300 transition-colors">Sign in</Link> to leave feedback
                   </p>
                 </div>
@@ -1014,7 +1014,7 @@ export default function ShowcaseDetailPage() {
                       {comment.profile?.avatar_url ? (
                         <img src={comment.profile.avatar_url} alt={comment.profile.full_name || 'Commenter avatar'} className="w-8 h-8 rounded-full object-cover shrink-0" loading="lazy" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/40 shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-surface-900/10 flex items-center justify-center text-xs font-bold text-white/50 shrink-0">
                           {(comment.profile?.full_name || '?')[0].toUpperCase()}
                         </div>
                       )}
@@ -1142,12 +1142,12 @@ export default function ShowcaseDetailPage() {
                   <div>
                     <p className="font-medium text-white/90">{project.author.full_name || 'Unknown'}</p>
                     {project.author.username && (
-                      <p className="text-xs text-white/40">@{project.author.username}</p>
+                      <p className="text-xs text-white/50">@{project.author.username}</p>
                     )}
                   </div>
                 </div>
                 {project.author.bio && (
-                  <p className="text-xs text-white/40 mt-3 line-clamp-3">{project.author.bio}</p>
+                  <p className="text-xs text-white/50 mt-3 line-clamp-3">{project.author.bio}</p>
                 )}
               </Link>
             )}
@@ -1247,7 +1247,7 @@ export default function ShowcaseDetailPage() {
                   {externalLinks.website && (
                     <a href={externalLinks.website} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-3 text-sm text-white/70 hover:text-amber-400 transition-colors">
-                      <span className="text-[11px] font-bold text-white/40 bg-surface-900/5 px-1.5 py-0.5 rounded">WWW</span>
+                      <span className="text-[11px] font-bold text-white/50 bg-surface-900/5 px-1.5 py-0.5 rounded">WWW</span>
                       Official Website
                       <svg className="w-3 h-3 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                     </a>
@@ -1261,7 +1261,7 @@ export default function ShowcaseDetailPage() {
               <div className="space-y-2">
                 <Link
                   href={`/support?type=showcase&id=${params.id}&subject=${encodeURIComponent(`Report showcase: ${project.title}`)}`}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-xs font-medium text-white/40 bg-surface-900/[0.03] hover:bg-surface-900/[0.06] border border-white/[0.06] rounded-lg transition-colors"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-xs font-medium text-white/50 bg-surface-900/[0.03] hover:bg-surface-900/[0.06] border border-white/[0.06] rounded-lg transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
                   Report this showcase

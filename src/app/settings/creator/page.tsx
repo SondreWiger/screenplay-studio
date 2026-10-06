@@ -187,7 +187,7 @@ export default function CreatorSettingsPage() {
           <Card className="p-6 border-surface-700">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <svg className="w-5 h-5 text-white/45" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-white mb-1">Creator Program coming soon</h3>
@@ -218,7 +218,7 @@ export default function CreatorSettingsPage() {
                   onChange={(e) => setAppNote(e.target.value)}
                   rows={3}
                   placeholder="Tell us a bit about your audience or how you plan to share the link..."
-                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-600 outline-none focus:border-brand-500 resize-none"
+                  className="w-full rounded-lg border border-surface-700 bg-surface-900 px-3 py-2.5 text-sm text-white placeholder:text-surface-500 outline-none focus:border-brand-500 resize-none"
                 />
               </div>
               <p className="text-[11px] text-surface-500">

@@ -85,7 +85,7 @@ function SynopsisEditor({
       className={cn(
         'text-xs text-surface-400 leading-relaxed min-h-[3rem]',
         canEdit && 'cursor-text hover:text-surface-300 transition-colors',
-        !value && 'italic text-surface-600',
+        !value && 'italic text-surface-500',
       )}
       onClick={() => canEdit && setEditing(true)}
       title={canEdit ? 'Click to edit synopsis' : undefined}
@@ -421,7 +421,7 @@ export default function CorkboardPage({ params }: { params: { id: string } }) {
         <LoadingSpinner className="py-32" />
       ) : filteredScenes.length === 0 ? (
         <div className="text-center py-24 text-surface-500">
-          <svg className="w-12 h-12 mx-auto mb-4 text-surface-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-12 h-12 mx-auto mb-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4" />
           </svg>
           <p className="font-medium">No scenes yet</p>
@@ -450,7 +450,7 @@ export default function CorkboardPage({ params }: { params: { id: string } }) {
       )}
 
       {canEdit && scenes.length > 0 && (
-        <p className="text-xs text-surface-600 text-center mt-8">
+        <p className="text-xs text-surface-500 text-center mt-8">
           Drag cards to reorder · Click synopsis text to edit inline · Click ○ to mark complete
         </p>
       )}

@@ -512,7 +512,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
         <div className="flex-1 overflow-y-auto py-1">
           {days.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-xs text-surface-600">No shoot days yet.</p>
+              <p className="text-xs text-surface-500">No shoot days yet.</p>
               {canEdit && <button onClick={handleAddDay} className="mt-2 text-xs text-brand-500 hover:underline">Add first day</button>}
             </div>
           ) : (
@@ -539,7 +539,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   </p>
                 )}
                 {day.location && (
-                  <p className="text-[11px] text-surface-600 truncate">{day.location}</p>
+                  <p className="text-[11px] text-surface-500 truncate">{day.location}</p>
                 )}
               </button>
             ))
@@ -613,7 +613,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                     Export Day Pack
                   </button>
                   {canEdit && (
-                    <button onClick={() => handleDeleteDay(selectedDay.id)} className="text-xs p-1.5 rounded-lg text-surface-600 hover:text-red-400 transition-colors" title="Delete day">
+                    <button onClick={() => handleDeleteDay(selectedDay.id)} className="text-xs p-1.5 rounded-lg text-surface-500 hover:text-red-400 transition-colors" title="Delete day">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                   )}
@@ -704,12 +704,12 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                         <button key={el.id} onClick={() => { handleAddSceneToDay(el); setShowAddScene(false); setSceneSearch(''); }}
                           className={cn('w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors',
                             selectedDay.scenes.some(s => s.scene_element_id === el.id)
-                              ? 'text-surface-600 cursor-not-allowed'
+                              ? 'text-surface-500 cursor-not-allowed'
                               : 'text-surface-300 hover:bg-surface-700 hover:text-white'
                           )}>
                           {el.scene_number && <span className="text-surface-500 mr-1.5">#{el.scene_number}</span>}
                           {el.content}
-                          {selectedDay.scenes.some(s => s.scene_element_id === el.id) && <span className="ml-2 text-[11px] text-surface-600">Already added</span>}
+                          {selectedDay.scenes.some(s => s.scene_element_id === el.id) && <span className="ml-2 text-[11px] text-surface-500">Already added</span>}
                         </button>
                       ))}
                   </div>
@@ -718,7 +718,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
               )}
 
               {selectedDay.scenes.length === 0 ? (
-                <p className="text-xs text-surface-600 italic py-2">No scenes assigned to this day.</p>
+                <p className="text-xs text-surface-500 italic py-2">No scenes assigned to this day.</p>
               ) : (
                 <div className="rounded-xl border border-surface-800 overflow-hidden">
                   {selectedDay.scenes.map((scene, idx) => (
@@ -767,7 +767,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
               )}
 
               {selectedDay.cast.length === 0 ? (
-                <p className="text-xs text-surface-600 italic py-2">No cast assigned to this day.</p>
+                <p className="text-xs text-surface-500 italic py-2">No cast assigned to this day.</p>
               ) : (
                 <div className="rounded-xl border border-surface-800 overflow-hidden">
                   {selectedDay.cast.map((member, idx) => (
@@ -853,7 +853,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       className="w-full px-3 py-2 rounded-lg bg-surface-800 border border-surface-700 text-white text-sm outline-none focus:border-brand-500/60 mb-2"
                       autoFocus />
                     {unassigned.length === 0 ? (
-                      <p className="text-xs text-surface-600 italic py-2 text-center">
+                      <p className="text-xs text-surface-500 italic py-2 text-center">
                         {allProjectGear.filter(g => !g.shoot_day_id).length === 0 ? 'No unassigned gear in project — add items from the Gear page first.' : 'No matches.'}
                       </p>
                     ) : (
@@ -862,8 +862,8 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                           <button key={g.id} onClick={() => handleAssignGear(g)}
                             className="w-full text-left text-xs px-3 py-1.5 rounded-lg text-surface-300 hover:bg-surface-700 hover:text-white transition-colors flex items-center gap-2">
                             <span className="flex-1 truncate">{g.name}</span>
-                            <span className="text-surface-600 shrink-0">{g.category}</span>
-                            <span className="text-surface-600 shrink-0">{g.quantity} {g.unit}</span>
+                            <span className="text-surface-500 shrink-0">{g.category}</span>
+                            <span className="text-surface-500 shrink-0">{g.quantity} {g.unit}</span>
                           </button>
                         ))}
                       </div>
@@ -875,7 +875,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
 
               {/* Assigned gear list */}
               {selectedDay.gear.length === 0 ? (
-                <p className="text-xs text-surface-600 italic py-2">No gear assigned to this day.</p>
+                <p className="text-xs text-surface-500 italic py-2">No gear assigned to this day.</p>
               ) : (
                 <div className="rounded-xl border border-surface-800 overflow-hidden">
                   {selectedDay.gear.map((item, idx) => (
@@ -883,7 +883,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                       <span className="flex-1 text-sm font-medium text-white">{item.name}</span>
                       <span className="text-xs text-surface-500">{item.category}</span>
                       <span className="text-xs text-surface-400">{item.quantity} {item.unit}</span>
-                      {item.vendor && <span className="text-xs text-surface-600">{item.vendor}</span>}
+                      {item.vendor && <span className="text-xs text-surface-500">{item.vendor}</span>}
                       {canEdit && (
                         <button onClick={() => handleUnassignGear(item.id)} className="text-surface-700 hover:text-red-400 p-1 rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" title="Remove from day">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -902,7 +902,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                   <h3 className="text-xs font-semibold text-surface-400 uppercase tracking-[0.04em]">
                     Script Pages (Sides)
                   </h3>
-                  <span className="text-[11px] text-surface-600">Included in print export</span>
+                  <span className="text-[11px] text-surface-500">Included in print export</span>
                 </div>
                 <div className="space-y-4">
                   {selectedDay.scenes.map(scene => {
@@ -915,7 +915,7 @@ export default function SchedulePackPage({ params }: { params: { id: string } })
                         </div>
                         <div className="px-5 py-3 font-mono text-[11px] leading-relaxed space-y-0.5 max-h-80 overflow-y-auto">
                           {content.length === 0 ? (
-                            <p className="text-surface-600 italic">No content found for this scene.</p>
+                            <p className="text-surface-500 italic">No content found for this scene.</p>
                           ) : content.map(el => renderScriptElement(el))}
                         </div>
                       </div>

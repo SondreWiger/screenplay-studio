@@ -329,7 +329,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                       placeholder={field === 'est_time' ? '1h30m' : ''} />
                   ))}
                   <button onClick={() => setForm({ ...form, advanced_schedule: form.advanced_schedule.filter((_, j) => j !== i) })}
-                    className="text-surface-600 hover:text-red-400 text-lg leading-none">×</button>
+                    className="text-surface-500 hover:text-red-400 text-lg leading-none">×</button>
                 </div>
               ))}
             </div>
@@ -386,7 +386,7 @@ export default function CallSheetPage({ params }: { params: { id: string } }) {
                       className="bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-xs text-white w-full" />
                   ))}
                   <button onClick={() => setForm({ ...form, crew_calls: form.crew_calls.filter((_, j) => j !== i) })}
-                    className="text-surface-600 hover:text-red-400 text-lg leading-none">×</button>
+                    className="text-surface-500 hover:text-red-400 text-lg leading-none">×</button>
                 </div>
               ))}
             </div>

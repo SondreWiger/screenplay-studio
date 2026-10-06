@@ -450,7 +450,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
             <div className="lg:col-span-2">
               {!selected ? (
                 <div className="h-full flex items-center justify-center rounded-xl border border-surface-800 bg-surface-900/20 min-h-[300px]">
-                  <p className="text-sm text-surface-600">Select a cast member to view details</p>
+                  <p className="text-sm text-surface-500">Select a cast member to view details</p>
                 </div>
               ) : (
                 <div className="rounded-xl border border-surface-800 bg-surface-900/40">
@@ -546,7 +546,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                         </Button>
                       )}
                       {actorDocs(selected.id).length === 0 ? (
-                        <p className="text-sm text-surface-600 text-center py-8">No documents yet.</p>
+                        <p className="text-sm text-surface-500 text-center py-8">No documents yet.</p>
                       ) : (
                         actorDocs(selected.id).map(doc => {
                           const dt = docTypeMeta(doc.doc_type);
@@ -600,7 +600,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                         </Button>
                       )}
                       {actorPayments(selected.id).length === 0 ? (
-                        <p className="text-sm text-surface-600 text-center py-8">No payments yet.</p>
+                        <p className="text-sm text-surface-500 text-center py-8">No payments yet.</p>
                       ) : (
                         actorPayments(selected.id).map(pay => {
                           const pm = paymentStatusMeta(pay.status);
@@ -612,7 +612,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                                   <span className={cn('text-[11px] px-2 py-0.5 rounded-full font-medium', pm.color)}>{pm.label}</span>
                                 </div>
                                 {pay.description && <p className="text-xs text-surface-400 mt-0.5">{pay.description}</p>}
-                                <div className="flex items-center gap-3 mt-1 text-[11px] text-surface-600 flex-wrap">
+                                <div className="flex items-center gap-3 mt-1 text-[11px] text-surface-500 flex-wrap">
                                   {pay.due_date && <span>Due {new Date(pay.due_date).toLocaleDateString()}</span>}
                                   {pay.period_start && pay.period_end && <span>{new Date(pay.period_start).toLocaleDateString()} – {new Date(pay.period_end).toLocaleDateString()}</span>}
                                   {pay.paid_at && <span className="text-green-400">Paid {new Date(pay.paid_at).toLocaleDateString()}</span>}
@@ -671,7 +671,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
           </div>
 
           {filteredPayments.length === 0 ? (
-            <p className="text-sm text-surface-600 text-center py-12">No payments {payFilter !== 'all' ? `with status "${payFilter}"` : 'yet'}.</p>
+            <p className="text-sm text-surface-500 text-center py-12">No payments {payFilter !== 'all' ? `with status "${payFilter}"` : 'yet'}.</p>
           ) : (
             <div className="space-y-2">
               {filteredPayments.map(pay => {
@@ -688,7 +688,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                         )}
                       </div>
                       {pay.description && <p className="text-xs text-surface-500 mt-0.5">{pay.description}</p>}
-                      <div className="flex gap-3 mt-1 text-[11px] text-surface-600">
+                      <div className="flex gap-3 mt-1 text-[11px] text-surface-500">
                         {pay.due_date && <span>Due {new Date(pay.due_date).toLocaleDateString()}</span>}
                         {pay.paid_at && <span className="text-green-400">Paid {new Date(pay.paid_at).toLocaleDateString()}</span>}
                       </div>
@@ -760,7 +760,7 @@ export default function ActorsPage({ params }: { params: { id: string } }) {
                       <td className="p-3"><span className={cn('text-[11px] px-2 py-0.5 rounded-full border', meta.color)}>{meta.label}</span></td>
                       <td className="p-3 text-right text-xs text-green-400 font-medium">{paid > 0 ? formatCurrency(paid) : '—'}</td>
                       <td className="p-3 text-right text-xs font-medium">
-                        <span className={owed > 0 ? 'text-yellow-400' : 'text-surface-600'}>{owed > 0 ? formatCurrency(owed) : '—'}</span>
+                        <span className={owed > 0 ? 'text-yellow-400' : 'text-surface-500'}>{owed > 0 ? formatCurrency(owed) : '—'}</span>
                       </td>
                       <td className="p-3 text-center text-xs text-surface-500">{docs}</td>
                     </tr>

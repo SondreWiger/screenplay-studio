@@ -114,7 +114,7 @@ export default function ShowcasePage() {
                 key={s}
                 onClick={() => setSortBy(s)}
                 className={`px-3 py-1.5 text-xs uppercase tracking-[0.04em] capitalize transition-colors ${
-                  sortBy === s ? 'text-white' : 'text-white/40 hover:text-white'
+                  sortBy === s ? 'text-white' : 'text-white/50 hover:text-white'
                 }`}
                 style={sortBy === s ? { background: '#FF5F1F' } : {}}
               >
@@ -248,7 +248,7 @@ export default function ShowcasePage() {
                       {project.title}
                     </h3>
                     {(project.showcase_description || project.logline) && (
-                      <p className="text-sm text-white/40 mt-1 line-clamp-2">
+                      <p className="text-sm text-white/50 mt-1 line-clamp-2">
                         {project.showcase_description || project.logline}
                       </p>
                     )}

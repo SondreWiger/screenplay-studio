@@ -263,7 +263,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
                                 canEdit
                                   ? 'cursor-pointer active:bg-surface-700/60 hover:bg-surface-700/30'
                                   : '',
-                                value ? 'text-surface-200' : 'text-surface-600 italic',
+                                value ? 'text-surface-200' : 'text-surface-500 italic',
                               )}
                             >
                               {isSavingThis ? (
@@ -349,7 +349,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
                                     className={cn(
                                       'min-h-[36px] rounded px-2 py-1 transition-colors',
                                       canEdit ? 'cursor-pointer hover:bg-surface-700/40' : '',
-                                      value ? 'text-surface-200' : 'text-surface-600 italic',
+                                      value ? 'text-surface-200' : 'text-surface-500 italic',
                                     )}
                                   >
                                     {saving === `${scene.id}__${activeChar}` ? (
@@ -368,7 +368,7 @@ export default function ContinuityPage({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            <p className="text-[11px] text-surface-600 mt-3">⌘↵ to save · Esc to cancel</p>
+            <p className="text-[11px] text-surface-500 mt-3">⌘↵ to save · Esc to cancel</p>
           </div>
         </>
       )}

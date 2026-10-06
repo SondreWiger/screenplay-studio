@@ -234,7 +234,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
                                 ? 'bg-red-600 text-white'
                                 : isListening
                                   ? 'bg-surface-700 text-white hover:bg-red-600'
-                                  : 'bg-surface-800 text-surface-600 cursor-not-allowed'
+                                  : 'bg-surface-800 text-surface-500 cursor-not-allowed'
                             )}
                           >
                             {isTalking ? '🔴 TALK' : 'PTT'}

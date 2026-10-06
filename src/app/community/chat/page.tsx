@@ -264,7 +264,7 @@ export default function ChatPage() {
             {messages.length === 0 && (
               <div className="text-center py-20">
                 <div className="text-4xl mb-3">{activeChannel?.icon || '💬'}</div>
-                <p className="text-sm text-white/40">No messages yet. Start the conversation!</p>
+                <p className="text-sm text-white/50">No messages yet. Start the conversation!</p>
               </div>
             )}
 
@@ -290,7 +290,7 @@ export default function ChatPage() {
                     {compact ? (
                       <div className="w-9 shrink-0" />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-white/40 shrink-0" style={author?.avatar_url ? {} : { backgroundColor: `hsl(${(msg.author_id.charCodeAt(0) * 47) % 360}, 40%, 90%)`, color: `hsl(${(msg.author_id.charCodeAt(0) * 47) % 360}, 40%, 40%)` }}>
+                      <div className="w-9 h-9 rounded-full bg-surface-700 flex items-center justify-center text-xs font-bold text-white/50 shrink-0" style={author?.avatar_url ? {} : { backgroundColor: `hsl(${(msg.author_id.charCodeAt(0) * 47) % 360}, 40%, 90%)`, color: `hsl(${(msg.author_id.charCodeAt(0) * 47) % 360}, 40%, 40%)` }}>
                         {author?.avatar_url ? (
                           <img src={author.avatar_url} alt={author.full_name || 'Chat user avatar'} className="w-full h-full rounded-full object-cover" loading="lazy" />
                         ) : (
@@ -380,7 +380,7 @@ export default function ChatPage() {
             <div className="shrink-0 px-5 py-3 border-t border-white/10 bg-surface-900">
               {replyTo && (
                 <div className="flex items-center justify-between mb-2 px-3 py-1.5 bg-surface-900 rounded-lg border border-white/10">
-                  <div className="flex items-center gap-2 text-xs text-white/40">
+                  <div className="flex items-center gap-2 text-xs text-white/50">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                     <span>Replying to <strong className="text-white/70">{profiles[replyTo.author_id]?.full_name || 'someone'}</strong></span>
                     <span className="text-white/50 truncate max-w-[200px]">{replyTo.content}</span>

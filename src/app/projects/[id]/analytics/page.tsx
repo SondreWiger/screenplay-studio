@@ -332,7 +332,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                         </div>
                       ))}
                     </div>
-                    <p className="text-[11px] text-surface-600 mt-2 text-center">Elements created/edited per day</p>
+                    <p className="text-[11px] text-surface-500 mt-2 text-center">Elements created/edited per day</p>
                   </>
                 ) : (
                   <p className="text-sm text-surface-500 text-center py-8">No writing activity in this period.</p>
@@ -455,7 +455,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-between text-[11px] text-surface-600 mt-1">
+                    <div className="flex justify-between text-[11px] text-surface-500 mt-1">
                       <span>{workTime.daily[0]?.date.slice(5)}</span>
                       <span>{workTime.daily[workTime.daily.length - 1]?.date.slice(5)}</span>
                     </div>

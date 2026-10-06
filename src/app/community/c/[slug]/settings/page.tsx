@@ -131,7 +131,7 @@ export default function SettingsPage() {
         {(['appearance','rules','members','automod','pending'] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={cn('px-3 py-1.5 text-xs font-medium rounded-lg capitalize transition-colors',
-              tab === t ? 'text-white' : 'text-white/40 hover:text-white/70')}
+              tab === t ? 'text-white' : 'text-white/50 hover:text-white/70')}
             style={tab === t ? { background: accentColor + '33', color: accentColor } : undefined}>
             {t}
             {t === 'pending' && pendingPosts.length > 0 && (
@@ -148,7 +148,7 @@ export default function SettingsPage() {
       {tab === 'appearance' && (
         <div className="max-w-md space-y-5">
           <div>
-            <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-2">Icon</label>
+            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-2">Icon</label>
             <div className="flex flex-wrap gap-1.5">
               {ICON_OPTIONS.map(i => (
                 <button key={i} type="button" onClick={() => setIcon(i)}
@@ -160,19 +160,19 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-1.5">Name</label>
+            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-1.5">Name</label>
             <input value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2.5 text-sm text-white rounded-xl outline-none" style={{ background: 'rgba(255,255,255,0.05)' }} />
           </div>
           <div>
-            <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-1.5">Short Description</label>
+            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-1.5">Short Description</label>
             <input value={desc} onChange={e => setDesc(e.target.value)} maxLength={500} className="w-full px-3 py-2.5 text-sm text-white rounded-xl outline-none" style={{ background: 'rgba(255,255,255,0.05)' }} />
           </div>
           <div>
-            <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-1.5">Long Description</label>
+            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-1.5">Long Description</label>
             <textarea value={longDesc} onChange={e => setLongDesc(e.target.value)} rows={4} className="w-full px-3 py-2.5 text-sm text-white rounded-xl outline-none resize-none" style={{ background: 'rgba(255,255,255,0.05)' }} />
           </div>
           <div>
-            <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-2">Accent Colour</label>
+            <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-2">Accent Colour</label>
             <div className="flex flex-wrap gap-2 items-center">
               {ACCENT_PRESETS.map(c => (
                 <button key={c} type="button" onClick={() => setAccentColor(c)}
@@ -184,7 +184,7 @@ export default function SettingsPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-1.5">Visibility</label>
+              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-1.5">Visibility</label>
               <select value={visibility} onChange={e => setVisibility(e.target.value as any)}
                 className="w-full px-3 py-2 text-sm text-white rounded-xl outline-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <option value="public">Public</option>
@@ -193,7 +193,7 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-1.5">Posting Mode</label>
+              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-1.5">Posting Mode</label>
               <select value={postingMode} onChange={e => setPostingMode(e.target.value as any)}
                 className="w-full px-3 py-2 text-sm text-white rounded-xl outline-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <option value="open">Open</option>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
               <span className="text-xs font-medium text-[#7289da] uppercase tracking-[0.04em]">Discord Integration</span>
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-1.5">Invite URL <span className="normal-case text-white/25">(e.g. https://discord.gg/abc123)</span></label>
+              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-1.5">Invite URL <span className="normal-case text-white/45">(e.g. https://discord.gg/abc123)</span></label>
               <input
                 value={discordInviteUrl}
                 onChange={e => setDiscordInviteUrl(e.target.value)}
@@ -230,7 +230,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-1.5">Server ID <span className="normal-case text-white/25">(numeric guild ID for embed widget)</span></label>
+              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-1.5">Server ID <span className="normal-case text-white/45">(numeric guild ID for embed widget)</span></label>
               <input
                 value={discordServerId}
                 onChange={e => setDiscordServerId(e.target.value)}
@@ -238,27 +238,27 @@ export default function SettingsPage() {
                 className="w-full px-3 py-2.5 text-sm text-white rounded-xl outline-none"
                 style={{ background: 'rgba(255,255,255,0.05)' }}
               />
-              <p className="mt-1 text-[11px] text-white/25">Found in Discord Server Settings → Widget. Required for the live member count embed.</p>
+              <p className="mt-1 text-[11px] text-white/45">Found in Discord Server Settings → Widget. Required for the live member count embed.</p>
             </div>
             {/* Chat mode */}
             <div className="pt-1 border-t border-white/10">
-              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em] block mb-2">Chat Tab Behaviour</label>
+              <label className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em] block mb-2">Chat Tab Behaviour</label>
               <div className="flex gap-2">
                 <button type="button" onClick={() => setChatMode('chat')}
                   className={cn('flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition-colors',
-                    chatMode === 'chat' ? 'text-white border-transparent' : 'border-white/10 text-white/40 hover:text-white/70')}
+                    chatMode === 'chat' ? 'text-white border-transparent' : 'border-white/10 text-white/50 hover:text-white/70')}
                   style={chatMode === 'chat' ? { background: accentColor } : undefined}>
                   💬 Built-in chat
                 </button>
                 <button type="button" onClick={() => setChatMode('discord_only')}
                   className={cn('flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition-colors',
-                    chatMode === 'discord_only' ? 'text-white border-transparent' : 'border-white/10 text-white/40 hover:text-white/70')}
+                    chatMode === 'discord_only' ? 'text-white border-transparent' : 'border-white/10 text-white/50 hover:text-white/70')}
                   style={chatMode === 'discord_only' ? { background: '#5865F2' } : undefined}>
                   <svg className="w-3 h-3 inline mr-1" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.035.056a19.909 19.909 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
                   Discord only
                 </button>
               </div>
-              <p className="mt-1.5 text-[11px] text-white/25">
+              <p className="mt-1.5 text-[11px] text-white/45">
                 {chatMode === 'discord_only'
                   ? 'The Chat tab will show a \"Join Discord\" card instead of built-in channels.'
                   : 'The Chat tab shows the built-in Discord-style channel chat.'}
@@ -278,19 +278,19 @@ export default function SettingsPage() {
         <div className="max-w-md space-y-4">
           {rules.map((rule, i) => (
             <div key={rule.id} className="flex items-start gap-3 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <span className="text-xs font-bold w-5 text-white/40 pt-0.5">{i+1}</span>
+              <span className="text-xs font-bold w-5 text-white/50 pt-0.5">{i+1}</span>
               <div className="flex-1">
                 <p className="text-sm font-medium">{rule.title}</p>
-                {rule.description && <p className="text-xs text-white/40 mt-0.5">{rule.description}</p>}
+                {rule.description && <p className="text-xs text-white/50 mt-0.5">{rule.description}</p>}
               </div>
               <button onClick={() => deleteRule(rule.id)} className="text-white/20 hover:text-red-400 transition text-xs">✕</button>
             </div>
           ))}
           <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)' }}>
             <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="New rule title *"
-              className="w-full px-3 py-2 text-sm text-white placeholder:text-white/25 rounded-lg outline-none" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              className="w-full px-3 py-2 text-sm text-white placeholder:text-white/45 rounded-lg outline-none" style={{ background: 'rgba(255,255,255,0.06)' }} />
             <input value={newDesc2} onChange={e => setNewDesc2(e.target.value)} placeholder="Description (optional)"
-              className="w-full px-3 py-2 text-sm text-white placeholder:text-white/25 rounded-lg outline-none" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              className="w-full px-3 py-2 text-sm text-white placeholder:text-white/45 rounded-lg outline-none" style={{ background: 'rgba(255,255,255,0.06)' }} />
             <button onClick={addRule} disabled={!newTitle.trim()}
               className="px-3 py-1.5 text-xs font-semibold rounded-lg disabled:opacity-40 hover:opacity-90" style={{ background: accentColor }}>
               Add Rule
@@ -303,7 +303,7 @@ export default function SettingsPage() {
       {tab === 'members' && (
         <div className="space-y-3">
           <input value={memberQ} onChange={e => setMemberQ(e.target.value)} placeholder="Search members…"
-            className="px-3 py-2 text-sm text-white placeholder:text-white/25 rounded-xl outline-none w-64" style={{ background: 'rgba(255,255,255,0.05)' }} />
+            className="px-3 py-2 text-sm text-white placeholder:text-white/45 rounded-xl outline-none w-64" style={{ background: 'rgba(255,255,255,0.05)' }} />
           <div className="space-y-2">
             {filteredMembers.map(m => {
               const u = (m as any).user;
@@ -334,19 +334,19 @@ export default function SettingsPage() {
       {tab === 'automod' && (
         <div className="space-y-3">
           {flags.length === 0 ? (
-            <p className="text-sm text-white/40">No unresolved flags. ✅</p>
+            <p className="text-sm text-white/50">No unresolved flags. ✅</p>
           ) : flags.map(f => (
             <div key={f.id} className="flex items-start gap-3 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <span className={cn('text-[11px] px-1.5 py-0.5 rounded uppercase flex-shrink-0 mt-0.5',
                 f.severity === 'critical' ? 'bg-red-600/30 text-red-300'
                 : f.severity === 'high'   ? 'bg-red-500/20 text-red-400'
                 : f.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400'
-                                          : 'bg-white/10 text-white/40')}>
+                                          : 'bg-white/10 text-white/50')}>
                 {f.severity}
               </span>
               <div className="flex-1">
                 <p className="text-xs text-white/70">{f.reason}</p>
-                <p className="text-[11px] text-white/30 mt-0.5">{f.content_type} · {new Date(f.created_at!).toLocaleString()}</p>
+                <p className="text-[11px] text-white/45 mt-0.5">{f.content_type} · {new Date(f.created_at!).toLocaleString()}</p>
               </div>
               <button onClick={() => resolveFlag(f.id)} className="text-xs px-2 py-1 rounded-lg hover:opacity-80" style={{ background: accentColor + '33', color: accentColor }}>Resolve</button>
             </div>
@@ -358,12 +358,12 @@ export default function SettingsPage() {
       {tab === 'pending' && (
         <div className="space-y-3">
           {pendingPosts.length === 0 ? (
-            <p className="text-sm text-white/40">No pending posts.</p>
+            <p className="text-sm text-white/50">No pending posts.</p>
           ) : pendingPosts.map(p => (
             <div key={p.id} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <p className="text-sm font-medium">{p.title}</p>
               {p.description && <p className="text-xs text-white/50 mt-1 line-clamp-2">{p.description}</p>}
-              <p className="text-[11px] text-white/30 mt-1.5">by {(p as any).author?.full_name ?? 'Anonymous'} · {new Date(p.created_at!).toLocaleDateString()}</p>
+              <p className="text-[11px] text-white/45 mt-1.5">by {(p as any).author?.full_name ?? 'Anonymous'} · {new Date(p.created_at!).toLocaleDateString()}</p>
               <div className="flex gap-2 mt-2">
                 <button onClick={() => moderatePost(p.id, 'approved')}
                   className="px-3 py-1 text-xs font-semibold rounded-lg" style={{ background: '#10b98133', color: '#10b981' }}>Approve</button>

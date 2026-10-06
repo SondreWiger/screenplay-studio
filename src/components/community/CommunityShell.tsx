@@ -88,7 +88,7 @@ export function CommunityShell({ children }: { children: ReactNode }) {
                     href={tab.href}
                     className={cn(
                       'relative shrink-0 whitespace-nowrap px-2 py-4 text-[11px] font-semibold uppercase tracking-[0.06em] transition-colors xl:px-2.5',
-                      active ? 'text-white' : 'text-white/40 hover:text-white/80',
+                      active ? 'text-white' : 'text-white/50 hover:text-white/80',
                     )}
                   >
                     {tab.label}
@@ -105,7 +105,7 @@ export function CommunityShell({ children }: { children: ReactNode }) {
               {user ? (
                 <>
                   {messages && (
-                    <Link href="/messages" className="relative hidden rounded-lg p-2 text-white/40 transition-colors hover:bg-white/5 hover:text-white sm:block" aria-label="Messages">
+                    <Link href="/messages" className="relative hidden rounded-lg p-2 text-white/50 transition-colors hover:bg-white/5 hover:text-white sm:block" aria-label="Messages">
                       <MessageSquare className="h-5 w-5" />
                       {unreadDMs > 0 && <span className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-brand-500 ring-2 ring-surface-950" />}
                     </Link>
@@ -207,10 +207,10 @@ export function CommunityShell({ children }: { children: ReactNode }) {
             <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-6 w-6 items-center justify-center bg-brand-500 text-[10px] font-semibold text-white">SS</span>
-                <span className="text-[11px] uppercase tracking-[0.08em] text-white/40">Screenplay Studio Community</span>
+                <span className="text-[11px] uppercase tracking-[0.08em] text-white/50">Screenplay Studio Community</span>
                 <SiteVersion />
               </div>
-              <nav className="flex flex-wrap gap-x-5 gap-y-2 text-[11px] uppercase tracking-[0.06em] text-white/35" aria-label="Community footer">
+              <nav className="flex flex-wrap gap-x-5 gap-y-2 text-[11px] uppercase tracking-[0.06em] text-white/50" aria-label="Community footer">
                 <Link href="/community/showcase" className="hover:text-white">Showcase</Link>
                 <Link href="/community/challenges" className="hover:text-white">Challenges</Link>
                 <Link href="/legal/community-guidelines" className="hover:text-white">Guidelines</Link>

@@ -95,7 +95,7 @@ export default function ProUpgradePage() {
       <div className="min-h-screen" style={{ background: 'rgb(var(--surface-950))' }}>
         <AppHeader />
         <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <p className="text-white/30 text-sm">Pro subscriptions are not available yet.</p>
+          <p className="text-white/45 text-sm">Pro subscriptions are not available yet.</p>
         </div>
       </div>
     );
@@ -196,7 +196,7 @@ export default function ProUpgradePage() {
             Tools for productions<br />
             <span style={{ color: '#FF5F1F' }}>that need more.</span>
           </h1>
-          <p className="text-base text-white/30 max-w-2xl mx-auto mb-12 leading-relaxed">
+          <p className="text-base text-white/45 max-w-2xl mx-auto mb-12 leading-relaxed">
             Free is the whole product — writing, planning, sharing, version history, analytics and every export format.
             Pro adds capacity and the sister apps. Studio adds a full production-office tool suite for shoots that need it.
           </p>
@@ -356,7 +356,7 @@ export default function ProUpgradePage() {
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>WHAT PRO ADDS</h2>
-          <p className="text-white/30 text-sm">On top of everything in Free — nothing in Free is held back.</p>
+          <p className="text-white/45 text-sm">On top of everything in Free — nothing in Free is held back.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRO_FEATURES.map((f) => (
@@ -379,7 +379,7 @@ export default function ProUpgradePage() {
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>THE PRODUCTION OFFICE</h2>
-          <p className="text-white/40 text-sm max-w-2xl mx-auto">
+          <p className="text-white/50 text-sm max-w-2xl mx-auto">
             {PRO_TOOLS.length} tools for productions with departments, budgets and deliverables — accounting, rights and clearances,
             distribution, VFX tracking and more. Add it to a single production for ${PRO_PRICING.project_lifetime.amount} once,
             or talk to us about Studio for your whole company.
@@ -450,7 +450,7 @@ export default function ProUpgradePage() {
           <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
         </div>
         <h2 className="text-2xl font-bold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>UPGRADE YOUR PRODUCTION.</h2>
-        <p className="text-white/30 text-sm mb-8 max-w-xl mx-auto leading-relaxed">
+        <p className="text-white/45 text-sm mb-8 max-w-xl mx-auto leading-relaxed">
           The free tools stay free. Pro is for when you need the things a paying production actually needs.
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">

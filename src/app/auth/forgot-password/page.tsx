@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
             <div className="w-3 h-px" style={{ background: '#FF5F1F' }} />
           </div>
           <h1 className="text-2xl font-semibold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>{t('auth.check_email')}</h1>
-          <p className="text-sm text-white/35 mb-8 leading-relaxed">
+          <p className="text-sm text-white/50 mb-8 leading-relaxed">
             {t('auth.reset_check_inbox')}{' '}
             <span className="text-white font-mono">{sentEmail}</span>,
             {t('auth.reset_check_spam')}
@@ -137,7 +137,7 @@ export default function ForgotPasswordPage() {
               <span className="ss-label">{t('auth.password_reset')}</span>
             </div>
             <h1 className="text-2xl font-semibold text-white" style={{ letterSpacing: '-0.03em' }}>{t('auth.password_reset')}</h1>
-            <p className="mt-1 text-sm text-white/30">
+            <p className="mt-1 text-sm text-white/45">
               {t('auth.reset_instruction')}
             </p>
           </div>

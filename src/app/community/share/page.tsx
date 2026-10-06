@@ -464,7 +464,7 @@ export default function ShareScriptPage() {
 
       <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-3xl font-bold text-white tracking-tight mb-1">Create a Post</h1>
-        <p className="text-white/35 mb-8 text-sm">Share writing, scripts, or just start a discussion — always posted to a community.</p>
+        <p className="text-white/50 mb-8 text-sm">Share writing, scripts, or just start a discussion — always posted to a community.</p>
 
         {error && (
           <div className="mb-6 rounded-xl px-4 py-3 text-sm text-red-400" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}>{error}</div>
@@ -503,7 +503,7 @@ export default function ShareScriptPage() {
 
             {/* Search input */}
             <div className="relative">
-              <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/30 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/45 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
               </svg>
               <input
@@ -512,7 +512,7 @@ export default function ShareScriptPage() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
                 placeholder="Search communities…"
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-white/15 bg-surface-900 text-sm text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-white/15 bg-surface-900 text-sm text-white/90 placeholder:text-white/45 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
               />
             </div>
 
@@ -543,7 +543,7 @@ export default function ShareScriptPage() {
                         <span className="text-xl leading-none">{c.icon ?? '🎬'}</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-white/90 truncate">c/{c.slug}</p>
-                          {c.name && <p className="text-[11px] text-white/35 truncate">{c.name}{c.member_count ? ` · ${c.member_count} members` : ''}</p>}
+                          {c.name && <p className="text-[11px] text-white/50 truncate">{c.name}{c.member_count ? ` · ${c.member_count} members` : ''}</p>}
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           {isJoined && !communitySearch && <span className="text-[11px] font-bold text-brand-500">JOINED</span>}
@@ -558,7 +558,7 @@ export default function ShareScriptPage() {
                     );
                   })}
                   {visible.length === 0 && communitySearch && (
-                    <p className="px-3 py-4 text-sm text-white/30 text-center">No communities found for &quot;{communitySearch}&quot;</p>
+                    <p className="px-3 py-4 text-sm text-white/45 text-center">No communities found for &quot;{communitySearch}&quot;</p>
                   )}
                 </div>
               ) : null;
@@ -572,7 +572,7 @@ export default function ShareScriptPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What's this post about?"
-              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-base text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-base text-white/90 placeholder:text-white/45 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
             />
           </div>
 
@@ -584,7 +584,7 @@ export default function ShareScriptPage() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder={"What's on your mind?\n\nShare a concept, request feedback, start a discussion — or just drop some thoughts. You can attach a script below if you want."}
               rows={7}
-              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-3 text-sm text-white/90 placeholder:text-white/25 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-y transition-colors leading-relaxed"
+              className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-3 text-sm text-white/90 placeholder:text-white/45 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-y transition-colors leading-relaxed"
             />
           </div>
 
@@ -621,7 +621,7 @@ export default function ShareScriptPage() {
                     value={coverUrl}
                     onChange={(e) => setCoverUrl(e.target.value)}
                     placeholder="https://..."
-                    className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+                    className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/45 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
                   />
                 </div>
 
@@ -647,7 +647,7 @@ export default function ShareScriptPage() {
               <button
                 onClick={() => setInputMode('project')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  inputMode === 'project' ? 'text-white' : 'text-white/40 hover:text-white'
+                  inputMode === 'project' ? 'text-white' : 'text-white/50 hover:text-white'
                 }`}
                 style={inputMode === 'project' ? { background: 'rgba(255,95,31,0.15)', color: '#FF5F1F' } : {}}
               >
@@ -656,7 +656,7 @@ export default function ShareScriptPage() {
               <button
                 onClick={() => setInputMode('text')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  inputMode === 'text' ? 'text-white' : 'text-white/40 hover:text-white'
+                  inputMode === 'text' ? 'text-white' : 'text-white/50 hover:text-white'
                 }`}
                 style={inputMode === 'text' ? { background: 'rgba(255,95,31,0.15)', color: '#FF5F1F' } : {}}
               >
@@ -665,7 +665,7 @@ export default function ShareScriptPage() {
               <button
                 onClick={() => setInputMode('file')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  inputMode === 'file' ? 'text-white' : 'text-white/40 hover:text-white'
+                  inputMode === 'file' ? 'text-white' : 'text-white/50 hover:text-white'
                 }`}
                 style={inputMode === 'file' ? { background: 'rgba(255,95,31,0.15)', color: '#FF5F1F' } : {}}
               >
@@ -679,7 +679,7 @@ export default function ShareScriptPage() {
                 {projects.length === 0 ? (
                   <div className="rounded-xl border-2 border-dashed border-white/10 py-10 text-center">
                     <div className="text-3xl mb-2">📝</div>
-                    <p className="text-sm text-white/40 mb-1">No projects yet</p>
+                    <p className="text-sm text-white/50 mb-1">No projects yet</p>
                     <p className="text-xs text-white/50">Create a project in the dashboard first, or use plain text mode.</p>
                   </div>
                 ) : (
@@ -711,7 +711,7 @@ export default function ShareScriptPage() {
                           >
                             <div className="flex items-start gap-3">
                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
-                                isSelected ? 'bg-brand-500 text-white' : 'bg-surface-800 text-white/40'
+                                isSelected ? 'bg-brand-500 text-white' : 'bg-surface-800 text-white/50'
                               }`}>
                                 {p.title?.[0]?.toUpperCase() || '?'}
                               </div>
@@ -742,7 +742,7 @@ export default function ShareScriptPage() {
                     {/* Script version selector (if project has multiple scripts) */}
                     {selectedProject && projectScripts.length > 1 && (
                       <div className="mb-4">
-                        <label className="block text-xs font-medium text-white/40 mb-1.5">Script Version</label>
+                        <label className="block text-xs font-medium text-white/50 mb-1.5">Script Version</label>
                         <div className="flex flex-wrap gap-2">
                           {projectScripts.map((s) => (
                             <button
@@ -766,7 +766,7 @@ export default function ShareScriptPage() {
                     {loadingScript && (
                       <div className="flex items-center justify-center py-12 rounded-xl border border-white/10 bg-surface-900">
                         <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/15 border-t-brand-500" />
-                        <span className="ml-3 text-sm text-white/40">Loading screenplay...</span>
+                        <span className="ml-3 text-sm text-white/50">Loading screenplay...</span>
                       </div>
                     )}
 
@@ -805,7 +805,7 @@ export default function ShareScriptPage() {
                   onChange={(e) => { setScriptContent(e.target.value); setScriptElements(null); }}
                   placeholder="Paste or write your screenplay here..."
                   rows={16}
-                  className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none transition-colors font-mono leading-relaxed"
+                  className="w-full rounded-lg border border-white/15 bg-surface-900 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/45 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none transition-colors font-mono leading-relaxed"
                 />
                 <p className="text-xs text-white/50 mt-1">Tip: Use &quot;From My Projects&quot; to share with proper screenplay formatting.</p>
               </div>
@@ -843,9 +843,9 @@ export default function ShareScriptPage() {
                       </p>
                       <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
                         {(['fdx', 'fountain', 'txt', 'pdf'] as const).map((fmt) => (
-                          <span key={fmt} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-surface-800 text-white/40 border border-white/10">
+                          <span key={fmt} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-surface-800 text-white/50 border border-white/10">
                             .{fmt}
-                            <span className="text-white/25 font-normal normal-case tracking-normal">·</span>
+                            <span className="text-white/45 font-normal normal-case tracking-normal">·</span>
                             <span className="font-normal normal-case tracking-normal">{FORMAT_LABELS[fmt]}</span>
                           </span>
                         ))}
@@ -862,7 +862,7 @@ export default function ShareScriptPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">{attachedFile.name}</p>
-                        <p className="text-xs text-white/40">
+                        <p className="text-xs text-white/50">
                           {formatFileSize(attachedFile.size)}
                           {attachedFileType && (
                             <> · <span className="text-brand-500">
@@ -873,7 +873,7 @@ export default function ShareScriptPage() {
                       </div>
                       <button
                         onClick={handleRemoveFile}
-                        className="text-white/30 hover:text-white/70 transition-colors text-lg leading-none px-1"
+                        className="text-white/45 hover:text-white/70 transition-colors text-lg leading-none px-1"
                         title="Remove file"
                       >
                         ✕
@@ -969,7 +969,7 @@ export default function ShareScriptPage() {
                 </button>
               )}
             </div>
-            <p className="text-xs text-white/40 mb-3">
+            <p className="text-xs text-white/50 mb-3">
               Credit others who helped create this post — they&apos;ll be notified and it&apos;ll appear on their stats.
             </p>
             <CollaboratorPicker
@@ -1038,7 +1038,7 @@ export default function ShareScriptPage() {
 
           {/* Submit */}
           <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <Link href="/community" className="text-sm text-white/40 hover:text-white/70 transition-colors">Cancel</Link>
+            <Link href="/community" className="text-sm text-white/50 hover:text-white/70 transition-colors">Cancel</Link>
             <button
               onClick={handleSubmit}
               disabled={submitting}

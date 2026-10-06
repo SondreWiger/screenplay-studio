@@ -180,7 +180,7 @@ function ResourceCard({ resource, canManage, userId, onPin, onDelete }: {
           <span key={t} className="text-[11px] bg-surface-800/50 px-1.5 py-0.5 rounded text-surface-500">#{t}</span>
         ))}
       </div>
-      <span className="text-[11px] text-surface-600">{new Date(resource.created_at).toLocaleDateString()}</span>
+      <span className="text-[11px] text-surface-500">{new Date(resource.created_at).toLocaleDateString()}</span>
     </Card>
   );
 }

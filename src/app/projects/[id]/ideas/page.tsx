@@ -435,7 +435,7 @@ function IdeaCard({
             {showMenu && (
               <div ref={menuRef} className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border border-surface-700 bg-surface-900 shadow-xl p-1 max-h-48 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                 <p className="text-[11px] font-medium text-surface-500 uppercase px-2 py-1">Scenes</p>
-                {scenes.length === 0 && <p className="text-xs text-surface-600 px-2 py-1">No scenes in script</p>}
+                {scenes.length === 0 && <p className="text-xs text-surface-500 px-2 py-1">No scenes in script</p>}
                 {scenes.map((s) => (
                   <button key={s.id} onClick={() => onToggleScene(s.id)}
                     className={cn(
@@ -455,7 +455,7 @@ function IdeaCard({
                 ))}
                 <div className="border-t border-surface-800 mt-1 pt-1">
                   <p className="text-[11px] font-medium text-surface-500 uppercase px-2 py-1">Characters</p>
-                  {characters.length === 0 && <p className="text-xs text-surface-600 px-2 py-1">No characters yet</p>}
+                  {characters.length === 0 && <p className="text-xs text-surface-500 px-2 py-1">No characters yet</p>}
                   {characters.map((c) => (
                     <button key={c.id} onClick={() => onToggleCharacter(c.id)}
                       className={cn(
@@ -490,7 +490,7 @@ function IdeaCard({
                   value={imageUrlDraft}
                   onChange={(e) => onImageUrlDraftChange(e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded border border-surface-700 bg-surface-800 px-2 py-1.5 text-xs text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500/50"
+                  className="w-full rounded border border-surface-700 bg-surface-800 px-2 py-1.5 text-xs text-white placeholder:text-surface-500 focus:outline-none focus:border-brand-500/50"
                   autoFocus
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSaveImage(); } if (e.key === 'Escape') onCloseImageInput(); }}
                 />
@@ -596,7 +596,7 @@ function IdeaDetailModal({ isOpen, idea, scenes, characters, onClose, onEdit, on
           </div>
         )}
 
-        <div className="text-[11px] text-surface-600">
+        <div className="text-[11px] text-surface-500">
           Created {idea.created_at ? timeAgo(idea.created_at) : 'unknown'}
         </div>
 

@@ -111,7 +111,7 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
       <div className="h-10 shrink-0 flex items-center px-3 gap-3 border-b border-white/5 bg-black/30 z-20">
         <Link
           href={isEpisodic ? `/projects/${params.id}/episodes` : `/projects/${params.id}`}
-          className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors"
+          className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white/70 transition-colors"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -130,7 +130,7 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
         {currentProject && (
           <>
             <span className="text-white/20">·</span>
-            <span className="text-xs text-white/40 truncate max-w-[200px]">{currentProject.title}</span>
+            <span className="text-xs text-white/50 truncate max-w-[200px]">{currentProject.title}</span>
           </>
         )}
 
@@ -143,7 +143,7 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-3 text-[11px] text-white/25">
+        <div className="flex items-center gap-3 text-[11px] text-white/45">
           <span>Double-click canvas = add node</span>
           <span>·</span>
           <span>Hover node ports to draw edges</span>

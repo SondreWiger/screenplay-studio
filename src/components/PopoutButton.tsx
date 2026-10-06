@@ -112,11 +112,11 @@ export function PopoutBar({ projectId, projectTitle, pageLabel }: PopoutBarProps
       {/* Center — sync status */}
       <div className="flex items-center gap-1.5">
         <span className={`w-1.5 h-1.5 rounded-full transition-colors ${synced ? 'bg-green-400' : 'bg-surface-700'}`} />
-        <span className={`font-medium transition-colors ${synced ? 'text-green-400' : 'text-surface-600'}`}>
+        <span className={`font-medium transition-colors ${synced ? 'text-green-400' : 'text-surface-500'}`}>
           {synced ? 'Synced' : 'Standalone'}
         </span>
         {peerCount > 0 && (
-          <span className="text-surface-600 ml-1">· {peerCount} window{peerCount !== 1 ? 's' : ''}</span>
+          <span className="text-surface-500 ml-1">· {peerCount} window{peerCount !== 1 ? 's' : ''}</span>
         )}
       </div>
 
@@ -124,7 +124,7 @@ export function PopoutBar({ projectId, projectTitle, pageLabel }: PopoutBarProps
       <button
         onClick={() => window.close()}
         title="Close popout window"
-        className="flex items-center gap-1 px-2 py-1 rounded text-surface-600 hover:text-white hover:bg-surface-800 transition-colors"
+        className="flex items-center gap-1 px-2 py-1 rounded text-surface-500 hover:text-white hover:bg-surface-800 transition-colors"
       >
         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

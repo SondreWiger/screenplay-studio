@@ -380,7 +380,7 @@ function KpiTile({ def, data, selected, onSelect }: { def: MetricDef; data: Anal
       <AnimatedNumber value={kpi.current} format={fmt} className="mt-1.5 text-xl font-bold text-white" />
       <div className="mt-1 flex items-center gap-1.5" title={kpi.previous != null ? `Previous period: ${fmt(kpi.previous)}` : undefined}>
         <Delta value={pctChange(kpi.current, kpi.previous)} invert={def.invert} />
-        {kpi.previous != null && <span className="hidden truncate text-[10px] text-surface-600 2xl:inline">vs {fmt(kpi.previous)}</span>}
+        {kpi.previous != null && <span className="hidden truncate text-[10px] text-surface-500 2xl:inline">vs {fmt(kpi.previous)}</span>}
       </div>
       {values && <Sparkline values={values} color={def.color} height={26} className="mt-2" />}
     </Tag>
@@ -458,7 +458,7 @@ function MainChart({ data, metric, compare, setCompare, setMetric, className }: 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wide text-surface-600">{label}</p>
+      <p className="text-[10px] uppercase tracking-wide text-surface-500">{label}</p>
       <p className="text-sm font-semibold tabular-nums text-surface-200">{value}</p>
     </div>
   );
@@ -466,7 +466,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function Leaderboard({ rows }: { rows: { id: string; href: string | null; lead: ReactNode; title: string; sub?: string; value: number }[] }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
-  if (!rows.length) return <p className="py-6 text-center text-xs text-surface-600">No tracked writing time in this period</p>;
+  if (!rows.length) return <p className="py-6 text-center text-xs text-surface-500">No tracked writing time in this period</p>;
   return (
     <ol className="space-y-1">
       {rows.map((r, i) => (
@@ -478,7 +478,7 @@ function Leaderboard({ rows }: { rows: { id: string; href: string | null; lead: 
               animate={{ width: `${(r.value / max) * 100}%` }}
               transition={{ duration: 0.8, delay: 0.05 * i }}
             />
-            <span className="relative w-4 text-right text-[11px] font-bold tabular-nums text-surface-600">{i + 1}</span>
+            <span className="relative w-4 text-right text-[11px] font-bold tabular-nums text-surface-500">{i + 1}</span>
             <span className="relative">{r.lead}</span>
             <span className="relative min-w-0 flex-1">
               <span className="block truncate text-sm text-surface-100 group-hover:text-white">{r.title}</span>

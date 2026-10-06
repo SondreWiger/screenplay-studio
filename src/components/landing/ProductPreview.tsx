@@ -72,7 +72,7 @@ export function ProductPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]/80" />
-          <div className="mx-auto hidden rounded-md bg-surface-950/80 px-3 py-0.5 font-mono text-[10px] text-white/30 sm:block">
+          <div className="mx-auto hidden rounded-md bg-surface-950/80 px-3 py-0.5 font-mono text-[10px] text-white/45 sm:block">
             screenplaystudio.fun/projects/the-long-night/script
           </div>
         </div>
@@ -85,7 +85,7 @@ export function ProductPreview() {
               <span className="truncate text-[11px] font-semibold text-white/80">The Long Night</span>
             </div>
             {SIDEBAR.map((s) => (
-              <div key={s} className={`relative mb-0.5 rounded-md px-2 py-1.5 text-[11px] ${s === 'Script' ? 'bg-white/[0.06] text-white' : 'text-white/35'}`}>
+              <div key={s} className={`relative mb-0.5 rounded-md px-2 py-1.5 text-[11px] ${s === 'Script' ? 'bg-white/[0.06] text-white' : 'text-white/50'}`}>
                 {s === 'Script' && <span className="absolute left-0 top-1/2 h-3 w-0.5 -translate-y-1/2 rounded-full bg-brand-400" />}
                 {s}
               </div>
@@ -118,7 +118,7 @@ export function ProductPreview() {
 
           {/* Breakdown rail */}
           <div className="hidden w-48 shrink-0 space-y-3 border-l border-white/[0.06] p-3 lg:block">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-white/30">Scene 14 breakdown</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-white/45">Scene 14 breakdown</p>
             {[
               { k: 'Cast', v: 'Mara · Okafor · Patient', c: '#a78bfa' },
               { k: 'Props', v: 'Chart · Monitor', c: '#fbbf24' },
@@ -132,7 +132,7 @@ export function ProductPreview() {
               </div>
             ))}
             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2">
-              <div className="flex justify-between text-[9px] font-semibold uppercase tracking-[0.06em] text-white/40">
+              <div className="flex justify-between text-[9px] font-semibold uppercase tracking-[0.06em] text-white/50">
                 <span>Draft</span><span className="font-mono text-white/60">{Math.round(progress * 100)}%</span>
               </div>
               <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
@@ -145,7 +145,7 @@ export function ProductPreview() {
                   {['A', 'S', 'K'][i]}
                 </span>
               ))}
-              <span className="pl-3 text-[10px] text-white/40">3 writing now</span>
+              <span className="pl-3 text-[10px] text-white/50">3 writing now</span>
             </div>
           </div>
         </div>

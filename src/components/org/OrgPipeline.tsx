@@ -100,7 +100,7 @@ export function OrgPipeline({ companyId, canManage }: Props) {
                   <span className="text-xs text-surface-500">({stageProjects.length})</span>
                 </div>
                 {canManage && !stage.is_default && (
-                  <button onClick={() => deleteStage(stage.id)} className="text-surface-600 hover:text-red-400 text-xs">✕</button>
+                  <button onClick={() => deleteStage(stage.id)} className="text-surface-500 hover:text-red-400 text-xs">✕</button>
                 )}
               </div>
               <div className="p-2 space-y-2 min-h-[200px]">

@@ -222,7 +222,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
                 <span className={cn('text-xs font-medium uppercase tracking-[0.04em]', col.color)}>
                   {col.label}
                 </span>
-                <span className="text-[11px] text-surface-600 bg-surface-900/60 px-1.5 py-0.5 rounded-full">
+                <span className="text-[11px] text-surface-500 bg-surface-900/60 px-1.5 py-0.5 rounded-full">
                   {colStories.length}
                 </span>
               </div>
@@ -289,7 +289,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
               {col.status === 'draft' && (
                 <button
                   onClick={() => { setEditStory(null); setForm(DEFAULT_FORM); setShowPitchModal(true); }}
-                  className="mx-2 mb-2 mt-1 py-1.5 text-[11px] text-surface-600 hover:text-surface-400 border border-dashed border-surface-800 hover:border-surface-600 rounded text-center transition-colors flex-shrink-0"
+                  className="mx-2 mb-2 mt-1 py-1.5 text-[11px] text-surface-500 hover:text-surface-400 border border-dashed border-surface-800 hover:border-surface-600 rounded text-center transition-colors flex-shrink-0"
                 >
                   + Pitch a story
                 </button>
@@ -376,7 +376,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
               value={form.source}
               onChange={e => setForm(p => ({ ...p, source: e.target.value }))}
               placeholder="e.g. staff, wire:ap, wire:reuters, tip"
-              className="w-full bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-sm text-white placeholder:text-surface-600"
+              className="w-full bg-surface-800 border border-surface-700 rounded px-2 py-1.5 text-sm text-white placeholder:text-surface-500"
             />
           </div>
 

@@ -613,7 +613,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <span className="truncate flex-1">{folder.name}</span>
                 {canEdit && (
                   <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-opacity">
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-500 hover:text-red-400 transition-opacity">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 )}
@@ -637,13 +637,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                     {doc.is_pinned && <span className="text-[11px]">PIN</span>}
                     <span className="truncate">{doc.title}</span>
                   </div>
-                  <span className="text-[11px] text-surface-600">
+                  <span className="text-[11px] text-surface-500">
                     {doc.word_count} words &middot; {new Date(doc.updated_at).toLocaleDateString()}
                   </span>
                 </div>
                 {canEdit && (
                   <button onClick={(e) => { e.stopPropagation(); handleDeleteDoc(doc.id); }}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-600 hover:text-red-400 transition-opacity shrink-0">
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-0.5 rounded text-surface-500 hover:text-red-400 transition-opacity shrink-0">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 )}
@@ -699,13 +699,13 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                       setDocuments((prev) => prev.map((d) => d.id === currentDoc.id ? { ...d, title } : d));
                     }, 600);
                   }}
-                  className="bg-transparent text-sm font-medium text-white w-full outline-none placeholder:text-surface-600"
+                  className="bg-transparent text-sm font-medium text-white w-full outline-none placeholder:text-surface-500"
                   placeholder="Document Title"
                   disabled={!canEdit}
                 />
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[11px] text-surface-500">{DOCUMENT_TYPE_LABELS[currentDoc.doc_type]}</span>
-                  <span className="text-[11px] text-surface-600">&middot;</span>
+                  <span className="text-[11px] text-surface-500">&middot;</span>
                   <span className="text-[11px] text-surface-500">
                     {(currentDoc.content || '').split(/\s+/).filter(Boolean).length} words
                   </span>
@@ -714,7 +714,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                       <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" /> Saving
                     </span>
                   ) : lastSaved && (
-                    <span className="flex items-center gap-1 text-[11px] text-surface-600">
+                    <span className="flex items-center gap-1 text-[11px] text-surface-500">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Saved
                     </span>
                   )}
@@ -810,7 +810,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                       onChange={(e) => handleContentChange(e.target.value)}
                       onMouseUp={handleEditorSelect}
                       onKeyUp={handleEditorSelect}
-                      className="w-full h-full min-h-[600px] p-8 bg-transparent text-surface-200 text-sm font-mono leading-relaxed outline-none resize-none placeholder:text-surface-600"
+                      className="w-full h-full min-h-[600px] p-8 bg-transparent text-surface-200 text-sm font-mono leading-relaxed outline-none resize-none placeholder:text-surface-500"
                       placeholder="Start writing..."
                       disabled={!canEdit}
                       spellCheck
@@ -881,7 +881,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-surface-600">⌘↵ to post</span>
+                        <span className="text-[11px] text-surface-500">⌘↵ to post</span>
                         <button
                           onClick={handleAddComment}
                           disabled={!commentText.trim() || addingComment}
@@ -925,8 +925,8 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                               <span className="text-[11px] text-surface-500">
                                 {(comment as any).author?.display_name || (comment as any).author?.email?.split('@')[0] || 'User'}
                               </span>
-                              <span className="text-[11px] text-surface-600">·</span>
-                              <span className="text-[11px] text-surface-600">
+                              <span className="text-[11px] text-surface-500">·</span>
+                              <span className="text-[11px] text-surface-500">
                                 {new Date(comment.created_at).toLocaleDateString()}
                               </span>
                               {comment.is_resolved && (
@@ -965,7 +965,7 @@ export default function DocumentsPage({ params }: { params: { id: string } }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p className="text-sm text-surface-500 mb-2">Select or create a document</p>
-              <p className="text-xs text-surface-600 mb-4">Notes, outlines, treatments, and more</p>
+              <p className="text-xs text-surface-500 mb-4">Notes, outlines, treatments, and more</p>
               {canEdit && (
                 <Button onClick={() => setShowNewDoc(true)}>+ New Document</Button>
               )}

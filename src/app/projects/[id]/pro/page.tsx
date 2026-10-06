@@ -123,7 +123,7 @@ export default function ProToolsIndexPage({ params }: { params: { id: string } }
               <h2 className={cn('text-[11px] font-semibold uppercase tracking-[0.04em]', GROUP_ACCENT[group].text)}>
                 {group}
               </h2>
-              <span className="text-[11px] text-surface-600">{tools.length}</span>
+              <span className="text-[11px] text-surface-500">{tools.length}</span>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {tools.map((tool) => (
@@ -151,7 +151,7 @@ export default function ProToolsIndexPage({ params }: { params: { id: string } }
                         ) : null}
                       </div>
                       <p className="text-xs text-surface-500 mt-1">{tool.tagline}</p>
-                      <span className="text-[11px] text-surface-600 mt-1.5 inline-block capitalize">
+                      <span className="text-[11px] text-surface-500 mt-1.5 inline-block capitalize">
                         {layoutFor(tool)} view
                       </span>
                     </div>

@@ -791,7 +791,7 @@ export function GuidedTour({ onComplete, usageIntent = 'writer', projectId: init
             {step === 0 ? (
               <button
                 onClick={handleFinish}
-                className="text-xs text-surface-600 hover:text-surface-400 transition-colors"
+                className="text-xs text-surface-500 hover:text-surface-400 transition-colors"
               >
                 Skip tour
               </button>

@@ -394,7 +394,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
           )}
-          <kbd className="text-[11px] font-mono text-surface-600 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5">Esc</kbd>
+          <kbd className="text-[11px] font-mono text-surface-500 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5">Esc</kbd>
         </div>
 
         {/* Results */}
@@ -421,7 +421,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                         <p className="text-sm text-surface-200 group-hover:text-white transition-colors truncate">{rp.title || 'Untitled'}</p>
                         <p className="text-[11px] text-surface-500">{rp.project_type ?? 'Project'} · {new Date(rp.viewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
                       </div>
-                      <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      <svg className="w-3.5 h-3.5 text-surface-500 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                     </button>
                   ))}
                   <div className="mx-4 my-2 border-t border-surface-800" />
@@ -447,7 +447,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                     <p className="text-sm text-surface-200 group-hover:text-white transition-colors">{item.label}</p>
                     <p className="text-[11px] text-surface-500">{item.sublabel}</p>
                   </div>
-                  <svg className="w-3.5 h-3.5 text-surface-600 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  <svg className="w-3.5 h-3.5 text-surface-500 group-hover:text-brand-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </button>
               ))}
             </div>
@@ -489,7 +489,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
                           )}
                         </div>
                         {isActive && (
-                          <kbd className="text-[11px] font-mono text-surface-600 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5 shrink-0">↵</kbd>
+                          <kbd className="text-[11px] font-mono text-surface-500 bg-surface-800 border border-surface-700 rounded px-1.5 py-0.5 shrink-0">↵</kbd>
                         )}
                       </button>
                     );
@@ -502,17 +502,17 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
 
         {/* Footer */}
         <div className="px-4 py-2 border-t border-surface-800 flex items-center gap-4">
-          <span className="text-[11px] text-surface-600 flex items-center gap-1">
+          <span className="text-[11px] text-surface-500 flex items-center gap-1">
             <kbd className="font-mono bg-surface-800 border border-surface-700 rounded px-1">↑↓</kbd> navigate
           </span>
-          <span className="text-[11px] text-surface-600 flex items-center gap-1">
+          <span className="text-[11px] text-surface-500 flex items-center gap-1">
             <kbd className="font-mono bg-surface-800 border border-surface-700 rounded px-1">↵</kbd> open
           </span>
-          <span className="text-[11px] text-surface-600 flex items-center gap-1">
+          <span className="text-[11px] text-surface-500 flex items-center gap-1">
             <kbd className="font-mono bg-surface-800 border border-surface-700 rounded px-1">Esc</kbd> close
           </span>
           {results.length > 0 && (
-            <span className="ml-auto text-[11px] text-surface-600">
+            <span className="ml-auto text-[11px] text-surface-500">
               {results.length} result{results.length !== 1 ? 's' : ''}
             </span>
           )}

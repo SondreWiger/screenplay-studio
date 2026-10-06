@@ -90,11 +90,11 @@ export function TicketsTab({ tickets, selectedTicketId, messages, replyText, onS
                 </div>
                 <div className="flex items-center gap-2 text-[11px]">
                   <span className="text-surface-400">{ticket.profile?.full_name || ticket.profile?.email || 'User'}</span>
-                  <span className="text-surface-600">·</span>
+                  <span className="text-surface-500">·</span>
                   <span className="text-surface-500 capitalize">{ticket.category.replace('_', ' ')}</span>
-                  <span className="text-surface-600">·</span>
+                  <span className="text-surface-500">·</span>
                   <span className={`font-semibold capitalize ${PRIORITY_COLORS[ticket.priority]}`}>{ticket.priority}</span>
-                  <span className="text-surface-600">·</span>
+                  <span className="text-surface-500">·</span>
                   <span className="text-surface-500">{timeAgo(ticket.updated_at)}</span>
                 </div>
                 {ticket.reported_content_type && (
@@ -118,7 +118,7 @@ export function TicketsTab({ tickets, selectedTicketId, messages, replyText, onS
                   <span className="text-xs text-surface-400">
                     by {selected.profile?.full_name || 'User'} ({selected.profile?.email})
                   </span>
-                  <span className="text-surface-600">·</span>
+                  <span className="text-surface-500">·</span>
                   <span className="text-xs text-surface-500">{timeAgo(selected.created_at)}</span>
 
                   {/* Status control */}

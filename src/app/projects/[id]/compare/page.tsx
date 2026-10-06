@@ -295,7 +295,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
                       return <span key={wi}>{w.text} </span>;
                     })}
                     {d.diff.every(w => w.tag === 'added') && (
-                      <span className="text-surface-600 italic">No content</span>
+                      <span className="text-surface-500 italic">No content</span>
                     )}
                   </p>
                 </div>
@@ -311,7 +311,7 @@ export default function ComparePage({ params }: { params: { id: string } }) {
                       return <span key={wi}>{w.text} </span>;
                     })}
                     {d.diff.every(w => w.tag === 'removed') && (
-                      <span className="text-surface-600 italic">No content</span>
+                      <span className="text-surface-500 italic">No content</span>
                     )}
                   </p>
                 </div>

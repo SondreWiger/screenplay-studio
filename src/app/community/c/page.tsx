@@ -84,14 +84,14 @@ export default function BrowseCommunitiesPage() {
 
         {/* Search */}
         <div className="relative">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search communities…"
-            className="w-full pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 rounded-xl outline-none"
+            className="w-full pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/45 rounded-xl outline-none"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
           />
         </div>
@@ -99,7 +99,7 @@ export default function BrowseCommunitiesPage() {
         {/* Your communities */}
         {mine.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold text-white/40 uppercase tracking-[0.04em] mb-3">Your Communities</h2>
+            <h2 className="text-xs font-semibold text-white/50 uppercase tracking-[0.04em] mb-3">Your Communities</h2>
             <div className="flex flex-wrap gap-2">
               {mine.map(c => (
                 <Link
@@ -128,7 +128,7 @@ export default function BrowseCommunitiesPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-4xl mb-3">🔍</p>
-            <p className="text-white/30 text-sm">{search ? 'No communities match your search.' : 'No communities yet. Be the first!'}</p>
+            <p className="text-white/45 text-sm">{search ? 'No communities match your search.' : 'No communities yet. Be the first!'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -165,7 +165,7 @@ export default function BrowseCommunitiesPage() {
                       <p className="text-xs text-white/45 mt-2 line-clamp-2">{c.description}</p>
                     )}
                     <div className="flex items-center justify-between mt-3">
-                      <span className="text-[11px] text-white/25">
+                      <span className="text-[11px] text-white/45">
                         {c.member_count.toLocaleString()} member{c.member_count !== 1 ? 's' : ''} · {c.post_count} posts
                       </span>
                       {user && (
@@ -175,7 +175,7 @@ export default function BrowseCommunitiesPage() {
                           className="px-3 py-1 text-[11px] font-semibold rounded-lg transition-colors"
                           style={
                             joined
-                              ? { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }
+                              ? { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }
                               : { background: c.accent_color, color: '#fff' }
                           }
                         >
@@ -186,13 +186,13 @@ export default function BrowseCommunitiesPage() {
                     <div className="mt-2 flex gap-1 flex-wrap">
                       <span
                         className="text-[11px] uppercase tracking-[0.04em] px-1.5 py-0.5 rounded"
-                        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)' }}
+                        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)' }}
                       >
                         {c.visibility}
                       </span>
                       <span
                         className="text-[11px] uppercase tracking-[0.04em] px-1.5 py-0.5 rounded"
-                        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)' }}
+                        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)' }}
                       >
                         {c.posting_mode.replace(/_/g, ' ')}
                       </span>

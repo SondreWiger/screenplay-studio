@@ -217,7 +217,7 @@ export default function OnboardingPage() {
               <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: '#FF5F1F' }}>
                 <span className="font-semibold text-white text-[11px]" style={{ letterSpacing: '-0.04em' }}>SS</span>
               </div>
-              <span className="text-[11px] font-semibold text-white/40 uppercase tracking-[0.04em]">
+              <span className="text-[11px] font-semibold text-white/50 uppercase tracking-[0.04em]">
                 Step {step + 1} of {TOTAL_STEPS}
               </span>
             </div>
@@ -497,7 +497,7 @@ export default function OnboardingPage() {
                   );
                 })}
 
-                <p className="text-[11px] text-surface-600 text-center pt-2">
+                <p className="text-[11px] text-surface-500 text-center pt-2">
                   Everything stays accessible — hidden features appear in a &quot;More Tools&quot; menu
                 </p>
               </div>
@@ -577,7 +577,7 @@ export default function OnboardingPage() {
                     <p className="text-[11px] text-surface-500 mt-0.5">XP still collected silently</p>
                   </button>
                 </div>
-                <p className="text-[11px] text-surface-600 text-center mt-3">
+                <p className="text-[11px] text-surface-500 text-center mt-3">
                   Change this anytime in Settings → Gamification
                 </p>
               </div>
@@ -634,7 +634,7 @@ export default function OnboardingPage() {
                         autoFocus
                       />
                     </div>
-                    <p className="text-[11px] text-surface-600">You&apos;ll be able to invite team members after setup.</p>
+                    <p className="text-[11px] text-surface-500">You&apos;ll be able to invite team members after setup.</p>
                   </div>
                 )}
 

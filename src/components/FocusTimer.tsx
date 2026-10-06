@@ -112,7 +112,7 @@ export function FocusTimer({
         </span>
         <button
           onClick={() => setExpanded(false)}
-          className="text-surface-600 hover:text-surface-400 transition-colors text-xs"
+          className="text-surface-500 hover:text-surface-400 transition-colors text-xs"
           aria-label="Collapse timer"
         >
           ✕

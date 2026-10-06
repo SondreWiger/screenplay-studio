@@ -289,7 +289,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
                     {member.job_title && (
                       <span className="text-[11px] text-surface-500">{'\u00B7'} {member.job_title}</span>
                     )}
-                    <span className="text-[11px] text-surface-600">{t('team.joined')} {formatDate(member.joined_at)}</span>
+                    <span className="text-[11px] text-surface-500">{t('team.joined')} {formatDate(member.joined_at)}</span>
                     {online && pageLabel && (
                       <span className="text-[11px] text-green-400">{'\u00B7'} Viewing {pageLabel}</span>
                     )}
@@ -422,7 +422,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-sm font-medium text-surface-400">External Credits</h2>
-            <p className="text-[11px] text-surface-600 mt-0.5">Credit crew members who aren&apos;t on the platform</p>
+            <p className="text-[11px] text-surface-500 mt-0.5">Credit crew members who aren&apos;t on the platform</p>
           </div>
           {canManage && (
             <Button variant="ghost" onClick={() => setShowAddCredit(true)}>

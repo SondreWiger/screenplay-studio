@@ -54,7 +54,7 @@ export function CoursesAdminTab() {
     pending: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
     published: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
     rejected: 'text-red-400 bg-red-500/10 border-red-500/20',
-    draft: 'text-white/40 bg-white/5 border-white/10',
+    draft: 'text-white/50 bg-white/5 border-white/10',
   };
 
   return (

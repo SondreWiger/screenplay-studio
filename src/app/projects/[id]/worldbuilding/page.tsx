@@ -202,7 +202,7 @@ export default function WorldbuildingPage({ params }: { params: { id: string } }
                   <Input 
                     value={selectedEntity.name}
                     onChange={(e) => handleUpdateEntity(selectedEntity.id, { name: e.target.value })}
-                    className="text-2xl font-bold bg-transparent border-none px-0 h-auto focus:ring-0 placeholder:text-surface-600"
+                    className="text-2xl font-bold bg-transparent border-none px-0 h-auto focus:ring-0 placeholder:text-surface-500"
                     placeholder="Entity Name"
                     disabled={!canEdit}
                   />

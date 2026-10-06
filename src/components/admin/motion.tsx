@@ -122,7 +122,7 @@ export function Panel({ title, subtitle, action, children, className, bodyClassN
 
 /** Up/down change pill. `invert` for metrics where down is good. */
 export function Delta({ value, invert = false, className }: { value: number | null; invert?: boolean; className?: string }) {
-  if (value == null) return <span className={cn('text-[11px] font-medium text-surface-600', className)}>—</span>;
+  if (value == null) return <span className={cn('text-[11px] font-medium text-surface-500', className)}>—</span>;
   const good = invert ? value < 0 : value > 0;
   const flat = value === 0;
   return (

@@ -212,7 +212,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
                     )}>
                       {src.short_name || src.name}
                     </div>
-                    <div className="text-[11px] text-surface-600">
+                    <div className="text-[11px] text-surface-500">
                       {src.source_type}
                       {src.protocol && ` • ${src.protocol.toUpperCase()}`}
                     </div>

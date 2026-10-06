@@ -122,7 +122,7 @@ export function MoreMenu({
               className={cn(
                 'flex items-center gap-2.5 w-full px-3 py-2 text-left transition-colors',
                 item.disabledReason
-                  ? 'text-surface-600 cursor-not-allowed'
+                  ? 'text-surface-500 cursor-not-allowed'
                   : item.danger
                     ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
                     : 'text-surface-200 hover:bg-surface-800 hover:text-white',
@@ -131,7 +131,7 @@ export function MoreMenu({
               {item.icon && <MenuIcon name={item.icon} />}
               <span className="flex-1">
                 {item.label}
-                {item.disabledReason && <span className="block text-[11px] text-surface-600 leading-snug">{item.disabledReason}</span>}
+                {item.disabledReason && <span className="block text-[11px] text-surface-500 leading-snug">{item.disabledReason}</span>}
               </span>
             </button>
           ))}

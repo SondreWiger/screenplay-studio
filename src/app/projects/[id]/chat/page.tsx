@@ -486,7 +486,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                   <div className="flex items-center justify-center h-full text-center">
                     <div>
                       <p className="text-surface-500">No messages in #{selectedChannel.name}</p>
-                      <p className="text-surface-600 text-sm mt-1">Be the first to say something!</p>
+                      <p className="text-surface-500 text-sm mt-1">Be the first to say something!</p>
                     </div>
                   </div>
                 ) : (
@@ -535,11 +535,11 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                                     {prodRole}
                                   </span>
                                 )}
-                                <span className="text-[11px] text-surface-600">{formatTime(msg.created_at)}</span>
+                                <span className="text-[11px] text-surface-500">{formatTime(msg.created_at)}</span>
                               </div>
                               <p className="text-sm text-surface-200 break-words mt-0.5"><FormattedChatText content={msg.content} /></p>
                             </div>
-                            <span className="text-[11px] text-surface-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0 mt-1">
+                            <span className="text-[11px] text-surface-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0 mt-1">
                               {formatTime(msg.created_at)}
                             </span>
                           </div>
@@ -627,7 +627,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                             </p>
                           )}
                           {!m.production_role && m.job_title && (
-                            <p className="text-[11px] text-surface-600 truncate">{m.job_title}</p>
+                            <p className="text-[11px] text-surface-500 truncate">{m.job_title}</p>
                           )}
                         </div>
                       </div>
@@ -671,7 +671,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
                 autoFocus
               />
             </div>
-            <p className="text-[11px] text-surface-600 mt-1">Lowercase, hyphens, no spaces</p>
+            <p className="text-[11px] text-surface-500 mt-1">Lowercase, hyphens, no spaces</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">Description (optional)</label>
