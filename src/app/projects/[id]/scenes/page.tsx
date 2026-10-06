@@ -153,7 +153,7 @@ export default function ScenesPage({ params }: { params: { id: string } }) {
             {setupNeeded > 0 && <span className="text-amber-400"> &bull; {setupNeeded} need setup</span>}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href={`/projects/${params.id}/script`}>
             <Button variant="ghost" size="sm">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -186,7 +186,7 @@ export default function EditorialPage({ params }: { params: { id: string } }) {
             {stories.length} stories · {formatBroadcastDuration(totalPlannedSeconds)} planned
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}

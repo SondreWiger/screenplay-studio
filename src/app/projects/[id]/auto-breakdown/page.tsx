@@ -259,7 +259,7 @@ export default function AutoBreakdownPage() {
             {scanComplete && <> &middot; {totalItems} items found</>}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {scanComplete && (
             <Button variant="outline" size="sm" onClick={exportBreakdown}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

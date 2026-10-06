@@ -153,7 +153,7 @@ export default function MosDevicesPage({ params }: { params: { id: string } }) {
           <PageTitle>MOS Devices</PageTitle>
           <p className="text-xs text-surface-400">Media Object Server protocol devices</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {connectedCount > 0 && (
             <Badge variant="info">{connectedCount} connected</Badge>
           )}

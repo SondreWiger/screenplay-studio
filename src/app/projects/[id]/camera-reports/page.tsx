@@ -156,7 +156,7 @@ export default function CameraReportsPage({ params }: { params: { id: string } }
     <div className="p-4 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <PageTitle>{selected ? 'Edit' : `New ${activeTab === 'camera' ? 'Camera' : 'Sound'} Report`}</PageTitle>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="ghost" onClick={() => setView('list')}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
         </div>

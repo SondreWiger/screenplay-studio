@@ -631,13 +631,14 @@ export default function MindMapPage({ params }: { params: { id: string } }) {
     <div className="h-[calc(100vh-48px)] md:h-screen flex flex-col bg-surface-950 relative">
       {/* TOOLBAR */}
       <div className="border-b border-surface-800 bg-surface-950 px-4 py-2 flex items-center justify-between gap-2 z-10">
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <h1 className="text-lg font-bold text-white hidden sm:block">Mind Map</h1>
           <Badge variant="default">{nodes.length} nodes</Badge>
-          <Badge variant="default">{edges.length} connections</Badge>
+          <span className="hidden sm:inline"><Badge variant="default">{edges.length} connections</Badge></span>
         </div>
 
-        <div className="flex items-center gap-1">
+        {/* Tools scroll sideways on phones instead of pushing off-screen */}
+        <div className="flex min-w-0 items-center gap-1 overflow-x-auto [&>*]:shrink-0 [scrollbar-width:none]">
           {/* Tool buttons */}
           {canEdit && (
             <div className="flex items-center bg-surface-900 rounded-lg p-0.5 mr-2">

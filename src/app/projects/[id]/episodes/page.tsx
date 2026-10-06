@@ -470,7 +470,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <PageTitle>{currentProject?.title}</PageTitle>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               {seasons.map(s => (
                 <span
                   key={s.num}
@@ -632,7 +632,8 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                           onDrop={e => onDrop(e, script.id)}
                           onDragEnd={onDragEnd}
                           className={cn(
-                            'flex items-center gap-2 p-2.5 rounded-xl border transition-colors',
+                            // Controls drop to a second line on phones
+                            'flex flex-wrap items-center gap-2 p-2.5 rounded-xl border transition-colors sm:flex-nowrap',
                             isDraggingThis
                               ? 'opacity-40 border-surface-600 bg-surface-900'
                               : isDragTarget
@@ -662,7 +663,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                           </span>
 
                           {/* Title + synopsis */}
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-[7rem] flex-1">
                             <h3 className="text-sm font-semibold text-white truncate">{stripEpCode(script.title)}</h3>
                             {script.title_page_data?.notes && (
                               <p className="text-[11px] text-surface-500 truncate">{script.title_page_data.notes}</p>
@@ -710,8 +711,8 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                                 )}
                               </div>
 
-                              {/* Color picker */}
-                              <div className="relative" onClick={e => e.stopPropagation()}>
+                              {/* Color picker (also in the episode's settings; no room on phones) */}
+                              <div className="relative hidden sm:block" onClick={e => e.stopPropagation()}>
                                 <button
                                   onClick={() => setOpenColorFor(openColorFor === script.id ? null : script.id)}
                                   className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] transition-colors hover:bg-surface-800"
@@ -812,7 +813,7 @@ export default function EpisodesPage({ params }: { params: { id: string } }) {
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                               </svg>
-                              Write
+                              <span className="hidden sm:inline">Write</span>
                             </Button>
                           </Link>
                           {canEdit && (

@@ -132,10 +132,10 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)] md:h-screen bg-black select-none">
       {/* ── Control Bar ──────────────────────────────── */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-surface-950 border-b border-surface-800">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 bg-surface-950 border-b border-surface-800">
+        <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xs font-medium text-surface-400 uppercase tracking-[0.04em]">Multiviewer</h1>
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             {(['2x2', '3x3', '4x4', '1+5'] as GridLayout[]).map(l => (
               <button
                 key={l}
@@ -163,7 +163,7 @@ export default function MultiviewerPage({ params }: { params: { id: string } }) 
             Audio
           </button>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div ref={dateRef} className="text-[11px] text-surface-500" />
           <div ref={clockRef} className="font-mono text-xl text-red-500 font-bold tabular-nums" />
         </div>

@@ -136,7 +136,7 @@ export default function SchedulePage({ params }: { params: { id: string } }) {
           <PageTitle>Production Schedule</PageTitle>
           <p className="text-sm text-surface-400 mt-1">{events.length} events scheduled</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <div className="flex rounded-lg border border-surface-700 overflow-hidden">
             <button onClick={() => setView('calendar')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'calendar' ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white')}>Month</button>
             <button onClick={() => setView('day')} className={cn('px-3 py-1.5 text-xs font-medium', view === 'day' ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white')}>Day</button>

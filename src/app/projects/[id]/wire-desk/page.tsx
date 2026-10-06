@@ -226,12 +226,12 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] md:h-screen bg-surface-950">
+    <div className="flex h-[calc(100vh-3rem)] flex-col overflow-y-auto bg-surface-950 md:h-screen md:flex-row md:overflow-visible">
       {/* ── Wire Story List ──────────────────────────── */}
-      <div className={cn('flex flex-col', selectedStory ? 'w-1/2' : 'flex-1')}>
+      <div className={cn('flex flex-col', selectedStory ? 'w-full md:w-1/2' : 'flex-1')}>
         {/* Header bar */}
         <div className="p-3 border-b border-surface-800 space-y-2 bg-surface-900/50">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-bold text-white">Wire Desk</h2>
               <span className="text-xs text-surface-500">{filteredStories.length} stories</span>
@@ -351,7 +351,7 @@ export default function WireDeskPage({ params }: { params: { id: string } }) {
 
       {/* ── Story Detail Panel ───────────────────────── */}
       {selectedStory && (
-        <div className="w-1/2 border-l border-surface-800 flex flex-col overflow-hidden">
+        <div className="w-full border-t border-surface-800 flex flex-col overflow-hidden md:w-1/2 md:border-l md:border-t-0">
           {/* Header */}
           <div className="p-3 border-b border-surface-800 bg-surface-900/50 flex items-center justify-between">
             <div className="flex items-center gap-2">

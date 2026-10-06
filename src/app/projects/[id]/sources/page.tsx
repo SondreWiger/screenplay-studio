@@ -165,10 +165,10 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] md:h-screen bg-surface-950">
+    <div className="flex h-[calc(100vh-3rem)] flex-col overflow-y-auto bg-surface-950 md:h-screen md:flex-row md:overflow-visible">
       {/* Main Source Grid */}
-      <div className={cn('flex flex-col', selectedSource ? 'w-2/3' : 'flex-1')}>
-        <div className="p-3 border-b border-surface-800 bg-surface-900/50 flex items-center justify-between">
+      <div className={cn('flex flex-col', selectedSource ? 'w-full md:w-2/3' : 'flex-1')}>
+        <div className="p-3 border-b border-surface-800 bg-surface-900/50 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-bold text-white">Sources</h2>
             <span className="text-xs text-surface-500">
@@ -320,7 +320,7 @@ export default function SourcesPage({ params }: { params: { id: string } }) {
 
       {/* Detail panel */}
       {selectedSource && (
-        <div className="w-1/3 border-l border-surface-800 flex flex-col overflow-hidden">
+        <div className="w-full border-t border-surface-800 flex flex-col overflow-hidden md:w-1/3 md:border-l md:border-t-0">
           <div className="p-3 border-b border-surface-800 bg-surface-900/50 flex items-center justify-between">
             <h3 className="text-sm font-bold text-white">{selectedSource.name}</h3>
             <div className="flex items-center gap-1">

@@ -378,7 +378,7 @@ export default function ProjectChatPage({ params }: { params: { id: string } }) 
             <span className="text-surface-500 text-sm hidden sm:inline">#{selectedChannel.name}</span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setShowMembers((v) => !v)}
             className={cn('p-1.5 rounded-lg transition-colors', showMembers ? 'bg-surface-900/10 text-white' : 'text-surface-400 hover:text-white')}

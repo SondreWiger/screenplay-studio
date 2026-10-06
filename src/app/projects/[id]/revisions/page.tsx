@@ -275,7 +275,7 @@ export default function RevisionsPage() {
             {activeScript ? ` · Script v${activeScript.version}` : ''}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={compareMode ? 'primary' : 'secondary'}
             onClick={() => { setCompareMode(!compareMode); setCompareA(null); setCompareB(null); setShowDiffModal(false); }}

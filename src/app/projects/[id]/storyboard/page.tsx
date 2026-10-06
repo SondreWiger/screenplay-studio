@@ -296,7 +296,7 @@ export default function StoryboardPage({ params }: { params: { id: string } }) {
               {shots.length} shot{shots.length !== 1 ? 's' : ''} &middot; {withContent} with storyboard
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex bg-surface-900 rounded-lg p-0.5">
               {(['sm', 'md', 'lg'] as const).map(s => (
                 <button key={s} onClick={() => setViewSize(s)} className={cn('px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors', viewSize === s ? 'bg-surface-700 text-white' : 'text-surface-500 hover:text-white')}>

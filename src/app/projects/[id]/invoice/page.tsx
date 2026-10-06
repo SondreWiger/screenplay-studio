@@ -131,7 +131,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
             {totalHours.toFixed(2)} hrs across {sortedDates.length} days
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {uniqueUsers.length > 1 && (
             <select
               value={filterUser}

@@ -129,21 +129,21 @@ export default function ArcPlannerPage({ params }: { params: { id: string } }) {
         </div>
         {currentProject && (
           <>
-            <span className="text-white/20">·</span>
-            <span className="text-xs text-white/50 truncate max-w-[200px]">{currentProject.title}</span>
+            <span className="hidden text-white/20 sm:inline">·</span>
+            <span className="hidden max-w-[200px] truncate text-xs text-white/50 sm:inline">{currentProject.title}</span>
           </>
         )}
 
         {!isEpisodic && (
           <>
-            <span className="text-white/20">·</span>
-            <span className="text-[11px] text-violet-400/60 italic">Act Structure Mode</span>
+            <span className="hidden text-white/20 md:inline">·</span>
+            <span className="hidden text-[11px] italic text-violet-400/60 md:inline">Act Structure Mode</span>
           </>
         )}
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-3 text-[11px] text-white/45">
+        <div className="hidden items-center gap-3 text-[11px] text-white/45 xl:flex">
           <span>Double-click canvas = add node</span>
           <span>·</span>
           <span>Hover node ports to draw edges</span>

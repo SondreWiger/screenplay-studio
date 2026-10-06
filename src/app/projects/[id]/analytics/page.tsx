@@ -259,17 +259,17 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
           </div>
           <p className="text-sm text-surface-400 mt-1">Real project metrics computed from your actual data.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="ghost" size="sm" onClick={fetchAnalytics}>
             <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             Refresh
           </Button>
-          <div className="flex items-center gap-1 bg-surface-800/50 rounded-lg p-0.5">
+          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-surface-800/50 p-0.5">
             {(['7d', '30d', '90d', 'all'] as TimeRange[]).map((r) => (
               <button
                 key={r}
                 onClick={() => setRange(r)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                className={`shrink-0 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   range === r ? 'bg-brand-500 text-white' : 'text-surface-400 hover:text-white'
                 }`}
               >

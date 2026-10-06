@@ -160,11 +160,11 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
   if (loading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] md:h-screen bg-surface-950">
+    <div className="flex h-[calc(100vh-3rem)] flex-col overflow-y-auto bg-surface-950 md:h-screen md:flex-row md:overflow-visible">
       {/* Main log */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-3 border-b border-surface-800 bg-surface-900/50 flex items-center justify-between">
+        <div className="p-3 border-b border-surface-800 bg-surface-900/50 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-bold text-white">As-Run Log</h2>
             <select
@@ -275,7 +275,7 @@ export default function AsRunPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Stats sidebar */}
-      <div className="w-64 border-l border-surface-800 p-4 space-y-4 overflow-y-auto bg-surface-900/30">
+      <div className="w-full shrink-0 border-t border-surface-800 p-4 space-y-4 overflow-y-auto bg-surface-900/30 md:w-64 md:border-l md:border-t-0">
         <h3 className="text-xs font-medium text-surface-400 uppercase">Show Summary</h3>
 
         <StatBox label="Total Events" value={entries.length.toString()} />

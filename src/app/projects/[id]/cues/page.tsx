@@ -115,7 +115,7 @@ export default function CuePage() {
             {cues.length} cue{cues.length !== 1 ? 's' : ''} · {currentProject?.title}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handlePrint}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-surface-700 text-surface-400 hover:text-white hover:border-surface-500 text-sm transition-colors"

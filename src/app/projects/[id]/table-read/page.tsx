@@ -171,7 +171,7 @@ export default function TableReadPage({ params }: { params: { id: string } }) {
           <PageTitle>Session Complete</PageTitle>
           <p className="text-sm text-surface-400 mt-0.5">Total runtime: <span className="text-orange-400 font-bold text-base">{fmt(totalElapsed)}</span></p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="ghost" onClick={() => setView('list')}>Discard</Button>
           <Button onClick={saveSession} disabled={saving}>{saving ? 'Saving…' : 'Save Session'}</Button>
         </div>

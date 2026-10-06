@@ -134,7 +134,7 @@ export default function CommsPage({ params }: { params: { id: string } }) {
           <PageTitle>Comms / Intercom</PageTitle>
           <p className="text-xs text-surface-400">Production communication channels • Push-to-talk</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant={activeChannels.size > 0 ? 'info' : 'default'}>
             {activeChannels.size} active
           </Badge>

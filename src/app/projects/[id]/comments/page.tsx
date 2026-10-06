@@ -317,7 +317,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
             rows={3}
           />
           <div className="flex items-center justify-between mt-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value as CommentType)}
@@ -335,8 +335,8 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
           </div>
         </Card>
 
-      {/* Filter bar */}
-      <div className="flex gap-2 mb-4">
+      {/* Filter bar: scrolls sideways on narrow screens */}
+      <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
         {[
           { key: 'all', label: 'All' },
           { key: 'script', label: `Script (${scriptCommentCount})` },
@@ -345,7 +345,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
           { key: 'unresolved', label: 'Unresolved' },
         ].map(f => (
           <button key={f.key} onClick={() => setFilter(f.key as any)} className={cn(
-            'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+            'shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
             filter === f.key ? 'bg-brand-600/20 text-brand-500' : 'text-surface-400 hover:text-white hover:bg-surface-900/5'
           )}>{f.label}</button>
         ))}

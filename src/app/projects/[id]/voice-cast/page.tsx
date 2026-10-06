@@ -236,7 +236,7 @@ export default function VoiceCastPage({ params }: { params: { id: string } }) {
             )}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {canEdit && (
             <Button variant="ghost" size="sm" onClick={handleSync} disabled={syncing}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -335,7 +335,7 @@ export default function OneLinerPage({ params }: { params: { id: string } }) {
             {scenes.length} scene{scenes.length !== 1 ? 's' : ''} · {scriptTitle || 'Untitled'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Status summary */}
           <div className="hidden md:flex items-center gap-1.5">
             {(Object.entries(sceneCountByStatus) as [SceneStatus, number][]).filter(([, c]) => c > 0).map(([status, count]) => (

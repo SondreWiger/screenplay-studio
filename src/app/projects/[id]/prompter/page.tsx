@@ -153,8 +153,8 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
     <div ref={containerRef} className={cn('flex flex-col h-[calc(100vh-3rem)] md:h-screen', mirror ? 'transform scale-x-[-1]' : '')}>
       {/* Control bar (hideable) */}
       {showControls && (
-        <div className={cn('p-2 border-b border-surface-800 bg-surface-900 flex items-center justify-between gap-3 z-10', mirror && 'transform scale-x-[-1]')}>
-          <div className="flex items-center gap-3">
+        <div className={cn('p-2 border-b border-surface-800 bg-surface-900 flex flex-wrap items-center justify-between gap-3 z-10', mirror && 'transform scale-x-[-1]')}>
+          <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-xs font-bold text-white">Prompter</h2>
             <select
               value={selectedRundownId || ''}
@@ -167,7 +167,7 @@ export default function PrompterPage({ params }: { params: { id: string } }) {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Font size */}
             <button onClick={() => setFontSize(Math.max(20, fontSize - 4))} className="text-surface-400 hover:text-white px-1 text-sm">A-</button>
             <span className="text-xs text-surface-500 w-8 text-center">{fontSize}</span>

@@ -328,7 +328,7 @@ export default function BudgetPage({ params }: { params: { id: string } }) {
             {overdueCount > 0 && <span className="text-red-400 ml-2">· {overdueCount} overdue</span>}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {items.length > 0 && (
             <button onClick={exportCSV} className="px-3 py-2 text-xs font-medium text-surface-400 hover:text-white bg-surface-800 hover:bg-surface-700 rounded-lg transition-colors">
               ↓ CSV

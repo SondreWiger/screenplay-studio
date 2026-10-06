@@ -185,7 +185,7 @@ export default function GearPage({ params }: { params: { id: string } }) {
             {gear.length} item{gear.length !== 1 ? 's' : ''} · {fmt(totalCost)} committed
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleExportCSV}
             className="text-xs px-2.5 py-1.5 rounded-lg border border-surface-700 text-surface-300 hover:text-white hover:border-surface-500 transition-colors flex items-center gap-1.5"
