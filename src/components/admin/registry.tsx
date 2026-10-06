@@ -2,12 +2,12 @@
 
 import type { ComponentType, ReactNode } from 'react';
 import {
-  Award, BarChart3, Cpu, Flag, FolderKanban, GraduationCap, Languages, LayoutDashboard, Mail, MessageSquareText,
+  Activity, Award, BarChart3, Cpu, Flag, FolderKanban, GraduationCap, Languages, LayoutDashboard, Mail, MessageSquareText,
   MessagesSquare, Network, Newspaper, Scale, ScrollText, ShieldAlert, ShieldCheck, Star, Ticket, ToggleRight, Users, Zap,
 } from 'lucide-react';
 
 export type AdminTab =
-  | 'overview' | 'users' | 'projects' | 'mindmap' | 'system' | 'blog' | 'community' | 'tickets'
+  | 'overview' | 'users' | 'engagement' | 'projects' | 'mindmap' | 'system' | 'blog' | 'community' | 'tickets'
   | 'contributors' | 'badges' | 'courses' | 'creators' | 'translations';
 
 type Loader = () => Promise<{ default: ComponentType }>;
@@ -16,6 +16,7 @@ type Loader = () => Promise<{ default: ComponentType }>;
 export const TAB_LOADERS: Record<AdminTab, Loader> = {
   overview: () => import('./tabs/OverviewTab'),
   users: () => import('./tabs/UsersTab'),
+  engagement: () => import('./tabs/EngagementTab'),
   projects: () => import('./tabs/ProjectsTab'),
   mindmap: () => import('./tabs/ProjectsTab').then((m) => ({ default: m.MindmapPanel })),
   system: () => import('./tabs/SystemTab'),
@@ -59,6 +60,7 @@ export const NAV_SECTIONS: { label: string; items: NavItem[] }[] = [
     items: [
       { label: 'Overview', href: '/admin', tab: 'overview', icon: <LayoutDashboard className={ic} /> },
       { label: 'Users', href: '/admin?tab=users', tab: 'users', icon: <Users className={ic} /> },
+      { label: 'Engagement', href: '/admin?tab=engagement', tab: 'engagement', icon: <Activity className={ic} /> },
       { label: 'Projects', href: '/admin?tab=projects', tab: 'projects', icon: <FolderKanban className={ic} /> },
       { label: 'Mind Map', href: '/admin?tab=mindmap', tab: 'mindmap', icon: <Network className={ic} /> },
     ],

@@ -7,6 +7,10 @@
     {
       "path": "/api/challenges/announce",
       "schedule": "30 12 * * *"
+    },
+    {
+      "path": "/api/cron/expire-gifts",
+      "schedule": "15 3 * * *"
     }
   ]
 }
