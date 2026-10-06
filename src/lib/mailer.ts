@@ -1,3 +1,4 @@
+import { escapeHtml } from '@/lib/utils';
 import { Resend } from 'resend';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
@@ -120,7 +121,7 @@ export async function sendWelcomeEmail(to: EmailRecipient): Promise<EmailResult>
     to,
     subject: "You're in — Screenplay Studio",
     heading: 'Welcome!',
-    body: `Hey ${to.name || 'there'},<br><br>Glad you signed up. You've got a blank dashboard waiting — go create a project and start writing.<br><br>Everything's free. No limits, no paywalls. Just write.<br><br>If you hit anything weird or have ideas, reply to this email. I read every one.<br><br>— Sondre`,
+    body: `Hey ${escapeHtml(to.name || 'there')},<br><br>Glad you signed up. You've got a blank dashboard waiting — go create a project and start writing.<br><br>Everything's free. No limits, no paywalls. Just write.<br><br>If you hit anything weird or have ideas, reply to this email. I read every one.<br><br>— Sondre`,
     ctaLabel: 'Start Writing',
     ctaUrl: '/dashboard',
   });
@@ -135,7 +136,7 @@ export async function sendTicketReplyEmail(
     to,
     subject: `Re: ${ticketSubject} — Screenplay Studio Support`,
     heading: 'New reply on your support ticket',
-    body: `Our team has responded to your support ticket: <strong>${ticketSubject}</strong>. Click below to view the reply and continue the conversation.`,
+    body: `Our team has responded to your support ticket: <strong>${escapeHtml(ticketSubject)}</strong>. Click below to view the reply and continue the conversation.`,
     ctaLabel: 'View Ticket',
     ctaUrl: `/support?ticket=${ticketId}`,
   });
@@ -151,7 +152,7 @@ export async function sendProjectInviteEmail(
     to,
     subject: `${inviterName} invited you to "${projectName}" — Screenplay Studio`,
     heading: "You've been invited!",
-    body: `<strong>${inviterName}</strong> has invited you to join the project <strong>${projectName}</strong>. Open the project to start collaborating.`,
+    body: `<strong>${escapeHtml(inviterName)}</strong> has invited you to join the project <strong>${escapeHtml(projectName)}</strong>. Open the project to start collaborating.`,
     ctaLabel: 'Open Project',
     ctaUrl: `/projects/${projectId}`,
   });

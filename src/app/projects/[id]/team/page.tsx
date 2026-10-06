@@ -557,13 +557,9 @@ function InviteModal({ isOpen, onClose, projectId, onInvited }: {
 
       // Send invitation email (best-effort) to the address that was entered
       {
-        sendProjectInviteEmailAction(
-          email.trim(),
-          profile.display_name || profile.full_name || '',
-          project?.title || 'a project',
-          actorName,
-          projectId,
-        ).catch((err) => logger.error('Team', 'Failed to send project invite email:', err));
+        // The server checks we manage the project and looks up the address itself
+        sendProjectInviteEmailAction(projectId, profile.id)
+          .catch((err) => logger.error('Team', 'Failed to send project invite email:', err));
       }
 
       setLoading(false);

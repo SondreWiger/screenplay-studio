@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { getEmailsByIds } from '@/lib/private-profile';
 import { fetchAllResult } from '@/lib/supabase/fetch-all';
 import { useAuthStore, useProjectStore } from '@/lib/stores';
 import { Button, Card, Badge, Textarea, EmptyState, LoadingSpinner, Avatar, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
 import { notifyProjectMembers } from '@/lib/notifications';
-import { sendNotificationEmailAction } from '@/lib/email-actions';
+import { sendCommentEmailAction } from '@/lib/email-actions';
 import type { Comment, Profile, CommentType, ScriptElement } from '@/lib/types';
 import logger from '@/lib/logger';
 import { ELEMENT_LABELS } from '@/lib/types';
@@ -215,7 +214,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
     if (!newContent.trim() || !user) return;
     setSubmitting(true);
     const supabase = createClient();
-    const { error } = await supabase.from('comments').insert({
+    const { data: posted, error } = await supabase.from('comments').insert({
       project_id: params.id,
       entity_type: 'project',
       entity_id: params.id,
@@ -223,7 +222,7 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
       content: newContent.trim(),
       comment_type: newType,
       created_by: user.id,
-    });
+    }).select('id').single();
     if (error) {
       toast.error('Failed to post: ' + error.message);
     } else {
@@ -238,42 +237,11 @@ export default function CommentsPage({ params }: { params: { id: string } }) {
         entityType: 'comment',
       });
 
-      // Send email notifications to project members (best-effort)
-      try {
-        const supabase = createClient();
-        const { data: members } = await supabase
-          .from('project_members')
-          .select('user_id')
-          .eq('project_id', params.id)
-          .neq('user_id', user.id);
-        if (members) {
-          const { data: actorProfile } = await supabase.from('profiles').select('display_name, full_name').eq('id', user.id).single();
-          const actorName = actorProfile?.display_name || actorProfile?.full_name || 'Someone';
-          // One query for everyone instead of one per member; emails come from
-          // profile_contact (collaborators can see each other's).
-          const memberIds = members.map((m: { user_id: string }) => m.user_id);
-          const [{ data: memberProfiles }, emailMap] = await Promise.all([
-            supabase.from('profiles').select('id, email, display_name, full_name').in('id', memberIds),
-            getEmailsByIds(supabase, memberIds),
-          ]);
-          const profileById = new Map((memberProfiles || []).map((p: { id: string }) => [p.id, p]));
-          for (const member of members) {
-            const found = profileById.get(member.user_id) as { email: string | null; display_name: string | null; full_name: string | null } | undefined;
-            const memberProfile = found ? { ...found, email: emailMap.get(member.user_id) || found.email } : null;
-            if (memberProfile?.email) {
-              sendNotificationEmailAction(
-                memberProfile.email,
-                memberProfile.display_name || memberProfile.full_name || '',
-                `New ${newType} on ${currentProject?.title || 'project'}`,
-                `New ${newType} from ${actorName}`,
-                newContent.trim().slice(0, 200),
-                'View Comment',
-                `/projects/${params.id}/comments`,
-              ).catch((err) => logger.error('Comments', 'Failed to send notification email:', err));
-            }
-          }
-        }
-      } catch { /* email is best-effort */ }
+      // Email the project's members (best-effort). The server checks we wrote
+      // the comment and builds the email from what was saved.
+      if (posted?.id) {
+        sendCommentEmailAction(posted.id).catch((err) => logger.error('Comments', 'Failed to send notification email:', err));
+      }
       setNewContent('');
       setNewType('note');
       await fetchComments();

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { cn, timeAgo } from '@/lib/utils';
 import type { SupportTicket, TicketMessage } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
-import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import logger from '@/lib/logger';
 import { sendTicketReplyEmailAction } from '@/lib/email-actions';
@@ -265,14 +264,9 @@ export default function TicketsPanel() {
       entity_id: ticket.id,
     });
     // Push delivery is handled by the recipient's useNotifications hook (triggerSelfPush)
-    const { data: owner, error: profileError } = await supabase.from('profiles').select('id, email, full_name, display_name').eq('id', ticket.user_id).single();
-    // The address lives in profile_contact (staff can read it)
-    if (owner) await fillEmails(supabase, [owner]);
-    if (profileError) console.error('Failed to fetch ticket owner profile:', profileError.message);
-    if (owner?.email) {
-      sendTicketReplyEmailAction(owner.email, owner.display_name || owner.full_name || '', ticket.subject, ticket.id)
-        .catch((err) => logger.error('Admin', 'Failed to send ticket reply email:', err));
-    }
+    // The server checks we're staff and emails the ticket's owner
+    sendTicketReplyEmailAction(ticket.id)
+      .catch((err) => logger.error('Admin', 'Failed to send ticket reply email:', err));
   };
 
   const updateTicket = async (ticketId: string, patch: Partial<Pick<SupportTicket, 'status' | 'priority'>>) => {
