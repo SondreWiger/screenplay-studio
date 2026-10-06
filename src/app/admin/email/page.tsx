@@ -388,6 +388,8 @@ export default function AdminEmailPage() {
         meta={<>{users.length.toLocaleString()} users loaded · {pendingBatches.length} batch{pendingBatches.length === 1 ? '' : 'es'} in progress</>}
       />
 
+      <SenderWarning />
+
       <StatGrid
         cols={5}
         items={[
@@ -681,5 +683,31 @@ export default function AdminEmailPage() {
         )}
       </AnimatePresence>
     </AdminPage>
+  );
+}
+
+/** Warn when mail would go out from a sender that lands in spam. */
+function SenderWarning() {
+  const [status, setStatus] = useState<{ resendConfigured: boolean; sharedSender: boolean; from: string } | null>(null);
+  useEffect(() => {
+    fetch('/api/admin/email/status').then((r) => (r.ok ? r.json() : null)).then(setStatus).catch(() => setStatus(null));
+  }, []);
+  if (!status || (status.resendConfigured && !status.sharedSender)) return null;
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-4 py-3 text-xs text-amber-100">
+      <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+      <div className="space-y-1">
+        {!status.resendConfigured ? (
+          <p className="font-semibold">Email isn&apos;t configured: RESEND_API_KEY is missing, so nothing will send.</p>
+        ) : (
+          <>
+            <p className="font-semibold">Mail is going out from {status.from} — a shared test sender that inboxes treat as spam.</p>
+            <p className="text-amber-200/80">
+              Verify your own domain in Resend (it walks you through the SPF, DKIM and DMARC DNS records), then set EMAIL_FROM to an address on it, e.g. <code className="rounded bg-black/30 px-1">Screenplay Studio &lt;hello@screenplaystudio.fun&gt;</code>, and redeploy.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

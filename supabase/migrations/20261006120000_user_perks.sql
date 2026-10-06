@@ -40,7 +40,7 @@ CREATE POLICY "Admins read all perks"
   USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin'));
 
 -- Gifted Pro is a normal subscription row with payment_method = 'gift' and an
--- end date; /api/cron/expire-gifts ends it when the period is over.
+-- end date; /api/cron/expire-pro ends it when the period is over.
 CREATE INDEX IF NOT EXISTS subscriptions_gift_expiry_idx
   ON public.subscriptions (current_period_end)
   WHERE payment_method = 'gift' AND status = 'active';

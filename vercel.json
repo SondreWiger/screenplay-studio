@@ -9,7 +9,7 @@
       "schedule": "30 12 * * *"
     },
     {
-      "path": "/api/cron/expire-gifts",
+      "path": "/api/cron/expire-pro",
       "schedule": "15 3 * * *"
     }
   ]
