@@ -161,7 +161,7 @@ export default function DownloadPage() {
         {/* Platform selector + download */}
         <div className="flex flex-col md:flex-row gap-8 mb-20">
           {/* Platform tabs */}
-          <div className="flex flex-row md:flex-col gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 md:flex md:flex-col">
             {PLATFORMS.map((p) => {
               const Icon = p.icon;
               const isDetected = p.key === detected.os;
@@ -169,7 +169,7 @@ export default function DownloadPage() {
                 <button
                   key={p.key}
                   onClick={() => setSelected(p.key)}
-                  className={`flex items-center gap-3 px-4 py-3 border text-left transition-all ${
+                  className={`flex min-w-0 items-center gap-3 px-4 py-3 border text-left transition-all ${
                     selected === p.key
                       ? 'border-white/20 bg-white/5'
                       : 'border-white/5 bg-transparent hover:border-white/10 hover:bg-white/[0.02]'
@@ -298,7 +298,7 @@ export default function DownloadPage() {
             <Link href="/" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
               Home
             </Link>
-            <Link href="/auth" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
+            <Link href="/auth/login" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">
               Sign in
             </Link>
             <Link href="/learn" className="text-[11px] font-medium uppercase tracking-[0.04em] text-white/55 hover:text-white/60 transition-colors">

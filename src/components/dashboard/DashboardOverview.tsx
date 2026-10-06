@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Bell, FileUp, Lightbulb, MessagesSquare, PenLine, Plus, Sparkles, Wrench } from 'lucide-react';
 import { Panel, StatGrid, dailySpark } from '@/components/kit';
+import { SupervisorNote } from './SupervisorNote';
 import { useNotificationStore } from '@/lib/stores';
 import { cn, timeAgo } from '@/lib/utils';
 import type { Project } from '@/lib/types';
@@ -124,6 +125,8 @@ export function DashboardOverview({
               </Link>
             ))}
           </div>
+
+          <SupervisorNote />
         </section>
 
         {/* Where every project sits in the pipeline */}

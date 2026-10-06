@@ -92,7 +92,7 @@ export default function ClaimProPage() {
           <p className="text-surface-400 mb-6">
             Please sign in to claim your Pro access from your donation.
           </p>
-          <Link href="/auth">
+          <Link href="/auth/login?redirect=/claim-pro">
             <Button className="w-full">Sign In</Button>
           </Link>
         </div>
