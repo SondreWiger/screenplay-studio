@@ -76,6 +76,7 @@ function filmNav(p: string, isEpisodic: boolean, isViewer: boolean): NavCategory
         { label: 'Arc Planner', href: `${p}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Beat Sheet', href: `${p}/beat-sheet`, icon: 'beat-sheet', always: true },
         { label: 'Notes Rounds', href: `${p}/notes-rounds`, icon: 'notes-rounds', always: true },
+        { label: 'Idea Starter', href: `${p}/idea-starter`, icon: 'idea-starter', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
         { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },
@@ -172,6 +173,7 @@ function tvNav(p: string): NavCategory[] {
       category: 'Pre-Production',
       items: [
         { label: 'Wire Desk', href: `${p}/wire-desk`, icon: 'wiredesk', always: true },
+        { label: 'Idea Starter', href: `${p}/idea-starter`, icon: 'idea-starter', always: true },
         { label: 'Editorial Board', href: `${p}/editorial`, icon: 'editorial', always: true },
         { label: 'Stories', href: `${p}/stories`, icon: 'stories', always: true },
         { label: 'Contacts', href: `${p}/contacts`, icon: 'contacts', always: true },
@@ -239,6 +241,7 @@ function novelNav(p: string, isViewer: boolean): NavCategory[] {
       items: [
         { label: 'Manuscript', href: `${p}/manuscript`, icon: 'manuscript', always: true },
         { label: 'Goals & Sprints', href: `${p}/writing-goals`, icon: 'writing-goals', always: true },
+        { label: 'Idea Starter', href: `${p}/idea-starter`, icon: 'idea-starter', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
         { label: 'Research', href: `${p}/documents`, icon: 'documents', always: true },
       ],
@@ -296,6 +299,7 @@ function audioDramaNav(p: string): NavCategory[] {
         { label: 'Script', href: `${p}/script`, icon: 'script', always: true },
         { label: 'Arc Planner', href: `${p}/arc-planner`, icon: 'arc-planner', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },
+        { label: 'Idea Starter', href: `${p}/idea-starter`, icon: 'idea-starter', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
         { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
       ],
@@ -360,6 +364,7 @@ function stagePlayNav(p: string, isViewer: boolean): NavCategory[] {
         { label: 'Script', href: `${p}/script`, icon: 'script', always: true },
         { label: 'Notes Rounds', href: `${p}/notes-rounds`, icon: 'notes-rounds', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },
+        { label: 'Idea Starter', href: `${p}/idea-starter`, icon: 'idea-starter', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
         { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
       ],
@@ -426,6 +431,7 @@ function contentCreatorNav(p: string): NavCategory[] {
       category: 'Script',
       items: [
         { label: 'Script', href: `${p}/script`, icon: 'script', always: true },
+        { label: 'Idea Starter', href: `${p}/idea-starter`, icon: 'idea-starter', always: true },
         { label: 'Ideas', href: `${p}/ideas`, icon: 'ideas', always: true },
         { label: 'Worldbuilding', href: `${p}/worldbuilding`, icon: 'worldbuilding', always: true },
         { label: 'Documents', href: `${p}/documents`, icon: 'documents', always: true },

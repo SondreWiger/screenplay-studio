@@ -173,6 +173,15 @@ const FEATURES: Feature[] = [
     bullets: ['Quick capture', 'Rich text', 'Categories', 'Search'],
   },
   {
+    id: 'idea-starter',
+    icon: '🚀',
+    name: 'Idea Starter',
+    tagline: 'From rough idea to first plan',
+    category: 'Story',
+    description: 'Type a rough idea and get a starter kit made for your format: a pitch builder, the questions to answer first, a starter structure and twists to try.',
+    bullets: ['Made for each format', 'Logline builder', 'Starter outline', 'Saves to Ideas'],
+  },
+  {
     id: 'one-liner',
     icon: '📊',
     name: 'One-Liner',

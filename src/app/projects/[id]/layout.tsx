@@ -261,6 +261,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     'Beat Sheet': 'sidebar.beat_sheet',
     'Notes Rounds': 'sidebar.notes_rounds',
     'Ideas': 'sidebar.ideas',
+    'Idea Starter': 'sidebar.idea_starter',
     'Documents': 'sidebar.documents',
     'Characters': 'sidebar.characters',
     'Locations': 'sidebar.locations',

@@ -202,7 +202,7 @@ const EN: Record<string, string> = {
 
   'sidebar.overview': 'Overview', 'sidebar.script': 'Script', 'sidebar.episodes': 'Episodes',
   'sidebar.arc_planner': 'Arc Planner', 'sidebar.beat_sheet': 'Beat Sheet',
-  'sidebar.notes_rounds': 'Notes Rounds', 'sidebar.ideas': 'Ideas',
+  'sidebar.notes_rounds': 'Notes Rounds', 'sidebar.ideas': 'Ideas', 'sidebar.idea_starter': 'Idea Starter',
   'sidebar.documents': 'Documents', 'sidebar.characters': 'Characters',
   'sidebar.locations': 'Locations', 'sidebar.scenes': 'Scenes', 'sidebar.schedule': 'Schedule',
   'sidebar.budget': 'Budget', 'sidebar.breakdown': 'Breakdown', 'sidebar.call_sheet': 'Call Sheet',

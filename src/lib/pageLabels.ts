@@ -3,7 +3,7 @@ export const PAGE_LABELS: Record<string, string> = {
   characters: 'Characters', locations: 'Locations', scenes: 'Scenes',
   episodes: 'Episodes',
   'arc-planner': 'Arc Planner',
-  shots: 'Shot List', schedule: 'Schedule', ideas: 'Ideas',
+  shots: 'Shot List', schedule: 'Schedule', ideas: 'Ideas', 'idea-starter': 'Idea Starter',
   budget: 'Budget', team: 'Team', settings: 'Settings',
   mindmap: 'Mind Map', moodboard: 'Mood Board', messages: 'Messages', chat: 'Chat',
   storyboard: 'Storyboard', onset: 'On Set', comments: 'Comments',
