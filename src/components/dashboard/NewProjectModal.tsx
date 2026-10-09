@@ -12,7 +12,7 @@ import { useTranslation } from '@/components/TranslationProvider';
 import type { ScriptType, ProjectType, Company, CompanyMember, CompanyRole } from '@/lib/types';
 import { FORMAT_OPTIONS, GENRE_OPTIONS, SCRIPT_TYPE_OPTIONS, AUDIO_DRAMA_FORMAT_OPTIONS, NOVEL_FORMAT_OPTIONS, NOVEL_GENRE_OPTIONS } from '@/lib/types';
 import { isElectronMode, isLocalMode, setLocalMode } from '@/lib/supabase/electron-client';
-import { putCached } from '@/lib/offline/db';
+import { putCachedVerified } from '@/lib/offline/db';
 
 export function NewProjectModal({
   isOpen,
@@ -131,7 +131,8 @@ export function NewProjectModal({
           } : {}),
         };
 
-        await putCached('projects', projectRow);
+        // Verified: read back so we never claim "created" if storage dropped it
+        await putCachedVerified('projects', projectRow);
 
         // Create a default script for the project
         const scriptId = crypto.randomUUID();
@@ -145,7 +146,7 @@ export function NewProjectModal({
           created_at: now,
           updated_at: now,
         };
-        await putCached('scripts', scriptRow);
+        await putCachedVerified('scripts', scriptRow);
 
         // Create a title page element
         const titleElement: Record<string, unknown> = {
@@ -157,7 +158,7 @@ export function NewProjectModal({
           created_at: now,
           updated_at: now,
         };
-        await putCached('script_elements', titleElement);
+        await putCachedVerified('script_elements', titleElement);
 
         if (window.electron?.writeFile) {
           const { saveProjectToDisk } = await import('@/lib/local-files');

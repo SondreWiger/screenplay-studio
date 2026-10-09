@@ -47,12 +47,44 @@ export type DataStoreName = (typeof DATA_STORES)[number];
 
 // Singleton
 
-let _db: IDBPDatabase | null = null;
+let _dbPromise: Promise<IDBPDatabase> | null = null;
+
+/**
+ * Ask the browser not to evict our data under storage pressure (Safari/iOS
+ * and low-disk devices otherwise may silently wipe IndexedDB). Returns whether
+ * storage is persistent.
+ */
+export async function requestPersistentStorage(): Promise<boolean> {
+  try {
+    if (typeof navigator === 'undefined' || !navigator.storage?.persist) return false;
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Write a row and read it back to prove it actually landed. Throws if the
+ * browser accepted the write but the data isn't there (broken/evicted storage).
+ */
+export async function putCachedVerified(store: DataStoreName, row: Row): Promise<void> {
+  await putCached(store, row);
+  const back = await getCachedById(store, row.id as string);
+  if (!back) {
+    throw new Error('Browser storage did not keep the data. Storage may be full, blocked or in private mode.');
+  }
+}
 
 export async function getDB(): Promise<IDBPDatabase> {
-  if (_db) return _db;
+  if (_dbPromise) return _dbPromise;
 
-  _db = await openDB(DB_NAME, DB_VERSION, {
+  const reset = () => { _dbPromise = null; };
+  _dbPromise = openDB(DB_NAME, DB_VERSION, {
+    // Another tab wants to upgrade, or the browser killed the connection:
+    // drop our cached handle so the next call reopens instead of failing.
+    blocking() { reset(); },
+    terminated() { reset(); },
     upgrade(db) {
       // Data caches
       for (const name of DATA_STORES) {
@@ -74,9 +106,9 @@ export async function getDB(): Promise<IDBPDatabase> {
         sq.createIndex('by_timestamp', 'timestamp', { unique: false });
       }
     },
-  });
+  }).catch((err) => { reset(); throw err; });
 
-  return _db;
+  return _dbPromise;
 }
 
 // Helpers

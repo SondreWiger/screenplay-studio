@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { processSyncQueue, requestSync, flushSyncQueue } from '@/lib/offline/queue';
+import { requestPersistentStorage } from '@/lib/offline/db';
 
 /**
  * Registers the service worker and wires up the offline sync queue.
@@ -45,6 +46,11 @@ export function ServiceWorkerRegistration() {
   // every environment (it used to be skipped entirely in development).
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // Without this, Safari/iOS and low-disk devices may silently evict local data.
+    requestPersistentStorage().then((ok) => {
+      if (!ok) console.warn('[offline] Persistent storage not granted; local data may be evicted');
+    });
 
     const handleOnline = () => { processSyncQueue({ includeFailed: true }).catch(console.warn); };
     // Fired by offlineUpsert/offlineDelete; debounced so typing batches up.
