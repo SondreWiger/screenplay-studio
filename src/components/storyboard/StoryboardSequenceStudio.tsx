@@ -1842,7 +1842,7 @@ export function StoryboardSequenceStudio({
                 onClick={clearActiveLayer}
                 className="mt-2 text-[11px] text-surface-500 hover:text-red-400 transition-colors w-full text-center"
               >
-                Clear strokes on "{activeLayer?.name}"
+                Clear strokes on &ldquo;{activeLayer?.name}&rdquo;
               </button>
             </div>
 

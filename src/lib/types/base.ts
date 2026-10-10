@@ -731,6 +731,13 @@ export interface WorldEntityRelationship {
 export type AccessRequestReasonType = 'standard' | 'custom';
 export type AccessRequestStatus = 'pending' | 'accepted' | 'denied' | 'revoked';
 
+export const STANDARD_ACCESS_REASONS = [
+  'Routine content moderation & safety review',
+  'Investigating flagged content or user report',
+  'Platform terms & safety compliance check',
+  'Assisting user with technical support or project recovery',
+] as const;
+
 export interface AdminProjectAccessRequest {
   id: string;
   project_id: string;

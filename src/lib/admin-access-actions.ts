@@ -11,17 +11,14 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import { getEmailsByIds } from '@/lib/private-profile';
-import { escapeHtml } from '@/lib/utils';
 import logger from '@/lib/logger';
 import { sendNotificationEmail } from '@/lib/mailer';
-import type { AdminProjectAccessRequest, AccessRequestReasonType, AccessRequestStatus } from '@/lib/types';
-
-export const STANDARD_ACCESS_REASONS = [
-  'Routine content moderation & safety review',
-  'Investigating flagged content or user report',
-  'Platform terms & safety compliance check',
-  'Assisting user with technical support or project recovery',
-] as const;
+import {
+  type AdminProjectAccessRequest,
+  type AccessRequestReasonType,
+  type AccessRequestStatus,
+  STANDARD_ACCESS_REASONS,
+} from '@/lib/types';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID || process.env.ADMIN_UID || 'f0e0c4a4-0833-4c64-b012-15829c087c77';
 
@@ -119,9 +116,8 @@ export async function requestAdminProjectAccessAction({
     };
 
     // Attempt to write into admin_project_access_requests table
-    let tableWritten = false;
     try {
-      const { error: insertErr } = await db.from('admin_project_access_requests').insert({
+      await db.from('admin_project_access_requests').insert({
         id: requestId,
         project_id: projectId,
         requester_id: user.id,
@@ -132,7 +128,6 @@ export async function requestAdminProjectAccessAction({
         access_type: 'moderation_view',
         created_at: now,
       });
-      if (!insertErr) tableWritten = true;
     } catch {
       // Table may not be migrated in schema cache yet
     }

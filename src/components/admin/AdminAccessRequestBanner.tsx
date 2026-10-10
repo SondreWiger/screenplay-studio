@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Shield, ShieldAlert, Check, X, Lock, MessageSquare, AlertCircle } from 'lucide-react';
+import { Shield, ShieldAlert, Check, X, Lock } from 'lucide-react';
 import { Button, toast } from '@/components/ui';
 import { getPendingAccessRequestsForProjectAction, respondToAdminAccessAction } from '@/lib/admin-access-actions';
 import type { AdminProjectAccessRequest } from '@/lib/types';
@@ -19,7 +19,6 @@ export function AdminAccessRequestBanner({ projectId }: AdminAccessRequestBanner
   const router = useRouter();
 
   const [requests, setRequests] = useState<AdminProjectAccessRequest[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [selectedRequest, setSelectedRequest] = useState<AdminProjectAccessRequest | null>(null);
   const [confirmModal, setConfirmModal] = useState<'accept' | 'deny' | null>(null);
@@ -39,7 +38,6 @@ export function AdminAccessRequestBanner({ projectId }: AdminAccessRequestBanner
 
   const fetchRequests = useCallback(async () => {
     if (!isOwner || !projectId) {
-      setLoading(false);
       return;
     }
 
@@ -57,8 +55,6 @@ export function AdminAccessRequestBanner({ projectId }: AdminAccessRequestBanner
       }
     } catch (err) {
       console.error('[AdminAccessRequestBanner] Failed to fetch requests:', err);
-    } finally {
-      setLoading(false);
     }
   }, [projectId, isOwner, searchParams]);
 
@@ -139,7 +135,7 @@ export function AdminAccessRequestBanner({ projectId }: AdminAccessRequestBanner
               </div>
               <p className="text-surface-300 mt-0.5">
                 <strong className="text-amber-200">{requesterName}</strong> requested read-only & comment access for:{' '}
-                <span className="italic text-white">"{currentReq.reason}"</span>
+                <span className="italic text-white">&ldquo;{currentReq.reason}&rdquo;</span>
               </p>
             </div>
           </div>

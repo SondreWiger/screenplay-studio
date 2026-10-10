@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ShieldAlert, X, Send, Lock, Info, CheckCircle2 } from 'lucide-react';
+import { Shield, ShieldAlert, X, Send, Lock } from 'lucide-react';
 import { Button, toast } from '@/components/ui';
-import { requestAdminProjectAccessAction, STANDARD_ACCESS_REASONS } from '@/lib/admin-access-actions';
-import type { AccessRequestReasonType } from '@/lib/types';
+import { requestAdminProjectAccessAction } from '@/lib/admin-access-actions';
+import { type AccessRequestReasonType, STANDARD_ACCESS_REASONS } from '@/lib/types';
 
 interface AdminRequestAccessModalProps {
   isOpen: boolean;
