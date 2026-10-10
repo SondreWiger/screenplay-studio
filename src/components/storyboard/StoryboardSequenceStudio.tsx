@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button, Badge, LoadingSpinner, toast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Shot, Scene } from '@/lib/types';
+import { requestSidebarCompact, isSidebarCurrentlyCollapsed } from '@/lib/sidebar-collapse';
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -573,6 +574,34 @@ export function StoryboardSequenceStudio({
   useEffect(() => {
     if (initialShotId) setActiveShotId(initialShotId);
   }, [initialShotId]);
+
+  // ── Auto-compact Project Sidebar on Open & Restore on Close ─────────
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Record whether sidebar was already collapsed before Sequence Studio opened
+    const wasAlreadyCollapsed = isSidebarCurrentlyCollapsed();
+
+    // Auto-compact the sidebar to give the studio maximum canvas space
+    requestSidebarCompact(true);
+
+    // Escape key listener to close studio
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      // Restore previous state if sidebar was originally expanded
+      if (!wasAlreadyCollapsed) {
+        requestSidebarCompact(false);
+      }
+    };
+  }, [isOpen, onClose]);
 
   // Find active shot
   const currentShot = useMemo(() => {
@@ -1149,7 +1178,7 @@ export function StoryboardSequenceStudio({
   if (!isOpen || !currentShot) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-surface-950 text-white select-none overflow-hidden">
+    <div className="fixed inset-y-0 right-0 left-0 md:left-[var(--sidebar-width,3.5rem)] z-30 flex flex-col bg-surface-950 text-white select-none overflow-hidden transition-[left] duration-300 ease-spring">
       {/* ── Studio Top Header ────────────────────────────────────────── */}
       <header className="h-14 px-3 sm:px-5 flex items-center justify-between border-b border-surface-800 bg-surface-950/95 backdrop-blur-md shrink-0">
         {/* Left: Sequence Breadcrumb & Scene Selector */}

@@ -36,6 +36,7 @@ import { useTranslation } from '@/components/TranslationProvider';
 import dynamic from 'next/dynamic';
 import ProjectLoading from './loading';
 import { ZEN_MODE_EVENT } from '@/lib/zen-mode';
+import { SIDEBAR_COLLAPSE_EVENT } from '@/lib/sidebar-collapse';
 import { getTourState, endTour } from '@/lib/tourState';
 import type { UsageIntent } from '@/lib/types';
 /** Canvas/editor tools that fill the viewport — they skip the page-load cascade. */
@@ -161,6 +162,32 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
+
+  // Listen for external requests to compact or expand the sidebar (e.g. Storyboard Sequence Studio)
+  useEffect(() => {
+    const handleCollapse = (e: Event) => {
+      const detail = (e as CustomEvent<{ collapsed: boolean }>).detail;
+      if (detail && typeof detail.collapsed === 'boolean') {
+        setSidebarCollapsed(detail.collapsed);
+      }
+    };
+    window.addEventListener(SIDEBAR_COLLAPSE_EVENT, handleCollapse);
+    return () => window.removeEventListener(SIDEBAR_COLLAPSE_EVENT, handleCollapse);
+  }, []);
+
+  // Synchronize document dataset and CSS variable --sidebar-width with current collapse state
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.style.setProperty(
+      '--sidebar-width',
+      sidebarCollapsed ? '3.5rem' : '15rem'
+    );
+    if (sidebarCollapsed) {
+      document.documentElement.dataset.sidebarCollapsed = 'true';
+    } else {
+      delete document.documentElement.dataset.sidebarCollapsed;
+    }
+  }, [sidebarCollapsed]);
 
   // Save the current project route so Dashboard can reopen the last active tab
   useEffect(() => {
@@ -1089,7 +1116,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       {!zenMode && (
       <aside
         className={cn(
-          'hidden md:flex flex-col transition-[width] duration-300 ease-spring bg-surface-950 border-r border-surface-800',
+          'hidden md:flex flex-col transition-[width] duration-300 ease-spring bg-surface-950 border-r border-surface-800 z-30 relative',
           sidebarCollapsed ? 'w-14' : 'w-60'
         )}
       >
