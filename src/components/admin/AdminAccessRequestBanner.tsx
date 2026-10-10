@@ -12,6 +12,8 @@ interface AdminAccessRequestBannerProps {
   projectId: string;
 }
 
+import { createClient } from '@/lib/supabase/client';
+
 export function AdminAccessRequestBanner({ projectId }: AdminAccessRequestBannerProps) {
   const { user } = useAuthStore();
   const { currentProject, members } = useProjectStore();
@@ -42,7 +44,33 @@ export function AdminAccessRequestBanner({ projectId }: AdminAccessRequestBanner
     }
 
     try {
-      const data = await getPendingAccessRequestsForProjectAction(projectId);
+      let data: AdminProjectAccessRequest[] = [];
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      try {
+        const apiRes = await fetch(`/api/admin/project-access?mode=pending&projectId=${encodeURIComponent(projectId)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (apiRes.ok) {
+          const json = await apiRes.json().catch(() => null);
+          if (json && Array.isArray(json.requests)) {
+            data = json.requests;
+          }
+        }
+      } catch {
+        // Fall through to Server Action fallback
+      }
+
+      if (data.length === 0) {
+        try {
+          data = await getPendingAccessRequestsForProjectAction(projectId, token);
+        } catch {
+          data = [];
+        }
+      }
+
       setRequests(data);
 
       // Check if URL specified a specific request
@@ -67,16 +95,61 @@ export function AdminAccessRequestBanner({ projectId }: AdminAccessRequestBanner
     if (!target) return;
 
     setActionLoading(true);
-    try {
-      const res = await respondToAdminAccessAction({
-        projectId,
-        requestId: target.id,
-        action,
-        note: responseNote.trim() || undefined,
-      });
+    let res: { success: boolean; error?: string; status?: string } | null = null;
 
-      if (!res.success) {
-        toast.error(res.error || 'Failed to update request');
+    try {
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      // 1. Try API route
+      try {
+        const apiRes = await fetch('/api/admin/project-access', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            action: 'respond',
+            projectId,
+            requestId: target.id,
+            responseAction: action,
+            note: responseNote.trim() || undefined,
+          }),
+        });
+
+        const json = await apiRes.json().catch(() => null);
+        if (json && typeof json.success === 'boolean') {
+          res = json;
+        } else if (!apiRes.ok) {
+          res = { success: false, error: json?.error || `Request failed (${apiRes.status})` };
+        }
+      } catch {
+        // Fall through to Server Action fallback
+      }
+
+      // 2. Server Action fallback
+      if (!res) {
+        try {
+          const actionRes = await respondToAdminAccessAction({
+            projectId,
+            requestId: target.id,
+            action,
+            note: responseNote.trim() || undefined,
+            authToken: token,
+          });
+          res = actionRes || { success: false, error: 'Empty response received' };
+        } catch (actionErr) {
+          res = {
+            success: false,
+            error: actionErr instanceof Error ? actionErr.message : 'Server action failed',
+          };
+        }
+      }
+
+      if (!res?.success) {
+        toast.error(res?.error || 'Failed to update request');
       } else {
         toast.success(action === 'accept' ? 'Moderatory access granted!' : 'Access request declined.');
         setRequests((prev) => prev.filter((r) => r.id !== target.id));

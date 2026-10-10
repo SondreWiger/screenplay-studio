@@ -19,6 +19,8 @@ interface AdminRequestAccessModalProps {
   onSuccess?: () => void;
 }
 
+import { createClient } from '@/lib/supabase/client';
+
 export function AdminRequestAccessModal({
   isOpen,
   onClose,
@@ -40,16 +42,61 @@ export function AdminRequestAccessModal({
     }
 
     setSubmitting(true);
-    try {
-      const res = await requestAdminProjectAccessAction({
-        projectId: project.id,
-        reasonType,
-        standardReason: selectedStandard,
-        customReason: customReason.trim(),
-      });
+    let res: { success: boolean; error?: string; requestId?: string } | null = null;
 
-      if (!res.success) {
-        toast.error(res.error || 'Failed to request access');
+    try {
+      // 1. Try via API route with Bearer token
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      try {
+        const apiRes = await fetch('/api/admin/project-access', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            action: 'request',
+            projectId: project.id,
+            reasonType,
+            standardReason: selectedStandard,
+            customReason: customReason.trim(),
+          }),
+        });
+
+        const json = await apiRes.json().catch(() => null);
+        if (json && typeof json.success === 'boolean') {
+          res = json;
+        } else if (!apiRes.ok) {
+          res = { success: false, error: json?.error || `Request failed (${apiRes.status})` };
+        }
+      } catch {
+        // Fall through to Server Action fallback
+      }
+
+      // 2. Fallback to Server Action if API route didn't return a result
+      if (!res) {
+        try {
+          const actionRes = await requestAdminProjectAccessAction({
+            projectId: project.id,
+            reasonType,
+            standardReason: selectedStandard,
+            customReason: customReason.trim(),
+            authToken: token,
+          });
+          res = actionRes || { success: false, error: 'Empty response received' };
+        } catch (actionErr) {
+          res = {
+            success: false,
+            error: actionErr instanceof Error ? actionErr.message : 'Server action failed',
+          };
+        }
+      }
+
+      if (!res?.success) {
+        toast.error(res?.error || 'Failed to request access');
       } else {
         toast.success(`Access request sent to ${project.ownerName || 'project owner'}!`);
         if (onSuccess) onSuccess();

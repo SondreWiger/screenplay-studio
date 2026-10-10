@@ -26,13 +26,46 @@ function isStaffOrAdmin(userId: string, role?: string | null): boolean {
   return userId === ADMIN_UID || role === 'admin' || role === 'moderator';
 }
 
-async function getAuthenticatedUser() {
-  const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+async function getAuthenticatedUser(authToken?: string) {
+  let user: { id: string; email?: string } | null = null;
+
+  if (authToken) {
+    try {
+      const adminDb = createAdminSupabaseClient();
+      const { data, error } = await adminDb.auth.getUser(authToken);
+      if (!error && data?.user) {
+        user = data.user;
+      }
+    } catch {
+      // Token check failed
+    }
+  }
+
+  if (!user) {
+    try {
+      const supabase = createServerSupabaseClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+        user = data.user;
+      }
+    } catch {
+      // Cookies not available or SSR issue
+    }
+  }
+
   if (!user) return null;
-  const adminDb = createAdminSupabaseClient();
-  const { data: profile } = await adminDb.from('profiles').select('id, role, display_name, full_name, email').eq('id', user.id).maybeSingle();
-  return { user, profile };
+
+  try {
+    const adminDb = createAdminSupabaseClient();
+    const { data: profile } = await adminDb
+      .from('profiles')
+      .select('id, role, display_name, full_name, email')
+      .eq('id', user.id)
+      .maybeSingle();
+    return { user, profile: profile ?? null };
+  } catch {
+    return { user, profile: null };
+  }
 }
 
 /**
@@ -43,14 +76,16 @@ export async function requestAdminProjectAccessAction({
   reasonType,
   customReason,
   standardReason,
+  authToken,
 }: {
   projectId: string;
   reasonType: AccessRequestReasonType;
   customReason?: string;
   standardReason?: string;
+  authToken?: string;
 }): Promise<{ success: boolean; error?: string; requestId?: string }> {
   try {
-    const auth = await getAuthenticatedUser();
+    const auth = await getAuthenticatedUser(authToken);
     if (!auth) return { success: false, error: 'Unauthorized' };
 
     const { user, profile } = auth;
@@ -229,14 +264,16 @@ export async function respondToAdminAccessAction({
   requestId,
   action,
   note,
+  authToken,
 }: {
   projectId: string;
   requestId: string;
   action: 'accept' | 'deny';
   note?: string;
+  authToken?: string;
 }): Promise<{ success: boolean; error?: string; status?: AccessRequestStatus }> {
   try {
-    const auth = await getAuthenticatedUser();
+    const auth = await getAuthenticatedUser(authToken);
     if (!auth) return { success: false, error: 'Unauthorized' };
 
     const { user, profile } = auth;
@@ -400,9 +437,12 @@ export async function respondToAdminAccessAction({
 /**
  * Fetch pending access requests for a project (used by project owner banner).
  */
-export async function getPendingAccessRequestsForProjectAction(projectId: string): Promise<AdminProjectAccessRequest[]> {
+export async function getPendingAccessRequestsForProjectAction(
+  projectId: string,
+  authToken?: string
+): Promise<AdminProjectAccessRequest[]> {
   try {
-    const auth = await getAuthenticatedUser();
+    const auth = await getAuthenticatedUser(authToken);
     if (!auth) return [];
 
     const { user } = auth;
@@ -463,7 +503,10 @@ export async function getPendingAccessRequestsForProjectAction(projectId: string
 /**
  * Checks an admin's access status for a given project.
  */
-export async function checkAdminAccessStatusAction(projectId: string): Promise<{
+export async function checkAdminAccessStatusAction(
+  projectId: string,
+  authToken?: string
+): Promise<{
   status: 'none' | AccessRequestStatus;
   isMember: boolean;
   memberRole?: string;
@@ -471,7 +514,7 @@ export async function checkAdminAccessStatusAction(projectId: string): Promise<{
   request?: AdminProjectAccessRequest | null;
 }> {
   try {
-    const auth = await getAuthenticatedUser();
+    const auth = await getAuthenticatedUser(authToken);
     if (!auth) return { status: 'none', isMember: false, isModeratorView: false };
 
     const { user } = auth;
