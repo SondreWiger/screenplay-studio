@@ -66,6 +66,11 @@ function CommentThread({ comment, allComments, depth, canEdit, userId, projectId
           <span className="text-xs font-medium text-surface-300">
             {comment.profile?.full_name || comment.profile?.email || 'Anonymous'}
           </span>
+          {comment.profile?.role === 'admin' && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              🛡️ Moderator
+            </span>
+          )}
           {typeLabels[comment.comment_type] && (
             <Badge size="sm" variant={comment.comment_type === 'issue' ? 'error' : comment.comment_type === 'suggestion' ? 'info' : 'success'}>
               {typeLabels[comment.comment_type]}

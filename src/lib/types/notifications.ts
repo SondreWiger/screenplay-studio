@@ -25,7 +25,9 @@ export type NotificationType =
   | 'blog_comment'
   | 'feedback_update'
   | 'collaborator_added'
-  | 'poll_published';
+  | 'poll_published'
+  | 'access_request'
+  | 'access_response';
 
 // Poll / Survey Types
 

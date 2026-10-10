@@ -35,6 +35,8 @@ const TYPE_ICON: Record<NotificationType, { label: string; color: string }> = {
   feedback_update: { label: 'FB', color: 'bg-amber-500/20' },
   collaborator_added: { label: 'CO', color: 'bg-green-500/20' },
   poll_published: { label: '📊', color: 'bg-brand-500/20' },
+  access_request: { label: '🛡️', color: 'bg-amber-500/20' },
+  access_response: { label: '🛡️', color: 'bg-emerald-500/20' },
 };
 
 // NOTIFICATION BELL — top-bar icon with badge

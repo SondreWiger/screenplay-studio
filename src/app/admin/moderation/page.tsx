@@ -4,12 +4,13 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Archive, MessageSquare, Radar, ShieldAlert, ShieldCheck, Trash2, X } from 'lucide-react';
+import { Archive, MessageSquare, Radar, Shield, ShieldAlert, ShieldCheck, Trash2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { fillEmails } from '@/lib/private-profile';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, toast } from '@/components/ui';
 import { cn, timeAgo } from '@/lib/utils';
+import { AdminRequestAccessModal } from '@/components/admin/AdminRequestAccessModal';
 import {
   ActionButton, AdminPage, AnimatedItem, BarList, Dialog, Dots, EmptyState, Field, PageHeader, Panel, Pill, Reveal,
   SearchInput, Segmented, Shimmer, StatGrid, TabSkeleton, Toolbar, TrendPanel, fieldClass, tally, SERIES, type Tone,
@@ -100,6 +101,7 @@ export default function ModerationPage() {
   const [actionModal, setActionModal] = useState<{ flag: ContentFlag; action: string } | null>(null);
   const [actionNotes, setActionNotes] = useState('');
   const [actionDays, setActionDays] = useState(30);
+  const [accessModalProject, setAccessModalProject] = useState<{ id: string; title: string; ownerName?: string; ownerEmail?: string } | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -438,6 +440,21 @@ export default function ModerationPage() {
                           </div>
                           {flag.status === 'pending' ? (
                             <div className="flex flex-wrap items-center gap-1.5">
+                              {flag.project_id && (
+                                <ActionButton
+                                  variant="ghost"
+                                  icon={<Shield className="h-3.5 w-3.5 text-amber-400" />}
+                                  onClick={() => setAccessModalProject({
+                                    id: flag.project_id!,
+                                    title: `Project (${flag.project_id!.slice(0, 8)}…)`,
+                                    ownerName: flag.flagged_user?.display_name || flag.flagged_user?.full_name || 'Owner',
+                                    ownerEmail: flag.flagged_user?.email,
+                                  })}
+                                  className="text-amber-300"
+                                >
+                                  Request Access
+                                </ActionButton>
+                              )}
                               <ActionButton variant="ghost" icon={<MessageSquare className="h-3.5 w-3.5" />} onClick={() => setDmModal({ userId: flag.flagged_user_id, userName: flag.flagged_user?.display_name || flag.flagged_user?.full_name || 'User' })}>DM</ActionButton>
                               <ActionButton
                                 variant="ghost"
@@ -512,14 +529,29 @@ export default function ModerationPage() {
                           </div>
                           {isFlaggedUser && <Pill tone="red" dot>{owner.moderation_status}</Pill>}
                         </div>
-                        <button
-                          onClick={() => setDmModal({ userId: p.created_by, userName: owner?.display_name || owner?.full_name || 'Owner' })}
-                          className="rounded-lg p-1.5 text-surface-500 transition-colors hover:bg-surface-800 hover:text-white"
-                          title="DM owner"
-                          aria-label="DM owner"
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={() => setAccessModalProject({
+                              id: p.id,
+                              title: p.title,
+                              ownerName: owner?.display_name || owner?.full_name || 'Owner',
+                              ownerEmail: owner?.email,
+                            })}
+                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-amber-300 hover:bg-amber-500/10 border border-amber-500/30 transition-colors"
+                            title="Request moderatory access"
+                          >
+                            <Shield className="h-3.5 w-3.5 text-amber-400" />
+                            <span className="hidden sm:inline font-medium">Request Access</span>
+                          </button>
+                          <button
+                            onClick={() => setDmModal({ userId: p.created_by, userName: owner?.display_name || owner?.full_name || 'Owner' })}
+                            className="rounded-lg p-1.5 text-surface-500 transition-colors hover:bg-surface-800 hover:text-white"
+                            title="DM owner"
+                            aria-label="DM owner"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </button>
+                        </div>
                         <span className="w-16 shrink-0 text-right text-[11px] text-surface-500">{timeAgo(p.updated_at)}</span>
                       </motion.li>
                     );
@@ -618,6 +650,14 @@ export default function ModerationPage() {
           </div>
         )}
       </Dialog>
+
+      {accessModalProject && (
+        <AdminRequestAccessModal
+          isOpen={!!accessModalProject}
+          onClose={() => setAccessModalProject(null)}
+          project={accessModalProject}
+        />
+      )}
     </AdminPage>
   );
 }

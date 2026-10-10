@@ -11,8 +11,9 @@ import { MindmapTab } from '../MindmapTab';
 import { useAdminData } from '../data';
 import { TabSkeleton } from '../motion';
 import { fillEmails } from '@/lib/private-profile';
-import { FolderKanban, Network } from 'lucide-react';
+import { FolderKanban, Network, Shield } from 'lucide-react';
 import { AdminPage, BarList, PageHeader, Panel, Reveal, StatGrid, TrendPanel, tally, windowCounts, dailySpark, SERIES } from '../kit';
+import { AdminRequestAccessModal } from '../AdminRequestAccessModal';
 
 export function ProjectsTab({ projects, search, onSearchChange }: {
   projects: ProjectWithCounts[];
@@ -21,6 +22,7 @@ export function ProjectsTab({ projects, search, onSearchChange }: {
 }) {
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
   const [projectStats, setProjectStats] = useState<Record<string, ProjectStatsDetail>>({});
+  const [accessModalProject, setAccessModalProject] = useState<{ id: string; title: string; ownerName?: string; ownerEmail?: string } | null>(null);
 
   const loadProjectStats = async (projectId: string) => {
     if (projectStats[projectId]) {
@@ -109,6 +111,24 @@ export function ProjectsTab({ projects, search, onSearchChange }: {
                 <p className="text-xs text-surface-500">{p.logline || 'No logline'}</p>
               </div>
               <Badge variant="default" size="sm">{(p.status || '').replace('_', ' ')}</Badge>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const ownerMember = p.project_members?.find(m => m.role === 'owner') || p.project_members?.[0];
+                  setAccessModalProject({
+                    id: p.id,
+                    title: p.title,
+                    ownerName: ownerMember?.profile?.display_name || 'Owner',
+                    ownerEmail: ownerMember?.profile?.email || undefined,
+                  });
+                }}
+                className="shrink-0"
+              >
+                <span className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-amber-300 hover:bg-amber-500/10 border border-amber-500/30 transition-colors cursor-pointer">
+                  <Shield className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="hidden sm:inline font-medium">Request Access</span>
+                </span>
+              </div>
               <div className="text-right">
                 <p className="text-xs text-surface-400">{p.format || '—'}</p>
                 <p className="text-[11px] text-surface-500">{timeAgo(p.updated_at)}</p>
@@ -140,16 +160,40 @@ export function ProjectsTab({ projects, search, onSearchChange }: {
                 {projectStats[p.id].totalBudget > 0 && (
                   <p className="text-xs text-surface-400">Total Budget: <span className="text-white font-medium">${projectStats[p.id].totalBudget.toLocaleString()}</span></p>
                 )}
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex items-center gap-2">
                   <Link href={`/projects/${p.id}`}>
                     <Button variant="ghost" className="text-xs">Open Project</Button>
                   </Link>
+                  <Button
+                    variant="secondary"
+                    className="text-xs gap-1.5 border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+                    onClick={() => {
+                      const ownerMember = p.project_members?.find(m => m.role === 'owner') || p.project_members?.[0];
+                      setAccessModalProject({
+                        id: p.id,
+                        title: p.title,
+                        ownerName: ownerMember?.profile?.display_name || 'Owner',
+                        ownerEmail: ownerMember?.profile?.email || undefined,
+                      });
+                    }}
+                  >
+                    <Shield className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Request Moderatory Access</span>
+                  </Button>
                 </div>
               </div>
             )}
           </div>
         ))}
       </div>
+
+      {accessModalProject && (
+        <AdminRequestAccessModal
+          isOpen={!!accessModalProject}
+          onClose={() => setAccessModalProject(null)}
+          project={accessModalProject}
+        />
+      )}
     </div>
   );
 }

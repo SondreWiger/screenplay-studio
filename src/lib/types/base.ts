@@ -726,3 +726,25 @@ export interface WorldEntityRelationship {
   description: string | null;
   created_at: string;
 }
+
+// ── Admin Project Access Requests (Moderatory Access) ───────────────
+export type AccessRequestReasonType = 'standard' | 'custom';
+export type AccessRequestStatus = 'pending' | 'accepted' | 'denied' | 'revoked';
+
+export interface AdminProjectAccessRequest {
+  id: string;
+  project_id: string;
+  requester_id: string;
+  owner_id: string;
+  reason_type: AccessRequestReasonType;
+  reason: string;
+  status: AccessRequestStatus;
+  access_type: 'moderation_view' | 'full_edit';
+  created_at: string;
+  responded_at?: string | null;
+  response_note?: string | null;
+  reviewed_by?: string | null;
+  project?: { id: string; title: string };
+  requester?: { id: string; display_name: string | null; full_name?: string | null; email?: string | null; avatar_url?: string | null };
+  owner?: { id: string; display_name: string | null; full_name?: string | null; email?: string | null; avatar_url?: string | null };
+}

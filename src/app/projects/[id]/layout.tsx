@@ -50,6 +50,7 @@ const PopoutButton = dynamic(() => import('@/components/PopoutButton').then(m =>
 const PopoutBar = dynamic(() => import('@/components/PopoutButton').then(m => ({ default: m.PopoutBar })), { ssr: false });
 const GuidedTour = dynamic(() => import('@/components/GuidedTour').then(m => ({ default: m.GuidedTour })), { ssr: false });
 const TourBanner = dynamic(() => import('@/components/TourBanner'), { ssr: false });
+import { AdminAccessRequestBanner } from '@/components/admin/AdminAccessRequestBanner';
 
 function ProjectUnavailable({ reason, onRetry }: { reason: 'not_found' | 'no_access' | 'network'; onRetry: () => void }) {
   const copy = {
@@ -1128,6 +1129,7 @@ const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
       <main className={cn('flex-1 overflow-y-auto bg-surface-950', zenMode ? 'pt-0' : 'pt-mobile-header md:pt-0', !FULL_BLEED_TOOLS.test(pathname) && !OWN_MOTION.test(pathname) && 'page-cascade')}>
         {/* Not over full-screen tools: it would push the editor down */}
         {!zenMode && !FULL_BLEED_TOOLS.test(pathname) && <EmailSpamNotice />}
+        <AdminAccessRequestBanner projectId={params.id} />
         {/* Keyed by path so a crash in one tool doesn't stick when navigating to another */}
         <ErrorBoundary key={pathname}>
           {children}
